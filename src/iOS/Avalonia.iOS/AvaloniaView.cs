@@ -27,11 +27,9 @@ namespace Avalonia.iOS
         private TouchHandler _touches;
         private ITextInputMethodClient _client;
         private bool _isActive;
-        private AvaloniaResponder _textResponder;
 
         public AvaloniaView()
         {
-            _textResponder = new AvaloniaResponder();
             _topLevelImpl = new TopLevelImpl(this);
             _touches = new TouchHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
@@ -55,8 +53,6 @@ namespace Avalonia.iOS
         public override bool CanBecomeFirstResponder => true;
 
         public override bool CanResignFirstResponder => true;
-
-        public override UIResponder NextResponder => _textResponder;
 
         internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost,
             ITopLevelImplWithStorageProvider
@@ -164,6 +160,8 @@ namespace Avalonia.iOS
 
         bool ITextInputMethodImpl.IsActive => _isActive;
 
+        private AvaloniaResponder _currentResponder;
+
         void ITextInputMethodImpl.SetClient(ITextInputMethodClient client)
         {
             if (_client != null)
@@ -175,21 +173,23 @@ namespace Avalonia.iOS
 
             if (_client is { })
             {
+                if (_currentResponder != null && _currentResponder.IsFirstResponder)
+                {
+                    _currentResponder.ResignFirstResponder();
+                    _currentResponder = null;
+                }
+
+                _currentResponder = new AvaloniaResponder(this, _client);
                 //_client.CursorRectangleChanged += ClientOnCursorRectangleChanged;
+
                 //_client.SurroundingTextChanged += ClientOnSurroundingTextChanged;
-                _textResponder.BecomeFirstResponder();
+                _currentResponder.BecomeFirstResponder();
 
-                var x = _textResponder.IsFirstResponder;
-
-                var keyWindow = UIApplication.SharedApplication.KeyWindow;
-
-                var windowNextResponder = keyWindow.NextResponder;
-
-                var nr1 = windowNextResponder.NextResponder;
+                var x = _currentResponder.IsFirstResponder;
             }
             else
             {
-                _textResponder.ResignFirstResponder();
+                _currentResponder.ResignFirstResponder();
             }
         }
 
@@ -265,7 +265,7 @@ namespace Avalonia.iOS
 
         void ITextInputMethodImpl.Reset()
         {
-            _textResponder?.ResignFirstResponder();
+            _currentResponder?.ResignFirstResponder();
         }
     }
 }

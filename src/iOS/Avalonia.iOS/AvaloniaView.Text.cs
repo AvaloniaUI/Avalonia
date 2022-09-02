@@ -54,11 +54,17 @@ public class AvaloniaResponder : UIResponder, IUITextInput
         }
     }
 
-    public AvaloniaResponder()
+    private UIResponder _nextResponder;
+
+    public AvaloniaResponder(AvaloniaView view, ITextInputMethodClient client)
     {
+        _nextResponder = view;
+        _client = client;
         _tokenizer = new UITextInputStringTokenizer(this);
         
     }
+
+    public override UIResponder NextResponder => _nextResponder;
 
     public override bool CanPerform(Selector action, NSObject? withSender)
     {
@@ -241,7 +247,8 @@ public class AvaloniaResponder : UIResponder, IUITextInput
             return new AvaloniaTextRange(range);
         }
 
-        throw new Exception();
+        return null;
+        //throw new Exception();
     }
 
     UITextPosition IUITextInput.GetPosition(UITextPosition fromPosition, nint offset)
