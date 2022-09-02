@@ -78,7 +78,7 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
 
-                var root = CreatedRoot(1.5, target);
+                var root = CreateRoot(1.5, target);
 
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
@@ -101,7 +101,7 @@ namespace Avalonia.Controls.UnitTests
                     }
                 };
 
-                var root = CreatedRoot(1.5, target);
+                var root = CreateRoot(1.5, target);
 
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
@@ -111,7 +111,7 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(new Size(104, 104), target.DesiredSize);
             }
 
-            private static TestRoot CreatedRoot(
+            private static TestRoot CreateRoot(
                 double scaling,
                 Control child,
                 Size? constraint = null)
