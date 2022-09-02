@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
 using Microsoft.Build.Framework;
 using Mono.Cecil;
@@ -16,6 +15,7 @@ using FieldAttributes = Mono.Cecil.FieldAttributes;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
 using XamlX.IL;
+using XamlX.IL.Emitters;
 
 namespace Avalonia.Build.Tasks
 {
@@ -24,7 +24,7 @@ namespace Avalonia.Build.Tasks
         static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
                                                || r.Name.ToLowerInvariant().EndsWith(".paml")
                                                || r.Name.ToLowerInvariant().EndsWith(".axaml");
-        
+
         public class CompileResult
         {
             public bool Success { get; set; }
@@ -78,7 +78,7 @@ namespace Avalonia.Build.Tasks
         }
 
         static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
-            string projectDirectory, bool verifyIl, 
+            string projectDirectory, bool verifyIl,
             MessageImportance logImportance
             , bool debuggerLaunch = false)
         {
@@ -100,7 +100,7 @@ namespace Avalonia.Build.Tasks
                         System.Threading.Thread.Sleep(100);
                     }
 
-                    time.Stop();                    
+                    time.Stop();
                     if (time.Elapsed >= timeout)
                     {
                         engine.LogMessage("Wating attach debugger timeout.", MessageImportance.Normal);
@@ -118,15 +118,18 @@ namespace Avalonia.Build.Tasks
                 // Nothing to do
                 return null;
 
-            var clrPropertiesDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlHelpers",
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
-            asm.MainModule.Types.Add(clrPropertiesDef);
-            var indexerAccessorClosure = new TypeDefinition("CompiledAvaloniaXaml", "!IndexerAccessorFactoryClosure",
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
-            asm.MainModule.Types.Add(indexerAccessorClosure);
-            var trampolineBuilder = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlTrampolines",
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
-            asm.MainModule.Types.Add(trampolineBuilder);
+            TypeDefinition AddClass(string name)
+            {
+                var typeDef = new TypeDefinition("CompiledAvaloniaXaml", name,
+                    TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+                asm.MainModule.Types.Add(typeDef);
+                return typeDef;
+            }
+
+            var clrPropertiesDef = AddClass("XamlIlHelpers");
+            var indexerAccessorClosure = AddClass("!IndexerAccessorFactoryClosure");
+            var trampolineBuilder = AddClass("XamlIlTrampolines");
+            var dynamicSettersBuilder = typeSystem.CreateTypeBuilder(AddClass("XamlDynamicSetters"));
 
             var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
             var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
@@ -140,14 +143,16 @@ namespace Avalonia.Build.Tasks
                 new DeterministicIdGenerator());
 
 
-            var contextDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlContext", 
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
-            asm.MainModule.Types.Add(contextDef);
+            var contextDef = AddClass("XamlIlContext");
 
             var contextClass = XamlILContextDefinition.GenerateContextClass(typeSystem.CreateTypeBuilder(contextDef), typeSystem,
                 xamlLanguage, emitConfig);
 
-            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, emitConfig, contextClass) { EnableIlVerification = verifyIl };
+            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, emitConfig, contextClass)
+            {
+                EnableIlVerification = verifyIl,
+                DynamicSetterContainerProvider = new DefaultXamlDynamicSetterContainerProvider(dynamicSettersBuilder)
+            };
 
             var editorBrowsableAttribute = typeSystem
                 .GetTypeReference(typeSystem.FindType("System.ComponentModel.EditorBrowsableAttribute"))
@@ -160,10 +165,8 @@ namespace Avalonia.Build.Tasks
             var createRootServiceProviderMethod = asm.MainModule.ImportReference(
                 typeSystem.GetTypeReference(runtimeHelpers).Resolve().Methods
                     .First(x => x.Name == "CreateRootServiceProviderV2"));
-            
-            var loaderDispatcherDef = new TypeDefinition("CompiledAvaloniaXaml", "!XamlLoader",
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
 
+            var loaderDispatcherDef = AddClass("!XamlLoader");
 
             loaderDispatcherDef.CustomAttributes.Add(new CustomAttribute(editorBrowsableCtor)
             {
@@ -178,7 +181,6 @@ namespace Avalonia.Build.Tasks
                 Parameters = {new ParameterDefinition(asm.MainModule.TypeSystem.String)}
             };
             loaderDispatcherDef.Methods.Add(loaderDispatcherMethod);
-            asm.MainModule.Types.Add(loaderDispatcherDef);
 
             var stringEquals = asm.MainModule.ImportReference(asm.MainModule.TypeSystem.String.Resolve().Methods.First(
                 m =>
@@ -186,19 +188,17 @@ namespace Avalonia.Build.Tasks
                     m.ReturnType.FullName == "System.Boolean"
                     && m.Parameters[0].ParameterType.FullName == "System.String"
                     && m.Parameters[1].ParameterType.FullName == "System.String"));
-            
+
             bool CompileGroup(IResourceGroup group)
             {
-                var typeDef = new TypeDefinition("CompiledAvaloniaXaml", "!"+ group.Name,
-                    TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+                var typeDef = AddClass("!" + group.Name);
 
                 typeDef.CustomAttributes.Add(new CustomAttribute(editorBrowsableCtor)
                 {
                     ConstructorArguments = {new CustomAttributeArgument(editorBrowsableCtor.Parameters[0].ParameterType, 1)}
                 });
-                asm.MainModule.Types.Add(typeDef);
                 var builder = typeSystem.CreateTypeBuilder(typeDef);
-                
+
                 foreach (var res in group.Resources.Where(CheckXamlName).OrderBy(x=>x.FilePath.ToLowerInvariant()))
                 {
                     try
@@ -210,8 +210,8 @@ namespace Avalonia.Build.Tasks
                         var parsed = XDocumentXamlParser.Parse(xaml);
 
                         var initialRoot = (XamlAstObjectNode)parsed.Root;
-                        
-                        
+
+
                         var precompileDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
                             .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "Precompile");
                         if (precompileDirective != null)
@@ -223,7 +223,7 @@ namespace Avalonia.Build.Tasks
                             if (precompileText != "true")
                                 throw new XamlParseException("Invalid value for x:Precompile", precompileDirective);
                         }
-                        
+
                         var classDirective = initialRoot.Children.OfType<XamlAstXmlDirective>()
                             .FirstOrDefault(d => d.Namespace == XamlNamespaces.Xaml2006 && d.Name == "Class");
                         IXamlType classType = null;
@@ -238,12 +238,12 @@ namespace Avalonia.Build.Tasks
                                 new XamlAstClrTypeReference(classDirective, classType, false));
                             initialRoot.Children.Remove(classDirective);
                         }
-                        
-                        
+
+
                         compiler.Transform(parsed);
                         var populateName = classType == null ? "Populate:" + res.Name : "!XamlIlPopulate";
-                        var buildName = classType == null ? "Build:" + res.Name : null; 
-                        
+                        var buildName = classType == null ? "Build:" + res.Name : null;
+
                         var classTypeDefinition =
                             classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
 
@@ -251,17 +251,15 @@ namespace Avalonia.Build.Tasks
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
                             typeSystem.CreateTypeBuilder(classTypeDefinition);
-                        compiler.Compile(parsed, 
+                        compiler.Compile(parsed,
                             contextClass,
                             compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
                                 classTypeDefinition == null),
+                            populateBuilder,
                             buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true),
+                            builder,
                             builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name,
                                 true),
-                            (closureName, closureBaseType) =>
-                                populateBuilder.DefineSubType(closureBaseType, closureName, false),
-                            (closureName, returnType, parameterTypes) =>
-                                populateBuilder.DefineDelegateSubType(closureName, false, returnType, parameterTypes),
                             res.Uri, res
                         );
                         

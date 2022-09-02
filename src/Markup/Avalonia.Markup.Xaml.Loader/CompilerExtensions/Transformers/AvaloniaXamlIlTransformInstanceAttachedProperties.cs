@@ -163,6 +163,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 }
                 public AvaloniaAttachedInstanceProperty Parent { get; }
                 public bool IsPublic => true;
+                public bool IsPrivate => false;
                 public bool IsStatic => true;
                 public string Name { get; protected set; }
                 public IXamlType DeclaringType { get; }

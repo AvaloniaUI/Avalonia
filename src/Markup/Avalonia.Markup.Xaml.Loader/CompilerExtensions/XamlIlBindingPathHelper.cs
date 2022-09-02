@@ -641,7 +641,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 {
                     // In this case, we need to emit our own delegate type.
                     string delegateTypeName = context.Configuration.IdentifierGenerator.GenerateIdentifierPart();
-                    specificDelegateType = newDelegateTypeBuilder = context.DefineDelegateSubType(delegateTypeName, Method.ReturnType, Method.Parameters);
+                    specificDelegateType = newDelegateTypeBuilder = context.DeclaringType.DefineDelegateSubType(delegateTypeName, false, Method.ReturnType, Method.Parameters);
                 }
 
                 codeGen
