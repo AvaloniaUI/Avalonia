@@ -4,8 +4,9 @@ using Avalonia.Data;
 namespace Avalonia
 {
     /// <summary>
-    /// Provides information for a avalonia property change.
+    /// Provides information for an Avalonia property change.
     /// </summary>
+    /// <seealso cref="AvaloniaPropertyChangedEventArgs{T}"/>
     public abstract class AvaloniaPropertyChangedEventArgs : EventArgs
     {
         public AvaloniaPropertyChangedEventArgs(
@@ -42,14 +43,14 @@ namespace Avalonia
         public AvaloniaProperty Property => GetProperty();
 
         /// <summary>
-        /// Gets the old value of the property.
+        /// Gets the old value of the property, or <see cref="AvaloniaProperty.UnsetValue"/>.
         /// </summary>
-        public object? OldValue => GetOldValue();
+        public object? OldValue { get; protected set; }
 
         /// <summary>
-        /// Gets the new value of the property.
+        /// Gets the new value of the property, or <see cref="AvaloniaProperty.UnsetValue"/>.
         /// </summary>
-        public object? NewValue => GetNewValue();
+        public object? NewValue { get; protected set; }
 
         /// <summary>
         /// Gets the priority of the binding that produced the value.
@@ -57,12 +58,10 @@ namespace Avalonia
         /// <value>
         /// The priority of the new value.
         /// </value>
-        public BindingPriority Priority { get; private set; }
+        public BindingPriority Priority { get; }
 
         internal bool IsEffectiveValueChange { get; private set; }
 
         protected abstract AvaloniaProperty GetProperty();
-        protected abstract object? GetOldValue();
-        protected abstract object? GetNewValue();
     }
 }

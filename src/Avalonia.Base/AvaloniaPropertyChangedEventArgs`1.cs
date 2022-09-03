@@ -7,6 +7,9 @@ namespace Avalonia
     /// </summary>
     public class AvaloniaPropertyChangedEventArgs<T> : AvaloniaPropertyChangedEventArgs
     {
+        private Optional<T> _oldValue;
+        private BindingValue<T> _newValue;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaPropertyChangedEventArgs"/> class.
         /// </summary>
@@ -50,17 +53,29 @@ namespace Avalonia
         /// <summary>
         /// Gets the old value of the property.
         /// </summary>
-        public new Optional<T> OldValue { get; private set; }
+        public new Optional<T> OldValue
+        {
+            get => _oldValue;
+            private set
+            {
+                _oldValue = value;
+                base.OldValue = value.GetValueOrDefault(AvaloniaProperty.UnsetValue);
+            }
+        }
 
         /// <summary>
         /// Gets the new value of the property.
         /// </summary>
-        public new BindingValue<T> NewValue { get; private set; }
+        public new BindingValue<T> NewValue
+        {
+            get => _newValue;
+            private set
+            {
+                _newValue = value;
+                base.NewValue = value.GetValueOrDefault(AvaloniaProperty.UnsetValue);
+            }
+        }
 
         protected override AvaloniaProperty GetProperty() => Property;
-
-        protected override object? GetOldValue() => OldValue.GetValueOrDefault(AvaloniaProperty.UnsetValue);
-
-        protected override object? GetNewValue() => NewValue.GetValueOrDefault(AvaloniaProperty.UnsetValue);
     }
 }
