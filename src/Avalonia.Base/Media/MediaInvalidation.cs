@@ -13,7 +13,6 @@ namespace Avalonia.Media
     {
         private static readonly HashSet<AvaloniaProperty> s_registeredProperties = new();
 
-
         /// <summary>
         /// Marks one or more instances of <see cref="AvaloniaProperty"/> as affecting the appearance of the owner type.
         /// </summary>
@@ -23,20 +22,20 @@ namespace Avalonia.Media
             {
                 if (s_registeredProperties.Add(property))
                 {
-                    property.Changed.Subscribe(OnMediaRenderPropertyChanged);
+                    property.Changed.Subscribe(property.PropertyType.IsValueType ? OnMediaRenderPropertyChanged_Struct : OnMediaRenderPropertyChanged);
                 }
             }
         }
 
-        internal static void AddMediaChild(AvaloniaObject child, AvaloniaObject parent)
+        internal static void AddMediaChild(AvaloniaObject parent, AvaloniaObject child)
         {
             child.GetOrCreateMediaParents().Add(parent);
-            InvalidateAncestors(child);
+            Invalidate(parent);
         }
 
-        internal static void RemoveMediaChild(AvaloniaObject child, AvaloniaObject parent)
+        internal static void RemoveMediaChild(AvaloniaObject parent, AvaloniaObject child)
         {
-            InvalidateAncestors(child);
+            Invalidate(parent);
             child.GetMediaParents()?.Remove(parent);
         }
 
@@ -49,10 +48,15 @@ namespace Avalonia.Media
 
             if (e.NewValue is IMediaCollection newCollection)
             {
-                newCollection.AddParent(e.Sender);
+                newCollection.Parents.Add(e.Sender);
+
+                foreach (var child in newCollection.Items)
+                {
+                    child.GetOrCreateMediaParents().Add(e.Sender);
+                }
             }
 
-            InvalidateAncestors(e.Sender);
+            Invalidate(e.Sender);
 
             if (e.OldValue is AvaloniaObject oldChild)
             {
@@ -61,7 +65,29 @@ namespace Avalonia.Media
 
             if (e.OldValue is IMediaCollection oldCollection)
             {
-                oldCollection.RemoveParent(e.Sender);
+                foreach (var child in oldCollection.Items)
+                {
+                    child.GetMediaParents()?.Remove(e.Sender);
+                }
+
+                oldCollection.Parents.Remove(e.Sender);
+            }
+        }
+
+        private static void OnMediaRenderPropertyChanged_Struct(AvaloniaPropertyChangedEventArgs e)
+        {
+            Invalidate(e.Sender);
+        }
+
+        private static void Invalidate(AvaloniaObject obj)
+        {
+            if (obj is Visual visual)
+            {
+                visual.InvalidateVisual();
+            }
+            else
+            {
+                InvalidateAncestors(obj);
             }
         }
 
@@ -79,39 +105,54 @@ namespace Avalonia.Media
         /// </remarks>
         public static void InvalidateAncestors(AvaloniaObject mediaObject)
         {
-            foreach (var ancestor in GetMediaAncestors<Visual>(mediaObject, new()))
+            var ancestors = GetMediaAncestors<Visual>(mediaObject);
+            if (ancestors != null)
             {
-                ancestor.InvalidateVisual();
+                foreach (var ancestor in ancestors)
+                {
+                    ancestor.InvalidateVisual();
+                }
             }
         }
 
-        private static IEnumerable<T> GetMediaAncestors<T>(AvaloniaObject current, HashSet<AvaloniaObject> visited) where T : AvaloniaObject
+        private static List<T>? GetMediaAncestors<T>(AvaloniaObject root) where T : AvaloniaObject
         {
-            var parents = current.GetMediaParents();
+            var parents = root.GetMediaParents();
             if (parents == null)
             {
-                yield break;
+                return null;
             }
 
-            foreach (var parent in parents)
-            {
-                if (!visited.Add(parent))
-                {
-                    continue;
-                }
+            var visited = new HashSet<AvaloniaObject>(parents);
+            var stack = new Stack<AvaloniaObject>(visited); // start with only unique values
+            List<T>? result = null;
 
-                if (parent is T target)
+            while (stack.Count > 0)
+            {
+                var current = stack.Pop();
+
+                if (current is T target)
                 {
-                    yield return target;
+                    result ??= new(1); // most objects will only have one parent
+                    result.Add(target);
                 }
                 else
                 {
-                    foreach (var ancestor in GetMediaAncestors<T>(parent, visited))
+                    parents = current.GetMediaParents();
+                    if (parents != null)
                     {
-                        yield return ancestor;
+                        foreach (var p in parents)
+                        {
+                            if (visited.Add(p))
+                            {
+                                stack.Push(p);
+                            }
+                        }
                     }
                 }
             }
+
+            return result;
         }
     }
 }

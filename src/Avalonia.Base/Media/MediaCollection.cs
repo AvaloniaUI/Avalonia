@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Collections;
-using Avalonia.Metadata;
 
 #nullable enable
 
@@ -39,49 +37,30 @@ namespace Avalonia.Media
             ResetBehavior = ResetBehavior.Remove;
 
             this.ForEachItem(
-               x =>
+               child =>
                {
                    foreach (var parent in Parents)
                    {
-                       MediaInvalidation.AddMediaChild(x, parent);
+                       MediaInvalidation.AddMediaChild(parent, child);
                    }
                },
-               x =>
+               child =>
                {
                    foreach (var parent in Parents)
                    {
-                       MediaInvalidation.RemoveMediaChild(x, parent);
+                       MediaInvalidation.RemoveMediaChild(parent, child);
                    }
                },
                () => throw new NotSupportedException());
         }
 
-        void IMediaCollection.AddParent(AvaloniaObject parent)
-        {
-            _parentHandles.Add(parent);
-
-            foreach (var child in this)
-            {
-                MediaInvalidation.AddMediaChild(child, parent);
-            }
-        }
-
-        void IMediaCollection.RemoveParent(AvaloniaObject parent)
-        {
-            foreach (var child in this)
-            {
-                MediaInvalidation.RemoveMediaChild(child, parent);
-            }
-
-            _parentHandles.Remove(parent);
-        }
+        MediaParentsBag<AvaloniaObject> IMediaCollection.Parents => _parentHandles;
+        IEnumerable<AvaloniaObject> IMediaCollection.Items => this;
     }
 
-    internal interface IMediaCollection : IEnumerable
+    internal interface IMediaCollection
     {
-        IEnumerable<AvaloniaObject> Parents { get; }
-
-        void AddParent(AvaloniaObject parent);
-        void RemoveParent(AvaloniaObject parent);
+        MediaParentsBag<AvaloniaObject> Parents { get; }
+        IEnumerable<AvaloniaObject> Items { get; } // Inheriting from IEnumerable<AvaloniaObject> would cause MediaCollection<T> to have two IEnumerable<T> interfaces
     }
 }
