@@ -13,10 +13,10 @@ namespace Avalonia.Web.Blazor.Interop
         private readonly AvaloniaModule _module;
         private readonly ElementReference _inputElement;
 
-        public InputHelperInterop(AvaloniaModule module, ElementReference element)
+        public InputHelperInterop(AvaloniaModule module, ElementReference inputElement)
         {
             _module = module;
-            _inputElement = element;
+            _inputElement = inputElement;
         }
 
         public void Clear() => _module.Invoke(ClearSymbol, _inputElement);

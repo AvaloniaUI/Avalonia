@@ -32,10 +32,12 @@ namespace Avalonia.Web.Blazor
         private AvaloniaModule? _avaloniaModule = null;
         private InputHelperInterop? _inputHelper = null;
         private InputHelperInterop? _canvasHelper = null;
+        private InputHelperInterop? _containerHelper = null;
         private NativeControlHostInterop? _nativeControlHost = null;
         private StorageProviderInterop? _storageProvider = null;
         private ElementReference _htmlCanvas;
         private ElementReference _inputElement;
+        private ElementReference _containerElement;
         private ElementReference _nativeControlsContainer;
         private double _dpi = 1;
         private SKSize _canvasSize = new (100, 100);
@@ -247,8 +249,9 @@ namespace Avalonia.Web.Blazor
 
                 _inputHelper = new InputHelperInterop(_avaloniaModule, _inputElement);
                 _canvasHelper = new InputHelperInterop(_avaloniaModule, _htmlCanvas);
+                _containerHelper = new InputHelperInterop(_avaloniaModule, _containerElement);
 
-                _inputHelper.Hide();
+                HideIme();
                 _canvasHelper.SetCursor("default");
                 _topLevelImpl.SetCssCursor = x =>
                 {
@@ -387,6 +390,12 @@ namespace Avalonia.Web.Blazor
             }
         }
 
+        private void HideIme()
+        {
+            _inputHelper?.Hide();
+            _containerHelper?.Focus();
+        }
+
         public void SetClient(ITextInputMethodClient? client)
         {
             if (_inputHelper is null)
@@ -407,7 +416,7 @@ namespace Avalonia.Web.Blazor
             else
             {
                 _inputElementFocused = false;
-                _inputHelper.Hide();
+                HideIme();
             }
         }
 
