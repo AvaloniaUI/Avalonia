@@ -3,9 +3,18 @@
         inputElement.value = "";
     }
 
-    public static focus(inputElement: HTMLInputElement) {
+    
+    public static isInputElement( element : HTMLInputElement | HTMLElement ) : element is HTMLInputElement {
+        return ( element as HTMLInputElement).setSelectionRange !== undefined;
+    }
+
+    public static focus(inputElement: HTMLElement) {
         inputElement.focus();
-        inputElement.setSelectionRange(0, 0);
+        
+        if(this.isInputElement(inputElement))
+        {
+            (inputElement as HTMLInputElement).setSelectionRange(0,0);
+        }
     }
 
     public static setCursor(inputElement: HTMLInputElement, kind: string) {
