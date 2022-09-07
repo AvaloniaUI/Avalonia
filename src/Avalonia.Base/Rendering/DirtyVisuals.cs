@@ -17,8 +17,7 @@ namespace Avalonia.Rendering
     {
         private SortedDictionary<int, List<IVisual>> _inner = new SortedDictionary<int, List<IVisual>>();
         private Dictionary<IVisual, int> _index = new Dictionary<IVisual, int>();
-        private List<IVisual> _deferredChanges = new List<IVisual>();
-        private int _deferring;
+        private int _enumerating;
 
         /// <summary>
         /// Gets the number of dirty visuals.
@@ -31,10 +30,9 @@ namespace Avalonia.Rendering
         /// <param name="visual">The dirty visual.</param>
         public void Add(IVisual visual)
         {
-            if (_deferring > 0)
+            if (_enumerating > 0)
             {
-                _deferredChanges.Add(visual);
-                return;
+                throw new InvalidOperationException("Visual was invalidated during a render pass");
             }
 
             var distance = visual.CalculateDistanceFromAncestor(visual.VisualRoot);
@@ -65,7 +63,7 @@ namespace Avalonia.Rendering
         /// </summary>
         public void Clear()
         {
-            if (_deferring > 0)
+            if (_enumerating > 0)
             {
                 throw new InvalidOperationException("Cannot clear while enumerating");
             }
@@ -80,7 +78,7 @@ namespace Avalonia.Rendering
         /// <returns>A collection of visuals.</returns>
         public IEnumerator<IVisual> GetEnumerator()
         {
-            BeginDefer();
+            _enumerating++;
             try
             {
                 foreach (var i in _inner)
@@ -93,27 +91,10 @@ namespace Avalonia.Rendering
             }
             finally
             {
-                EndDefer();
+                _enumerating--;
             }
         }
-
-        private void BeginDefer()
-        {
-            ++_deferring;
-        }
-
-        private void EndDefer()
-        {
-            if (--_deferring > 0) return;
-
-            foreach (var visual in _deferredChanges)
-            {
-                Add(visual);
-            }
-
-            _deferredChanges.Clear();
-        }
-
+        
         /// <summary>
         /// Gets the dirty visuals, in ascending order of distance to their root.
         /// </summary>
