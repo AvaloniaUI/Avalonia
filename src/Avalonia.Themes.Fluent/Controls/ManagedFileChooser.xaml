@@ -134,7 +134,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
-          <ListBox x:Name="QuickLinks" DockPanel.Dock="Left" Items="{Binding QuickLinks}" SelectedIndex="{Binding QuickLinksSelectedIndex}" Focusable="False">
+          <ListBox x:Name="PART_QuickLinks" DockPanel.Dock="Left" Items="{Binding QuickLinks}" SelectedIndex="{Binding QuickLinksSelectedIndex}" Focusable="False">
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <StackPanel Spacing="4" Orientation="Horizontal" Background="Transparent">
@@ -213,7 +213,7 @@
               <GridSplitter Grid.Column="7" />
               <TextBlock Grid.Column="8" Text="Size" />
             </Grid>
-            <ListBox x:Name="Files"
+            <ListBox x:Name="PART_Files"
                 VirtualizationMode="Simple"
                 Items="{Binding Items}"
                 Margin="0 5"
