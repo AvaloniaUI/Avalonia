@@ -14,10 +14,9 @@
     }
 }
 
-class NativeControlHostTopLevelAttachment
-{
-    _child: HTMLElement;
-    _host: HTMLElement;
+class NativeControlHostTopLevelAttachment {
+    _child?: HTMLElement;
+    _host?: HTMLElement;
 
     InitializeWithChildHandle(child: HTMLElement) {
         this._child = child;
@@ -25,32 +24,38 @@ class NativeControlHostTopLevelAttachment
     }
 
     AttachTo(host: HTMLElement): void {
-        if (this._host) {
+        if (this._host && this._child) {
             this._host.removeChild(this._child);
         }
 
         this._host = host;
 
-        if (this._host) {
+        if (this._host && this._child) {
             this._host.appendChild(this._child);
         }
     }
 
     ShowInBounds(x: number, y: number, width: number, height: number): void {
-        this._child.style.top = y + "px";
-        this._child.style.left = x + "px";
-        this._child.style.width = width + "px";
-        this._child.style.height = height + "px";
-        this._child.style.display = "block";
+        if (this._child) {
+            this._child.style.top = y + "px";
+            this._child.style.left = x + "px";
+            this._child.style.width = width + "px";
+            this._child.style.height = height + "px";
+            this._child.style.display = "block";
+        }
     }
 
     HideWithSize(width: number, height: number): void {
-        this._child.style.width = width + "px";
-        this._child.style.height = height + "px";
-        this._child.style.display = "none";
+        if (this._child) {
+            this._child.style.width = width + "px";
+            this._child.style.height = height + "px";
+            this._child.style.display = "none";
+        }
     }
 
     ReleaseChild(): void {
-        this._child = null;
+        if (this._child) {
+            this._child = undefined;
+        }
     }
 }

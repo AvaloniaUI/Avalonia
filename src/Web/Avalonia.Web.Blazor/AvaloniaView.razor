@@ -1,7 +1,11 @@
-﻿<div id="container" class="avalonia-container" tabindex="0" oncontextmenu="return false;"
+﻿<div id="container" @ref="_containerElement"  
+     class="avalonia-container" 
+     tabindex="0" oncontextmenu="return false;"
      @onwheel="OnWheel"
      @onkeydown="OnKeyDown"
+     @onkeydown:preventDefault="true"
      @onkeyup="OnKeyUp"
+     @onkeyup:preventDefault="true"
      @onpointerdown="OnPointerDown"
      @onpointerup="OnPointerUp"
      @onpointermove="OnPointerMove"
@@ -16,6 +20,8 @@
         onpaste="return false;"
         oncopy="return false;" 
         oncut="return false;"
+        @onkeydown:preventDefault="true"
+        @onkeyup:preventDefault="true"
         autocapitalize="none"/>
 </div>
 
