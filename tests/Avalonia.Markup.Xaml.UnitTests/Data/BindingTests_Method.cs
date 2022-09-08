@@ -198,7 +198,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             public event PropertyChangedEventHandler PropertyChanged;
 
             public string Method() => Value = "Called";
-            public string Method1(int i) => Value = $"Called {i}";
+            public string Method1(object i) => Value = $"Called {i}";
             public string Method2(int i, int j) => Value = $"Called {i},{j}";
             public string Value { get; private set; } = "Not called";
 
