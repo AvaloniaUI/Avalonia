@@ -56,18 +56,11 @@
       </ControlTemplate>
     </Setter>
     
-    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrushPointerOver}"/>
-      <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundPointerOver}"/>
-      <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundPointerOver}"/>
-    </Style>
-    
     <Style Selector="^:pressed">
       <Setter Property="RenderTransform" Value="scale(0.98)" />
     </Style>
     
     <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrushPressed}"/>
       <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundPressed}"/>
       <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundPressed}"/>
     </Style>

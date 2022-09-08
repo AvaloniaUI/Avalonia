@@ -36,25 +36,6 @@ partial class Build : NukeBuild
 {
     [Solution("Avalonia.sln")] readonly Solution Solution;
 
-    static Lazy<string> MsBuildExe = new Lazy<string>(() =>
-    {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            return null;
-
-        var msBuildDirectory = VSWhere("-latest -nologo -property installationPath -format value -prerelease").FirstOrDefault().Text;
-
-        if (!string.IsNullOrWhiteSpace(msBuildDirectory))
-        {
-            string msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\Current\Bin\MSBuild.exe");
-            if (!System.IO.File.Exists(msBuildExe))
-                msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\15.0\Bin\MSBuild.exe");
-
-            return msBuildExe;
-        }
-
-        return null;
-    }, false);
-
     BuildParameters Parameters { get; set; }
     protected override void OnBuildInitialized()
     {
@@ -89,25 +70,28 @@ partial class Build : NukeBuild
         }
         ExecWait("dotnet version:", "dotnet", "--info");
         ExecWait("dotnet workloads:", "dotnet", "workload list");
+        Information("Processor count: " + Environment.ProcessorCount);
+        Information("Available RAM: " + GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 0x100000 + "MB");
     }
 
-    IReadOnlyCollection<Output> MsBuildCommon(
-        string projectFile,
-        Configure<MSBuildSettings> configurator = null)
+    DotNetConfigHelper ApplySettingCore(DotNetConfigHelper c)
     {
-        return MSBuild(c => c
-            .SetProjectFile(projectFile)
-            // This is required for VS2019 image on Azure Pipelines
-            .When(Parameters.IsRunningOnWindows &&
-                  Parameters.IsRunningOnAzure, _ => _
-                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64")))
-            .AddProperty("PackageVersion", Parameters.Version)
+        if (Parameters.IsRunningOnAzure)
+            c.AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64"));
+        c.AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
-            .SetProcessToolPath(MsBuildExe.Value)
             .SetConfiguration(Parameters.Configuration)
-            .SetVerbosity(MSBuildVerbosity.Minimal)
-            .Apply(configurator));
+            .SetVerbosity(DotNetVerbosity.Minimal);
+        return c;
     }
+    DotNetBuildSettings ApplySetting(DotNetBuildSettings c, Configure<DotNetBuildSettings> configurator = null) =>
+        ApplySettingCore(c).Build.Apply(configurator);
+
+    DotNetPackSettings ApplySetting(DotNetPackSettings c, Configure<DotNetPackSettings> configurator = null) =>
+        ApplySettingCore(c).Pack.Apply(configurator);
+
+    DotNetTestSettings ApplySetting(DotNetTestSettings c, Configure<DotNetTestSettings> configurator = null) =>
+        ApplySettingCore(c).Test.Apply(configurator);
 
     Target Clean => _ => _.Executes(() =>
     {
@@ -149,20 +133,11 @@ partial class Build : NukeBuild
     Target Compile => _ => _
         .DependsOn(Clean, CompileNative)
         .DependsOn(CompileHtmlPreviewer)
-        .Executes(async () =>
+        .Executes(() =>
         {
-            if (Parameters.IsRunningOnWindows)
-                MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .SetProcessArgumentConfigurator(a => a.Add("/r"))
-                    .AddTargets("Build")
-                );
-
-            else
-                DotNetBuild(c => c
-                    .SetProjectFile(Parameters.MSBuildSolution)
-                    .AddProperty("PackageVersion", Parameters.Version)
-                    .SetConfiguration(Parameters.Configuration)
-                );
+            DotNetBuild(c => ApplySetting(c)
+                .SetProjectFile(Parameters.MSBuildSolution)
+            );
         });
 
     void RunCoreTest(string projectName)
@@ -182,9 +157,8 @@ partial class Build : NukeBuild
 
             Information($"Running for {projectName} ({fw}) ...");
 
-            DotNetTest(c => c
+            DotNetTest(c => ApplySetting(c)
                 .SetProjectFile(project)
-                .SetConfiguration(Parameters.Configuration)
                 .SetFramework(fw)
                 .EnableNoBuild()
                 .EnableNoRestore()
@@ -263,19 +237,7 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             var data = Parameters;
-            var pathToProjectSource = RootDirectory / "samples" / "ControlCatalog.NetCore";
-            var pathToPublish = pathToProjectSource / "bin" / data.Configuration / "publish";
-
-            DotNetPublish(c => c
-                .SetProject(pathToProjectSource / "ControlCatalog.NetCore.csproj")
-                .EnableNoBuild()
-                .SetConfiguration(data.Configuration)
-                .AddProperty("PackageVersion", data.Version)
-                .AddProperty("PublishDir", pathToPublish));
-
-            Zip(data.ZipCoreArtifacts, data.BinRoot);
             Zip(data.ZipNuGetArtifacts, data.NugetRoot);
-            Zip(data.ZipTargetControlCatalogNetCoreDir, pathToPublish);
         });
 
     Target CreateIntermediateNugetPackages => _ => _
@@ -283,15 +245,7 @@ partial class Build : NukeBuild
         .After(RunTests)
         .Executes(() =>
         {
-            if (Parameters.IsRunningOnWindows)
-
-                MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .AddTargets("Pack"));
-            else
-                DotNetPack(c => c
-                    .SetProject(Parameters.MSBuildSolution)
-                    .SetConfiguration(Parameters.Configuration)
-                    .AddProperty("PackageVersion", Parameters.Version));
+            DotNetPack(c => ApplySetting(c).SetProject(Parameters.MSBuildSolution));
         });
 
     Target CreateNugetPackages => _ => _

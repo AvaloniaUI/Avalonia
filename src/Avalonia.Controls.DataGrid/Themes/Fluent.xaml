@@ -53,7 +53,6 @@
       <Setter Property="VerticalAlignment" Value="Center" />
     </ControlTheme>
     <ControlTheme x:Key="DataGridCellTextBoxTheme" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-      <Setter Property="Margin" Value="12,0,12,0" />
       <Setter Property="VerticalAlignment" Value="Stretch" />
       <Setter Property="Background" Value="Transparent" />
       <Style Selector="^ /template/ DataValidationErrors">
