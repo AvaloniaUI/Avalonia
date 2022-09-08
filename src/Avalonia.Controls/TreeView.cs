@@ -495,6 +495,7 @@ namespace Avalonia.Controls
                     break;
 
                 case NavigationDirection.Down:
+                case NavigationDirection.Right:
                     if (from?.IsExpanded == true && intoChildren && from.ItemCount > 0)
                     {
                         result = (TreeViewItem)from.ItemContainerGenerator.ContainerFromIndex(0)!;

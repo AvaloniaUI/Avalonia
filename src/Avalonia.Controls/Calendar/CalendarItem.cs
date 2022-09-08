@@ -32,11 +32,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         private const int NumberOfDaysPerWeek = 7;
 
-        private const string PART_ElementHeaderButton = "HeaderButton";
-        private const string PART_ElementPreviousButton = "PreviousButton";
-        private const string PART_ElementNextButton = "NextButton";
-        private const string PART_ElementMonthView = "MonthView";
-        private const string PART_ElementYearView = "YearView";
+        private const string PART_ElementHeaderButton = "PART_HeaderButton";
+        private const string PART_ElementPreviousButton = "PART_PreviousButton";
+        private const string PART_ElementNextButton = "PART_NextButton";
+        private const string PART_ElementMonthView = "PART_MonthView";
+        private const string PART_ElementYearView = "PART_YearView";
 
         private Button? _headerButton;
         private Button? _nextButton;

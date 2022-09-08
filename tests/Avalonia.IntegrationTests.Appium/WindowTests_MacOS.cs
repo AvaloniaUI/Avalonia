@@ -49,19 +49,16 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 mainWindow.Click();
 
-                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-                var mainWindowIndex = GetWindowOrder(windows, "MainWindow");
-                var secondaryWindowIndex = GetWindowOrder(windows, "SecondaryWindow");
+                var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
 
-                Assert.Equal(0, secondaryWindowIndex);
-                Assert.Equal(1, mainWindowIndex);
+                Assert.Equal(1, secondaryWindowIndex);
             }
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_Clicking_Resize_Grip()
         {
-            var mainWindow = FindWindow(_session, "MainWindow");
+            var mainWindow = GetWindow("MainWindow");
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
             {
@@ -70,24 +67,21 @@ namespace Avalonia.IntegrationTests.Appium
                     .ClickAndHold()
                     .Perform();
 
-                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-                var mainWindowIndex = GetWindowOrder(windows, "MainWindow");
-                var secondaryWindowIndex = GetWindowOrder(windows, "SecondaryWindow");
+                var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
 
                 new Actions(_session)
                     .MoveToElement(mainWindow, 100, 1)
                     .Release()
                     .Perform();
 
-                Assert.Equal(0, secondaryWindowIndex);
-                Assert.Equal(1, mainWindowIndex);
+                Assert.Equal(1, secondaryWindowIndex);
             }
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_In_Fullscreen()
         {
-            var mainWindow = FindWindow(_session, "MainWindow");
+            var mainWindow = GetWindow("MainWindow");
             var buttons = mainWindow.GetChromeButtons();
 
             buttons.maximize.Click();
@@ -98,14 +92,8 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.Manual))
                 {
-                    var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-                    var mainWindowIndex = GetWindowOrder(windows, "MainWindow");
-                    var secondaryWindowIndex = GetWindowOrder(windows, "SecondaryWindow");
-
-                    Assert.Equal(0, secondaryWindowIndex);
-                    Assert.Equal(1, mainWindowIndex);
-
-                    Thread.Sleep(5000);
+                    var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
+                    Assert.Equal(1, secondaryWindowIndex);
                 }
             }
             finally
@@ -122,13 +110,8 @@ namespace Avalonia.IntegrationTests.Appium
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.Manual))
             {
                 mainWindow.Click();
-
-                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-                var mainWindowIndex = GetWindowOrder(windows, "MainWindow");
-                var secondaryWindowIndex = GetWindowOrder(windows, "SecondaryWindow");
-
-                Assert.Equal(0, secondaryWindowIndex);
-                Assert.Equal(1, mainWindowIndex);
+                var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
+                Assert.Equal(1, secondaryWindowIndex);
             }
         }
 
@@ -141,12 +124,9 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 mainWindow.Click();
 
-                var windows = _session.FindElements(By.XPath("XCUIElementTypeWindow"));
-                var mainWindowIndex = GetWindowOrder(windows, "MainWindow");
-                var secondaryWindowIndex = GetWindowOrder(windows, "SecondaryWindow");
+                var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
 
-                Assert.Equal(1, secondaryWindowIndex);
-                Assert.Equal(0, mainWindowIndex);
+                Assert.Equal(2, secondaryWindowIndex);
 
                 var sendToBack = _session.FindElementByAccessibilityId("SendToBack");
                 sendToBack.Click();
@@ -154,9 +134,25 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(TestPlatforms.MacOS)]
+        public void WindowOrder_Owned_Is_Correct_After_Closing_Window()
+        {
+            using (OpenWindow(new PixelSize(300, 500), ShowWindowMode.Owned, WindowStartupLocation.CenterOwner))
+            {
+                // Open a second child window, and close it.
+                using (OpenWindow(new PixelSize(200, 200), ShowWindowMode.Owned, WindowStartupLocation.CenterOwner))
+                {
+                }
+        
+                var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
+        
+                Assert.Equal(1, secondaryWindowIndex);
+            }
+        }
+
+        [PlatformFact(TestPlatforms.MacOS)]
         public void Parent_Window_Has_Disabled_ChromeButtons_When_Modal_Dialog_Shown()
         {
-            var window = FindWindow(_session, "MainWindow");
+            var window = GetWindow("MainWindow");
             var (closeButton, miniaturizeButton, zoomButton) = window.GetChromeButtons();
 
             Assert.True(closeButton.Enabled);
@@ -176,7 +172,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Modal, WindowStartupLocation.CenterOwner))
             {
-                var secondaryWindow = FindWindow(_session, "SecondaryWindow");
+                var secondaryWindow = GetWindow("SecondaryWindow");
                 var (closeButton, miniaturizeButton, zoomButton) = secondaryWindow.GetChromeButtons();
 
                 Assert.True(closeButton.Enabled);
@@ -192,7 +188,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))
             {
-                var secondaryWindow = FindWindow(_session, "SecondaryWindow");
+                var secondaryWindow = GetWindow("SecondaryWindow");
                 var (_, miniaturizeButton, _) = secondaryWindow.GetChromeButtons();
 
                 miniaturizeButton.Click();
@@ -220,7 +216,7 @@ namespace Avalonia.IntegrationTests.Appium
             // causes Appium to think it's a different window.
             OpenWindow(null, ShowWindowMode.Owned, WindowStartupLocation.Manual);
             
-            var secondaryWindow = FindWindow(_session, "SecondaryWindow");
+            var secondaryWindow = GetWindow("SecondaryWindow");
             var hideButton = secondaryWindow.FindElementByAccessibilityId("HideButton");
 
             hideButton.Click();
@@ -236,7 +232,7 @@ namespace Avalonia.IntegrationTests.Appium
             _session.FindElementByAccessibilityId("RestoreAll").Click();
 
             // Close the window manually.
-            secondaryWindow = FindWindow(_session, "SecondaryWindow");
+            secondaryWindow = GetWindow("SecondaryWindow");
             secondaryWindow.GetChromeButtons().close.Click();
         }
 
@@ -259,18 +255,19 @@ namespace Avalonia.IntegrationTests.Appium
             return showButton.OpenWindowWithClick();
         }
 
-        private static int GetWindowOrder(IReadOnlyCollection<AppiumWebElement> elements, string identifier)
+        private AppiumWebElement GetWindow(string identifier)
         {
-            return elements.TakeWhile(x =>
-                x.FindElementByXPath("XCUIElementTypeWindow")?.GetAttribute("identifier") != identifier).Count();
+            // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed 
+            // but in the meantime use the `parent::' selector to return the parent "real" window. 
+            return _session.FindElementByXPath(
+                $"XCUIElementTypeWindow//*[@identifier='{identifier}']/parent::XCUIElementTypeWindow");
         }
 
-        private static AppiumWebElement FindWindow(AppiumDriver<AppiumWebElement> session, string identifier)
+        private int GetWindowOrder(string identifier)
         {
-            var windows = session.FindElementsByXPath("XCUIElementTypeWindow");
-            return windows.First(x =>
-                x.FindElementsByXPath("XCUIElementTypeWindow")
-                    .Any(y => y.GetAttribute("identifier") == identifier));
+            var window = GetWindow(identifier);
+            var order = window.FindElementByXPath("//*[@identifier='Order']");
+            return int.Parse(order.Text);
         }
 
         public enum ShowWindowMode
