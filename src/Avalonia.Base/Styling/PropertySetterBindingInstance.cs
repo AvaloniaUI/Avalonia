@@ -7,7 +7,9 @@ namespace Avalonia.Styling
 {
     internal class PropertySetterBindingInstance : BindingEntry, ISetterInstance
     {
-        private readonly IDisposable? _twoWaySubscription;
+        private readonly AvaloniaObject _target;
+        private readonly BindingMode _mode;
+        private IDisposable? _twoWaySubscription;
 
         public PropertySetterBindingInstance(
             AvaloniaObject target,
@@ -17,18 +19,14 @@ namespace Avalonia.Styling
             IObservable<object?> source)
             : base(instance, property, source)
         {
-            if (mode == BindingMode.TwoWay)
+            _target = target;
+            _mode = mode;
+
+            if (mode == BindingMode.TwoWay &&
+                source is not IObserver<object?>)
             {
-                // TODO: HUGE HACK FIXME
-                if (source is IObserver<object?> observer)
-                {
-                    _twoWaySubscription = target.GetObservable(property).Skip(1).Subscribe(observer);
-                }
-                else
-                {
-                    throw new NotSupportedException(
-                        "Attempting to bind two-way with a binding source which doesn't support it.");
-                }
+                throw new NotSupportedException(
+                    "Attempting to bind two-way with a binding source which doesn't support it.");
             }
         }
 
@@ -36,6 +34,17 @@ namespace Avalonia.Styling
         {
             _twoWaySubscription?.Dispose();
             base.Unsubscribe();
+        }
+
+        protected override void Start(bool produceValue)
+        {
+            if (_mode == BindingMode.TwoWay)
+            {
+                var observer = (IObserver<object?>)Source;
+                _twoWaySubscription = _target.GetObservable(Property).Skip(1).Subscribe(observer);
+            }
+
+            base.Start(produceValue);
         }
     }
 }

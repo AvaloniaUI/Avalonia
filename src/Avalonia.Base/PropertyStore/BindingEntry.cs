@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Reactive.Disposables;
 using Avalonia.Data;
 
@@ -10,7 +9,6 @@ namespace Avalonia.PropertyStore
         IDisposable
     {
         private readonly ValueFrame _frame;
-        private readonly IObservable<object?> _source;
         private IDisposable? _subscription;
         private bool _hasValue;
         private object? _value;
@@ -21,7 +19,7 @@ namespace Avalonia.PropertyStore
             IObservable<object?> source)
         {
             _frame = frame;
-            _source = source;
+            Source = source;
             Property = property;
         }
 
@@ -35,6 +33,7 @@ namespace Avalonia.PropertyStore
         }
 
         public AvaloniaProperty Property { get; }
+        protected IObservable<object?> Source { get; }
 
         public void Dispose()
         {
@@ -67,6 +66,18 @@ namespace Avalonia.PropertyStore
         {
             _subscription?.Dispose();
             _subscription = null;
+        }
+
+        protected virtual void Start(bool produceValue)
+        {
+            if (_subscription is not null)
+                return;
+
+            // Will only produce a new value when subscription isn't null.
+            if (produceValue)
+                _subscription = Disposable.Empty;
+
+            _subscription = Source.Subscribe(this);
         }
 
         private void ClearValue()
@@ -122,18 +133,6 @@ namespace Avalonia.PropertyStore
         {
             _subscription = null;
             _frame.OnBindingCompleted(this);
-        }
-
-        private void Start(bool produceValue)
-        {
-            if (_subscription is not null)
-                return;
-
-            // Will only produce a new value when subscription isn't null.
-            if (produceValue)
-                _subscription = Disposable.Empty;
-
-            _subscription = _source.Subscribe(this);
         }
     }
 }
