@@ -85,7 +85,7 @@ namespace ControlCatalog.Models
             }
             else
             {
-                if (_errorLookup.TryGetValue(propertyName, out List<string> errorList))
+                if (_errorLookup.TryGetValue(propertyName, out var errorList))
                 {
                     errorList.Clear();
                     errorList.Add(error!);
@@ -114,12 +114,12 @@ namespace ControlCatalog.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public IEnumerable? GetErrors(string propertyName)
+        public IEnumerable GetErrors(string? propertyName)
         {
-            if (_errorLookup.TryGetValue(propertyName, out List<string> errorList))
+            if (propertyName is { } && _errorLookup.TryGetValue(propertyName, out var errorList))
                 return errorList;
             else
-                return null;
+                return Array.Empty<object>();
         }
     }
 }

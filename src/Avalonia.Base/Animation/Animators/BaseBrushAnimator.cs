@@ -17,8 +17,7 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class BaseBrushAnimator : Animator<IBrush?>
     {
-        private static readonly List<(Func<Type, bool> Match, Type AnimatorType)> _brushAnimators =
-            new List<(Func<Type, bool> Match, Type AnimatorType)>();
+        private static readonly List<(Func<Type, bool> Match, Type AnimatorType, Func<IAnimator> AnimatorFactory)> _brushAnimators = new();
 
         /// <summary>
         /// Register an <see cref="Animator{T}"/> that handles a specific
@@ -34,7 +33,7 @@ namespace Avalonia.Animation.Animators
         public static void RegisterBrushAnimator<TAnimator>(Func<Type, bool> condition)
             where TAnimator : IAnimator, new()
         {
-            _brushAnimators.Insert(0, (condition, typeof(TAnimator)));
+            _brushAnimators.Insert(0, (condition, typeof(TAnimator), () => new TAnimator()));
         }
 
         /// <inheritdoc/>
@@ -85,14 +84,14 @@ namespace Avalonia.Animation.Animators
             {
                 if (keyframe.Value is ISolidColorBrush solidColorBrush)
                 {
-                    gradientAnimator.Add(new AnimatorKeyFrame(typeof(GradientBrushAnimator), keyframe.Cue, keyframe.KeySpline)
+                    gradientAnimator.Add(new AnimatorKeyFrame(typeof(GradientBrushAnimator), () => new GradientBrushAnimator(), keyframe.Cue, keyframe.KeySpline)
                     {
                         Value = GradientBrushAnimator.ConvertSolidColorBrushToGradient(firstGradient, solidColorBrush)
                     });
                 }
                 else if (keyframe.Value is IGradientBrush)
                 {
-                    gradientAnimator.Add(new AnimatorKeyFrame(typeof(GradientBrushAnimator), keyframe.Cue, keyframe.KeySpline)
+                    gradientAnimator.Add(new AnimatorKeyFrame(typeof(GradientBrushAnimator), () => new GradientBrushAnimator(), keyframe.Cue, keyframe.KeySpline)
                     {
                         Value = keyframe.Value
                     });
@@ -117,7 +116,7 @@ namespace Avalonia.Animation.Animators
             {
                 if (keyframe.Value is ISolidColorBrush)
                 {
-                    solidColorBrushAnimator.Add(new AnimatorKeyFrame(typeof(ISolidColorBrushAnimator), keyframe.Cue, keyframe.KeySpline)
+                    solidColorBrushAnimator.Add(new AnimatorKeyFrame(typeof(ISolidColorBrushAnimator), () => new ISolidColorBrushAnimator(), keyframe.Cue, keyframe.KeySpline)
                     {
                         Value = keyframe.Value
                     });
@@ -137,18 +136,18 @@ namespace Avalonia.Animation.Animators
         {
             if (_brushAnimators.Count > 0 && this[0].Value?.GetType() is Type firstKeyType)
             {
-                foreach (var (match, animatorType) in _brushAnimators)
+                foreach (var (match, animatorType, animatorFactory) in _brushAnimators)
                 {
                     if (!match(firstKeyType))
                         continue;
 
-                    animator = (IAnimator?)Activator.CreateInstance(animatorType);
+                    animator = animatorFactory();
                     if (animator != null)
                     {
                         animator.Property = Property;
                         foreach (var keyframe in this)
                         {
-                            animator.Add(new AnimatorKeyFrame(animatorType, keyframe.Cue, keyframe.KeySpline)
+                            animator.Add(new AnimatorKeyFrame(animatorType, animatorFactory, keyframe.Cue, keyframe.KeySpline)
                             {
                                 Value = keyframe.Value
                             });

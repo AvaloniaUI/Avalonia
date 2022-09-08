@@ -464,41 +464,6 @@ namespace Avalonia
             });
         }
 
-        /// <summary>
-        /// Subscribes to a property changed notifications for changes that originate from a
-        /// <typeparamref name="TTarget"/>.
-        /// </summary>
-        /// <typeparam name="TTarget">The type of the property change sender.</typeparam>
-        /// <param name="observable">The property changed observable.</param>
-        /// <param name="handler">Given a TTarget, returns the handler.</param>
-        /// <returns>A disposable that can be used to terminate the subscription.</returns>
-        [Obsolete("Use overload taking Action<TTarget, AvaloniaPropertyChangedEventArgs>.")]
-        public static IDisposable AddClassHandler<TTarget>(
-            this IObservable<AvaloniaPropertyChangedEventArgs> observable,
-            Func<TTarget, Action<AvaloniaPropertyChangedEventArgs>> handler)
-            where TTarget : class
-        {
-            return observable.Subscribe(e => SubscribeAdapter(e, handler));
-        }
-
-        /// <summary>
-        /// Observer method for <see cref="AddClassHandler{TTarget}(IObservable{AvaloniaPropertyChangedEventArgs},
-        /// Func{TTarget, Action{AvaloniaPropertyChangedEventArgs}})"/>.
-        /// </summary>
-        /// <typeparam name="TTarget">The sender type to accept.</typeparam>
-        /// <param name="e">The event args.</param>
-        /// <param name="handler">Given a TTarget, returns the handler.</param>
-        private static void SubscribeAdapter<TTarget>(
-            AvaloniaPropertyChangedEventArgs e,
-            Func<TTarget, Action<AvaloniaPropertyChangedEventArgs>> handler)
-            where TTarget : class
-        {
-            if (e.Sender is TTarget target)
-            {
-                handler(target)(e);
-            }
-        }
-
         private class BindingAdaptor : IBinding
         {
             private IObservable<object?> _source;

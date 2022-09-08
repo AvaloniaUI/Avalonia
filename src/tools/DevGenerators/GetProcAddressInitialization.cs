@@ -34,7 +34,7 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
         var all = fieldsWithAttribute.Collect();
         context.RegisterSourceOutput(all, static (context, methods) =>
         {
-            foreach (var typeGroup in methods.GroupBy(f => f.ContainingType))
+            foreach (var typeGroup in methods.GroupBy(f => f.ContainingType, SymbolEqualityComparer.Default))
             {
                 var nextContext = 0;
                 var contexts = new Dictionary<string, int>();

@@ -54,12 +54,10 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
         Visual = visual;
     }
 
-    internal override bool HitTest(Point pt, Func<IVisual, bool>? filter)
+    internal override bool HitTest(Point pt)
     {
         var custom = Visual as ICustomHitTest;
         if (DrawList == null && custom == null)
-            return false;
-        if (filter != null && !filter(Visual))
             return false;
         if (custom != null)
         {

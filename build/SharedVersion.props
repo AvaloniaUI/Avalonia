@@ -2,7 +2,7 @@
   xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Product>Avalonia</Product>
-    <Version>0.10.999</Version>
+    <Version>11.0.999</Version>
     <Copyright>Copyright 2022 &#169; The AvaloniaUI Project</Copyright>
     <PackageProjectUrl>https://avaloniaui.net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/AvaloniaUI/Avalonia/</RepositoryUrl>

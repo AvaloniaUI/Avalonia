@@ -342,22 +342,6 @@ namespace Avalonia
         /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
         /// called.
         /// </summary>
-        /// <param name="properties">The properties.</param>
-        /// <remarks>
-        /// This method should be called in a control's static constructor with each property
-        /// on the control which when changed should cause a redraw. This is similar to WPF's
-        /// FrameworkPropertyMetadata.AffectsRender flag.
-        /// </remarks>
-        [Obsolete("Use AffectsRender<T> and specify the control type.")]
-        protected static void AffectsRender(params AvaloniaProperty[] properties)
-        {
-            AffectsRender<Visual>(properties);
-        }
-
-        /// <summary>
-        /// Indicates that a property change should cause <see cref="InvalidateVisual"/> to be
-        /// called.
-        /// </summary>
         /// <typeparam name="T">The control which the property affects.</typeparam>
         /// <param name="properties">The properties.</param>
         /// <remarks>

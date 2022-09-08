@@ -140,21 +140,6 @@ namespace Avalonia.Collections
             }
         }
 
-        [Obsolete("Causes memory leaks. Use DynamicData or similar instead.")]
-        public static IAvaloniaReadOnlyList<TDerived> CreateDerivedList<TSource, TDerived>(
-            this IAvaloniaReadOnlyList<TSource> collection,
-            Func<TSource, TDerived> select)
-        {
-            var result = new AvaloniaList<TDerived>();
-
-            collection.ForEachItem(
-                (i, item) => result.Insert(i, select(item)),
-                (i, item) => result.RemoveAt(i),
-                () => result.Clear());
-
-            return result;
-        }
-
         /// <summary>
         /// Listens for property changed events from all items in a collection.
         /// </summary>

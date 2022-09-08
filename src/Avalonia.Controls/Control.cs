@@ -8,6 +8,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -104,7 +105,6 @@ namespace Avalonia.Controls
         private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
         private static readonly HashSet<Control> _loadedProcessingQueue = new HashSet<Control>();
 
-        private bool _isAttachedToVisualTree = false;
         private bool _isLoaded = false;
         private DataTemplates? _dataTemplates;
         private IControl? _focusAdorner;
@@ -347,7 +347,7 @@ namespace Avalonia.Controls
         internal void OnLoadedCore()
         {
             if (_isLoaded == false &&
-                _isAttachedToVisualTree)
+                ((ILogical)this).IsAttachedToLogicalTree)
             {
                 _isLoaded = true;
                 OnLoaded();
@@ -395,7 +395,6 @@ namespace Avalonia.Controls
         protected sealed override void OnAttachedToVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTreeCore(e);
-            _isAttachedToVisualTree = true;
 
             InitializeIfNeeded();
 
@@ -406,7 +405,6 @@ namespace Avalonia.Controls
         protected sealed override void OnDetachedFromVisualTreeCore(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTreeCore(e);
-            _isAttachedToVisualTree = false;
 
             OnUnloadedCore();
         }

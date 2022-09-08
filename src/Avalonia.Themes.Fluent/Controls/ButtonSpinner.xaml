@@ -65,6 +65,7 @@
     </Style>
 
     <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RepeatButtonBackgroundDisabled}" />
       <Setter Property="Foreground" Value="{DynamicResource RepeatButtonForegroundDisabled}" />
     </Style>
   </ControlTheme>

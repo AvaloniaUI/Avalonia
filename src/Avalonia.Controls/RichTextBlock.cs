@@ -381,9 +381,7 @@ namespace Avalonia.Controls
                 var hit = TextLayout.HitTestPoint(point);
                 var index = hit.TextPosition;
 
-#pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
-#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     case 1:
                         if (clickToSelect)
@@ -544,6 +542,32 @@ namespace Avalonia.Controls
                         break;
                     }
             }
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            foreach (var child in VisualChildren)
+            {
+                if (child is Control control)
+                {
+                    control.Measure(Size.Infinity);
+                }
+            }
+            
+            return base.MeasureOverride(availableSize);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            foreach (var child in VisualChildren)
+            {
+                if (child is Control control)
+                {
+                    control.Arrange(new Rect(control.DesiredSize));
+                }
+            }
+            
+            return base.ArrangeOverride(finalSize);
         }
 
         private string GetSelection()

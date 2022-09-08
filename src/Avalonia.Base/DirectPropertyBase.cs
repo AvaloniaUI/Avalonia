@@ -36,21 +36,6 @@ namespace Avalonia
         /// <param name="source">The property to copy.</param>
         /// <param name="ownerType">The new owner type.</param>
         /// <param name="metadata">Optional overridden metadata.</param>
-        [Obsolete("Use constructor with DirectPropertyBase<TValue> instead.", true)]
-        protected DirectPropertyBase(
-            AvaloniaProperty source,
-            Type ownerType,
-            AvaloniaPropertyMetadata metadata)
-            : this(source as DirectPropertyBase<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DirectPropertyBase{TValue}"/> class.
-        /// </summary>
-        /// <param name="source">The property to copy.</param>
-        /// <param name="ownerType">The new owner type.</param>
-        /// <param name="metadata">Optional overridden metadata.</param>
         protected DirectPropertyBase(
             DirectPropertyBase<TValue> source,
             Type ownerType,

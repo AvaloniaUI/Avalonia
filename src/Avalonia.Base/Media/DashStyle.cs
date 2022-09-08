@@ -35,7 +35,6 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="DashStyle"/> class.
         /// </summary>
         public DashStyle()
-            : this(null, 0)
         {
         }
 

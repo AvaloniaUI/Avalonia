@@ -251,11 +251,9 @@ namespace Avalonia.Controls
                     TemplateProperties.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
 
 
-#pragma warning disable CS0618 // Type or member is obsolete
                     // Remove these properties when we switch to fluent as default and removed the old one.
                     IndeterminateStartingOffset = -dim;
                     IndeterminateEndingOffset = dim;
-#pragma warning restore CS0618 // Type or member is obsolete
 
                     var padding = Padding;
                     var rectangle = new RectangleGeometry(

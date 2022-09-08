@@ -2,6 +2,7 @@ using System;
 using System.Reactive.Linq;
 using Avalonia.VisualTree;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using ReactiveUI;
 
 namespace Avalonia.ReactiveUI
@@ -25,27 +26,28 @@ namespace Avalonia.ReactiveUI
         public IObservable<bool> GetActivationForView(IActivatableView view)
         {
             if (!(view is IVisual visual)) return Observable.Return(false);
-            if (view is WindowBase window) return GetActivationForWindowBase(window);
+            if (view is Control control) return GetActivationForControl(control);
             return GetActivationForVisual(visual);
         }
 
         /// <summary>
-        /// Listens to Opened and Closed events for Avalonia windows.
+        /// Listens to Loaded and Unloaded 
+        /// events for Avalonia Control.
         /// </summary>
-        private IObservable<bool> GetActivationForWindowBase(WindowBase window) 
+        private IObservable<bool> GetActivationForControl(Control control) 
         {
-            var windowLoaded = Observable
-                .FromEventPattern(
-                    x => window.Opened += x,
-                    x => window.Opened -= x)
+            var controlLoaded = Observable
+                .FromEventPattern<RoutedEventArgs>(
+                    x => control.Loaded += x,
+                    x => control.Loaded -= x)
                 .Select(args => true);
-            var windowUnloaded = Observable
-                .FromEventPattern(
-                    x => window.Closed += x,
-                    x => window.Closed -= x)
+            var controlUnloaded = Observable
+                .FromEventPattern<RoutedEventArgs>(
+                    x => control.Unloaded += x,
+                    x => control.Unloaded -= x)
                 .Select(args => false);
-            return windowLoaded
-                .Merge(windowUnloaded)
+            return controlLoaded
+                .Merge(controlUnloaded)
                 .DistinctUntilChanged();
         }
 
