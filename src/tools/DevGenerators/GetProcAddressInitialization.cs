@@ -131,10 +131,13 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                                     .Append(".GetProcAddress(")
                                     .Append("getProcAddress, ")
                                     .Append(contextName);
-                                
-                                var syntaxNode = (AttributeSyntax)attr.ApplicationSyntaxReference.GetSyntax();
-                                foreach (var arg in syntaxNode.ArgumentList.Arguments)
-                                    initializeBody.Append(", ").Append(arg.GetText());
+
+                                if (attr.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax syntaxNode 
+                                    && syntaxNode.ArgumentList is { })
+                                {
+                                    foreach (var arg in syntaxNode.ArgumentList.Arguments)
+                                        initializeBody.Append(", ").Append(arg.GetText());
+                                }
                                 initializeBody.AppendLine(");");
                             }
                         }
