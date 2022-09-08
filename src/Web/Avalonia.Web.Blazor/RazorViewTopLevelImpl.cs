@@ -7,6 +7,7 @@ using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Web.Blazor.Interop;
 using SkiaSharp;
 
@@ -146,7 +147,7 @@ namespace Avalonia.Web.Blazor
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             var loop = AvaloniaLocator.Current.GetRequiredService<IRenderLoop>();
-            return new DeferredRenderer(root, loop);
+            return new CompositingRenderer(root, new Compositor(loop, null));
         }
 
         public void Invalidate(Rect rect)
