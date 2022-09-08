@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Web.Blazor.Interop;
 using Avalonia.Web.Blazor.Interop.Storage;
 
@@ -28,12 +29,15 @@ namespace Avalonia.Web.Blazor
         private SizeWatcherInterop? _sizeWatcher = null;
         private DpiWatcherInterop? _dpiWatcher = null;
         private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null;
+        private AvaloniaModule? _avaloniaModule = null;
         private InputHelperInterop? _inputHelper = null;
         private InputHelperInterop? _canvasHelper = null;
+        private InputHelperInterop? _containerHelper = null;
         private NativeControlHostInterop? _nativeControlHost = null;
         private StorageProviderInterop? _storageProvider = null;
         private ElementReference _htmlCanvas;
         private ElementReference _inputElement;
+        private ElementReference _containerElement;
         private ElementReference _nativeControlsContainer;
         private double _dpi = 1;
         private SKSize _canvasSize = new (100, 100);
@@ -241,10 +245,13 @@ namespace Avalonia.Web.Blazor
             {
                 AvaloniaLocator.CurrentMutable.Bind<IJSInProcessRuntime>().ToConstant((IJSInProcessRuntime)Js);
 
-                _inputHelper = await InputHelperInterop.ImportAsync(Js, _inputElement);
-                _canvasHelper = await InputHelperInterop.ImportAsync(Js, _htmlCanvas);
+                _avaloniaModule = await AvaloniaModule.ImportAsync(Js);
 
-                _inputHelper.Hide();
+                _inputHelper = new InputHelperInterop(_avaloniaModule, _inputElement);
+                _canvasHelper = new InputHelperInterop(_avaloniaModule, _htmlCanvas);
+                _containerHelper = new InputHelperInterop(_avaloniaModule, _containerElement);
+
+                HideIme();
                 _canvasHelper.SetCursor("default");
                 _topLevelImpl.SetCssCursor = x =>
                 {
@@ -252,11 +259,11 @@ namespace Avalonia.Web.Blazor
                     _canvasHelper.SetCursor(x); //windows
                 };
 
-                _nativeControlHost = await NativeControlHostInterop.ImportAsync(Js, _nativeControlsContainer);
+                _nativeControlHost = new NativeControlHostInterop(_avaloniaModule, _nativeControlsContainer);
                 _storageProvider = await StorageProviderInterop.ImportAsync(Js);
                 
                 Console.WriteLine("starting html canvas setup");
-                _interop = await SKHtmlCanvasInterop.ImportAsync(Js, _htmlCanvas, OnRenderFrame);
+                _interop = new SKHtmlCanvasInterop(_avaloniaModule, _htmlCanvas, OnRenderFrame);
 
                 Console.WriteLine("Interop created");
                 
@@ -306,9 +313,10 @@ namespace Avalonia.Web.Blazor
                 {
                     _interop.RequestAnimationFrame(true);
                     
-                    _sizeWatcher = await SizeWatcherInterop.ImportAsync(Js, _htmlCanvas, OnSizeChanged);
-                    _dpiWatcher = await DpiWatcherInterop.ImportAsync(Js, OnDpiChanged);
+                    _sizeWatcher = new SizeWatcherInterop(_avaloniaModule, _htmlCanvas, OnSizeChanged);
+                    _dpiWatcher = new DpiWatcherInterop(_avaloniaModule, OnDpiChanged);
                     
+                    _sizeWatcher.Start();
                     _topLevel.Prepare();
 
                     _topLevel.Renderer.Start();
@@ -348,9 +356,9 @@ namespace Avalonia.Web.Blazor
             // We also don't want to have it as a meaningful public API.
             // Therefore we have InternalsVisibleTo hack here.
 
-            if (_topLevel.Renderer is DeferredRenderer dr)
+            if (_topLevel.Renderer is CompositingRenderer dr)
             {
-                dr.Render(true);
+                dr.CompositionTarget.ImmediateUIThreadRender();
             }
         }
 
@@ -382,6 +390,12 @@ namespace Avalonia.Web.Blazor
             }
         }
 
+        private void HideIme()
+        {
+            _inputHelper?.Hide();
+            _containerHelper?.Focus();
+        }
+
         public void SetClient(ITextInputMethodClient? client)
         {
             if (_inputHelper is null)
@@ -402,7 +416,7 @@ namespace Avalonia.Web.Blazor
             else
             {
                 _inputElementFocused = false;
-                _inputHelper.Hide();
+                HideIme();
             }
         }
 

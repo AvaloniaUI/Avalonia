@@ -12,7 +12,7 @@ namespace Avalonia.Web.Blazor.Interop.Storage
 
     internal class StorageProviderInterop : JSModuleInterop, IStorageProvider
     {
-        private const string JsFilename = "./_content/Avalonia.Web.Blazor/StorageProvider.js";
+        private const string JsFilename = "./_content/Avalonia.Web.Blazor/avaloniaStorage.js";
         private const string PickerCancelMessage = "The user aborted a request";
 
         public static async Task<StorageProviderInterop> ImportAsync(IJSRuntime js)

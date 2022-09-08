@@ -11,6 +11,7 @@
   <pc:ThirdComponentConverter x:Key="ThirdComponentConverter" />
   <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayNameConverter" />
   <converters:ColorToHexConverter x:Key="ColorToHexConverter" />
+  <converters:DoNothingForNullConverter x:Key="DoNothingForNullConverter" />
   <globalization:NumberFormatInfo x:Key="ColorViewComponentNumberFormat" NumberDecimalDigits="0" />
   <x:Double x:Key="ColorViewTabStripHeight">48</x:Double>
   <x:Double x:Key="ColorViewComponentLabelWidth">30</x:Double>
@@ -205,7 +206,7 @@
                 </Border>
               </TabItem.Header>
               <ListBox Items="{TemplateBinding PaletteColors}"
-                       SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                       SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource DoNothingForNullConverter}, Mode=TwoWay}"
                        UseLayoutRounding="False"
                        Margin="12">
                 <ListBox.Styles>
