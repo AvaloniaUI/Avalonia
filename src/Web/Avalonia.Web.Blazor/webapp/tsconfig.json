@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "strict": true,
+    "sourceMap": true,
+    "outDir": "../wwwroot",
+    "removeComments": true,
+    "noEmitOnError": true,
+    "lib": [
+      "dom",
+      "ES6",
+      "esnext.asynciterable"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

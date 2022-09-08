@@ -15,6 +15,7 @@ using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using JetBrains.Annotations;
 
@@ -26,6 +27,10 @@ namespace Avalonia.LinuxFramebuffer
         private static readonly Stopwatch St = Stopwatch.StartNew();
         internal static uint Timestamp => (uint)St.ElapsedTicks;
         public static InternalPlatformThreadingInterface Threading;
+        
+        internal static Compositor Compositor { get; private set; }
+        
+        
         LinuxFramebufferPlatform(IOutputBackend backend)
         {
             _fb = backend;
@@ -48,6 +53,10 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+            
+            Compositor = new Compositor(
+                AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
+                AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>());
         }
 
        
