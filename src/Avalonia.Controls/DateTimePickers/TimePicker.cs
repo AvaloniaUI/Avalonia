@@ -12,18 +12,18 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a time.
     /// </summary>
-    [TemplatePart("FirstColumnDivider",      typeof(Rectangle))]
-    [TemplatePart("FirstPickerHost",         typeof(Border))]
-    [TemplatePart("FlyoutButton",            typeof(Button))]
-    [TemplatePart("FlyoutButtonContentGrid", typeof(Grid))]
-    [TemplatePart("HourTextBlock",           typeof(TextBlock))]
-    [TemplatePart("MinuteTextBlock",         typeof(TextBlock))]
-    [TemplatePart("PeriodTextBlock",         typeof(TextBlock))]
-    [TemplatePart("PickerPresenter",         typeof(TimePickerPresenter))]
-    [TemplatePart("Popup",                   typeof(Popup))]
-    [TemplatePart("SecondColumnDivider",     typeof(Rectangle))]
-    [TemplatePart("SecondPickerHost",        typeof(Border))]
-    [TemplatePart("ThirdPickerHost",         typeof(Border))]
+    [TemplatePart("PART_FirstColumnDivider",      typeof(Rectangle))]
+    [TemplatePart("PART_FirstPickerHost",         typeof(Border))]
+    [TemplatePart("PART_FlyoutButton",            typeof(Button))]
+    [TemplatePart("PART_FlyoutButtonContentGrid", typeof(Grid))]
+    [TemplatePart("PART_HourTextBlock",           typeof(TextBlock))]
+    [TemplatePart("PART_MinuteTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PART_PeriodTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PART_PickerPresenter",         typeof(TimePickerPresenter))]
+    [TemplatePart("PART_Popup",                   typeof(Popup))]
+    [TemplatePart("PART_SecondColumnDivider",     typeof(Rectangle))]
+    [TemplatePart("PART_SecondPickerHost",        typeof(Border))]
+    [TemplatePart("PART_ThirdPickerHost",         typeof(Border))]
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {
@@ -169,23 +169,23 @@ namespace Avalonia.Controls
             }
             base.OnApplyTemplate(e);
 
-            _flyoutButton = e.NameScope.Find<Button>("FlyoutButton");
+            _flyoutButton = e.NameScope.Find<Button>("PART_FlyoutButton");
 
-            _firstPickerHost = e.NameScope.Find<Border>("FirstPickerHost");
-            _secondPickerHost = e.NameScope.Find<Border>("SecondPickerHost");
-            _thirdPickerHost = e.NameScope.Find<Border>("ThirdPickerHost");
+            _firstPickerHost = e.NameScope.Find<Border>("PART_FirstPickerHost");
+            _secondPickerHost = e.NameScope.Find<Border>("PART_SecondPickerHost");
+            _thirdPickerHost = e.NameScope.Find<Border>("PART_ThirdPickerHost");
 
-            _hourText = e.NameScope.Find<TextBlock>("HourTextBlock");
-            _minuteText = e.NameScope.Find<TextBlock>("MinuteTextBlock");
-            _periodText = e.NameScope.Find<TextBlock>("PeriodTextBlock");
+            _hourText = e.NameScope.Find<TextBlock>("PART_HourTextBlock");
+            _minuteText = e.NameScope.Find<TextBlock>("PART_MinuteTextBlock");
+            _periodText = e.NameScope.Find<TextBlock>("PART_PeriodTextBlock");
 
-            _firstSplitter = e.NameScope.Find<Rectangle>("FirstColumnDivider");
-            _secondSplitter = e.NameScope.Find<Rectangle>("SecondColumnDivider");
+            _firstSplitter = e.NameScope.Find<Rectangle>("PART_FirstColumnDivider");
+            _secondSplitter = e.NameScope.Find<Rectangle>("PART_SecondColumnDivider");
 
-            _contentGrid = e.NameScope.Find<Grid>("FlyoutButtonContentGrid");
+            _contentGrid = e.NameScope.Find<Grid>("PART_FlyoutButtonContentGrid");
 
-            _popup = e.NameScope.Find<Popup>("Popup");
-            _presenter = e.NameScope.Find<TimePickerPresenter>("PickerPresenter");
+            _popup = e.NameScope.Find<Popup>("PART_Popup");
+            _presenter = e.NameScope.Find<TimePickerPresenter>("PART_PickerPresenter");
 
             if (_flyoutButton != null)
                 _flyoutButton.Click += OnFlyoutButtonClicked;

@@ -54,7 +54,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         FieldDeclarationSyntax DeclareField(string type, string name, params SyntaxKind[] modifiers) =>
             DeclareField(type, name, null, modifiers);
 
-        FieldDeclarationSyntax DeclareField(string type, string name, EqualsValueClauseSyntax initializer,
+        FieldDeclarationSyntax DeclareField(string type, string name, EqualsValueClauseSyntax? initializer,
             params SyntaxKind[] modifiers) =>
             FieldDeclaration(
                     VariableDeclaration(ParseTypeName(type),
