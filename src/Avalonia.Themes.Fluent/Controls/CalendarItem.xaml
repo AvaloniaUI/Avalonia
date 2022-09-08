@@ -79,12 +79,12 @@
                  -->
           <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" RowDefinitions="40,*" MinWidth="294">
             <Grid ColumnDefinitions="5*,*,*">
-              <Button Name="HeaderButton"
+              <Button Name="PART_HeaderButton"
                       Theme="{StaticResource FluentCalendarButton}"
                       Foreground="{TemplateBinding Foreground}"
                       Padding="12,0,0,0"
                       HorizontalContentAlignment="Left" />
-              <Button Name="PreviousButton"
+              <Button Name="PART_PreviousButton"
                       Grid.Column="1"
                       Theme="{StaticResource FluentCalendarButton}"
                       Foreground="{TemplateBinding Foreground}"
@@ -97,7 +97,7 @@
                       HorizontalAlignment="Center" 
                       VerticalAlignment="Center" />
               </Button>
-              <Button Name="NextButton"
+              <Button Name="PART_NextButton"
                       Grid.Column="2"
                       Theme="{StaticResource FluentCalendarButton}"
                       Foreground="{TemplateBinding Foreground}"
@@ -113,7 +113,7 @@
             </Grid>
             <!--Border below is used only for MonthView but it can't be moved inside of Grid because CalendarItem expects it to be empty and it will cause side-effects-->
             <Border Name="BackgroundLayer" Background="{TemplateBinding BorderBrush}" Margin="0,38,0,0" IsVisible="{ReflectionBinding #MonthView.IsVisible}" Grid.Row="1" />
-            <Grid Name="MonthView" Grid.Row="1" IsVisible="False" MinHeight="290">
+            <Grid Name="PART_MonthView" Grid.Row="1" IsVisible="False" MinHeight="290">
               <Grid.RowDefinitions>
                 <!--This should always be the week day names??-->
                 <RowDefinition Height="38" />
@@ -134,7 +134,7 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
             </Grid>
-            <Grid Name="YearView"
+            <Grid Name="PART_YearView"
                   Background="{TemplateBinding BorderBrush}"
                   MinHeight="290"
                   Grid.Row="1"
