@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Utils
                     _backgroundGeometryCache = null;
                 }
 
-                if (boundRect.Width != 0 && innerRect.Height != 0)
+                if (boundRect.Width != 0 && boundRect.Height != 0)
                 {
                     var borderGeometryKeypoints =
                         new BorderGeometryKeypoints(boundRect, borderThickness, cornerRadius, false);
