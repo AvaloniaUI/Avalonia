@@ -502,6 +502,102 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal(0, source.Subscriptions[0].Unsubscribe);
         }
 
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        [InlineData(BindingPriority.Animation)]
+        public void Observable_Is_Unsubscribed_When_New_Binding_Of_Same_Priority_Is_Added(BindingPriority priority)
+        {
+            var scheduler = new TestScheduler();
+            var source1 = scheduler.CreateColdObservable<BindingValue<string>>();
+            var source2 = scheduler.CreateColdObservable<BindingValue<string>>();
+            var target = new Class1();
+
+            target.Bind(Class1.FooProperty, source1, priority);
+            Assert.Equal(1, source1.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, source1.Subscriptions[0].Unsubscribe);
+
+            target.Bind(Class1.FooProperty, source2, priority);
+            Assert.Equal(1, source2.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, source2.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source1.Subscriptions.Count);
+            Assert.Equal(0, source1.Subscriptions[0].Unsubscribe);
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        public void Observable_Is_Unsubscribed_When_New_Binding_Of_Higher_Priority_Is_Added(BindingPriority priority)
+        {
+            var scheduler = new TestScheduler();
+            var source1 = scheduler.CreateColdObservable<BindingValue<string>>();
+            var source2 = scheduler.CreateColdObservable<BindingValue<string>>();
+            var target = new Class1();
+
+            target.Bind(Class1.FooProperty, source1, priority);
+            Assert.Equal(1, source1.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, source1.Subscriptions[0].Unsubscribe);
+
+            target.Bind(Class1.FooProperty, source2, priority - 1);
+            Assert.Equal(1, source2.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, source2.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source1.Subscriptions.Count);
+            Assert.Equal(0, source1.Subscriptions[0].Unsubscribe);
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.Style)]
+        [InlineData(BindingPriority.Animation)]
+        public void Observable_Is_Unsubscribed_When_New_Value_Of_Same_Priority_Is_Added(BindingPriority priority)
+        {
+            var scheduler = new TestScheduler();
+            var source = scheduler.CreateColdObservable<BindingValue<string>>();
+            var target = new Class1();
+
+            target.Bind(Class1.FooProperty, source, priority);
+            Assert.Equal(1, source.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+
+            target.SetValue(Class1.FooProperty, "foo", priority);
+            Assert.Equal(1, source.Subscriptions.Count);
+            Assert.Equal(0, source.Subscriptions[0].Unsubscribe);
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        [InlineData(BindingPriority.Animation)]
+        public void Observable_Is_Unsubscribed_When_New_Value_Of_Higher_Priority_Is_Added(BindingPriority priority)
+        {
+            var scheduler = new TestScheduler();
+            var source = scheduler.CreateColdObservable<BindingValue<string>>();
+            var target = new Class1();
+
+            target.Bind(Class1.FooProperty, source, priority);
+            Assert.Equal(1, source.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+
+            target.SetValue(Class1.FooProperty, "foo", priority - 1);
+            Assert.Equal(0, source.Subscriptions.Count);
+            Assert.Equal(0, source.Subscriptions[0].Unsubscribe);
+        }
+
+        [Fact]
+        public void LocalValue_Binding_Is_Not_Unsubscribed_When_LocalValue_Is_Set()
+        {
+            var scheduler = new TestScheduler();
+            var source = scheduler.CreateColdObservable<BindingValue<string>>();
+            var target = new Class1();
+
+            target.Bind(Class1.FooProperty, source);
+            Assert.Equal(1, source.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+
+            target.SetValue(Class1.FooProperty, "foo");
+            Assert.Equal(1, source.Subscriptions.Count);
+            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+        }
+
         [Fact]
         public void Two_Way_Separate_Binding_Works()
         {
@@ -936,6 +1032,20 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void TwoWay_Binding_Should_Update_Source()
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel();
+
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+
+            target.DoubleValue = 123.4;
+
+            Assert.True(source.SetterCalled);
+            Assert.Equal(source.Value, 123.4);
+        }
+
+        [Fact]
         public void TwoWay_Binding_Should_Not_Call_Setter_On_Creation()
         {
             var target = new Class1();
@@ -973,6 +1083,20 @@ namespace Avalonia.Base.UnitTests
             target.DataContext = null;
 
             target.Bind(TextBlock.TextProperty, new Binding("[0]", BindingMode.TwoWay));
+        }
+
+        [Fact]
+        public void TwoWay_LocalValue_Binding_Should_Not_Update_Source_When_Animated_Value_Set()
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel();
+
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+            target.SetValue(Class1.DoubleValueProperty, 123.4, BindingPriority.Animation);
+
+            // Setter should not be called because the TwoWay binding with LocalValue priority
+            // should be overridden by the animated value and the binding made inactive.
+            Assert.False(source.SetterCalled);
         }
 
         [Fact]

@@ -348,6 +348,54 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
+        public void Non_Active_Styled_Property_Binding_Should_Be_Unsubscribed()
+        {
+            var data = new Data { Bar = Brushes.Red };
+            var control = new Border
+            {
+                DataContext = data,
+            };
+
+            var style1 = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = new Binding("Bar"),
+                    }
+                },
+            };
+
+            var style2 = new Style(x => x.OfType<Border>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = Brushes.Green,
+                    }
+                },
+            };
+
+            Apply(style1, control);
+            Apply(style2, control);
+
+            // `style1` is initially active.
+            Assert.Equal(Brushes.Red, control.Background);
+            Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+
+            // Activate `style2`.
+            control.Classes.Add("foo");
+            Assert.Equal(Brushes.Green, control.Background);
+
+            // The binding from `style1` is now inactive and so should be unsubscribed.
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+        }
+
+        [Fact]
         public void Non_Active_Styled_Property_Setter_With_TwoWay_Binding_Should_Not_Update_Source()
         {
             var data = new Data { Bar = Brushes.Red };
@@ -414,7 +462,7 @@ namespace Avalonia.Base.UnitTests.Styling
             Apply(style, control);
         }
 
-        private class Data
+        private class Data : NotifyingBase
         {
             public string? Foo { get; set; }
             public IBrush? Bar { get; set; }
