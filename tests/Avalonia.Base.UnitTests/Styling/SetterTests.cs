@@ -347,6 +347,58 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Equal(Brushes.Green, data.Bar);
         }
 
+        [Fact]
+        public void Non_Active_Styled_Property_Setter_With_TwoWay_Binding_Should_Not_Update_Source()
+        {
+            var data = new Data { Bar = Brushes.Red };
+            var control = new Border
+            {
+                DataContext = data,
+            };
+
+            var style1 = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = new Binding
+                        {
+                            Path = "Bar",
+                            Mode = BindingMode.TwoWay
+                        }
+                    }
+                },
+            };
+
+            var style2 = new Style(x => x.OfType<Border>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = Brushes.Green,
+                    }
+                },
+            };
+
+            Apply(style1, control);
+            Apply(style2, control);
+
+            // `style1` is initially active.
+            Assert.Equal(Brushes.Red, control.Background);
+
+            // Activate `style2`.
+            control.Classes.Add("foo");
+            Assert.Equal(Brushes.Green, control.Background);
+
+            // The two-way binding from `style1` is now inactive and so should not write back to
+            // the DataContext.
+            Assert.Equal(Brushes.Red, data.Bar);
+        }
+
         private void Apply(Style style, Control control)
         {
             style.TryAttach(control, null);
