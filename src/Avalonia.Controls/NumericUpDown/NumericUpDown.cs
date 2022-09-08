@@ -138,7 +138,6 @@ namespace Avalonia.Controls
         private bool _clipValueToMinMax;
         private bool _isSyncingTextAndValueProperties;
         private bool _isTextChangedFromUI;
-        private CultureInfo? _cultureInfo;
         private NumberStyles _parsingNumberStyle = NumberStyles.Any;
         private NumberFormatInfo? _numberFormat;
 
