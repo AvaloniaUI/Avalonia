@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using Avalonia.Logging;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
@@ -11,21 +12,48 @@ namespace Avalonia.Controls
     {
         public WindowIcon(IBitmap bitmap)
         {
-            PlatformImpl = AvaloniaLocator.Current.GetRequiredService<IPlatformIconLoader>().LoadIcon(bitmap.PlatformImpl.Item);
+            if (AvaloniaLocator.Current.GetService<IPlatformIconLoader>() is { } iconLoader)
+            {
+                PlatformImpl = iconLoader.LoadIcon(bitmap.PlatformImpl.Item);
+            }
+            else
+            {
+                DoLogIfNull();
+            }
         }
 
         public WindowIcon(string fileName)
         {
-            PlatformImpl = AvaloniaLocator.Current.GetRequiredService<IPlatformIconLoader>().LoadIcon(fileName);
+            if (AvaloniaLocator.Current.GetService<IPlatformIconLoader>() is { } iconLoader)
+            {
+                PlatformImpl = iconLoader.LoadIcon(fileName);
+            }
+            else
+            {
+                DoLogIfNull();
+            }
         }
 
         public WindowIcon(Stream stream)
         {
-            PlatformImpl = AvaloniaLocator.Current.GetRequiredService<IPlatformIconLoader>().LoadIcon(stream);
+            if (AvaloniaLocator.Current.GetService<IPlatformIconLoader>() is { } iconLoader)
+            {
+                PlatformImpl = iconLoader.LoadIcon(stream);
+            }
+            else
+            {
+                DoLogIfNull();
+            }
         }
 
-        public IWindowIconImpl PlatformImpl { get; }
+        private void DoLogIfNull()
+        {
+            Logger.TryGet(LogEventLevel.Error, LogArea.Platforms)
+                ?.Log(this, "Error: Missing IPlatformIconLoader implementation in current platform.");
+        }
 
-        public void Save(Stream stream) => PlatformImpl.Save(stream);
+        public IWindowIconImpl? PlatformImpl { get; }
+
+        public void Save(Stream stream) => PlatformImpl?.Save(stream);
     }
 }
