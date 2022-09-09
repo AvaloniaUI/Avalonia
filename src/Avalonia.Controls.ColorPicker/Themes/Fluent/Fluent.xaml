@@ -28,6 +28,14 @@
         </VisualBrush.Visual>
       </VisualBrush>
 
+      <SolidColorBrush x:Key="ColorControlLightSelectorBrush" Color="#FFFFFFFF" />
+      <SolidColorBrush x:Key="ColorControlDarkSelectorBrush" Color="#E4000000" />
+      <DynamicResource x:Key="ColorControlDefaultSelectorBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
+      <SolidColorBrush x:Key="ColorViewContentBackgroundBrush" Color="Transparent" />
+      <SolidColorBrush x:Key="ColorViewContentBorderBrush" Color="Transparent" />
+      <DynamicResource x:Key="ColorViewTabBackgroundBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+      <SolidColorBrush x:Key="ColorViewTabBorderBrush" Color="Transparent" />
+
       <!-- Shared Converters -->
       <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
       <converters:ToBrushConverter x:Key="ToBrushConverter" />
