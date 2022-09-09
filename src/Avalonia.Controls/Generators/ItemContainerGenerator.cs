@@ -45,6 +45,9 @@ namespace Avalonia.Controls.Generators
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
         public IDataTemplate? ItemTemplate { get; set; }
+        
+        /// <inheritdoc />
+        public IBinding? DisplayMemberBinding { get; set; }
 
         /// <summary>
         /// Gets the owner control.
@@ -189,7 +192,15 @@ namespace Avalonia.Controls.Generators
             if (result == null)
             {
                 result = new ContentPresenter();
-                result.SetValue(ContentPresenter.ContentProperty, item, BindingPriority.Style);
+                if (DisplayMemberBinding is not null)
+                {
+                    result.SetValue(StyledElement.DataContextProperty, item, BindingPriority.Style);
+                    result.Bind(ContentPresenter.ContentProperty, DisplayMemberBinding, BindingPriority.Style);
+                }
+                else
+                {
+                    result.SetValue(ContentPresenter.ContentProperty, item, BindingPriority.Style);
+                }
 
                 if (ItemTemplate != null)
                 {
