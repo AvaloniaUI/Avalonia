@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -26,37 +27,32 @@ namespace DevAnalyzers
         {
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
-            context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
+            context.RegisterSyntaxNodeAction(AnalyzeMethod, SyntaxKind.MethodDeclaration);
         }
 
-        private static void AnalyzeMethod(SymbolAnalysisContext context)
+        private static void AnalyzeMethod(SyntaxNodeAnalysisContext context)
         {
-            if (context.Symbol is IMethodSymbol currentMethod
+            var method = (MethodDeclarationSyntax)context.Node;
+            if (context.SemanticModel.GetDeclaredSymbol(method, context.CancellationToken) is IMethodSymbol currentMethod
                 && currentMethod.Name == "OnPropertyChanged"
                 && currentMethod.OverriddenMethod is IMethodSymbol originalMethod)
             {
-                var declaration = currentMethod.DeclaringSyntaxReferences.FirstOrDefault()
-                    ?.GetSyntax(context.CancellationToken);
-                if (declaration is not null && context.Compilation.GetSemanticModel(declaration!.SyntaxTree) is { } semanticModel)
+                var baseInvocations = method.Body?.DescendantNodes().OfType<BaseExpressionSyntax>();
+                if (baseInvocations?.Any() == true)
                 {
-                    if (declaration.SyntaxTree.TryGetRoot(out var root))
+                    foreach (var baseInvocation in baseInvocations)
                     {
-                        var baseInvocations = root.DescendantNodes().OfType<BaseExpressionSyntax>();
-                        if (baseInvocations.Any())
+                        if (baseInvocation.Parent is SyntaxNode parent)
                         {
-                            foreach (var baseInvocation in baseInvocations)
+                            var targetSymbol = context.SemanticModel.GetSymbolInfo(parent, context.CancellationToken);
+                            if (SymbolEqualityComparer.Default.Equals(targetSymbol.Symbol, originalMethod))
                             {
-                                var parent = baseInvocation.Parent;
-                                var targetSymbol = semanticModel.GetSymbolInfo(parent, context.CancellationToken);
-                                if (SymbolEqualityComparer.Default.Equals(targetSymbol.Symbol, originalMethod))
-                                {
-                                    return;
-                                }
+                                return;
                             }
                         }
-                        context.ReportDiagnostic(Diagnostic.Create(Rule, currentMethod.Locations[0], currentMethod.Name));
                     }
                 }
+                context.ReportDiagnostic(Diagnostic.Create(Rule, currentMethod.Locations[0], currentMethod.Name));
             }
         }
 
