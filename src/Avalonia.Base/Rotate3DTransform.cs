@@ -205,6 +205,7 @@ public class Rotate3DTransform : Transform
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
+        base.OnPropertyChanged(change);
         if (!_isInitializing) RaiseChanged();
     } 
 }
