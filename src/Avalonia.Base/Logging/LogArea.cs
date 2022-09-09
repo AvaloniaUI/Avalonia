@@ -5,6 +5,8 @@ namespace Avalonia.Logging
     /// </summary>
     public static class LogArea
     {
+        private static string _platforms;
+
         /// <summary>
         /// The log event comes from the property system.
         /// </summary>
@@ -54,5 +56,10 @@ namespace Avalonia.Logging
         /// The log event comes from IOSPlatform.
         /// </summary>
         public const string IOSPlatform = nameof(IOSPlatform);
+        
+        /// <summary>
+        /// The log event comes from any Platform Implementation.
+        /// </summary>
+        public const string Platforms = nameof(Platforms);
     }
 }
