@@ -113,22 +113,32 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        public void RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
+        public bool RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
         {
             if (Keycodes.KeyCodes.TryGetValue(code, out var avkey))
             {
                 if (_inputRoot is { })
                 {
-                    Input?.Invoke(new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers));
+                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
+                    
+                    Input?.Invoke(args);
+                    
+                    return args.Handled;
                 }
             }
             else if (Keycodes.KeyCodes.TryGetValue(key, out avkey))
             {
                 if (_inputRoot is { })
                 {
-                    Input?.Invoke(new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers));
+                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
+                    
+                    Input?.Invoke(args);
+
+                    return args.Handled;
                 }
             }
+
+            return false;
         }
 
         public void RawTextEvent(string text)
