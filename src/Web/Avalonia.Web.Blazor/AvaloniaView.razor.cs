@@ -63,6 +63,8 @@ namespace Avalonia.Web.Blazor
             }
         }
 
+        public bool KeyPreventDefault { get; set; }
+
         internal INativeControlHostImpl GetNativeControlHostImpl()
         {
             return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
@@ -203,12 +205,12 @@ namespace Avalonia.Web.Blazor
 
         private void OnKeyDown(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, e.Key, GetModifiers(e));
+            KeyPreventDefault = _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, e.Code, e.Key, GetModifiers(e));
         }
 
         private void OnKeyUp(KeyboardEventArgs e)
         {
-            _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, e.Key, GetModifiers(e));
+            KeyPreventDefault = _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, e.Code, e.Key, GetModifiers(e));
         }
 
         private void OnFocus(FocusEventArgs e)
