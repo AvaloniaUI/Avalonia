@@ -240,13 +240,14 @@
         <Grid RowDefinitions="Auto,Auto">
 
           <!-- Backgrounds -->
+          <!-- TODO: Background="{DynamicResource ColorViewTabBackgroundBrush}" -->
           <Border x:Name="TabBackgroundBorder"
                   Grid.Row="0"
                   Grid.RowSpan="2"
                   Height="48"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Top"
-                  Background="{DynamicResource ColorViewTabBackgroundBrush}"
+                  Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
                   BorderBrush="{DynamicResource ColorViewTabBorderBrush}"
                   CornerRadius="{DynamicResource ColorViewTabBackgroundCornerRadius}" />
           <Border x:Name="ContentBackgroundBorder"
@@ -356,7 +357,7 @@
               <ListBox Theme="{StaticResource ColorViewPaletteListBoxTheme}"
                        ItemContainerTheme="{StaticResource ColorViewPaletteListBoxItemTheme}"
                        Items="{TemplateBinding PaletteColors}"
-                       SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                       SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource DoNothingForNullConverter}, Mode=TwoWay}"
                        UseLayoutRounding="False"
                        Margin="12">
                 <ListBox.ItemTemplate>

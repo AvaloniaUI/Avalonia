@@ -5,7 +5,8 @@
   <ControlTheme x:Key="ColorSliderThumbTheme"
                 TargetType="Thumb">
     <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ColorControlDefaultSelectorBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+    <!--TODO: <Setter Property="BorderBrush" Value="{DynamicResource ColorControlDefaultSelectorBrush}" />-->
     <Setter Property="BorderThickness" Value="3" />
     <Setter Property="CornerRadius" Value="10" />
     <Setter Property="Template">
