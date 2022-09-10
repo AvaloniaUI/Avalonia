@@ -524,6 +524,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
+            base.OnPropertyChanged(change);
             if (_openState is not null)
             {
                 if (change.Property == WidthProperty ||
