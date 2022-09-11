@@ -26,7 +26,6 @@ namespace Avalonia.iOS
         private EmbeddableControlRoot _topLevel;
         private TouchHandler _touches;
         private ITextInputMethodClient _client;
-        private bool _isActive;
 
         public AvaloniaView()
         {
@@ -154,118 +153,6 @@ namespace Avalonia.iOS
         {
             get => (Control)_topLevel.Content;
             set => _topLevel.Content = value;
-        }
-
-        ITextInputMethodClient ITextInputMethodImpl.Client => _client;
-
-        bool ITextInputMethodImpl.IsActive => _isActive;
-
-        private AvaloniaResponder _currentResponder;
-
-        void ITextInputMethodImpl.SetClient(ITextInputMethodClient client)
-        {
-            if (_client != null)
-            {
-                //_client.CursorRectangleChanged -= ClientOnCursorRectangleChanged;
-            }
-
-            _client = client;
-
-            if (_client is { })
-            {
-                if (_currentResponder != null && _currentResponder.IsFirstResponder)
-                {
-                    _currentResponder.ResignFirstResponder();
-                    _currentResponder = null;
-                }
-
-                _currentResponder = new AvaloniaResponder(this, _client);
-                //_client.CursorRectangleChanged += ClientOnCursorRectangleChanged;
-
-                //_client.SurroundingTextChanged += ClientOnSurroundingTextChanged;
-                _currentResponder.BecomeFirstResponder();
-
-                var x = _currentResponder.IsFirstResponder;
-            }
-            else
-            {
-                _currentResponder.ResignFirstResponder();
-            }
-        }
-
-        void ITextInputMethodImpl.SetCursorRect(Rect rect)
-        {
-            // maybe this will be cursor / selection rect?
-        }
-
-        void ITextInputMethodImpl.SetOptions(TextInputOptions options)
-        {
-            /*IsSecureEntry = false;
-
-            switch (options.ContentType)
-            {
-                case TextInputContentType.Normal:
-                    KeyboardType = UIKeyboardType.Default;
-                    break;
-
-                case TextInputContentType.Alpha:
-                    KeyboardType = UIKeyboardType.AsciiCapable;
-                    break;
-
-                case TextInputContentType.Digits:
-                    KeyboardType = UIKeyboardType.PhonePad;
-                    break;
-
-                case TextInputContentType.Pin:
-                    KeyboardType = UIKeyboardType.NumberPad;
-                    IsSecureEntry = true;
-                    break;
-
-                case TextInputContentType.Number:
-                    KeyboardType = UIKeyboardType.PhonePad;
-                    break;
-
-                case TextInputContentType.Email:
-                    KeyboardType = UIKeyboardType.EmailAddress;
-                    break;
-
-                case TextInputContentType.Url:
-                    KeyboardType = UIKeyboardType.Url;
-                    break;
-
-                case TextInputContentType.Name:
-                    KeyboardType = UIKeyboardType.NamePhonePad;
-                    break;
-
-                case TextInputContentType.Password:
-                    KeyboardType = UIKeyboardType.Default;
-                    IsSecureEntry = true;
-                    break;
-
-                case TextInputContentType.Social:
-                    KeyboardType = UIKeyboardType.Twitter;
-                    break;
-
-                case TextInputContentType.Search:
-                    KeyboardType = UIKeyboardType.WebSearch;
-                    break;
-            }
-
-            if (options.IsSensitive)
-            {
-                IsSecureEntry = true;
-            }
-
-            ReturnKeyType = (UIReturnKeyType)options.ReturnKeyType;
-            AutocorrectionType = UITextAutocorrectionType.Yes;
-            SpellCheckingType = UITextSpellCheckingType.Yes;
-            KeyboardAppearance = UIKeyboardAppearance.Alert;*/
-        }
-
-
-        void ITextInputMethodImpl.Reset()
-        {
-            _currentResponder?.ResignFirstResponder();
         }
     }
 }

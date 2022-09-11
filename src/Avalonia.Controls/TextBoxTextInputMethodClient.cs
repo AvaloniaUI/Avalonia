@@ -51,20 +51,50 @@ namespace Avalonia.Controls
 
         public bool SupportsSurroundingText => true;
 
-        public event EventHandler? SurroundingTextChanged { add { } remove { } }
+        public event EventHandler? SurroundingTextChanged;
 
-        public TextInputMethodSurroundingText SurroundingText => new TextInputMethodSurroundingText { Text =  _presenter?.Text ?? "", CursorOffset = _presenter?.CaretIndex ?? 0, AnchorOffset = _presenter?.SelectionStart ?? 0};
+        public TextInputMethodSurroundingText SurroundingText => new()
+        {
+            Text = _presenter?.Text ?? "",
+            CursorOffset = _presenter?.CaretIndex ?? 0,
+            AnchorOffset = _presenter?.SelectionStart ?? 0
+        };
 
         public string? TextBeforeCursor => null;
         
         public string? TextAfterCursor => null;
+        public void SelectInSurroundingText(int start, int end)
+        {
+            if(_parent == null)
+                return;
+            // TODO: Account for the offset
+            _parent.SelectionStart = start;
+            _parent.SelectionEnd = end;
+        }
 
         private void OnCaretBoundsChanged(object? sender, EventArgs e) => CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
+        
+        private void OnTextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == TextBox.TextProperty || e.Property == TextBox.SelectionStartProperty ||
+                e.Property == TextBox.SelectionEndProperty)
+                SurroundingTextChanged?.Invoke(this, EventArgs.Empty);
+        }
 
 
         public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
+            if (_parent != null)
+            {
+                _parent.PropertyChanged -= OnTextBoxPropertyChanged;
+            }
+            
             _parent = parent;
+
+            if (_parent != null)
+            {
+                _parent.PropertyChanged += OnTextBoxPropertyChanged;
+            }
 
             if (_presenter != null)
             {

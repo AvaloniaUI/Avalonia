@@ -49,6 +49,8 @@ namespace Avalonia.Input.TextInput
         /// Returns the text before the cursor. Must return a non-empty string if cursor is not at the end of the text entry
         /// </summary>
         string? TextAfterCursor { get; }
+
+        public void SelectInSurroundingText(int start, int end);
     }
 
     public struct TextInputMethodSurroundingText

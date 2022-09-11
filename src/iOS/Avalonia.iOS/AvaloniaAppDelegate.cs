@@ -20,7 +20,7 @@ namespace Avalonia.iOS
             }
         }
 
-        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseiOS();
+        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
         
         [Export("window")]
         public UIWindow Window { get; set; }
@@ -28,7 +28,7 @@ namespace Avalonia.iOS
         [Export("application:didFinishLaunchingWithOptions:")]
         public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
-            var builder = AppBuilder.Configure<TApp>();
+            var builder = AppBuilder.Configure<TApp>().UseiOS();
             CustomizeAppBuilder(builder);
 
             var lifetime = new SingleViewLifetime();
