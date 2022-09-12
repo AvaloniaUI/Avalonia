@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using Avalonia.Controls.Presenters;
 using Foundation;
 using ObjCRuntime;
 using Avalonia.Input.TextInput;
@@ -358,10 +359,19 @@ partial class AvaloniaView
 
         UITextPosition IUITextInput.GetClosestPositionToPoint(CGPoint point)
         {
-            // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetClosestPositionToPoint");
-            return new AvaloniaTextPosition(0);
+
+            var presenter = _client.TextViewVisual as TextPresenter;
+
+            if (presenter is { })
+            {
+                var hitResult = presenter.TextLayout.HitTestPoint(new Point(point.X, point.Y));
+                
+                return new AvaloniaTextPosition(hitResult.TextPosition);
+            }
+
+            return null;
         }
 
         UITextPosition IUITextInput.GetClosestPositionToPoint(CGPoint point, UITextRange withinRange)
