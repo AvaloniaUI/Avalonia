@@ -81,16 +81,34 @@ namespace Avalonia.Input
         }
 
         /// <summary>
+        /// Gets the pointer position relative to the input root.
+        /// </summary>
+        /// <returns>The pointer position in the root's coordinates.</returns>
+        public Point GetPosition()
+        {
+            return _rootVisualPosition;
+        }
+
+        /// <summary>
         /// Returns the PointerPoint associated with the current event.
         /// </summary>
         /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns>
-        /// Returns current point or null if not possible to transform to relative visual. 
+        /// The Returns current point in the visual's coordinates or null if not possible to transform to relative visual. 
         /// </returns>
         public PointerPoint? GetCurrentPoint(IVisual? relativeTo)
             => GetPosition(relativeTo) is { } position
             ? new PointerPoint(Pointer, position, Properties)
             : null;
+
+        /// <summary>
+        /// Returns the PointerPoint associated with the current event.
+        /// </summary>
+        /// <returns>
+        /// Returns current point in the root's coordinates. 
+        /// </returns>
+        public PointerPoint GetCurrentPoint()
+            => new PointerPoint(Pointer, _rootVisualPosition, Properties);
 
         /// <summary>
         /// Retrieves position and state information for the specified pointer, from the last pointer event up to and including the current pointer event.
