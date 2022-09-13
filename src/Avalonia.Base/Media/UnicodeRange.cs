@@ -9,7 +9,7 @@ namespace Avalonia.Media
     /// </summary>
     public readonly struct UnicodeRange
     {
-        public static UnicodeRange Default = Parse("0-10FFFD");
+        public readonly static UnicodeRange Default = Parse("0-10FFFD");
 
         private readonly UnicodeRangeSegment _single;
         private readonly IReadOnlyList<UnicodeRangeSegment>? _segments = null;
