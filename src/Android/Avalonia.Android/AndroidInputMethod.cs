@@ -12,7 +12,14 @@ using Java.Lang;
 
 namespace Avalonia.Android
 {
-    class AndroidInputMethod<TView> : ITextInputMethodImpl
+    internal interface IAndroidInputMethod
+    {
+        public ITextInputMethodClient Client { get; }
+        
+        public bool IsActive { get; }
+    }
+    
+    class AndroidInputMethod<TView> : ITextInputMethodImpl, IAndroidInputMethod
         where TView: View, IInitEditorInfo
     {
         private readonly TView _host;

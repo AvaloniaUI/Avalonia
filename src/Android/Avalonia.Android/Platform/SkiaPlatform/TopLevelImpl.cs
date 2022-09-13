@@ -259,9 +259,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
     internal class InputConnectionImpl: BaseInputConnection
     {
-        private readonly ITextInputMethodImpl _inputMethod;
+        private readonly IAndroidInputMethod _inputMethod;
 
-        public InputConnectionImpl(View? targetView, ITextInputMethodImpl inputMethod) :
+        public InputConnectionImpl(View? targetView, IAndroidInputMethod inputMethod) :
             base(targetView, false)
         {
             _inputMethod = inputMethod;
