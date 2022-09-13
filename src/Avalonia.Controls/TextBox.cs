@@ -1148,9 +1148,9 @@ namespace Avalonia.Controls
             }
 
             var text = Text;
-
-            if (text != null && e.GetCurrentPoint(_presenter) is { } clickInfo &&
-                clickInfo.Properties.IsLeftButtonPressed &&
+            
+            if (text != null && e.Properties.IsLeftButtonPressed
+                && e.GetCurrentPoint(this) is { } clickInfo &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
                 var point = clickInfo.Position;
@@ -1231,8 +1231,8 @@ namespace Avalonia.Controls
             }
 
             // selection should not change during pointer move if the user right clicks
-            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(_presenter) is { } clickInfo &&
-                clickInfo.Properties.IsLeftButtonPressed)
+            if (e.Pointer.Captured == _presenter && e.Properties.IsLeftButtonPressed
+                && e.GetCurrentPoint(_presenter) is { } clickInfo)
             {
                 var point = clickInfo.Position;
                 point = new Point(

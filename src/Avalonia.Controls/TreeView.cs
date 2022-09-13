@@ -520,18 +520,16 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.Source is IVisual source)
+            if (e.Source is IInteractive)
             {
-                var point = e.GetCurrentPoint(source) ?? default;
-
-                if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
+                if (e.Properties.IsLeftButtonPressed || e.Properties.IsRightButtonPressed)
                 {
                     e.Handled = UpdateSelectionFromEventSource(
                         e.Source,
                         true,
                         e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
                         e.KeyModifiers.HasAllFlags(AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>().CommandModifiers),
-                        point.Properties.IsRightButtonPressed);
+                        e.Properties.IsRightButtonPressed);
                 }
             }
         }

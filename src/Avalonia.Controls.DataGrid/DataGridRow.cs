@@ -761,7 +761,7 @@ namespace Avalonia.Controls
 
         private void DataGridRow_PointerPressed(PointerPressedEventArgs e)
         {
-            if (!e.GetCurrentPoint(this)?.Properties.IsLeftButtonPressed == true)
+            if (!e.Properties.IsLeftButtonPressed)
             {
                 return;
             }

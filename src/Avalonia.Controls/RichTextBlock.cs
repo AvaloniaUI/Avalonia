@@ -366,9 +366,9 @@ namespace Avalonia.Controls
             }
 
             var text = Text;
-            var clickInfo = e.GetCurrentPoint(this) ?? default;
 
-            if (text != null && clickInfo.Properties.IsLeftButtonPressed)
+            if (text != null && e.Properties.IsLeftButtonPressed
+                && e.GetCurrentPoint(this) is { } clickInfo)
             {
                 var padding = Padding;
 
@@ -449,9 +449,8 @@ namespace Avalonia.Controls
             }
 
             // selection should not change during pointer move if the user right clicks
-            if (e.Pointer.Captured == this
-                && e.GetCurrentPoint(this) is { } currentPoint
-                && currentPoint.Properties.IsLeftButtonPressed)
+            if (e.Pointer.Captured == this && e.Properties.IsLeftButtonPressed
+                && e.GetCurrentPoint(this) is { } currentPoint)
             {
                 var text = Text;
                 var padding = Padding;

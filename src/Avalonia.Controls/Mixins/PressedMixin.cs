@@ -23,7 +23,7 @@ namespace Avalonia.Controls.Mixins
 
         private static void HandlePointerPressed<TControl>(TControl sender, PointerPressedEventArgs e) where TControl : Control
         {
-            if (e.GetCurrentPoint(sender)?.Properties.IsLeftButtonPressed == true)
+            if (e.Properties.IsLeftButtonPressed)
             {
                 ((IPseudoClasses)sender.Classes).Set(":pressed", true);
             }

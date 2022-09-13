@@ -292,7 +292,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            if (e.GetCurrentPoint(this)?.Properties.IsLeftButtonPressed == true)
+            if (e.Properties.IsLeftButtonPressed)
             {
                 if (OwningGrid.IsDoubleClickRecordsClickOnCall(this) && !e.Handled)
                 {
@@ -309,7 +309,7 @@ namespace Avalonia.Controls
                     e.Handled = OwningGrid.UpdateStateOnMouseLeftButtonDown(e, OwningGrid.CurrentColumnIndex, RowGroupInfo.Slot, allowEdit: false);
                 }
             }
-            else if (e.GetCurrentPoint(this)?.Properties.IsRightButtonPressed == true)
+            else if (e.Properties.IsRightButtonPressed)
             {
                 if (!e.Handled)
                 {

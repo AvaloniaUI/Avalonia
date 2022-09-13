@@ -167,7 +167,7 @@ namespace Avalonia.Controls
                 return;
             }
             OwningGrid.OnCellPointerPressed(new DataGridCellPointerPressedEventArgs(this, OwningRow, OwningColumn, e));
-            if (e.GetCurrentPoint(this)?.Properties.IsLeftButtonPressed == true)
+            if (e.Properties.IsLeftButtonPressed)
             {
                 if (!e.Handled)
                 //if (!e.Handled && OwningGrid.IsTabStop)
@@ -188,7 +188,7 @@ namespace Avalonia.Controls
                     OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
                 }
             }
-            else if (e.GetCurrentPoint(this)?.Properties.IsRightButtonPressed == true)
+            else if (e.Properties.IsRightButtonPressed)
             {
                 if (!e.Handled)
                 //if (!e.Handled && OwningGrid.IsTabStop)

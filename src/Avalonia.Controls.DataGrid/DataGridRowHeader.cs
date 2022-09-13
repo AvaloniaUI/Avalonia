@@ -185,7 +185,7 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            if (e.GetCurrentPoint(this)?.Properties.IsLeftButtonPressed == true)
+            if (e.Properties.IsLeftButtonPressed == true)
             {
                 if (!e.Handled)
                 //if (!e.Handled && OwningGrid.IsTabStop)
@@ -200,7 +200,7 @@ namespace Avalonia.Controls.Primitives
                     OwningGrid.UpdatedStateOnMouseLeftButtonDown = true;
                 }
             }
-            else if (e.GetCurrentPoint(this)?.Properties.IsRightButtonPressed == true)
+            else if (e.Properties.IsRightButtonPressed == true)
             {
                 if (!e.Handled)
                 {

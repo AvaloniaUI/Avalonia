@@ -347,7 +347,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.GetCurrentPoint(this)?.Properties.IsLeftButtonPressed == true)
+            if (e.Properties.IsLeftButtonPressed)
             {
                 e.Handled = true;
 

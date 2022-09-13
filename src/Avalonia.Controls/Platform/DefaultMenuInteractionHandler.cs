@@ -354,9 +354,10 @@ namespace Avalonia.Controls.Platform
             {
                 return;
             }
-            var point = e.GetCurrentPoint(null) ?? default;
 
-            if (point.Properties.IsLeftButtonPressed && item.TransformedBounds.Value.Contains(point.Position) == false)
+            if (e.Properties.IsLeftButtonPressed
+                && e.GetCurrentPoint(null) is { } point
+                && item.TransformedBounds.Value.Contains(point.Position) == false)
             {
                 e.Pointer.Capture(null);
             }
@@ -401,8 +402,7 @@ namespace Avalonia.Controls.Platform
         {
             var item = GetMenuItem(e.Source as IControl);
 
-            if (sender is IVisual visual &&
-                e.GetCurrentPoint(visual)?.Properties.IsLeftButtonPressed == true && item?.HasSubMenu == true)
+            if (e.Properties.IsLeftButtonPressed && item?.HasSubMenu == true)
             {
                 if (item.IsSubMenuOpen)
                 {

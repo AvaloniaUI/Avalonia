@@ -216,7 +216,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.GetCurrentPoint(this)?.Properties.IsLeftButtonPressed == true && e.Pointer.Type == PointerType.Mouse)
+            if (e.Properties.IsLeftButtonPressed == true && e.Pointer.Type == PointerType.Mouse)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }

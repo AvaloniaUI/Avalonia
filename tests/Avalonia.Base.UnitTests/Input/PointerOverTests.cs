@@ -310,7 +310,7 @@ namespace Avalonia.Base.UnitTests.Input
             var renderer = new Mock<IRenderer>();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
-            var result = new List<(object?, string, Point)>();
+            var result = new List<(object?, string, Point?)>();
 
             void HandleEvent(object? sender, PointerEventArgs e)
             {
@@ -338,7 +338,7 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(
                 new[]
                 {
-                    ((object?)canvas, nameof(InputElement.PointerEntered), expectedPosition),
+                    ((object?)canvas, nameof(InputElement.PointerEntered), (Point?)expectedPosition),
                     (root, nameof(InputElement.PointerEntered), expectedPosition),
                     (canvas, nameof(InputElement.PointerExited), expectedPosition),
                     (root, nameof(InputElement.PointerExited), expectedPosition)
@@ -448,7 +448,7 @@ namespace Avalonia.Base.UnitTests.Input
 
             var lastClientPosition = new Point(1, 5);
             var invalidateRect = new Rect(0, 0, 15, 15);
-            var result = new List<(object?, string, Point)>();
+            var result = new List<(object?, string, Point?)>();
 
             void HandleEvent(object? sender, PointerEventArgs e)
             {
@@ -479,7 +479,7 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(
                 new[]
                 {
-                    ((object?)canvas, nameof(InputElement.PointerEntered), lastClientPosition),
+                    ((object?)canvas, nameof(InputElement.PointerEntered), (Point?)lastClientPosition),
                     (root, nameof(InputElement.PointerEntered), lastClientPosition),
                     (canvas, nameof(InputElement.PointerExited), lastClientPosition),
                     (root, nameof(InputElement.PointerExited), lastClientPosition),

@@ -98,7 +98,7 @@ namespace Avalonia.Input
                     s_isDoubleTapped = false;
                     s_lastPress.SetTarget(ev.Source);
                 }
-                else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(null)?.Properties.IsLeftButtonPressed == true)
+                else if (e.ClickCount % 2 == 0 && e.Properties.IsLeftButtonPressed)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {
