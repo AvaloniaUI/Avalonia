@@ -65,7 +65,7 @@ namespace Avalonia.MicroCom
 
         protected virtual void Dispose(bool disposing)
         {
-            if(_nativePointer == null)
+            if(_nativePointer == IntPtr.Zero)
                 return;
             if (_ownsHandle)
             {
