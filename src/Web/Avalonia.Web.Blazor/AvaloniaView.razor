@@ -3,9 +3,9 @@
      tabindex="0" oncontextmenu="return false;"
      @onwheel="OnWheel"
      @onkeydown="OnKeyDown"
-     @onkeydown:preventDefault="true"
      @onkeyup="OnKeyUp"
-     @onkeyup:preventDefault="true"
+     @onkeyup:preventDefault="@KeyPreventDefault"
+     @onkeydown:preventDefault="@KeyPreventDefault"
      @onpointerdown="OnPointerDown"
      @onpointerup="OnPointerUp"
      @onpointermove="OnPointerMove"
@@ -20,8 +20,6 @@
         onpaste="return false;"
         oncopy="return false;" 
         oncut="return false;"
-        @onkeydown:preventDefault="true"
-        @onkeyup:preventDefault="true"
         autocapitalize="none"/>
 </div>
 

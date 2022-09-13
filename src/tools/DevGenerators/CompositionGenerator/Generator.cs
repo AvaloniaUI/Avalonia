@@ -133,10 +133,6 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 MethodDeclaration(ParseTypeName("void"), "Initialize")
                     .AddModifiers(SyntaxKind.PartialKeyword).WithSemicolonToken(Semicolon()));
 
-
-            var changesVarName = "c";
-            var changesVar = IdentifierName(changesVarName);
-
             server = server.AddMembers(
                 MethodDeclaration(ParseTypeName("void"), "DeserializeChangesExtra")
                     .AddParameterListParameters(Parameter(Identifier("c")).WithType(ParseTypeName("BatchStreamReader")))
