@@ -66,17 +66,7 @@ namespace Avalonia.Input
             if (relativeTo == null)
                 return pt;
 
-            // If relativeTo visual is from another visual tree and possibly window, translate position first.
-            var pointRootVisual = _rootVisual;
-            if (relativeTo.VisualRoot is { } root
-                && _rootVisual != root)
-            {
-                var screenPoint = _rootVisual.PointToScreen(pt);
-                pt = relativeTo.VisualRoot.PointToClient(screenPoint);
-                pointRootVisual = root;
-            }
-
-            return pt * pointRootVisual.TransformToVisual(relativeTo) ?? default;
+            return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
         }
 
         /// <summary>
