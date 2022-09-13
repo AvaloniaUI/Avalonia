@@ -10,7 +10,7 @@ namespace Sandbox
         public MainWindow()
         {
             this.InitializeComponent();
-            this.AttachDevTools();
+            this.AttachDevTools();DataContext = 5.6;
         }
 
         private void InitializeComponent()

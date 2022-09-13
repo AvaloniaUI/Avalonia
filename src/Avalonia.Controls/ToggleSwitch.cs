@@ -19,7 +19,7 @@ namespace Avalonia.Controls
         private Panel? _knobsPanel;
         private Panel? _switchKnob;
         private bool _knobsPanelPressed = false;
-        private Point _switchStartPoint = new Point();
+        private Point? _switchStartPoint = new Point();
         private double _initLeft = -1;
         private bool _isDragging = false;
 
@@ -218,17 +218,18 @@ namespace Avalonia.Controls
         {
             if (_knobsPanelPressed)
             {
-                var difference = e.GetPosition(_switchKnob) - _switchStartPoint;
-
-                if ((!_isDragging) && (System.Math.Abs(difference.X) > 3))
+                if ((e.GetPosition(_switchKnob) - _switchStartPoint) is { } difference)
                 {
-                    _isDragging = true;
-                    PseudoClasses.Set(":dragging", true);
-                }
+                    if ((!_isDragging) && (System.Math.Abs(difference.X) > 3))
+                    {
+                        _isDragging = true;
+                        PseudoClasses.Set(":dragging", true);
+                    }
 
-                if (_isDragging)
-                {
-                    Canvas.SetLeft(_knobsPanel!, System.Math.Min(_switchKnob!.Bounds.Width, System.Math.Max(0, (_initLeft + difference.X))));
+                    if (_isDragging)
+                    {
+                        Canvas.SetLeft(_knobsPanel!, System.Math.Min(_switchKnob!.Bounds.Width, System.Math.Max(0, (_initLeft + difference.X))));
+                    }
                 }
             }
         }

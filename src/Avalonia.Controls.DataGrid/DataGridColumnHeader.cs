@@ -459,9 +459,11 @@ namespace Avalonia.Controls
                 return;
             }
 
-            Point mousePosition = e.GetPosition(this);
-            OnMouseEnter(mousePosition);
-            UpdatePseudoClasses();
+            if (e.GetPosition(this) is { } mousePosition)
+            {
+                OnMouseEnter(mousePosition);
+                UpdatePseudoClasses();
+            }
         }
 
         private void DataGridColumnHeader_PointerExited(object sender, PointerEventArgs e)
@@ -477,14 +479,19 @@ namespace Avalonia.Controls
 
         private void DataGridColumnHeader_PointerPressed(object sender, PointerPressedEventArgs e)
         {
-            if (OwningColumn == null || e.Handled || !IsEnabled || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (OwningColumn == null || e.Handled || !IsEnabled)
             {
                 return;
             }
 
-            Point mousePosition = e.GetPosition(this);
+            var point = e.GetCurrentPoint(this);
+            if (point is null || !point.Value.Properties.IsLeftButtonPressed)
+            {
+                return;
+            }
+
             bool handled = e.Handled;
-            OnMouseLeftButtonDown(ref handled, e, mousePosition);
+            OnMouseLeftButtonDown(ref handled, e, point.Value.Position);
             e.Handled = handled;
 
             UpdatePseudoClasses();
@@ -497,13 +504,15 @@ namespace Avalonia.Controls
                 return;
             }
 
-            Point mousePosition = e.GetPosition(this);
-            Point mousePositionHeaders = e.GetPosition(OwningGrid.ColumnHeaders);
-            bool handled = e.Handled;
-            OnMouseLeftButtonUp(ref handled, e, mousePosition, mousePositionHeaders);
-            e.Handled = handled;
+            if (e.GetPosition(this) is { } mousePosition
+                && e.GetPosition(OwningGrid.ColumnHeaders) is { } mousePositionHeaders)
+            {
+                bool handled = e.Handled;
+                OnMouseLeftButtonUp(ref handled, e, mousePosition, mousePositionHeaders);
+                e.Handled = handled;
 
-            UpdatePseudoClasses();
+                UpdatePseudoClasses();
+            }
         }
 
         private void DataGridColumnHeader_PointerMoved(object sender, PointerEventArgs e)
@@ -513,10 +522,11 @@ namespace Avalonia.Controls
                 return;
             }
 
-            Point mousePosition = e.GetPosition(this);
-            Point mousePositionHeaders = e.GetPosition(OwningGrid.ColumnHeaders);
-
-            OnMouseMove(e, mousePosition, mousePositionHeaders);
+            if (e.GetPosition(this) is { } mousePosition
+                && e.GetPosition(OwningGrid.ColumnHeaders) is { } mousePositionHeaders)
+            {
+                OnMouseMove(e, mousePosition, mousePositionHeaders);
+            }
         }
 
         /// <summary>

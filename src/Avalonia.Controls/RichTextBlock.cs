@@ -366,13 +366,13 @@ namespace Avalonia.Controls
             }
 
             var text = Text;
-            var clickInfo = e.GetCurrentPoint(this);
+            var clickInfo = e.GetCurrentPoint(this) ?? default;
 
             if (text != null && clickInfo.Properties.IsLeftButtonPressed)
             {
                 var padding = Padding;
 
-                var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
+                var point = clickInfo.Position - new Point(padding.Left, padding.Top);
 
                 var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
 
@@ -449,12 +449,14 @@ namespace Avalonia.Controls
             }
 
             // selection should not change during pointer move if the user right clicks
-            if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.Pointer.Captured == this
+                && e.GetCurrentPoint(this) is { } currentPoint
+                && currentPoint.Properties.IsLeftButtonPressed)
             {
                 var text = Text;
                 var padding = Padding;
 
-                var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
+                var point = currentPoint.Position - new Point(padding.Left, padding.Top);
 
                 point = new Point(
                     MathUtilities.Clamp(point.X, 0, Math.Max(TextLayout.Bounds.Width, 0)),
@@ -504,11 +506,12 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (e.InitialPressMouseButton == MouseButton.Right)
+            if (e.InitialPressMouseButton == MouseButton.Right
+                && e.GetPosition(this) is { } position)
             {
                 var padding = Padding;
 
-                var point = e.GetPosition(this) - new Point(padding.Left, padding.Top);
+                var point = position - new Point(padding.Left, padding.Top);
 
                 var hit = TextLayout.HitTestPoint(point);
 

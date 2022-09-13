@@ -2,6 +2,7 @@
 using Avalonia.Controls.Metadata;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
@@ -110,7 +111,15 @@ namespace Avalonia.Controls.Primitives
 
                 if (bitmap != null)
                 {
-                    Background = new ImageBrush(ColorPickerHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight));
+                    if ((Background as ImageBrush)?.Source is WriteableBitmap existingBitmap)
+                    {
+                        ColorPickerHelpers.UpdateBitmapFromPixelData(existingBitmap, bitmap);
+                        Background = new ImageBrush(existingBitmap);
+                    }
+                    else
+                    {
+                        Background = new ImageBrush(ColorPickerHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight));
+                    }
                 }
             }
         }

@@ -101,7 +101,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.GetCurrentPoint(this)?.Properties.IsLeftButtonPressed == true)
             {
                 StartTimer();
             }

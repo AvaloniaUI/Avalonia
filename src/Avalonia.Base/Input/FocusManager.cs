@@ -223,7 +223,7 @@ namespace Avalonia.Input
             var ev = (PointerPressedEventArgs)e;
             var visual = (IVisual)sender;
 
-            if (sender == e.Source && ev.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+            if (sender == e.Source && ev.GetCurrentPoint(visual)?.Properties.IsLeftButtonPressed == true)
             {
                 IVisual? element = ev.Pointer?.Captured ?? e.Source as IInputElement;
 

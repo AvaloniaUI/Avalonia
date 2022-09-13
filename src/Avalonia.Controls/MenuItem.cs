@@ -449,7 +449,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerEntered(e);
 
-            var point = e.GetCurrentPoint(null);
+            var point = e.GetCurrentPoint(null) ?? default;
             RaiseEvent(new PointerEventArgs(PointerEnteredItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }
@@ -459,7 +459,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerExited(e);
 
-            var point = e.GetCurrentPoint(null);
+            var point = e.GetCurrentPoint(null) ?? default;
             RaiseEvent(new PointerEventArgs(PointerExitedItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }

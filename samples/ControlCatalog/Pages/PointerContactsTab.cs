@@ -64,7 +64,7 @@ public class PointerContactsTab : Control
             _pointers[e.Pointer] = info = new PointerInfo { Color = color };
         }
 
-        info.Point = e.GetPosition(this);
+        info.Point = e.GetPosition(this) ?? default;
         InvalidateVisual();
     }
 

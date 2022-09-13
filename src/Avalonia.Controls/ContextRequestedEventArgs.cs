@@ -43,14 +43,14 @@ namespace Avalonia.Controls
         /// </returns>
         public bool TryGetPosition(Control? relativeTo, out Point point)
         {
-            if (_pointerEventArgs is null)
+            if (_pointerEventArgs?.GetPosition(relativeTo) is { } position)
             {
-                point = default;
-                return false;
+                point = position;
+                return true;
             }
 
-            point = _pointerEventArgs.GetPosition(relativeTo);
-            return true;
+            point = default;
+            return false;
         }
     }
 }

@@ -33,7 +33,7 @@ public class PointersPage : UserControl
     {
         if (sender is Border border && border.Child is TextBlock textBlock)
         {
-            var position = e.GetPosition(border);
+            var position = e.GetPosition(border) ?? default;
             textBlock.Text = @$"Type: {e.Pointer.Type}
 Captured: {e.Pointer.Captured == sender}
 PointerId: {e.Pointer.Id}

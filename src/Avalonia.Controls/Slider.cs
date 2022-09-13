@@ -317,9 +317,10 @@ namespace Avalonia.Controls
 
         private void TrackMoved(object? sender, PointerEventArgs e)
         {
-            if (_isDragging)
+            if (_isDragging
+                && e.GetCurrentPoint(_track) is { } point)
             {
-                MoveToPoint(e.GetCurrentPoint(_track));
+                MoveToPoint(point);
             }
         }
 
@@ -330,9 +331,10 @@ namespace Avalonia.Controls
 
         private void TrackPressed(object? sender, PointerPressedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.GetCurrentPoint(_track) is { } point
+                && point.Properties.IsLeftButtonPressed)
             {
-                MoveToPoint(e.GetCurrentPoint(_track));
+                MoveToPoint(point);
                 _isDragging = true;
             }
         }

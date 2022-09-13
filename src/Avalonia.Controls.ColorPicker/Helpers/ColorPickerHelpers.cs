@@ -617,13 +617,18 @@ namespace Avalonia.Controls.Primitives
                 PixelFormat.Bgra8888,
                 AlphaFormat.Premul);
 
+            UpdateBitmapFromPixelData(bitmap, bgraPixelData);
+
+            return bitmap;
+        }
+
+        public static void UpdateBitmapFromPixelData(WriteableBitmap bitmap, IList<byte> bgraPixelData)
+        {
             // Warning: This is highly questionable
             using (var frameBuffer = bitmap.Lock())
             {
-                Marshal.Copy(bgraPixelData.ToArray(), 0, frameBuffer.Address, bgraPixelData.Count);
+                Marshal.Copy((bgraPixelData as byte[]) ?? bgraPixelData.ToArray(), 0, frameBuffer.Address, bgraPixelData.Count);
             }
-
-            return bitmap;
         }
     }
 }

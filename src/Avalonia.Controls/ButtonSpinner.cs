@@ -136,11 +136,10 @@ namespace Avalonia.Controls
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
-            Point mousePosition;
             if (IncreaseButton != null && IncreaseButton.IsEnabled == false)
             {
-                mousePosition = e.GetPosition(IncreaseButton);
-                if (mousePosition.X > 0 && mousePosition.X < IncreaseButton.Width &&
+                if (e.GetPosition(IncreaseButton) is { } mousePosition &&
+                    mousePosition.X > 0 && mousePosition.X < IncreaseButton.Width &&
                     mousePosition.Y > 0 && mousePosition.Y < IncreaseButton.Height)
                 {
                     e.Handled = true;
@@ -149,8 +148,8 @@ namespace Avalonia.Controls
 
             if (DecreaseButton != null && DecreaseButton.IsEnabled == false)
             {
-                mousePosition = e.GetPosition(DecreaseButton);
-                if (mousePosition.X > 0 && mousePosition.X < DecreaseButton.Width &&
+                if (e.GetPosition(DecreaseButton) is { } mousePosition &&
+                    mousePosition.X > 0 && mousePosition.X < DecreaseButton.Width &&
                     mousePosition.Y > 0 && mousePosition.Y < DecreaseButton.Height)
                 {
                     e.Handled = true;

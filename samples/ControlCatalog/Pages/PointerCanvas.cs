@@ -74,7 +74,7 @@ public class PointerCanvas : Control
         public void HandleEvent(PointerEventArgs e, Visual v)
         {
             e.Handled = true;
-            var currentPoint = e.GetCurrentPoint(v);
+            var currentPoint = e.GetCurrentPoint(v) ?? default;
             if (e.RoutedEvent == PointerPressedEvent)
                 AddPoint(currentPoint.Position, Brushes.Green, 10);
             else if (e.RoutedEvent == PointerReleasedEvent)
@@ -171,7 +171,7 @@ Twist: {_lastProperties?.Twist}";
         }
         InvalidateVisual();
 
-        var lastPointer = e.GetCurrentPoint(this);
+        var lastPointer = e.GetCurrentPoint(this) ?? default;
         _lastProperties = lastPointer.Properties;
 
         if (_lastProperties?.PointerUpdateKind != PointerUpdateKind.Other)

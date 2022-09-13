@@ -772,9 +772,9 @@ namespace Avalonia.Controls.Primitives
         private void PassThroughEvent(PointerPressedEventArgs e)
         {
             if (e.Source is LightDismissOverlayLayer layer &&
-                layer.GetVisualRoot() is IInputElement root)
+                layer.GetVisualRoot() is IInputElement root &&
+                e.GetCurrentPoint(root) is { } p)
             {
-                var p = e.GetCurrentPoint(root);
                 var hit = root.InputHitTest(p.Position, x => x != layer);
 
                 if (hit != null)

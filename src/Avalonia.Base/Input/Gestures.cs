@@ -92,14 +92,13 @@ namespace Avalonia.Input
             if (ev.Route == RoutingStrategies.Bubble)
             {
                 var e = (PointerPressedEventArgs)ev;
-                var visual = (IVisual)ev.Source;
 
                 if (e.ClickCount <= 1)
                 {
                     s_isDoubleTapped = false;
                     s_lastPress.SetTarget(ev.Source);
                 }
-                else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
+                else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(null)?.Properties.IsLeftButtonPressed == true)
                 {
                     if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
                     {

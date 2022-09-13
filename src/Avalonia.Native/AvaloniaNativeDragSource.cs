@@ -66,7 +66,7 @@ namespace Avalonia.Native
                     clipboard.SetTextAsync(data.GetText()).Wait();
                 
                 view.BeginDraggingSession((AvnDragDropEffects)allowedEffects,
-                    triggerEvent.GetPosition(tl).ToAvnPoint(), clipboardImpl, cb,
+                    triggerEvent.GetPosition(tl)?.ToAvnPoint() ?? default, clipboardImpl, cb,
                     GCHandle.ToIntPtr(GCHandle.Alloc(data)));
             }
 

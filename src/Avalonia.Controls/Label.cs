@@ -65,7 +65,7 @@ namespace Avalonia.Controls
         /// <param name="e">Event Arguments</param>
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
+            if (e.GetCurrentPoint(this)?.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonPressed)
             {
                 LabelActivated(e);
             }

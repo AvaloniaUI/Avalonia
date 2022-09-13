@@ -390,7 +390,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.GetCurrentPoint(this)?.Properties.IsLeftButtonPressed == true)
             {
                 IsPressed = true;
                 e.Handled = true;
@@ -412,8 +412,9 @@ namespace Avalonia.Controls
                 IsPressed = false;
                 e.Handled = true;
 
-                if (ClickMode == ClickMode.Release &&
-                    this.GetVisualsAt(e.GetPosition(this)).Any(c => this == c || this.IsVisualAncestorOf(c)))
+                if (ClickMode == ClickMode.Release
+                    && e.GetPosition(this) is { } position
+                    && this.GetVisualsAt(position).Any(c => this == c || this.IsVisualAncestorOf(c)))
                 {
                     OnClick();
                 }

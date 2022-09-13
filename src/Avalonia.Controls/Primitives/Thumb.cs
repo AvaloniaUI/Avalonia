@@ -78,12 +78,13 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
-            if (_lastPoint.HasValue)
+            if (_lastPoint is { } lastPoint
+                && e.GetPosition(this) is { } newPoint)
             {
                 var ev = new VectorEventArgs
                 {
                     RoutedEvent = DragDeltaEvent,
-                    Vector = e.GetPosition(this) - _lastPoint.Value,
+                    Vector = (Vector)(newPoint - lastPoint),
                 };
 
                 RaiseEvent(ev);
@@ -95,20 +96,24 @@ namespace Avalonia.Controls.Primitives
             e.Handled = true;
             _lastPoint = e.GetPosition(this);
 
-            var ev = new VectorEventArgs
+            if (_lastPoint is { } lastPoint)
             {
-                RoutedEvent = DragStartedEvent,
-                Vector = (Vector)_lastPoint,
-            };
+                var ev = new VectorEventArgs
+                {
+                    RoutedEvent = DragStartedEvent,
+                    Vector = (Vector)lastPoint,
+                };
 
-            PseudoClasses.Add(":pressed");
+                PseudoClasses.Add(":pressed");
 
-            RaiseEvent(ev);
+                RaiseEvent(ev);
+            }
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            if (_lastPoint.HasValue)
+            if (_lastPoint is { } lastPoint
+                && e.GetPosition(this) is { } newPoint)
             {
                 e.Handled = true;
                 _lastPoint = null;
@@ -116,7 +121,7 @@ namespace Avalonia.Controls.Primitives
                 var ev = new VectorEventArgs
                 {
                     RoutedEvent = DragCompletedEvent,
-                    Vector = (Vector)e.GetPosition(this),
+                    Vector = (Vector)newPoint,
                 };
 
                 RaiseEvent(ev);

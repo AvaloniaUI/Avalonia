@@ -216,7 +216,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && e.Pointer.Type == PointerType.Mouse)
+            if (e.GetCurrentPoint(this)?.Properties.IsLeftButtonPressed == true && e.Pointer.Type == PointerType.Mouse)
             {
                 e.Handled = UpdateSelectionFromEventSource(e.Source);
             }
@@ -228,7 +228,8 @@ namespace Avalonia.Controls
             {
                 var container = GetContainerFromEventSource(e.Source);
                 if (container != null
-                    && container.GetVisualsAt(e.GetPosition(container))
+                    && e.GetPosition(container) is { } position
+                    && container.GetVisualsAt(position)
                         .Any(c => container == c || container.IsVisualAncestorOf(c)))
                 {
                     e.Handled = UpdateSelectionFromEventSource(e.Source);

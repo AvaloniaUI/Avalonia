@@ -1148,12 +1148,12 @@ namespace Avalonia.Controls
             }
 
             var text = Text;
-            var clickInfo = e.GetCurrentPoint(this);
 
-            if (text != null && clickInfo.Properties.IsLeftButtonPressed &&
+            if (text != null && e.GetCurrentPoint(_presenter) is { } clickInfo &&
+                clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
-                var point = e.GetPosition(_presenter);
+                var point = clickInfo.Position;
 
                 var oldIndex = CaretIndex;
 
@@ -1231,10 +1231,10 @@ namespace Avalonia.Controls
             }
 
             // selection should not change during pointer move if the user right clicks
-            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(_presenter) is { } clickInfo &&
+                clickInfo.Properties.IsLeftButtonPressed)
             {
-                var point = e.GetPosition(_presenter);
-
+                var point = clickInfo.Position;
                 point = new Point(
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
@@ -1283,10 +1283,9 @@ namespace Avalonia.Controls
                 return;
             }
 
-            if (e.InitialPressMouseButton == MouseButton.Right)
+            if (e.InitialPressMouseButton == MouseButton.Right
+                && e.GetPosition(_presenter) is { } point)
             {
-                var point = e.GetPosition(_presenter);
-
                 _presenter.MoveCaretToPoint(point);
 
                 var caretIndex = _presenter.CaretIndex;

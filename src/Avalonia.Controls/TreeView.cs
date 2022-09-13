@@ -522,7 +522,7 @@ namespace Avalonia.Controls
 
             if (e.Source is IVisual source)
             {
-                var point = e.GetCurrentPoint(source);
+                var point = e.GetCurrentPoint(source) ?? default;
 
                 if (point.Properties.IsLeftButtonPressed || point.Properties.IsRightButtonPressed)
                 {

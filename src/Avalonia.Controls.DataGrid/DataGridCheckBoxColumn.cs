@@ -182,11 +182,13 @@ namespace Avalonia.Controls
                     void ProcessPointerArgs()
                     {
                         // Editing was triggered by a mouse click
-                        Point position = args.GetPosition(editingCheckBox);
-                        Rect rect = new Rect(0, 0, editingCheckBox.Bounds.Width, editingCheckBox.Bounds.Height);
-                        if(rect.Contains(position))
+                        if (args.GetPosition(editingCheckBox) is { } position)
                         {
-                            EditValue();
+                            Rect rect = new Rect(0, 0, editingCheckBox.Bounds.Width, editingCheckBox.Bounds.Height);
+                            if (rect.Contains(position))
+                            {
+                                EditValue();
+                            }
                         }
                     }
                     

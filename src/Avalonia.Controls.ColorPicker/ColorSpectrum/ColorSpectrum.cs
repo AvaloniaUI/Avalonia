@@ -865,33 +865,33 @@ namespace Avalonia.Controls.Primitives
         private void InputTarget_PointerPressed(object? sender, PointerPressedEventArgs args)
         {
             var inputTarget = _inputTarget;
+            if (args.GetCurrentPoint(inputTarget) is { } point)
+            {
+                Focus();
 
-            Focus();
+                _isPointerPressed = true;
+                _shouldShowLargeSelection =
+                    args.Pointer.Type == PointerType.Pen ||
+                    args.Pointer.Type == PointerType.Touch;
 
-            _isPointerPressed = true;
-            _shouldShowLargeSelection =
-                // TODO: After Pen PR is merged: https://github.com/AvaloniaUI/Avalonia/pull/7412
-                // args.Pointer.Type == PointerType.Pen ||
-                args.Pointer.Type == PointerType.Touch;
+                args.Pointer.Capture(inputTarget);
+                UpdateColorFromPoint(point);
+                UpdatePseudoClasses();
+                UpdateEllipse();
 
-            args.Pointer.Capture(inputTarget);
-            UpdateColorFromPoint(args.GetCurrentPoint(inputTarget));
-            UpdatePseudoClasses();
-            UpdateEllipse();
-
-            args.Handled = true;
+                args.Handled = true;
+            }
         }
 
         /// <inheritdoc cref="InputElement.PointerMoved"/>
         private void InputTarget_PointerMoved(object? sender, PointerEventArgs args)
         {
-            if (!_isPointerPressed)
+            if (_isPointerPressed
+                && args.GetCurrentPoint(_inputTarget) is { } point)
             {
-                return;
+                UpdateColorFromPoint(point);
+                args.Handled = true;
             }
-
-            UpdateColorFromPoint(args.GetCurrentPoint(_inputTarget));
-            args.Handled = true;
         }
 
         /// <inheritdoc cref="InputElement.PointerReleased"/>

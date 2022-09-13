@@ -9,7 +9,7 @@ namespace Avalonia.Input.GestureRecognizers
             IGestureRecognizer
     {
         private bool _scrolling;
-        private Point _trackedRootPoint;
+        private Point? _trackedRootPoint;
         private IPointer? _tracking;
         private IInputElement? _target;
         private IGestureRecognizerActionsDispatcher? _actions;
@@ -84,14 +84,15 @@ namespace Avalonia.Input.GestureRecognizers
         
         public void PointerMoved(PointerEventArgs e)
         {
-            if (e.Pointer == _tracking)
+            if (e.Pointer == _tracking
+                && _trackedRootPoint is { } trackedRootPoint
+                && e.GetPosition(_target) is { } rootPoint)
             {
-                var rootPoint = e.GetPosition(_target);
                 if (!_scrolling)
                 {
-                    if (CanHorizontallyScroll && Math.Abs(_trackedRootPoint.X - rootPoint.X) > ScrollStartDistance)
+                    if (CanHorizontallyScroll && Math.Abs(trackedRootPoint.X - rootPoint.X) > ScrollStartDistance)
                         _scrolling = true;
-                    if (CanVerticallyScroll && Math.Abs(_trackedRootPoint.Y - rootPoint.Y) > ScrollStartDistance)
+                    if (CanVerticallyScroll && Math.Abs(trackedRootPoint.Y - rootPoint.Y) > ScrollStartDistance)
                         _scrolling = true;
                     if (_scrolling)
                     {
@@ -101,7 +102,7 @@ namespace Avalonia.Input.GestureRecognizers
 
                 if (_scrolling)
                 {
-                    var vector = _trackedRootPoint - rootPoint;
+                    var vector = trackedRootPoint - rootPoint;
                     var elapsed = _lastMoveTimestamp.HasValue && _lastMoveTimestamp < e.Timestamp ?
                         TimeSpan.FromMilliseconds(e.Timestamp - _lastMoveTimestamp.Value) :
                         TimeSpan.Zero;

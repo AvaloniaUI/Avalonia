@@ -6,11 +6,13 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
+    /// <summary>
+    /// Arguments for input element's pointer related events.
+    /// </summary>
     public class PointerEventArgs : RoutedEventArgs
     {
         private readonly IVisual? _rootVisual;
         private readonly Point _rootVisualPosition;
-        private readonly PointerPointProperties _properties;
         private readonly Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
 
         public PointerEventArgs(RoutedEvent routedEvent,
@@ -25,7 +27,7 @@ namespace Avalonia.Input
             Source = source;
             _rootVisual = rootVisual;
             _rootVisualPosition = rootVisualPosition;
-            _properties = properties;
+            Properties = properties;
             Pointer = pointer;
             Timestamp = timestamp;
             KeyModifiers = modifiers;
@@ -59,57 +61,85 @@ namespace Avalonia.Input
         /// </summary>
         public KeyModifiers KeyModifiers { get; }
 
-        private Point GetPosition(Point pt, IVisual? relativeTo)
-        {
-            if (_rootVisual == null)
-                return default;
-            if (relativeTo == null)
-                return pt;
-
-            return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
-        }
-
         /// <summary>
         /// Gets the pointer position relative to a control.
         /// </summary>
         /// <param name="relativeTo">The control.</param>
-        /// <returns>The pointer position in the control's coordinates.</returns>
-        public Point GetPosition(IVisual? relativeTo) => GetPosition(_rootVisualPosition, relativeTo);
+        /// <returns>The pointer position in the visual's coordinates or null if not possible to transform to it.</returns>
+        public Point? GetPosition(IVisual? relativeTo)
+        {
+            if (_rootVisual is null)
+                return null;
+            if (relativeTo is null)
+                return _rootVisualPosition;
+
+            var transform = _rootVisual.TransformToVisual(relativeTo);
+            if (transform is null)
+                return null;
+
+            return _rootVisualPosition * transform;
+        }
 
         /// <summary>
-        /// Returns the PointerPoint associated with the current event
+        /// Returns the PointerPoint associated with the current event.
         /// </summary>
         /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
-        /// <returns></returns>
-        public PointerPoint GetCurrentPoint(IVisual? relativeTo)
-            => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
+        /// <returns>
+        /// Returns current point or null if not possible to transform to relative visual. 
+        /// </returns>
+        public PointerPoint? GetCurrentPoint(IVisual? relativeTo)
+            => GetPosition(relativeTo) is { } position
+            ? new PointerPoint(Pointer, position, Properties)
+            : null;
 
         /// <summary>
-        /// Returns the PointerPoint associated with the current event
+        /// Retrieves position and state information for the specified pointer, from the last pointer event up to and including the current pointer event.
         /// </summary>
         /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Returns list of the intermediate points including current point in the end.
+        /// If it's not possible to transform points to the relative visual method returns an empty array.
+        /// </returns>
         public IReadOnlyList<PointerPoint> GetIntermediatePoints(IVisual? relativeTo)
         {
+            if (_rootVisual is null)
+                return Array.Empty<PointerPoint>();
+
+            var transform = Matrix.Identity;
+            if (relativeTo is not null)
+            {
+                if (_rootVisual.TransformToVisual(relativeTo) is { } transformMatrix)
+                {
+                    transform = transformMatrix;
+                }
+                else
+                {
+                    return Array.Empty<PointerPoint>();
+                }
+            }
+
+            var currentPoint = new PointerPoint(Pointer, _rootVisualPosition * transform, Properties);
+
             var previousPoints = _previousPoints?.Value;            
             if (previousPoints == null || previousPoints.Count == 0)
-                return new[] { GetCurrentPoint(relativeTo) };
+                return new[] { currentPoint };
+
             var points = new PointerPoint[previousPoints.Count + 1];
             for (var c = 0; c < previousPoints.Count; c++)
             {
                 var pt = previousPoints[c];
-                var pointProperties = new PointerPointProperties(_properties, pt);
-                points[c] = new PointerPoint(Pointer, GetPosition(pt.Position, relativeTo), pointProperties);
+                var pointProperties = new PointerPointProperties(Properties, pt);
+                points[c] = new PointerPoint(Pointer, pt.Position * transform, pointProperties);
             }
 
-            points[points.Length - 1] = GetCurrentPoint(relativeTo);
+            points[points.Length - 1] = currentPoint;
             return points;
         }
 
         /// <summary>
         /// Returns the current pointer point properties
         /// </summary>
-        protected PointerPointProperties Properties => _properties;
+        protected PointerPointProperties Properties { get; private set; }
     }
     
     public enum MouseButton

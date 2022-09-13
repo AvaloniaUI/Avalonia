@@ -46,7 +46,7 @@ namespace Avalonia.Controls.Primitives
             {
                 var point = e.GetCurrentPoint(source);
 
-                if (point.Properties.IsLeftButtonPressed)
+                if (point?.Properties.IsLeftButtonPressed == true)
                 {
                     e.Handled = UpdateSelectionFromEventSource(e.Source);
                 }
