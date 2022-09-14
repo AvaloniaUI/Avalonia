@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
@@ -55,6 +57,43 @@ namespace Avalonia.IntegrationTests.Appium
                 }
             }
         }
+        
+        [PlatformFact(TestPlatforms.Windows)]
+        public void OnWindows_Docked_Windows_Retain_Size_Position_When_Restored()
+        {
+            using (OpenWindow(new Size(400, 400), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
+            {
+                var windowState = _session.FindElementByAccessibilityId("WindowState");
+
+                Assert.Equal("Normal", windowState.GetComboBoxValue());
+                
+                
+                var window = _session.FindElements(By.XPath("//Window")).First();
+                
+                new Actions(_session)
+                    .KeyDown(Keys.Meta)
+                    .SendKeys(Keys.Left)
+                    .KeyUp(Keys.Meta)
+                    .Perform();
+                
+                var original = GetWindowInfo();
+                
+                windowState.Click();
+                _session.FindElementByName("Minimized").SendClick();
+                
+                new Actions(_session)
+                    .KeyDown(Keys.Alt)
+                    .SendKeys(Keys.Tab)
+                    .KeyUp(Keys.Alt)
+                    .Perform();
+                
+                var current = GetWindowInfo();
+                
+                Assert.Equal(original.Position, current.Position);
+                Assert.Equal(original.FrameSize, current.FrameSize);
+
+            }
+        }
 
 
         [Theory]
@@ -92,7 +131,8 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.True(clientSize.Width >= current.ScreenRect.Width);
                 Assert.True(clientSize.Height >= current.ScreenRect.Height);
 
-                windowState.Click();
+                windowState.SendClick();
+                
                 _session.FindElementByName("Normal").SendClick();
 
                 current = GetWindowInfo();
@@ -190,7 +230,7 @@ namespace Avalonia.IntegrationTests.Appium
                         PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text),
                         double.Parse(_session.FindElementByAccessibilityId("Scaling").Text));
                 }
-                catch (OpenQA.Selenium.NoSuchElementException e) when (retry++ < 3)
+                catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 3)
                 {
                     // MacOS sometimes seems to need a bit of time to get itself back in order after switching out
                     // of fullscreen.

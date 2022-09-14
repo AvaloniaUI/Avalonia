@@ -94,9 +94,6 @@ namespace Avalonia.Controls
         
         public Screens Screens { get; private set; }
 
-        [Obsolete("No longer used. Always returns false.")]
-        protected bool AutoSizing => false;
-
         /// <summary>
         /// Gets or sets the owner of the window.
         /// </summary>
@@ -169,9 +166,6 @@ namespace Avalonia.Controls
             }
         }
 
-        [Obsolete("No longer used. Has no effect.")]
-        protected IDisposable BeginAutoSizing() => Disposable.Empty;
-
         /// <summary>
         /// Ensures that the window is initialized.
         /// </summary>
@@ -225,9 +219,6 @@ namespace Avalonia.Controls
                 _ignoreVisibilityChange = false;
             }
         }
-
-        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
-        protected override void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
 
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.

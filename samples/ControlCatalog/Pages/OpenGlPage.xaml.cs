@@ -68,7 +68,7 @@ namespace ControlCatalog.Pages
             set => SetAndRaise(DiscoProperty, ref _disco, value);
         }
 
-        private string _info;
+        private string _info = string.Empty;
 
         public static readonly DirectProperty<OpenGlPageControl, string> InfoProperty =
             AvaloniaProperty.RegisterDirect<OpenGlPageControl, string>("Info", o => o.Info, (o, v) => o.Info = v);
@@ -205,7 +205,7 @@ namespace ControlCatalog.Pages
         public OpenGlPageControl()
         {
             var name = typeof(OpenGlPage).Assembly.GetManifestResourceNames().First(x => x.Contains("teapot.bin"));
-            using (var sr = new BinaryReader(typeof(OpenGlPage).Assembly.GetManifestResourceStream(name)))
+            using (var sr = new BinaryReader(typeof(OpenGlPage).Assembly.GetManifestResourceStream(name)!))
             {
                 var buf = new byte[sr.ReadInt32()];
                 sr.Read(buf, 0, buf.Length);
@@ -345,7 +345,7 @@ namespace ControlCatalog.Pages
                     0.01f, 1000);
 
 
-            var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
+            var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, 1, 0));
             var model = Matrix4x4.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
             var modelLoc = GL.GetUniformLocationString(_shaderProgram, "uModel");
             var viewLoc = GL.GetUniformLocationString(_shaderProgram, "uView");

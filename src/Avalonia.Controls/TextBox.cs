@@ -17,6 +17,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Automation.Peers;
+using System.Diagnostics;
 
 namespace Avalonia.Controls
 {
@@ -1164,9 +1165,7 @@ namespace Avalonia.Controls
 
                 SetAndRaise(CaretIndexProperty, ref _caretIndex, index);
 
-#pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
-#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     case 1:
                         if (clickToSelect)
@@ -1240,9 +1239,10 @@ namespace Avalonia.Controls
                     MathUtilities.Clamp(point.X, 0, Math.Max(_presenter.Bounds.Width - 1, 0)),
                     MathUtilities.Clamp(point.Y, 0, Math.Max(_presenter.Bounds.Height - 1, 0)));
 
-                _presenter.MoveCaretToPoint(point);
+                _presenter.MoveCaretToPoint(point);  
 
                 var caretIndex = _presenter.CaretIndex;
+
                 var text = Text;
 
                 if (text != null && _wordSelectionStart >= 0)
@@ -1266,7 +1266,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    SelectionEnd = _presenter.CaretIndex;
+                    SelectionEnd = caretIndex;
                 }
             }
         }

@@ -111,9 +111,16 @@ namespace ControlCatalog.Pages
                     Title = "Select folder",
                     Directory = lastSelectedDirectory?.TryGetUri(out var path) == true ? path.LocalPath : null
                 }.ShowAsync(GetWindow());
-                lastSelectedDirectory = new BclStorageFolder(new System.IO.DirectoryInfo(result));
-                results.Items = new [] { result };
-                resultsVisible.IsVisible = result != null;
+                if (string.IsNullOrEmpty(result))
+                {
+                    resultsVisible.IsVisible = false;
+                }
+                else
+                {
+                    lastSelectedDirectory = new BclStorageFolder(new System.IO.DirectoryInfo(result));
+                    results.Items = new[] { result };
+                    resultsVisible.IsVisible = true;
+                }
             };
             this.Get<Button>("OpenBoth").Click += async delegate
             {
@@ -195,10 +202,10 @@ namespace ControlCatalog.Pages
                 {
                     // Sync disposal of StreamWriter is not supported on WASM
 #if NET6_0_OR_GREATER
-                    await using var stream = await file.OpenWrite();
+                    await using var stream = await file.OpenWriteAsync();
                     await using var reader = new System.IO.StreamWriter(stream);
 #else
-                    using var stream = await file.OpenWrite();
+                    using var stream = await file.OpenWriteAsync();
                     using var reader = new System.IO.StreamWriter(stream);
 #endif
                     await reader.WriteLineAsync(openedFileContent.Text);
@@ -243,8 +250,8 @@ namespace ControlCatalog.Pages
             async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items)
             {
                 items ??= Array.Empty<IStorageItem>();
-                var mappedResults = items.Select(FullPathOrName).ToList();
-                bookmarkContainer.Text = items.FirstOrDefault(f => f.CanBookmark) is { } f ? await f.SaveBookmark() : "Can't bookmark";
+                bookmarkContainer.Text = items.FirstOrDefault(f => f.CanBookmark) is { } f ? await f.SaveBookmarkAsync() : "Can't bookmark";
+                var mappedResults = new List<string>();
 
                 if (items.FirstOrDefault() is IStorageItem item)
                 {
@@ -267,9 +274,9 @@ Content:
                         if (file.CanOpenRead)
                         {
 #if NET6_0_OR_GREATER
-                            await using var stream = await file.OpenRead();
+                            await using var stream = await file.OpenReadAsync();
 #else
-                            using var stream = await file.OpenRead();
+                            using var stream = await file.OpenReadAsync();
 #endif
                             using var reader = new System.IO.StreamReader(stream);
 
@@ -293,7 +300,19 @@ Content:
                     lastSelectedDirectory = await item.GetParentAsync();
                     if (lastSelectedDirectory is not null)
                     {
-                        mappedResults.Insert(0,  "Parent: " + FullPathOrName(lastSelectedDirectory));
+                        mappedResults.Add(FullPathOrName(lastSelectedDirectory));
+                    }
+
+                    foreach (var selectedItem in items)
+                    {
+                        mappedResults.Add("+> " + FullPathOrName(selectedItem));
+                        if (selectedItem is IStorageFolder folder)
+                        {
+                            foreach (var innerItems in await folder.GetItemsAsync())
+                            {
+                                mappedResults.Add("++> " + FullPathOrName(innerItems));
+                            }
+                        }
                     }
                 }
 

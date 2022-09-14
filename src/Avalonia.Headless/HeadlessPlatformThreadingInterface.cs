@@ -36,35 +36,35 @@ namespace Avalonia.Headless
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
         {
-            var cancelled = false;
-            var enqueued = false;
-            var l = new object();
-            var timer = new Timer(_ =>
+            if (interval.TotalMilliseconds < 10)
+                interval = TimeSpan.FromMilliseconds(10);
+
+            var stopped = false;
+            Timer timer = null;
+            timer = new Timer(_ =>
             {
-                lock (l)
+                if (stopped)
+                    return;
+
+                Dispatcher.UIThread.Post(() =>
                 {
-                    if (cancelled || enqueued)
-                        return;
-                    enqueued = true;
-                    Dispatcher.UIThread.Post(() =>
+                    try
                     {
-                        lock (l)
-                        {
-                            enqueued = false;
-                            if (cancelled)
-                                return;
-                            tick();
-                        }
-                    }, priority);
-                }
-            }, null, interval, interval);
+                        tick();
+                    }
+                    finally
+                    {
+                        if (!stopped)
+                            timer.Change(interval, Timeout.InfiniteTimeSpan);
+                    }
+                });
+            },
+            null, interval, Timeout.InfiniteTimeSpan);
+
             return Disposable.Create(() =>
             {
-                lock (l)
-                {
-                    timer.Dispose();
-                    cancelled = true;
-                }
+                stopped = true;
+                timer.Dispose();
             });
         }
 

@@ -224,7 +224,7 @@ namespace Avalonia.Controls
     /// </para>
     /// </remarks>
     [TemplatePart(PART_ElementMonth, typeof(CalendarItem))]
-    [TemplatePart(PART_ElementRoot,  typeof(Panel))]
+    [TemplatePart(PART_ElementRoot, typeof(Panel))]
     public class Calendar : TemplatedControl
     {
         internal const int RowsPerMonth = 7;
@@ -338,14 +338,11 @@ namespace Avalonia.Controls
         /// <param name="e">The DependencyPropertyChangedEventArgs.</param>
         private void OnIsTodayHighlightedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (DisplayDate != null)
-            {
-                int i = DateTimeHelper.CompareYearMonth(DisplayDateInternal, DateTime.Today);
+            int i = DateTimeHelper.CompareYearMonth(DisplayDateInternal, DateTime.Today);
 
-                if (i > -2 && i < 2)
-                {
-                    UpdateMonths();
-                }
+            if (i > -2 && i < 2)
+            {
+                UpdateMonths();
             }
         }
 
@@ -655,7 +652,7 @@ namespace Avalonia.Controls
                 SelectedDatesChanged?.Invoke(this, e);
             }
         }
-        
+
         internal Collection<DateTime> RemovedItems { get; set; }
         internal DateTime? LastSelectedDateInternal { get; set; }
         internal DateTime? LastSelectedDate
@@ -914,7 +911,7 @@ namespace Avalonia.Controls
                 o => o.DisplayDateEnd,
                 (o, v) => o.DisplayDateEnd = v,
                 defaultBindingMode: BindingMode.TwoWay);
-        
+
         /// <summary>
         /// Gets or sets the last date to be displayed.
         /// </summary>
@@ -1242,7 +1239,7 @@ namespace Avalonia.Controls
                                     {
                                         b.IsSelected = false;
                                     }
-                                } 
+                                }
                             }
                         }
                     }
@@ -1278,7 +1275,7 @@ namespace Avalonia.Controls
 
         internal void OnPreviousClick()
         {
-            if (DisplayMode == CalendarMode.Month && DisplayDate != null)
+            if (DisplayMode == CalendarMode.Month)
             {
                 DateTime? d = DateTimeHelper.AddMonths(DateTimeHelper.DiscardDayTime(DisplayDate), -1);
                 if (d.HasValue)
@@ -1326,7 +1323,7 @@ namespace Avalonia.Controls
         }
         internal void OnNextClick()
         {
-            if (DisplayMode == CalendarMode.Month && DisplayDate != null)
+            if (DisplayMode == CalendarMode.Month)
             {
                 DateTime? d = DateTimeHelper.AddMonths(DateTimeHelper.DiscardDayTime(DisplayDate), 1);
                 if (d.HasValue)
@@ -1645,7 +1642,7 @@ namespace Avalonia.Controls
         {
             if (DisplayMode == CalendarMode.Month)
             {
-                if (LastSelectedDate.HasValue && DisplayDateInternal != null)
+                if (LastSelectedDate.HasValue)
                 {
                     // If a blackout day is inactive, when clicked on it, the
                     // previous inactive day which is not a blackout day can get
@@ -1897,24 +1894,21 @@ namespace Avalonia.Controls
             {
                 case CalendarMode.Month:
                     {
-                        if (DisplayDate != null)
-                        {
-                            DateTime? selectedDate = new DateTime(DisplayDateInternal.Year, DisplayDateInternal.Month, 1);
+                        DateTime? selectedDate = new DateTime(DisplayDateInternal.Year, DisplayDateInternal.Month, 1);
 
-                            if (DateTimeHelper.CompareYearMonth(DateTime.MaxValue, selectedDate.Value) > 0)
-                            {
-                                // since DisplayDate is not equal to
-                                // DateTime.MaxValue we are sure selectedDate is\
-                                // not null
-                                selectedDate = DateTimeHelper.AddMonths(selectedDate.Value, 1)!.Value;
-                                selectedDate = DateTimeHelper.AddDays(selectedDate.Value, -1)!.Value;
-                            }
-                            else
-                            {
-                                selectedDate = DateTime.MaxValue;
-                            }
-                            ProcessSelection(shift, selectedDate, null);
+                        if (DateTimeHelper.CompareYearMonth(DateTime.MaxValue, selectedDate.Value) > 0)
+                        {
+                            // since DisplayDate is not equal to
+                            // DateTime.MaxValue we are sure selectedDate is\
+                            // not null
+                            selectedDate = DateTimeHelper.AddMonths(selectedDate.Value, 1)!.Value;
+                            selectedDate = DateTimeHelper.AddDays(selectedDate.Value, -1)!.Value;
                         }
+                        else
+                        {
+                            selectedDate = DateTime.MaxValue;
+                        }
+                        ProcessSelection(shift, selectedDate, null);
                         break;
                     }
                 case CalendarMode.Year:
@@ -2026,7 +2020,6 @@ namespace Avalonia.Controls
                             focusDate = DisplayDate;
                             LastSelectedDate = DisplayDate;
                         }
-                        Debug.Assert(focusDate != null, "focusDate should not be null!");
                         FocusButton = FindDayButtonFromDay(focusDate);
 
                         if (FocusButton != null)
@@ -2091,17 +2084,17 @@ namespace Avalonia.Controls
 
         static Calendar()
         {
-            IsEnabledProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnIsEnabledChanged(e));
-            FirstDayOfWeekProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnFirstDayOfWeekChanged(e));
-            IsTodayHighlightedProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnIsTodayHighlightedChanged(e));
-            DisplayModeProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayModePropertyChanged(e));
-            SelectionModeProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnSelectionModeChanged(e));
-            SelectedDateProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnSelectedDateChanged(e));
-            DisplayDateProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateChanged(e));
-            DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateStartChanged(e));
-            DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x,e) => x.OnDisplayDateEndChanged(e));
-            KeyDownEvent.AddClassHandler<Calendar>((x,e) => x.Calendar_KeyDown(e));
-            KeyUpEvent.AddClassHandler<Calendar>((x,e) => x.Calendar_KeyUp(e));
+            IsEnabledProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnIsEnabledChanged(e));
+            FirstDayOfWeekProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnFirstDayOfWeekChanged(e));
+            IsTodayHighlightedProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnIsTodayHighlightedChanged(e));
+            DisplayModeProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayModePropertyChanged(e));
+            SelectionModeProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnSelectionModeChanged(e));
+            SelectedDateProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnSelectedDateChanged(e));
+            DisplayDateProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateChanged(e));
+            DisplayDateStartProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateStartChanged(e));
+            DisplayDateEndProperty.Changed.AddClassHandler<Calendar>((x, e) => x.OnDisplayDateEndChanged(e));
+            KeyDownEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyDown(e));
+            KeyUpEvent.AddClassHandler<Calendar>((x, e) => x.Calendar_KeyUp(e));
         }
 
         /// <summary>
@@ -2116,8 +2109,8 @@ namespace Avalonia.Controls
             RemovedItems = new Collection<DateTime>();
         }
 
-        private const string PART_ElementRoot = "Root";
-        private const string PART_ElementMonth = "CalendarItem";
+        private const string PART_ElementRoot = "PART_Root";
+        private const string PART_ElementMonth = "PART_CalendarItem";
 
         /// <summary>
         /// Builds the visual tree for the

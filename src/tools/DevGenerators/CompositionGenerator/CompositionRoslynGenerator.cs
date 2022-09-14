@@ -11,8 +11,9 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
         {
             var schema =
                 context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith("composition-schema.xml"));
-            var configs = schema.Select((t, _) =>
-                (GConfig)new XmlSerializer(typeof(GConfig)).Deserialize(new StringReader(t.GetText().ToString())));
+            var configs = schema.Select((t, _) => t.GetText())
+                .Where(source => source is not null)
+                .Select((source, _) => (GConfig)new XmlSerializer(typeof(GConfig)).Deserialize(new StringReader(source!.ToString())));
             context.RegisterSourceOutput(configs, (spc, config) =>
             {
                 var generator = new Generator(new RoslynCompositionGeneratorSink(spc), config);

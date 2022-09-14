@@ -1,11 +1,8 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
-using Avalonia.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia

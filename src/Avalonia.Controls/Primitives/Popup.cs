@@ -22,9 +22,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// Displays a popup window.
     /// </summary>
-#pragma warning disable CS0612 // Type or member is obsolete
-    public class Popup : Control, IVisualTreeHost, IPopupHostProvider
-#pragma warning restore CS0612 // Type or member is obsolete
+    public class Popup : Control, IPopupHostProvider
     {
         public static readonly StyledProperty<bool> WindowManagerAddShadowHintProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(WindowManagerAddShadowHint), false);
@@ -90,14 +88,6 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             AvaloniaProperty.Register<Popup, Control?>(nameof(PlacementTarget));
 
-#pragma warning disable 618
-        /// <summary>
-        /// Defines the <see cref="ObeyScreenEdges"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> ObeyScreenEdgesProperty =
-            AvaloniaProperty.Register<Popup, bool>(nameof(ObeyScreenEdges), true);
-#pragma warning restore 618
-
         public static readonly StyledProperty<bool> OverlayDismissEventPassThroughProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(OverlayDismissEventPassThrough));
 
@@ -124,17 +114,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<double> VerticalOffsetProperty =
             AvaloniaProperty.Register<Popup, double>(nameof(VerticalOffset));
-
-        /// <summary>
-        /// Defines the <see cref="StaysOpen"/> property.
-        /// </summary>
-        [Obsolete("Use IsLightDismissEnabledProperty")]
-        public static readonly DirectProperty<Popup, bool> StaysOpenProperty =
-            AvaloniaProperty.RegisterDirect<Popup, bool>(
-                nameof(StaysOpen),
-                o => o.StaysOpen,
-                (o, v) => o.StaysOpen = v,
-                true);
 
         /// <summary>
         /// Defines the <see cref="Topmost"/> property.
@@ -301,13 +280,6 @@ namespace Avalonia.Controls.Primitives
             set { SetValue(PlacementTargetProperty, value); }
         }
 
-        [Obsolete("This property has no effect")]
-        public bool ObeyScreenEdges
-        {
-            get => GetValue(ObeyScreenEdgesProperty);
-            set => SetValue(ObeyScreenEdgesProperty, value);
-        }
-
         /// <summary>
         /// Gets or sets a value indicating whether the event that closes the popup is passed
         /// through to the parent window.
@@ -353,17 +325,6 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the popup should stay open when the popup is
-        /// pressed or loses focus.
-        /// </summary>
-        [Obsolete("Use IsLightDismissEnabled")]
-        public bool StaysOpen
-        {
-            get => !IsLightDismissEnabled;
-            set => IsLightDismissEnabled = !value;
-        }
-
-        /// <summary>
         /// Gets or sets whether this popup appears on top of all other windows
         /// </summary>
         public bool Topmost
@@ -371,11 +332,6 @@ namespace Avalonia.Controls.Primitives
             get { return GetValue(TopmostProperty); }
             set { SetValue(TopmostProperty, value); }
         }
-
-        /// <summary>
-        /// Gets the root of the popup window.
-        /// </summary>
-        IVisual? IVisualTreeHost.Root => _openState?.PopupHost.HostedVisualTreeRoot;
 
         IPopupHost? IPopupHostProvider.PopupHost => Host;
 
@@ -501,7 +457,7 @@ namespace Avalonia.Controls.Primitives
                 if (dismissLayer != null)
                 {
                     dismissLayer.IsVisible = true;
-                    dismissLayer.InputPassThroughElement = _overlayInputPassThroughElement;
+                    dismissLayer.InputPassThroughElement = OverlayInputPassThroughElement;
                     
                     Disposable.Create(() =>
                     {
@@ -568,6 +524,7 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
+            base.OnPropertyChanged(change);
             if (_openState is not null)
             {
                 if (change.Property == WidthProperty ||

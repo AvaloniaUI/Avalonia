@@ -50,7 +50,7 @@ namespace Avalonia.ReactiveUI
     /// ReactiveUI routing documentation website</see> for more info.
     /// </para>
     /// </remarks>
-    public class RoutedViewHost : TransitioningContentControl, IActivatableView, IEnableLogger
+    public class RoutedViewHost : TransitioningContentControl, IActivatableView, IEnableLogger, IStyleable
     {
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="Router"/> property.
@@ -63,6 +63,12 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public static readonly StyledProperty<string?> ViewContractProperty =
             AvaloniaProperty.Register<RoutedViewHost, string?>(nameof(ViewContract));
+
+        /// <summary>
+        /// <see cref="AvaloniaProperty"/> for the <see cref="DefaultContent"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object?> DefaultContentProperty =
+            ViewModelViewHost.DefaultContentProperty.AddOwner<RoutedViewHost>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RoutedViewHost"/> class.
@@ -107,10 +113,21 @@ namespace Avalonia.ReactiveUI
         }
 
         /// <summary>
+        /// Gets or sets the content displayed whenever there is no page currently routed.
+        /// </summary>
+        public object? DefaultContent
+        {
+            get => GetValue(DefaultContentProperty);
+            set => SetValue(DefaultContentProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the ReactiveUI view locator used by this router.
         /// </summary>
         public IViewLocator? ViewLocator { get; set; }
 
+        Type IStyleable.StyleKey => typeof(TransitioningContentControl);
+        
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.
         /// </summary>

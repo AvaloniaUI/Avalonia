@@ -17,7 +17,6 @@ namespace Avalonia.Win32.Input
         private bool _active;
         private bool _showCompositionWindow;
         private Imm32CaretManager _caretManager = new();
-        private bool _showCandidateList;
         private ushort _langId;
         private const int _caretMargin = 1;
         
@@ -32,7 +31,6 @@ namespace Avalonia.Win32.Input
             _active = false;
             _langId = PRIMARYLANGID(LGID(HKL));
             _showCompositionWindow = true;
-            _showCandidateList = true;
 
             IsComposing = false;
         }
@@ -50,7 +48,6 @@ namespace Avalonia.Win32.Input
             _active = false;
             _langId = 0;
             _showCompositionWindow = false;
-            _showCandidateList = false;
 
             IsComposing = false;
         }

@@ -12,6 +12,11 @@ public class BclStorageFile : IStorageBookmarkFile
 {
     private readonly FileInfo _fileInfo;
 
+    public BclStorageFile(string fileName)
+    {
+        _fileInfo = new FileInfo(fileName);
+    }
+
     public BclStorageFile(FileInfo fileInfo)
     {
         _fileInfo = fileInfo ?? throw new ArgumentNullException(nameof(fileInfo));
@@ -27,15 +32,14 @@ public class BclStorageFile : IStorageBookmarkFile
 
     public Task<StorageItemProperties> GetBasicPropertiesAsync()
     {
-        var props = new StorageItemProperties();
         if (_fileInfo.Exists)
         {
-            props = new StorageItemProperties(
+            return Task.FromResult(new StorageItemProperties(
                 (ulong)_fileInfo.Length,
                 _fileInfo.CreationTimeUtc,
-                _fileInfo.LastAccessTimeUtc);
+                _fileInfo.LastAccessTimeUtc));
         }
-        return Task.FromResult(props);
+        return Task.FromResult(new StorageItemProperties());
     }
 
     public Task<IStorageFolder?> GetParentAsync()
@@ -47,22 +51,22 @@ public class BclStorageFile : IStorageBookmarkFile
         return Task.FromResult<IStorageFolder?>(null);
     }
 
-    public Task<Stream> OpenRead()
+    public Task<Stream> OpenReadAsync()
     {
         return Task.FromResult<Stream>(_fileInfo.OpenRead());
     }
 
-    public Task<Stream> OpenWrite()
+    public Task<Stream> OpenWriteAsync()
     {
         return Task.FromResult<Stream>(_fileInfo.OpenWrite());
     }
 
-    public virtual Task<string?> SaveBookmark()
+    public virtual Task<string?> SaveBookmarkAsync()
     {
         return Task.FromResult<string?>(_fileInfo.FullName);
     }
 
-    public Task ReleaseBookmark()
+    public Task ReleaseBookmarkAsync()
     {
         // No-op
         return Task.CompletedTask;

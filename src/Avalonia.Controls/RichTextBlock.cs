@@ -44,8 +44,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
-        public static readonly StyledProperty<InlineCollection> InlinesProperty =
-            AvaloniaProperty.Register<RichTextBlock, InlineCollection>(
+        public static readonly StyledProperty<InlineCollection?> InlinesProperty =
+            AvaloniaProperty.Register<RichTextBlock, InlineCollection?>(
                 nameof(Inlines));
 
         public static readonly DirectProperty<TextBox, bool> CanCopyProperty =
@@ -138,7 +138,7 @@ namespace Avalonia.Controls
         /// Gets or sets the inlines.
         /// </summary>
         [Content]
-        public InlineCollection Inlines
+        public InlineCollection? Inlines
         {
             get => GetValue(InlinesProperty);
             set => SetValue(InlinesProperty, value);
@@ -159,7 +159,7 @@ namespace Avalonia.Controls
             remove => RemoveHandler(CopyingToClipboardEvent, value);
         }
 
-        internal bool HasComplexContent => Inlines.Count > 0;
+        internal bool HasComplexContent => Inlines != null && Inlines.Count > 0;
 
         /// <summary>
         /// Copies the current selection to the Clipboard.
@@ -260,23 +260,23 @@ namespace Avalonia.Controls
             {
                 if (!string.IsNullOrEmpty(_text))
                 {
-                    Inlines.Add(_text);
+                    Inlines?.Add(_text);
 
                     _text = null;
                 }
 
-                Inlines.Add(text);
+                Inlines?.Add(text);
             }
         }
 
         protected override string? GetText()
         {
-            return _text ?? Inlines.Text;
+            return _text ?? Inlines?.Text;
         }
 
         protected override void SetText(string? text)
         {
-            var oldValue = _text ?? Inlines?.Text;
+            var oldValue = GetText();
       
             AddText(text);        
 
@@ -301,10 +301,10 @@ namespace Avalonia.Controls
 
             ITextSource textSource;
 
-            var inlines = Inlines;
-
             if (HasComplexContent)
             {
+                var inlines = Inlines!;
+
                 var textRuns = new List<TextRun>();
 
                 foreach (var inline in inlines)
@@ -381,9 +381,7 @@ namespace Avalonia.Controls
                 var hit = TextLayout.HitTestPoint(point);
                 var index = hit.TextPosition;
 
-#pragma warning disable CS0618 // Type or member is obsolete
                 switch (e.ClickCount)
-#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     case 1:
                         if (clickToSelect)
@@ -537,13 +535,39 @@ namespace Avalonia.Controls
 
             switch (change.Property.Name)
             {
-                case nameof(InlinesProperty):
+                case nameof(Inlines):
                     {
                         OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
                         InvalidateTextLayout();
                         break;
                     }
             }
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            foreach (var child in VisualChildren)
+            {
+                if (child is Control control)
+                {
+                    control.Measure(Size.Infinity);
+                }
+            }
+            
+            return base.MeasureOverride(availableSize);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            foreach (var child in VisualChildren)
+            {
+                if (child is Control control)
+                {
+                    control.Arrange(new Rect(control.DesiredSize));
+                }
+            }
+            
+            return base.ArrangeOverride(finalSize);
         }
 
         private string GetSelection()
@@ -553,7 +577,7 @@ namespace Avalonia.Controls
                 return "";
             }
 
-            var text = Inlines.Text ?? Text;
+            var text = GetText();
 
             if (string.IsNullOrEmpty(text))
             {

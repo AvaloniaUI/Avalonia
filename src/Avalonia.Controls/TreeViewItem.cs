@@ -157,17 +157,26 @@ namespace Avalonia.Controls
                 switch (e.Key)
                 {
                     case Key.Right:
-                        if (Items != null && Items.Cast<object>().Any())
+                        if (Items != null && Items.Cast<object>().Any() && !IsExpanded)
                         {
                             IsExpanded = true;
+                            e.Handled = true;
                         }
-
-                        e.Handled = true;
                         break;
 
                     case Key.Left:
-                        IsExpanded = false;
-                        e.Handled = true;
+                        if (Items is not null && Items.Cast<object>().Any() && IsExpanded)
+                        {
+                            if (IsFocused)
+                            {
+                                IsExpanded = false;
+                            }
+                            else
+                            {
+                                FocusManager.Instance?.Focus(this, NavigationMethod.Directional);
+                            }
+                            e.Handled = true;
+                        }
                         break;
                 }
             }

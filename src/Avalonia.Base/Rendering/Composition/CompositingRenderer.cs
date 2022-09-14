@@ -29,6 +29,7 @@ public class CompositingRenderer : IRendererWithCompositor
     private bool _queuedUpdate;
     private Action _update;
     private Action _invalidateScene;
+    private bool _updating;
 
     internal CompositionTarget CompositionTarget;
     
@@ -71,12 +72,14 @@ public class CompositingRenderer : IRendererWithCompositor
         if(_queuedUpdate)
             return;
         _queuedUpdate = true;
-        Dispatcher.UIThread.Post(_update, DispatcherPriority.Composition);
+        _compositor.InvokeWhenReadyForNextCommit(_update);
     }
     
     /// <inheritdoc/>
     public void AddDirty(IVisual visual)
     {
+        if (_updating)
+            throw new InvalidOperationException("Visual was invalidated during the render pass");
         _dirty.Add((Visual)visual);
         QueueUpdate();
     }
@@ -84,7 +87,16 @@ public class CompositingRenderer : IRendererWithCompositor
     /// <inheritdoc/>
     public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
     {
-        var res = CompositionTarget.TryHitTest(p, filter);
+        Func<CompositionVisual, bool>? f = null;
+        if (filter != null)
+            f = v =>
+            {
+                if (v is CompositionDrawListVisual dlv)
+                    return filter(dlv.Visual);
+                return true;
+            };
+        
+        var res = CompositionTarget.TryHitTest(p, f);
         if(res == null)
             yield break;
         foreach(var v in res)
@@ -107,6 +119,8 @@ public class CompositingRenderer : IRendererWithCompositor
     /// <inheritdoc/>
     public void RecalculateChildren(IVisual visual)
     {
+        if (_updating)
+            throw new InvalidOperationException("Visual was invalidated during the render pass");
         _recalculateChildren.Add((Visual)visual);
         QueueUpdate();
     }
@@ -191,7 +205,7 @@ public class CompositingRenderer : IRendererWithCompositor
     private void InvalidateScene() =>
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
 
-    private void Update()
+    private void UpdateCore()
     {
         _queuedUpdate = false;
         foreach (var visual in _dirty)
@@ -239,6 +253,21 @@ public class CompositingRenderer : IRendererWithCompositor
         CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
         Compositor.InvokeOnNextCommit(_invalidateScene);
+    }
+
+    private void Update()
+    {
+        if(_updating)
+            return;
+        _updating = true;
+        try
+        {
+            UpdateCore();
+        }
+        finally
+        {
+            _updating = false;
+        }
     }
     
     public void Resized(Size size)
