@@ -146,7 +146,7 @@ namespace Avalonia.Native
             }
             
 
-            if (_options.UseDeferredRendering && _options.UseCompositor)
+            if (_options.UseCompositor)
             {
                 Compositor = new Compositor(renderLoop, _platformGl);
             }
