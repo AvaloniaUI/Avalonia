@@ -358,7 +358,7 @@ namespace Avalonia.Base.UnitTests.Input
             var invalidateRect = new Rect(0, 0, 15, 15);
             var lastClientPosition = new Point(1, 5);
 
-            var result = new List<(object?, string, Point)>();
+            var result = new List<(object?, string, Point?)>();
             void HandleEvent(object? sender, PointerEventArgs e)
             {
                 result.Add((sender, e.RoutedEvent!.Name, e.GetPosition(null)));
@@ -392,7 +392,7 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.Equal(
                 new[]
                 {
-                    ((object?)canvas, nameof(InputElement.PointerEntered), lastClientPosition),
+                    ((object?)canvas, nameof(InputElement.PointerEntered), (Point?)lastClientPosition),
                     (root, nameof(InputElement.PointerEntered), lastClientPosition),
                     (canvas, nameof(InputElement.PointerExited), lastClientPosition),
                     (root, nameof(InputElement.PointerExited), lastClientPosition),
