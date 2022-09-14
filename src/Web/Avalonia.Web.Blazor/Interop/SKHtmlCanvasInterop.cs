@@ -4,7 +4,7 @@ using SkiaSharp;
 
 namespace Avalonia.Web.Blazor.Interop
 {
-    internal class SKHtmlCanvasInterop : JSModuleInterop
+    internal class SKHtmlCanvasInterop : IDisposable
     {
         private const string JsFilename = "./_content/Avalonia.Web.Blazor/SKHtmlCanvas.js";
         private const string InitGLSymbol = "SKHtmlCanvas.initGL";
@@ -14,39 +14,32 @@ namespace Avalonia.Web.Blazor.Interop
         private const string SetCanvasSizeSymbol = "SKHtmlCanvas.setCanvasSize";
         private const string PutImageDataSymbol = "SKHtmlCanvas.putImageData";
 
-        private readonly ElementReference htmlCanvas;
-        private readonly string htmlElementId;
-        private readonly ActionHelper callbackHelper;
+        private readonly AvaloniaModule _module;
+        private readonly ElementReference _htmlCanvas;
+        private readonly string _htmlElementId;
+        private readonly ActionHelper _callbackHelper;
 
         private DotNetObjectReference<ActionHelper>? callbackReference;
 
-        public static async Task<SKHtmlCanvasInterop> ImportAsync(IJSRuntime js, ElementReference element, Action callback)
+        public SKHtmlCanvasInterop(AvaloniaModule module, ElementReference element, Action renderFrameCallback)
         {
-            var interop = new SKHtmlCanvasInterop(js, element, callback);
-            await interop.ImportAsync();
-            return interop;
+            _module = module;
+            _htmlCanvas = element;
+            _htmlElementId = element.Id;
+
+            _callbackHelper = new ActionHelper(renderFrameCallback);
         }
 
-        public SKHtmlCanvasInterop(IJSRuntime js, ElementReference element, Action renderFrameCallback)
-            : base(js, JsFilename)
-        {
-            htmlCanvas = element;
-            htmlElementId = element.Id;
-
-            callbackHelper = new ActionHelper(renderFrameCallback);
-        }
-
-        protected override void OnDisposingModule() =>
-            Deinit();
+        public void Dispose() => Deinit();
 
         public GLInfo InitGL()
         {
             if (callbackReference != null)
                 throw new InvalidOperationException("Unable to initialize the same canvas more than once.");
 
-            callbackReference = DotNetObjectReference.Create(callbackHelper);
+            callbackReference = DotNetObjectReference.Create(_callbackHelper);
 
-            return Invoke<GLInfo>(InitGLSymbol, htmlCanvas, htmlElementId, callbackReference);
+            return _module.Invoke<GLInfo>(InitGLSymbol, _htmlCanvas, _htmlElementId, callbackReference);
         }
 
         public bool InitRaster()
@@ -54,9 +47,9 @@ namespace Avalonia.Web.Blazor.Interop
             if (callbackReference != null)
                 throw new InvalidOperationException("Unable to initialize the same canvas more than once.");
 
-            callbackReference = DotNetObjectReference.Create(callbackHelper);
+            callbackReference = DotNetObjectReference.Create(_callbackHelper);
 
-            return Invoke<bool>(InitRasterSymbol, htmlCanvas, htmlElementId, callbackReference);
+            return _module.Invoke<bool>(InitRasterSymbol, _htmlCanvas, _htmlElementId, callbackReference);
         }
 
         public void Deinit()
@@ -64,19 +57,19 @@ namespace Avalonia.Web.Blazor.Interop
             if (callbackReference == null)
                 return;
 
-            Invoke(DeinitSymbol, htmlElementId);
+            _module.Invoke(DeinitSymbol, _htmlElementId);
 
             callbackReference?.Dispose();
         }
 
         public void RequestAnimationFrame(bool enableRenderLoop) =>
-            Invoke(RequestAnimationFrameSymbol, htmlCanvas, enableRenderLoop);
+            _module.Invoke(RequestAnimationFrameSymbol, _htmlCanvas, enableRenderLoop);
 
         public void SetCanvasSize(int rawWidth, int rawHeight) =>
-            Invoke(SetCanvasSizeSymbol, htmlCanvas, rawWidth, rawHeight);
+            _module.Invoke(SetCanvasSizeSymbol, _htmlCanvas, rawWidth, rawHeight);
 
         public void PutImageData(IntPtr intPtr, SKSizeI rawSize) =>
-            Invoke(PutImageDataSymbol, htmlCanvas, intPtr.ToInt64(), rawSize.Width, rawSize.Height);
+            _module.Invoke(PutImageDataSymbol, _htmlCanvas, intPtr.ToInt64(), rawSize.Width, rawSize.Height);
 
         public record GLInfo(int ContextId, uint FboId, int Stencils, int Samples, int Depth);
     }

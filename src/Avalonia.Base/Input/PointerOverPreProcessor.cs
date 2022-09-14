@@ -68,27 +68,29 @@ namespace Avalonia.Input
 
                 if (dirtyRect.Contains(clientPoint))
                 {
-                    SetPointerOver(pointer, _inputRoot, _inputRoot.InputHitTest(clientPoint), 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
+                    var element = pointer.Captured ?? _inputRoot.InputHitTest(clientPoint);
+                    SetPointerOver(pointer, _inputRoot, element, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
                 else if (!_inputRoot.Bounds.Contains(clientPoint))
                 {
-                    ClearPointerOver(pointer, _inputRoot, 0, new Point(-1, -1), PointerPointProperties.None, KeyModifiers.None);
+                    ClearPointerOver(pointer, _inputRoot, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
             }
         }
 
         private void ClearPointerOver()
         {
-            if (_lastPointer is (var pointer, var _))
+            if (_lastPointer is (var pointer, var position))
             {
-                ClearPointerOver(pointer, _inputRoot, 0, new Point(-1, -1), PointerPointProperties.None, KeyModifiers.None);
+                var clientPoint = _inputRoot.PointToClient(position);
+                ClearPointerOver(pointer, _inputRoot, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
             }
             _lastPointer = null;
             _lastActivePointerDevice = null;
         }
 
         private void ClearPointerOver(IPointer pointer, IInputRoot root,
-            ulong timestamp, Point position, PointerPointProperties properties, KeyModifiers inputModifiers)
+            ulong timestamp, Point? position, PointerPointProperties properties, KeyModifiers inputModifiers)
         {
             var element = root.PointerOverElement;
             if (element is null)
@@ -96,11 +98,10 @@ namespace Avalonia.Input
                 return;
             }
 
-            // Do not pass rootVisual, when we have unknown (negative) position,
+            // Do not pass rootVisual, when we have unknown position,
             // so GetPosition won't return invalid values.
-            var hasPosition = position.X >= 0 && position.Y >= 0;
             var e = new PointerEventArgs(InputElement.PointerExitedEvent, element, pointer,
-                hasPosition ? root : null, hasPosition ? position : default,
+                position.HasValue ? root : null, position.HasValue ? position.Value : default,
                 timestamp, properties, inputModifiers);
 
             if (element != null && !element.IsAttachedToVisualTree)

@@ -23,11 +23,11 @@
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel
-            Name="Root"
+            Name="PART_Root"
             HorizontalAlignment="Center"
             ClipToBounds="True">
           <CalendarItem
-              Name="CalendarItem"
+              Name="PART_CalendarItem"
               Background="{TemplateBinding Background}"
               BorderBrush="{TemplateBinding BorderBrush}"
               BorderThickness="{TemplateBinding BorderThickness}"

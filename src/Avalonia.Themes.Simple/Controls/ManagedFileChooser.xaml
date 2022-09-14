@@ -94,7 +94,7 @@
                    Text="{Binding FileName}"
                    Watermark="File name" />
 
-          <ListBox x:Name="QuickLinks"
+          <ListBox x:Name="PART_QuickLinks"
                    Margin="0,0,5,5"
                    BorderBrush="Transparent"
                    DockPanel.Dock="Left"
@@ -143,7 +143,7 @@
               <TextBlock Grid.Column="8"
                          Text="Size" />
             </Grid>
-            <ListBox x:Name="Files"
+            <ListBox x:Name="PART_Files"
                      Margin="0,5"
                      Items="{Binding Items}"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"

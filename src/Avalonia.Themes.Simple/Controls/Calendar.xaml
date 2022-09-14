@@ -16,10 +16,10 @@
     <Setter Property="HeaderBackground" Value="{DynamicResource ThemeAccentBrush2}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <StackPanel Name="Root"
+        <StackPanel Name="PART_Root"
                     HorizontalAlignment="Center"
                     ClipToBounds="True">
-          <CalendarItem Name="CalendarItem"
+          <CalendarItem Name="PART_CalendarItem"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"

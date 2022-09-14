@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 
 namespace Avalonia.Web.Blazor.Interop
 {
@@ -31,16 +29,16 @@ namespace Avalonia.Web.Blazor.Interop
         protected IJSUnmarshalledObjectReference Module =>
             module ?? throw new InvalidOperationException("Make sure to run ImportAsync() first.");
 
-        protected void Invoke(string identifier, params object?[]? args) =>
+        internal void Invoke(string identifier, params object?[]? args) =>
             Module.InvokeVoid(identifier, args);
 
-        protected TValue Invoke<TValue>(string identifier, params object?[]? args) =>
+        internal TValue Invoke<TValue>(string identifier, params object?[]? args) =>
             Module.Invoke<TValue>(identifier, args);
 
-        protected ValueTask InvokeAsync(string identifier, params object?[]? args) =>
+        internal ValueTask InvokeAsync(string identifier, params object?[]? args) =>
             Module.InvokeVoidAsync(identifier, args);
 
-        protected ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object?[]? args) =>
+        internal ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object?[]? args) =>
             Module.InvokeAsync<TValue>(identifier, args);
 
         protected virtual void OnDisposingModule() { }

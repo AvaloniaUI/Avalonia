@@ -23,10 +23,10 @@ namespace Avalonia.Controls
     [PseudoClasses(":pressed", ":current", ":expanded")]
     public class DataGridRowGroupHeader : TemplatedControl
     {
-        private const string DATAGRIDROWGROUPHEADER_expanderButton = "ExpanderButton";
-        private const string DATAGRIDROWGROUPHEADER_indentSpacer = "IndentSpacer";
-        private const string DATAGRIDROWGROUPHEADER_itemCountElement = "ItemCountElement";
-        private const string DATAGRIDROWGROUPHEADER_propertyNameElement = "PropertyNameElement";
+        private const string DATAGRIDROWGROUPHEADER_expanderButton = "PART_ExpanderButton";
+        private const string DATAGRIDROWGROUPHEADER_indentSpacer = "PART_IndentSpacer";
+        private const string DATAGRIDROWGROUPHEADER_itemCountElement = "PART_ItemCountElement";
+        private const string DATAGRIDROWGROUPHEADER_propertyNameElement = "PART_PropertyNameElement";
 
         private bool _areIsCheckedHandlersSuspended;
         private ToggleButton _expanderButton;
