@@ -1482,7 +1482,7 @@ namespace Avalonia.Controls
             SelectionEnd = Text?.Length ?? 0;
         }
 
-        private bool DeleteSelection(bool raiseTextChanged = true)
+        internal bool DeleteSelection(bool raiseTextChanged = true)
         {
             if (IsReadOnly)
                 return true;

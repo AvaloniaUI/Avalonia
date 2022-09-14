@@ -13,6 +13,7 @@ using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
@@ -25,6 +26,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -36,7 +38,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
-        private readonly ITextInputMethodImpl _textInputMethod;
+        private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
         private ViewImpl _view;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -211,7 +213,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
 
             private Func<View, EditorInfo, InputConnectionImpl> _initEditorInfo;
-            protected InputConnectionImpl _inputConnection;
 
             public void InitEditorInfo(Func<View, EditorInfo, InputConnectionImpl> init)
             {
@@ -257,7 +258,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         }
     }
 
-    internal class InputConnectionImpl: BaseInputConnection
+    internal class InputConnectionImpl: BaseInputConnection, IInputConnection
     {
         private readonly IAndroidInputMethod _inputMethod;
 
@@ -271,11 +272,93 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
         }
 
-        public override bool SetComposingText(ICharSequence text, int newCursorPosition)
+        public string CompositionText { get; private set; }
+
+        public override bool SetComposingRegion(int start, int end)
         {
             if (_inputMethod.IsActive)
             {
-                _inputMethod.Client.SetPreeditText(text.ToString());
+                var surroundingText = _inputMethod.Client.SurroundingText;
+
+                System.Diagnostics.Debug.WriteLine($"Composing Region: [{start}|{end}] {surroundingText.Text?.Substring(start, end - start)}");
+            }
+
+            return base.SetComposingRegion(start, end);
+        }
+
+        public override bool CommitCorrection(CorrectionInfo correctionInfo)
+        {
+            return base.CommitCorrection(correctionInfo);
+        }
+
+        public override bool DeleteSurroundingTextInCodePoints(int beforeLength, int afterLength)
+        {
+            return base.DeleteSurroundingTextInCodePoints(beforeLength, afterLength);
+        }
+
+        public override bool DeleteSurroundingText(int beforeLength, int afterLength)
+        {
+            if (_inputMethod.IsActive && _inputMethod.Client.SupportsSurroundingText)
+            {
+                _inputMethod.Client.DeleteSurroundingText(beforeLength, afterLength);
+            }
+          
+            return base.DeleteSurroundingText(beforeLength, afterLength);
+        }
+
+        public override ICharSequence GetTextBeforeCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
+        {
+            if (_inputMethod.IsActive)
+            {
+                var surroundingText = _inputMethod.Client.SurroundingText;
+
+                if (_inputMethod.IsActive && !string.IsNullOrEmpty(surroundingText.Text))
+                {
+                    var start = System.Math.Max(surroundingText.CursorOffset - length, 0);
+
+                    var end = System.Math.Min(start + length, surroundingText.CursorOffset);
+
+                    var text = surroundingText.Text.Substring(start, end - start);
+
+                    System.Diagnostics.Debug.WriteLine($"Text Before: {text}");
+
+                    return new Java.Lang.String(text);
+                }
+            }
+
+            return base.GetTextBeforeCursorFormatted(length, flags);
+        }
+
+        public override ICharSequence GetTextAfterCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
+        {
+            if (_inputMethod.IsActive)
+            {
+                var surroundingText = _inputMethod.Client.SurroundingText;
+
+                if (_inputMethod.IsActive && !string.IsNullOrEmpty(surroundingText.Text))
+                {
+                    var start = surroundingText.CursorOffset;
+
+                    var end = System.Math.Min(start + length, surroundingText.Text.Length);
+
+                    var text = surroundingText.Text.Substring(start, end - start);
+
+                    System.Diagnostics.Debug.WriteLine($"Text After: {text}");
+
+                    return new Java.Lang.String(text);
+                }
+            }
+
+            return base.GetTextAfterCursorFormatted(length, flags);
+        }
+
+        public override bool SetComposingText(ICharSequence text, int newCursorPosition)
+        {
+            CompositionText = text.ToString();
+
+            if (_inputMethod.IsActive)
+            {
+                _inputMethod.Client.SetPreeditText(CompositionText);
             }
 
             return base.SetComposingText(text, newCursorPosition);
@@ -283,12 +366,26 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
         {
+            CompositionText = null;
+
             if (_inputMethod.IsActive)
             {
                 _inputMethod.Client.SetPreeditText(null);
             }
 
             return base.CommitText(text, newCursorPosition);
+        }
+
+        public override bool FinishComposingText()
+        {
+            CompositionText = null;
+
+            if (_inputMethod.IsActive)
+            {
+                _inputMethod.Client.SetPreeditText(CompositionText);
+            }
+
+            return base.FinishComposingText();
         }
     }
 }

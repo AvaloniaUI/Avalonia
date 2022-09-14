@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -56,7 +57,7 @@ namespace Avalonia.Controls
         public TextInputMethodSurroundingText SurroundingText => new()
         {
             Text = _presenter?.Text ?? "",
-            CursorOffset = _presenter?.CaretIndex ?? 0,
+            CursorOffset = _presenter?.SelectionEnd ?? 0,
             AnchorOffset = _presenter?.SelectionStart ?? 0
         };
 
@@ -78,9 +79,13 @@ namespace Avalonia.Controls
         {
             if (e.Property == TextBox.TextProperty || e.Property == TextBox.SelectionStartProperty ||
                 e.Property == TextBox.SelectionEndProperty)
-                SurroundingTextChanged?.Invoke(this, EventArgs.Empty);
+            {
+                if (string.IsNullOrEmpty(_presenter?.PreeditText))
+                {
+                    SurroundingTextChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
         }
-
 
         public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
@@ -98,6 +103,8 @@ namespace Avalonia.Controls
 
             if (_presenter != null)
             {
+                _presenter.PreeditText = null;
+
                 _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;
             }
            
@@ -107,14 +114,22 @@ namespace Avalonia.Controls
             {
                 _presenter.CaretBoundsChanged += OnCaretBoundsChanged;
             }
-
-            if(presenter == null)
-            {
-                SetPreeditText(null);
-            }
-            
+           
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
             CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void DeleteSurroundingText(int beforeLength, int afterLength)
+        {
+            if (_parent != null && _presenter != null && string.IsNullOrEmpty(_presenter.PreeditText))
+            {
+                var start = _presenter.SelectionStart;
+
+                _parent.SelectionStart = start - beforeLength;
+                _parent.SelectionEnd = start + afterLength;
+
+                _parent.DeleteSelection(true);
+            }
         }
     }
 }

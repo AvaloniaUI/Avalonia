@@ -41,6 +41,14 @@ namespace Avalonia.Input.TextInput
         /// Should be fired when surrounding text changed
         /// </summary>
         event EventHandler? SurroundingTextChanged;
+
+        /// <summary>
+        /// Deletes specified length before and after current selection.
+        /// </summary>
+        /// <param name="beforeLength">The length before current selection.</param>
+        /// <param name="afterLength">The length after current selection.</param>
+        void DeleteSurroundingText(int beforeLength, int afterLength);
+
         /// <summary>
         /// Returns the text before the cursor. Must return a non-empty string if cursor is not at the beginning of the text entry
         /// </summary>

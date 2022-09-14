@@ -15,12 +15,12 @@ namespace Avalonia.Android
     internal interface IAndroidInputMethod
     {
         public ITextInputMethodClient Client { get; }
-        
+
         public bool IsActive { get; }
     }
-    
+
     class AndroidInputMethod<TView> : ITextInputMethodImpl, IAndroidInputMethod
-        where TView: View, IInitEditorInfo
+        where TView : View, IInitEditorInfo
     {
         private readonly TView _host;
         private readonly InputMethodManager _imm;
@@ -51,16 +51,42 @@ namespace Avalonia.Android
 
         public void SetClient(ITextInputMethodClient client)
         {
+            if(client is null)
+            {
+                _inputConnection?.SetComposingText("", 0);
+            }
+
+            if (_client != null)
+            {
+                _client.SurroundingTextChanged -= SurroundingTextChanged;
+            }
+
+            Reset();
+
             _client = client;
-            
+
             if (IsActive)
             {
+                _client.SurroundingTextChanged += SurroundingTextChanged;
+
                 _host.RequestFocus();
-                Reset();
+
                 _imm.ShowSoftInput(_host, ShowFlags.Implicit);
             }
             else
-                _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.None);         
+            {
+                _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.None);
+            }
+        }
+
+        private void SurroundingTextChanged(object sender, EventArgs e)
+        {
+            if (IsActive)
+            {
+                var surroundingText = Client.SurroundingText;
+
+                _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+            }
         }
 
         public void SetCursorRect(Rect rect)
@@ -69,10 +95,12 @@ namespace Avalonia.Android
 
         public void SetOptions(TextInputOptions options)
         {
-            _inputConnection = new InputConnectionImpl(_host, this);
-
             _host.InitEditorInfo((_host, outAttrs) =>
             {
+                _inputConnection?.CommitText("", 0);
+
+                _inputConnection = new InputConnectionImpl(_host, this);
+
                 outAttrs.InputType = options.ContentType switch
                 {
                     TextInputContentType.Email => global::Android.Text.InputTypes.TextVariationEmailAddress,

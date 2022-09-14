@@ -9,7 +9,6 @@ using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Controls.Documents;
-using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -100,6 +99,7 @@ namespace Avalonia.Controls.Presenters
         private Rect _caretBounds;
         private Point _navigationPosition;
         private string? _preeditText;
+        private CharacterHit _compositionStartHit = new CharacterHit(-1);
 
         static TextPresenter()
         {
@@ -235,7 +235,7 @@ namespace Avalonia.Controls.Presenters
 
                 _textLayout = CreateTextLayout();
 
-                UpdateCaret(_lastCharacterHit);
+                UpdateCaret(_lastCharacterHit, false);
 
                 return _textLayout;
             }
@@ -532,8 +532,8 @@ namespace Avalonia.Controls.Presenters
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
                         new GenericTextRunProperties(typeface, FontSize,
-                        foregroundBrush: foreground/*,
-                        textDecorations: TextDecorations.Underline*/));
+                        foregroundBrush: foreground,
+                        textDecorations: TextDecorations.Underline));
 
                 textStyleOverrides = new[]
                 {
@@ -572,7 +572,6 @@ namespace Avalonia.Controls.Presenters
 
             InvalidateMeasure();
         }
-
 
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -800,7 +799,7 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        private void UpdateCaret(CharacterHit characterHit)
+        private void UpdateCaret(CharacterHit characterHit, bool updateCaretIndex = true)
         {
             _lastCharacterHit = characterHit;
 
@@ -828,7 +827,10 @@ namespace Avalonia.Controls.Presenters
                 CaretBoundsChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
+            if (updateCaretIndex)
+            {
+                SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
+            }
         }
 
         internal Rect GetCursorRectangle()
@@ -845,12 +847,48 @@ namespace Avalonia.Controls.Presenters
             _caretTimer.Tick -= CaretTimerTick;
         }
 
+        protected void OnPreeditTextChanged(string? preeditText)
+        {
+            InvalidateTextLayout();
+
+            if (preeditText is null)
+            {
+                _compositionStartHit = new CharacterHit(-1);
+            }
+            else
+            {
+                if (_compositionStartHit.FirstCharacterIndex == -1)
+                {
+                    _compositionStartHit = _lastCharacterHit;
+                }
+            }
+
+            if (_compositionStartHit.FirstCharacterIndex != -1)
+            {
+                var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + preeditText?.Length ?? 0;
+
+                var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, true);
+
+                var textLine = TextLayout.TextLines[lineIndex];
+
+                var characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(textPosition - 1));
+
+                UpdateCaret(characterHit, false);
+            }
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             switch (change.Property.Name)
             {
+                case nameof(PreeditText):
+                    {
+                        OnPreeditTextChanged(change.NewValue as string);
+                        break;
+                    }
+
                 case nameof(Foreground):
                 case nameof(FontSize):
                 case nameof(FontStyle):
@@ -859,7 +897,6 @@ namespace Avalonia.Controls.Presenters
                 case nameof(FontStretch):
 
                 case nameof(Text):
-                case nameof(PreeditText):
                 case nameof(TextAlignment):
                 case nameof(TextWrapping):
 
