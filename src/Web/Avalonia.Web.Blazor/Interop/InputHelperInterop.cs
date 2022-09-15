@@ -1,41 +1,53 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using SkiaSharp;
 
 namespace Avalonia.Web.Blazor.Interop
 {
-    internal class InputHelperInterop : JSModuleInterop
+    internal class InputHelperInterop
     {
-        private const string JsFilename = "./_content/Avalonia.Web.Blazor/InputHelper.js";
         private const string ClearSymbol = "InputHelper.clear";
         private const string FocusSymbol = "InputHelper.focus";
         private const string SetCursorSymbol = "InputHelper.setCursor";
         private const string HideSymbol = "InputHelper.hide";
         private const string ShowSymbol = "InputHelper.show";
+        private const string StartSymbol = "InputHelper.start";
 
-        private readonly ElementReference inputElement;
+        private readonly AvaloniaModule _module;
+        private readonly ElementReference _inputElement;
+        private readonly ActionHelper _actionHelper;
+        private DotNetObjectReference<ActionHelper>? callbackReference;
 
-        public static async Task<InputHelperInterop> ImportAsync(IJSRuntime js, ElementReference element)
+        public InputHelperInterop(AvaloniaModule module, ElementReference inputElement)
         {
-            var interop = new InputHelperInterop(js, element);
-            await interop.ImportAsync();
-            return interop;
+            _module = module;
+            _inputElement = inputElement;
+
+            _actionHelper = new ActionHelper(() =>
+            {
+
+            });
+            
+            Start();
         }
 
-        public InputHelperInterop(IJSRuntime js, ElementReference element)
-            : base(js, JsFilename)
+        public void Clear() => _module.Invoke(ClearSymbol, _inputElement);
+
+        public void Focus() => _module.Invoke(FocusSymbol, _inputElement);
+
+        public void SetCursor(string kind) => _module.Invoke(SetCursorSymbol, _inputElement, kind);
+
+        public void Hide() => _module.Invoke(HideSymbol, _inputElement);
+
+        public void Show() => _module.Invoke(ShowSymbol, _inputElement);
+
+        private void Start()
         {
-            inputElement = element;
+            if(callbackReference != null)
+                return;
+            
+            callbackReference = DotNetObjectReference.Create(_actionHelper);
+
+            _module.Invoke(StartSymbol, _inputElement, callbackReference);
         }
-
-        public void Clear() => Invoke(ClearSymbol, inputElement);
-
-        public void Focus() => Invoke(FocusSymbol, inputElement);
-
-        public void SetCursor(string kind) => Invoke(SetCursorSymbol, inputElement, kind);
-
-        public void Hide() => Invoke(HideSymbol, inputElement);
-
-        public void Show() => Invoke(ShowSymbol, inputElement);
     }
 }

@@ -1,43 +1,29 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
 namespace Avalonia.Web.Blazor.Interop
 {
-    internal class DpiWatcherInterop : JSModuleInterop
+    internal class DpiWatcherInterop : IDisposable
     {
-        private const string JsFilename = "./_content/Avalonia.Web.Blazor/DpiWatcher.js";
         private const string StartSymbol = "DpiWatcher.start";
         private const string StopSymbol = "DpiWatcher.stop";
         private const string GetDpiSymbol = "DpiWatcher.getDpi";
 
-        private static DpiWatcherInterop? instance;
-
         private event Action<double>? callbacksEvent;
-        private readonly FloatFloatActionHelper callbackHelper;
+        private readonly FloatFloatActionHelper _callbackHelper;
+        private readonly AvaloniaModule _module;
 
         private DotNetObjectReference<FloatFloatActionHelper>? callbackReference;
 
-        public static async Task<DpiWatcherInterop> ImportAsync(IJSRuntime js, Action<double>? callback = null)
+        public DpiWatcherInterop(AvaloniaModule module, Action<double>? callback = null)
         {
-            var interop = Get(js);
-            await interop.ImportAsync();
+            _module = module;
+            _callbackHelper = new FloatFloatActionHelper((o, n) => callbacksEvent?.Invoke(n));
+
             if (callback != null)
-                interop.Subscribe(callback);
-            return interop;
+                Subscribe(callback);
         }
 
-        public static DpiWatcherInterop Get(IJSRuntime js) =>
-            instance ??= new DpiWatcherInterop(js);
-
-        private DpiWatcherInterop(IJSRuntime js)
-            : base(js, JsFilename)
-        {
-            callbackHelper = new FloatFloatActionHelper((o, n) => callbacksEvent?.Invoke(n));
-        }
-
-        protected override void OnDisposingModule() =>
-            Stop();
+        public void Dispose() => Stop();
 
         public void Subscribe(Action<double> callback)
         {
@@ -65,9 +51,9 @@ namespace Avalonia.Web.Blazor.Interop
             if (callbackReference != null)
                 return GetDpi();
 
-            callbackReference = DotNetObjectReference.Create(callbackHelper);
+            callbackReference = DotNetObjectReference.Create(_callbackHelper);
 
-            return Invoke<double>(StartSymbol, callbackReference);
+            return _module.Invoke<double>(StartSymbol, callbackReference);
         }
 
         private void Stop()
@@ -75,13 +61,12 @@ namespace Avalonia.Web.Blazor.Interop
             if (callbackReference == null)
                 return;
 
-            Invoke(StopSymbol);
+            _module.Invoke(StopSymbol);
 
             callbackReference?.Dispose();
             callbackReference = null;
         }
 
-        public double GetDpi() =>
-            Invoke<double>(GetDpiSymbol);
+        public double GetDpi() => _module.Invoke<double>(GetDpiSymbol);
     }
 }

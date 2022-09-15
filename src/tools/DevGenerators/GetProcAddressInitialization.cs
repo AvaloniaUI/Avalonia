@@ -34,7 +34,7 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
         var all = fieldsWithAttribute.Collect();
         context.RegisterSourceOutput(all, static (context, methods) =>
         {
-            foreach (var typeGroup in methods.GroupBy(f => f.ContainingType))
+            foreach (var typeGroup in methods.GroupBy(f => f.ContainingType, SymbolEqualityComparer.Default))
             {
                 var nextContext = 0;
                 var contexts = new Dictionary<string, int>();
@@ -131,10 +131,13 @@ public class GetProcAddressInitializationGenerator : IIncrementalGenerator
                                     .Append(".GetProcAddress(")
                                     .Append("getProcAddress, ")
                                     .Append(contextName);
-                                
-                                var syntaxNode = (AttributeSyntax)attr.ApplicationSyntaxReference.GetSyntax();
-                                foreach (var arg in syntaxNode.ArgumentList.Arguments)
-                                    initializeBody.Append(", ").Append(arg.GetText());
+
+                                if (attr.ApplicationSyntaxReference?.GetSyntax() is AttributeSyntax syntaxNode 
+                                    && syntaxNode.ArgumentList is { })
+                                {
+                                    foreach (var arg in syntaxNode.ArgumentList.Arguments)
+                                        initializeBody.Append(", ").Append(arg.GetText());
+                                }
                                 initializeBody.AppendLine(");");
                             }
                         }

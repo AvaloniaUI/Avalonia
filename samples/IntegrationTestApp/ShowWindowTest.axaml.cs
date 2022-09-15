@@ -1,21 +1,32 @@
 using System;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Rendering;
+using Avalonia.Threading;
 
 namespace IntegrationTestApp
 {
     public class ShowWindowTest : Window
     {
+        private readonly DispatcherTimer? _timer;
+        private readonly TextBox? _orderTextBox;
+        
         public ShowWindowTest()
         {
             InitializeComponent();
             DataContext = this;
             PositionChanged += (s, e) => this.GetControl<TextBox>("Position").Text = $"{Position}";
-        }
 
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                _orderTextBox = this.GetControl<TextBox>("Order");
+                _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+                _timer.Tick += TimerOnTick;
+                _timer.Start();
+            }
+        }
+        
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
@@ -35,6 +46,17 @@ namespace IntegrationTestApp
                 var owner = (Window)Owner;
                 ownerRect.Text = $"{owner.Position}, {PixelSize.FromSize(owner.FrameSize!.Value, scaling)}";
             }
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            _timer?.Stop();
+        }
+
+        private void TimerOnTick(object? sender, EventArgs e)
+        {
+            _orderTextBox!.Text = MacOSIntegration.GetOrderedIndex(this).ToString();
         }
     }
 }

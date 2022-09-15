@@ -7,49 +7,47 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
 {
     public static class Extensions
     {
-        public static ClassDeclarationSyntax AddModifiers(this ClassDeclarationSyntax cl, params SyntaxKind[] modifiers)
+        public static ClassDeclarationSyntax AddModifiers(this ClassDeclarationSyntax cl, params SyntaxKind[]? modifiers)
         {
-            if (modifiers == null)
+            if (modifiers is null)
                 return cl;
             return cl.AddModifiers(modifiers.Select(x => SyntaxFactory.Token(x)).ToArray());
         }
         
-        public static MethodDeclarationSyntax AddModifiers(this MethodDeclarationSyntax cl, params SyntaxKind[] modifiers)
+        public static MethodDeclarationSyntax AddModifiers(this MethodDeclarationSyntax cl, params SyntaxKind[]? modifiers)
         {
-            if (modifiers == null)
+            if (modifiers is null)
                 return cl;
             return cl.AddModifiers(modifiers.Select(x => SyntaxFactory.Token(x)).ToArray());
         }
         
-        public static PropertyDeclarationSyntax AddModifiers(this PropertyDeclarationSyntax cl, params SyntaxKind[] modifiers)
+        public static PropertyDeclarationSyntax AddModifiers(this PropertyDeclarationSyntax cl, params SyntaxKind[]? modifiers)
         {
-            if (modifiers == null)
+            if (modifiers is null)
                 return cl;
             return cl.AddModifiers(modifiers.Select(x => SyntaxFactory.Token(x)).ToArray());
         }
 
-        public static ConstructorDeclarationSyntax AddModifiers(this ConstructorDeclarationSyntax cl, params SyntaxKind[] modifiers)
+        public static ConstructorDeclarationSyntax AddModifiers(this ConstructorDeclarationSyntax cl, params SyntaxKind[]? modifiers)
         {
-            if (modifiers == null)
+            if (modifiers is null)
                 return cl;
             return cl.AddModifiers(modifiers.Select(x => SyntaxFactory.Token(x)).ToArray());
         }
         
-        public static AccessorDeclarationSyntax AddModifiers(this AccessorDeclarationSyntax cl, params SyntaxKind[] modifiers)
+        public static AccessorDeclarationSyntax AddModifiers(this AccessorDeclarationSyntax cl, params SyntaxKind[]? modifiers)
         {
-            if (modifiers == null)
+            if (modifiers is null)
                 return cl;
             return cl.AddModifiers(modifiers.Select(x => SyntaxFactory.Token(x)).ToArray());
         }
         
-        public static EnumDeclarationSyntax AddModifiers(this EnumDeclarationSyntax cl, params SyntaxKind[] modifiers)
+        public static EnumDeclarationSyntax AddModifiers(this EnumDeclarationSyntax cl, params SyntaxKind[]? modifiers)
         {
-            if (modifiers == null)
+            if (modifiers is null)
                 return cl;
             return cl.AddModifiers(modifiers.Select(x => SyntaxFactory.Token(x)).ToArray());
         }
-        
-        
 
         public static string WithLowerFirst(this string s)
         {
@@ -58,7 +56,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             return char.ToLowerInvariant(s[0]) + s.Substring(1);
         }
 
-        public static ExpressionSyntax MemberAccess(params string[] identifiers)
+        public static ExpressionSyntax MemberAccess(params string[]? identifiers)
         {
             if (identifiers == null || identifiers.Length == 0)
                 throw new ArgumentException();

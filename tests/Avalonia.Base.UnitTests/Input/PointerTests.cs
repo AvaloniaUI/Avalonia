@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class PointerTests
+    public class PointerTests : PointerTestsBase
     {
         [Fact]
         public void On_Capture_Transfer_PointerCaptureLost_Should_Propagate_Up_To_The_Common_Parent()
