@@ -523,7 +523,7 @@ namespace Avalonia.Layout
             {
                 firstRealizedElement = _elementManager.GetAt(0);
                 firstBounds = _elementManager.GetLayoutBoundsForRealizedIndex(0);
-                firstDataIndex = _elementManager.GetDataIndexFromRealizedRangeIndex(0);;
+                firstDataIndex = _elementManager.GetDataIndexFromRealizedRangeIndex(0);
 
                 int last = _elementManager.GetRealizedElementCount() - 1;
                 lastRealizedElement = _elementManager.GetAt(last);
