@@ -19,6 +19,17 @@ namespace Avalonia.Android
         public bool IsActive { get; }
     }
 
+    enum CustomImeFlags
+    { 
+        ActionNone = 0x00000001,
+       ActionGo = 0x00000002,
+       ActionSearch = 0x00000003,
+       ActionSend = 0x00000004,
+       ActionNext = 0x00000005,
+       ActionDone = 0x00000006,
+       ActionPrevious = 0x00000007,
+    }
+
     class AndroidInputMethod<TView> : ITextInputMethodImpl, IAndroidInputMethod
         where TView : View, IInitEditorInfo
     {
@@ -119,6 +130,17 @@ namespace Avalonia.Android
 
                 if (options.Multiline)
                     outAttrs.InputType |= global::Android.Text.InputTypes.TextFlagMultiLine;
+
+                outAttrs.ImeOptions = options.ReturnKeyType switch
+                {
+                    TextInputReturnKeyType.Return => ImeFlags.NoEnterAction,
+                    TextInputReturnKeyType.Go => (ImeFlags)CustomImeFlags.ActionGo,
+                    TextInputReturnKeyType.Send => (ImeFlags)CustomImeFlags.ActionSend,
+                    TextInputReturnKeyType.Search => (ImeFlags)CustomImeFlags.ActionSearch,
+                    TextInputReturnKeyType.Next => (ImeFlags)CustomImeFlags.ActionNext,
+                    TextInputReturnKeyType.Previous => (ImeFlags)CustomImeFlags.ActionPrevious,
+                    _ => (ImeFlags)CustomImeFlags.ActionDone
+                };
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
 
