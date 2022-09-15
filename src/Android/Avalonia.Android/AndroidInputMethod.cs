@@ -95,11 +95,11 @@ namespace Avalonia.Android
 
         public void SetOptions(TextInputOptions options)
         {
-            _host.InitEditorInfo((_host, outAttrs) =>
-            {
-                _inputConnection?.CommitText("", 0);
+            _inputConnection = new InputConnectionImpl(_host, this);
 
-                _inputConnection = new InputConnectionImpl(_host, this);
+            _host.InitEditorInfo((_host, outAttrs) =>
+            {          
+                _inputConnection?.FinishComposingText();
 
                 outAttrs.InputType = options.ContentType switch
                 {

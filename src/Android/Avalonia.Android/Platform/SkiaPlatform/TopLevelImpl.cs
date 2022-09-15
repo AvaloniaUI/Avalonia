@@ -272,7 +272,19 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
         }
 
+        public ComposingRegion ComposingRegion { get; private set; }
+
         public string CompositionText { get; private set; }
+
+        public override bool SetSelection(int start, int end)
+        {
+            if (_inputMethod.IsActive)
+            {
+                _inputMethod.Client.SelectInSurroundingText(start, end);
+            }
+
+            return base.SetSelection(start, end);
+        }
 
         public override bool SetComposingRegion(int start, int end)
         {
@@ -281,6 +293,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 var surroundingText = _inputMethod.Client.SurroundingText;
 
                 System.Diagnostics.Debug.WriteLine($"Composing Region: [{start}|{end}] {surroundingText.Text?.Substring(start, end - start)}");
+
+                ComposingRegion = new ComposingRegion(start, end);
             }
 
             return base.SetComposingRegion(start, end);
@@ -289,11 +303,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public override bool CommitCorrection(CorrectionInfo correctionInfo)
         {
             return base.CommitCorrection(correctionInfo);
-        }
-
-        public override bool DeleteSurroundingTextInCodePoints(int beforeLength, int afterLength)
-        {
-            return base.DeleteSurroundingTextInCodePoints(beforeLength, afterLength);
         }
 
         public override bool DeleteSurroundingText(int beforeLength, int afterLength)
@@ -320,7 +329,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                     var text = surroundingText.Text.Substring(start, end - start);
 
-                    System.Diagnostics.Debug.WriteLine($"Text Before: {text}");
+                    //System.Diagnostics.Debug.WriteLine($"Text Before: {text}");
 
                     return new Java.Lang.String(text);
                 }
@@ -343,7 +352,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                     var text = surroundingText.Text.Substring(start, end - start);
 
-                    System.Diagnostics.Debug.WriteLine($"Text After: {text}");
+                    //System.Diagnostics.Debug.WriteLine($"Text After: {text}");
 
                     return new Java.Lang.String(text);
                 }
@@ -359,21 +368,48 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (_inputMethod.IsActive)
             {
                 _inputMethod.Client.SetPreeditText(CompositionText);
+
+                if (!string.IsNullOrEmpty(CompositionText))
+                {
+                    ComposingRegion = default;
+                }
             }
 
             return base.SetComposingText(text, newCursorPosition);
         }
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
-        {
+        {          
             CompositionText = null;
 
             if (_inputMethod.IsActive)
             {
                 _inputMethod.Client.SetPreeditText(null);
+
+                if (string.IsNullOrEmpty(CompositionText) && ComposingRegion.Start != ComposingRegion.End)
+                {
+                    _inputMethod.Client.SelectInSurroundingText(ComposingRegion.Start, ComposingRegion.End);
+                }
             }
 
+            ComposingRegion = default;
+
             return base.CommitText(text, newCursorPosition);
+        }
+
+        public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)
+        {
+            return base.PerformEditorAction(actionCode);
+        }
+
+        public override bool PerformPrivateCommand(string action, Bundle data)
+        {
+            return base.PerformPrivateCommand(action, data);
+        }
+
+        public override bool SendKeyEvent(KeyEvent e)
+        {
+            return base.SendKeyEvent(e);
         }
 
         public override bool FinishComposingText()
@@ -386,6 +422,19 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
 
             return base.FinishComposingText();
+        }      
+    }
+
+    public readonly struct ComposingRegion
+    {
+        public ComposingRegion(int start, int end)
+        {
+            Start = start;
+            End = end;
         }
+
+        public int Start { get; }
+
+        public int End { get; }
     }
 }
