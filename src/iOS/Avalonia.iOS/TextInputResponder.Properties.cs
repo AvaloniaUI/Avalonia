@@ -42,10 +42,16 @@ partial class AvaloniaView
             {
                 if (_view._options != null)
                 {
-                    if (_view._options.ReturnKeyType == TextInputReturnKeyType.Default)
+                    return _view._options.ReturnKeyType switch
                     {
-                        return _view._options.Multiline ? UIReturnKeyType.Default : UIReturnKeyType.Done;
-                    }
+                        TextInputReturnKeyType.Done => UIReturnKeyType.Done,
+                        TextInputReturnKeyType.Go => UIReturnKeyType.Go,
+                        TextInputReturnKeyType.Search => UIReturnKeyType.Search,
+                        TextInputReturnKeyType.Next => UIReturnKeyType.Next,
+                        TextInputReturnKeyType.Return => UIReturnKeyType.Default,
+                        TextInputReturnKeyType.Send => UIReturnKeyType.Send,
+                        _ => _view._options.Multiline ? UIReturnKeyType.Default : UIReturnKeyType.Done
+                    };
                 }
 
                 return UIReturnKeyType.Default;

@@ -3,15 +3,11 @@ namespace Avalonia.Input.TextInput;
 public enum TextInputReturnKeyType
 {
     Default,
-    Go,
-    Google,
-    Join,
-    Next,
-    Route,
-    Search,
-    Send,
-    Yahoo,
+    Return,
     Done,
-    EmergencyCall,
-    Continue,
+    Go,
+    Send,
+    Search,
+    Next,
+    Previous
 }
