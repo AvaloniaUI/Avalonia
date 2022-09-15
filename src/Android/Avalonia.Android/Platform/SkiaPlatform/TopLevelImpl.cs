@@ -390,9 +390,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 {
                     _inputMethod.Client.SelectInSurroundingText(ComposingRegion.Start, ComposingRegion.End);
                 }
-            }
 
-            ComposingRegion = default;
+                ComposingRegion = new ComposingRegion(ComposingRegion.Start, ComposingRegion.Start + text.Length());
+            }
 
             return base.CommitText(text, newCursorPosition);
         }
