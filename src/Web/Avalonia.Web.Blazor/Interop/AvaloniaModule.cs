@@ -4,7 +4,7 @@ namespace Avalonia.Web.Blazor.Interop
 {
     internal class AvaloniaModule : JSModuleInterop
     {
-        private AvaloniaModule(IJSRuntime js) : base(js, "./_content/Avalonia.Web.Blazor/avalonia.js")
+        private AvaloniaModule(IJSRuntime js) : base(js, "./_content/Avalonia.Web.Blazor/Avalonia.js")
         {
         }
 
