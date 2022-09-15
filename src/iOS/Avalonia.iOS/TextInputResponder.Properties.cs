@@ -35,7 +35,7 @@ partial class AvaloniaView
         [Export("keyboardAppearance")]
         public UIKeyboardAppearance KeyboardAppearance => UIKeyboardAppearance.Alert;
 
-        [Export("returnKeyType")] public UIReturnKeyType ReturnKeyType => UIReturnKeyType.Default;
+        [Export("returnKeyType")] public UIReturnKeyType ReturnKeyType => (UIReturnKeyType)(_view._options?.ReturnKeyType ?? TextInputReturnKeyType.Default);
 
         [Export("enablesReturnKeyAutomatically")]
         public bool EnablesReturnKeyAutomatically { get; set; }
