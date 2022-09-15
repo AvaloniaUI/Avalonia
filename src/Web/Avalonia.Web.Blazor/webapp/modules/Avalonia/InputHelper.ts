@@ -49,7 +49,7 @@
             case "compositionstart":
             case "compositionupdate":
             case "compositionend":
-                InputHelper.callback.invokeMethod('Invoke');
+                InputHelper.callback.invokeMethod('Invoke', ev.type, ev.data);
                 break;
         }
     }

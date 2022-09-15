@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
@@ -254,10 +255,12 @@ namespace Avalonia.Web.Blazor
                 AvaloniaLocator.CurrentMutable.Bind<IJSInProcessRuntime>().ToConstant((IJSInProcessRuntime)Js);
 
                 _avaloniaModule = await AvaloniaModule.ImportAsync(Js);
-
-                _inputHelper = new InputHelperInterop(_avaloniaModule, _inputElement);
+                
                 _canvasHelper = new InputHelperInterop(_avaloniaModule, _htmlCanvas);
                 _containerHelper = new InputHelperInterop(_avaloniaModule, _containerElement);
+                _inputHelper = new InputHelperInterop(_avaloniaModule, _inputElement);
+                
+                _inputHelper.CompositionEvent += InputHelperOnCompositionEvent;
 
                 HideIme();
                 _canvasHelper.SetCursor("default");
@@ -328,6 +331,11 @@ namespace Avalonia.Web.Blazor
                     _topLevel.Renderer.Start();
                 });
             }
+        }
+
+        private void InputHelperOnCompositionEvent(object? sender, WebCompositionEventArgs e)
+        {
+            Debug.WriteLine("Test");
         }
 
         private void OnRenderFrame()
