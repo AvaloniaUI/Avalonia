@@ -35,7 +35,22 @@ partial class AvaloniaView
         [Export("keyboardAppearance")]
         public UIKeyboardAppearance KeyboardAppearance => UIKeyboardAppearance.Alert;
 
-        [Export("returnKeyType")] public UIReturnKeyType ReturnKeyType => (UIReturnKeyType)(_view._options?.ReturnKeyType ?? TextInputReturnKeyType.Default);
+        [Export("returnKeyType")]
+        public UIReturnKeyType ReturnKeyType
+        {
+            get
+            {
+                if (_view._options != null)
+                {
+                    if (_view._options.ReturnKeyType == TextInputReturnKeyType.Default)
+                    {
+                        return _view._options.Multiline ? UIReturnKeyType.Default : UIReturnKeyType.Done;
+                    }
+                }
+
+                return UIReturnKeyType.Default;
+            }
+        } 
 
         [Export("enablesReturnKeyAutomatically")]
         public bool EnablesReturnKeyAutomatically { get; set; }

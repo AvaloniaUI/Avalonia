@@ -149,6 +149,16 @@ partial class AvaloniaView
             if (text == "\n")
             {
                 KeyPress(Key.Enter);
+
+                switch (ReturnKeyType)
+                {
+                    case UIReturnKeyType.Done:
+                        case UIReturnKeyType.Go:
+                        case UIReturnKeyType.Send:
+                        case UIReturnKeyType.Search:
+                        ResignFirstResponder();
+                        break;
+                }
                 return;
             }
 
