@@ -69,7 +69,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             var tev = libinput_event_get_touch_event(ev);
             if (tev == IntPtr.Zero)
                 return;
-            var modifiers = GetCurrentModifiersState();
+            _manager.TtyGetModifiers(out var modifiers);
             if (type < LibInputEventType.LIBINPUT_EVENT_TOUCH_FRAME)
             {
                 var info = _screen.ScaledSize;
@@ -105,7 +105,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
         private void HandlePointer(IntPtr ev, LibInputEventType type)
         {
-            var modifiers = GetCurrentModifiersState();
+            _manager.TtyGetModifiers(out var modifiers);
             var pev = libinput_event_get_pointer_event(ev);
             var info = _screen.ScaledSize;
             var ts = libinput_event_pointer_get_time_usec(pev) / 1000;
