@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using Avalonia.Data;
@@ -12,6 +11,8 @@ namespace Avalonia.PropertyStore
         IObserver<BindingValue<T>>,
         IDisposable
     {
+        private static IDisposable s_Creating = Disposable.Empty;
+        private static IDisposable s_CreatingQuiet = Disposable.Create(() => { });
         private readonly ValueFrame _frame;
         private readonly object _source;
         private IDisposable? _subscription;
@@ -132,11 +133,11 @@ namespace Avalonia.PropertyStore
                 {
                     _value = value;
                     _hasValue = true;
-                    if (_subscription is not null)
+                    if (_subscription is not null && _subscription != s_CreatingQuiet)
                         _frame.Owner?.OnBindingValueChanged(Property, _frame.Priority, value);
                 }
             }
-            else if (_subscription is not null)
+            else if (_subscription is not null && _subscription != s_CreatingQuiet)
             {
                 _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
             }
@@ -153,10 +154,7 @@ namespace Avalonia.PropertyStore
             if (_subscription is not null)
                 return;
 
-            // Will only produce a new value when subscription isn't null.
-            if (produceValue)
-                _subscription = Disposable.Empty;
-
+            _subscription = produceValue ? s_Creating : s_CreatingQuiet;
             _subscription = _source switch
             {
                 IObservable<BindingValue<T>> bv => bv.Subscribe(this),

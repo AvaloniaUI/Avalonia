@@ -8,6 +8,8 @@ namespace Avalonia.PropertyStore
         IObserver<object?>,
         IDisposable
     {
+        private static IDisposable s_Creating = Disposable.Empty;
+        private static IDisposable s_CreatingQuiet = Disposable.Create(() => { });
         private readonly ValueFrame _frame;
         private IDisposable? _subscription;
         private bool _hasValue;
@@ -72,11 +74,7 @@ namespace Avalonia.PropertyStore
         {
             if (_subscription is not null)
                 return;
-
-            // Will only produce a new value when subscription isn't null.
-            if (produceValue)
-                _subscription = Disposable.Empty;
-
+            _subscription = produceValue ? s_Creating : s_CreatingQuiet;
             _subscription = Source.Subscribe(this);
         }
 
@@ -87,7 +85,7 @@ namespace Avalonia.PropertyStore
                 _hasValue = false;
                 _value = default;
 
-                if (_subscription is not null)
+                if (_subscription is not null && _subscription != s_CreatingQuiet)
                     _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
             }
         }
@@ -118,7 +116,7 @@ namespace Avalonia.PropertyStore
                     _value = typedValue;
                     _hasValue = true;
 
-                    if (_subscription is not null)
+                    if (_subscription is not null && _subscription != s_CreatingQuiet)
                         _frame.Owner?.OnBindingValueChanged(Property, _frame.Priority, typedValue);
                 }
             }

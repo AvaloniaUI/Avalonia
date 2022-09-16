@@ -7,6 +7,7 @@ using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Utilities;
+using JetBrains.Annotations;
 
 namespace Avalonia.PropertyStore
 {
@@ -56,11 +57,14 @@ namespace Avalonia.PropertyStore
             else
             {
                 var effective = GetEffectiveValue(property);
-                var frame = GetOrCreateImmediateValueFrame(property, priority);
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out var frameIndex);
                 var result = frame.AddBinding(property, source);
 
                 if (effective is null || priority <= effective.Priority)
+                {
                     result.Start();
+                    UnsubscribeInactiveValues(frameIndex, property);
+                }
 
                 return result;
             }
@@ -83,11 +87,14 @@ namespace Avalonia.PropertyStore
             else
             {
                 var effective = GetEffectiveValue(property);
-                var frame = GetOrCreateImmediateValueFrame(property, priority);
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out var frameIndex);
                 var result = frame.AddBinding(property, source);
 
                 if (effective is null || priority <= effective.Priority)
+                {
                     result.Start();
+                    UnsubscribeInactiveValues(frameIndex, property);
+                }
 
                 return result;
             }
@@ -110,11 +117,14 @@ namespace Avalonia.PropertyStore
             else
             {
                 var effective = GetEffectiveValue(property);
-                var frame = GetOrCreateImmediateValueFrame(property, priority);
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out var frameIndex);
                 var result = frame.AddBinding(property, source);
 
                 if (effective is null || priority <= effective.Priority)
+                {
                     result.Start();
+                    UnsubscribeInactiveValues(frameIndex, property);
+                }
 
                 return result;
             }
@@ -170,8 +180,9 @@ namespace Avalonia.PropertyStore
 
             if (priority != BindingPriority.LocalValue)
             {
-                var frame = GetOrCreateImmediateValueFrame(property, priority);
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out var frameIndex);
                 result = frame.AddValue(property, value);
+                UnsubscribeInactiveValues(frameIndex, property);
             }
 
             if (TryGetEffectiveValue(property, out var existing))
@@ -615,7 +626,7 @@ namespace Avalonia.PropertyStore
                 null);
         }
 
-        private void InsertFrame(ValueFrame frame)
+        private int InsertFrame(ValueFrame frame)
         {
             // Uncomment this line when #8549 is fixed.
             //Debug.Assert(!_frames.Contains(frame));
@@ -624,11 +635,13 @@ namespace Avalonia.PropertyStore
             _frames.Insert(index, frame);
             ++_frameGeneration;
             frame.SetOwner(this);
+            return index;
         }
 
         private ImmediateValueFrame GetOrCreateImmediateValueFrame(
             AvaloniaProperty property, 
-            BindingPriority priority)
+            BindingPriority priority,
+            out int frameIndex)
         {
             Debug.Assert(priority != BindingPriority.LocalValue);
 
@@ -637,10 +650,13 @@ namespace Avalonia.PropertyStore
             if (index > 0 && _frames[index - 1] is ImmediateValueFrame f &&
                 f.Priority == priority &&
                 !f.Contains(property))
+            {
+                frameIndex = index - 1;
                 return f;
+            }
 
             var result = new ImmediateValueFrame(priority);
-            InsertFrame(result);
+            frameIndex = InsertFrame(result);
             return result;
         }
 
@@ -765,13 +781,11 @@ namespace Avalonia.PropertyStore
             for (var i = _frames.Count - 1; i >= 0; --i)
             {
                 var frame = _frames[i];
-
-                if (!frame.IsActive)
-                    continue;
-
                 var priority = frame.Priority;
 
-                if (frame.TryGetEntry(property, out var entry) && entry.HasValue)
+                if (frame.TryGetEntry(property, out var entry) &&
+                    frame.IsActive &&
+                    entry.HasValue)
                 {
                     if (current is not null)
                     {
@@ -785,12 +799,16 @@ namespace Avalonia.PropertyStore
                     }
                 }
 
+                if (generation != _frameGeneration)
+                    goto restart;
+
                 if (current is not null &&
                     current.Priority < BindingPriority.Unset &&
                     current.BasePriority < BindingPriority.Unset)
+                {
+                    UnsubscribeInactiveValues(i, property);
                     return;
-                if (generation != _frameGeneration)
-                    goto restart;
+                }
             }
 
             if (current?.Priority == BindingPriority.Unset)
@@ -895,6 +913,29 @@ namespace Avalonia.PropertyStore
                         e.DisposeAndRaiseUnset(this, v);
                 }
                 remove.Dispose();
+            }
+        }
+
+        private void UnsubscribeInactiveValues(int activeFrameIndex, AvaloniaProperty property)
+        {
+            var foundBaseValue = _frames[activeFrameIndex].Priority != BindingPriority.Animation;
+
+            for (var i = activeFrameIndex - 1; i >= 0; --i)
+            {
+                var frame = _frames[i];
+
+                if (!foundBaseValue && frame.Priority > BindingPriority.Animation)
+                {
+                    foundBaseValue = true;
+                    continue;
+                }
+
+                if ((foundBaseValue || frame.Priority <= BindingPriority.Animation) &&
+                    frame.TryGetEntry(property, out var entry) &&
+                    frame.IsActive)
+                {
+                    entry.Unsubscribe();
+                }
             }
         }
 

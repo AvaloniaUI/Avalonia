@@ -352,6 +352,7 @@ namespace Avalonia
             if (_initCount == 0 && !_styled)
             {
                 var styler = AvaloniaLocator.Current.GetService<IStyler>();
+                var hasPromotedTheme = _hasPromotedTheme;
 
                 if (styler is object)
                 {
@@ -368,7 +369,7 @@ namespace Avalonia
                     }
                 }
 
-                if (_hasPromotedTheme)
+                if (hasPromotedTheme)
                 {
                     _hasPromotedTheme = false;
                     ClearValue(ThemeProperty);
