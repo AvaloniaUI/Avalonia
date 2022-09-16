@@ -12,6 +12,7 @@ using Avalonia.Web.Blazor.Interop;
 using Avalonia.Web.Blazor.Interop.Storage;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
@@ -72,6 +73,8 @@ namespace Avalonia.Web.Blazor
         public ITextInputMethodClient? Client => _client;
 
         public bool IsActive => _client != null;
+
+        public bool IsComposing { get; private set; }
 
         internal INativeControlHostImpl GetNativeControlHostImpl()
         {
@@ -231,20 +234,6 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        private void OnInput(ChangeEventArgs e)
-        {
-            if (e.Value != null)
-            {
-                var inputData = e.Value.ToString();
-                if (inputData != null)
-                {
-                    _topLevelImpl.RawTextEvent(inputData);
-                }
-            }
-
-            _inputHelper?.Clear();
-        }
-
         [Parameter(CaptureUnmatchedValues = true)]
         public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -261,6 +250,7 @@ namespace Avalonia.Web.Blazor
                 _inputHelper = new InputHelperInterop(_avaloniaModule, _inputElement);
                 
                 _inputHelper.CompositionEvent += InputHelperOnCompositionEvent;
+                _inputHelper.InputEvent += InputHelperOnInputEvent;
 
                 HideIme();
                 _canvasHelper.SetCursor("default");
@@ -333,9 +323,38 @@ namespace Avalonia.Web.Blazor
             }
         }
 
+        private void InputHelperOnInputEvent(object? sender, WebInputEventArgs e)
+        {
+            if (IsComposing)
+            {
+                return;
+            }
+
+            _topLevelImpl.RawTextEvent(e.Data);
+        }
+
         private void InputHelperOnCompositionEvent(object? sender, WebCompositionEventArgs e)
         {
-            Debug.WriteLine("Test");
+            if(_client == null)
+            {
+                return;
+            }
+
+            switch (e.Type)
+            {
+                case WebCompositionEventArgs.WebCompositionEventType.Start:
+                    _client.SetPreeditText(null);
+                    IsComposing = true;
+                    break;
+                case WebCompositionEventArgs.WebCompositionEventType.Update:
+                    _client?.SetPreeditText(e.Data);
+                    break;
+                case WebCompositionEventArgs.WebCompositionEventType.End:
+                    IsComposing = false;
+                    _client?.SetPreeditText(null);
+                    _topLevelImpl.RawTextEvent(e.Data);
+                    break;
+            }
         }
 
         private void OnRenderFrame()
@@ -417,6 +436,16 @@ namespace Avalonia.Web.Blazor
                 return;
             }
 
+            if(_client != null)
+            {
+                _client.SurroundingTextChanged -= SurroundingTextChanged;
+            }
+
+            if(client != null)
+            {
+                client.SurroundingTextChanged += SurroundingTextChanged;
+            }
+
             _inputHelper.Clear();
 
             _client = client;
@@ -431,6 +460,16 @@ namespace Avalonia.Web.Blazor
             {
                 _inputElementFocused = false;
                 HideIme();
+            }
+        }
+
+        private void SurroundingTextChanged(object? sender, EventArgs e)
+        {
+            if(_client != null && IsComposing)
+            {
+                var surroundingText = _client.SurroundingText;
+
+                _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
         }
 

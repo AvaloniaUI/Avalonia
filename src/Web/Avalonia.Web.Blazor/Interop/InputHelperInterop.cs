@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Avalonia.Web.Blazor.Interop
@@ -30,6 +29,19 @@ namespace Avalonia.Web.Blazor.Interop
         
         public string Data { get; }
     }
+
+    internal class WebInputEventArgs
+    {
+        public WebInputEventArgs(string type, string data)
+        {
+            Type = type;
+            Data = data;
+        }
+
+        public string Type { get; }
+
+        public string Data { get; }
+    }
     
     internal class InputHelperInterop
     {
@@ -39,28 +51,40 @@ namespace Avalonia.Web.Blazor.Interop
         private const string HideSymbol = "InputHelper.hide";
         private const string ShowSymbol = "InputHelper.show";
         private const string StartSymbol = "InputHelper.start";
+        private const string SetSurroundingTextSymbol = "InputHelper.setSurroundingText";
 
         private readonly AvaloniaModule _module;
         private readonly ElementReference _inputElement;
-        private readonly ActionHelper<string, string> _actionHelper;
-        private DotNetObjectReference<ActionHelper<string, string>>? callbackReference;
+        private readonly ActionHelper<string, string> _compositionAction;
+        private readonly ActionHelper<string, string> _inputAction;
+
+        private DotNetObjectReference<ActionHelper<string, string>>? compositionActionReference;
+        private DotNetObjectReference<ActionHelper<string, string>>? inputActionReference;
 
         public InputHelperInterop(AvaloniaModule module, ElementReference inputElement)
         {
             _module = module;
             _inputElement = inputElement;
 
-            _actionHelper = new ActionHelper<string, string>(OnCompositionEvent);
-            
+            _compositionAction = new ActionHelper<string, string>(OnCompositionEvent);
+            _inputAction = new ActionHelper<string, string>(OnInputEvent);
+
             Start();
         }
 
-        public event EventHandler<WebCompositionEventArgs>? CompositionEvent; 
+        public event EventHandler<WebCompositionEventArgs>? CompositionEvent;
+        public event EventHandler<WebInputEventArgs>? InputEvent;
 
         private void OnCompositionEvent(string type, string data)
         {
             Console.WriteLine($"CompositionEvent Handler Helper {CompositionEvent == null} ");
             CompositionEvent?.Invoke(this, new WebCompositionEventArgs(type, data));
+        }
+
+        private void OnInputEvent(string type, string data)
+        {
+            Console.WriteLine($"InputEvent Handler Helper {InputEvent == null} ");
+            InputEvent?.Invoke(this, new WebInputEventArgs(type, data));
         }
 
         public void Clear() => _module.Invoke(ClearSymbol, _inputElement);
@@ -75,12 +99,21 @@ namespace Avalonia.Web.Blazor.Interop
 
         private void Start()
         {
-            if(callbackReference != null)
+            if(compositionActionReference != null)
+            {
                 return;
-            
-            callbackReference = DotNetObjectReference.Create(_actionHelper);
+            }
+                          
+            compositionActionReference = DotNetObjectReference.Create(_compositionAction);
 
-            _module.Invoke(StartSymbol, _inputElement, callbackReference);
+            inputActionReference = DotNetObjectReference.Create(_inputAction);
+
+            _module.Invoke(StartSymbol, _inputElement, compositionActionReference, inputActionReference);
+        }
+
+        public void SetSurroundingText(string text, int start, int end)
+        {
+            _module.Invoke(SetSurroundingTextSymbol, _inputElement, text, start, end);
         }
     }
 }

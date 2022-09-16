@@ -28,7 +28,7 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// Sets the non-committed input string
         /// </summary>
-        void SetPreeditText(string text);
+        void SetPreeditText(string? text);
         /// <summary>
         /// Indicates if text input client is capable of providing the text around the cursor
         /// </summary>
