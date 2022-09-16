@@ -335,7 +335,23 @@ namespace Avalonia.Web.Blazor
 
         private void InputHelperOnCompositionEvent(object? sender, WebCompositionEventArgs e)
         {
-            Debug.WriteLine("Test");
+            if(_client == null)
+            {
+                return;
+            }
+
+            switch (e.Type)
+            {
+                case WebCompositionEventArgs.WebCompositionEventType.Start:
+                    _client.SetPreeditText(null);
+                    break;
+                case WebCompositionEventArgs.WebCompositionEventType.Update:
+                    _client?.SetPreeditText(e.Data);
+                    break;
+                case WebCompositionEventArgs.WebCompositionEventType.End:
+                    _client?.SetPreeditText(null);
+                    break;
+            }
         }
 
         private void OnRenderFrame()
@@ -417,6 +433,16 @@ namespace Avalonia.Web.Blazor
                 return;
             }
 
+            if(_client != null)
+            {
+                _client.SurroundingTextChanged -= SurroundingTextChanged;
+            }
+
+            if(client != null)
+            {
+                client.SurroundingTextChanged += SurroundingTextChanged;
+            }
+
             _inputHelper.Clear();
 
             _client = client;
@@ -432,6 +458,13 @@ namespace Avalonia.Web.Blazor
                 _inputElementFocused = false;
                 HideIme();
             }
+        }
+
+        private void SurroundingTextChanged(object? sender, EventArgs e)
+        {
+            var surroundingText = _client.SurroundingText;
+
+            _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
         }
 
         public void SetCursorRect(Rect rect)
