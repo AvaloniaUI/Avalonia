@@ -32,8 +32,8 @@ namespace Avalonia.Web.Blazor
         private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null;
         private AvaloniaModule? _avaloniaModule = null;
         private InputHelperInterop? _inputHelper = null;
-        private InputHelperInterop? _canvasHelper = null;
-        private InputHelperInterop? _containerHelper = null;
+        private FocusHelperInterop? _canvasHelper = null;
+        private FocusHelperInterop? _containerHelper = null;
         private NativeControlHostInterop? _nativeControlHost = null;
         private StorageProviderInterop? _storageProvider = null;
         private ElementReference _htmlCanvas;
@@ -256,8 +256,8 @@ namespace Avalonia.Web.Blazor
 
                 _avaloniaModule = await AvaloniaModule.ImportAsync(Js);
                 
-                _canvasHelper = new InputHelperInterop(_avaloniaModule, _htmlCanvas);
-                _containerHelper = new InputHelperInterop(_avaloniaModule, _containerElement);
+                _canvasHelper = new FocusHelperInterop(_avaloniaModule, _htmlCanvas);
+                _containerHelper = new FocusHelperInterop(_avaloniaModule, _containerElement);
                 _inputHelper = new InputHelperInterop(_avaloniaModule, _inputElement);
                 
                 _inputHelper.CompositionEvent += InputHelperOnCompositionEvent;
