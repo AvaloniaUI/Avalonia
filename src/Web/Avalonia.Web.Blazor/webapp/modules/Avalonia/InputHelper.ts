@@ -13,18 +13,9 @@
     public static clear(inputElement: HTMLInputElement) {
         inputElement.value = "";
     }
-    
-    public static isInputElement( element : HTMLInputElement | HTMLElement ) : element is HTMLInputElement {
-        return ( element as HTMLInputElement).setSelectionRange !== undefined;
-    }
-
-    public static focus(inputElement: HTMLElement) {
+    public static focus(inputElement: HTMLInputElement) {
         inputElement.focus();
-        
-        if(this.isInputElement(inputElement))
-        {
-            (inputElement as HTMLInputElement).setSelectionRange(0,0);
-        }
+        inputElement.setSelectionRange(0,0);
     }
 
     public static setCursor(inputElement: HTMLInputElement, kind: string) {
@@ -54,3 +45,4 @@
         }
     }
 }
+
