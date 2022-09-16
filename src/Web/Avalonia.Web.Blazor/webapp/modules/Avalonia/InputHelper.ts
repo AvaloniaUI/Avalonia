@@ -1,13 +1,18 @@
 ﻿export class InputHelper {
-    static callback?: DotNet.DotNetObject;
+    static inputCallback?: DotNet.DotNetObject;
+    static compositionCallback?: DotNet.DotNetObject 
     
-    public static start(inputElement: HTMLInputElement, callback: DotNet.DotNetObject)
-    {
-        InputHelper.callback = callback;
+    public static start(inputElement: HTMLInputElement, compositionCallback: DotNet.DotNetObject, inputCallback: DotNet.DotNetObject)
+    {       
+        InputHelper.compositionCallback = compositionCallback;
 
         inputElement.addEventListener('compositionstart', InputHelper.onCompositionEvent);
         inputElement.addEventListener('compositionupdate', InputHelper.onCompositionEvent);
-        inputElement.addEventListener('compositionend', InputHelper.onCompositionEvent);
+        inputElement.addEventListener('compositionend', InputHelper.onCompositionEvent);    
+
+        InputHelper.inputCallback = inputCallback;
+
+        inputElement.addEventListener('input', InputHelper.onInputEvent);
     }
     
     public static clear(inputElement: HTMLInputElement) {
@@ -30,9 +35,18 @@
         inputElement.style.display = 'block';
     }
 
+    public static setSurroundingText(inputElement: HTMLInputElement, text: string, start: number, end: number) {
+        if (!inputElement) {
+            return;
+        }
+
+        inputElement.value = text;
+        inputElement.setSelectionRange(start, end);
+    }
+
     private static onCompositionEvent(ev: CompositionEvent)
     {
-        if(!InputHelper.callback)
+        if(!InputHelper.compositionCallback)
             return;
         
         switch (ev.type)
@@ -40,9 +54,18 @@
             case "compositionstart":
             case "compositionupdate":
             case "compositionend":
-                InputHelper.callback.invokeMethod('Invoke', ev.type, ev.data);
+                InputHelper.compositionCallback.invokeMethod('Invoke', ev.type, ev.data);
                 break;
         }
+    }
+
+    private static onInputEvent(ev: Event) {
+        if (!InputHelper.inputCallback)
+            return;
+
+        var inputEvent = ev as InputEvent;
+
+        InputHelper.inputCallback.invokeMethod('Invoke', ev.type, inputEvent.data);
     }
 }
 
