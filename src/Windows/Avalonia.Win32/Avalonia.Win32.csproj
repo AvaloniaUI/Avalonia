@@ -29,5 +29,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Avalonia.Win32.Interoperability, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Direct2D1, PublicKey=$(AvaloniaPublicKey)" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Compile  Remove="$(MSBuildThisFileDirectory)\Shared\ModuleInitializer.cs" />
   </ItemGroup>
 </Project>
