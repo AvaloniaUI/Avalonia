@@ -156,6 +156,8 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
             ++_drawOperationIndex;
     }
 
+    public object? GetFeature(Type t) => null;
+
     /// <inheritdoc/>
     public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
     {

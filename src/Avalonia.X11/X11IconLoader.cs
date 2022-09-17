@@ -68,9 +68,7 @@ namespace Avalonia.X11
         public void Save(Stream outputStream)
         {
             using (var wr =
-#pragma warning disable CS0618 // Type or member is obsolete
                 new WriteableBitmap(new PixelSize(_width, _height), new Vector(96, 96), PixelFormat.Bgra8888))
-#pragma warning restore CS0618 // Type or member is obsolete
             {
                 using (var fb = wr.Lock())
                 {

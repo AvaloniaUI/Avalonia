@@ -11,6 +11,7 @@
   <pc:ThirdComponentConverter x:Key="ThirdComponentConverter" />
   <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayNameConverter" />
   <converters:ColorToHexConverter x:Key="ColorToHexConverter" />
+  <converters:DoNothingForNullConverter x:Key="DoNothingForNullConverter" />
   <globalization:NumberFormatInfo x:Key="ColorViewComponentNumberFormat" NumberDecimalDigits="0" />
   <x:Double x:Key="ColorViewTabStripHeight">48</x:Double>
   <x:Double x:Key="ColorViewComponentLabelWidth">30</x:Double>
@@ -77,6 +78,8 @@
     17.7761 14 17.5 14H9.94999ZM7.5 16C6.67157 16 6 15.3284 6 14.5C6 13.6716 6.67157 13 7.5
     13C8.32843 13 9 13.6716 9 14.5C9 15.3284 8.32843 16 7.5 16Z
   </PathGeometry>
+  <!-- This radius should follow ControlCornerRadius -->
+  <CornerRadius x:Key="ColorViewTabBackgroundCornerRadius">3</CornerRadius>
 
   <ControlTheme x:Key="{x:Type ColorView}"
                 TargetType="ColorView">
@@ -97,7 +100,7 @@
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Top"
                   Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                  CornerRadius="{TemplateBinding CornerRadius}" />
+                  CornerRadius="{DynamicResource ColorViewTabBackgroundCornerRadius}" />
           <Border x:Name="ContentBackgroundBorder"
                   Grid.Row="0"
                   Grid.RowSpan="2"
@@ -203,7 +206,7 @@
                 </Border>
               </TabItem.Header>
               <ListBox Items="{TemplateBinding PaletteColors}"
-                       SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                       SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource DoNothingForNullConverter}, Mode=TwoWay}"
                        UseLayoutRounding="False"
                        Margin="12">
                 <ListBox.Styles>

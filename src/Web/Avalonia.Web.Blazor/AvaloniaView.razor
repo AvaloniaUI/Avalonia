@@ -1,7 +1,11 @@
-﻿<div id="container" class="avalonia-container" tabindex="0" oncontextmenu="return false;"
+﻿<div id="container" @ref="_containerElement"  
+     class="avalonia-container" 
+     tabindex="0" oncontextmenu="return false;"
      @onwheel="OnWheel"
      @onkeydown="OnKeyDown"
      @onkeyup="OnKeyUp"
+     @onkeyup:preventDefault="@KeyPreventDefault"
+     @onkeydown:preventDefault="@KeyPreventDefault"
      @onpointerdown="OnPointerDown"
      @onpointerup="OnPointerUp"
      @onpointermove="OnPointerMove"
@@ -15,7 +19,8 @@
     <input id="inputElement" @ref="_inputElement" type="text" @oninput="OnInput" 
         onpaste="return false;"
         oncopy="return false;" 
-        oncut="return false;"/>
+        oncut="return false;"
+        autocapitalize="none"/>
 </div>
 
 <style>

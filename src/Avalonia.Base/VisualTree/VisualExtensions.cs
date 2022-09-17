@@ -413,7 +413,7 @@ namespace Avalonia.VisualTree
                     Index = index,
                     ZIndex = element.ZIndex,
                 })
-                .OrderBy(x => x, null)
+                .OrderBy(x => x, ZOrderElement.Comparer)
                 .Select(x => x.Element!);
         }
 
@@ -448,6 +448,19 @@ namespace Avalonia.VisualTree
             public int Index { get; set; }
             public int ZIndex { get; set; }
 
+            class ZOrderComparer : IComparer<ZOrderElement>
+            {
+                public int Compare(ZOrderElement? x, ZOrderElement? y)
+                {
+                    if (ReferenceEquals(x, y)) return 0;
+                    if (ReferenceEquals(null, y)) return 1;
+                    if (ReferenceEquals(null, x)) return -1;
+                    return x.CompareTo(y);
+                }
+            }
+
+            public static IComparer<ZOrderElement> Comparer { get; } = new ZOrderComparer();
+            
             public int CompareTo(ZOrderElement? other)
             {
                 if (other is null)

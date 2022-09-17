@@ -137,6 +137,9 @@ space_within_single_line_array_initializer_braces = true
 # Wrapping preferences
 csharp_wrap_before_ternary_opsigns = false
 
+# Avalonia DevAnalyzer preferences
+dotnet_diagnostic.AVADEV2001.severity = error
+
 # Xaml files
 [*.{xaml,axaml}]
 indent_size = 2

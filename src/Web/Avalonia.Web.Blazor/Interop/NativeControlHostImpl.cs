@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
@@ -10,31 +9,24 @@ using Microsoft.JSInterop;
 namespace Avalonia.Web.Blazor.Interop
 {
 
-    internal class NativeControlHostInterop : JSModuleInterop, INativeControlHostImpl
+    internal class NativeControlHostInterop : INativeControlHostImpl
     {
-        private const string JsFilename = "./_content/Avalonia.Web.Blazor/NativeControlHost.js";
         private const string CreateDefaultChildSymbol = "NativeControlHost.CreateDefaultChild";
         private const string CreateAttachmentSymbol = "NativeControlHost.CreateAttachment";
         private const string GetReferenceSymbol = "NativeControlHost.GetReference";
 
-        private readonly ElementReference hostElement;
+        private readonly AvaloniaModule _module;
+        private readonly ElementReference _hostElement;
 
-        public static async Task<NativeControlHostInterop> ImportAsync(IJSRuntime js, ElementReference element)
+        public NativeControlHostInterop(AvaloniaModule module, ElementReference element)
         {
-            var interop = new NativeControlHostInterop(js, element);
-            await interop.ImportAsync();
-            return interop;
-        }
-
-        public NativeControlHostInterop(IJSRuntime js, ElementReference element)
-            : base(js, JsFilename)
-        {
-            hostElement = element;
+            _module = module;
+            _hostElement = element;
         }
 
         public INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent)
         {
-            var element = Invoke<IJSInProcessObjectReference>(CreateDefaultChildSymbol);
+            var element = _module.Invoke<IJSInProcessObjectReference>(CreateDefaultChildSymbol);
             return new JSObjectControlHandle(element);
         }
 
@@ -43,9 +35,9 @@ namespace Avalonia.Web.Blazor.Interop
             Attachment? a = null;
             try
             {
-                using var hostElementJsReference = Invoke<IJSInProcessObjectReference>(GetReferenceSymbol, hostElement);                
+                using var hostElementJsReference = _module.Invoke<IJSInProcessObjectReference>(GetReferenceSymbol, _hostElement);                
                 var child = create(new JSObjectControlHandle(hostElementJsReference));
-                var attachmenetReference = Invoke<IJSInProcessObjectReference>(CreateAttachmentSymbol);
+                var attachmenetReference = _module.Invoke<IJSInProcessObjectReference>(CreateAttachmentSymbol);
                 // It has to be assigned to the variable before property setter is called so we dispose it on exception
 #pragma warning disable IDE0017 // Simplify object initialization
                 a = new Attachment(attachmenetReference, child);
@@ -62,7 +54,7 @@ namespace Avalonia.Web.Blazor.Interop
 
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(IPlatformHandle handle)
         {
-            var attachmenetReference = Invoke<IJSInProcessObjectReference>(CreateAttachmentSymbol);
+            var attachmenetReference = _module.Invoke<IJSInProcessObjectReference>(CreateAttachmentSymbol);
             var a = new Attachment(attachmenetReference, handle);
             a.AttachedTo = this;
             return a;
@@ -111,7 +103,7 @@ namespace Avalonia.Web.Blazor.Interop
                     }
                     else
                     {
-                        _native.InvokeVoid(AttachToSymbol, host.hostElement);
+                        _native.InvokeVoid(AttachToSymbol, host._hostElement);
                     }
                     _attachedTo = host;
                 }

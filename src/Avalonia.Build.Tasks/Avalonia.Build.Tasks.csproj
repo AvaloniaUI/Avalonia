@@ -109,4 +109,5 @@
       <PackageReference Include="Microsoft.Build.Framework" Version="15.1.548" PrivateAssets="All" />
       <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
     </ItemGroup>
+  <Import Project="..\..\build\SourceGenerators.props" />
 </Project>

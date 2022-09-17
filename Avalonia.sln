@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Direct2D1", "src\W
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls", "src\Avalonia.Controls\Avalonia.Controls.csproj", "{D2221C82-4A25-4583-9B43-D791E3F6820C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Default", "src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj", "{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Simple", "src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj", "{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Diagnostics", "src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj", "{7062AE20-5DCC-4442-9645-8195BDECE63E}"
 EndProject

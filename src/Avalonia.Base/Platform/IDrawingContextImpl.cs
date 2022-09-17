@@ -172,6 +172,20 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="custom">Custom draw operation</param>
         void Custom(ICustomDrawOperation custom);
+
+        /// <summary>
+        /// Attempts to get an optional feature from the drawing context implementation
+        /// </summary>
+        object? GetFeature(Type t);
+    }
+
+    public static class DrawingContextImplExtensions
+    {
+        /// <summary>
+        /// Attempts to get an optional feature from the drawing context implementation
+        /// </summary>
+        public static T? GetFeature<T>(this IDrawingContextImpl context) where T : class =>
+            (T?)context.GetFeature(typeof(T));
     }
 
     public interface IDrawingContextLayerImpl : IRenderTargetBitmapImpl

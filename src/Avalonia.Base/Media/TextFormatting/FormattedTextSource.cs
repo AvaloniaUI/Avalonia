@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
@@ -116,7 +117,30 @@ namespace Avalonia.Media.TextFormatting
                 length = text.Length;
             }
 
+            length = CoerceLength(text, length);
+
             return new ValueSpan<TextRunProperties>(firstTextSourceIndex, length, currentProperties);
+        }
+
+        private static int CoerceLength(ReadOnlySlice<char> text, int length)
+        {
+            var finalLength = 0;
+
+            var graphemeEnumerator = new GraphemeEnumerator(text);
+
+            while (graphemeEnumerator.MoveNext())
+            {
+                var grapheme = graphemeEnumerator.Current;
+
+                finalLength += grapheme.Text.Length;
+
+                if (finalLength >= length)
+                {
+                    return finalLength;
+                }
+            }
+
+            return length;
         }
     }
 }

@@ -14,15 +14,15 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a date
     /// </summary>
-    [TemplatePart("ButtonContentGrid", typeof(Grid))]
-    [TemplatePart("DayText",           typeof(TextBlock))]
-    [TemplatePart("FirstSpacer",       typeof(Rectangle))]
-    [TemplatePart("FlyoutButton",      typeof(Button))]
-    [TemplatePart("MonthText",         typeof(TextBlock))]
-    [TemplatePart("PickerPresenter",   typeof(DatePickerPresenter))]
-    [TemplatePart("Popup",             typeof(Popup))]
-    [TemplatePart("SecondSpacer",      typeof(Rectangle))]
-    [TemplatePart("YearText",          typeof(TextBlock))]
+    [TemplatePart("PART_ButtonContentGrid", typeof(Grid))]
+    [TemplatePart("PART_DayTextBlock",      typeof(TextBlock))]
+    [TemplatePart("PART_FirstSpacer",       typeof(Rectangle))]
+    [TemplatePart("PART_FlyoutButton",      typeof(Button))]
+    [TemplatePart("PART_MonthTextBlock",    typeof(TextBlock))]
+    [TemplatePart("PART_PickerPresenter",   typeof(DatePickerPresenter))]
+    [TemplatePart("PART_Popup",             typeof(Popup))]
+    [TemplatePart("PART_SecondSpacer",      typeof(Rectangle))]
+    [TemplatePart("PART_YearTextBlock",     typeof(TextBlock))]
     [PseudoClasses(":hasnodate")]
     public class DatePicker : TemplatedControl
     {
@@ -280,15 +280,15 @@ namespace Avalonia.Controls
             }
 
             base.OnApplyTemplate(e);
-            _flyoutButton = e.NameScope.Find<Button>("FlyoutButton");
-            _dayText = e.NameScope.Find<TextBlock>("DayText");
-            _monthText = e.NameScope.Find<TextBlock>("MonthText");
-            _yearText = e.NameScope.Find<TextBlock>("YearText");
-            _container = e.NameScope.Find<Grid>("ButtonContentGrid");
-            _spacer1 = e.NameScope.Find<Rectangle>("FirstSpacer");
-            _spacer2 = e.NameScope.Find<Rectangle>("SecondSpacer");
-            _popup = e.NameScope.Find<Popup>("Popup");
-            _presenter = e.NameScope.Find<DatePickerPresenter>("PickerPresenter");
+            _flyoutButton = e.NameScope.Find<Button>("PART_FlyoutButton");
+            _dayText = e.NameScope.Find<TextBlock>("PART_DayTextBlock");
+            _monthText = e.NameScope.Find<TextBlock>("PART_MonthTextBlock");
+            _yearText = e.NameScope.Find<TextBlock>("PART_YearTextBlock");
+            _container = e.NameScope.Find<Grid>("PART_ButtonContentGrid");
+            _spacer1 = e.NameScope.Find<Rectangle>("PART_FirstSpacer");
+            _spacer2 = e.NameScope.Find<Rectangle>("PART_SecondSpacer");
+            _popup = e.NameScope.Find<Popup>("PART_Popup");
+            _presenter = e.NameScope.Find<DatePickerPresenter>("PART_PickerPresenter");
 
             _areControlsAvailable = true;
 

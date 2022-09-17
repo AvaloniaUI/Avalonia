@@ -10,6 +10,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
+using JetBrains.Annotations;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -17,7 +18,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia based drawing context.
     /// </summary>
-    internal class DrawingContextImpl : IDrawingContextImpl, ISkiaDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
+    internal class DrawingContextImpl : IDrawingContextImpl, IDrawingContextWithAcrylicLikeSupport
     {
         private IDisposable[] _disposables;
         private readonly Vector _dpi;
@@ -38,7 +39,8 @@ namespace Avalonia.Skia
         private readonly SKPaint _fillPaint = new SKPaint();
         private readonly SKPaint _boxShadowPaint = new SKPaint();
         private static SKShader s_acrylicNoiseShader;
-        private readonly ISkiaGpuRenderSession _session; 
+        private readonly ISkiaGpuRenderSession _session;
+        private bool _leased = false;
 
         /// <summary>
         /// Context create info.
@@ -83,6 +85,47 @@ namespace Avalonia.Skia
             public ISkiaGpuRenderSession CurrentSession;
         }
 
+        class SkiaLeaseFeature : ISkiaSharpApiLeaseFeature
+        {
+            private readonly DrawingContextImpl _context;
+
+            public SkiaLeaseFeature(DrawingContextImpl context)
+            {
+                _context = context;
+            }
+
+            public ISkiaSharpApiLease Lease()
+            {
+                _context.CheckLease();
+                return new ApiLease(_context);
+            }
+
+            class ApiLease : ISkiaSharpApiLease
+            {
+                private DrawingContextImpl _context;
+                private readonly SKMatrix _revertTransform;
+
+                public ApiLease(DrawingContextImpl context)
+                {
+                    _revertTransform = context.Canvas.TotalMatrix;
+                    _context = context;
+                    _context._leased = true;
+                }
+
+                public SKCanvas SkCanvas => _context.Canvas;
+                public GRContext GrContext => _context.GrContext;
+                public SKSurface SkSurface => _context.Surface;
+                public double CurrentOpacity => _context._currentOpacity;
+                
+                public void Dispose()
+                {
+                    _context.Canvas.SetMatrix(_revertTransform);
+                    _context._leased = false;
+                    _context = null;
+                }
+            }
+        }
+        
         /// <summary>
         /// Create new drawing context.
         /// </summary>
@@ -123,20 +166,23 @@ namespace Avalonia.Skia
         public SKCanvas Canvas { get; }
         public SKSurface Surface { get; }
 
-        SKCanvas ISkiaDrawingContextImpl.SkCanvas => Canvas;
-        SKSurface ISkiaDrawingContextImpl.SkSurface => Surface;
-        GRContext ISkiaDrawingContextImpl.GrContext => _grContext;
-        double ISkiaDrawingContextImpl.CurrentOpacity => _currentOpacity;
-
+        private void CheckLease()
+        {
+            if (_leased)
+                throw new InvalidOperationException("The underlying graphics API is currently leased");
+        }
+        
         /// <inheritdoc />
         public void Clear(Color color)
         {
+            CheckLease();
             Canvas.Clear(color.ToSKColor());
         }
 
         /// <inheritdoc />
         public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode)
         {
+            CheckLease();
             var drawableImage = (IDrawableBitmapImpl)source.Item;
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
@@ -157,6 +203,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawBitmap(IRef<IBitmapImpl> source, IBrush opacityMask, Rect opacityMaskRect, Rect destRect)
         {
+            CheckLease();
             PushOpacityMask(opacityMask, opacityMaskRect);
             DrawBitmap(source, 1, new Rect(0, 0, source.Item.PixelSize.Width, source.Item.PixelSize.Height), destRect, BitmapInterpolationMode.Default);
             PopOpacityMask();
@@ -165,6 +212,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawLine(IPen pen, Point p1, Point p2)
         {
+            CheckLease();
             using (var paint = CreatePaint(_strokePaint, pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
                 if (paint.Paint is object)
@@ -177,6 +225,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
         {
+            CheckLease();
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
@@ -260,6 +309,7 @@ namespace Avalonia.Skia
         {
             if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
                 return;
+            CheckLease();
             
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
@@ -296,6 +346,7 @@ namespace Avalonia.Skia
         {
             if (rect.Rect.Height <= 0 || rect.Rect.Width <= 0)
                 return;
+            CheckLease();
             // Arbitrary chosen values
             // On OSX Skia breaks OpenGL context when asked to draw, e. g. (0, 0, 623, 6666600) rect
             if (rect.Rect.Height > 8192 || rect.Rect.Width > 8192)
@@ -421,7 +472,8 @@ namespace Avalonia.Skia
         {
             if (rect.Height <= 0 || rect.Width <= 0)
                 return;
-
+            CheckLease();
+            
             var rc = rect.ToSKRect();
 
             if (brush != null)
@@ -447,6 +499,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
         {
+            CheckLease();
             using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
@@ -459,18 +512,21 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IDrawingContextLayerImpl CreateLayer(Size size)
         {
+            CheckLease();
             return CreateRenderTarget(size, true);
         }
 
         /// <inheritdoc />
         public void PushClip(Rect clip)
         {
+            CheckLease();
             Canvas.Save();
             Canvas.ClipRect(clip.ToSKRect());
         }
 
         public void PushClip(RoundedRect clip)
         {
+            CheckLease();
             Canvas.Save();
             Canvas.ClipRoundRect(clip.ToSKRoundRect(), antialias:true);
         }
@@ -478,12 +534,14 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopClip()
         {
+            CheckLease();
             Canvas.Restore();
         }
 
         /// <inheritdoc />
         public void PushOpacity(double opacity)
         {
+            CheckLease();
             _opacityStack.Push(_currentOpacity);
             _currentOpacity *= opacity;
         }
@@ -491,6 +549,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopOpacity()
         {
+            CheckLease();
             _currentOpacity = _opacityStack.Pop();
         }
 
@@ -499,6 +558,7 @@ namespace Avalonia.Skia
         {
             if(_disposed)
                 return;
+            CheckLease();
             try
             {
                 if (_grContext != null)
@@ -523,6 +583,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PushGeometryClip(IGeometryImpl clip)
         {
+            CheckLease();
             Canvas.Save();
             Canvas.ClipPath(((GeometryImpl)clip).EffectivePath, SKClipOperation.Intersect, true);
         }
@@ -530,12 +591,14 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopGeometryClip()
         {
+            CheckLease();
             Canvas.Restore();
         }
 
         /// <inheritdoc />
         public void PushBitmapBlendMode(BitmapBlendingMode blendingMode)
         {
+            CheckLease();
             _blendingModeStack.Push(_currentBlendingMode);
             _currentBlendingMode = blendingMode;
         }
@@ -543,14 +606,20 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopBitmapBlendMode()
         {
+            CheckLease();
             _currentBlendingMode = _blendingModeStack.Pop();
         }
 
-        public void Custom(ICustomDrawOperation custom) => custom.Render(this);
+        public void Custom(ICustomDrawOperation custom)
+        {
+            CheckLease();
+            custom.Render(this);
+        }
 
         /// <inheritdoc />
         public void PushOpacityMask(IBrush mask, Rect bounds)
         {
+            CheckLease();
             // TODO: This should be disposed
             var paint = new SKPaint();
 
@@ -561,6 +630,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public void PopOpacityMask()
         {
+            CheckLease();
             using (var paint = new SKPaint { BlendMode = SKBlendMode.DstIn })
             {
                 Canvas.SaveLayer(paint);
@@ -580,6 +650,7 @@ namespace Avalonia.Skia
             get { return _currentTransform; }
             set
             {
+                CheckLease();
                 if (_currentTransform == value)
                     return;
 
@@ -594,6 +665,14 @@ namespace Avalonia.Skia
 
                 Canvas.SetMatrix(transform.ToSKMatrix());
             }
+        }
+
+        [CanBeNull]
+        public object GetFeature(Type t)
+        {
+            if (t == typeof(ISkiaSharpApiLeaseFeature))
+                return new SkiaLeaseFeature(this);
+            return null;
         }
 
         /// <summary>
