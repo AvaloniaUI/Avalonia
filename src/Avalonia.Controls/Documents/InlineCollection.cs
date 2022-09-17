@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
 using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {
@@ -70,14 +70,14 @@ namespace Avalonia.Controls.Documents
         {
             get
             {
-                var builder = new StringBuilder();
+                var builder = StringBuilderCache.Acquire();
 
                 foreach (var inline in this)
                 {
                     inline.AppendText(builder);
                 }
 
-                return builder.ToString();
+                return StringBuilderCache.GetStringAndRelease(builder);
             }
 
         }
