@@ -290,6 +290,9 @@
 
 - (void)mouseDown:(NSEvent *)event
 {
+    if (event.modifierFlags & NSEventModifierFlagControl)
+        return [self rightMouseDown:event];
+    
     _isLeftPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:LeftButtonDown];
@@ -329,6 +332,9 @@
 
 - (void)mouseUp:(NSEvent *)event
 {
+    if (event.modifierFlags & NSEventModifierFlagControl)
+        return [self rightMouseUp:event];
+    
     _isLeftPressed = false;
     [self mouseEvent:event withType:LeftButtonUp];
 }
