@@ -51,15 +51,9 @@
                 <TabControl
                     Items="{Binding Tabs}"
                     Margin="0 16"
+                    HeaderDisplayMemberBinding="{Binding Header}"
                     TabStripPlacement="{Binding TabPlacement}">
-                    <TabControl.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock
-                                Text="{Binding Header}">
-                            </TextBlock>
-                        </DataTemplate>
-                    </TabControl.ItemTemplate>
-                    <TabControl.ContentTemplate>
+                  <TabControl.ContentTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Vertical" Spacing="8">
                                 <TextBlock Text="{Binding Text}"/>
