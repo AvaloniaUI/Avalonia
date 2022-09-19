@@ -1103,8 +1103,45 @@ namespace Avalonia.Base.UnitTests
             target.Bind(TextBlock.TextProperty, new Binding("[0]", BindingMode.TwoWay));
         }
 
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.StyleTrigger)]
+        [InlineData(BindingPriority.Style)]
+        public void TwoWay_Binding_Should_Not_Update_Source_When_Higher_Priority_Value_Set(BindingPriority priority)
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel();
+            var binding = new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source };
+
+            target.Bind(Class1.DoubleValueProperty, binding, priority);
+            target.SetValue(Class1.DoubleValueProperty, 123.4, priority - 1);
+
+            // Setter should not be called because the TwoWay binding with LocalValue priority
+            // should be overridden by the animated value and the binding made inactive.
+            Assert.False(source.SetterCalled);
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.StyleTrigger)]
+        [InlineData(BindingPriority.Style)]
+        public void TwoWay_Binding_Should_Not_Update_Source_When_Higher_Priority_Binding_Added(BindingPriority priority)
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel();
+            var binding1 = new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source };
+            var binding2 = new BehaviorSubject<double>(123.4);
+            
+            target.Bind(Class1.DoubleValueProperty, binding1, priority);
+            target.Bind(Class1.DoubleValueProperty, binding2, priority - 1);
+
+            // Setter should not be called because the TwoWay binding with LocalValue priority
+            // should be overridden by the animated binding and the binding made inactive.
+            Assert.False(source.SetterCalled);
+        }
+
         [Fact]
-        public void TwoWay_LocalValue_Binding_Should_Not_Update_Source_When_Animated_Value_Set()
+        public void TwoWay_Style_Binding_Should_Not_Update_Source_When_StyleTrigger_Value_Set()
         {
             var target = new Class1();
             var source = new TestTwoWayBindingViewModel();
@@ -1112,9 +1149,24 @@ namespace Avalonia.Base.UnitTests
             target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
             target.SetValue(Class1.DoubleValueProperty, 123.4, BindingPriority.Animation);
 
-            // Setter should not be called because the TwoWay binding with LocalValue priority
+            // Setter should not be called because the TwoWay binding with Style priority
             // should be overridden by the animated value and the binding made inactive.
             Assert.False(source.SetterCalled);
+        }
+
+        [Fact]
+        public void TwoWay_Style_Binding_Should_Not_Update_Source_When_Animated_Binding_Added()
+        {
+            var target = new Class1();
+            var source1 = new TestTwoWayBindingViewModel();
+            var source2 = new BehaviorSubject<double>(123.4);
+
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source1.Value), BindingMode.TwoWay) { Source = source1 });
+            target.Bind(Class1.DoubleValueProperty, source2, BindingPriority.Animation);
+
+            // Setter should not be called because the TwoWay binding with Style priority
+            // should be overridden by the animated binding and the binding made inactive.
+            Assert.False(source1.SetterCalled);
         }
 
         [Fact]
