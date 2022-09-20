@@ -49,8 +49,11 @@ internal struct SpringSolver
             zeta, 
             initialVelocity)
     {
-        // T is period
-        // T = 2 * PI * sqrt(m / k)
+        // T is time period [s]
+        // T = (2*PI / sqrt(k)) * sqrt(m)
+
+        // ωn is natural frequency of the system [Hz] [1/s]
+        // ωn = 2*PI / T
     }
 
     /// <summary>
@@ -66,6 +69,9 @@ internal struct SpringSolver
             c / (2 * Math.Sqrt(k * m)), // c / Cc
             initialVelocity)
     {
+        // ωn is natural frequency of the system [Hz] [1/s]
+        // ωn = sqrt(k / m)
+
         // Cc is critical damping coefficient
         // Cc = 2 * Sqrt(k * m)
         // Cc = 2 * m * wn
@@ -83,7 +89,6 @@ internal struct SpringSolver
     /// <param name="initialVelocity"></param>
     public SpringSolver(double ωn, double zeta, double initialVelocity)
     {
-        // ωn = sqrt(k / m)
         m_w0 = ωn;
         m_zeta = zeta;
 
