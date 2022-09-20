@@ -10,6 +10,7 @@ using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Rendering.Composition.Transport;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 
 
 // Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
@@ -24,16 +25,18 @@ namespace Avalonia.Rendering.Composition
     {
         internal IRenderLoop Loop { get; }
         private ServerCompositor _server;
-        private bool _implicitBatchCommitQueued;
-        private Action _implicitBatchCommit;
+        private TaskCompletionSource<int>? _nextCommit;
+        private Action _commit;
         private BatchStreamObjectPool<object?> _batchObjectPool = new();
         private BatchStreamMemoryPool _batchMemoryPool = new();
         private List<CompositionObject> _objectsForSerialization = new();
+        private Queue<Action<Task>> _invokeBeforeCommit = new();
         internal ServerCompositor Server => _server;
+        private Task? _pendingBatch;
+        private readonly object _pendingBatchLock = new();
+
         internal IEasing DefaultEasing { get; }
-        private List<Action>? _invokeOnNextCommit;
-        private readonly Stack<List<Action>> _invokeListPool = new();
-        private Task? _lastBatchCompleted;
+        
 
         /// <summary>
         /// Creates a new compositor on a specified render loop that would use a particular GPU
@@ -44,19 +47,13 @@ namespace Avalonia.Rendering.Composition
         {
             Loop = loop;
             _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
-            _implicitBatchCommit = ImplicitBatchCommit;
+            _commit = () =>
+            {
+                Console.WriteLine("Dispatcher:Commit");
+                Commit();
+            };
 
             DefaultEasing = new CubicBezierEasing(new Point(0.25f, 0.1f), new Point(0.25f, 1f));
-        }
-
-        /// <summary>
-        /// Creates a new CompositionTarget
-        /// </summary>
-        /// <param name="renderTargetFactory">A factory method to create IRenderTarget to be called from the render thread</param>
-        /// <returns></returns>
-        public CompositionTarget CreateCompositionTarget(Func<IRenderTarget> renderTargetFactory)
-        {
-            return new CompositionTarget(this, new ServerCompositionTarget(_server, renderTargetFactory));
         }
 
         /// <summary>
@@ -66,7 +63,35 @@ namespace Avalonia.Rendering.Composition
         public Task RequestCommitAsync()
         {
             Dispatcher.UIThread.VerifyAccess();
-            var batch = new Batch();
+            if (_nextCommit == null)
+            {
+                _nextCommit = new TaskCompletionSource<int>();
+                var pending = _pendingBatch;
+                if (pending != null)
+                {
+                    pending.ContinueWith(_ =>
+                    {
+                        Dispatcher.UIThread.Post(_commit, DispatcherPriority.Composition);
+                    });
+                }
+                else
+                    Dispatcher.UIThread.Post(_commit, DispatcherPriority.Composition);
+            }
+
+            return _nextCommit.Task;
+        }
+        
+        internal Task Commit()
+        {
+            Dispatcher.UIThread.VerifyAccess();
+            using var noPump = NonPumpingLockHelper.Use();
+            
+            _nextCommit ??= new TaskCompletionSource<int>();
+
+            while (_invokeBeforeCommit.Count > 0)
+                _invokeBeforeCommit.Dequeue()(_nextCommit.Task);
+            
+            var batch = new Batch(_nextCommit);
             
             using (var writer = new BatchStreamWriter(batch.Changes, _batchMemoryPool, _batchObjectPool))
             {
@@ -84,71 +109,36 @@ namespace Avalonia.Rendering.Composition
             
             batch.CommitedAt = Server.Clock.Elapsed;
             _server.EnqueueBatch(batch);
-            if (_invokeOnNextCommit != null) 
-                ScheduleCommitCallbacks(batch.Completed);
             
-            return _lastBatchCompleted = batch.Completed;
-        }
-
-        async void ScheduleCommitCallbacks(Task task)
-        {
-            var list = _invokeOnNextCommit;
-            _invokeOnNextCommit = null;
-            await task;
-            foreach (var i in list!)
-                i();
-            list.Clear();
-            _invokeListPool.Push(list);
-        }
-
-        public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
-        
-        public ExpressionAnimation CreateExpressionAnimation() => new ExpressionAnimation(this);
-
-        public ExpressionAnimation CreateExpressionAnimation(string expression) => new ExpressionAnimation(this)
-        {
-            Expression = expression
-        };
-
-        public ImplicitAnimationCollection CreateImplicitAnimationCollection() => new ImplicitAnimationCollection(this);
-
-        public CompositionAnimationGroup CreateAnimationGroup() => new CompositionAnimationGroup(this);
-        
-        private void QueueImplicitBatchCommit()
-        {
-            if(_implicitBatchCommitQueued)
-                return;
-            _implicitBatchCommitQueued = true;
-            Dispatcher.UIThread.Post(_implicitBatchCommit, DispatcherPriority.CompositionBatch);
-        }
-
-        private void ImplicitBatchCommit()
-        {
-            _implicitBatchCommitQueued = false;
-            RequestCommitAsync();
+            lock (_pendingBatchLock)
+            {
+                _pendingBatch = _nextCommit.Task;
+                _pendingBatch.ContinueWith(t =>
+                {
+                    lock (_pendingBatchLock)
+                    {
+                        if (_pendingBatch == t)
+                            _pendingBatch = null;
+                    }
+                }, TaskContinuationOptions.ExecuteSynchronously);
+                _nextCommit = null;
+                
+                return _pendingBatch;
+            }
         }
 
         internal void RegisterForSerialization(CompositionObject compositionObject)
         {
             Dispatcher.UIThread.VerifyAccess();
             _objectsForSerialization.Add(compositionObject);
-            QueueImplicitBatchCommit();
+            RequestCommitAsync();
         }
 
-        internal void InvokeOnNextCommit(Action action)
+        internal void InvokeBeforeNextCommit(Action<Task> action)
         {
-            _invokeOnNextCommit ??= _invokeListPool.Count > 0 ? _invokeListPool.Pop() : new();
-            _invokeOnNextCommit.Add(action);
-        }
-
-        public void InvokeWhenReadyForNextCommit(Action action)
-        {
-            if (_lastBatchCompleted == null || _lastBatchCompleted.IsCompleted)
-                Dispatcher.UIThread.Post(action, DispatcherPriority.Composition);
-            else
-                _lastBatchCompleted.ContinueWith(
-                    static (_, state) => Dispatcher.UIThread.Post((Action)state!, DispatcherPriority.Composition),
-                    action);
+            Dispatcher.UIThread.VerifyAccess();
+            _invokeBeforeCommit.Enqueue(action);
+            RequestCommitAsync();
         }
     }
 }
