@@ -37,10 +37,55 @@ internal struct SpringSolver
     private double m_A;
     private double m_B;
 
-    public SpringSolver(double mass, double stiffness, double damping, double initialVelocity)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="period">The time period.</param>
+    /// <param name="zeta">The damping ratio.</param>
+    /// <param name="initialVelocity"></param>
+    public SpringSolver(TimeSpan period, double zeta, double initialVelocity) 
+        : this(
+            2 * Math.PI / period.TotalSeconds, 
+            zeta, 
+            initialVelocity)
     {
-        m_w0 = Math.Sqrt(stiffness / mass);
-        m_zeta = damping / (2 * Math.Sqrt(stiffness * mass));
+        // T is period
+        // T = 2 * PI * sqrt(m / k)
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="m">The mass of the oscillating body.</param>
+    /// <param name="k">The stiffness of the oscillated body (spring constant).</param>
+    /// <param name="c">The actual damping.</param>
+    /// <param name="initialVelocity">The initial velocity.</param>
+    public SpringSolver(double m, double k, double c, double initialVelocity)
+        : this(
+            Math.Sqrt(k / m), // ωn
+            c / (2 * Math.Sqrt(k * m)), // c / Cc
+            initialVelocity)
+    {
+        // Cc is critical damping coefficient
+        // Cc = 2 * Sqrt(k * m)
+        // Cc = 2 * m * wn
+        // Cc = 2 * m * Sqrt(k / m)
+
+        // ζ is damping ratio (Greek letter zeta)
+        // ζ = m_zeta = c / Cc
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="ωn">The the natural frequency of the system [rad/s].</param>
+    /// <param name="zeta">The damping ratio.</param>
+    /// <param name="initialVelocity"></param>
+    public SpringSolver(double ωn, double zeta, double initialVelocity)
+    {
+        // ωn = sqrt(k / m)
+        m_w0 = ωn;
+        m_zeta = zeta;
 
         if (m_zeta < 1) {
             // Under-damped.
