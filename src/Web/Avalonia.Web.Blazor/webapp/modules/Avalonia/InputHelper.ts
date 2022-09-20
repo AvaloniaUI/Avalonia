@@ -1,6 +1,8 @@
-﻿export class InputHelper {
+﻿import {CaretHelper} from "./CaretHelper";
+
+export class InputHelper {
     static inputCallback?: DotNet.DotNetObject;
-    static compositionCallback?: DotNet.DotNetObject 
+    static compositionCallback?: DotNet.DotNetObject
     
     public static start(inputElement: HTMLInputElement, compositionCallback: DotNet.DotNetObject, inputCallback: DotNet.DotNetObject)
     {       
@@ -34,7 +36,9 @@
         inputElement.style.height = "20px";
         inputElement.style.width = "200px";
 
-        getCaretCoordinates(inputElement, inputElement.selectionEnd);
+        if(inputElement.selectionStart) {
+            let {height, left, top} = CaretHelper.getCaretCoordinates(inputElement, inputElement.selectionStart);
+        }
     }
 
     public static hide(inputElement: HTMLInputElement) {
