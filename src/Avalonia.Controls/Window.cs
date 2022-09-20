@@ -668,7 +668,7 @@ namespace Avalonia.Controls
             Owner = parent;
             parent?.AddChild(this, false);
 
-            SetWindowStartupLocation(Owner?.PlatformImpl);
+            SetWindowStartupLocation(parent?.PlatformImpl);
 
             PlatformImpl?.Show(ShowActivated, false);
             Renderer?.Start();
