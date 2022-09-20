@@ -830,8 +830,8 @@ namespace Avalonia.Controls
             var startupLocation = WindowStartupLocation;
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
-                (Owner is null || 
-                 (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
+                (owner is null || 
+                 (owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
                 )
             {
                 // If startup location is CenterOwner, but owner is null or minimized then fall back
