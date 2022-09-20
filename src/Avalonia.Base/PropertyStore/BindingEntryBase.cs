@@ -13,7 +13,6 @@ namespace Avalonia.PropertyStore
     {
         private static IDisposable s_creating = Disposable.Empty;
         private static IDisposable s_creatingQuiet = Disposable.Create(() => { });
-        private readonly ValueFrame _frame;
         private IDisposable? _subscription;
         private bool _hasValue;
         private TValue? _value;
@@ -23,7 +22,7 @@ namespace Avalonia.PropertyStore
             AvaloniaProperty property,
             IObservable<BindingValue<TSource>> source)
         {
-            _frame = frame;
+            Frame = frame;
             Source = source;
             Property = property;
         }
@@ -33,7 +32,7 @@ namespace Avalonia.PropertyStore
             AvaloniaProperty property,
             IObservable<TSource> source)
         {
-            _frame = frame;
+            Frame = frame;
             Source = source;
             Property = property;
         }
@@ -50,6 +49,7 @@ namespace Avalonia.PropertyStore
         public bool IsSubscribed => _subscription is not null;
         public AvaloniaProperty Property { get; }
         AvaloniaProperty IValueEntry.Property => Property;
+        protected ValueFrame Frame { get; }
         protected object Source { get; }
 
         public void Dispose()
@@ -125,16 +125,16 @@ namespace Avalonia.PropertyStore
                 _hasValue = false;
                 _value = default;
                 if (_subscription is not null)
-                    _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
+                    Frame.Owner?.OnBindingValueCleared(Property, Frame.Priority);
             }
         }
 
         private void SetValue(BindingValue<TValue> value)
         {
-            if (_frame.Owner is null)
+            if (Frame.Owner is null)
                 return;
 
-            LoggingUtils.LogIfNecessary(_frame.Owner.Owner, Property, value);
+            LoggingUtils.LogIfNecessary(Frame.Owner.Owner, Property, value);
 
             if (value.HasValue)
             {
@@ -143,21 +143,21 @@ namespace Avalonia.PropertyStore
                     _value = value.Value;
                     _hasValue = true;
                     if (_subscription is not null && _subscription != s_creatingQuiet)
-                        _frame.Owner?.OnBindingValueChanged(Property, _frame.Priority, value.Value);
+                        Frame.Owner?.OnBindingValueChanged(Property, Frame.Priority, value.Value);
                 }
             }
             else if (value.Type != BindingValueType.DoNothing)
             {
                 ClearValue();
                 if (_subscription is not null && _subscription != s_creatingQuiet)
-                    _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
+                    Frame.Owner?.OnBindingValueCleared(Property, Frame.Priority);
             }
         }
 
         private void BindingCompleted()
         {
             _subscription = null;
-            _frame.OnBindingCompleted(this);
+            Frame.OnBindingCompleted(this);
         }
     }
 }

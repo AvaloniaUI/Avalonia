@@ -52,7 +52,7 @@ namespace Avalonia.Styling
         {
             if (e.Property == Property && e.Priority >= BindingPriority.LocalValue)
             {
-                //if (Frame.Owner is not null && !Frame.Owner.IsEvaluating)
+                if (Frame.Owner is not null && !Frame.Owner.IsEvaluating)
                     ((IObserver<object?>)Source).OnNext(e.NewValue);
             }
         }
