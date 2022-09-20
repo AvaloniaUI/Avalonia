@@ -238,6 +238,19 @@ namespace Avalonia.Data
         /// <returns>The typed binding value.</returns>
         public static BindingValue<T> FromUntyped(object? value)
         {
+            return FromUntyped(value, typeof(T));
+        }
+
+        /// <summary>
+        /// Creates a <see cref="BindingValue{T}"/> from an object, handling the special values
+        /// <see cref="AvaloniaProperty.UnsetValue"/>, <see cref="BindingOperations.DoNothing"/> and
+        /// <see cref="BindingNotification"/>.
+        /// </summary>
+        /// <param name="value">The untyped value.</param>
+        /// <param name="targetType">The runtime target type.</param>
+        /// <returns>The typed binding value.</returns>
+        public static BindingValue<T> FromUntyped(object? value, Type targetType)
+        {
             if (value == AvaloniaProperty.UnsetValue)
                 return Unset;
             else if (value == BindingOperations.DoNothing)
@@ -265,13 +278,13 @@ namespace Avalonia.Data
 
             if ((type & BindingValueType.HasValue) != 0)
             {
-                if (TypeUtilities.TryConvertImplicit(typeof(T), value, out var typed))
+                if (TypeUtilities.TryConvertImplicit(targetType, value, out var typed))
                     v = (T)typed!;
                 else
                 {
                     var e = new InvalidCastException(
                         $"Unable to convert object '{value ?? "(null)"}' " +
-                        $"of type '{value?.GetType()}' to type '{typeof(T)}'.");
+                        $"of type '{value?.GetType()}' to type '{targetType}'.");
 
                     if (error is null)
                         error = e;

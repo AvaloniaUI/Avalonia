@@ -1,0 +1,52 @@
+﻿using System;
+using Avalonia.Data;
+
+namespace Avalonia.PropertyStore
+{
+    /// <summary>
+    /// An <see cref="IValueEntry"/> that holds a binding whose source observable and target
+    /// property are both typed.
+    /// </summary>
+    internal sealed class TypedBindingEntry<T> : BindingEntryBase<T, T>, IValueEntry<T>
+    {
+        public TypedBindingEntry(
+            ValueFrame frame, 
+            StyledPropertyBase<T> property,
+            IObservable<T> source)
+                : base(frame, property, source)
+        {
+        }
+
+        public TypedBindingEntry(
+            ValueFrame frame,
+            StyledPropertyBase<T> property,
+            IObservable<BindingValue<T>> source)
+                : base(frame, property, source)
+        {
+        }
+
+        public new StyledPropertyBase<T> Property => (StyledPropertyBase<T>)base.Property;
+
+        protected override BindingValue<T> ConvertAndValidate(T value)
+        {
+            if (Property.ValidateValue?.Invoke(value) == false)
+            {
+                return BindingValue<T>.BindingError(
+                    new InvalidCastException($"'{value}' is not a valid value."));
+            }
+
+            return value;
+        }
+
+        protected override BindingValue<T> ConvertAndValidate(BindingValue<T> value)
+        {
+            if (value.HasValue && Property.ValidateValue?.Invoke(value.Value) == false)
+            {
+                return BindingValue<T>.BindingError(
+                    new InvalidCastException($"'{value.Value}' is not a valid value."));
+            }
+            
+            return value;
+        }
+    }
+}

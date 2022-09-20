@@ -16,29 +16,29 @@ namespace Avalonia.PropertyStore
 
         public override bool IsActive => true;
 
-        public BindingEntry<T> AddBinding<T>(
+        public TypedBindingEntry<T> AddBinding<T>(
             StyledPropertyBase<T> property,
             IObservable<BindingValue<T>> source)
         {
-            var e = new BindingEntry<T>(this, property, source);
+            var e = new TypedBindingEntry<T>(this, property, source);
             Add(e);
             return e;
         }
 
-        public BindingEntry<T> AddBinding<T>(
+        public TypedBindingEntry<T> AddBinding<T>(
             StyledPropertyBase<T> property,
             IObservable<T> source)
         {
-            var e = new BindingEntry<T>(this, property, source);
+            var e = new TypedBindingEntry<T>(this, property, source);
             Add(e);
             return e;
         }
 
-        public UntypedBindingEntry<T> AddBinding<T>(
+        public SourceUntypedBindingEntry<T> AddBinding<T>(
             StyledPropertyBase<T> property,
             IObservable<object?> source)
         {
-            var e = new UntypedBindingEntry<T>(this, property, source);
+            var e = new SourceUntypedBindingEntry<T>(this, property, source);
             Add(e);
             return e;
         }

@@ -6,36 +6,35 @@ using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
-    internal class BindingEntry<T> : IValueEntry<T>,
-        IObserver<T>,
-        IObserver<BindingValue<T>>,
+    internal abstract class BindingEntryBase<TValue, TSource> : IValueEntry,
+        IObserver<TSource>,
+        IObserver<BindingValue<TSource>>,
         IDisposable
     {
-        private static IDisposable s_Creating = Disposable.Empty;
-        private static IDisposable s_CreatingQuiet = Disposable.Create(() => { });
+        private static IDisposable s_creating = Disposable.Empty;
+        private static IDisposable s_creatingQuiet = Disposable.Create(() => { });
         private readonly ValueFrame _frame;
-        private readonly object _source;
         private IDisposable? _subscription;
         private bool _hasValue;
-        private T? _value;
+        private TValue? _value;
 
-        public BindingEntry(
+        protected BindingEntryBase(
             ValueFrame frame,
-            StyledPropertyBase<T> property,
-            IObservable<BindingValue<T>> source)
+            AvaloniaProperty property,
+            IObservable<BindingValue<TSource>> source)
         {
             _frame = frame;
-            _source = source;
+            Source = source;
             Property = property;
         }
 
-        public BindingEntry(
+        protected BindingEntryBase(
             ValueFrame frame,
-            StyledPropertyBase<T> property,
-            IObservable<T> source)
+            AvaloniaProperty property,
+            IObservable<TSource> source)
         {
             _frame = frame;
-            _source = source;
+            Source = source;
             Property = property;
         }
 
@@ -48,8 +47,10 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public StyledPropertyBase<T> Property { get; }
+        public bool IsSubscribed => _subscription is not null;
+        public AvaloniaProperty Property { get; }
         AvaloniaProperty IValueEntry.Property => Property;
+        protected object Source { get; }
 
         public void Dispose()
         {
@@ -57,7 +58,7 @@ namespace Avalonia.PropertyStore
             BindingCompleted();
         }
 
-        public T GetValue()
+        public TValue GetValue()
         {
             Start(produceValue: false);
             if (!_hasValue)
@@ -67,7 +68,7 @@ namespace Avalonia.PropertyStore
 
         public void Start() => Start(true);
 
-        public bool TryGetValue([MaybeNullWhen(false)] out T value)
+        public bool TryGetValue([MaybeNullWhen(false)] out TValue value)
         {
             Start(produceValue: false);
             value = _value;
@@ -76,21 +77,10 @@ namespace Avalonia.PropertyStore
 
         public void OnCompleted() => BindingCompleted();
         public void OnError(Exception error) => BindingCompleted();
+        public void OnNext(TSource value) => SetValue(ConvertAndValidate(value));
+        public void OnNext(BindingValue<TSource> value) => SetValue(ConvertAndValidate(value));
 
-        public void OnNext(T value) => SetValue(value);
-
-        public void OnNext(BindingValue<T> value)
-        {
-            if (_frame.Owner is not null)
-                LoggingUtils.LogIfNecessary(_frame.Owner.Owner, Property, value);
-
-            if (value.HasValue)
-                SetValue(value.Value);
-            else
-                ClearValue();
-        }
-
-        public void Unsubscribe()
+        public virtual void Unsubscribe()
         {
             _subscription?.Dispose();
             _subscription = null;
@@ -111,6 +101,23 @@ namespace Avalonia.PropertyStore
             return _hasValue;
         }
 
+        protected abstract BindingValue<TValue> ConvertAndValidate(TSource value);
+        protected abstract BindingValue<TValue> ConvertAndValidate(BindingValue<TSource> value);
+
+        protected virtual void Start(bool produceValue)
+        {
+            if (_subscription is not null)
+                return;
+
+            _subscription = produceValue ? s_creating : s_creatingQuiet;
+            _subscription = Source switch
+            {
+                IObservable<BindingValue<TSource>> bv => bv.Subscribe(this),
+                IObservable<TSource> b => b.Subscribe(this),
+                _ => throw new AvaloniaInternalException("Unexpected binding source."),
+            };
+        }
+
         private void ClearValue()
         {
             if (_hasValue)
@@ -122,24 +129,28 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        private void SetValue(T value)
+        private void SetValue(BindingValue<TValue> value)
         {
             if (_frame.Owner is null)
                 return;
 
-            if (Property.ValidateValue?.Invoke(value) != false)
+            LoggingUtils.LogIfNecessary(_frame.Owner.Owner, Property, value);
+
+            if (value.HasValue)
             {
-                if (!_hasValue || !EqualityComparer<T>.Default.Equals(_value, value))
+                if (!_hasValue || !EqualityComparer<TValue>.Default.Equals(_value, value.Value))
                 {
-                    _value = value;
+                    _value = value.Value;
                     _hasValue = true;
-                    if (_subscription is not null && _subscription != s_CreatingQuiet)
-                        _frame.Owner?.OnBindingValueChanged(Property, _frame.Priority, value);
+                    if (_subscription is not null && _subscription != s_creatingQuiet)
+                        _frame.Owner?.OnBindingValueChanged(Property, _frame.Priority, value.Value);
                 }
             }
-            else if (_subscription is not null && _subscription != s_CreatingQuiet)
+            else if (value.Type != BindingValueType.DoNothing)
             {
-                _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
+                ClearValue();
+                if (_subscription is not null && _subscription != s_creatingQuiet)
+                    _frame.Owner?.OnBindingValueCleared(Property, _frame.Priority);
             }
         }
 
@@ -147,20 +158,6 @@ namespace Avalonia.PropertyStore
         {
             _subscription = null;
             _frame.OnBindingCompleted(this);
-        }
-
-        private void Start(bool produceValue)
-        {
-            if (_subscription is not null)
-                return;
-
-            _subscription = produceValue ? s_Creating : s_CreatingQuiet;
-            _subscription = _source switch
-            {
-                IObservable<BindingValue<T>> bv => bv.Subscribe(this),
-                IObservable<T> b => b.Subscribe(this),
-                _ => throw new AvaloniaInternalException("Unexpected binding source."),
-            };
         }
     }
 }

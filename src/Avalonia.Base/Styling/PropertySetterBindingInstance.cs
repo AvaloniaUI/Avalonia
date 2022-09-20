@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
-    internal class PropertySetterBindingInstance : BindingEntry, ISetterInstance
+    internal class PropertySetterBindingInstance : UntypedBindingEntry, ISetterInstance
     {
         private readonly AvaloniaObject _target;
         private readonly BindingMode _mode;
-        private IDisposable? _twoWaySubscription;
 
         public PropertySetterBindingInstance(
             AvaloniaObject target,
@@ -32,19 +30,31 @@ namespace Avalonia.Styling
 
         public override void Unsubscribe()
         {
-            _twoWaySubscription?.Dispose();
+            _target.PropertyChanged -= PropertyChanged;
             base.Unsubscribe();
         }
 
         protected override void Start(bool produceValue)
         {
-            if (_mode == BindingMode.TwoWay)
+            if (!IsSubscribed)
             {
-                var observer = (IObserver<object?>)Source;
-                _twoWaySubscription = _target.GetObservable(Property).Skip(1).Subscribe(observer);
-            }
+                if (_mode == BindingMode.TwoWay)
+                {
+                    var observer = (IObserver<object?>)Source;
+                    _target.PropertyChanged += PropertyChanged;
+                }
 
-            base.Start(produceValue);
+                base.Start(produceValue);
+            }
+        }
+
+        private void PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property == Property && e.Priority >= BindingPriority.LocalValue)
+            {
+                //if (Frame.Owner is not null && !Frame.Owner.IsEvaluating)
+                    ((IObserver<object?>)Source).OnNext(e.NewValue);
+            }
         }
     }
 }

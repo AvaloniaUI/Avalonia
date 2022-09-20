@@ -24,6 +24,7 @@ namespace Avalonia.PropertyStore
 
         public AvaloniaObject Owner { get; }
         public ValueStore? InheritanceAncestor { get; private set; }
+        public bool IsEvaluating { get; private set; }
         public IReadOnlyList<ValueFrame> Frames => _frames;
 
         public void BeginStyling() => ++_styling;
@@ -760,159 +761,177 @@ namespace Avalonia.PropertyStore
             EffectiveValue? current,
             bool ignoreLocalValue = false)
         {
-        restart:
-            // Don't reevaluate if a styling pass is in effect, reevaluation will be done when
-            // it has finished.
-            if (_styling > 0)
-                return;
+            IsEvaluating = true;
 
-            var generation = _frameGeneration;
-
-            // Reset all non-LocalValue effective value to Unset priority.
-            if (current is not null)
+            try
             {
-                if (ignoreLocalValue || current.Priority != BindingPriority.LocalValue)
-                    current.SetPriority(BindingPriority.Unset);
-                if (ignoreLocalValue || current.BasePriority != BindingPriority.LocalValue)
-                    current.SetBasePriority(BindingPriority.Unset);
-            }
+            restart:
+                // Don't reevaluate if a styling pass is in effect, reevaluation will be done when
+                // it has finished.
+                if (_styling > 0)
+                    return;
 
-            // Iterate the frames to get the effective value.
-            for (var i = _frames.Count - 1; i >= 0; --i)
-            {
-                var frame = _frames[i];
-                var priority = frame.Priority;
+                var generation = _frameGeneration;
 
-                if (frame.TryGetEntry(property, out var entry) &&
-                    frame.IsActive &&
-                    entry.HasValue)
+                // Reset all non-LocalValue effective value to Unset priority.
+                if (current is not null)
                 {
-                    if (current is not null)
+                    if (ignoreLocalValue || current.Priority != BindingPriority.LocalValue)
+                        current.SetPriority(BindingPriority.Unset);
+                    if (ignoreLocalValue || current.BasePriority != BindingPriority.LocalValue)
+                        current.SetBasePriority(BindingPriority.Unset);
+                }
+
+                // Iterate the frames to get the effective value.
+                for (var i = _frames.Count - 1; i >= 0; --i)
+                {
+                    var frame = _frames[i];
+                    var priority = frame.Priority;
+
+                    if (frame.TryGetEntry(property, out var entry) &&
+                        frame.IsActive &&
+                        entry.HasValue)
                     {
-                        current.SetAndRaise(this, entry, priority);
+                        if (current is not null)
+                        {
+                            current.SetAndRaise(this, entry, priority);
+                        }
+                        else
+                        {
+                            current = property.CreateEffectiveValue(Owner);
+                            AddEffectiveValue(property, current);
+                            current.SetAndRaise(this, entry, priority);
+                        }
+                    }
+
+                    if (generation != _frameGeneration)
+                        goto restart;
+
+                    if (current is not null &&
+                        current.Priority < BindingPriority.Unset &&
+                        current.BasePriority < BindingPriority.Unset)
+                    {
+                        UnsubscribeInactiveValues(i, property);
+                        return;
+                    }
+                }
+
+                if (current?.Priority == BindingPriority.Unset)
+                {
+                    if (current.BasePriority == BindingPriority.Unset)
+                    {
+                        RemoveEffectiveValue(property);
+                        current.DisposeAndRaiseUnset(this, property);
                     }
                     else
                     {
-                        current = property.CreateEffectiveValue(Owner);
-                        AddEffectiveValue(property, current);
-                        current.SetAndRaise(this, entry, priority);
+                        current.SetAndRaise(this, property, current.BaseValue, current.BasePriority);
                     }
                 }
-
-                if (generation != _frameGeneration)
-                    goto restart;
-
-                if (current is not null &&
-                    current.Priority < BindingPriority.Unset &&
-                    current.BasePriority < BindingPriority.Unset)
-                {
-                    UnsubscribeInactiveValues(i, property);
-                    return;
-                }
             }
-
-            if (current?.Priority == BindingPriority.Unset)
+            finally
             {
-                if (current.BasePriority == BindingPriority.Unset)
-                {
-                    RemoveEffectiveValue(property);
-                    current.DisposeAndRaiseUnset(this, property);
-                }
-                else
-                {
-                    current.SetAndRaise(this, property, current.BaseValue, current.BasePriority);
-                }
+                IsEvaluating = false;
             }
         }
 
         private void ReevaluateEffectiveValues()
         {
-        restart:
-            // Don't reevaluate if a styling pass is in effect, reevaluation will be done when
-            // it has finished.
-            if (_styling > 0)
-                return;
+            IsEvaluating = true;
 
-            var generation = _frameGeneration;
-            var count = _effectiveValues.Count;
-
-            // Reset all non-LocalValue effective values to Unset priority.
-            for (var i = 0; i < count; ++i)
+            try
             {
-                var e = _effectiveValues[i];
+            restart:
+                // Don't reevaluate if a styling pass is in effect, reevaluation will be done when
+                // it has finished.
+                if (_styling > 0)
+                    return;
 
-                if (e.Priority != BindingPriority.LocalValue)
-                    e.SetPriority(BindingPriority.Unset);
-                if (e.BasePriority != BindingPriority.LocalValue)
-                    e.SetBasePriority(BindingPriority.Unset);
-            }
+                var generation = _frameGeneration;
+                var count = _effectiveValues.Count;
 
-            // Iterate the frames, setting and creating effective values.
-            for (var i = _frames.Count - 1; i >= 0; --i)
-            {
-                var frame = _frames[i];
-
-                if (!frame.IsActive)
-                    continue;
-
-                var priority = frame.Priority;
-                
-                count = frame.EntryCount;
-
-                for (var j = 0; j < count; ++j)
+                // Reset all non-LocalValue effective values to Unset priority.
+                for (var i = 0; i < count; ++i)
                 {
-                    var entry = frame.GetEntry(j);
-                    var property = entry.Property;
-                    EffectiveValue? effectiveValue;
+                    var e = _effectiveValues[i];
 
-                    // Skip if we already have a value/base value for this property.
-                    if (_effectiveValues.TryGetValue(property, out effectiveValue) == true &&
-                        effectiveValue.BasePriority < BindingPriority.Unset)
+                    if (e.Priority != BindingPriority.LocalValue)
+                        e.SetPriority(BindingPriority.Unset);
+                    if (e.BasePriority != BindingPriority.LocalValue)
+                        e.SetBasePriority(BindingPriority.Unset);
+                }
+
+                // Iterate the frames, setting and creating effective values.
+                for (var i = _frames.Count - 1; i >= 0; --i)
+                {
+                    var frame = _frames[i];
+
+                    if (!frame.IsActive)
                         continue;
 
-                    if (!entry.HasValue)
-                        continue;
+                    var priority = frame.Priority;
 
-                    if (effectiveValue is not null)
-                    {
-                        effectiveValue.SetAndRaise(this, entry, priority);
-                    }
-                    else
-                    {
-                        var v = property.CreateEffectiveValue(Owner);
-                        AddEffectiveValue(property, v);
-                        v.SetAndRaise(this, entry, priority);
-                    }
+                    count = frame.EntryCount;
 
-                    if (generation != _frameGeneration)
-                        goto restart;
+                    for (var j = 0; j < count; ++j)
+                    {
+                        var entry = frame.GetEntry(j);
+                        var property = entry.Property;
+                        EffectiveValue? effectiveValue;
+
+                        // Skip if we already have a value/base value for this property.
+                        if (_effectiveValues.TryGetValue(property, out effectiveValue) == true &&
+                            effectiveValue.BasePriority < BindingPriority.Unset)
+                            continue;
+
+                        if (!entry.HasValue)
+                            continue;
+
+                        if (effectiveValue is not null)
+                        {
+                            effectiveValue.SetAndRaise(this, entry, priority);
+                        }
+                        else
+                        {
+                            var v = property.CreateEffectiveValue(Owner);
+                            AddEffectiveValue(property, v);
+                            v.SetAndRaise(this, entry, priority);
+                        }
+
+                        if (generation != _frameGeneration)
+                            goto restart;
+                    }
+                }
+
+                // Remove all effective values that are still unset.
+                PooledList<AvaloniaProperty>? remove = null;
+
+                count = _effectiveValues.Count;
+
+                for (var i = 0; i < count; ++i)
+                {
+                    _effectiveValues.GetKeyValue(i, out var key, out var e);
+
+                    if (e.Priority == BindingPriority.Unset)
+                    {
+                        remove ??= new();
+                        remove.Add(key);
+                    }
+                }
+
+                if (remove is not null)
+                {
+                    foreach (var v in remove)
+                    {
+                        if (RemoveEffectiveValue(v, out var e))
+                            e.DisposeAndRaiseUnset(this, v);
+                    }
+                    remove.Dispose();
                 }
             }
-
-            // Remove all effective values that are still unset.
-            PooledList<AvaloniaProperty>? remove = null;
-
-            count = _effectiveValues.Count;
-
-            for (var i = 0; i < count; ++i)
+            finally
             {
-                _effectiveValues.GetKeyValue(i, out var key, out var e);
-
-                if (e.Priority == BindingPriority.Unset)
-                {
-                    remove ??= new();
-                    remove.Add(key);
-                }
-            }
-
-            if (remove is not null)
-            {
-                foreach (var v in remove)
-                {
-                    if (RemoveEffectiveValue(v, out var e))
-                        e.DisposeAndRaiseUnset(this, v);
-                }
-                remove.Dispose();
+                IsEvaluating = false;
             }
         }
 
