@@ -4,6 +4,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -57,7 +58,7 @@ namespace Avalonia.Controls
         public TextInputMethodSurroundingText SurroundingText => new()
         {
             Text = _presenter?.Text ?? "",
-            CursorOffset = _presenter?.SelectionEnd ?? 0,
+            CursorOffset = _presenter?.CaretIndex ?? 0,
             AnchorOffset = _presenter?.SelectionStart ?? 0
         };
 
@@ -73,7 +74,8 @@ namespace Avalonia.Controls
             _parent.SelectionEnd = end;
         }
 
-        private void OnCaretBoundsChanged(object? sender, EventArgs e) => CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
+        private void OnCaretBoundsChanged(object? sender, EventArgs e) =>
+            Dispatcher.UIThread.Post(() => CursorRectangleChanged?.Invoke(this, EventArgs.Empty), DispatcherPriority.Input);
         
         private void OnTextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
