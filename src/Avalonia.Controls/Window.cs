@@ -869,14 +869,11 @@ namespace Avalonia.Controls
             }
             else if (startupLocation == WindowStartupLocation.CenterOwner)
             {
-                if (owner != null)
-                {
-                    var ownerSize = owner.FrameSize ?? owner.ClientSize;
-                    var ownerRect = new PixelRect(
-                        owner.Position,
-                        PixelSize.FromSize(ownerSize, scaling));
-                    Position = ownerRect.CenterRect(rect).Position;
-                }
+                var ownerSize = owner.FrameSize ?? owner.ClientSize;
+                var ownerRect = new PixelRect(
+                    owner.Position,
+                    PixelSize.FromSize(ownerSize, scaling));
+                Position = ownerRect.CenterRect(rect).Position;
             }
         }
 
