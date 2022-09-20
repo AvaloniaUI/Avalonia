@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>Avalonia.Web.Blazor</PackageId>
     <LangVersion>preview</LangVersion>
@@ -30,8 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0-rc.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0-rc.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.8" />
   </ItemGroup>
   
   <ItemGroup>

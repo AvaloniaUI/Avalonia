@@ -488,6 +488,7 @@ namespace Avalonia.Web.Blazor
         public void Reset()
         {
             _inputHelper?.Clear();
+            _inputHelper?.SetSurroundingText("", 0, 0);
         }
     }
 }
