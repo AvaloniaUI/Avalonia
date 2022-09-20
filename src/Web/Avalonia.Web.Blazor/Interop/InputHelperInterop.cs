@@ -91,11 +91,6 @@ namespace Avalonia.Web.Blazor.Interop
             var args = new WebInputEventArgs(type, data);
 
             InputEvent?.Invoke(this, args);
-
-            if (args.Handled)
-            {
-                SetSurroundingText("", 0, 0);
-            }
         }
 
         public void Clear() => _module.Invoke(ClearSymbol, _inputElement);

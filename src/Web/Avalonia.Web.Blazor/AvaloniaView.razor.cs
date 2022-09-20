@@ -349,12 +349,12 @@ namespace Avalonia.Web.Blazor
                     IsComposing = true;
                     break;
                 case WebCompositionEventArgs.WebCompositionEventType.Update:
-                    _client?.SetPreeditText(e.Data);
+                    _client.SetPreeditText(e.Data);
                     break;
                 case WebCompositionEventArgs.WebCompositionEventType.End:
                     IsComposing = false;
-                    _client?.SetPreeditText(null);
-                    _topLevelImpl.RawTextEvent(e.Data);
+                    _client.SetPreeditText(null);
+                    _topLevelImpl.RawTextEvent(e.Data);              
                     break;
             }
         }
@@ -467,7 +467,7 @@ namespace Avalonia.Web.Blazor
 
         private void SurroundingTextChanged(object? sender, EventArgs e)
         {
-            if(_client != null && IsComposing)
+            if(_client != null)
             {
                 var surroundingText = _client.SurroundingText;
 
@@ -480,6 +480,14 @@ namespace Avalonia.Web.Blazor
             var bounds = new PixelRect((int)rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height);
             
             _inputHelper?.SetBounds(bounds);
+
+            if (_client != null && _client.SupportsSurroundingText && !IsComposing)
+            {
+                var surroundingText = _client.SurroundingText;
+
+                _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+            }
+
             _inputHelper?.Focus();
         }
 
