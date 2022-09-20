@@ -1,4 +1,4 @@
-﻿// Ported from:
+// Ported from:
 // https://svn.webkit.org/repository/webkit/trunk/Source/WebCore/platform/graphics/SpringSolver.h
 /*
  * Copyright (C) 2016 Apple Inc. All rights reserved.
