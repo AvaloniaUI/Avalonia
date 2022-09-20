@@ -331,6 +331,8 @@ namespace Avalonia.Web.Blazor
             }
 
             _topLevelImpl.RawTextEvent(e.Data);
+
+            e.Handled = true;
         }
 
         private void InputHelperOnCompositionEvent(object? sender, WebCompositionEventArgs e)

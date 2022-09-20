@@ -41,6 +41,8 @@ namespace Avalonia.Web.Blazor.Interop
         public string Type { get; }
 
         public string Data { get; }
+
+        public bool Handled { get; set; }
     }
     
     internal class InputHelperInterop
@@ -85,7 +87,15 @@ namespace Avalonia.Web.Blazor.Interop
         private void OnInputEvent(string type, string data)
         {
             Console.WriteLine($"InputEvent Handler Helper {InputEvent == null} ");
-            InputEvent?.Invoke(this, new WebInputEventArgs(type, data));
+
+            var args = new WebInputEventArgs(type, data);
+
+            InputEvent?.Invoke(this, args);
+
+            if (args.Handled)
+            {
+                SetSurroundingText("", 0, 0);
+            }
         }
 
         public void Clear() => _module.Invoke(ClearSymbol, _inputElement);
