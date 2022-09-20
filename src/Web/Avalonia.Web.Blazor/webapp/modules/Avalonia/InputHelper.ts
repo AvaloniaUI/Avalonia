@@ -33,6 +33,8 @@
         inputElement.style.top = (y - 5).toFixed(0) + "px";
         inputElement.style.height = "20px";
         inputElement.style.width = "200px";
+
+        getCaretCoordinates(inputElement, inputElement.selectionEnd);
     }
 
     public static hide(inputElement: HTMLInputElement) {
@@ -76,4 +78,6 @@
         InputHelper.inputCallback.invokeMethod('Invoke', ev.type, inputEvent.data);
     }
 }
+
+
 
