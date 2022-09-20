@@ -29,15 +29,16 @@ export class InputHelper {
         inputElement.style.cursor = kind;
     }
     
-    public static setBounds(inputElement: HTMLInputElement, x: number, y: number, width: number, height: number)
+    public static setBounds(inputElement: HTMLInputElement, x: number, y: number, width: number, height: number, caret: number)
     {
-        inputElement.style.left = (x - 5).toFixed(0) + "px";
-        inputElement.style.top = (y - 5).toFixed(0) + "px";
-        inputElement.style.height = "20px";
-        inputElement.style.width = "200px";
-
         if(inputElement.selectionStart) {
-            let {height, left, top} = CaretHelper.getCaretCoordinates(inputElement, inputElement.selectionStart);
+            inputElement.style.left = (x).toFixed(0) + "px";
+            inputElement.style.top = (y).toFixed(0) + "px";
+
+            let {height, left, top} = CaretHelper.getCaretCoordinates(inputElement, caret);
+
+            inputElement.style.left = (x - left).toFixed(0) + "px";
+            inputElement.style.top = (y - top).toFixed(0) + "px";
         }
     }
 

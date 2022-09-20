@@ -452,11 +452,15 @@ namespace Avalonia.Web.Blazor
 
             _client = client;
             
-            if (IsActive)
+            if (IsActive && _client != null)
             {
                 _inputHelper.Show();
                 _inputElementFocused = true;
                 _inputHelper.Focus();
+                
+                var surroundingText = _client.SurroundingText;
+
+                _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
             else
             {
@@ -470,17 +474,25 @@ namespace Avalonia.Web.Blazor
             if(_client != null && IsComposing)
             {
                 var surroundingText = _client.SurroundingText;
-
+                
                 _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
         }
 
         public void SetCursorRect(Rect rect)
         {
+            _inputHelper?.Focus();
             var bounds = new PixelRect((int)rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height);
             
-            _inputHelper?.SetBounds(bounds);
-            _inputHelper?.Focus();
+            if (_client != null)
+            {
+                var surroundingText = _client.SurroundingText;
+
+                _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset,
+                    surroundingText.CursorOffset);
+                
+                _inputHelper?.SetBounds(bounds, surroundingText.CursorOffset);
+            }
         }
 
         public void SetOptions(TextInputOptions options)
