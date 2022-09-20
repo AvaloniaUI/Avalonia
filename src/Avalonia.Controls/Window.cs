@@ -830,10 +830,11 @@ namespace Avalonia.Controls
             var startupLocation = WindowStartupLocation;
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
-                Owner is Window ownerWindow &&
-                ownerWindow.WindowState == WindowState.Minimized)
+                (Owner is null || 
+                 (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
+                )
             {
-                // If startup location is CenterOwner, but owner is minimized then fall back
+                // If startup location is CenterOwner, but owner is null or minimized then fall back
                 // to CenterScreen. This behavior is consistent with WPF.
                 startupLocation = WindowStartupLocation.CenterScreen;
             }
