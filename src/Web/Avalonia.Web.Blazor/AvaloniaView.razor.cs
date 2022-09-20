@@ -475,6 +475,10 @@ namespace Avalonia.Web.Blazor
 
         public void SetCursorRect(Rect rect)
         {
+            var bounds = new PixelRect((int)rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height);
+            
+            _inputHelper?.SetBounds(bounds);
+            _inputHelper?.Focus();
         }
 
         public void SetOptions(TextInputOptions options)

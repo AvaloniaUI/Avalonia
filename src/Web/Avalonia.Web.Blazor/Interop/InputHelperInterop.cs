@@ -52,6 +52,7 @@ namespace Avalonia.Web.Blazor.Interop
         private const string ShowSymbol = "InputHelper.show";
         private const string StartSymbol = "InputHelper.start";
         private const string SetSurroundingTextSymbol = "InputHelper.setSurroundingText";
+        private const string SetBoundsSymbol = "InputHelper.setBounds";
 
         private readonly AvaloniaModule _module;
         private readonly ElementReference _inputElement;
@@ -114,6 +115,11 @@ namespace Avalonia.Web.Blazor.Interop
         public void SetSurroundingText(string text, int start, int end)
         {
             _module.Invoke(SetSurroundingTextSymbol, _inputElement, text, start, end);
+        }
+
+        public void SetBounds(PixelRect bounds)
+        {
+            _module.Invoke(SetBoundsSymbol, _inputElement, bounds.X, bounds.Y, bounds.Width, bounds.Height);
         }
     }
 }
