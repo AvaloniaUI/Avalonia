@@ -144,10 +144,10 @@ namespace Avalonia.Controls
             {
                 if (SupportsSurroundingText)
                 {
-                    SurroundingTextChanged?.Invoke(sender, e);
+                    SurroundingTextChanged?.Invoke(this, e);
                 }
 
-                CursorRectangleChanged?.Invoke(sender, e);
+                CursorRectangleChanged?.Invoke(this, e);
 
             }, DispatcherPriority.Input);
         }
