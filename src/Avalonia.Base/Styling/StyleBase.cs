@@ -99,7 +99,7 @@ namespace Avalonia.Styling
 
                 instance = new StyleInstance(this, activator);
 
-                if (_setters is object)
+                if (_setters is not null)
                 {
                     foreach (var setter in _setters)
                     {
@@ -109,6 +109,9 @@ namespace Avalonia.Styling
                     }
                 }
 
+                if (_animations is not null)
+                    instance.Add(_animations);
+
                 if (canShareInstance)
                 {
                     instance.MakeShared();
@@ -117,6 +120,7 @@ namespace Avalonia.Styling
             }
 
             ao.GetValueStore().AddFrame(instance);
+            instance.ApplyAnimations(ao);
             return instance;
         }
 

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reactive.Subjects;
+using Avalonia.Animation;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Styling.Activators;
@@ -20,6 +23,8 @@ namespace Avalonia.Styling
     {
         private readonly IStyleActivator? _activator;
         private List<ISetterInstance>? _setters;
+        private List<IAnimation>? _animations;
+        private Subject<bool>? _animationTrigger;
 
         public StyleInstance(IStyle style, IStyleActivator? activator)
         {
@@ -35,7 +40,11 @@ namespace Avalonia.Styling
             get
             {
                 if (_activator?.IsSubscribed == false)
+                {
                     _activator.Subscribe(this);
+                    _animationTrigger?.OnNext(_activator.IsActive);
+                }
+                
                 return _activator?.IsActive ?? true;
             }
         }
@@ -55,6 +64,24 @@ namespace Avalonia.Styling
                 (_setters ??= new()).Add(instance);
         }
 
+        public void Add(IList<IAnimation> animations)
+        {
+            if (_animations is null)
+                _animations = new List<IAnimation>(animations);
+            else
+                _animations.AddRange(animations);
+        }
+
+        public void ApplyAnimations(AvaloniaObject control)
+        {
+            if (_animations is not null && control is Animatable animatable)
+            {
+                _animationTrigger ??= new Subject<bool>();
+                foreach (var animation in _animations)
+                    animation.Apply(animatable, null, _animationTrigger);
+            }
+        }
+
         public override void Dispose()
         {
             base.Dispose();
@@ -63,6 +90,10 @@ namespace Avalonia.Styling
 
         public new void MakeShared() => base.MakeShared();
 
-        void IStyleActivatorSink.OnNext(bool value, int tag) => Owner?.OnFrameActivationChanged(this);
+        void IStyleActivatorSink.OnNext(bool value, int tag)
+        {
+            Owner?.OnFrameActivationChanged(this);
+            _animationTrigger?.OnNext(value);
+        }
     }
 }
