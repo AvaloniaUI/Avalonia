@@ -122,9 +122,9 @@ namespace Avalonia.Web.Blazor.Interop
             _module.Invoke(SetSurroundingTextSymbol, _inputElement, text, start, end);
         }
 
-        public void SetBounds(PixelRect bounds)
+        public void SetBounds(PixelRect bounds, int caret)
         {
-            _module.Invoke(SetBoundsSymbol, _inputElement, bounds.X, bounds.Y, bounds.Width, bounds.Height);
+            _module.Invoke(SetBoundsSymbol, _inputElement, bounds.X, bounds.Y, bounds.Width, bounds.Height, caret);
         }
     }
 }

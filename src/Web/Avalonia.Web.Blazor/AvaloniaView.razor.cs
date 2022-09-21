@@ -349,12 +349,12 @@ namespace Avalonia.Web.Blazor
                     IsComposing = true;
                     break;
                 case WebCompositionEventArgs.WebCompositionEventType.Update:
-                    _client.SetPreeditText(e.Data);
+                    _client?.SetPreeditText(e.Data);
                     break;
                 case WebCompositionEventArgs.WebCompositionEventType.End:
                     IsComposing = false;
-                    _client.SetPreeditText(null);
-                    _topLevelImpl.RawTextEvent(e.Data);              
+                    _client?.SetPreeditText(null);
+                    _topLevelImpl.RawTextEvent(e.Data);
                     break;
             }
         }
@@ -452,11 +452,15 @@ namespace Avalonia.Web.Blazor
 
             _client = client;
             
-            if (IsActive)
+            if (IsActive && _client != null)
             {
                 _inputHelper.Show();
                 _inputElementFocused = true;
                 _inputHelper.Focus();
+                
+                var surroundingText = _client.SurroundingText;
+
+                _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
             else
             {
@@ -467,28 +471,28 @@ namespace Avalonia.Web.Blazor
 
         private void SurroundingTextChanged(object? sender, EventArgs e)
         {
-            if(_client != null)
+            if(_client != null && IsComposing)
             {
                 var surroundingText = _client.SurroundingText;
-
+                
                 _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
         }
 
         public void SetCursorRect(Rect rect)
         {
+            _inputHelper?.Focus();
             var bounds = new PixelRect((int)rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height);
             
-            _inputHelper?.SetBounds(bounds);
-
-            if (_client != null && _client.SupportsSurroundingText && !IsComposing)
+            if (_client != null)
             {
                 var surroundingText = _client.SurroundingText;
 
-                _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+                _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset,
+                    surroundingText.CursorOffset);
+                
+                _inputHelper?.SetBounds(bounds, surroundingText.CursorOffset);
             }
-
-            _inputHelper?.Focus();
         }
 
         public void SetOptions(TextInputOptions options)
