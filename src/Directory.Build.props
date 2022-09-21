@@ -15,7 +15,7 @@
         </RestoreSources>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Nerdbank.GitVersioning" Version="3.5.108" PrivateAssets="all" />
+        <PackageReference Include="Nerdbank.GitVersioning" Version="3.5.113" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup Condition="'$(InstallAvalonia)' == 'true'">
         <PackageReference Include="Avalonia" Version="0.10.999-cibuild0012810-beta" />
