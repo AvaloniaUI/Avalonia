@@ -57,9 +57,10 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         
         [DllImport(LibInput)]
         public extern static int libinput_get_fd(IntPtr ctx);
-        
+
+        // https://wayland.freedesktop.org/libinput/doc/latest/api/group__base.html#ga271f910ed17461830e48d4cd20483a00
         [DllImport(LibInput)]
-        public extern static void libinput_dispatch(IntPtr ctx);
+        public extern static int libinput_dispatch(IntPtr ctx);
         
         [DllImport(LibInput)]
         public extern static IntPtr libinput_get_event(IntPtr ctx);
