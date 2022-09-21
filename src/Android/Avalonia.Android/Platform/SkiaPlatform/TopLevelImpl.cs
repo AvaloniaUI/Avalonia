@@ -262,9 +262,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private readonly IAndroidInputMethod _inputMethod;
 
-        public InputConnectionImpl(View? targetView, IAndroidInputMethod inputMethod) :
+        public InputConnectionImpl(View targetView, IAndroidInputMethod inputMethod) :
             base(targetView, false)
         {
+            View = targetView;
+
             _inputMethod = inputMethod;
         }
 
@@ -272,19 +274,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
         }
 
+        public View View { get; }
+
         public ComposingRegion ComposingRegion { get; private set; }
 
         public string CompositionText { get; private set; }
-
-        public override bool SetSelection(int start, int end)
-        {
-            if (_inputMethod.IsActive)
-            {
-                _inputMethod.Client.SelectInSurroundingText(start, end);
-            }
-
-            return base.SetSelection(start, end);
-        }
 
         public override bool SetComposingRegion(int start, int end)
         {
@@ -298,21 +292,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
 
             return base.SetComposingRegion(start, end);
-        }
-
-        public override bool CommitCorrection(CorrectionInfo correctionInfo)
-        {
-            return base.CommitCorrection(correctionInfo);
-        }
-
-        public override bool DeleteSurroundingText(int beforeLength, int afterLength)
-        {
-            if (_inputMethod.IsActive && _inputMethod.Client.SupportsSurroundingText)
-            {
-                _inputMethod.Client.DeleteSurroundingText(beforeLength, afterLength);
-            }
-          
-            return base.DeleteSurroundingText(beforeLength, afterLength);
         }
 
         public override ICharSequence GetTextBeforeCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
@@ -329,7 +308,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                     var text = surroundingText.Text.Substring(start, end - start);
 
-                    //System.Diagnostics.Debug.WriteLine($"Text Before: {text}");
+                    System.Diagnostics.Debug.WriteLine($"Text Before: {text}");
 
                     return new Java.Lang.String(text);
                 }
@@ -352,7 +331,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                     var text = surroundingText.Text.Substring(start, end - start);
 
-                    //System.Diagnostics.Debug.WriteLine($"Text After: {text}");
+                    System.Diagnostics.Debug.WriteLine($"Text After: {text}");
 
                     return new Java.Lang.String(text);
                 }
@@ -368,14 +347,14 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             if (_inputMethod.IsActive)
             {
                 _inputMethod.Client.SetPreeditText(CompositionText);
-
-                if (!string.IsNullOrEmpty(CompositionText))
-                {
-                    ComposingRegion = default;
-                }
             }
 
             return base.SetComposingText(text, newCursorPosition);
+        }
+
+        public override bool SendKeyEvent(KeyEvent e)
+        {
+            return base.SendKeyEvent(e);
         }
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
@@ -386,30 +365,17 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 _inputMethod.Client.SetPreeditText(null);
 
-                if (string.IsNullOrEmpty(CompositionText) && ComposingRegion.Start != ComposingRegion.End)
+                var textLength = text.Length();
+
+                if (string.IsNullOrEmpty(CompositionText) && ComposingRegion.End > 0)
                 {
-                    _inputMethod.Client.SelectInSurroundingText(ComposingRegion.Start, ComposingRegion.End);
+                    _inputMethod.Client.SelectInSurroundingText(ComposingRegion.Start, ComposingRegion.Start + textLength);
                 }
 
-                ComposingRegion = new ComposingRegion(ComposingRegion.Start, ComposingRegion.Start + text.Length());
+                ComposingRegion = new ComposingRegion(ComposingRegion.Start, ComposingRegion.Start + textLength);
             }
 
             return base.CommitText(text, newCursorPosition);
-        }
-
-        public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)
-        {
-            return base.PerformEditorAction(actionCode);
-        }
-
-        public override bool PerformPrivateCommand(string action, Bundle data)
-        {
-            return base.PerformPrivateCommand(action, data);
-        }
-
-        public override bool SendKeyEvent(KeyEvent e)
-        {
-            return base.SendKeyEvent(e);
         }
 
         public override bool FinishComposingText()
@@ -427,14 +393,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
     public readonly struct ComposingRegion
     {
+        private readonly int _start = -1;
+        private readonly int _end = -1;
+
         public ComposingRegion(int start, int end)
         {
-            Start = start;
-            End = end;
+            _start = start;
+            _end = end;
         }
 
-        public int Start { get; }
-
-        public int End { get; }
+        public int Start => _start;
+        public int End => _end;
     }
 }

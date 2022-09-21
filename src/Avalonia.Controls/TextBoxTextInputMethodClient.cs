@@ -43,7 +43,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                if(_presenter is null)
+                if(_presenter is null || _parent is null)
                 {
                     return default;
                 }
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
 
                 var lineText = _presenter.Text?.Substring(lineStart, textLine.Length);
 
-                var anchorOffset = Math.Max(0, _presenter.SelectionStart - lineStart);
+                var anchorOffset = Math.Max(0, _parent.SelectionStart - lineStart);
 
                 var cursorOffset = Math.Max(0, _presenter.SelectionEnd - lineStart);
 
@@ -87,16 +87,19 @@ namespace Avalonia.Controls
 
         public void SelectInSurroundingText(int start, int end)
         {
-            if(_parent == null)
+            if(_parent is null ||_presenter is null)
             {
                 return;
             }
 
-            //start and end are relative to surroundingText
-            var surroundingText = SurroundingText;
+            var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
 
-            var selectionStart = surroundingText.AnchorOffset + start;
-            var selectionEnd = surroundingText.AnchorOffset + end;
+            var textLine = _presenter.TextLayout.TextLines[lineIndex];
+
+            var lineStart = textLine.FirstTextSourceIndex;
+
+            var selectionStart = lineStart + start;
+            var selectionEnd = lineStart + end;
              
             _parent.SelectionStart = selectionStart;
             _parent.SelectionEnd = selectionEnd;
@@ -104,13 +107,23 @@ namespace Avalonia.Controls
         
         public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
+            if(_parent != null)
+            {
+                _parent.PropertyChanged -= OnParentPropertyChanged;
+            }
+
             _parent = parent;
+
+            if(_parent != null)
+            {
+                _parent.PropertyChanged += OnParentPropertyChanged;
+            }
 
             if (_presenter != null)
             {
                 _presenter.PreeditText = null;
 
-                _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;
+                _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;             
             }
            
             _presenter = presenter;
@@ -123,6 +136,17 @@ namespace Avalonia.Controls
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
 
             OnCaretBoundsChanged(this, EventArgs.Empty);
+        }
+
+        private void OnParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if(e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
+            {
+                if (SupportsSurroundingText)
+                {
+                    SurroundingTextChanged?.Invoke(this, e);
+                }
+            }
         }
 
         public void DeleteSurroundingText(int beforeLength, int afterLength)
@@ -142,11 +166,6 @@ namespace Avalonia.Controls
         {
             Dispatcher.UIThread.Post(() =>
             {
-                if (SupportsSurroundingText)
-                {
-                    SurroundingTextChanged?.Invoke(this, e);
-                }
-
                 CursorRectangleChanged?.Invoke(this, e);
 
             }, DispatcherPriority.Input);

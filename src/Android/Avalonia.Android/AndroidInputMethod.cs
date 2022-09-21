@@ -17,6 +17,8 @@ namespace Avalonia.Android
         public ITextInputMethodClient Client { get; }
 
         public bool IsActive { get; }
+
+        public InputMethodManager IMM { get; }
     }
 
     enum CustomImeFlags
@@ -54,6 +56,8 @@ namespace Avalonia.Android
         public bool IsActive => Client != null;
 
         public ITextInputMethodClient Client => _client;
+
+        public InputMethodManager IMM => _imm;
 
         public void Reset()
         {
@@ -96,7 +100,7 @@ namespace Avalonia.Android
             {
                 var surroundingText = Client.SurroundingText;
 
-                _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+                _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, _inputConnection.ComposingRegion.Start, _inputConnection.ComposingRegion.End);
             }
         }
 
