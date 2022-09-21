@@ -62,6 +62,28 @@ public class XamlXNameResolverTests
     }
 
     [Fact]
+    public async Task Should_Resolve_Types_From_Avalonia_Markup_File_When_Types_Contains_Generic_Arguments()
+    {
+        var xaml = await View.Load(View.ViewWithGenericBaseView);
+        var controls = ResolveNames(xaml);
+        Assert.Equal(2, controls.Count);
+        
+        var currentControl = controls[0];
+        Assert.Equal("Root", currentControl.Name);
+        Assert.Equal("Sample.App.BaseView", currentControl.TypeName);
+        Assert.Equal(1, currentControl.GenericTypeArguments.Count);
+        Assert.Equal(typeof(string).FullName, currentControl.GenericTypeArguments[0]);
+        Assert.Equal("global::Sample.App.BaseView<global::System.String>", currentControl.PrintableTypeName);
+
+        currentControl = controls[1];
+        Assert.Equal("NotAsRootNode", currentControl.Name);
+        Assert.Equal("Sample.App.BaseView", currentControl.TypeName);
+        Assert.Equal(1, currentControl.GenericTypeArguments.Count);
+        Assert.Equal(typeof(int).FullName, currentControl.GenericTypeArguments[0]);
+        Assert.Equal("global::Sample.App.BaseView<global::System.Int32>", currentControl.PrintableTypeName);
+    }
+
+    [Fact]
     public async Task Should_Not_Resolve_Named_Controls_From_Avalonia_Markup_File_Without_Named_Controls()
     {
         var xaml = await View.Load(View.NoNamedControls);
@@ -107,7 +129,8 @@ public class XamlXNameResolverTests
     {
         var compilation =
             View.CreateAvaloniaCompilation()
-                .WithCustomTextBox();
+                .WithCustomTextBox()
+                .WithBaseView();
 
         var classResolver = new XamlXViewResolver(
             new RoslynTypeSystem(compilation),

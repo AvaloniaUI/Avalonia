@@ -19,12 +19,14 @@ public class XamlXClassResolverTests
     [InlineData("Sample.App", "SignUpView", View.SignUpView)]
     [InlineData("Sample.App", "xNamedControl", View.XNamedControl)]
     [InlineData("Sample.App", "xNamedControls", View.XNamedControls)]
+    [InlineData("Sample.App", "ViewWithGenericBaseView", View.ViewWithGenericBaseView)]
     public async Task Should_Resolve_Base_Class_From_Xaml_File(string nameSpace, string className, string markup)
     {
         var xaml = await View.Load(markup);
         var compilation = View
             .CreateAvaloniaCompilation()
-            .WithCustomTextBox();
+            .WithCustomTextBox()
+            .WithBaseView();
 
         var types = new RoslynTypeSystem(compilation);
         var resolver = new XamlXViewResolver(

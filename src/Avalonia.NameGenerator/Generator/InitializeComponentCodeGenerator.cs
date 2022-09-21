@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Xml.Linq;
+
 using Avalonia.NameGenerator.Domain;
 using XamlX.TypeSystem;
 
@@ -28,10 +30,12 @@ internal class InitializeComponentCodeGenerator: ICodeGenerator
     {
         var properties = new List<string>();
         var initializations = new List<string>();
-        foreach (var (typeName, name, fieldModifier) in names)
+        foreach (var resolvedName in names)
         {
-            properties.Add($"        {fieldModifier} global::{typeName} {name};");
-            initializations.Add($"            {name} = this.FindControl<global::{typeName}>(\"{name}\");");
+            var (_, name, fieldModifier) = resolvedName;
+            string typeName = resolvedName.PrintableTypeName;
+            properties.Add($"        {fieldModifier} {typeName} {name};");
+            initializations.Add($"            {name} = this.FindControl<{typeName}>(\"{name}\");");
         }
 
         var attachDevTools = _diagnosticsAreConnected && IsWindow(xamlType);

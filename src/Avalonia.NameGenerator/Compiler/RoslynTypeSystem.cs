@@ -145,11 +145,15 @@ public class RoslynType : IXamlType
         
     public IReadOnlyList<IXamlCustomAttribute> CustomAttributes { get; } = new List<IXamlCustomAttribute>();
 
-    public IReadOnlyList<IXamlType> GenericArguments { get; } = new List<IXamlType>();
+    public IReadOnlyList<IXamlType> GenericArguments { get; private set; } = new List<IXamlType>();
 
     public bool IsAssignableFrom(IXamlType type) => type == this;
 
-    public IXamlType MakeGenericType(IReadOnlyList<IXamlType> typeArguments) => this;
+    public IXamlType MakeGenericType(IReadOnlyList<IXamlType> typeArguments)
+    {
+        GenericArguments = typeArguments;
+        return this;
+    }
 
     public IXamlType GenericTypeDefinition => this;
         

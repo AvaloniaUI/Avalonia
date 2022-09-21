@@ -3,7 +3,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Avalonia.Controls;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -22,7 +24,8 @@ public static class View
     public const string AttachedProps = "AttachedProps.xml";
     public const string FieldModifier = "FieldModifier.xml";
     public const string ControlWithoutWindow = "ControlWithoutWindow.xml";
-        
+    public const string ViewWithGenericBaseView = "ViewWithGenericBaseView.xml";
+
     public static async Task<string> Load(string viewName)
     {
         var assembly = typeof(XamlXNameResolverTests).Assembly;
@@ -66,4 +69,10 @@ public static class View
                 "  public class CustomTextBox : TextBox { }" +
                 "  public class EvilControl { }" +
                 "}"));
+
+    public static CSharpCompilation WithBaseView(this CSharpCompilation compilation) =>
+        compilation.AddSyntaxTrees(
+            CSharpSyntaxTree.ParseText(
+                "using Avalonia.Controls;" +
+                "namespace Sample.App { public class BaseView<TViewModel> : UserControl { } }"));
 }
