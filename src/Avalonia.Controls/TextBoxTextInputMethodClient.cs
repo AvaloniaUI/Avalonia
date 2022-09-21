@@ -1,9 +1,6 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Controls.Presenters;
-using Avalonia.Input;
 using Avalonia.Input.TextInput;
-using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -13,6 +10,12 @@ namespace Avalonia.Controls
     {
         private TextBox? _parent;
         private TextPresenter? _presenter;
+
+        public IVisual TextViewVisual => _presenter!;
+
+        public bool SupportsPreedit => true;
+
+        public bool SupportsSurroundingText => true;
 
         public Rect CursorRectangle
         {
@@ -36,10 +39,41 @@ namespace Avalonia.Controls
             }
         }
 
-        public event EventHandler? CursorRectangleChanged;
-        public IVisual TextViewVisual => _presenter!;
+        public TextInputMethodSurroundingText SurroundingText
+        {
+            get
+            {
+                if(_presenter is null)
+                {
+                    return default;
+                }
+
+                var lineIndex = _presenter.TextLayout.GetLineIndexFromCharacterIndex(_presenter.CaretIndex, false);
+
+                var textLine = _presenter.TextLayout.TextLines[lineIndex];
+
+                var lineStart = textLine.FirstTextSourceIndex;
+
+                var lineText = _presenter.Text?.Substring(lineStart, textLine.Length);
+
+                var anchorOffset = Math.Max(0, _presenter.SelectionStart - lineStart);
+
+                var cursorOffset = Math.Max(0, _presenter.SelectionEnd - lineStart);
+
+                return new TextInputMethodSurroundingText
+                {
+                    Text = lineText ?? "",                   
+                    AnchorOffset = anchorOffset,
+                    CursorOffset = cursorOffset
+                };
+            }
+        }
+
         public event EventHandler? TextViewVisualChanged;
-        public bool SupportsPreedit => true;
+
+        public event EventHandler? CursorRectangleChanged;
+
+        public event EventHandler? SurroundingTextChanged;
 
         public void SetPreeditText(string? text)
         {
@@ -51,57 +85,26 @@ namespace Avalonia.Controls
             _presenter.PreeditText = text;
         }
 
-        public bool SupportsSurroundingText => true;
-
-        public event EventHandler? SurroundingTextChanged;
-
-        public TextInputMethodSurroundingText SurroundingText => new()
-        {
-            Text = _presenter?.Text ?? "",
-            CursorOffset = _presenter?.CaretIndex ?? 0,
-            AnchorOffset = _presenter?.SelectionStart ?? 0
-        };
-
-        public string? TextBeforeCursor => null;
-        
-        public string? TextAfterCursor => null;
         public void SelectInSurroundingText(int start, int end)
         {
             if(_parent == null)
-                return;
-            // TODO: Account for the offset
-            _parent.SelectionStart = start;
-            _parent.SelectionEnd = end;
-        }
-
-        private void OnCaretBoundsChanged(object? sender, EventArgs e) =>
-            Dispatcher.UIThread.Post(() => CursorRectangleChanged?.Invoke(this, EventArgs.Empty), DispatcherPriority.Input);
-        
-        private void OnTextBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-        {
-            if (e.Property == TextBox.TextProperty || e.Property == TextBox.SelectionStartProperty ||
-                e.Property == TextBox.SelectionEndProperty)
             {
-                if (string.IsNullOrEmpty(_presenter?.PreeditText))
-                {
-                    SurroundingTextChanged?.Invoke(this, EventArgs.Empty);
-                }
+                return;
             }
-        }
 
+            //start and end are relative to surroundingText
+            var surroundingText = SurroundingText;
+
+            var selectionStart = surroundingText.AnchorOffset + start;
+            var selectionEnd = surroundingText.AnchorOffset + end;
+             
+            _parent.SelectionStart = selectionStart;
+            _parent.SelectionEnd = selectionEnd;
+        }    
+        
         public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
-            if (_parent != null)
-            {
-                _parent.PropertyChanged -= OnTextBoxPropertyChanged;
-            }
-            
             _parent = parent;
-
-            if (_parent != null)
-            {
-                _parent.PropertyChanged += OnTextBoxPropertyChanged;
-            }
 
             if (_presenter != null)
             {
@@ -118,7 +121,8 @@ namespace Avalonia.Controls
             }
            
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
-            CursorRectangleChanged?.Invoke(this, EventArgs.Empty);
+
+            OnCaretBoundsChanged(this, EventArgs.Empty);
         }
 
         public void DeleteSurroundingText(int beforeLength, int afterLength)
@@ -132,6 +136,20 @@ namespace Avalonia.Controls
 
                 _parent.DeleteSelection(true);
             }
+        }
+
+        private void OnCaretBoundsChanged(object? sender, EventArgs e)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (SupportsSurroundingText)
+                {
+                    SurroundingTextChanged?.Invoke(sender, e);
+                }
+
+                CursorRectangleChanged?.Invoke(sender, e);
+
+            }, DispatcherPriority.Input);
         }
     }
 }

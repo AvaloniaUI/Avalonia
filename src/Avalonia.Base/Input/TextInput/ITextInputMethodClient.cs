@@ -49,16 +49,7 @@ namespace Avalonia.Input.TextInput
         /// <param name="afterLength">The length after current selection.</param>
         void DeleteSurroundingText(int beforeLength, int afterLength);
 
-        /// <summary>
-        /// Returns the text before the cursor. Must return a non-empty string if cursor is not at the beginning of the text entry
-        /// </summary>
-        string? TextBeforeCursor { get; }
-        /// <summary>
-        /// Returns the text before the cursor. Must return a non-empty string if cursor is not at the end of the text entry
-        /// </summary>
-        string? TextAfterCursor { get; }
-
-        public void SelectInSurroundingText(int start, int end);
+        void SelectInSurroundingText(int start, int end);
     }
 
     public struct TextInputMethodSurroundingText
