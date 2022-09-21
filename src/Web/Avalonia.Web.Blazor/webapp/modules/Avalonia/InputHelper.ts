@@ -22,24 +22,20 @@ export class InputHelper {
     }
     public static focus(inputElement: HTMLInputElement) {
         inputElement.focus();
-        inputElement.setSelectionRange(0,0);
     }
 
     public static setCursor(inputElement: HTMLInputElement, kind: string) {
         inputElement.style.cursor = kind;
     }
     
-    public static setBounds(inputElement: HTMLInputElement, x: number, y: number, width: number, height: number, caret: number)
-    {
-        if(inputElement.selectionStart) {
-            inputElement.style.left = (x).toFixed(0) + "px";
-            inputElement.style.top = (y).toFixed(0) + "px";
+    public static setBounds(inputElement: HTMLInputElement, x: number, y: number, caretWidth: number, caretHeight: number, caret: number) {
+        inputElement.style.left = (x).toFixed(0) + "px";
+        inputElement.style.top = (y).toFixed(0) + "px";
+        
+        let {height, left, top} = CaretHelper.getCaretCoordinates(inputElement, caret);
 
-            let {height, left, top} = CaretHelper.getCaretCoordinates(inputElement, caret);
-
-            inputElement.style.left = (x - left).toFixed(0) + "px";
-            inputElement.style.top = (y - top).toFixed(0) + "px";
-        }
+        inputElement.style.left = (x - left).toFixed(0) + "px";
+        inputElement.style.top = (y - top).toFixed(0) + "px";
     }
 
     public static hide(inputElement: HTMLInputElement) {
@@ -57,6 +53,8 @@ export class InputHelper {
 
         inputElement.value = text;
         inputElement.setSelectionRange(start, end);
+        inputElement.style.width = "20px";
+        inputElement.style.width = inputElement.scrollWidth + "px";
     }
 
     private static onCompositionEvent(ev: CompositionEvent)
