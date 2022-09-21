@@ -14,16 +14,20 @@ namespace Avalonia.Animation.Animators
     /// </summary>
     public class ColorAnimator : Animator<Color>
     {
-        // Opto-electronic conversion function for the sRGB color space
-        // Takes a gamma-encoded sRGB value and converts it to a linear sRGB value
+        /// <summary>
+        /// Opto-electronic conversion function for the sRGB color space.
+        /// Takes a gamma-encoded sRGB value and converts it to a linear sRGB value.
+        /// </summary>
         private static double OECF_sRGB(double linear)
         {
             // IEC 61966-2-1:1999
             return linear <= 0.0031308d ? linear * 12.92d : (double)(Math.Pow(linear, 1.0d / 2.4d) * 1.055d - 0.055d);
         }
 
-        // Electro-optical conversion function for the sRGB color space
-        // Takes a linear sRGB value and converts it to a gamma-encoded sRGB value
+        /// <summary>
+        /// Electro-optical conversion function for the sRGB color space.
+        /// Takes a linear sRGB value and converts it to a gamma-encoded sRGB value.
+        /// </summary>
         private static double EOCF_sRGB(double srgb)
         {
             // IEC 61966-2-1:1999
