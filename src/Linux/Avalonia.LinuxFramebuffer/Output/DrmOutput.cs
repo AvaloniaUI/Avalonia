@@ -297,7 +297,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                         while (waitingForFlip)
                         {
                             var pfd = new pollfd {events = 1, fd = _parent._card.Fd};
-                            poll(&pfd, new IntPtr(1), -1);
+                            poll(&pfd, 1, -1);
                             drmHandleEvent(_parent._card.Fd, &ctx);
                         }
 

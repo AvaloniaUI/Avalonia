@@ -40,6 +40,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                         ?.Log(this, $"Failed to open {f} Error: {Marshal.GetLastWin32Error()}.");
                 }
             }
+            pollfd pfd = new pollfd { fd = fd, events = 1 };
 
             while (true)
             {
@@ -66,8 +67,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     libinput_dispatch(ctx);
                 }
 
-                pollfd pfd = new pollfd { fd = fd, events = 1 };
-                NativeUnsafeMethods.poll(&pfd, new IntPtr(1), 10);
+                NativeUnsafeMethods.poll(&pfd, 1, 10);
             }
         }
 

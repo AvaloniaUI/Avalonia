@@ -35,7 +35,7 @@ namespace Avalonia.LinuxFramebuffer
 
 
         [DllImport("libc", EntryPoint = "poll", SetLastError = true)]
-        public static extern int poll(pollfd* fds, IntPtr nfds, int timeout);
+        public static extern int poll(pollfd* fds, uint nfds, int timeout);
 
         [DllImport("libevdev.so.2", EntryPoint = "libevdev_new_from_fd", SetLastError = true)]
         public static extern int libevdev_new_from_fd(int fd, out IntPtr dev);
