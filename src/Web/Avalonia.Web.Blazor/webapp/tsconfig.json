@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "es2016",
     "strict": true,
     "sourceMap": true,
     "outDir": "../wwwroot",
-    "removeComments": true,
     "noEmitOnError": true,
+    "isolatedModules": true, // we need it for esbuild
     "lib": [
       "dom",
-      "ES6",
+      "es2016",
       "esnext.asynciterable"
     ]
   },
