@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -31,7 +32,15 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
 
             foreach (var f in Directory.GetFiles("/dev/input", "event*"))
-                libinput_path_add_device(ctx, f);
+            {
+                var deviceHadler = libinput_path_add_device(ctx, f);
+                if (deviceHadler == IntPtr.Zero)
+                {
+                    Logging.Logger.TryGet(Logging.LogEventLevel.Error, LibInput)
+                        ?.Log(this, $"Failed to open {f} Error: {Marshal.GetLastWin32Error()}.");
+                }
+            }
+
             while (true)
             {
                 IntPtr ev;
