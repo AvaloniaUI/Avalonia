@@ -42,9 +42,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
         public bool TtyGetModifiers(out RawInputModifiers modifiers)
         {
             modifiers = default;
-            if (_ctx?.IsInvalid == true
-                || _keymap?.IsInvalid == true
-                || _state?.IsInvalid == true)
+            if (_ctx is null or { IsInvalid: true }
+                || (_keymap is null or { IsInvalid: true })
+                || (_state is null or { IsInvalid: true }))
                 return false;
             modifiers = AXkbCommon.GetModifiers(_state);
             return true;
@@ -53,9 +53,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
         public bool TryProcessKey(LibInput.libinput_key key, LibInput.libinput_key_state key_State, out (Avalonia.Input.Key Key, RawInputModifiers Modifiers, bool IsRepeats)? avaloniaKeyState)
         {
             avaloniaKeyState = default;
-            if (_ctx?.IsInvalid == true
-                || _keymap?.IsInvalid == true
-                || _state?.IsInvalid == true)
+            if (_ctx is null or { IsInvalid: true }
+                || (_keymap is null or { IsInvalid: true })
+                || (_state is null or { IsInvalid: true }))
                 return false;
 
             uint keycode = (uint)key + 8;
