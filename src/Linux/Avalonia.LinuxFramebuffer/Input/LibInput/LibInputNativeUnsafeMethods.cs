@@ -42,7 +42,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         }
 
         private const string LibInput = "libinput.so.10";
-        
+
         [DllImport(LibInput)]
         public extern static IntPtr libinput_path_create_context(IntPtr* iface, IntPtr userData);
 
@@ -61,7 +61,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         // https://wayland.freedesktop.org/libinput/doc/latest/api/group__base.html#ga271f910ed17461830e48d4cd20483a00
         [DllImport(LibInput)]
         public extern static int libinput_dispatch(IntPtr ctx);
-        
+
         [DllImport(LibInput)]
         public extern static IntPtr libinput_get_event(IntPtr ctx);
         
@@ -179,5 +179,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
         [DllImport(LibInput)]
         public extern static ulong libinput_event_keyboard_get_time(IntPtr ev);
+
+        //https://wayland.freedesktop.org/libinput/doc/latest/api/group__device.html#gaf21b51406529ee8d39a5b13a9ad428c0
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_device_ref(IntPtr device);
     }
 }

@@ -30,25 +30,29 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
 
             var timeval = stackalloc IntPtr[2];
 
+            var pfd = new pollfd { fd = fd, events = 1 };
 
             foreach (var f in Directory.GetFiles("/dev/input", "event*"))
             {
-                var deviceHadler = libinput_path_add_device(ctx, f);
-                if (deviceHadler == IntPtr.Zero)
+                var deviceHandler = libinput_path_add_device(ctx, f);
+                if (deviceHandler == IntPtr.Zero)
                 {
                     Logging.Logger.TryGet(Logging.LogEventLevel.Error, LibInput)
                         ?.Log(this, $"Failed to open {f} Error: {Marshal.GetLastWin32Error()}.");
                 }
+                else
+                {
+                    libinput_device_ref(deviceHandler);
+                }
             }
-            pollfd pfd = new pollfd { fd = fd, events = 1 };
+            IntPtr ev;
 
             while (true)
             {
-                IntPtr ev;
+                NativeUnsafeMethods.poll(&pfd, 1, 10);
                 libinput_dispatch(ctx);
                 while ((ev = libinput_get_event(ctx)) != IntPtr.Zero)
                 {
-
                     var type = libinput_event_get_type(ev);
                     if (type >= LibInputEventType.LIBINPUT_EVENT_TOUCH_DOWN &&
                         type <= LibInputEventType.LIBINPUT_EVENT_TOUCH_CANCEL)
@@ -62,12 +66,8 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     {
                         HandleKeyboardEvent(ev, type);
                     }
-
                     libinput_event_destroy(ev);
-                    libinput_dispatch(ctx);
                 }
-
-                NativeUnsafeMethods.poll(&pfd, 1, 10);
             }
         }
 
