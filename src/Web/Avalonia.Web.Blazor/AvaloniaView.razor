@@ -17,7 +17,7 @@
 	<div id="nativeControlsContainer" @ref="_nativeControlsContainer" />
 
     <input id="inputElement" @ref="_inputElement" type="text" 
-        onpaste="return false;"
+           spellcheck="false" onpaste="return false;"
         oncopy="return false;" 
         oncut="return false;"
         autocapitalize="none"/>
@@ -50,11 +50,18 @@
 #inputElement {
     padding: 0;
     margin: 0;
-    opacity: 0;
     position: absolute;
     height: 20px;
     z-index: 1000;
     overflow: hidden;
+    caret-color: transparent;
+    border-top-style: hidden;
+    border-bottom-style: hidden;
+    border-right-style: hidden;
+    border-left-style: hidden;
+    outline: none;
+    background: transparent;
+    color: transparent;
 }
 
 </style>
