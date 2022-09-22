@@ -1,43 +1,73 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 namespace Avalonia.LinuxFramebuffer.Input.LibXKB;
 
-internal unsafe static class LibXKBNative
+internal static unsafe class LibXKBNative
 {
-    private const string LibXKB = "libxkbcommon.so.0";
+    private const string LibXkb = "libxkbcommon.so.0";
 
+    [SecurityCritical]
     public sealed class xkb_keymap : SafeHandleZeroOrMinusOneIsInvalid
     {
+        [SecurityCritical]
+        public xkb_keymap() :base(true)
+        {
+                
+        }
+        
+        [SecurityCritical]
         public xkb_keymap(bool ownsHandle) : base(ownsHandle)
         {
         }
 
+        [SecurityCritical]
         protected override bool ReleaseHandle()
         {
             xkb_keymap_unref(handle);
             return true;
         }
     }
+    
+    [SecurityCritical]
     public sealed class xkb_state : SafeHandleZeroOrMinusOneIsInvalid
     {
+        [SecurityCritical]
+        public xkb_state():base(true)
+        {
+                
+        }
+        [SecurityCritical]
         public xkb_state(bool ownsHandle) : base(ownsHandle)
         {
         }
+        
+        [SecurityCritical]
         protected override bool ReleaseHandle()
         {
             xkb_state_unref(handle);
             return true;
         }
     }
+    
+    [SecurityCritical]
     public sealed class xkb_context : SafeHandleZeroOrMinusOneIsInvalid
     {
+        [SecurityCritical]
+        public xkb_context():base(true)
+        {
+                
+        }
+        
+        [SecurityCritical]
         public xkb_context(bool ownsHandle) : base(ownsHandle)
         {
         }
 
+        [SecurityCritical]
         protected override bool ReleaseHandle()
         {
             xkb_context_unref(handle);
@@ -106,61 +136,61 @@ internal unsafe static class LibXKBNative
         public sbyte* options;
     }
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     private static extern void xkb_state_unref(/* xkb_state* */ IntPtr state);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     private static extern void xkb_keymap_unref(/* struct xkb_keymap * */ IntPtr keymap);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     private static extern void xkb_context_unref(/*struct xkb_context * */ IntPtr context);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern xkb_context xkb_context_new(xkb_context_flags flags);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern xkb_keymap xkb_keymap_new_from_names(xkb_context context, xkb_rule_names* names, xkb_keymap_compile_flags flags);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern xkb_state xkb_state_new(xkb_keymap keymap);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern uint xkb_state_key_get_one_sym(xkb_state state, uint key);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern xkb_state_component xkb_state_update_key(xkb_state state, uint key, xkb_key_direction direction);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern bool xkb_keymap_key_repeats(xkb_keymap keymap, uint key);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern int xkb_state_mod_name_is_active(xkb_state state, string name, xkb_state_component type);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern xkb_keymap xkb_state_get_keymap(xkb_state state);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern uint xkb_keymap_num_layouts_for_key(xkb_keymap keymap, uint key);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern uint xkb_state_key_get_layout(xkb_state state, uint key);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern uint xkb_state_key_get_level(xkb_state state, uint key, uint layout);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern int xkb_keymap_key_get_syms_by_level(xkb_keymap keymap, uint key, uint layout, uint level, out IntPtr syms);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern uint xkb_state_serialize_mods(xkb_state state, xkb_state_component components);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern uint xkb_keymap_min_keycode(xkb_keymap keymap);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern uint xkb_keymap_max_keycode(xkb_keymap keymap);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern xkb_state_component xkb_state_update_mask(xkb_state state
         , uint depressed_mods
         , uint latched_mods
@@ -169,9 +199,9 @@ internal unsafe static class LibXKBNative
         , uint latched_layout
         , uint locked_layout);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern int xkb_keysym_to_utf8(uint keysym, [MarshalAs(UnmanagedType.LPStr)] StringBuilder buffer, nuint size);
 
-    [DllImport(LibXKB, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern int xkb_state_key_get_utf8(xkb_state state, uint key, [MarshalAs(UnmanagedType.LPStr)] StringBuilder buffer, nuint size);
 }
