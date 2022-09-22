@@ -831,6 +831,11 @@ namespace Avalonia.Controls
                 return;
             }
 
+            if (!string.IsNullOrEmpty(_presenter.PreeditText))
+            {
+                return;
+            }
+
             var text = Text ?? string.Empty;
             var caretIndex = CaretIndex;
             var movement = false;

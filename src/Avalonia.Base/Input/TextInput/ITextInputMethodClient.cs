@@ -42,13 +42,6 @@ namespace Avalonia.Input.TextInput
         /// </summary>
         event EventHandler? SurroundingTextChanged;
 
-        /// <summary>
-        /// Deletes specified length before and after current selection.
-        /// </summary>
-        /// <param name="beforeLength">The length before current selection.</param>
-        /// <param name="afterLength">The length after current selection.</param>
-        void DeleteSurroundingText(int beforeLength, int afterLength);
-
         void SelectInSurroundingText(int start, int end);
     }
 

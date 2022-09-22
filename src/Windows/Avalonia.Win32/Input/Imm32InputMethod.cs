@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Input.TextInput;
 using Avalonia.Threading;
@@ -79,9 +78,7 @@ namespace Avalonia.Win32.Input
         {
             HWND = hwnd;
             _parent = parent;
-            _active = false;
             _langId = PRIMARYLANGID(LGID(HKL));
-            _showCompositionWindow = true;
 
             _parent = parent;
 
@@ -105,7 +102,6 @@ namespace Avalonia.Win32.Input
             _parent = null;
             _client = null;
             _langId = 0;
-            _showCompositionWindow = false;
 
             IsComposing = false;
         }

@@ -276,7 +276,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public View View { get; }
 
-        public ComposingRegion ComposingRegion { get; private set; }
+        public ComposingRegion ComposingRegion { get; internal set; }
 
         public string CompositionText { get; private set; }
 
@@ -365,14 +365,18 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 _inputMethod.Client.SetPreeditText(null);
 
-                var textLength = text.Length();
-
-                if (string.IsNullOrEmpty(CompositionText) && ComposingRegion.End > 0)
+                if (string.IsNullOrEmpty(CompositionText))
                 {
-                    _inputMethod.Client.SelectInSurroundingText(ComposingRegion.Start, ComposingRegion.Start + textLength);
+                    var surroundingText = _inputMethod.Client.SurroundingText;
+
+                    var composingRegionLength = ComposingRegion.End - ComposingRegion.Start;
+
+                    var composingRegionText = surroundingText.Text?.Substring(ComposingRegion.Start, composingRegionLength);
+
+                    _inputMethod.Client.SelectInSurroundingText(ComposingRegion.Start, ComposingRegion.End);
                 }
 
-                ComposingRegion = new ComposingRegion(ComposingRegion.Start, ComposingRegion.Start + textLength);
+                ComposingRegion = new ComposingRegion(ComposingRegion.End, ComposingRegion.End);
             }
 
             return base.CommitText(text, newCursorPosition);

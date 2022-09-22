@@ -100,12 +100,13 @@ namespace Avalonia.Android
             {
                 var surroundingText = Client.SurroundingText;
 
-                _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, _inputConnection.ComposingRegion.Start, _inputConnection.ComposingRegion.End);
+                _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
         }
 
         public void SetCursorRect(Rect rect)
         {
+            
         }
 
         public void SetOptions(TextInputOptions options)
@@ -114,7 +115,7 @@ namespace Avalonia.Android
 
             _host.InitEditorInfo((_host, outAttrs) =>
             {          
-                _inputConnection?.FinishComposingText();
+                //_inputConnection?.FinishComposingText();
 
                 outAttrs.InputType = options.ContentType switch
                 {

@@ -1,7 +1,9 @@
 using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Input.TextInput;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -54,7 +56,7 @@ namespace Avalonia.Controls
 
                 var lineStart = textLine.FirstTextSourceIndex;
 
-                var lineText = _presenter.Text?.Substring(lineStart, textLine.Length);
+                var lineText = GetTextLineText(textLine);
 
                 var anchorOffset = Math.Max(0, _parent.SelectionStart - lineStart);
 
@@ -67,6 +69,29 @@ namespace Avalonia.Controls
                     CursorOffset = cursorOffset
                 };
             }
+        }
+
+        private static string GetTextLineText(TextLine textLine)
+        {
+            var builder = StringBuilderCache.Acquire(textLine.Length);
+
+            foreach (var run in textLine.TextRuns)
+            {
+                if(run.Text.Length > 0)
+                {
+#if NET6_0
+                    builder.Append(run.Text.Span);
+#else
+                    builder.Append(run.Text.Span.ToArray());
+#endif
+                }
+            }
+
+            var lineText = builder.ToString();
+
+            StringBuilderCache.Release(builder);
+
+            return lineText;
         }
 
         public event EventHandler? TextViewVisualChanged;
@@ -146,19 +171,6 @@ namespace Avalonia.Controls
                 {
                     SurroundingTextChanged?.Invoke(this, e);
                 }
-            }
-        }
-
-        public void DeleteSurroundingText(int beforeLength, int afterLength)
-        {
-            if (_parent != null && _presenter != null && string.IsNullOrEmpty(_presenter.PreeditText))
-            {
-                var start = _presenter.SelectionStart;
-
-                _parent.SelectionStart = start - beforeLength;
-                _parent.SelectionEnd = start + afterLength;
-
-                _parent.DeleteSelection(true);
             }
         }
 

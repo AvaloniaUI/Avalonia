@@ -847,12 +847,21 @@ namespace Avalonia.Controls.Presenters
             _caretTimer.Tick -= CaretTimerTick;
         }
 
-        protected void OnPreeditTextChanged(string? preeditText)
+        protected void OnPreeditTextChanged(string? oldValue, string? newValue)
         {
             InvalidateTextLayout();
 
-            if (preeditText is null)
+            if (string.IsNullOrEmpty(newValue))
             {
+                if (!string.IsNullOrEmpty(oldValue))
+                {
+                    var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + newValue?.Length ?? 0;
+
+                    var characterHit = GetCharacterHitFromTextPosition(textPosition);
+
+                    UpdateCaret(characterHit, true);
+                }
+
                 _compositionStartHit = new CharacterHit(-1);
             }
             else
@@ -865,16 +874,23 @@ namespace Avalonia.Controls.Presenters
 
             if (_compositionStartHit.FirstCharacterIndex != -1)
             {
-                var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + preeditText?.Length ?? 0;
+                var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + newValue?.Length ?? 0;
 
-                var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, true);
-
-                var textLine = TextLayout.TextLines[lineIndex];
-
-                var characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(textPosition - 1));
+                var characterHit = GetCharacterHitFromTextPosition(textPosition);
 
                 UpdateCaret(characterHit, false);
             }
+        }
+
+        private CharacterHit GetCharacterHitFromTextPosition(int textPosition)
+        {
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, true);
+
+            var textLine = TextLayout.TextLines[lineIndex];
+
+            var characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(textPosition - 1));
+
+            return characterHit;
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -885,7 +901,7 @@ namespace Avalonia.Controls.Presenters
             {
                 case nameof(PreeditText):
                     {
-                        OnPreeditTextChanged(change.NewValue as string);
+                        OnPreeditTextChanged(change.OldValue as string, change.NewValue as string);
                         break;
                     }
 
