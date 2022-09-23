@@ -613,28 +613,27 @@ internal static class AXkbCommon
 
     static string lookupString(xkb_state state, uint code)
     {
-        System.Text.StringBuilder buffer = new System.Text.StringBuilder(32);
-        var size = xkb_state_key_get_utf8(state, code, buffer, (uint)buffer.Length);
-        if (size + 1 > buffer.Length)
-        { // +1 for NUL
-            buffer.Append(' ', size);
-            xkb_state_key_get_utf8(state, code, buffer, (uint)size + 1);
+        var size = xkb_state_key_get_utf8(state, code, null, 0);
+        if (size == 0)
+        {
+            return string.Empty;
         }
+        System.Text.StringBuilder buffer = new(size + 1);
+        xkb_state_key_get_utf8(state, code, buffer, (uint)size + 1);
         return buffer.ToString();
     }
 
     static string lookupStringNoKeysymTransformations(uint keysym)
     {
-        System.Text.StringBuilder buffer = new System.Text.StringBuilder(32);
-        var size = xkb_keysym_to_utf8(keysym, buffer, (uint)buffer.Length);
+        System.Text.StringBuilder buffer = new(32);
+        var size = -1;
+        while (size < 0)
+        {
+            size = xkb_keysym_to_utf8(keysym, buffer, (uint)buffer.Capacity);
+            buffer.Capacity += 10;
+        }
         if (size == 0)
             return string.Empty; // the keysym does not have a Unicode representation
-
-        if (size > buffer.Length)
-        {
-            buffer.Append(' ', size);
-            xkb_keysym_to_utf8(keysym, buffer, (uint)size);
-        }
         return buffer.ToString(0, size - 1);
     }
 
