@@ -60,8 +60,6 @@ namespace Avalonia.Web
             var canvas = AvaloniaRuntime.CreateCanvas(div);
             canvas.SetProperty("id", "mycanvas");
 
-            AvaloniaRuntime.Foo(canvas);
-
             _topLevelImpl = new RazorViewTopLevelImpl(this);
 
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
