@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <WasmExtraFilesToDeploy Include="$(MSBuildThisFileDirectory)/wwwroot/**/*.*" />
+  </ItemGroup>
+</Project>
+  
