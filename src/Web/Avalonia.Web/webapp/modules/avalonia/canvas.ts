@@ -1,6 +1,4 @@
-﻿declare let GL: any;
-declare let GLctx: WebGLRenderingContext;
-declare let Module: EmscriptenModule;
+﻿declare let Module: EmscriptenModule;
 
 type SKGLViewInfo = {
     context: WebGLRenderingContext | WebGL2RenderingContext | undefined;
@@ -64,8 +62,12 @@ export class Canvas {
                 return;
             }
 
+            var GL = (globalThis as any).AvaloniaGL;
+
             // make current
             GL.makeContextCurrent(ctx);
+
+            var GLctx = GL.currentContext.GLctx as WebGLRenderingContext;
 
             // read values
             const fbo = GLctx.getParameter(GLctx.FRAMEBUFFER_BINDING);
@@ -103,8 +105,7 @@ export class Canvas {
             renderViaOffscreenBackBuffer: 1,
         };
 
-
-        var context = htmlCanvas.getContext("webgl2", contextAttributes);
+        var GL = (globalThis as any).AvaloniaGL;
 
         let ctx: WebGLRenderingContext = GL.createContext(htmlCanvas, contextAttributes);
         if (!ctx && contextAttributes.majorVersion > 1) {

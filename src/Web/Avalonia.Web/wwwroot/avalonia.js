@@ -30,7 +30,9 @@ var Canvas = class {
         console.error(`Failed to create WebGL context: err ${ctx}`);
         return;
       }
+      var GL = globalThis.AvaloniaGL;
       GL.makeContextCurrent(ctx);
+      var GLctx = GL.currentContext.GLctx;
       const fbo = GLctx.getParameter(GLctx.FRAMEBUFFER_BINDING);
       this.glInfo = {
         context: ctx,
@@ -82,7 +84,7 @@ var Canvas = class {
       explicitSwapControl: 0,
       renderViaOffscreenBackBuffer: 1
     };
-    var context = htmlCanvas.getContext("webgl2", contextAttributes);
+    var GL = globalThis.AvaloniaGL;
     let ctx = GL.createContext(htmlCanvas, contextAttributes);
     if (!ctx && contextAttributes.majorVersion > 1) {
       console.warn("Falling back to WebGL 1.0");

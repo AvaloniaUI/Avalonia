@@ -8,13 +8,10 @@ using Avalonia.Web;
 internal class Program
 {
 
-    [DllImport("libSkiaSharp", CallingConvention = CallingConvention.Cdecl)]
-    static extern JSObject example_initialize();
+    
     private static void Main(string[] args)
     {
         Console.WriteLine("Hello, Browser!");
-
-        example_initialize();
 
         Console.WriteLine();
         

@@ -5,7 +5,7 @@ var LibraryExample = {
         }
     },
     example_initialize: function () {
-        window["avalonia-helper-GL"] = GL
+        globalThis.AvaloniaGL = GL
     }
 }
 

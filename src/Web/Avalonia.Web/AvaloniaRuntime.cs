@@ -9,10 +9,13 @@ public partial class AvaloniaRuntime
 {
     public record GLInfo(int ContextId, uint FboId, int Stencils, int Samples, int Depth);
 
+    [DllImport("libSkiaSharp", CallingConvention = CallingConvention.Cdecl)]
+    static extern JSObject example_initialize();
+
     [JSExport]
     internal static void StartAvaloniaView(JSObject canvas)
     {
-        Init();
+        example_initialize();
         // setup, get gl context...
         var info = InitGL(canvas, "testCanvas");
 
