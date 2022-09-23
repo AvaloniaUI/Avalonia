@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Avalonia.Web;
 
@@ -10,32 +9,24 @@ public partial class AvaloniaRuntime
     public record GLInfo(int ContextId, uint FboId, int Stencils, int Samples, int Depth);
 
     [DllImport("libSkiaSharp", CallingConvention = CallingConvention.Cdecl)]
-    static extern JSObject example_initialize();
+    static extern JSObject InterceptGLObject();
 
     [JSExport]
     internal static void StartAvaloniaView(JSObject canvas)
     {
-        example_initialize();
+        InterceptGLObject();
         // setup, get gl context...
         var info = InitGL(canvas, "testCanvas");
 
     
-       /* var glInfo = new GLInfo(
+        var glInfo = new GLInfo(
             info.GetPropertyAsInt32("context"), 
             (uint)info.GetPropertyAsInt32("fboId"), 
             info.GetPropertyAsInt32("stencil"), 
             info.GetPropertyAsInt32("sample"), 
             info.GetPropertyAsInt32("depth"));
 
-        Console.WriteLine($"{glInfo.ContextId}, {glInfo.FboId}");*/
-    }
-
-    public static void Init ()
-    {
-        if (false)
-        {
-            SkiaSharp.GRGlInterface.Create();
-        }
+        Console.WriteLine($"{glInfo.ContextId}, {glInfo.FboId}");
     }
 
     [JSImport("Canvas.Foo", "avalonia.ts")]
@@ -46,9 +37,6 @@ public partial class AvaloniaRuntime
 
     [JSImport("StorageProvider.isFileApiSupported", "storage.ts")]
     public static partial bool IsFileApiSupported();
-
-    //[DllImport("__Internal")]
-    //public
 
 }
 

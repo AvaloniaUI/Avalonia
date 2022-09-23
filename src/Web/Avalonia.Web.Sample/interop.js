@@ -4,7 +4,7 @@ var LibraryExample = {
         internal_func: function () {
         }
     },
-    example_initialize: function () {
+    InterceptGLObject: function () {
         globalThis.AvaloniaGL = GL
     }
 }

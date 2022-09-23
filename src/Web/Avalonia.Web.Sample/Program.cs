@@ -14,12 +14,12 @@ internal class Program
         Console.WriteLine("Hello, Browser!");
 
         Console.WriteLine();
-        
 
         foreach(var arg in args)
         {
             Console.WriteLine(arg);
         }
+
         AvaloniaRuntime.Init(); 
     }
 }
