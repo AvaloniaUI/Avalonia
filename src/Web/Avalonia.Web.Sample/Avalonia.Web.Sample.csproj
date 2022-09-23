@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
@@ -6,6 +6,9 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <WasmBuildNative>true</WasmBuildNative>
+    <EmccFlags>-sVERBOSE</EmccFlags>
+    <EmccExtraLDFlags>--js-library="C:\Users\User\repos\Avalonia\src\Web\Avalonia.Web.Sample\interop.js"</EmccExtraLDFlags>
   </PropertyGroup>
 
   <ItemGroup>
