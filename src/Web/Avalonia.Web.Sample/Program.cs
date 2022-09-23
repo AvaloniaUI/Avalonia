@@ -4,7 +4,10 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Avalonia;
 using Avalonia.Web;
+using Avalonia.Web.Blazor;
+using ControlCatalog;
 //using SkiaSharp;
 
 internal partial class Program
@@ -15,24 +18,11 @@ internal partial class Program
 
     private static void Main(string[] args)
     {
-        Console.WriteLine("Hello, Browser!");
-
-        Console.WriteLine();
-
-        foreach(var arg in args)
-        {
-            Console.WriteLine(arg);
-        }
-
-        var div = GetElementById("out");
-        Console.WriteLine("got div");
-
-        var canvas = AvaloniaRuntime.CreateCanvas(div);
-
-        Console.WriteLine("Created canvas");
-
-        AvaloniaRuntime.Foo(canvas);
+        BuildAvaloniaApp().UseBrowserWasm();
     }
+
+    public static AppBuilder BuildAvaloniaApp()
+           => AppBuilder.Configure<App>();
 }
 
 public partial class MyClass

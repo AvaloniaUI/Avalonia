@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\samples\ControlCatalog\ControlCatalog.csproj" />
     <ProjectReference Include="..\Avalonia.Web\Avalonia.Web.csproj" />
   </ItemGroup>
 

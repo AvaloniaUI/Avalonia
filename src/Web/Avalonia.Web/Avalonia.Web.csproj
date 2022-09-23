@@ -15,6 +15,11 @@
   <Import Project="..\..\..\build\NullableEnable.props" />
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="*.props">
       <Pack>true</Pack>
       <PackagePath>build\</PackagePath>

@@ -11,9 +11,4 @@ export class AvaloniaRuntime {
             Canvas
         });
     }
-
-    createAvaloniaView(element: HTMLDivElement): void {
-        const canvas = document.createElement("canvas");
-        element.appendChild(canvas);
-    }
 }

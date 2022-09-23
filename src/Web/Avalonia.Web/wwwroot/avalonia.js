@@ -109,10 +109,6 @@ var AvaloniaRuntime = class {
       Canvas
     });
   }
-  createAvaloniaView(element) {
-    const canvas = document.createElement("canvas");
-    element.appendChild(canvas);
-  }
 };
 
 // modules/avalonia.ts
