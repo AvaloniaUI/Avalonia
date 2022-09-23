@@ -54,6 +54,8 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                 while ((ev = libinput_get_event(ctx)) != IntPtr.Zero)
                 {
                     var type = libinput_event_get_type(ev);
+                    Logging.Logger.TryGet(Logging.LogEventLevel.Verbose, LibInput)
+                        ?.Log(this,$"Event Type {type}");
                     if (type >= LibInputEventType.LIBINPUT_EVENT_TOUCH_DOWN &&
                         type <= LibInputEventType.LIBINPUT_EVENT_TOUCH_CANCEL)
                         HandleTouch(ev, type);

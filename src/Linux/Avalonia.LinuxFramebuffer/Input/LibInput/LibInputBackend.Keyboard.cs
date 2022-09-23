@@ -10,7 +10,8 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
     public partial class LibInputBackend
     {
         private readonly IKeyboardDevice _keyboard =
-            AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
+            AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>() ??
+             new KeyboardDevice();
         private readonly KeyboardManager _manager =
             new KeyboardManager();
 
@@ -41,6 +42,11 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
                     }
                 }
             }
+            else
+            {
+                Logging.Logger.TryGet(Logging.LogEventLevel.Verbose, LibInput)
+                    ?.Log(this, $"HandleKeyboardEvent Invalid IntPtre");
+            }
         }
 
         private void OnKeyPressEvent(libinput_key rawKey, ulong timestamp)
@@ -48,20 +54,20 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             if (_manager.TryProcessKey(rawKey, libinput_key_state.Pressed, out var state))
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Debug, LibInput)
-                    ?.Log(this, $"{nameof(OnKeyPressEvent)}: {rawKey} -> {state.Value.Key}");
+                    ?.Log(this, $"{nameof(OnKeyPressEvent)}: {rawKey} -> {state.Key}");
 
                 var args = new RawKeyEventArgs(_keyboard
                     , timestamp
                     , _inputRoot
                     , RawKeyEventType.KeyDown
-                    , state.Value.Key
-                    , state.Value.Modifiers);
+                    , state.Key
+                    , state.Modifiers);
                 ScheduleInput(args);
             }
             else
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Error, LibInput)
-                    ?.Log(this, $"{nameof(OnKeyPressEvent)}: {rawKey} -> {state.Value.Key}");
+                    ?.Log(this, $"{nameof(OnKeyPressEvent)}: Invalid key mapping of {rawKey}.");
             }
         }
 
@@ -70,20 +76,20 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             if (_manager.TryProcessKey(rawKey, libinput_key_state.Pressed, out var state))
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Debug, LibInput)
-                    ?.Log(this, $"{nameof(OnKeyReleaseEvent)}: {rawKey} -> {state.Value.Key}");
+                    ?.Log(this, $"{nameof(OnKeyReleaseEvent)}: {rawKey} -> {state.Key}");
 
                 var args = new RawKeyEventArgs(_keyboard
                     , timestamp
                     , _inputRoot
                     , RawKeyEventType.KeyUp
-                    , state.Value.Key
-                    , state.Value.Modifiers);
+                    , state.Key
+                    , state.Modifiers);
                 ScheduleInput(args);
             }
             else
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Error, LibInput)
-                    ?.Log(this, $"{nameof(OnKeyReleaseEvent)}: {rawKey} -> {state.Value.Key}");
+                    ?.Log(this, $"{nameof(OnKeyReleaseEvent)}: Invalid key mapping of {rawKey}.");
             }
         }
 
