@@ -15,9 +15,5 @@ export class AvaloniaRuntime {
     createAvaloniaView(element: HTMLDivElement): void {
         const canvas = document.createElement("canvas");
         element.appendChild(canvas);
-
-
-
-        this.dotnetAssembly.Avalonia.Web.AvaloniaRuntime.StartAvaloniaView(canvas);
     }
 }

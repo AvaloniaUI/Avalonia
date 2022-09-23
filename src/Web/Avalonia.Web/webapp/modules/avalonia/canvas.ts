@@ -23,6 +23,14 @@ export class Canvas {
     newWidth?: number;
     newHeight?: number;
 
+    public static createCanvas(element: HTMLDivElement): HTMLCanvasElement {
+        var canvas = document.createElement("canvas");
+
+        element.appendChild(canvas);
+
+        return canvas;
+    }
+
     public static initGL(element: HTMLCanvasElement, elementId: string): SKGLViewInfo | null {
         console.log("inside initGL");
         var view = Canvas.init(true, element, elementId);

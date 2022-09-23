@@ -43,6 +43,11 @@ var Canvas = class {
       };
     }
   }
+  static createCanvas(element) {
+    var canvas = document.createElement("canvas");
+    element.appendChild(canvas);
+    return canvas;
+  }
   static initGL(element, elementId) {
     console.log("inside initGL");
     var view = Canvas.init(true, element, elementId);
@@ -107,7 +112,6 @@ var AvaloniaRuntime = class {
   createAvaloniaView(element) {
     const canvas = document.createElement("canvas");
     element.appendChild(canvas);
-    this.dotnetAssembly.Avalonia.Web.AvaloniaRuntime.StartAvaloniaView(canvas);
   }
 };
 

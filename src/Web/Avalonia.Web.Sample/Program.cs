@@ -1,14 +1,18 @@
 using System;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Avalonia.Web;
 //using SkiaSharp;
 
-internal class Program
+internal partial class Program
 {
 
-    
+    [JSImport("globalThis.document.getElementById")]
+    internal static partial JSObject GetElementById(string id);
+
     private static void Main(string[] args)
     {
         Console.WriteLine("Hello, Browser!");
@@ -20,7 +24,13 @@ internal class Program
             Console.WriteLine(arg);
         }
 
-        AvaloniaRuntime.Init(); 
+        var div = GetElementById("out");
+        Console.WriteLine("got div");
+
+        var canvas = AvaloniaRuntime.CreateCanvas(div);
+
+        Console.WriteLine("Created canvas");
+        
     }
 }
 
