@@ -145,7 +145,7 @@ internal static unsafe class LibXKBNative
     [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     private static extern void xkb_context_unref(/*struct xkb_context * */ IntPtr context);
 
-    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, SetLastError = true)]
     public static extern xkb_context xkb_context_new(xkb_context_flags flags);
 
     [DllImport(LibXkb, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]

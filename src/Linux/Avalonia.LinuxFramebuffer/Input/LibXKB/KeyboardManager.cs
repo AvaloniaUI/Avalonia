@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Runtime.InteropServices;
 using Avalonia.Input;
 using static Avalonia.LinuxFramebuffer.Input.LibXKB.LibXKBNative;
 
@@ -16,25 +17,25 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
         public unsafe KeyboardManager()
         {
             _ctx = xkb_context_new(xkb_context_flags.XKB_CONTEXT_NO_FLAGS);
-            if (!_ctx.IsInvalid)
+            if (_ctx.IsInvalid)
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Warning, LibXKB)
-                    ?.Log(this, $"{nameof(KeyboardManager)}: Failed to create xkb context.");
+                    ?.Log(this, $"{nameof(KeyboardManager)}: Failed to create xkb context Error {Marshal.GetLastWin32Error()}.");
                 return;
             }
 
             _keymap = xkb_keymap_new_from_names(_ctx, default, xkb_keymap_compile_flags.XKB_KEYMAP_COMPILE_NO_FLAGS);
-            if (!_keymap.IsInvalid)
+            if (_keymap.IsInvalid)
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Warning, LibXKB)
-                    ?.Log(this, $"{nameof(KeyboardManager)}: Failed to compile keymap.");
+                    ?.Log(this, $"{nameof(KeyboardManager)}: Failed to compile keymap Error {Marshal.GetLastWin32Error()}.");
                 return;
             }
             _state = xkb_state_new(_keymap);
-            if (!_state.IsInvalid)
+            if (_state.IsInvalid)
             {
                 Logging.Logger.TryGet(Logging.LogEventLevel.Warning, LibXKB)
-                    ?.Log(this, $"{nameof(KeyboardManager)}: Failed to create xkb state.");
+                    ?.Log(this, $"{nameof(KeyboardManager)}: Failed to create xkb state Error {Marshal.GetLastWin32Error()}.");
                 return;
             }
         }
@@ -50,7 +51,7 @@ namespace Avalonia.LinuxFramebuffer.Input.LibXKB
             return true;
         }
 
-        public bool TryProcessKey(LibInput.libinput_key key, LibInput.libinput_key_state key_State, out (Avalonia.Input.Key Key, RawInputModifiers Modifiers, bool IsRepeats)? avaloniaKeyState)
+        public bool TryProcessKey(LibInput.libinput_key key, LibInput.libinput_key_state key_State, out (Avalonia.Input.Key Key, RawInputModifiers Modifiers, bool IsRepeats) avaloniaKeyState)
         {
             avaloniaKeyState = default;
             if (_ctx is null or { IsInvalid: true }
