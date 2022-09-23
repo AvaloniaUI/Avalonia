@@ -1,19 +1,18 @@
 ﻿using System;
 using Android.Content;
-using Android.OS;
 using Android.Runtime;
-using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
-using Java.Lang;
 
 namespace Avalonia.Android
 {
     internal interface IAndroidInputMethod
     {
+        public View View { get; }
+
         public ITextInputMethodClient Client { get; }
 
         public bool IsActive { get; }
@@ -38,7 +37,7 @@ namespace Avalonia.Android
         private readonly TView _host;
         private readonly InputMethodManager _imm;
         private ITextInputMethodClient _client;
-        private InputConnectionImpl _inputConnection;
+        private AvaloniaInputConnection _inputConnection;
 
         public AndroidInputMethod(TView host)
         {
@@ -52,6 +51,8 @@ namespace Avalonia.Android
             _host.FocusableInTouchMode = true;
             _host.ViewTreeObserver.AddOnGlobalLayoutListener(new SoftKeyboardListener(_host));
         }
+
+        public View View => _host;
 
         public bool IsActive => Client != null;
 
@@ -100,6 +101,8 @@ namespace Avalonia.Android
             {
                 var surroundingText = Client.SurroundingText;
 
+                _inputConnection.SurroundingText = surroundingText;
+
                 _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
         }
@@ -111,11 +114,9 @@ namespace Avalonia.Android
 
         public void SetOptions(TextInputOptions options)
         {
-            _inputConnection = new InputConnectionImpl(_host, this);
-
-            _host.InitEditorInfo((_host, outAttrs) =>
-            {          
-                //_inputConnection?.FinishComposingText();
+            _host.InitEditorInfo((topLevel, outAttrs) =>
+            {
+                _inputConnection = new AvaloniaInputConnection(topLevel, this);
 
                 outAttrs.InputType = options.ContentType switch
                 {
