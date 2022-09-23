@@ -29,11 +29,11 @@ public partial class AvaloniaRuntime
         Console.WriteLine($"{glInfo.ContextId}, {glInfo.FboId}");
     }
 
-    [JSImport("Canvas.createCanvas", "avalonia.js")]
+    [JSImport("Canvas.createCanvas", "avalonia.ts")]
     public static partial JSObject CreateCanvas(JSObject container);
 
     [JSImport("Canvas.Foo", "avalonia.ts")]
-    internal static partial void Foo(JSObject canvas);
+    public static partial void Foo(JSObject canvas);
 
     [JSImport("Canvas.initGL", "avalonia.ts")]
     internal static partial JSObject InitGL(JSObject canvas, string canvasId);

@@ -30,7 +30,8 @@ internal partial class Program
         var canvas = AvaloniaRuntime.CreateCanvas(div);
 
         Console.WriteLine("Created canvas");
-        
+
+        AvaloniaRuntime.Foo(canvas);
     }
 }
 
