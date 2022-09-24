@@ -47,13 +47,14 @@ namespace Avalonia.Web
 
         private bool _useGL;
         private bool _inputElementFocused;
+        private static int _canvasCount;
 
-        public AvaloniaView()
+        public AvaloniaView(string divId)
         {
-            var div = GetElementById("out");
+            var div = GetElementById(divId);
 
             _canvas = CreateCanvas(div);
-            _canvas.SetProperty("id", "mycanvas");
+            _canvas.SetProperty("id", $"avaloniaCanvas{_canvasCount++}");
 
             _topLevelImpl = new RazorViewTopLevelImpl(this);
 

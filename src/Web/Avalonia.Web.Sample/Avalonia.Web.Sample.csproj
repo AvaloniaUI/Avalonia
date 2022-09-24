@@ -7,8 +7,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
     <WasmBuildNative>true</WasmBuildNative>
-    <EmccFlags>-sVERBOSE</EmccFlags>
+    <EmccFlags>-sVERBOSE -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
     <EmccExtraLDFlags>--js-library="C:\Users\User\repos\Avalonia\src\Web\Avalonia.Web.Sample\interop.js"</EmccExtraLDFlags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <RunAOTCompilation>true</RunAOTCompilation>
+    <PublishTrimmed>true</PublishTrimmed>
+    <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
+    <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
   </PropertyGroup>
 
   <ItemGroup>

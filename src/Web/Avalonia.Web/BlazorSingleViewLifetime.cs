@@ -19,13 +19,10 @@ namespace Avalonia.Web.Blazor
 
     public static partial class WebAppBuilder
     {
-        
-
-        public static T UseBrowserWasm<T>(
-        this T builder)
+        public static T SetupBrowserApp<T>(
+        this T builder, string mainDivId)
         where T : AppBuilderBase<T>, new()
         {
-            Console.WriteLine("In UseBrowserWasm");
             var lifetime = new BlazorSingleViewLifetime();
 
             return builder
@@ -34,13 +31,9 @@ namespace Avalonia.Web.Blazor
                 .With(new SkiaOptions { CustomGpuFactory = () => new BlazorSkiaGpu() })
                 .AfterSetup(b =>
                 {
-                    var view = new AvaloniaView();
-                    lifetime.View = view;
-                    Console.WriteLine("After setup");
-
+                    lifetime.View = new AvaloniaView(mainDivId);
                 })
                 .SetupWithLifetime(lifetime);
-
         }
     }
 }

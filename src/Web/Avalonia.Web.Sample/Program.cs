@@ -18,7 +18,7 @@ internal partial class Program
 
     private static void Main(string[] args)
     {
-        BuildAvaloniaApp().UseBrowserWasm();
+        BuildAvaloniaApp().SetupBrowserApp("out1");
     }
 
     public static AppBuilder BuildAvaloniaApp()

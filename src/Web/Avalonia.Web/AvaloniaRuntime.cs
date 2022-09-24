@@ -35,7 +35,7 @@ public partial class AvaloniaRuntime
     {
         InterceptGLObject();
 
-        var info = InitGL(canvas, "testCanvas", renderFrameCallback);
+        var info = InitGL(canvas, canvas.GetPropertyAsString("id")!, renderFrameCallback);
 
 
         var glInfo = new GLInfo(
