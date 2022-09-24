@@ -53,6 +53,11 @@ namespace Avalonia.Web
         {
             var div = GetElementById(divId);
 
+            if(div == null)
+            {
+                throw new Exception($"div with id: {divId}, was not found in the html document.");
+            }
+
             _canvas = CreateCanvas(div);
             _canvas.SetProperty("id", $"avaloniaCanvas{_canvasCount++}");
 

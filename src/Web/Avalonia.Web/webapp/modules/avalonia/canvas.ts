@@ -25,6 +25,8 @@ export class Canvas {
 
     public static createCanvas(element: HTMLDivElement): HTMLCanvasElement {
         var canvas = document.createElement("canvas");
+        canvas.style.setProperty("width", "100%");
+        canvas.style.setProperty("height", "100%");
 
         element.appendChild(canvas);
         canvas.classList.add('avalonia-canvas');
