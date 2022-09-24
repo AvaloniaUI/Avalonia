@@ -110,14 +110,15 @@ namespace Avalonia.Web.Blazor
 
         public bool RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
         {
-            /*if (Keycodes.KeyCodes.TryGetValue(code, out var avkey))
+            Console.WriteLine($"{type} {code} {key} {modifiers}");
+            if (Keycodes.KeyCodes.TryGetValue(code, out var avkey))
             {
                 if (_inputRoot is { })
                 {
                     var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
-                    
+
                     Input?.Invoke(args);
-                    
+
                     return args.Handled;
                 }
             }
@@ -126,12 +127,12 @@ namespace Avalonia.Web.Blazor
                 if (_inputRoot is { })
                 {
                     var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
-                    
+
                     Input?.Invoke(args);
 
                     return args.Handled;
                 }
-            }*/
+            }
 
             return false;
         }

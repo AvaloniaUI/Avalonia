@@ -13,6 +13,8 @@ using Avalonia.Input.TextInput;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Web.Blazor;
+using Avalonia.Web.Interop;
+
 using SkiaSharp;
 using static Avalonia.Web.AvaloniaRuntime;
 
@@ -72,8 +74,10 @@ namespace Avalonia.Web
 
             _topLevel.Renderer.Start();
 
-
-            
+            InputHelper.SubscribeKeyboardEvents(
+                div,
+                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(Input.Raw.RawKeyEventType.KeyDown, code, key, (Input.RawInputModifiers)modifier),
+                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(Input.Raw.RawKeyEventType.KeyUp, code, key, (Input.RawInputModifiers)modifier));
 
             //_interop = new SKHtmlCanvasInterop(_avaloniaModule, _htmlCanvas, OnRenderFrame);
 
