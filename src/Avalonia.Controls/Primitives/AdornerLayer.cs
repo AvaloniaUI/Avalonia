@@ -27,6 +27,12 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<bool> IsClipEnabledProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, bool>("IsClipEnabled", true);
 
+        /// <summary>
+        /// Allows for getting and setting of the adorner for control.
+        /// </summary>
+        public static readonly AttachedProperty<Control?> AdornerProperty =
+            AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, Control?>("Adorner");
+
         private static readonly AttachedProperty<AdornedElementInfo> s_adornedElementInfoProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo>("AdornedElementInfo");
 
@@ -63,6 +69,72 @@ namespace Avalonia.Controls.Primitives
         public static void SetIsClipEnabled(Visual adorner, bool isClipEnabled)
         {
             adorner.SetValue(IsClipEnabledProperty, isClipEnabled);
+        }
+
+        public static Control? GetAdorner(Visual visual)
+        {
+            return visual.GetValue(AdornerProperty);
+        }
+
+        public static void SetAdorner(Visual visual, Control? adorner)
+        {
+            visual.SetValue(AdornerProperty, adorner);
+
+            SetVisualAdorner(visual, adorner);
+        }
+
+        private static void SetVisualAdorner(Visual visual, Control? adorner)
+        {
+            var layer = default(AdornerLayer);
+
+            visual.AttachedToVisualTree += (_, _) =>
+            {
+                layer = AddVisualAdorner(visual, adorner);
+            };
+
+            visual.DetachedFromVisualTree += (_, _) =>
+            {
+                RemoveVisualAdorner(visual, adorner, layer);
+            };
+        }
+
+        private static AdornerLayer? AddVisualAdorner(Visual visual, Control? adorner)
+        {
+            if (adorner is null)
+            {
+                return null;
+            }
+
+            var layer = AdornerLayer.GetAdornerLayer(visual);
+            if (layer == null || layer.Children.Contains(adorner))
+            {
+                return layer;
+            }
+
+            AdornerLayer.SetAdornedElement(adorner, visual);
+            AdornerLayer.SetIsClipEnabled(adorner, false);
+
+            ((ISetLogicalParent) adorner).SetParent(visual);
+            layer.Children.Add(adorner);
+
+            return layer;
+        }
+
+        private static void RemoveVisualAdorner(Visual visual, Control? adorner, AdornerLayer? layer)
+        {
+            if (adorner is null)
+            {
+                return;
+            }
+
+            // var layer = AdornerLayer.GetAdornerLayer(visual);
+            if (layer is null || !layer.Children.Contains(adorner))
+            {
+                return;
+            }
+
+            layer.Children.Remove(adorner);
+            ((ISetLogicalParent) adorner).SetParent(null);
         }
 
         protected override Size MeasureOverride(Size availableSize)
