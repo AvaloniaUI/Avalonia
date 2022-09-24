@@ -19,6 +19,20 @@ internal static partial class InputHelper
         [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
         Func<string, string, int, bool> keyUp);
 
+    
+   
+
+    [JSImport("InputHelper.subscribePointerEvents", "avalonia.ts")]
+    public static partial void SubscribePointerEvents(
+        JSObject htmlElement,
+        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
+        Func<JSObject, bool> pointerMove,
+        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
+        Func<JSObject, bool> pointerDown,
+        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
+        Func<JSObject, bool> pointerUp);
+        
+
     [JSImport("InputHelper.subscribeInputEvents", "avalonia.ts")]
     public static partial void SubscribeInputEvents(
         JSObject htmlElement,

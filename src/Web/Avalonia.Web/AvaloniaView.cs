@@ -3,6 +3,7 @@ using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
+using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
@@ -66,6 +67,85 @@ namespace Avalonia.Web
                 div,
                 (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(Input.Raw.RawKeyEventType.KeyDown, code, key, (Input.RawInputModifiers)modifier),
                 (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(Input.Raw.RawKeyEventType.KeyUp, code, key, (Input.RawInputModifiers)modifier));
+
+            InputHelper.SubscribePointerEvents(_canvas, args =>
+            {
+                var type = args.GetPropertyAsString("pointertype");
+
+                var point = new RawPointerPoint
+                {
+                    Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+                    Pressure = (float)args.GetPropertyAsDouble("pressure"),
+                    XTilt = (float)args.GetPropertyAsDouble("tiltX"),
+                    YTilt = (float)args.GetPropertyAsDouble("tiltY")
+                    // Twist = args.Twist - read from JS code directly when
+                };
+
+                _topLevelImpl.RawPointerEvent(Input.Raw.RawPointerEventType.Move, type!, point, Input.RawInputModifiers.None, args.GetPropertyAsInt32("pointerId"));
+
+                return false;
+
+            }, args => {
+
+                var pointerType = args.GetPropertyAsString("pointerType");
+
+                var type = pointerType switch
+                {
+                    "touch" => RawPointerEventType.TouchBegin,
+                    _ => args.GetPropertyAsInt32("button") switch
+                    {
+                        0 => RawPointerEventType.LeftButtonDown,
+                        1 => RawPointerEventType.MiddleButtonDown,
+                        2 => RawPointerEventType.RightButtonDown,
+                        3 => RawPointerEventType.XButton1Down,
+                        4 => RawPointerEventType.XButton2Down,
+                        // 5 => Pen eraser button,
+                        _ => RawPointerEventType.Move
+                    }
+                };
+
+                var point = new RawPointerPoint
+                {
+                    Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+                    Pressure = (float)args.GetPropertyAsDouble("pressure"),
+                    XTilt = (float)args.GetPropertyAsDouble("tiltX"),
+                    YTilt = (float)args.GetPropertyAsDouble("tiltY")
+                    // Twist = args.Twist - read from JS code directly when
+                };
+
+                _topLevelImpl.RawPointerEvent(type, pointerType!, point, Input.RawInputModifiers.None, args.GetPropertyAsInt32("pointerId"));
+                return false;
+            }, args => {
+                var pointerType = args.GetPropertyAsString("pointerType");
+
+                var type = pointerType switch
+                {
+                    "touch" => RawPointerEventType.TouchEnd,
+                    _ => args.GetPropertyAsInt32("button") switch
+                    {
+                        0 => RawPointerEventType.LeftButtonUp,
+                        1 => RawPointerEventType.MiddleButtonUp,
+                        2 => RawPointerEventType.RightButtonUp,
+                        3 => RawPointerEventType.XButton1Up,
+                        4 => RawPointerEventType.XButton2Up,
+                        // 5 => Pen eraser button,
+                        _ => RawPointerEventType.Move
+                    }
+                };
+
+                var point = new RawPointerPoint
+                {
+                    Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+                    Pressure = (float)args.GetPropertyAsDouble("pressure"),
+                    XTilt = (float)args.GetPropertyAsDouble("tiltX"),
+                    YTilt = (float)args.GetPropertyAsDouble("tiltY")
+                    // Twist = args.Twist - read from JS code directly when
+                };
+
+                _topLevelImpl.RawPointerEvent(type, pointerType!, point, Input.RawInputModifiers.None, args.GetPropertyAsInt32("pointerId"));
+                return false;
+            });
+            
 
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 

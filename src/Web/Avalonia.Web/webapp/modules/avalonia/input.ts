@@ -45,6 +45,46 @@ export class InputHelper {
             element.removeEventListener("keyup", keyUpHandler);
         };
     }
+
+    public static subscribePointerEvents(
+        element: HTMLInputElement,
+        pointerMoveCallback: (args: PointerEvent) => boolean,
+        pointerDownCallback: (args: PointerEvent) => boolean,
+        pointerUpCallback: (args: PointerEvent) => boolean,
+    ) {
+        const pointerMoveHandler = (args: PointerEvent) => {
+            
+            if (pointerMoveCallback(args)) {
+                args.preventDefault();
+            }
+        };
+
+        const pointerDownHandler = (args: PointerEvent) => {
+
+            if (pointerDownCallback(args)) {
+                args.preventDefault();
+            }
+        };
+
+        const pointerUpHandler = (args: PointerEvent) => {
+
+            if (pointerUpCallback(args)) {
+                args.preventDefault();
+            }
+        };
+
+        element.addEventListener("pointermove", pointerMoveHandler);
+        element.addEventListener("pointerdown", pointerDownHandler);
+        element.addEventListener("pointerup", pointerUpHandler);
+
+       
+
+        return () => {
+            element.removeEventListener("pointerover", pointerMoveHandler);
+            element.removeEventListener("pointerdown", pointerDownHandler);
+            element.removeEventListener("pointerup", pointerUpHandler);
+        };
+    }
     
     public static subscribeInputEvents(
         element: HTMLInputElement,
