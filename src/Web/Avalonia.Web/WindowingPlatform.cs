@@ -29,12 +29,10 @@ namespace Avalonia.Web.Blazor
         }
 
         public static KeyboardDevice Keyboard => s_keyboard ??
-            throw new InvalidOperationException("123 BlazorWindowingPlatform not registered.");
+            throw new InvalidOperationException("BlazorWindowingPlatform not registered.");
 
         public static void Register()
         {
-            Console.WriteLine("Registering windowing");
-
             var instance = new BlazorWindowingPlatform();
             s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable

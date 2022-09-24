@@ -157,8 +157,6 @@ namespace Avalonia.Web
 
             _dpi = ObserveDpi(OnDpiChanged);
 
-            Console.WriteLine($"Started observing dpi: {_dpi}");
-
             _useGL = skiaOptions?.CustomGpuFactory != null;
 
             if (_useGL)
@@ -167,13 +165,11 @@ namespace Avalonia.Web
                 // create the SkiaSharp context
                 if (_context == null)
                 {
-                    Console.WriteLine("create glcontext");
                     _glInterface = GRGlInterface.Create();
                     _context = GRContext.CreateGl(_glInterface);
 
                     // bump the default resource cache limit
                     _context.SetResourceCacheLimit(skiaOptions?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
-                    Console.WriteLine("glcontext created and resource limit set");
                 }
 
                 _topLevelImpl.Surfaces = new[] { new BlazorSkiaSurface(_context, _jsGlInfo, ColorType, new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, GRSurfaceOrigin.BottomLeft) };

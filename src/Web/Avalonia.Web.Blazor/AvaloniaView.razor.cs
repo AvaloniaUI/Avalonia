@@ -287,7 +287,6 @@ namespace Avalonia.Web.Blazor
                     // create the SkiaSharp context
                     if (_context == null)
                     {
-                        Console.WriteLine("create glcontext");
                         _glInterface = GRGlInterface.Create();
                         _context = GRContext.CreateGl(_glInterface);
 

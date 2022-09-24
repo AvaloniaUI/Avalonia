@@ -35,7 +35,6 @@ export class Canvas {
     }
 
     public static initGL(element: HTMLCanvasElement, elementId: string, renderFrameCallback: () => void): SKGLViewInfo | null {
-        console.log("inside initGL");
         var view = Canvas.init(true, element, elementId, renderFrameCallback);
         if (!view || !view.glInfo)
             return null;
