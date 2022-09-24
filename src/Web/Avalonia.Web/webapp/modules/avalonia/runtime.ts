@@ -1,6 +1,7 @@
 import { RuntimeAPI } from "../../types/dotnet";
 
 import { Canvas } from "./canvas";
+import { InputHelper } from "./input";
 
 export class AvaloniaRuntime {
     constructor(
@@ -8,7 +9,8 @@ export class AvaloniaRuntime {
         api: RuntimeAPI
     ) {
         api.setModuleImports("avalonia.ts", {
-            Canvas
+            Canvas,
+            InputHelper
         });
     }
 }
