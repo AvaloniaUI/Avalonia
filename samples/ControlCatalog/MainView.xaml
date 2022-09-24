@@ -4,7 +4,7 @@
              xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
              xmlns:models="clr-namespace:ControlCatalog.Models"
              xmlns:pages="clr-namespace:ControlCatalog.Pages">
-  <Border Background="Red">
-    
+  <Border Background="Red" Height="100" Width="100">
+    <CheckBox Content="Test" />
   </Border>
 </UserControl>

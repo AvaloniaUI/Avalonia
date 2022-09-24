@@ -31,11 +31,11 @@ public partial class AvaloniaRuntime
         
     }
 
-    public static GLInfo InitialiseGL (JSObject canvas)
+    public static GLInfo InitialiseGL (JSObject canvas, Action renderFrameCallback)
     {
         InterceptGLObject();
 
-        var info = InitGL(canvas, "testCanvas");
+        var info = InitGL(canvas, "testCanvas", renderFrameCallback);
 
 
         var glInfo = new GLInfo(
@@ -48,14 +48,21 @@ public partial class AvaloniaRuntime
         return glInfo;
     }
 
+    [JSImport("Canvas.requestAnimationFrame", "avalonia.ts")]
+    public static partial void RequestAnimationFrame(JSObject canvas, bool renderLoop);
+
     [JSImport("Canvas.createCanvas", "avalonia.ts")]
     public static partial JSObject CreateCanvas(JSObject container);
 
-    [JSImport("Canvas.Foo", "avalonia.ts")]
-    public static partial void Foo(JSObject canvas);
+    [JSImport("Canvas.setCanvasSize", "avalonia.ts")]
+    public static partial void SetCanvasSize(JSObject canvas, int height, int width);
 
     [JSImport("Canvas.initGL", "avalonia.ts")]
-    private static partial JSObject InitGL(JSObject canvas, string canvasId);
+    private static partial JSObject InitGL(
+        JSObject canvas, 
+        string canvasId,
+        [JSMarshalAs<JSType.Function>] 
+        Action renderFrameCallback);
 
     [JSImport("StorageProvider.isFileApiSupported", "storage.ts")]
     public static partial bool IsFileApiSupported();

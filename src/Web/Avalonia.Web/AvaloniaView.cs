@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
 using Avalonia.Input.TextInput;
@@ -14,7 +8,6 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Web.Blazor;
 using Avalonia.Web.Interop;
-
 using SkiaSharp;
 using static Avalonia.Web.AvaloniaRuntime;
 
@@ -55,22 +48,16 @@ namespace Avalonia.Web
 
         public AvaloniaView()
         {
-            Console.WriteLine("In AvaloniaView");
             var div = GetElementById("out");
-            Console.WriteLine("got div");
 
-            var canvas = AvaloniaRuntime.CreateCanvas(div);
+            var canvas = CreateCanvas(div);
             canvas.SetProperty("id", "mycanvas");
 
             _topLevelImpl = new RazorViewTopLevelImpl(this);
 
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
 
-            Console.WriteLine("created toplevel");
-
             _topLevel.Prepare();
-
-            Console.WriteLine("Prepped");
 
             _topLevel.Renderer.Start();
 
@@ -87,7 +74,7 @@ namespace Avalonia.Web
 
             if (_useGL)
             {
-                _jsGlInfo = AvaloniaRuntime.InitialiseGL(canvas);
+                _jsGlInfo = AvaloniaRuntime.InitialiseGL(canvas, OnRenderFrame);
                 Console.WriteLine("jsglinfo created - init gl");
             }
             else
@@ -120,22 +107,26 @@ namespace Avalonia.Web
                    // new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, _interop.PutImageData);
             }
 
-           // _interop.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+            AvaloniaRuntime.SetCanvasSize(canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
-            Threading.Dispatcher.UIThread.Post(async () =>
-            {
-                //_interop.RequestAnimationFrame(true);
+            _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
-               // _sizeWatcher = new SizeWatcherInterop(_avaloniaModule, _htmlCanvas, OnSizeChanged);
-               // _dpiWatcher = new DpiWatcherInterop(_avaloniaModule, OnDpiChanged);
-
-                //_sizeWatcher.Start();
-            });
+            RequestAnimationFrame(canvas, true);
         }
-
-        internal void SetSurface(SKColorType colorType, PixelSize size, double scaling, Action<IntPtr, SKSizeI> blitCallback)
+        private void OnRenderFrame()
         {
-            //_currentSurface = new BlazorSkiaRasterSurface(colorType, size, scaling, blitCallback);
+            if (_useGL && (_jsGlInfo == null))
+            {
+                Console.WriteLine("nothing to render");
+                return;
+            }
+            if (_canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0)
+            {
+                Console.WriteLine("nothing to render");
+                return;
+            }
+
+            ManualTriggerRenderTimer.Instance.RaiseTick();
         }
 
         public Control? Content
@@ -156,22 +147,6 @@ namespace Avalonia.Web
         {
             throw new NotImplementedException();
             //return _storageProvider ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
-        }
-
-        private void OnRenderFrame()
-        {
-            if (_useGL && (_jsGlInfo == null))
-            {
-                Console.WriteLine("nothing to render");
-                return;
-            }
-            if (_canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0)
-            {
-                Console.WriteLine("nothing to render");
-                return;
-            }
-
-            ManualTriggerRenderTimer.Instance.RaiseTick();
         }
 
         private void ForceBlit()
