@@ -38,8 +38,8 @@ namespace Avalonia.Web.Blazor
             var instance = new BlazorWindowingPlatform();
             s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable
-                //.Bind<IClipboard>().ToSingleton<ClipboardImpl>()
-                //.Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
+                .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
+                .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
                 .Bind<IPlatformSettings>().ToConstant(instance)
                 .Bind<IPlatformThreadingInterface>().ToConstant(instance)
