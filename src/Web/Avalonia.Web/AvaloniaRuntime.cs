@@ -64,6 +64,18 @@ public partial class AvaloniaRuntime
         [JSMarshalAs<JSType.Function>] 
         Action renderFrameCallback);
 
+    [JSImport("SizeWatcher.observe", "avalonia.ts")]
+    public static partial JSObject ObserveSize(
+        JSObject canvas,
+        string canvasId,
+        [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number>>]
+        Action<int, int> onSizeChanged);
+
+    [JSImport("DpiWatcher.start", "avalonia.ts")]
+    public static partial double ObserveDpi(
+       [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number>>]
+        Action<double, double> onDpiChanged);
+
     [JSImport("StorageProvider.isFileApiSupported", "storage.ts")]
     public static partial bool IsFileApiSupported();
 

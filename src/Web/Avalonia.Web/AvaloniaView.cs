@@ -36,8 +36,9 @@ namespace Avalonia.Web
         private ElementReference _inputElement;
         private ElementReference _containerElement;
         private ElementReference _nativeControlsContainer;*/
+        private JSObject _canvas;
         private double _dpi = 1;
-        private SKSize _canvasSize = new(100, 100);
+        private Size _canvasSize = new(100.0, 100.0);
 
         private GRContext? _context;
         private GRGlInterface? _glInterface;
@@ -50,8 +51,8 @@ namespace Avalonia.Web
         {
             var div = GetElementById("out");
 
-            var canvas = CreateCanvas(div);
-            canvas.SetProperty("id", "mycanvas");
+            _canvas = CreateCanvas(div);
+            _canvas.SetProperty("id", "mycanvas");
 
             _topLevelImpl = new RazorViewTopLevelImpl(this);
 
@@ -66,26 +67,17 @@ namespace Avalonia.Web
                 (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(Input.Raw.RawKeyEventType.KeyDown, code, key, (Input.RawInputModifiers)modifier),
                 (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(Input.Raw.RawKeyEventType.KeyUp, code, key, (Input.RawInputModifiers)modifier));
 
-            //_interop = new SKHtmlCanvasInterop(_avaloniaModule, _htmlCanvas, OnRenderFrame);
-
-
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
+
+            _dpi = ObserveDpi(OnDpiChanged);
+
+            Console.WriteLine($"Started observing dpi: {_dpi}");
+
             _useGL = skiaOptions?.CustomGpuFactory != null;
 
             if (_useGL)
             {
-                _jsGlInfo = AvaloniaRuntime.InitialiseGL(canvas, OnRenderFrame);
-                Console.WriteLine("jsglinfo created - init gl");
-            }
-            else
-            {
-                throw new NotImplementedException();
-                //var rasterInitialized = _interop.InitRaster();
-                //Console.WriteLine("raster initialized: {0}", rasterInitialized);
-            }
-
-            if (_useGL)
-            {
+                _jsGlInfo = AvaloniaRuntime.InitialiseGL(_canvas, OnRenderFrame);
                 // create the SkiaSharp context
                 if (_context == null)
                 {
@@ -93,25 +85,29 @@ namespace Avalonia.Web
                     _glInterface = GRGlInterface.Create();
                     _context = GRContext.CreateGl(_glInterface);
 
-
                     // bump the default resource cache limit
                     _context.SetResourceCacheLimit(skiaOptions?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
                     Console.WriteLine("glcontext created and resource limit set");
                 }
 
-                _topLevelImpl.Surfaces = new[] { new BlazorSkiaSurface(_context, _jsGlInfo, ColorType, new PixelSize(100, 100), 1, GRSurfaceOrigin.BottomLeft) };
+                _topLevelImpl.Surfaces = new[] { new BlazorSkiaSurface(_context, _jsGlInfo, ColorType, new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, GRSurfaceOrigin.BottomLeft) };
             }
             else
             {
+                //var rasterInitialized = _interop.InitRaster();
+                //Console.WriteLine("raster initialized: {0}", rasterInitialized);
+
                 //_topLevelImpl.SetSurface(ColorType,
-                   // new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, _interop.PutImageData);
+                // new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, _interop.PutImageData);
             }
 
-            AvaloniaRuntime.SetCanvasSize(canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+            AvaloniaRuntime.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
-            RequestAnimationFrame(canvas, true);
+            ObserveSize(_canvas, "mycanvas", OnSizeChanged);
+
+            RequestAnimationFrame(_canvas, true);
         }
         private void OnRenderFrame()
         {
@@ -164,13 +160,13 @@ namespace Avalonia.Web
             }
         }
 
-        private void OnDpiChanged(double newDpi)
+        private void OnDpiChanged(double oldDpi, double newDpi)
         {
             if (Math.Abs(_dpi - newDpi) > 0.0001)
             {
                 _dpi = newDpi;
 
-                //_interop!.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
@@ -178,13 +174,15 @@ namespace Avalonia.Web
             }
         }
 
-        private void OnSizeChanged(SKSize newSize)
+        private void OnSizeChanged(int height, int width)
         {
+            var newSize = new Size(height, width);
+
             if (_canvasSize != newSize)
             {
                 _canvasSize = newSize;
 
-                //_interop!.SetCanvasSize((int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 

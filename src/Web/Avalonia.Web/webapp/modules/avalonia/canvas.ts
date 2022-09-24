@@ -27,6 +27,7 @@ export class Canvas {
         var canvas = document.createElement("canvas");
 
         element.appendChild(canvas);
+        canvas.classList.add('avalonia-canvas');
 
         return canvas;
     }
@@ -200,5 +201,114 @@ export class Canvas {
         }
 
         return ctx;
+    }
+}
+
+type SizeWatcherElement = {
+    SizeWatcher: SizeWatcherInstance;
+} & HTMLElement
+
+type SizeWatcherInstance = {
+    callback: (width: number, height: number) => void;
+}
+
+export class SizeWatcher {
+    static observer: ResizeObserver;
+    static elements: Map<string, HTMLElement>;
+
+    public static observe(element: HTMLElement, elementId: string, callback: (width: number, height: number) => void) {
+        if (!element || !callback)
+            return;
+
+        //console.info(`Adding size watcher observation with callback ${callback._id}...`);
+
+        SizeWatcher.init();
+
+        const watcherElement = element as SizeWatcherElement;
+        watcherElement.SizeWatcher = {
+            callback: callback
+        };
+
+        SizeWatcher.elements.set(elementId, element);
+        SizeWatcher.observer.observe(element);
+
+        SizeWatcher.invoke(element);
+    }
+
+    public static unobserve(elementId: string) {
+        if (!elementId || !SizeWatcher.observer)
+            return;
+
+        //console.info('Removing size watcher observation...');
+
+        const element = SizeWatcher.elements.get(elementId)!;
+
+        SizeWatcher.elements.delete(elementId);
+        SizeWatcher.observer.unobserve(element);
+    }
+
+    static init() {
+        if (SizeWatcher.observer)
+            return;
+
+        //console.info('Starting size watcher...');
+
+        SizeWatcher.elements = new Map<string, HTMLElement>();
+        SizeWatcher.observer = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                SizeWatcher.invoke(entry.target);
+            }
+        });
+    }
+
+    static invoke(element: Element) {
+        const watcherElement = element as SizeWatcherElement;
+        const instance = watcherElement.SizeWatcher;
+
+        if (!instance || !instance.callback)
+            return;
+
+        return instance.callback(element.clientWidth, element.clientHeight);
+    }
+}
+
+export class DpiWatcher {
+    static lastDpi: number;
+    static timerId: number;
+    static callback: (old: number, newdpi: number) => void;
+
+    public static getDpi() {
+        return window.devicePixelRatio;
+    }
+
+    public static start(callback: (old: number, newdpi: number) => void) : number {
+        //console.info(`Starting DPI watcher with callback ${callback._id}...`);
+
+        DpiWatcher.lastDpi = window.devicePixelRatio;
+        DpiWatcher.timerId = window.setInterval(DpiWatcher.update, 1000);
+        DpiWatcher.callback = callback;
+
+        return DpiWatcher.lastDpi;
+    }
+
+    public static stop() {
+        //console.info(`Stopping DPI watcher with callback ${DpiWatcher.callback._id}...`);
+
+        window.clearInterval(DpiWatcher.timerId);
+
+        //DpiWatcher.callback = undefined;
+    }
+
+    static update() {
+        if (!DpiWatcher.callback)
+            return;
+
+        const currentDpi = window.devicePixelRatio;
+        const lastDpi = DpiWatcher.lastDpi;
+        DpiWatcher.lastDpi = currentDpi;
+
+        if (Math.abs(lastDpi - currentDpi) > 0.001) {
+            DpiWatcher.callback(lastDpi, currentDpi);
+        }
     }
 }

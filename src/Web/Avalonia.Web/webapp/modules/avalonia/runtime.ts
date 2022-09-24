@@ -1,5 +1,7 @@
 import { RuntimeAPI } from "../../types/dotnet";
 
+import { SizeWatcher } from "./canvas";
+import { DpiWatcher } from "./canvas";
 import { Canvas } from "./canvas";
 import { InputHelper } from "./input";
 
@@ -10,7 +12,9 @@ export class AvaloniaRuntime {
     ) {
         api.setModuleImports("avalonia.ts", {
             Canvas,
-            InputHelper
+            InputHelper,
+            SizeWatcher,
+            DpiWatcher
         });
     }
 }

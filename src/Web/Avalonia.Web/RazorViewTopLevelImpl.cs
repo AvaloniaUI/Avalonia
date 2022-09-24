@@ -21,7 +21,6 @@ namespace Avalonia.Web.Blazor
     internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
     {
         private Size _clientSize;
-        private IBlazorSkiaSurface? _currentSurface;
         private IInputRoot? _inputRoot;
         private readonly Stopwatch _sw = Stopwatch.StartNew();
         private readonly AvaloniaView _avaloniaView;
@@ -44,15 +43,13 @@ namespace Avalonia.Web.Blazor
 
         
 
-        public void SetClientSize(SKSize size, double dpi)
+        public void SetClientSize(Size newSize, double dpi)
         {
-            var newSize = new Size(size.Width, size.Height);
-
             if (Math.Abs(RenderScaling - dpi) > 0.0001)
             {
-                if (_currentSurface is { })
+                if (Surfaces.FirstOrDefault() is BlazorSkiaSurface surface)
                 {
-                    _currentSurface.Scaling = dpi;
+                    surface.Scaling = dpi;
                 }
                 
                 ScalingChanged?.Invoke(dpi);
@@ -62,9 +59,9 @@ namespace Avalonia.Web.Blazor
             {
                 _clientSize = newSize;
 
-                if (_currentSurface is { })
+                if (Surfaces.FirstOrDefault() is BlazorSkiaSurface surface)
                 {
-                    _currentSurface.Size = new PixelSize((int)size.Width, (int)size.Height);
+                    surface.Size = new PixelSize((int)newSize.Width, (int)newSize.Height);
                 }
 
                 Resized?.Invoke(newSize, PlatformResizeReason.User);
@@ -192,7 +189,7 @@ namespace Avalonia.Web.Blazor
 
         public Size ClientSize => _clientSize;
         public Size? FrameSize => null;
-        public double RenderScaling => _currentSurface?.Scaling ?? 1;
+        public double RenderScaling => (Surfaces.FirstOrDefault() as BlazorSkiaSurface)?.Scaling ?? 1;
 
         public IEnumerable<object> Surfaces { get; set; }
 

@@ -4,17 +4,29 @@
 <html>
 
 <head>
-  <title>Avalonia.Web.Sample</title>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="modulepreload" href="./main.js" />
-  <link rel="modulepreload" href="./dotnet.js" />
-  <link rel="modulepreload" href="./avalonia.js" />
+    <title>Avalonia.Web.Sample</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="modulepreload" href="./main.js" />
+    <link rel="modulepreload" href="./dotnet.js" />
+    <link rel="modulepreload" href="./avalonia.js" />
 </head>
 
 <body>
-  <div id="out" tabindex="0"></div>
-  <script type='module' src="./main.js"></script>
+    <style>
+        canvas.avalonia-canvas {
+            opacity: 1;
+            background-color: lawngreen;
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0px;
+            left: 0px;
+            z-index: 500;
+        }
+    </style>
+    <div id="out" tabindex="0"></div>
+    <script type='module' src="./main.js"></script>
 </body>
 
 </html>
