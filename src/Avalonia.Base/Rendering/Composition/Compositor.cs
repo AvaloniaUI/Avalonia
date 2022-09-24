@@ -47,11 +47,7 @@ namespace Avalonia.Rendering.Composition
         {
             Loop = loop;
             _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
-            _commit = () =>
-            {
-                Console.WriteLine("Dispatcher:Commit");
-                Commit();
-            };
+            _commit = () => Commit();
 
             DefaultEasing = new CubicBezierEasing(new Point(0.25f, 0.1f), new Point(0.25f, 1f));
         }
