@@ -28,6 +28,7 @@ export class AvaloniaDOM {
         inputElement.autocapitalize = "none";
         inputElement.type = "text";
         inputElement.classList.add('avalonia-input-element');
+        inputElement.style.display = "none";
         inputElement.style.opacity = "0";
         inputElement.style.left = "0px";
         inputElement.style.top = "0px";

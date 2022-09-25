@@ -80,9 +80,6 @@ namespace Avalonia.Web
 
             InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp, OnWheel);
 
-            InputHelper.HideElement(_inputElement);
-            
-
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
             _dpi = DomHelper.ObserveDpi(OnDpiChanged);
