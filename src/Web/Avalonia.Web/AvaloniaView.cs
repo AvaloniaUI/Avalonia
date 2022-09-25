@@ -78,88 +78,7 @@ namespace Avalonia.Web
                 (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier),
                 (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier));
 
-            InputHelper.SubscribePointerEvents(_containerElement, args =>
-            {
-                var type = args.GetPropertyAsString("pointertype");
-
-                var point = new RawPointerPoint
-                {
-                    Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
-                    Pressure = (float)args.GetPropertyAsDouble("pressure"),
-                    XTilt = (float)args.GetPropertyAsDouble("tiltX"),
-                    YTilt = (float)args.GetPropertyAsDouble("tiltY"),
-                    Twist = (float)args.GetPropertyAsDouble("twist")
-                };
-
-                _topLevelImpl.RawPointerEvent(RawPointerEventType.Move, type!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
-
-                return false;
-
-            }, args => {
-
-                var pointerType = args.GetPropertyAsString("pointerType");
-
-                var type = pointerType switch
-                {
-                    "touch" => RawPointerEventType.TouchBegin,
-                    _ => args.GetPropertyAsInt32("button") switch
-                    {
-                        0 => RawPointerEventType.LeftButtonDown,
-                        1 => RawPointerEventType.MiddleButtonDown,
-                        2 => RawPointerEventType.RightButtonDown,
-                        3 => RawPointerEventType.XButton1Down,
-                        4 => RawPointerEventType.XButton2Down,
-                        // 5 => Pen eraser button,
-                        _ => RawPointerEventType.Move
-                    }
-                };
-
-                var point = new RawPointerPoint
-                {
-                    Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
-                    Pressure = (float)args.GetPropertyAsDouble("pressure"),
-                    XTilt = (float)args.GetPropertyAsDouble("tiltX"),
-                    YTilt = (float)args.GetPropertyAsDouble("tiltY"),
-                    Twist = (float)args.GetPropertyAsDouble("twist")
-                };
-
-                _topLevelImpl.RawPointerEvent(type, pointerType!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
-                return false;
-            }, args => {
-                var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
-
-                var type = pointerType switch
-                {
-                    "touch" => RawPointerEventType.TouchEnd,
-                    _ => args.GetPropertyAsInt32("button") switch
-                    {
-                        0 => RawPointerEventType.LeftButtonUp,
-                        1 => RawPointerEventType.MiddleButtonUp,
-                        2 => RawPointerEventType.RightButtonUp,
-                        3 => RawPointerEventType.XButton1Up,
-                        4 => RawPointerEventType.XButton2Up,
-                        // 5 => Pen eraser button,
-                        _ => RawPointerEventType.Move
-                    }
-                };
-
-                var point = new RawPointerPoint
-                {
-                    Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
-                    Pressure = (float)args.GetPropertyAsDouble("pressure"),
-                    XTilt = (float)args.GetPropertyAsDouble("tiltX"),
-                    YTilt = (float)args.GetPropertyAsDouble("tiltY"),
-                    Twist = (float)args.GetPropertyAsDouble("twist")
-                };
-
-                _topLevelImpl.RawPointerEvent(type, pointerType, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
-                return false;
-            }, args =>
-            {
-                _topLevelImpl.RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
-                    new Vector(-(args.GetPropertyAsDouble("deltaX") / 50), -(args.GetPropertyAsDouble("deltaY") / 50)), GetModifiers(args));
-                return false;
-            });
+            InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp, OnWheel);
             
 
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
@@ -196,9 +115,86 @@ namespace Avalonia.Web
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
-            DomHelper.ObserveSize(_canvas, "mycanvas", OnSizeChanged);
+            DomHelper.ObserveSize(_canvas, _canvas.GetPropertyAsString("id")!, OnSizeChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
+        }
+
+        private static RawPointerPoint ExtractRawPointerFromJSArgs(JSObject args)
+        {
+            var point = new RawPointerPoint
+            {
+                Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+                Pressure = (float)args.GetPropertyAsDouble("pressure"),
+                XTilt = (float)args.GetPropertyAsDouble("tiltX"),
+                YTilt = (float)args.GetPropertyAsDouble("tiltY"),
+                Twist = (float)args.GetPropertyAsDouble("twist")
+            };
+
+            return point;
+        }
+
+        private bool OnPointerMove(JSObject args)
+        {
+            var type = args.GetPropertyAsString("pointertype");
+
+            var point = ExtractRawPointerFromJSArgs(args);
+
+            return _topLevelImpl.RawPointerEvent(RawPointerEventType.Move, type!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+        }
+
+        private bool OnPointerDown(JSObject args)
+        {
+            var pointerType = args.GetPropertyAsString("pointerType");
+
+            var type = pointerType switch
+            {
+                "touch" => RawPointerEventType.TouchBegin,
+                _ => args.GetPropertyAsInt32("button") switch
+                {
+                    0 => RawPointerEventType.LeftButtonDown,
+                    1 => RawPointerEventType.MiddleButtonDown,
+                    2 => RawPointerEventType.RightButtonDown,
+                    3 => RawPointerEventType.XButton1Down,
+                    4 => RawPointerEventType.XButton2Down,
+                    // 5 => Pen eraser button,
+                    _ => RawPointerEventType.Move
+                }
+            };
+
+            var point = ExtractRawPointerFromJSArgs(args);
+
+            return _topLevelImpl.RawPointerEvent(type, pointerType!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+        }
+
+        private bool OnPointerUp(JSObject args)
+        {
+            var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
+
+            var type = pointerType switch
+            {
+                "touch" => RawPointerEventType.TouchEnd,
+                _ => args.GetPropertyAsInt32("button") switch
+                {
+                    0 => RawPointerEventType.LeftButtonUp,
+                    1 => RawPointerEventType.MiddleButtonUp,
+                    2 => RawPointerEventType.RightButtonUp,
+                    3 => RawPointerEventType.XButton1Up,
+                    4 => RawPointerEventType.XButton2Up,
+                    // 5 => Pen eraser button,
+                    _ => RawPointerEventType.Move
+                }
+            };
+
+            var point = ExtractRawPointerFromJSArgs(args);
+
+            return _topLevelImpl.RawPointerEvent(type, pointerType, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+        }
+
+        private bool OnWheel(JSObject args)
+        {
+            return _topLevelImpl.RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+                new Vector(-(args.GetPropertyAsDouble("deltaX") / 50), -(args.GetPropertyAsDouble("deltaY") / 50)), GetModifiers(args));
         }
 
         private static RawInputModifiers GetModifiers(JSObject e)
@@ -291,7 +287,7 @@ namespace Avalonia.Web
             {
                 _dpi = newDpi;
 
-                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                //CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
@@ -307,7 +303,7 @@ namespace Avalonia.Web
             {
                 _canvasSize = newSize;
 
-                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                //CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 

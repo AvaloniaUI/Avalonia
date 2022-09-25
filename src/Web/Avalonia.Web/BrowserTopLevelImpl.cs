@@ -66,7 +66,7 @@ namespace Avalonia.Web
             }
         }
 
-        public void RawPointerEvent(
+        public bool RawPointerEvent(
             RawPointerEventType eventType, string pointerType,
             RawPointerPoint p, RawInputModifiers modifiers, long touchPointId)
         {
@@ -82,7 +82,11 @@ namespace Avalonia.Web
                     };
 
                 input.Invoke(args);
+
+                return args.Handled;
             }
+
+            return false;
         }
 
         private IPointerDevice GetPointerDevice(string pointerType)
@@ -95,12 +99,18 @@ namespace Avalonia.Web
             };
         }
 
-        public void RawMouseWheelEvent(Point p, Vector v, RawInputModifiers modifiers)
+        public bool RawMouseWheelEvent(Point p, Vector v, RawInputModifiers modifiers)
         {
             if (_inputRoot is { })
             {
-                Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, _inputRoot, p, v, modifiers));
+                var args = new RawMouseWheelEventArgs(MouseDevice, Timestamp, _inputRoot, p, v, modifiers);
+                
+                Input?.Invoke(args);
+
+                return args.Handled;
             }
+
+            return false;
         }
 
         public bool RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
