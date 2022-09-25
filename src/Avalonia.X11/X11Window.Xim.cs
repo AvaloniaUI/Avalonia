@@ -15,11 +15,16 @@ namespace Avalonia.X11
             private readonly X11Window _parent;
             private bool _controlActive, _windowActive, _imeActive;
             private Rect? _queuedCursorRect;
+            private ITextInputMethodClient? _client;
 
             public XimInputMethod(X11Window parent)
             {
                 _parent = parent;
             }
+
+            public ITextInputMethodClient? Client => _client;
+
+            public bool IsActive => _client != null;
             
             public void SetCursorRect(Rect rect)
             {
@@ -59,7 +64,7 @@ namespace Avalonia.X11
 
             public void SetClient(ITextInputMethodClient client)
             {
-                _controlActive = client is { };
+                _client = client;
                 UpdateActive();
             }
 
