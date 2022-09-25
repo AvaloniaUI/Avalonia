@@ -11,6 +11,7 @@ export class AvaloniaDOM {
         canvas.style.backgroundColor = "#ccc";
         canvas.style.width = "100%";
         canvas.style.height = "100%";
+        canvas.style.position = "absolute";
         host.appendChild(canvas);
         
         // Native controls host
