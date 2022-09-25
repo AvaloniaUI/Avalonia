@@ -1,17 +1,14 @@
 using System;
 using System.Threading;
-using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 
-#nullable enable
-
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
-    public class BlazorWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
+    public class BrowserWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
     {
         private bool _signaled;
         private static KeyboardDevice? s_keyboard;
@@ -29,11 +26,11 @@ namespace Avalonia.Web.Blazor
         }
 
         public static KeyboardDevice Keyboard => s_keyboard ??
-            throw new InvalidOperationException("BlazorWindowingPlatform not registered.");
+            throw new InvalidOperationException("BrowserWindowingPlatform not registered.");
 
         public static void Register()
         {
-            var instance = new BlazorWindowingPlatform();
+            var instance = new BrowserWindowingPlatform();
             s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
@@ -94,7 +91,7 @@ namespace Avalonia.Web.Blazor
         {
             get
             {
-                return true; // Blazor is single threaded.
+                return true; // Browser is single threaded.
             }
         }
 

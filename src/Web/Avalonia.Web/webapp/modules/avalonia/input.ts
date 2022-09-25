@@ -24,17 +24,15 @@ export class InputHelper {
         keyDownCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean,
         keyUpCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean,
     ) {
-        const keyDownHandler = (args: Event) => {
-            const keyArgs = <KeyboardEvent>args;
-            if (keyDownCallback(keyArgs.code, keyArgs.key, this.getModifiers(keyArgs))) {
+        const keyDownHandler = (args: KeyboardEvent) => {
+            if (keyDownCallback(args.code, args.key, this.getModifiers(args))) {
                 args.preventDefault();
             }
         };
         element.addEventListener("keydown", keyDownHandler);
 
-        const keyUpHandler = (args: Event) => {
-            const keyArgs = <KeyboardEvent>args;
-            if (keyUpCallback(keyArgs.code, keyArgs.key, this.getModifiers(keyArgs))) {
+        const keyUpHandler = (args: KeyboardEvent) => {
+            if (keyUpCallback(args.code, args.key, this.getModifiers(args))) {
                 args.preventDefault();
             }
         };
@@ -51,6 +49,7 @@ export class InputHelper {
         pointerMoveCallback: (args: PointerEvent) => boolean,
         pointerDownCallback: (args: PointerEvent) => boolean,
         pointerUpCallback: (args: PointerEvent) => boolean,
+        wheelCallback: (args: WheelEvent) => boolean,
     ) {
         const pointerMoveHandler = (args: PointerEvent) => {
             
@@ -73,9 +72,17 @@ export class InputHelper {
             }
         };
 
+        const wheelHandler = (args: WheelEvent) => {
+
+            if (wheelCallback(args)) {
+                args.preventDefault();
+            }
+        };
+
         element.addEventListener("pointermove", pointerMoveHandler);
         element.addEventListener("pointerdown", pointerDownHandler);
         element.addEventListener("pointerup", pointerUpHandler);
+        element.addEventListener("wheel", wheelHandler);
 
        
 
@@ -83,6 +90,7 @@ export class InputHelper {
             element.removeEventListener("pointerover", pointerMoveHandler);
             element.removeEventListener("pointerdown", pointerDownHandler);
             element.removeEventListener("pointerup", pointerUpHandler);
+            element.removeEventListener("wheel", wheelHandler);
         };
     }
     

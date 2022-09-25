@@ -1,11 +1,11 @@
+using Avalonia.Web.Interop;
 using SkiaSharp;
-using static Avalonia.Web.AvaloniaRuntime;
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
-    internal class BlazorSkiaSurface : IBlazorSkiaSurface
+    internal class BrowserSkiaSurface : IBrowserSkiaSurface
     {
-        public BlazorSkiaSurface(GRContext context, GLInfo glInfo, SKColorType colorType, PixelSize size, double scaling, GRSurfaceOrigin origin)
+        public BrowserSkiaSurface(GRContext context, GLInfo glInfo, SKColorType colorType, PixelSize size, double scaling, GRSurfaceOrigin origin)
         {
             Context = context;
             GlInfo = glInfo;

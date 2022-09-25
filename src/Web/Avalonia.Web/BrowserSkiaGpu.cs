@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using Avalonia.Skia;
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
-    public class BlazorSkiaGpu : ISkiaGpu
+    public class BrowserSkiaGpu : ISkiaGpu
     {
         public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
         {
             foreach (var surface in surfaces)
             {
-                if (surface is BlazorSkiaSurface blazorSkiaSurface)
+                if (surface is BrowserSkiaSurface browserSkiaSurface)
                 {
-                    return new BlazorSkiaGpuRenderTarget(blazorSkiaSurface);
+                    return new BrowserSkiaGpuRenderTarget(browserSkiaSurface);
                 }
             }
 

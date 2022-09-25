@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using Avalonia.Rendering;
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
     public class ManualTriggerRenderTimer : IRenderTimer
     {

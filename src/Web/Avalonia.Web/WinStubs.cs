@@ -1,14 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
-using Avalonia.Controls;
-using Avalonia.Controls.Platform;
-using Avalonia.Input;
-using Avalonia.Input.Platform;
 using Avalonia.Platform;
 
 #nullable enable
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
     internal class IconLoaderStub : IPlatformIconLoader
     {

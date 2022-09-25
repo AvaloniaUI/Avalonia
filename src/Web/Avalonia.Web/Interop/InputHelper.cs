@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices.JavaScript;
+using System.Threading.Tasks;
 
 namespace Avalonia.Web.Interop;
 
 internal static partial class InputHelper
 {
-    //[JSImport("InputHelper.subscribePointerEvents", "avalonia.ts")]
-    //public static partial void SubscribePointerEvents(
-    //    JSObject htmlElement,
-    //    [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number, JSType.Number, JSType.Number, JSType.Number, JSType.Boolean>>]
-    //            Func<double, double, double, double, int, bool> wheel);
-
     [JSImport("InputHelper.subscribeKeyboardEvents", "avalonia.ts")]
     public static partial void SubscribeKeyboardEvents(
         JSObject htmlElement,
@@ -18,9 +13,6 @@ internal static partial class InputHelper
         Func<string, string, int, bool> keyDown,
         [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
         Func<string, string, int, bool> keyUp);
-
-    
-   
 
     [JSImport("InputHelper.subscribePointerEvents", "avalonia.ts")]
     public static partial void SubscribePointerEvents(
@@ -30,7 +22,9 @@ internal static partial class InputHelper
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
         Func<JSObject, bool> pointerDown,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> pointerUp);
+        Func<JSObject, bool> pointerUp,
+        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
+        Func<JSObject, bool> wheel);
         
 
     [JSImport("InputHelper.subscribeInputEvents", "avalonia.ts")]
@@ -57,4 +51,11 @@ internal static partial class InputHelper
 
     [JSImport("InputHelper.show", "avalonia.ts")]
     public static partial void ShowElement(JSObject htmlElement);
+
+
+    [JSImport("navigator.clipboard.readText")]
+    public static partial Task<string> ReadClipboardTextAsync();
+
+    [JSImport("navigator.clipboard.writeText")]
+    public static partial Task WriteClipboardTextAsync(string text);
 }

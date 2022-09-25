@@ -3,41 +3,27 @@ using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
+using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
-using Avalonia.Web.Blazor;
 using Avalonia.Web.Interop;
 using SkiaSharp;
-using static Avalonia.Web.AvaloniaRuntime;
 
 namespace Avalonia.Web
 {
     public partial class AvaloniaView : ITextInputMethodImpl
     {
-        [JSImport("globalThis.document.getElementById")]
-        internal static partial JSObject GetElementById(string id);
-
-        private readonly RazorViewTopLevelImpl _topLevelImpl;
+        private readonly BrowserTopLevelImpl _topLevelImpl;
         private EmbeddableControlRoot _topLevel;
 
-        // Interop
-        /*private SKHtmlCanvasInterop? _interop = null;
-        private SizeWatcherInterop? _sizeWatcher = null;
-        private DpiWatcherInterop? _dpiWatcher = null;*/
+        private readonly JSObject _containerElement;
+        private readonly JSObject _canvas;
+        private readonly JSObject _nativeControlsContainer;
+        private readonly JSObject _inputElement;
+
         private GLInfo? _jsGlInfo = null;
-        /*private AvaloniaModule? _avaloniaModule = null;
-        private InputHelperInterop? _inputHelper = null;
-        private InputHelperInterop? _canvasHelper = null;
-        private InputHelperInterop? _containerHelper = null;
-        private NativeControlHostInterop? _nativeControlHost = null;
-        private StorageProviderInterop? _storageProvider = null;
-        private ElementReference _htmlCanvas;
-        private ElementReference _inputElement;
-        private ElementReference _containerElement;
-        private ElementReference _nativeControlsContainer;*/
-        private JSObject _canvas;
         private double _dpi = 1;
         private Size _canvasSize = new(100.0, 100.0);
 
@@ -51,30 +37,48 @@ namespace Avalonia.Web
 
         public AvaloniaView(string divId)
         {
-            var div = GetElementById(divId);
-
-            if(div == null)
+            var host = DomHelper.GetElementById(divId);
+            if (host == null)
             {
-                throw new Exception($"div with id: {divId}, was not found in the html document.");
+                throw new Exception($"Element with id {divId} was not found in the html document.");
             }
 
-            _canvas = CreateCanvas(div);
+            var hostContent = DomHelper.CreateAvaloniaHost(host);
+            if (hostContent == null)
+            {
+                throw new InvalidOperationException("Avalonia WASM host wasn't initialized.");
+            }
+
+            _containerElement = hostContent.GetPropertyAsJSObject("host")
+                ?? throw new InvalidOperationException("Host cannot be null");
+            _canvas = hostContent.GetPropertyAsJSObject("canvas")
+                ?? throw new InvalidOperationException("Canvas cannot be null");
+            _nativeControlsContainer = hostContent.GetPropertyAsJSObject("nativeHost")
+                ?? throw new InvalidOperationException("NativeHost cannot be null");
+            _inputElement = hostContent.GetPropertyAsJSObject("inputElement")
+                ?? throw new InvalidOperationException("InputElement cannot be null");
+
             _canvas.SetProperty("id", $"avaloniaCanvas{_canvasCount++}");
 
-            _topLevelImpl = new RazorViewTopLevelImpl(this);
+            _topLevelImpl = new BrowserTopLevelImpl(this);
 
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+            _topLevelImpl.SetCssCursor = (cursor) =>
+            {
+                InputHelper.SetCursor(_containerElement, cursor); // macOS
+                InputHelper.SetCursor(_canvas, cursor); // windows
+            };
 
             _topLevel.Prepare();
 
             _topLevel.Renderer.Start();
 
             InputHelper.SubscribeKeyboardEvents(
-                div,
-                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(Input.Raw.RawKeyEventType.KeyDown, code, key, (Input.RawInputModifiers)modifier),
-                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(Input.Raw.RawKeyEventType.KeyUp, code, key, (Input.RawInputModifiers)modifier));
+                _containerElement,
+                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier),
+                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier));
 
-            InputHelper.SubscribePointerEvents(_canvas, args =>
+            InputHelper.SubscribePointerEvents(_containerElement, args =>
             {
                 var type = args.GetPropertyAsString("pointertype");
 
@@ -83,11 +87,11 @@ namespace Avalonia.Web
                     Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
                     Pressure = (float)args.GetPropertyAsDouble("pressure"),
                     XTilt = (float)args.GetPropertyAsDouble("tiltX"),
-                    YTilt = (float)args.GetPropertyAsDouble("tiltY")
-                    // Twist = args.Twist - read from JS code directly when
+                    YTilt = (float)args.GetPropertyAsDouble("tiltY"),
+                    Twist = (float)args.GetPropertyAsDouble("twist")
                 };
 
-                _topLevelImpl.RawPointerEvent(Input.Raw.RawPointerEventType.Move, type!, point, Input.RawInputModifiers.None, args.GetPropertyAsInt32("pointerId"));
+                _topLevelImpl.RawPointerEvent(RawPointerEventType.Move, type!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
 
                 return false;
 
@@ -115,14 +119,14 @@ namespace Avalonia.Web
                     Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
                     Pressure = (float)args.GetPropertyAsDouble("pressure"),
                     XTilt = (float)args.GetPropertyAsDouble("tiltX"),
-                    YTilt = (float)args.GetPropertyAsDouble("tiltY")
-                    // Twist = args.Twist - read from JS code directly when
+                    YTilt = (float)args.GetPropertyAsDouble("tiltY"),
+                    Twist = (float)args.GetPropertyAsDouble("twist")
                 };
 
-                _topLevelImpl.RawPointerEvent(type, pointerType!, point, Input.RawInputModifiers.None, args.GetPropertyAsInt32("pointerId"));
+                _topLevelImpl.RawPointerEvent(type, pointerType!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
                 return false;
             }, args => {
-                var pointerType = args.GetPropertyAsString("pointerType");
+                var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
 
                 var type = pointerType switch
                 {
@@ -144,24 +148,29 @@ namespace Avalonia.Web
                     Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
                     Pressure = (float)args.GetPropertyAsDouble("pressure"),
                     XTilt = (float)args.GetPropertyAsDouble("tiltX"),
-                    YTilt = (float)args.GetPropertyAsDouble("tiltY")
-                    // Twist = args.Twist - read from JS code directly when
+                    YTilt = (float)args.GetPropertyAsDouble("tiltY"),
+                    Twist = (float)args.GetPropertyAsDouble("twist")
                 };
 
-                _topLevelImpl.RawPointerEvent(type, pointerType!, point, Input.RawInputModifiers.None, args.GetPropertyAsInt32("pointerId"));
+                _topLevelImpl.RawPointerEvent(type, pointerType, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+                return false;
+            }, args =>
+            {
+                _topLevelImpl.RawMouseWheelEvent(new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+                    new Vector(-(args.GetPropertyAsDouble("deltaX") / 50), -(args.GetPropertyAsDouble("deltaY") / 50)), GetModifiers(args));
                 return false;
             });
             
 
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
-            _dpi = ObserveDpi(OnDpiChanged);
+            _dpi = DomHelper.ObserveDpi(OnDpiChanged);
 
             _useGL = skiaOptions?.CustomGpuFactory != null;
 
             if (_useGL)
             {
-                _jsGlInfo = AvaloniaRuntime.InitialiseGL(_canvas, OnRenderFrame);
+                _jsGlInfo = CanvasHelper.InitialiseGL(_canvas, OnRenderFrame);
                 // create the SkiaSharp context
                 if (_context == null)
                 {
@@ -172,7 +181,7 @@ namespace Avalonia.Web
                     _context.SetResourceCacheLimit(skiaOptions?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
                 }
 
-                _topLevelImpl.Surfaces = new[] { new BlazorSkiaSurface(_context, _jsGlInfo, ColorType, new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, GRSurfaceOrigin.BottomLeft) };
+                _topLevelImpl.Surfaces = new[] { new BrowserSkiaSurface(_context, _jsGlInfo, ColorType, new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, GRSurfaceOrigin.BottomLeft) };
             }
             else
             {
@@ -183,14 +192,50 @@ namespace Avalonia.Web
                 // new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, _interop.PutImageData);
             }
 
-            AvaloniaRuntime.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+            CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
-            ObserveSize(_canvas, "mycanvas", OnSizeChanged);
+            DomHelper.ObserveSize(_canvas, "mycanvas", OnSizeChanged);
 
-            RequestAnimationFrame(_canvas, true);
+            CanvasHelper.RequestAnimationFrame(_canvas, true);
         }
+
+        private static RawInputModifiers GetModifiers(JSObject e)
+        {
+            var modifiers = RawInputModifiers.None;
+
+            if (e.GetPropertyAsBoolean("ctrlKey"))
+                modifiers |= RawInputModifiers.Control;
+            if (e.GetPropertyAsBoolean("altKey"))
+                modifiers |= RawInputModifiers.Alt;
+            if (e.GetPropertyAsBoolean("shiftKey"))
+                modifiers |= RawInputModifiers.Shift;
+            if (e.GetPropertyAsBoolean("metaKey"))
+                modifiers |= RawInputModifiers.Meta;
+
+            var buttons = e.GetPropertyAsInt32("buttons");
+            if ((buttons & 1L) == 1)
+                modifiers |= RawInputModifiers.LeftMouseButton;
+
+            if ((buttons & 2L) == 2)
+                modifiers |= e.GetPropertyAsString("type") == "pen" ? RawInputModifiers.PenBarrelButton : RawInputModifiers.RightMouseButton;
+
+            if ((buttons & 4L) == 4)
+                modifiers |= RawInputModifiers.MiddleMouseButton;
+
+            if ((buttons & 8L) == 8)
+                modifiers |= RawInputModifiers.XButton1MouseButton;
+
+            if ((buttons & 16L) == 16)
+                modifiers |= RawInputModifiers.XButton2MouseButton;
+
+            if ((buttons & 32L) == 32)
+                modifiers |= RawInputModifiers.PenEraser;
+
+            return modifiers;
+        }
+
         private void OnRenderFrame()
         {
             if (_useGL && (_jsGlInfo == null))
@@ -212,8 +257,6 @@ namespace Avalonia.Web
             get => (Control)_topLevel.Content!;
             set => _topLevel.Content = value;
         }
-
-        public bool KeyPreventDefault { get; set; }
 
         internal INativeControlHostImpl GetNativeControlHostImpl()
         {
@@ -248,7 +291,7 @@ namespace Avalonia.Web
             {
                 _dpi = newDpi;
 
-                SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
@@ -264,7 +307,7 @@ namespace Avalonia.Web
             {
                 _canvasSize = newSize;
 
-                SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 

@@ -1,27 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Web.Interop;
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
     internal class ClipboardImpl : IClipboard
     {
-        public async Task<string> GetTextAsync()
+        public Task<string> GetTextAsync()
         {
-            throw new NotImplementedException();
-            //return await AvaloniaLocator.Current.GetRequiredService<IJSInProcessRuntime>().
-              //  InvokeAsync<string>("navigator.clipboard.readText");
+            return InputHelper.ReadClipboardTextAsync();
         }
 
-        public async Task SetTextAsync(string text)
+        public Task SetTextAsync(string text)
         {
-            throw new NotImplementedException();
-            //await AvaloniaLocator.Current.GetRequiredService<IJSInProcessRuntime>().
-              //  InvokeAsync<string>("navigator.clipboard.writeText",text);
+            return InputHelper.WriteClipboardTextAsync(text);
         }
 
         public async Task ClearAsync() => await SetTextAsync("");

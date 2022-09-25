@@ -11,14 +11,12 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using SkiaSharp;
-using static Avalonia.Web.AvaloniaRuntime;
 
 #nullable enable
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
-    internal class RazorViewTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
     {
         private Size _clientSize;
         private IInputRoot? _inputRoot;
@@ -26,9 +24,9 @@ namespace Avalonia.Web.Blazor
         private readonly AvaloniaView _avaloniaView;
         private readonly TouchDevice _touchDevice;
         private readonly PenDevice _penDevice;
-        //private string _currentCursor = CssCursor.Default;
+        private string _currentCursor = CssCursor.Default;
 
-        public RazorViewTopLevelImpl(AvaloniaView avaloniaView)
+        public BrowserTopLevelImpl(AvaloniaView avaloniaView)
         {
             Surfaces = Enumerable.Empty<object>();
             _avaloniaView = avaloniaView;
@@ -47,7 +45,7 @@ namespace Avalonia.Web.Blazor
         {
             if (Math.Abs(RenderScaling - dpi) > 0.0001)
             {
-                if (Surfaces.FirstOrDefault() is BlazorSkiaSurface surface)
+                if (Surfaces.FirstOrDefault() is BrowserSkiaSurface surface)
                 {
                     surface.Scaling = dpi;
                 }
@@ -59,7 +57,7 @@ namespace Avalonia.Web.Blazor
             {
                 _clientSize = newSize;
 
-                if (Surfaces.FirstOrDefault() is BlazorSkiaSurface surface)
+                if (Surfaces.FirstOrDefault() is BrowserSkiaSurface surface)
                 {
                     surface.Size = new PixelSize((int)newSize.Width, (int)newSize.Height);
                 }
@@ -107,7 +105,6 @@ namespace Avalonia.Web.Blazor
 
         public bool RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
         {
-            Console.WriteLine($"{type} {code} {key} {modifiers}");
             if (Keycodes.KeyCodes.TryGetValue(code, out var avkey))
             {
                 if (_inputRoot is { })
@@ -169,12 +166,12 @@ namespace Avalonia.Web.Blazor
 
         public void SetCursor(ICursorImpl? cursor)
         {
-           /* var val = (cursor as CssCursor)?.Value ?? CssCursor.Default;
+            var val = (cursor as CssCursor)?.Value ?? CssCursor.Default;
             if (_currentCursor != val)
             {
                 SetCssCursor?.Invoke(val);
                 _currentCursor = val;
-            }*/
+            }
         }
 
         public IPopupImpl? CreatePopup()
@@ -189,7 +186,7 @@ namespace Avalonia.Web.Blazor
 
         public Size ClientSize => _clientSize;
         public Size? FrameSize => null;
-        public double RenderScaling => (Surfaces.FirstOrDefault() as BlazorSkiaSurface)?.Scaling ?? 1;
+        public double RenderScaling => (Surfaces.FirstOrDefault() as BrowserSkiaSurface)?.Scaling ?? 1;
 
         public IEnumerable<object> Surfaces { get; set; }
 
@@ -203,7 +200,7 @@ namespace Avalonia.Web.Blazor
         public Action? LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
-        public IKeyboardDevice KeyboardDevice { get; } = BlazorWindowingPlatform.Keyboard;
+        public IKeyboardDevice KeyboardDevice { get; } = BrowserWindowingPlatform.Keyboard;
         public WindowTransparencyLevel TransparencyLevel { get; }
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
 

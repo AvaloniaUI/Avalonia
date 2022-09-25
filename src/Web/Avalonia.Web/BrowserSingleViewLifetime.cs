@@ -4,9 +4,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
-    public class BlazorSingleViewLifetime : ISingleViewApplicationLifetime
+    public class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
     {
         public AvaloniaView? View;
 
@@ -23,12 +23,12 @@ namespace Avalonia.Web.Blazor
         this T builder, string mainDivId)
         where T : AppBuilderBase<T>, new()
         {
-            var lifetime = new BlazorSingleViewLifetime();
+            var lifetime = new BrowserSingleViewLifetime();
 
             return builder
-                .UseWindowingSubsystem(BlazorWindowingPlatform.Register)
+                .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
                 .UseSkia()
-                .With(new SkiaOptions { CustomGpuFactory = () => new BlazorSkiaGpu() })
+                .With(new SkiaOptions { CustomGpuFactory = () => new BrowserSkiaGpu() })
                 .AfterSetup(b =>
                 {
                     lifetime.View = new AvaloniaView(mainDivId);

@@ -3,7 +3,7 @@ using System.IO;
 using Avalonia.Input;
 using Avalonia.Platform;
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
     public class CssCursor : ICursorImpl
     {
@@ -80,7 +80,7 @@ namespace Avalonia.Web.Blazor
         {
             using var imageStream = new MemoryStream();
             cursor.Save(imageStream);
-            
+
             //not memory optimized because CryptoStream with ToBase64Transform is not supported in the browser.
             var base64String = Convert.ToBase64String(imageStream.ToArray());
             return new CssCursor(base64String, "png", hotSpot, StandardCursorType.Arrow);

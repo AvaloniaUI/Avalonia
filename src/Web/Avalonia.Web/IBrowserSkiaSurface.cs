@@ -1,6 +1,6 @@
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
-    internal interface IBlazorSkiaSurface
+    internal interface IBrowserSkiaSurface
     {
         public PixelSize Size { get; set; }
 

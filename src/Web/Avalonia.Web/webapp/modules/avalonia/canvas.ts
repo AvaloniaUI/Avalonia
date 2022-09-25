@@ -23,17 +23,6 @@ export class Canvas {
     newWidth?: number;
     newHeight?: number;
 
-    public static createCanvas(element: HTMLDivElement): HTMLCanvasElement {
-        var canvas = document.createElement("canvas");
-        canvas.style.setProperty("width", "100%");
-        canvas.style.setProperty("height", "100%");
-
-        element.appendChild(canvas);
-        canvas.classList.add('avalonia-canvas');
-
-        return canvas;
-    }
-
     public static initGL(element: HTMLCanvasElement, elementId: string, renderFrameCallback: () => void): SKGLViewInfo | null {
         var view = Canvas.init(true, element, elementId, renderFrameCallback);
         if (!view || !view.glInfo)

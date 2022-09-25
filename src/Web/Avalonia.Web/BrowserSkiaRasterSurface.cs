@@ -5,9 +5,9 @@ using Avalonia.Platform;
 using Avalonia.Skia;
 using SkiaSharp;
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web
 {
-    internal class BlazorSkiaRasterSurface : IBlazorSkiaSurface, IFramebufferPlatformSurface, IDisposable
+    internal class BrowserSkiaRasterSurface : IBrowserSkiaSurface, IFramebufferPlatformSurface, IDisposable
     {
         public SKColorType ColorType { get; set; }
 
@@ -19,7 +19,7 @@ namespace Avalonia.Web.Blazor
         private readonly Action<IntPtr, SKSizeI> _blitCallback;
         private readonly Action _onDisposeAction;
 
-        public BlazorSkiaRasterSurface(
+        public BrowserSkiaRasterSurface(
             SKColorType colorType, PixelSize size, double scaling, Action<IntPtr, SKSizeI> blitCallback)
         {
             ColorType = colorType;
