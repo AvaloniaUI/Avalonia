@@ -128,7 +128,7 @@ namespace Avalonia.Media
 
                 default:
                     {
-                        throw new ArgumentException("Specified family is not supported.");
+                        return new FontFamilyIdentifier(name, null);
                     }
             }
         }
