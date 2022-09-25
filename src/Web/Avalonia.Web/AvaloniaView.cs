@@ -115,7 +115,7 @@ namespace Avalonia.Web
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
-            DomHelper.ObserveSize(_canvas, _canvas.GetPropertyAsString("id")!, OnSizeChanged);
+            DomHelper.ObserveSize(host, divId, OnSizeChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
         }
@@ -124,7 +124,7 @@ namespace Avalonia.Web
         {
             var point = new RawPointerPoint
             {
-                Position = new Point(args.GetPropertyAsDouble("clientX"), args.GetPropertyAsDouble("clientY")),
+                Position = new Point(args.GetPropertyAsDouble("offsetX"), args.GetPropertyAsDouble("offsetY")),
                 Pressure = (float)args.GetPropertyAsDouble("pressure"),
                 XTilt = (float)args.GetPropertyAsDouble("tiltX"),
                 YTilt = (float)args.GetPropertyAsDouble("tiltY"),
