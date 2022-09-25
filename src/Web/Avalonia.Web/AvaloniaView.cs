@@ -79,6 +79,8 @@ namespace Avalonia.Web
                 (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier));
 
             InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp, OnWheel);
+
+            InputHelper.HideElement(_inputElement);
             
 
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
