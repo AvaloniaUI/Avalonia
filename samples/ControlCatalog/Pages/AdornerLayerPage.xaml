@@ -13,6 +13,17 @@
       <Slider Name="rotation" Maximum="360" Grid.Column="1" Grid.Row="0"/>
     </Grid>
 
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" DockPanel.Dock="Top">
+      <Button Name="AddAdorner" 
+              Click="AddAdorner_OnClick"
+              Content="Add Adorner" 
+              Margin="6" />
+      <Button Name="RemoveAdorner" 
+              Click="RemoveAdorner_OnClick"
+              Content="Remove Adorner"
+              Margin="6" />
+    </StackPanel>
+
     <Grid ColumnDefinitions="24,Auto,24" 
           RowDefinitions="24,Auto,24"
           HorizontalAlignment="Center"
@@ -27,7 +38,8 @@
           <RotateTransform Angle="{Binding #rotation.Value}"/>
         </LayoutTransformControl.LayoutTransform>
 
-        <Button Content="Adorned Button" 
+        <Button Name="AdornerButton"
+                Content="Adorned Button" 
                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center" VerticalAlignment="Stretch" 
                 Width="200" Height="42">
