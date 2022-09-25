@@ -36,9 +36,13 @@ namespace Avalonia.Controls.Primitives
         private static readonly AttachedProperty<AdornedElementInfo> s_adornedElementInfoProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo>("AdornedElementInfo");
 
+        private static readonly AttachedProperty<AdornerLayer?> s_savedAdornerLayerProperty =
+            AvaloniaProperty.RegisterAttached<Visual, Visual, AdornerLayer?>("SavedAdornerLayer");
+
         static AdornerLayer()
         {
             AdornedElementProperty.Changed.Subscribe(AdornedElementChanged);
+            AdornerProperty.Changed.Subscribe(AdornerChanged);
         }
 
         public AdornerLayer()
@@ -79,36 +83,79 @@ namespace Avalonia.Controls.Primitives
         public static void SetAdorner(Visual visual, Control? adorner)
         {
             visual.SetValue(AdornerProperty, adorner);
-
-            SetVisualAdorner(visual, adorner);
         }
 
-        private static void SetVisualAdorner(Visual visual, Control? adorner)
+        private static void AdornerChanged(AvaloniaPropertyChangedEventArgs<Control?> e)
         {
-            var layer = default(AdornerLayer);
-
-            visual.AttachedToVisualTree += (_, _) =>
+            if (e.Sender is Visual visual)
             {
-                layer = AddVisualAdorner(visual, adorner);
-            };
+                var oldAdorner = e.OldValue.GetValueOrDefault();
+                var newAdorner = e.NewValue.GetValueOrDefault();
 
-            visual.DetachedFromVisualTree += (_, _) =>
-            {
-                RemoveVisualAdorner(visual, adorner, layer);
-            };
-        }
+                if (Equals(oldAdorner, newAdorner))
+                {
+                    return;
+                }
 
-        private static AdornerLayer? AddVisualAdorner(Visual visual, Control? adorner)
-        {
-            if (adorner is null)
-            {
-                return null;
+                if (oldAdorner is { })
+                {
+                    visual.AttachedToVisualTree -= VisualOnAttachedToVisualTree;
+                    visual.DetachedFromVisualTree -= VisualOnDetachedFromVisualTree;
+                    Detach(visual, oldAdorner);
+                }
+
+                if (newAdorner is { })
+                {
+                    visual.AttachedToVisualTree += VisualOnAttachedToVisualTree;
+                    visual.DetachedFromVisualTree += VisualOnDetachedFromVisualTree;
+                    Attach(visual, newAdorner);
+                }
             }
+        }
 
-            var layer = AdornerLayer.GetAdornerLayer(visual);
-            if (layer == null || layer.Children.Contains(adorner))
+        private static void VisualOnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            if (sender is Visual visual)
             {
-                return layer;
+                var adorner = GetAdorner(visual);
+                if (adorner is { })
+                {
+                    Attach(visual, adorner);
+                }
+            }
+        }
+
+        private static void VisualOnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            if (sender is Visual visual)
+            {
+                var adorner = GetAdorner(visual);
+                if (adorner is { })
+                {
+                    Detach(visual, adorner);
+                }
+            }
+        }
+
+        private static void Attach(Visual visual, Control adorner)
+        {
+            var layer = AdornerLayer.GetAdornerLayer(visual);
+            AddVisualAdorner(visual, adorner, layer);
+            visual.SetValue(s_savedAdornerLayerProperty, layer);
+        }
+
+        private static void Detach(Visual visual, Control adorner)
+        {
+            var layer = visual.GetValue(s_savedAdornerLayerProperty);
+            RemoveVisualAdorner(visual, adorner, layer);
+            visual.ClearValue(s_savedAdornerLayerProperty);
+        }
+
+        private static void AddVisualAdorner(Visual visual, Control? adorner, AdornerLayer? layer)
+        {
+            if (adorner is null || layer == null || layer.Children.Contains(adorner))
+            {
+                return;
             }
 
             AdornerLayer.SetAdornedElement(adorner, visual);
@@ -116,19 +163,11 @@ namespace Avalonia.Controls.Primitives
 
             ((ISetLogicalParent) adorner).SetParent(visual);
             layer.Children.Add(adorner);
-
-            return layer;
         }
 
         private static void RemoveVisualAdorner(Visual visual, Control? adorner, AdornerLayer? layer)
         {
-            if (adorner is null)
-            {
-                return;
-            }
-
-            // var layer = AdornerLayer.GetAdornerLayer(visual);
-            if (layer is null || !layer.Children.Contains(adorner))
+            if (adorner is null || layer is null || !layer.Children.Contains(adorner))
             {
                 return;
             }
