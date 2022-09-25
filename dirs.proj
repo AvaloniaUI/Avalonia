@@ -11,8 +11,10 @@
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/*.*proj" />
     <ProjectReference Remove="tests/Avalonia.ReactiveUI.Events.UnitTests/Avalonia.ReactiveUI.Events.UnitTests.csproj" />
     <ProjectReference Remove="samples/ControlCatalog.iOS/ControlCatalog.iOS.csproj" />
+    <ProjectReference Remove="samples/MobileSandbox.iOS/MobileSandbox.iOS.csproj" />
     <ProjectReference Remove="samples/ControlCatalog.iOS.Legacy/ControlCatalog.iOS.Legacy.csproj" />
     <ProjectReference Remove="samples/ControlCatalog.Android/ControlCatalog.Android.csproj" />
+    <ProjectReference Remove="samples/MobileSandbox.Android/MobileSandbox.Android.csproj" />
     <ProjectReference Remove="src/Android/Avalonia.AndroidTestApplication/Avalonia.AndroidTestApplication.csproj" />
   </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildRuntimeType)' != 'Full'">

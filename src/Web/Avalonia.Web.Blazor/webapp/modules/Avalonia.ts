@@ -1,5 +1,7 @@
 ﻿export { DpiWatcher } from "./Avalonia/DpiWatcher"
 export { InputHelper } from "./Avalonia/InputHelper"
+export { FocusHelper } from "./Avalonia/FocusHelper"
 export { NativeControlHost } from "./Avalonia/NativeControlHost"
 export { SizeWatcher } from "./Avalonia/SizeWatcher"
 export { SKHtmlCanvas } from "./Avalonia/SKHtmlCanvas"
+export { CaretHelper } from "./Avalonia/CaretHelper"
