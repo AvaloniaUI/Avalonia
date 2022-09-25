@@ -277,7 +277,7 @@ namespace Avalonia.Web
 
             if (_topLevel.Renderer is CompositingRenderer dr)
             {
-                //dr.CompositionTarget.ImmediateUIThreadRender();
+                dr.CompositionTarget.ImmediateUIThreadRender();
             }
         }
 
@@ -287,7 +287,7 @@ namespace Avalonia.Web
             {
                 _dpi = newDpi;
 
-                //CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
@@ -303,7 +303,7 @@ namespace Avalonia.Web
             {
                 _canvasSize = newSize;
 
-                //CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
+                CanvasHelper.SetCanvasSize(_canvas, (int)(_canvasSize.Width * _dpi), (int)(_canvasSize.Height * _dpi));
 
                 _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
