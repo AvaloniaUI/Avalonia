@@ -76,7 +76,11 @@ namespace Avalonia.Web
             InputHelper.SubscribeKeyboardEvents(
                 _containerElement,
                 (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier),
-                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier));
+                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier),
+                (args) => { return false; },
+                (args) => { return false; },
+                (args) => { return false; },
+                (args) => { return false; });
 
             InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp, OnWheel);
 
