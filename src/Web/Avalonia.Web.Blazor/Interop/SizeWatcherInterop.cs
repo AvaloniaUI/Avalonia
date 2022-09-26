@@ -12,16 +12,16 @@ namespace Avalonia.Web.Blazor.Interop
         private readonly AvaloniaModule _module;
         private readonly ElementReference _htmlElement;
         private readonly string _htmlElementId;
-        private readonly FloatFloatActionHelper _callbackHelper;
+        private readonly ActionHelper<float, float> _callbackHelper;
 
-        private DotNetObjectReference<FloatFloatActionHelper>? callbackReference;
+        private DotNetObjectReference<ActionHelper<float, float>>? callbackReference;
 
         public SizeWatcherInterop(AvaloniaModule module, ElementReference element, Action<SKSize> callback)
         {
             _module = module;
             _htmlElement = element;
             _htmlElementId = element.Id;
-            _callbackHelper = new FloatFloatActionHelper((x, y) => callback(new SKSize(x, y)));
+            _callbackHelper = new ActionHelper<float, float>((x, y) => callback(new SKSize(x, y)));
         }
 
         public void Dispose() => Stop();

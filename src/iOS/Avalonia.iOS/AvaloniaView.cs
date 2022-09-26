@@ -19,35 +19,42 @@ using UIKit;
 
 namespace Avalonia.iOS
 {
-    public partial class AvaloniaView : UIView
+    public partial class AvaloniaView : UIView, ITextInputMethodImpl
     {
         internal IInputRoot InputRoot { get; private set; }
         private TopLevelImpl _topLevelImpl;
         private EmbeddableControlRoot _topLevel;
         private TouchHandler _touches;
+        private ITextInputMethodClient _client;
 
         public AvaloniaView()
         {
             _topLevelImpl = new TopLevelImpl(this);
             _touches = new TouchHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+
             _topLevel.Prepare();
-            
+
             _topLevel.Renderer.Start();
-            
-            var l = (CAEAGLLayer) Layer;
+
+            var l = (CAEAGLLayer)Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
             l.Opaque = true;
             l.DrawableProperties = new NSDictionary(
                 EAGLDrawableProperty.RetainedBacking, false,
                 EAGLDrawableProperty.ColorFormat, EAGLColorFormat.RGBA8
             );
-            _topLevelImpl.Surfaces = new[] {new EaglLayerSurface(l)};
+            _topLevelImpl.Surfaces = new[] { new EaglLayerSurface(l) };
             MultipleTouchEnabled = true;
             AddSubviews(new UIView[] { new UIKit.UIButton(UIButtonType.InfoDark) });
         }
 
-        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+        public override bool CanBecomeFirstResponder => true;
+
+        public override bool CanResignFirstResponder => true;
+
+        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost,
+            ITopLevelImplWithStorageProvider
         {
             private readonly AvaloniaView _view;
             public AvaloniaView View => _view;
@@ -65,7 +72,7 @@ namespace Avalonia.iOS
             }
 
             public IRenderer CreateRenderer(IRenderRoot root) => new CompositingRenderer(root, Platform.Compositor);
-                    
+
 
             public void Invalidate(Rect rect)
             {
@@ -79,7 +86,7 @@ namespace Avalonia.iOS
 
             public Point PointToClient(PixelPoint point) => new Point(point.X, point.Y);
 
-            public PixelPoint PointToScreen(Point point) => new PixelPoint((int) point.X, (int) point.Y);
+            public PixelPoint PointToScreen(Point point) => new PixelPoint((int)point.X, (int)point.Y);
 
             public void SetCursor(ICursorImpl _)
             {
@@ -118,7 +125,7 @@ namespace Avalonia.iOS
                 new AcrylicPlatformCompensationLevels();
 
             public ITextInputMethodImpl? TextInputMethod => _view;
-            public INativeControlHostImpl NativeControlHost { get; }            
+            public INativeControlHostImpl NativeControlHost { get; }
             public IStorageProvider StorageProvider { get; }
         }
 
