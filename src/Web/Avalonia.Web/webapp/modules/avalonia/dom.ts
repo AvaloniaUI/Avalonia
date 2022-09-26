@@ -26,16 +26,20 @@ export class AvaloniaDOM {
 
         // IME
         const inputElement = document.createElement("input");
+        inputElement.classList.add('avalonia-input-element');
         inputElement.autocapitalize = "none";
         inputElement.type = "text";
-        inputElement.classList.add('avalonia-input-element');
-        inputElement.style.display = "none";
-        inputElement.style.opacity = "0";
-        inputElement.style.left = "0px";
-        inputElement.style.top = "0px";
-        inputElement.style.width = "100%";
-        inputElement.style.height = "100%";
+        inputElement.spellcheck = false;
+        inputElement.style.padding = "0";
+        inputElement.style.margin = "0";
         inputElement.style.position = "absolute";
+        inputElement.style.overflow = "hidden";
+        inputElement.style.borderStyle = "hidden";
+        inputElement.style.outline = "none";
+        inputElement.style.background = "transparent";
+        inputElement.style.color = "transparent";
+        inputElement.style.display = "none";
+        inputElement.style.height = "20px";
         inputElement.onpaste = function () { return false; };
         inputElement.oncopy = function () { return false; };
         inputElement.oncut = function () { return false; };
