@@ -11,7 +11,7 @@ namespace Avalonia.Styling
         public override bool IsCombinator => false;
         public override Type? TargetType => null;
 
-        public override string ToString() => "^";
+        public override string ToString(Style? owner) => owner?.Parent?.ToString() ?? "^";
 
         protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {

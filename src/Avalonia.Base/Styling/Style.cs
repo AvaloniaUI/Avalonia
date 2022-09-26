@@ -68,17 +68,7 @@ namespace Avalonia.Styling
         /// Returns a string representation of the style.
         /// </summary>
         /// <returns>A string representation of the style.</returns>
-        public override string ToString()
-        {
-            if (Selector != null)
-            {
-                return "Style: " + Selector.ToString();
-            }
-            else
-            {
-                return "Style";
-            }
-        }
+        public override string ToString() => Selector?.ToString(this) ?? "Style";
 
         internal override void SetParent(StyleBase? parent)
         {

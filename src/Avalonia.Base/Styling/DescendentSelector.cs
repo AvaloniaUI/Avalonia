@@ -25,11 +25,11 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public override Type? TargetType => null;
 
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
-                _selectorString = _parent.ToString() + ' ';
+                _selectorString = _parent.ToString(owner) + ' ';
             }
 
             return _selectorString;

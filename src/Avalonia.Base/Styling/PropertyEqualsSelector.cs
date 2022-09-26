@@ -38,7 +38,7 @@ namespace Avalonia.Styling
         public override Type? TargetType => _previous?.TargetType;
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
@@ -46,7 +46,7 @@ namespace Avalonia.Styling
 
                 if (_previous != null)
                 {
-                    builder.Append(_previous.ToString());
+                    builder.Append(_previous.ToString(owner));
                 }
 
                 builder.Append('[');

@@ -84,11 +84,11 @@ namespace Avalonia.Styling
         public IList<string> Classes => _classes.Value;
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
-                _selectorString = BuildSelectorString();
+                _selectorString = BuildSelectorString(owner);
             }
 
             return _selectorString;
@@ -143,13 +143,13 @@ namespace Avalonia.Styling
         protected override Selector? MovePrevious() => _previous;
         protected override Selector? MovePreviousOrParent() => _previous;
 
-        private string BuildSelectorString()
+        private string BuildSelectorString(Style? owner)
         {
             var builder = new StringBuilder();
 
             if (_previous != null)
             {
-                builder.Append(_previous.ToString());
+                builder.Append(_previous.ToString(owner));
             }
 
             if (TargetType != null)
