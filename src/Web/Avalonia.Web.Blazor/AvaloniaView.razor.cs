@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
@@ -11,6 +12,7 @@ using Avalonia.Web.Blazor.Interop;
 using Avalonia.Web.Blazor.Interop.Storage;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
@@ -31,8 +33,8 @@ namespace Avalonia.Web.Blazor
         private SKHtmlCanvasInterop.GLInfo? _jsGlInfo = null;
         private AvaloniaModule? _avaloniaModule = null;
         private InputHelperInterop? _inputHelper = null;
-        private InputHelperInterop? _canvasHelper = null;
-        private InputHelperInterop? _containerHelper = null;
+        private FocusHelperInterop? _canvasHelper = null;
+        private FocusHelperInterop? _containerHelper = null;
         private NativeControlHostInterop? _nativeControlHost = null;
         private StorageProviderInterop? _storageProvider = null;
         private ElementReference _htmlCanvas;
@@ -49,6 +51,9 @@ namespace Avalonia.Web.Blazor
         private bool _useGL;
         private bool _inputElementFocused;
 
+        private ITextInputMethodClient? _client;
+
+
         [Inject] private IJSRuntime Js { get; set; } = null!;
 
         public AvaloniaView()
@@ -64,6 +69,12 @@ namespace Avalonia.Web.Blazor
         }
 
         public bool KeyPreventDefault { get; set; }
+        
+        public ITextInputMethodClient? Client => _client;
+
+        public bool IsActive => _client != null;
+
+        public bool IsComposing { get; private set; }
 
         internal INativeControlHostImpl GetNativeControlHostImpl()
         {
@@ -223,20 +234,6 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        private void OnInput(ChangeEventArgs e)
-        {
-            if (e.Value != null)
-            {
-                var inputData = e.Value.ToString();
-                if (inputData != null)
-                {
-                    _topLevelImpl.RawTextEvent(inputData);
-                }
-            }
-
-            _inputHelper?.Clear();
-        }
-
         [Parameter(CaptureUnmatchedValues = true)]
         public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -247,10 +244,13 @@ namespace Avalonia.Web.Blazor
                 AvaloniaLocator.CurrentMutable.Bind<IJSInProcessRuntime>().ToConstant((IJSInProcessRuntime)Js);
 
                 _avaloniaModule = await AvaloniaModule.ImportAsync(Js);
-
+                
+                _canvasHelper = new FocusHelperInterop(_avaloniaModule, _htmlCanvas);
+                _containerHelper = new FocusHelperInterop(_avaloniaModule, _containerElement);
                 _inputHelper = new InputHelperInterop(_avaloniaModule, _inputElement);
-                _canvasHelper = new InputHelperInterop(_avaloniaModule, _htmlCanvas);
-                _containerHelper = new InputHelperInterop(_avaloniaModule, _containerElement);
+                
+                _inputHelper.CompositionEvent += InputHelperOnCompositionEvent;
+                _inputHelper.InputEvent += InputHelperOnInputEvent;
 
                 HideIme();
                 _canvasHelper.SetCursor("default");
@@ -320,6 +320,42 @@ namespace Avalonia.Web.Blazor
 
                     _topLevel.Renderer.Start();
                 });
+            }
+        }
+
+        private void InputHelperOnInputEvent(object? sender, WebInputEventArgs e)
+        {
+            if (IsComposing)
+            {
+                return;
+            }
+
+            _topLevelImpl.RawTextEvent(e.Data);
+
+            e.Handled = true;
+        }
+
+        private void InputHelperOnCompositionEvent(object? sender, WebCompositionEventArgs e)
+        {
+            if(_client == null)
+            {
+                return;
+            }
+
+            switch (e.Type)
+            {
+                case WebCompositionEventArgs.WebCompositionEventType.Start:
+                    _client.SetPreeditText(null);
+                    IsComposing = true;
+                    break;
+                case WebCompositionEventArgs.WebCompositionEventType.Update:
+                    _client.SetPreeditText(e.Data);
+                    break;
+                case WebCompositionEventArgs.WebCompositionEventType.End:
+                    IsComposing = false;
+                    _client.SetPreeditText(null);
+                    _topLevelImpl.RawTextEvent(e.Data);              
+                    break;
             }
         }
 
@@ -402,15 +438,29 @@ namespace Avalonia.Web.Blazor
                 return;
             }
 
+            if(_client != null)
+            {
+                _client.SurroundingTextChanged -= SurroundingTextChanged;
+            }
+
+            if(client != null)
+            {
+                client.SurroundingTextChanged += SurroundingTextChanged;
+            }
+
             _inputHelper.Clear();
 
-            var active = client is { };
+            _client = client;
             
-            if (active)
+            if (IsActive && _client != null)
             {
                 _inputHelper.Show();
                 _inputElementFocused = true;
                 _inputHelper.Focus();
+                
+                var surroundingText = _client.SurroundingText;
+
+                _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
             else
             {
@@ -419,8 +469,23 @@ namespace Avalonia.Web.Blazor
             }
         }
 
+        private void SurroundingTextChanged(object? sender, EventArgs e)
+        {
+            if(_client != null)
+            {
+                var surroundingText = _client.SurroundingText;
+                
+                _inputHelper?.SetSurroundingText(surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+            }
+        }
+
         public void SetCursorRect(Rect rect)
         {
+            _inputHelper?.Focus();
+            var bounds = new PixelRect((int)rect.X, (int) rect.Y, (int) rect.Width, (int) rect.Height);
+            
+            _inputHelper?.SetBounds(bounds, _client?.SurroundingText.CursorOffset ?? 0);
+            _inputHelper?.Focus();
         }
 
         public void SetOptions(TextInputOptions options)
@@ -430,6 +495,7 @@ namespace Avalonia.Web.Blazor
         public void Reset()
         {
             _inputHelper?.Clear();
+            _inputHelper?.SetSurroundingText("", 0, 0);
         }
     }
 }

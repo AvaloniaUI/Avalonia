@@ -9,15 +9,15 @@ namespace Avalonia.Web.Blazor.Interop
         private const string GetDpiSymbol = "DpiWatcher.getDpi";
 
         private event Action<double>? callbacksEvent;
-        private readonly FloatFloatActionHelper _callbackHelper;
+        private readonly ActionHelper<float, float> _callbackHelper;
         private readonly AvaloniaModule _module;
 
-        private DotNetObjectReference<FloatFloatActionHelper>? callbackReference;
+        private DotNetObjectReference<ActionHelper<float, float>>? callbackReference;
 
         public DpiWatcherInterop(AvaloniaModule module, Action<double>? callback = null)
         {
             _module = module;
-            _callbackHelper = new FloatFloatActionHelper((o, n) => callbacksEvent?.Invoke(n));
+            _callbackHelper = new ActionHelper<float, float>((o, n) => callbacksEvent?.Invoke(n));
 
             if (callback != null)
                 Subscribe(callback);
