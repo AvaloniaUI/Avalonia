@@ -6,7 +6,6 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
-    
   - task: PowerShell@2
     displayName: Get PR Number
     inputs:
@@ -31,14 +30,20 @@ jobs:
     vmImage: 'ubuntu-20.04'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.418'
+    displayName: 'Use .NET Core SDK 3.1.423'
     inputs:
-      version: 3.1.418
+      version: 3.1.423
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.202'
+    displayName: 'Use .NET Core SDK 6.0.401'
     inputs:
-      version: 6.0.202
+      version: 6.0.401
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 7.0.100-rc.1.22431.12'
+    inputs:
+      version: 7.0.100-rc.1.22431.12
+
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -62,14 +67,19 @@ jobs:
     vmImage: 'macos-12'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.418'
+    displayName: 'Use .NET Core SDK 3.1.423'
     inputs:
-      version: 3.1.418
+      version: 3.1.423
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.202'
+    displayName: 'Use .NET Core SDK 6.0.401'
     inputs:
-      version: 6.0.202
+      version: 6.0.401
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 7.0.100-rc.1.22431.12'
+    inputs:
+      version: 7.0.100-rc.1.22431.12
       
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -134,14 +144,19 @@ jobs:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.418'
+    displayName: 'Use .NET Core SDK 3.1.423'
     inputs:
-      version: 3.1.418
+      version: 3.1.423
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.202'
+    displayName: 'Use .NET Core SDK 6.0.401'
     inputs:
-      version: 6.0.202
+      version: 6.0.401
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 7.0.100-rc.1.22431.12'
+    inputs:
+      version: 7.0.100-rc.1.22431.12
 
   - task: CmdLine@2
     displayName: 'Install Workloads'
