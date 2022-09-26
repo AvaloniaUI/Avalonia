@@ -44,6 +44,11 @@ jobs:
     inputs:
       version: 7.0.100-rc.1.22431.12
 
+  - task: CmdLine@2
+    displayName: 'Install Workloads'
+    inputs:
+      script: |
+       dotnet workload install android ios wasm-tools wasm-experimental
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -80,6 +85,12 @@ jobs:
     displayName: 'Use .NET Core SDK 7.0.100-rc.1.22431.12'
     inputs:
       version: 7.0.100-rc.1.22431.12
+
+  - task: CmdLine@2
+    displayName: 'Install Workloads'
+    inputs:
+      script: |
+       dotnet workload install android ios wasm-tools wasm-experimental
       
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -162,7 +173,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios
+       dotnet workload install android ios wasm-tools wasm-experimental
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
