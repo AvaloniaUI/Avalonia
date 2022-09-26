@@ -852,24 +852,20 @@ namespace Avalonia.Controls
 
                 if (owner is not null)
                 {
-                    screen = Screens.ScreenFromWindow(owner);
-
-                    screen ??= Screens.ScreenFromPoint(owner.Position);
+                    screen = Screens.ScreenFromWindow(owner) 
+                             ?? Screens.ScreenFromPoint(owner.Position);
                 }
 
-                if (screen is null)
-                {
-                    screen = Screens.ScreenFromPoint(Position);
-                }
+                screen ??= Screens.ScreenFromPoint(Position);
 
-                if (screen != null)
+                if (screen is not null)
                 {
                     Position = screen.WorkingArea.CenterRect(rect).Position;
                 }
             }
             else if (startupLocation == WindowStartupLocation.CenterOwner)
             {
-                var ownerSize = owner.FrameSize ?? owner.ClientSize;
+                var ownerSize = owner!.FrameSize ?? owner.ClientSize;
                 var ownerRect = new PixelRect(
                     owner.Position,
                     PixelSize.FromSize(ownerSize, scaling));
