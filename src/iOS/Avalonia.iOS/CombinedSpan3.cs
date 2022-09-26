@@ -33,8 +33,8 @@ internal ref struct CombinedSpan3<T>
     
     public void CopyTo(Span<T> to, int offset)
     {
-        CopyFromSpan(Span1, ref offset, ref to);
-        CopyFromSpan(Span2, ref offset, ref to);
-        CopyFromSpan(Span3, ref offset, ref to);
+        //CopyFromSpan(Span1, ref offset, ref to);
+        //CopyFromSpan(Span2, ref offset, ref to);
+        //CopyFromSpan(Span3, ref offset, ref to);
     }
 }
