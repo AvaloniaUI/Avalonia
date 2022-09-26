@@ -48,7 +48,7 @@ jobs:
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios wasm-tools wasm-experimental
+       dotnet workload install wasm-tools wasm-experimental
 
   - task: CmdLine@2
     displayName: 'Run Build'
