@@ -228,6 +228,78 @@
     </Style>
   </ControlTheme>
 
+  <!-- Based on the current Fluent TabItem ControlTheme -->
+  <ControlTheme x:Key="ColorViewTabItemTheme"
+                TargetType="TabItem">
+    <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
+    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselected}" />
+    <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselected}" />
+    <Setter Property="Padding" Value="6,0,6,0" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="MinHeight" Value="{DynamicResource ColorViewTabStripHeight}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+            Name="PART_LayoutRoot"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="{TemplateBinding CornerRadius}"
+            Padding="{TemplateBinding Padding}">
+          <Panel>
+            <ContentPresenter
+                Name="PART_ContentPresenter"
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                Content="{TemplateBinding Header}"
+                ContentTemplate="{TemplateBinding HeaderTemplate}"
+                FontFamily="{TemplateBinding FontFamily}"
+                FontSize="{TemplateBinding FontSize}"
+                FontWeight="{TemplateBinding FontWeight}" />
+            <Border Name="PART_SelectedPipe"
+                    Height="{DynamicResource TabItemPipeThickness}"
+                    Margin="0,0,0,2"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Bottom"
+                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                    CornerRadius="{DynamicResource ControlCornerRadius}"
+                    IsVisible="False"/>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelected}" />
+      <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#PART_SelectedPipe">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:pointerover /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
+    </Style>
+
+    <Style Selector="^:selected:pointerover /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPointerOver}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPointerOver}" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPressed}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPressed}" />
+    </Style>
+
+    <Style Selector="^:selected:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPressed}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPressed}" />
+    </Style>
+  </ControlTheme>
+
   <ControlTheme x:Key="{x:Type ColorView}"
                 TargetType="ColorView">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -264,24 +336,17 @@
                       Grid.Row="0"
                       Height="338"
                       Width="350"
+                      Padding="0"
                       SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
-            <TabControl.Resources>
-              <Thickness x:Key="TabItemMargin">0,0,0,0</Thickness>
-            </TabControl.Resources>
-            <TabControl.Styles>
-              <Style Selector="TabControl">
-                <Setter Property="ItemsPanel">
-                  <Setter.Value>
-                    <ItemsPanelTemplate>
-                      <UniformGrid Columns="0"
-                                   Rows="1" />
-                    </ItemsPanelTemplate>
-                  </Setter.Value>
-                </Setter>
-              </Style>
-            </TabControl.Styles>
+            <TabControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Columns="0"
+                             Rows="1" />
+              </ItemsPanelTemplate>
+            </TabControl.ItemsPanel>
             <!-- Spectrum Tab -->
-            <TabItem IsVisible="{TemplateBinding IsColorSpectrumVisible}">
+            <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
+                     IsVisible="{TemplateBinding IsColorSpectrumVisible}">
               <TabItem.Header>
                 <Border Height="{DynamicResource ColorViewTabStripHeight}">
                   <PathIcon Width="20"
@@ -345,7 +410,8 @@
               </Grid>
             </TabItem>
             <!-- Palette Tab -->
-            <TabItem IsVisible="{TemplateBinding IsColorPaletteVisible}">
+            <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
+                     IsVisible="{TemplateBinding IsColorPaletteVisible}">
               <TabItem.Header>
                 <Border Height="{DynamicResource ColorViewTabStripHeight}">
                   <PathIcon Width="20"
@@ -379,7 +445,8 @@
               </ListBox>
             </TabItem>
             <!-- Components Tab -->
-            <TabItem IsVisible="{TemplateBinding IsColorComponentsVisible}">
+            <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
+                     IsVisible="{TemplateBinding IsColorComponentsVisible}">
               <TabItem.Header>
                 <Border Height="{DynamicResource ColorViewTabStripHeight}">
                   <PathIcon Width="20"
