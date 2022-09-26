@@ -1,3 +1,5 @@
+import { CaretHelper } from "./CaretHelper"
+
 enum RawInputModifiers
 {
     None = 0,
@@ -23,7 +25,11 @@ export class InputHelper {
         element: HTMLInputElement,
         keyDownCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean,
         keyUpCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean,
-    ) {
+        inputCallback: (args: InputEvent) => boolean,
+        compositionStartCallback: (args: CompositionEvent) => boolean,
+        compositionUpdateCallback: (args: CompositionEvent) => boolean,
+        compositionEndCallback: (args: CompositionEvent) => boolean)
+    {
         const keyDownHandler = (args: KeyboardEvent) => {
             if (keyDownCallback(args.code, args.key, this.getModifiers(args))) {
                 args.preventDefault();
@@ -38,10 +44,48 @@ export class InputHelper {
         };
         element.addEventListener("keyup", keyUpHandler);
 
+        const inputHandler = (args: Event) => {
+            var inputEvent = args as InputEvent;
+
+            // todo check cast
+            if (inputCallback(inputEvent)) {
+                args.preventDefault();
+            }
+        };
+        element.addEventListener("input", inputHandler);
+
+        const compositionStartHandler = (args: CompositionEvent) => {
+            if (compositionStartCallback(args)) {
+                args.preventDefault();
+            }
+        };
+        element.addEventListener("compositionstart", compositionStartHandler);
+
+        const compositionUpdateHandler = (args: CompositionEvent) => {
+            if (compositionUpdateCallback(args)) {
+                args.preventDefault();
+            }
+        };
+        element.addEventListener("compositionupdate", compositionUpdateHandler);
+
+        const compositionEndHandler = (args: CompositionEvent) => {
+            if (compositionEndCallback(args)) {
+                args.preventDefault();
+            }
+        };
+        element.addEventListener("compositionend", compositionEndHandler);
+
         return () => {
             element.removeEventListener("keydown", keyDownHandler);
             element.removeEventListener("keyup", keyUpHandler);
+            element.removeEventListener("compositionstart", compositionStartHandler);
+            element.removeEventListener("compositionupdate", compositionUpdateHandler);
+            element.removeEventListener("compositionend", compositionEndHandler);
         };
+
+       
+
+
     }
 
     public static subscribePointerEvents(
@@ -114,20 +158,22 @@ export class InputHelper {
         inputElement.value = "";
     }
 
-    public static isInputElement(element: HTMLInputElement | HTMLElement): element is HTMLInputElement {
-        return (element as HTMLInputElement).setSelectionRange !== undefined;
-    }
-
     public static focusElement(inputElement: HTMLElement) {
         inputElement.focus();
-
-        if (this.isInputElement(inputElement)) {
-            (inputElement as HTMLInputElement).setSelectionRange(0, 0);
-        }
     }
 
     public static setCursor(inputElement: HTMLInputElement, kind: string) {
         inputElement.style.cursor = kind;
+    }
+
+    public static setBounds(inputElement: HTMLInputElement, x: number, y: number, caretWidth: number, caretHeight: number, caret: number) {
+        inputElement.style.left = (x).toFixed(0) + "px";
+        inputElement.style.top = (y).toFixed(0) + "px";
+
+        let { height, left, top } = CaretHelper.getCaretCoordinates(inputElement, caret);
+
+        inputElement.style.left = (x - left).toFixed(0) + "px";
+        inputElement.style.top = (y - top).toFixed(0) + "px";
     }
 
     public static hide(inputElement: HTMLInputElement) {
@@ -136,6 +182,17 @@ export class InputHelper {
 
     public static show(inputElement: HTMLInputElement) {
         inputElement.style.display = 'block';
+    }
+
+    public static setSurroundingText(inputElement: HTMLInputElement, text: string, start: number, end: number) {
+        if (!inputElement) {
+            return;
+        }
+
+        inputElement.value = text;
+        inputElement.setSelectionRange(start, end);
+        inputElement.style.width = "20px";
+        inputElement.style.width = inputElement.scrollWidth + "px";
     }
 
     private static getModifiers(args: KeyboardEvent): RawInputModifiers {
