@@ -164,19 +164,17 @@
     </Style>
   </ControlTheme>
 
-  <!-- Based on the Fluent ToggleButton ControlTheme -->
+  <!-- Based on the Simple ToggleButton ControlTheme -->
   <ControlTheme x:Key="ColorViewColorModelRadioButtonTheme"
                 TargetType="RadioButton">
-    <Setter Property="Background" Value="{DynamicResource ToggleButtonBackground}" />
-    <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrush}" />
-    <Setter Property="BorderThickness" Value="{DynamicResource ToggleButtonBorderThemeThickness}" />
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-    <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
+    <Setter Property="Background" Value="{DynamicResource ThemeControlMidBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderLowBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Padding" Value="4" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="VerticalAlignment" Value="Center" />
-    <Setter Property="FontWeight" Value="Normal" />
-    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
@@ -195,46 +193,22 @@
       </ControlTemplate>
     </Setter>
 
+    <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    </Style>
     <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPointerOver}" />
-      <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPointerOver}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
     </Style>
-
-    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPressed}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPressed}" />
-      <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPressed}" />
-    </Style>
-
-    <Style Selector="^:checked">
-      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundChecked}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushChecked}" />
-        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundChecked}" />
-      </Style>
-
-      <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPointerOver}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushCheckedPointerOver}" />
-        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPointerOver}" />
-      </Style>
-
-      <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPressed}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushCheckedPressed}" />
-        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPressed}" />
-      </Style>
+    <Style Selector="^:pressed  /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighBrush}" />
     </Style>
   </ControlTheme>
 
-  <!-- Based on the Fluent TabItem ControlTheme -->
+  <!-- Based on the Simple TabItem ControlTheme -->
   <ControlTheme x:Key="ColorViewTabItemTheme"
                 TargetType="TabItem">
-    <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
-    <Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
-    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselected}" />
-    <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselected}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     <Setter Property="Padding" Value="6,0,6,0" />
     <Setter Property="Margin" Value="0" />
     <Setter Property="MinHeight" Value="{DynamicResource ColorViewTabStripHeight}" />
@@ -259,11 +233,11 @@
                 FontSize="{TemplateBinding FontSize}"
                 FontWeight="{TemplateBinding FontWeight}" />
             <Border Name="PART_SelectedPipe"
-                    Height="{DynamicResource TabItemPipeThickness}"
+                    Height="2"
                     Margin="0,0,0,2"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Bottom"
-                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                    Background="{DynamicResource ThemeAccentColor}"
                     CornerRadius="{DynamicResource ControlCornerRadius}"
                     IsVisible="False"/>
           </Panel>
@@ -272,32 +246,20 @@
     </Setter>
 
     <Style Selector="^:selected">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelected}" />
-      <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}" />
     </Style>
     <Style Selector="^:selected /template/ Border#PART_SelectedPipe">
       <Setter Property="IsVisible" Value="True" />
     </Style>
 
     <Style Selector="^:pointerover /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
+      <Setter Property="Background" Value="{DynamicResource ThemeControlHighlightMidBrush}" />
     </Style>
 
     <Style Selector="^:selected:pointerover /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPointerOver}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPointerOver}" />
+      <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush3}" />
     </Style>
 
-    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPressed}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPressed}" />
-    </Style>
-
-    <Style Selector="^:selected:pressed /template/ Border#PART_LayoutRoot">
-      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPressed}" />
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPressed}" />
-    </Style>
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type ColorView}"
@@ -470,14 +432,14 @@
                                  Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
                                  Grid.Column="0"
                                  Content="RGB"
-                                 CornerRadius="4,0,0,4"
+                                 CornerRadius="0,0,0,0"
                                  BorderThickness="1,1,0,1"
                                  IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Rgba}, Mode=TwoWay}" />
                     <RadioButton x:Name="HsvRadioButton"
                                  Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
                                  Grid.Column="1"
                                  Content="HSV"
-                                 CornerRadius="0,4,4,0"
+                                 CornerRadius="0,0,0,0"
                                  BorderThickness="0,1,1,1"
                                  IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Hsva}, Mode=TwoWay}" />
                   </Grid>
@@ -490,11 +452,11 @@
                     </Grid.ColumnDefinitions>
                     <Border Grid.Column="0"
                             Height="32"
-                            Background="{DynamicResource TextControlBackgroundDisabled}"
-                            BorderBrush="{DynamicResource TextControlBorderBrush}"
+                            Background="{DynamicResource ThemeControlMidBrush}"
+                            BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                             BorderThickness="1,1,0,1"
-                            CornerRadius="4,0,0,4">
-                      <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                            CornerRadius="0,0,0,0">
+                      <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}"
                                  FontWeight="SemiBold"
                                  Text="#"
                                  HorizontalAlignment="Center"
@@ -507,7 +469,7 @@
                              Height="32"
                              MaxLength="8"
                              HorizontalAlignment="Stretch"
-                             CornerRadius="0,4,4,0" />
+                             CornerRadius="0,0,0,0" />
                   </Grid>
                 </Grid>
                 <!-- Color component editing controls -->
@@ -516,19 +478,19 @@
                         Grid.Row="2"
                         Height="{Binding ElementName=Component1NumericUpDown, Path=Bounds.Height}"
                         Width="{DynamicResource ColorViewComponentLabelWidth}"
-                        Background="{DynamicResource TextControlBackgroundDisabled}"
-                        BorderBrush="{DynamicResource TextControlBorderBrush}"
+                        Background="{DynamicResource ThemeControlMidBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                         BorderThickness="1,1,0,1"
-                        CornerRadius="4,0,0,4"
+                        CornerRadius="0,0,0,0"
                         VerticalAlignment="Center"
                         IsVisible="{TemplateBinding IsComponentTextInputVisible}">
                   <Panel HorizontalAlignment="Center"
                          VerticalAlignment="Center">
-                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                    <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}"
                                FontWeight="SemiBold"
                                Text="R"
                                IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Rgba}, Mode=OneWay}"/>
-                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                    <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}"
                                FontWeight="SemiBold"
                                Text="H"
                                IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Hsva}, Mode=OneWay}" />
@@ -541,7 +503,7 @@
                                ShowButtonSpinner="False"
                                Height="32"
                                Width="{DynamicResource ColorViewComponentTextInputWidth}"
-                               CornerRadius="0,4,4,0"
+                               CornerRadius="0,0,0,0"
                                Margin="0,0,12,0"
                                VerticalAlignment="Center"
                                NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
@@ -567,19 +529,19 @@
                         Grid.Row="3"
                         Width="{DynamicResource ColorViewComponentLabelWidth}"
                         Height="{Binding ElementName=Component2NumericUpDown, Path=Bounds.Height}"
-                        Background="{DynamicResource TextControlBackgroundDisabled}"
-                        BorderBrush="{DynamicResource TextControlBorderBrush}"
+                        Background="{DynamicResource ThemeControlMidBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                         BorderThickness="1,1,0,1"
-                        CornerRadius="4,0,0,4"
+                        CornerRadius="0,0,0,0"
                         VerticalAlignment="Center"
                         IsVisible="{TemplateBinding IsComponentTextInputVisible}">
                   <Panel HorizontalAlignment="Center"
                          VerticalAlignment="Center">
-                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                    <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}"
                                FontWeight="SemiBold"
                                Text="G"
                                IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Rgba}, Mode=OneWay}" />
-                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                    <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}"
                                FontWeight="SemiBold"
                                Text="S"
                                IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Hsva}, Mode=OneWay}" />
@@ -592,7 +554,7 @@
                                ShowButtonSpinner="False"
                                Height="32"
                                Width="{DynamicResource ColorViewComponentTextInputWidth}"
-                               CornerRadius="0,4,4,0"
+                               CornerRadius="0,0,0,0"
                                Margin="0,0,12,0"
                                VerticalAlignment="Center"
                                NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
@@ -618,19 +580,19 @@
                         Grid.Row="4"
                         Width="{DynamicResource ColorViewComponentLabelWidth}"
                         Height="{Binding ElementName=Component3NumericUpDown, Path=Bounds.Height}"
-                        Background="{DynamicResource TextControlBackgroundDisabled}"
-                        BorderBrush="{DynamicResource TextControlBorderBrush}"
+                        Background="{DynamicResource ThemeControlMidBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                         BorderThickness="1,1,0,1"
-                        CornerRadius="4,0,0,4"
+                        CornerRadius="0,0,0,0"
                         VerticalAlignment="Center"
                         IsVisible="{TemplateBinding IsComponentTextInputVisible}">
                   <Panel HorizontalAlignment="Center"
                          VerticalAlignment="Center">
-                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                    <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}"
                                FontWeight="SemiBold"
                                Text="B"
                                IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Rgba}, Mode=OneWay}" />
-                    <TextBlock Foreground="{DynamicResource TextControlForegroundDisabled}"
+                    <TextBlock Foreground="{DynamicResource ThemeForegroundBrush}"
                                FontWeight="SemiBold"
                                Text="V"
                                IsVisible="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Hsva}, Mode=OneWay}" />
@@ -643,7 +605,7 @@
                                ShowButtonSpinner="False"
                                Height="32"
                                Width="{DynamicResource ColorViewComponentTextInputWidth}"
-                               CornerRadius="0,4,4,0"
+                               CornerRadius="0,0,0,0"
                                Margin="0,0,12,0"
                                VerticalAlignment="Center"
                                NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
@@ -669,14 +631,14 @@
                         Grid.Row="5"
                         Width="{DynamicResource ColorViewComponentLabelWidth}"
                         Height="{Binding ElementName=AlphaComponentNumericUpDown, Path=Bounds.Height}"
-                        Background="{DynamicResource TextControlBackgroundDisabled}"
-                        BorderBrush="{DynamicResource TextControlBorderBrush}"
+                        Background="{DynamicResource ThemeControlMidBrush}"
+                        BorderBrush="{DynamicResource ThemeBorderMidBrush}"
                         BorderThickness="1,1,0,1"
-                        CornerRadius="4,0,0,4"
+                        CornerRadius="0,0,0,0"
                         VerticalAlignment="Center"
                         IsEnabled="{TemplateBinding IsAlphaEnabled}">
                   <TextBlock x:Name="AlphaComponentTextBlock"
-                             Foreground="{DynamicResource TextControlForegroundDisabled}"
+                             Foreground="{DynamicResource ThemeForegroundBrush}"
                              FontWeight="SemiBold"
                              Text="A"
                              HorizontalAlignment="Center"
@@ -697,7 +659,7 @@
                                ShowButtonSpinner="False"
                                Height="32"
                                Width="{DynamicResource ColorViewComponentTextInputWidth}"
-                               CornerRadius="0,4,4,0"
+                               CornerRadius="0,0,0,0"
                                Margin="0,0,12,0"
                                VerticalAlignment="Center"
                                NumberFormat="{StaticResource ColorViewComponentNumberFormat}"
