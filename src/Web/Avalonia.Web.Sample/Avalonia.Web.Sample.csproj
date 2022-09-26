@@ -24,14 +24,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\samples\ControlCatalog\ControlCatalog.csproj" />
     <ProjectReference Include="..\Avalonia.Web\Avalonia.Web.csproj" />
+    <ProjectReference Include="..\..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <WasmExtraFilesToDeploy Include="index.html" />
     <WasmExtraFilesToDeploy Include="main.js" />
-
-    <NativeFileReference Include="C:\Users\User\.nuget\packages\harfbuzzsharp.nativeassets.webassembly\2.8.2.1-preview.108\build\netstandard1.0\libHarfBuzzSharp.a\3.1.7\libHarfBuzzSharp.a" />
-    <NativeFileReference Include="C:\Users\User\.nuget\packages\skiasharp.nativeassets.webassembly\2.88.1\build\netstandard1.0\libSkiaSharp.a\3.1.7\libSkiaSharp.a" />
   </ItemGroup>
 
   <Import Project="..\Avalonia.Web\Avalonia.Web.props" />

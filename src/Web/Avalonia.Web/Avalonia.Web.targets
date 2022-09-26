@@ -1,6 +1,7 @@
 <Project>
   <ItemGroup>
     <WasmExtraFilesToDeploy Include="$(MSBuildThisFileDirectory)/wwwroot/**/*.*" />
+    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)\3.1.7\libHarfBuzzSharp.a" />
+    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\3.1.7\libSkiaSharp.a" />
   </ItemGroup>
 </Project>
-  
