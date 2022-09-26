@@ -141,12 +141,17 @@ namespace Avalonia.Web
             return false;
         }
 
-        public void RawTextEvent(string text)
+        public bool RawTextEvent(string text)
         {
             if (_inputRoot is { })
             {
-                Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice, Timestamp, _inputRoot, text));
+                var args = new RawTextInputEventArgs(KeyboardDevice, Timestamp, _inputRoot, text);
+                Input?.Invoke(args);
+
+                return args.Handled;
             }
+
+            return false;
         }
 
         public void Dispose()

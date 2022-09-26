@@ -14,6 +14,7 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <RunAOTCompilation>true</RunAOTCompilation>
     <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
     <WasmBuildNative>true</WasmBuildNative>
     <InvariantGlobalization>true</InvariantGlobalization>
     <WasmEnableSIMD>true</WasmEnableSIMD>

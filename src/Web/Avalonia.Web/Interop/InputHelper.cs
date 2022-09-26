@@ -1,20 +1,26 @@
 ﻿using System;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Avalonia.Web.Interop;
 
 internal static partial class InputHelper
 {
-    [JSImport("InputHelper.subscribeKeyboardEvents", "avalonia.ts")]
-    public static partial void SubscribeKeyboardEvents(
+    [JSImport("InputHelper.subscribeKeyEvents", "avalonia.ts")]
+    public static partial void SubscribeKeyEvents(
         JSObject htmlElement,
         [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
         Func<string, string, int, bool> keyDown,
         [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
-        Func<string, string, int, bool> keyUp,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
-        Func<JSObject, bool> onInput,
+        Func<string, string, int, bool> keyUp);
+
+    [JSImport("InputHelper.subscribeTextEvents", "avalonia.ts")]
+    public static partial void SubscribeTextEvents(
+        JSObject htmlElement,
+        [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Boolean>>]
+        Func<string, string?, bool> onInput,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
         Func<JSObject, bool> onCompositionStart,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
@@ -60,6 +66,11 @@ internal static partial class InputHelper
     [JSImport("InputHelper.show", "avalonia.ts")]
     public static partial void ShowElement(JSObject htmlElement);
 
+    [JSImport("InputHelper.setSurroundingText", "avalonia.ts")]
+    public static partial void SetSurroundingText(JSObject htmlElement, string text, int start, int end);
+
+    [JSImport("InputHelper.setBounds", "avalonia.ts")]
+    public static partial void SetBounds(JSObject htmlElement, int x, int y, int width, int height, int caret);
 
     [JSImport("navigator.clipboard.readText")]
     public static partial Task<string> ReadClipboardTextAsync();

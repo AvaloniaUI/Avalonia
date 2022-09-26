@@ -21,11 +21,11 @@ enum RawInputModifiers
 }
 
 export class InputHelper {
-    public static subscribeKeyboardEvents(
+    public static subscribeKeyEvents(
         element: HTMLInputElement,
         keyDownCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean,
         keyUpCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean,
-        inputCallback: (args: InputEvent) => boolean,
+        inputCallback: (type: string, data: string|null) => boolean,
         compositionStartCallback: (args: CompositionEvent) => boolean,
         compositionUpdateCallback: (args: CompositionEvent) => boolean,
         compositionEndCallback: (args: CompositionEvent) => boolean)
@@ -42,13 +42,27 @@ export class InputHelper {
                 args.preventDefault();
             }
         };
+
         element.addEventListener("keyup", keyUpHandler);
 
+        return () => {
+            element.removeEventListener("keydown", keyDownHandler);
+            element.removeEventListener("keyup", keyUpHandler);
+        };
+    }
+
+    public static subscribeTextEvents(
+        element: HTMLInputElement,        
+        inputCallback: (type: string, data: string | null) => boolean,
+        compositionStartCallback: (args: CompositionEvent) => boolean,
+        compositionUpdateCallback: (args: CompositionEvent) => boolean,
+        compositionEndCallback: (args: CompositionEvent) => boolean) {
+        
         const inputHandler = (args: Event) => {
             var inputEvent = args as InputEvent;
 
             // todo check cast
-            if (inputCallback(inputEvent)) {
+            if (inputCallback(inputEvent.type, inputEvent.data)) {
                 args.preventDefault();
             }
         };
@@ -76,16 +90,11 @@ export class InputHelper {
         element.addEventListener("compositionend", compositionEndHandler);
 
         return () => {
-            element.removeEventListener("keydown", keyDownHandler);
-            element.removeEventListener("keyup", keyUpHandler);
+            element.removeEventListener("input", inputHandler);
             element.removeEventListener("compositionstart", compositionStartHandler);
             element.removeEventListener("compositionupdate", compositionUpdateHandler);
             element.removeEventListener("compositionend", compositionEndHandler);
         };
-
-       
-
-
     }
 
     public static subscribePointerEvents(

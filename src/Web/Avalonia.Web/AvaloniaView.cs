@@ -33,6 +33,7 @@ namespace Avalonia.Web
 
         private bool _useGL;
         private bool _inputElementFocused;
+        private ITextInputMethodClient? _client;
         private static int _canvasCount;
 
         public AvaloniaView(string divId)
@@ -73,14 +74,17 @@ namespace Avalonia.Web
 
             _topLevel.Renderer.Start();
 
-            InputHelper.SubscribeKeyboardEvents(
+            InputHelper.SubscribeKeyEvents(
                 _containerElement,
-                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier),
-                (code, key, modifier) => _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier),
-                (args) => { return false; },
-                (args) => { return false; },
-                (args) => { return false; },
-                (args) => { return false; });
+                OnKeyDown,
+                OnKeyUp);
+
+            InputHelper.SubscribeTextEvents(
+                _inputElement,
+                OnTextInput,
+                OnCompositionStart,
+                OnCompositionUpdate,
+                OnCompositionEnd);
 
             InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp, OnWheel);
 
@@ -235,6 +239,59 @@ namespace Avalonia.Web
             return modifiers;
         }
 
+        private bool OnKeyDown (string code, string key, int modifier)
+        {
+            return _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
+        }
+
+        private bool OnKeyUp(string code, string key, int modifier)
+        {
+            return _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyUp, code, key, (RawInputModifiers)modifier);
+        }
+
+        private bool OnTextInput (string type, string? data)
+        {
+            if(data == null || IsComposing)
+            {
+                return false;
+            }
+
+            return _topLevelImpl.RawTextEvent(data);
+        }
+
+        private bool OnCompositionStart (JSObject args)
+        {
+            if (_client == null)
+                return false;
+
+            _client.SetPreeditText(null);
+            IsComposing = true;
+
+            return false;
+        }
+
+        private bool OnCompositionUpdate(JSObject args)
+        {
+            if (_client == null)
+                return false;
+
+            _client.SetPreeditText(args.GetPropertyAsString("data"));
+
+            return false;
+        }
+
+        private bool OnCompositionEnd(JSObject args)
+        {
+            if (_client == null)
+                return false;
+
+            IsComposing = false;
+            _client.SetPreeditText(null);
+            _topLevelImpl.RawTextEvent(args.GetPropertyAsString("data")!);
+
+            return false;
+        }
+
         private void OnRenderFrame()
         {
             if (_useGL && (_jsGlInfo == null))
@@ -256,6 +313,8 @@ namespace Avalonia.Web
             get => (Control)_topLevel.Content!;
             set => _topLevel.Content = value;
         }
+
+        public bool IsComposing { get; private set; }
 
         internal INativeControlHostImpl GetNativeControlHostImpl()
         {
@@ -314,13 +373,63 @@ namespace Avalonia.Web
             }
         }
 
+        private void HideIme()
+        {
+            InputHelper.HideElement(_inputElement);
+            InputHelper.FocusElement(_containerElement);
+        }
+
         public void SetClient(ITextInputMethodClient? client)
         {
-            
+            Console.WriteLine("Set Client");
+            if (_client != null)
+            {
+                _client.SurroundingTextChanged -= SurroundingTextChanged;
+            }
+
+            if (client != null)
+            {
+                client.SurroundingTextChanged += SurroundingTextChanged;
+            }
+
+            InputHelper.ClearInputElement(_inputElement);
+
+            _client = client;
+
+            if (_client != null)
+            {
+                InputHelper.ShowElement(_inputElement);
+                _inputElementFocused = true;
+                InputHelper.FocusElement(_inputElement);
+
+                var surroundingText = _client.SurroundingText;
+
+                InputHelper.SetSurroundingText(_inputElement, surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+
+                Console.WriteLine("Shown, focused and surrounded.");
+            }
+            else
+            {
+                _inputElementFocused = false;
+                HideIme();
+            }
+        }
+
+        private void SurroundingTextChanged(object? sender, EventArgs e)
+        {
+            if (_client != null)
+            {
+                var surroundingText = _client.SurroundingText;
+
+                InputHelper.SetSurroundingText(_inputElement, surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+            }
         }
 
         public void SetCursorRect(Rect rect)
         {
+            InputHelper.FocusElement(_inputElement);
+            InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height, _client?.SurroundingText.CursorOffset ?? 0);
+            InputHelper.FocusElement(_inputElement);
         }
 
         public void SetOptions(TextInputOptions options)
@@ -329,7 +438,8 @@ namespace Avalonia.Web
 
         public void Reset()
         {
-            
+            InputHelper.ClearInputElement(_inputElement);
+            InputHelper.SetSurroundingText(_inputElement, "", 0, 0);
         }
     }
 }
