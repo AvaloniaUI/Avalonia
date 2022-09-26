@@ -8,7 +8,6 @@
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
     <WasmBuildNative>true</WasmBuildNative>
     <EmccFlags>-sVERBOSE -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
-    <EmccExtraLDFlags>--js-library="C:\Users\User\repos\Avalonia\src\Web\Avalonia.Web.Sample\interop.js"</EmccExtraLDFlags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
@@ -34,6 +33,7 @@
     <NativeFileReference Include="C:\Users\User\.nuget\packages\harfbuzzsharp.nativeassets.webassembly\2.8.2.1-preview.108\build\netstandard1.0\libHarfBuzzSharp.a\3.1.7\libHarfBuzzSharp.a" />
     <NativeFileReference Include="C:\Users\User\.nuget\packages\skiasharp.nativeassets.webassembly\2.88.1\build\netstandard1.0\libSkiaSharp.a\3.1.7\libSkiaSharp.a" />
   </ItemGroup>
-  
+
+  <Import Project="..\Avalonia.Web\Avalonia.Web.props" />
   <Import Project="..\Avalonia.Web\Avalonia.Web.targets" />
 </Project>
