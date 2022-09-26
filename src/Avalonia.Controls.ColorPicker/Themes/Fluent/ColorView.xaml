@@ -164,7 +164,7 @@
     </Style>
   </ControlTheme>
 
-  <!-- Based on the current Fluent ToggleButton ControlTheme -->
+  <!-- Based on the Fluent ToggleButton ControlTheme -->
   <ControlTheme x:Key="ColorViewColorModelRadioButtonTheme"
                 TargetType="RadioButton">
     <Setter Property="Background" Value="{DynamicResource ToggleButtonBackground}" />
@@ -228,7 +228,7 @@
     </Style>
   </ControlTheme>
 
-  <!-- Based on the current Fluent TabItem ControlTheme -->
+  <!-- Based on the Fluent TabItem ControlTheme -->
   <ControlTheme x:Key="ColorViewTabItemTheme"
                 TargetType="TabItem">
     <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
