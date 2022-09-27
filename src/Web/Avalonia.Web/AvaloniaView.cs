@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
@@ -8,6 +9,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using Avalonia.Web.Interop;
 using SkiaSharp;
 
@@ -23,6 +25,7 @@ namespace Avalonia.Web
         private readonly JSObject _canvas;
         private readonly JSObject _nativeControlsContainer;
         private readonly JSObject _inputElement;
+        private readonly JSObject? _splash;
 
         private GLInfo? _jsGlInfo = null;
         private double _dpi = 1;
@@ -59,11 +62,23 @@ namespace Avalonia.Web
             _inputElement = hostContent.GetPropertyAsJSObject("inputElement")
                 ?? throw new InvalidOperationException("InputElement cannot be null");
 
+            _splash = DomHelper.GetElementById("avalonia-splash");
+
             _canvas.SetProperty("id", $"avaloniaCanvas{_canvasCount++}");
 
             _topLevelImpl = new BrowserTopLevelImpl(this);
 
-            _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+            _topLevel = new WebEmbeddableControlRoot(_topLevelImpl, () =>
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (_splash != null)
+                    {
+                        InputHelper.HideElement(_splash);
+                    }
+                });
+            });
+
             _topLevelImpl.SetCssCursor = (cursor) =>
             {
                 InputHelper.SetCursor(_containerElement, cursor); // macOS

@@ -12,7 +12,6 @@ export class AvaloniaDOM {
         canvas.style.width = "100%";
         canvas.style.height = "100%";
         canvas.style.position = "absolute";
-        host.appendChild(canvas);
         
         // Native controls host
         const nativeHost = document.createElement("div");
@@ -22,7 +21,6 @@ export class AvaloniaDOM {
         nativeHost.style.width = "100%";
         nativeHost.style.height = "100%";
         nativeHost.style.position = "absolute";
-        host.appendChild(nativeHost);
 
         // IME
         const inputElement = document.createElement("input");
@@ -43,7 +41,10 @@ export class AvaloniaDOM {
         inputElement.onpaste = function () { return false; };
         inputElement.oncopy = function () { return false; };
         inputElement.oncut = function () { return false; };
-        host.appendChild(inputElement);
+
+        host.prepend(inputElement);
+        host.prepend(nativeHost);
+        host.prepend(canvas);
 
         return {
             host,
