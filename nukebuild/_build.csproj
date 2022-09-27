@@ -7,7 +7,6 @@
     <RootNamespace></RootNamespace>
     <IsPackable>False</IsPackable>
     <NoWarn>CS0649;CS0169</NoWarn>
-    <NukeTelemetryVersion>1</NukeTelemetryVersion>
   </PropertyGroup>
  <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
   <ItemGroup>
