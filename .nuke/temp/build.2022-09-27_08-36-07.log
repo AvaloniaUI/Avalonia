@@ -1,0 +1,30 @@
+V |                      | ArgumentsFromParametersFile.OnBuildCreated (150)
+V |                      | Passing value for Build.Solution ()
+V |                      | InjectParameterValues.OnBuildCreated (100)
+W |                      | Could not inject value for Build.Solution
+System.ArgumentException: Solution 'C:\Users\User\repos\Avalonia\Avalonia.sln' contains duplicated NestedProjects entries:
+ - {4D36CEC8-53F2-40A5-9A37-79AAE356E2DA}
+   at Nuke.Common.Assert.True(Boolean condition, String message, String argumentExpression) in /_/source/Nuke.Common/Assert.cs:line 34
+   at Nuke.Common.Utilities.Collections.EnumerableExtensions.ToDictionarySafe[T,TKey,TValue](IEnumerable`1 enumerable, Func`2 keySelector, Func`2 valueSelector, String duplicationMessage) in /_/source/Nuke.Common/Utilities/Collections/Enumerable.ToDictionary.cs:line 46
+   at Nuke.Common.ProjectModel.SolutionSerializer.GetGlobalSection(String[] lines, String name, String solutionFile) in /_/source/Nuke.Common/ProjectModel/SolutionSerializer.cs:line 92
+   at Nuke.Common.ProjectModel.SolutionSerializer.DeserializeFromContent[T](String[] content, String solutionFile) in /_/source/Nuke.Common/ProjectModel/SolutionSerializer.cs:line 63
+   at Nuke.Common.ProjectModel.SolutionSerializer.DeserializeFromFile[T](String solutionFile) in /_/source/Nuke.Common/ProjectModel/SolutionSerializer.cs:line 23
+V |                      | HandleShellCompletion.OnBuildCreated (75)
+V |                      | GenerateBuildServerConfigurations.OnBuildCreated (50)
+V |                      | InvokeBuildServerConfigurationGeneration.OnBuildCreated (45)
+V |                      | UpdateNotification.OnBuildCreated (10)
+V |                      | UnsetVisualStudioEnvironmentVariables.OnBuildCreated (0)
+V |                      | HandleVisualStudioDebugging.OnBuildCreated (0)
+V |                      | HandleSingleFileExecution.OnBuildCreated (-50)
+V |                      | EventInvoker.OnBuildCreated (-3.4028235E+38)
+V |                      | HandleHelpRequests.OnBuildInitialized (5)
+V |                      | Telemetry.OnBuildInitialized (0)
+V |                      | InjectNonParameterValues.OnBuildInitialized (-100)
+V |                      | EventInvoker.OnBuildInitialized (-3.4028235E+38)
+V |                      | Target-unrelated exception was thrown
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at Build.OnBuildInitialized() in C:\Users\User\repos\Avalonia\nukebuild\Build.cs:line 42
+   at Nuke.Common.Execution.EventInvoker.OnBuildInitialized(NukeBuild build, IReadOnlyCollection`1 executableTargets, IReadOnlyCollection`1 executionPlan) in /_/source/Nuke.Common/Execution/EventInvoker.cs:line 27
+   at Nuke.Common.Utilities.Collections.EnumerableExtensions.ForEach[T](IEnumerable`1 enumerable, Action`1 action) in /_/source/Nuke.Common/Utilities/Collections/Enumerable.ForEach.cs:line 17
+   at Nuke.Common.NukeBuild.ExecuteExtension[TExtension](Expression`1 action)
+   at Nuke.Common.Execution.BuildManager.Execute[T](Expression`1[] defaultTargetExpressions) in /_/source/Nuke.Common/Execution/BuildManager.cs:line 58
