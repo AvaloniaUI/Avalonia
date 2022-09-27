@@ -1,4 +1,9 @@
 export class AvaloniaDOM {
+
+    public static addClass(element: HTMLElement, className: string) {
+        element.classList.add(className);
+    }
+
     static createAvaloniaHost(host: HTMLElement) {
         // Root element
         host.classList.add("avalonia-container");

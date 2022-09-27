@@ -74,7 +74,7 @@ namespace Avalonia.Web
                 {
                     if (_splash != null)
                     {
-                        InputHelper.HideElement(_splash);
+                        DomHelper.AddCssClass(_splash, "splash-close");
                     }
                 });
             });

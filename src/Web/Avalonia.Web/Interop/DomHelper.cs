@@ -11,6 +11,9 @@ internal static partial class DomHelper
     [JSImport("AvaloniaDOM.createAvaloniaHost", "avalonia.ts")]
     public static partial JSObject CreateAvaloniaHost(JSObject element);
 
+    [JSImport("AvaloniaDOM.addClass", "avalonia.ts")]
+    public static partial void AddCssClass(JSObject element, string className);
+
     [JSImport("SizeWatcher.observe", "avalonia.ts")]
     public static partial JSObject ObserveSize(
         JSObject canvas,

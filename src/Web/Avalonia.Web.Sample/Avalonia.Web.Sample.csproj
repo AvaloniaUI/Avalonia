@@ -30,6 +30,9 @@
   <ItemGroup>
     <WasmExtraFilesToDeploy Include="index.html" />
     <WasmExtraFilesToDeploy Include="main.js" />
+    <WasmExtraFilesToDeploy Include="favicon.ico" />
+    <WasmExtraFilesToDeploy Include="Logo.svg" />
+    <WasmExtraFilesToDeploy Include="app.css" />
   </ItemGroup>
 
   <Import Project="..\Avalonia.Web\Avalonia.Web.props" />
