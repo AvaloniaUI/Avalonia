@@ -1,4 +1,10 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="Toolchain for run Generator on Linux" Condition="'$(PkgMicrosoft_Net_Compilers)'==''">
+    <PackageReference Include="Microsoft.Net.Compilers" Version="4.2.0" GeneratePathProperty="true">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference 
       Include="$(MSBuildThisFileDirectory)/../src/tools/DevGenerators/DevGenerators.csproj"
