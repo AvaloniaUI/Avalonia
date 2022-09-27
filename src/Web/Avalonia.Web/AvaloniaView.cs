@@ -13,6 +13,7 @@ using SkiaSharp;
 
 namespace Avalonia.Web
 {
+    [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
     public partial class AvaloniaView : ITextInputMethodImpl
     {
         private readonly BrowserTopLevelImpl _topLevelImpl;
@@ -31,8 +32,7 @@ namespace Avalonia.Web
         private GRGlInterface? _glInterface;
         private const SKColorType ColorType = SKColorType.Rgba8888;
 
-        private bool _useGL;
-        private bool _inputElementFocused;
+        private bool _useGL;        
         private ITextInputMethodClient? _client;
         private static int _canvasCount;
 
@@ -399,7 +399,6 @@ namespace Avalonia.Web
             if (_client != null)
             {
                 InputHelper.ShowElement(_inputElement);
-                _inputElementFocused = true;
                 InputHelper.FocusElement(_inputElement);
 
                 var surroundingText = _client.SurroundingText;
@@ -410,7 +409,6 @@ namespace Avalonia.Web
             }
             else
             {
-                _inputElementFocused = false;
                 HideIme();
             }
         }

@@ -6,6 +6,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Web
 {
+    [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
     public class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
     {
         public AvaloniaView? View;

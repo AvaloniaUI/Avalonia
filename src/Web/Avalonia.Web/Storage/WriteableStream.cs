@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Web.Storage;
 
+[System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
 // Loose wrapper implementaion of a stream on top of FileAPI FileSystemWritableFileStream
 internal sealed class JSWriteableStream : Stream
 {

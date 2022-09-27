@@ -16,6 +16,7 @@ using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Web
 {
+    [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
     internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
     {
         private Size _clientSize;
