@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Web.Storage;
 
+[System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
 internal class BlobReadableStream : Stream
 {
     private JSObject? _jSReference;
