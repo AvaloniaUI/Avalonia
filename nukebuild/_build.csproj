@@ -11,7 +11,7 @@
   </PropertyGroup>
  <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="6.2.1" />
+    <PackageReference Include="Nuke.Common" Version="5.0.0" />
     <PackageReference Include="xunit.runner.console" Version="2.3.1" />
     <PackageReference Include="vswhere" Version="2.6.7" Condition=" '$(OS)' == 'Windows_NT' " />
     <PackageReference Include="ILRepack.NETStandard" Version="2.0.4" />

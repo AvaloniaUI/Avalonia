@@ -39,7 +39,6 @@ partial class Build : NukeBuild
     BuildParameters Parameters { get; set; }
     protected override void OnBuildInitialized()
     {
-        Console.WriteLine($"{Solution.Name}");
         Parameters = new BuildParameters(this);
         Information("Building version {0} of Avalonia ({1}) using version {2} of Nuke.",
             Parameters.Version,
@@ -144,7 +143,6 @@ partial class Build : NukeBuild
     void RunCoreTest(string projectName)
     {
         Information($"Running tests from {projectName}");
-        Console.WriteLine(Solution == null);
         var project = Solution.GetProject(projectName).NotNull("project != null");
 
         foreach (var fw in project.GetTargetFrameworks())
@@ -165,7 +163,7 @@ partial class Build : NukeBuild
                 .EnableNoBuild()
                 .EnableNoRestore()
                 .When(Parameters.PublishTestResults, _ => _
-                    .SetLoggers("trx")
+                    .SetLogger("trx")
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
     }
@@ -231,7 +229,7 @@ partial class Build : NukeBuild
                     $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
                     timeout: 120_000);
             }
-            ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromSeconds(3));
+            ControlFlow.ExecuteWithRetry(DoMemoryTest, waitInSeconds: 3);
         });
 
     Target ZipFiles => _ => _
