@@ -1,6 +1,4 @@
-﻿declare let Module: EmscriptenModule;
-
-type SKGLViewInfo = {
+interface SKGLViewInfo {
     context: WebGLRenderingContext | WebGL2RenderingContext | undefined;
     fboId: number;
     stencil: number;
@@ -9,8 +7,8 @@ type SKGLViewInfo = {
 }
 
 type CanvasElement = {
-    Canvas: Canvas | undefined
-} & HTMLCanvasElement
+    Canvas: Canvas | undefined;
+} & HTMLCanvasElement;
 
 export class Canvas {
     static elements: Map<string, HTMLCanvasElement>;
@@ -24,22 +22,24 @@ export class Canvas {
     newHeight?: number;
 
     public static initGL(element: HTMLCanvasElement, elementId: string, renderFrameCallback: () => void): SKGLViewInfo | null {
-        var view = Canvas.init(true, element, elementId, renderFrameCallback);
-        if (!view || !view.glInfo)
+        const view = Canvas.init(true, element, elementId, renderFrameCallback);
+        if (!view || !view.glInfo) {
             return null;
+        }
 
         return view.glInfo;
     }
 
     static init(useGL: boolean, element: HTMLCanvasElement, elementId: string, renderFrameCallback: () => void): Canvas | null {
-        var htmlCanvas = element as CanvasElement;
+        const htmlCanvas = element as CanvasElement;
         if (!htmlCanvas) {
-            console.error(`No canvas element was provided.`);
+            console.error("No canvas element was provided.");
             return null;
         }
 
-        if (!Canvas.elements)
+        if (!Canvas.elements) {
             Canvas.elements = new Map<string, HTMLCanvasElement>();
+        }
         Canvas.elements.set(elementId, element);
 
         const view = new Canvas(useGL, element, renderFrameCallback);
@@ -56,16 +56,16 @@ export class Canvas {
         if (useGL) {
             const ctx = Canvas.createWebGLContext(element);
             if (!ctx) {
-                console.error(`Failed to create WebGL context: err ${ctx}`);
+                console.error("Failed to create WebGL context");
                 return;
             }
 
-            var GL = (globalThis as any).AvaloniaGL;
+            const GL = (globalThis as any).AvaloniaGL;
 
             // make current
             GL.makeContextCurrent(ctx);
 
-            var GLctx = GL.currentContext.GLctx as WebGLRenderingContext;
+            const GLctx = GL.currentContext.GLctx as WebGLRenderingContext;
 
             // read values
             const fbo = GLctx.getParameter(GLctx.FRAMEBUFFER_BINDING);
@@ -75,17 +75,17 @@ export class Canvas {
                 fboId: fbo ? fbo.id : 0,
                 stencil: GLctx.getParameter(GLctx.STENCIL_BITS),
                 sample: 0, // TODO: GLctx.getParameter(GLctx.SAMPLES)
-                depth: GLctx.getParameter(GLctx.DEPTH_BITS),
+                depth: GLctx.getParameter(GLctx.DEPTH_BITS)
             };
         }
     }
 
-    public setEnableRenderLoop(enable: boolean) {
+    public setEnableRenderLoop(enable: boolean): void {
         this.renderLoopEnabled = enable;
 
         // either start the new frame or cancel the existing one
         if (enable) {
-            //console.info(`Enabling render loop with callback ${this.renderFrameCallback._id}...`);
+            // console.info(`Enabling render loop with callback ${this.renderFrameCallback._id}...`);
             this.requestAnimationFrame();
         } else if (this.renderLoopRequest !== 0) {
             window.cancelAnimationFrame(this.renderLoopRequest);
@@ -93,71 +93,76 @@ export class Canvas {
         }
     }
 
-    public requestAnimationFrame(renderLoop?: boolean) {
+    public requestAnimationFrame(renderLoop?: boolean): void {
         // optionally update the render loop
-        if (renderLoop !== undefined && this.renderLoopEnabled !== renderLoop)
+        if (renderLoop !== undefined && this.renderLoopEnabled !== renderLoop) {
             this.setEnableRenderLoop(renderLoop);
+        }
 
         // skip because we have a render loop
-        if (this.renderLoopRequest !== 0)
+        if (this.renderLoopRequest !== 0) {
             return;
+        }
 
         // add the draw to the next frame
         this.renderLoopRequest = window.requestAnimationFrame(() => {
             if (this.glInfo) {
-                var GL = (globalThis as any).AvaloniaGL;
+                const GL = (globalThis as any).AvaloniaGL;
                 // make current
                 GL.makeContextCurrent(this.glInfo.context);
             }
 
-            if (this.htmlCanvas.width != this.newWidth) {
-                this.htmlCanvas.width = this.newWidth || 0;
+            if (this.htmlCanvas.width !== this.newWidth) {
+                this.htmlCanvas.width = this.newWidth ?? 0;
             }
 
-            if (this.htmlCanvas.height != this.newHeight) {
-                this.htmlCanvas.height = this.newHeight || 0;
+            if (this.htmlCanvas.height !== this.newHeight) {
+                this.htmlCanvas.height = this.newHeight ?? 0;
             }
 
             this.renderFrameCallback();
             this.renderLoopRequest = 0;
 
             // we may want to draw the next frame
-            if (this.renderLoopEnabled)
+            if (this.renderLoopEnabled) {
                 this.requestAnimationFrame();
+            }
         });
     }
 
-    public setCanvasSize(width: number, height: number) {
+    public setCanvasSize(width: number, height: number): void {
         this.newWidth = width;
         this.newHeight = height;
 
-        if (this.htmlCanvas.width != this.newWidth) {
+        if (this.htmlCanvas.width !== this.newWidth) {
             this.htmlCanvas.width = this.newWidth;
         }
 
-        if (this.htmlCanvas.height != this.newHeight) {
+        if (this.htmlCanvas.height !== this.newHeight) {
             this.htmlCanvas.height = this.newHeight;
         }
 
         if (this.glInfo) {
-            var GL = (globalThis as any).AvaloniaGL;
+            const GL = (globalThis as any).AvaloniaGL;
             // make current
             GL.makeContextCurrent(this.glInfo.context);
         }
     }
 
-    public static setCanvasSize(element: HTMLCanvasElement, width: number, height: number) {
+    public static setCanvasSize(element: HTMLCanvasElement, width: number, height: number): void {
         const htmlCanvas = element as CanvasElement;
-        if (!htmlCanvas || !htmlCanvas.Canvas)
+        if (!htmlCanvas || !htmlCanvas.Canvas) {
             return;
+        }
 
         htmlCanvas.Canvas.setCanvasSize(width, height);
     }
 
-    public static requestAnimationFrame(element: HTMLCanvasElement, renderLoop?: boolean) {
+    public static requestAnimationFrame(element: HTMLCanvasElement, renderLoop?: boolean): void {
         const htmlCanvas = element as CanvasElement;
-        if (!htmlCanvas || !htmlCanvas.Canvas)
+        if (!htmlCanvas || !htmlCanvas.Canvas) {
             return;
+        }
 
         htmlCanvas.Canvas.requestAnimationFrame(renderLoop);
     }
@@ -176,15 +181,15 @@ export class Canvas {
             minorVersion: 0,
             enableExtensionsByDefault: 1,
             explicitSwapControl: 0,
-            renderViaOffscreenBackBuffer: 1,
+            renderViaOffscreenBackBuffer: 1
         };
 
-        var GL = (globalThis as any).AvaloniaGL;
+        const GL = (globalThis as any).AvaloniaGL;
 
         let ctx: WebGLRenderingContext = GL.createContext(htmlCanvas, contextAttributes);
 
         if (!ctx && contextAttributes.majorVersion > 1) {
-            console.warn('Falling back to WebGL 1.0');
+            console.warn("Falling back to WebGL 1.0");
             contextAttributes.majorVersion = 1;
             contextAttributes.minorVersion = 0;
             ctx = GL.createContext(htmlCanvas, contextAttributes);
@@ -196,9 +201,9 @@ export class Canvas {
 
 type SizeWatcherElement = {
     SizeWatcher: SizeWatcherInstance;
-} & HTMLElement
+} & HTMLElement;
 
-type SizeWatcherInstance = {
+interface SizeWatcherInstance {
     callback: (width: number, height: number) => void;
 }
 
@@ -206,17 +211,16 @@ export class SizeWatcher {
     static observer: ResizeObserver;
     static elements: Map<string, HTMLElement>;
 
-    public static observe(element: HTMLElement, elementId: string, callback: (width: number, height: number) => void) {
-        if (!element || !callback)
+    public static observe(element: HTMLElement, elementId: string, callback: (width: number, height: number) => void): void {
+        if (!element || !callback) {
             return;
-
-        //console.info(`Adding size watcher observation with callback ${callback._id}...`);
+        }
 
         SizeWatcher.init();
 
         const watcherElement = element as SizeWatcherElement;
         watcherElement.SizeWatcher = {
-            callback: callback
+            callback
         };
 
         SizeWatcher.elements.set(elementId, element);
@@ -225,38 +229,38 @@ export class SizeWatcher {
         SizeWatcher.invoke(element);
     }
 
-    public static unobserve(elementId: string) {
-        if (!elementId || !SizeWatcher.observer)
+    public static unobserve(elementId: string): void {
+        if (!elementId || !SizeWatcher.observer) {
             return;
+        }
 
-        //console.info('Removing size watcher observation...');
-
-        const element = SizeWatcher.elements.get(elementId)!;
-
-        SizeWatcher.elements.delete(elementId);
-        SizeWatcher.observer.unobserve(element);
+        const element = SizeWatcher.elements.get(elementId);
+        if (element) {
+            SizeWatcher.elements.delete(elementId);
+            SizeWatcher.observer.unobserve(element);
+        }
     }
 
-    static init() {
-        if (SizeWatcher.observer)
+    static init(): void {
+        if (SizeWatcher.observer) {
             return;
-
-        //console.info('Starting size watcher...');
+        }
 
         SizeWatcher.elements = new Map<string, HTMLElement>();
         SizeWatcher.observer = new ResizeObserver((entries) => {
-            for (let entry of entries) {
+            for (const entry of entries) {
                 SizeWatcher.invoke(entry.target);
             }
         });
     }
 
-    static invoke(element: Element) {
+    static invoke(element: Element): void {
         const watcherElement = element as SizeWatcherElement;
         const instance = watcherElement.SizeWatcher;
 
-        if (!instance || !instance.callback)
+        if (!instance || !instance.callback) {
             return;
+        }
 
         return instance.callback(element.clientWidth, element.clientHeight);
     }
@@ -267,13 +271,11 @@ export class DpiWatcher {
     static timerId: number;
     static callback: (old: number, newdpi: number) => void;
 
-    public static getDpi() {
+    public static getDpi(): number {
         return window.devicePixelRatio;
     }
 
-    public static start(callback: (old: number, newdpi: number) => void) : number {
-        //console.info(`Starting DPI watcher with callback ${callback._id}...`);
-
+    public static start(callback: (old: number, newdpi: number) => void): number {
         DpiWatcher.lastDpi = window.devicePixelRatio;
         DpiWatcher.timerId = window.setInterval(DpiWatcher.update, 1000);
         DpiWatcher.callback = callback;
@@ -281,17 +283,14 @@ export class DpiWatcher {
         return DpiWatcher.lastDpi;
     }
 
-    public static stop() {
-        //console.info(`Stopping DPI watcher with callback ${DpiWatcher.callback._id}...`);
-
+    public static stop(): void {
         window.clearInterval(DpiWatcher.timerId);
-
-        //DpiWatcher.callback = undefined;
     }
 
-    static update() {
-        if (!DpiWatcher.callback)
+    static update(): void {
+        if (!DpiWatcher.callback) {
             return;
+        }
 
         const currentDpi = window.devicePixelRatio;
         const lastDpi = DpiWatcher.lastDpi;

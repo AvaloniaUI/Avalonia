@@ -1,4 +1,4 @@
-﻿// Based on https://github.com/component/textarea-caret-position/blob/master/index.js
+// Based on https://github.com/component/textarea-caret-position/blob/master/index.js
 export class CaretHelper {
     public static getCaretCoordinates(
         element: HTMLInputElement | HTMLTextAreaElement,
@@ -11,7 +11,7 @@ export class CaretHelper {
             );
         }
 
-        const debug = (options && options.debug) || false;
+        const debug = options?.debug ?? false;
         if (debug) {
             const el = document.querySelector(
                 "#input-textarea-caret-position-mirror-div"
@@ -27,7 +27,7 @@ export class CaretHelper {
         const style = div.style;
         const computed = window.getComputedStyle
             ? window.getComputedStyle(element)
-            : ((element as any)["currentStyle"] as CSSStyleDeclaration); // currentStyle for IE < 9
+            : ((element as any).currentStyle as CSSStyleDeclaration); // currentStyle for IE < 9
         const isInput = element.nodeName === "INPUT";
 
         // Default textarea styles
@@ -51,7 +51,7 @@ export class CaretHelper {
                         parseInt(computed.borderBottomWidth);
                     const targetHeight = outerHeight + parseInt(computed.lineHeight);
                     if (height > targetHeight) {
-                        style.lineHeight = height - outerHeight + "px";
+                        style.lineHeight = `${height - outerHeight}px`;
                     } else if (height === targetHeight) {
                         style.lineHeight = computed.lineHeight;
                     } else {
@@ -67,8 +67,9 @@ export class CaretHelper {
 
         if (isFirefox) {
             // Firefox lies about the overflow property for textareas: https://bugzilla.mozilla.org/show_bug.cgi?id=984275
-            if (element.scrollHeight > parseInt(computed.height))
+            if (element.scrollHeight > parseInt(computed.height)) {
                 style.overflowY = "scroll";
+            }
         } else {
             style.overflow = "hidden"; // for Chrome to not render a scrollbar; IE keeps overflowY = 'scroll'
         }
@@ -88,9 +89,9 @@ export class CaretHelper {
         div.appendChild(span);
 
         const coordinates = {
-            top: span.offsetTop + parseInt(computed["borderTopWidth"]),
-            left: span.offsetLeft + parseInt(computed["borderLeftWidth"]),
-            height: parseInt(computed["lineHeight"]),
+            top: span.offsetTop + parseInt(computed.borderTopWidth),
+            left: span.offsetLeft + parseInt(computed.borderLeftWidth),
+            height: parseInt(computed.lineHeight)
         };
 
         if (debug) {
@@ -103,8 +104,7 @@ export class CaretHelper {
     }
 }
 
-
-var properties = [
+const properties = [
     "direction", // RTL support
     "boxSizing",
     "width", // on Chrome and IE, exclude the scrollbar, so the mirror div wraps exactly as the textarea does
@@ -142,7 +142,7 @@ var properties = [
     "wordSpacing",
 
     "tabSize",
-    "MozTabSize",
+    "MozTabSize"
 ];
 
 const isBrowser = typeof window !== "undefined";
