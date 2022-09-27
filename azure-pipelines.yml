@@ -179,7 +179,7 @@ jobs:
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 6.2.1 
+       dotnet tool install --global Nuke.GlobalTool --version 0.24.0 
 
   - task: CmdLine@2
     displayName: 'Run Nuke'
