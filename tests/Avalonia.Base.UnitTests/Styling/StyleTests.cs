@@ -230,6 +230,37 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
+        public void Later_Styles_Should_Override_Earlier_4()
+        {
+            Styles styles = new Styles
+            {
+                new Style(x => x.OfType<Class1>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo1"),
+                    },
+                },
+
+                new Style(x => x.OfType<Class1>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo2"),
+                        new Setter(Class1.DoubleProperty, 123.4),
+                    },
+                }
+            };
+
+            var target = new Class1();
+            styles.TryAttach(target, null);
+            target.Classes.Add("foo");
+
+            Assert.Equal("foo2", target.Foo);
+            Assert.Equal(123.4, target.Double);
+        }
+
+        [Fact]
         public void Inactive_Values_Should_Not_Be_Made_Active_During_Style_Attach()
         {
             using var app = UnitTestApplication.Start(TestServices.RealStyler);
