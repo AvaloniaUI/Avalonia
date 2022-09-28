@@ -27,7 +27,7 @@ namespace Avalonia.Styling.Activators
 
             foreach (var source in _sources)
             {
-                if (source.IsActive)
+                if (source.GetIsActive())
                     return true;
             }
 

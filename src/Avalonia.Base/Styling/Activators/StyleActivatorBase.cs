@@ -9,7 +9,7 @@ namespace Avalonia.Styling.Activators
         private int _tag;
         private bool _value;
 
-        public bool IsActive => _value = EvaluateIsActive();
+        public bool GetIsActive() => _value = EvaluateIsActive();
 
         public bool IsSubscribed => _sink is not null;
 
@@ -48,7 +48,7 @@ namespace Avalonia.Styling.Activators
         }
 
         /// <summary>
-        /// Evaluates the <see cref="IsActive"/> value.
+        /// Evaluates the activation state.
         /// </summary>
         /// <remarks>
         /// This method should read directly from its inputs and not rely on any subscriptions to
@@ -57,8 +57,8 @@ namespace Avalonia.Styling.Activators
         protected abstract bool EvaluateIsActive();
 
         /// <summary>
-        /// Called from a derived class when the <see cref="IsActive"/> state should be re-evaluated
-        /// and the subscriber notified of any change.
+        /// Called from a derived class when the activation state should be re-evaluated and the 
+        /// subscriber notified of any change.
         /// </summary>
         /// <returns>
         /// The evaluated active state;

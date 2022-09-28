@@ -39,7 +39,7 @@ namespace Avalonia.Base.UnitTests.Styling
             
             protected override void Subscribed(IObserver<bool> observer, bool first)
             {
-                observer.OnNext(_source.IsActive);
+                observer.OnNext(_source.GetIsActive());
             }
 
             void IStyleActivatorSink.OnNext(bool value, int tag)

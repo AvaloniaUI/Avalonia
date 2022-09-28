@@ -33,7 +33,7 @@ namespace Avalonia.Styling.Activators
 
             for (var i = 0; i < count; ++i)
             {
-                if (_sources[i].IsActive)
+                if (_sources[i].GetIsActive())
                     flags |= 1ul << i;
             }
 

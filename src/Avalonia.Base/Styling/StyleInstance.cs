@@ -92,10 +92,10 @@ namespace Avalonia.Styling
             if (_activator?.IsSubscribed == false)
             {
                 _activator.Subscribe(this);
-                _animationTrigger?.OnNext(_activator.IsActive);
+                _animationTrigger?.OnNext(_activator.GetIsActive());
             }
 
-            _isActive = _activator?.IsActive ?? true;
+            _isActive = _activator?.GetIsActive() ?? true;
             hasChanged = _isActive != previous;
             return _isActive;
         }

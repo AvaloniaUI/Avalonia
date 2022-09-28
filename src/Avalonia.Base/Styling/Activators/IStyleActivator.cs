@@ -19,20 +19,20 @@ namespace Avalonia.Styling.Activators
     public interface IStyleActivator : IDisposable
     {
         /// <summary>
-        /// Gets a value indicating whether the style is activated.
-        /// </summary>
-        /// <remarks>
-        /// This property should read directly from its inputs and not rely on any subscriptions 
-        /// to fire in order to be up-to-date. If a change in active state occurs when reading
-        /// this property then any subscribed <see cref="IStyleActivatorSink"/> should not be
-        /// notified of the change.
-        /// </remarks>
-        bool IsActive { get; }
-
-        /// <summary>
         /// Gets a value indicating whether the style is subscribed.
         /// </summary>
         bool IsSubscribed { get; }
+
+        /// <summary>
+        /// Gets the current activation state.
+        /// </summary>
+        /// <remarks>
+        /// This method should read directly from its inputs and not rely on any subscriptions 
+        /// to fire in order to be up-to-date. If a change in active state occurs when reading
+        /// this method then any subscribed <see cref="IStyleActivatorSink"/> should not be
+        /// notified of the change.
+        /// </remarks>
+        bool GetIsActive();
 
         /// <summary>
         /// Subscribes to the activator.

@@ -8,7 +8,7 @@
         private readonly IStyleActivator _source;
         public NotActivator(IStyleActivator source) => _source = source;
         void IStyleActivatorSink.OnNext(bool value, int tag) => ReevaluateIsActive();
-        protected override bool EvaluateIsActive() => !_source.IsActive;
+        protected override bool EvaluateIsActive() => !_source.GetIsActive();
         protected override void Initialize() => _source.Subscribe(this, 0);
         protected override void Deinitialize() => _source.Unsubscribe(this);
     }

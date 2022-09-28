@@ -295,7 +295,7 @@ namespace Avalonia.Base.UnitTests.Styling
             public ActivatorSink(IStyleActivator source)
             {
                 source.Subscribe(this);
-                Active = source.IsActive;
+                Active = source.GetIsActive();
             }
 
 
