@@ -544,6 +544,32 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            foreach (var child in VisualChildren)
+            {
+                if (child is Control control)
+                {
+                    control.Measure(Size.Infinity);
+                }
+            }
+            
+            return base.MeasureOverride(availableSize);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            foreach (var child in VisualChildren)
+            {
+                if (child is Control control)
+                {
+                    control.Arrange(new Rect(control.DesiredSize));
+                }
+            }
+            
+            return base.ArrangeOverride(finalSize);
+        }
+
         private string GetSelection()
         {
             if (!IsTextSelectionEnabled)

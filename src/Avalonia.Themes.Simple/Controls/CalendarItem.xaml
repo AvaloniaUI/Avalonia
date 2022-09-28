@@ -65,7 +65,7 @@
                            Fill="{TemplateBinding HeaderBackground}"
                            Stretch="Fill" />
 
-                <Button Name="PreviousButton"
+                <Button Name="PART_PreviousButton"
                         HorizontalAlignment="Left"
                         Classes="CalendarHeader CalendarNavigation"
                         IsVisible="False">
@@ -80,7 +80,7 @@
 
                 </Button>
 
-                <Button Name="HeaderButton"
+                <Button Name="PART_HeaderButton"
                         Grid.Column="1"
                         Padding="1,5,1,9"
                         HorizontalAlignment="Center"
@@ -89,7 +89,7 @@
                         FontSize="10.5"
                         FontWeight="Bold" />
 
-                <Button Name="NextButton"
+                <Button Name="PART_NextButton"
                         Grid.Column="2"
                         HorizontalAlignment="Right"
                         Classes="CalendarHeader CalendarNavigation"
@@ -105,7 +105,7 @@
 
                 </Button>
 
-                <Grid Name="MonthView"
+                <Grid Name="PART_MonthView"
                       Grid.Row="1"
                       Grid.ColumnSpan="3"
                       Margin="6,-1,6,6"
@@ -130,7 +130,7 @@
                   </Grid.ColumnDefinitions>
                 </Grid>
 
-                <Grid Name="YearView"
+                <Grid Name="PART_YearView"
                       Grid.Row="1"
                       Grid.ColumnSpan="3"
                       Margin="6,-3,7,6"

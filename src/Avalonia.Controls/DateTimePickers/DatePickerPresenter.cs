@@ -13,23 +13,23 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a date for a 
     /// <see cref="DatePicker"/>
     /// </summary>
-    [TemplatePart("AcceptButton",    typeof(Button))]
-    [TemplatePart("DayDownButton",   typeof(RepeatButton))]
-    [TemplatePart("DayHost",         typeof(Panel))]
-    [TemplatePart("DaySelector",     typeof(DateTimePickerPanel))]
-    [TemplatePart("DayUpButton",     typeof(RepeatButton))]
-    [TemplatePart("DismissButton",   typeof(Button))]
-    [TemplatePart("FirstSpacer",     typeof(Rectangle))]
-    [TemplatePart("MonthDownButton", typeof(RepeatButton))]
-    [TemplatePart("MonthHost",       typeof(Panel))]
-    [TemplatePart("MonthSelector",   typeof(DateTimePickerPanel))]
-    [TemplatePart("MonthUpButton",   typeof(RepeatButton))]
-    [TemplatePart("PickerContainer", typeof(Grid))]
-    [TemplatePart("SecondSpacer",    typeof(Rectangle))]
-    [TemplatePart("YearDownButton",  typeof(RepeatButton))]
-    [TemplatePart("YearHost",        typeof(Panel))]
-    [TemplatePart("YearSelector",    typeof(DateTimePickerPanel))]
-    [TemplatePart("YearUpButton",    typeof(RepeatButton))]
+    [TemplatePart("PART_AcceptButton",    typeof(Button))]
+    [TemplatePart("PART_DayDownButton",   typeof(RepeatButton))]
+    [TemplatePart("PART_DayHost",         typeof(Panel))]
+    [TemplatePart("PART_DaySelector",     typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_DayUpButton",     typeof(RepeatButton))]
+    [TemplatePart("PART_DismissButton",   typeof(Button))]
+    [TemplatePart("PART_FirstSpacer",     typeof(Rectangle))]
+    [TemplatePart("PART_MonthDownButton", typeof(RepeatButton))]
+    [TemplatePart("PART_MonthHost",       typeof(Panel))]
+    [TemplatePart("PART_MonthSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_MonthUpButton",   typeof(RepeatButton))]
+    [TemplatePart("PART_PickerContainer", typeof(Grid))]
+    [TemplatePart("PART_SecondSpacer",    typeof(Rectangle))]
+    [TemplatePart("PART_YearDownButton",  typeof(RepeatButton))]
+    [TemplatePart("PART_YearHost",        typeof(Panel))]
+    [TemplatePart("PART_YearSelector",    typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_YearUpButton",    typeof(RepeatButton))]
     public class DatePickerPresenter : PickerPresenterBase
     {
         /// <summary>
@@ -253,58 +253,58 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             // These are requirements, so throw if not found
-            _pickerContainer = e.NameScope.Get<Grid>("PickerContainer");
-            _monthHost = e.NameScope.Get<Panel>("MonthHost");
-            _dayHost = e.NameScope.Get<Panel>("DayHost");
-            _yearHost = e.NameScope.Get<Panel>("YearHost");
+            _pickerContainer = e.NameScope.Get<Grid>("PART_PickerContainer");
+            _monthHost = e.NameScope.Get<Panel>("PART_MonthHost");
+            _dayHost = e.NameScope.Get<Panel>("PART_DayHost");
+            _yearHost = e.NameScope.Get<Panel>("PART_YearHost");
 
-            _monthSelector = e.NameScope.Get<DateTimePickerPanel>("MonthSelector");
+            _monthSelector = e.NameScope.Get<DateTimePickerPanel>("PART_MonthSelector");
             _monthSelector.SelectionChanged += OnMonthChanged;
 
-            _daySelector = e.NameScope.Get<DateTimePickerPanel>("DaySelector");
+            _daySelector = e.NameScope.Get<DateTimePickerPanel>("PART_DaySelector");
             _daySelector.SelectionChanged += OnDayChanged;
 
-            _yearSelector = e.NameScope.Get<DateTimePickerPanel>("YearSelector");
+            _yearSelector = e.NameScope.Get<DateTimePickerPanel>("PART_YearSelector");
             _yearSelector.SelectionChanged += OnYearChanged;
 
-            _acceptButton = e.NameScope.Get<Button>("AcceptButton");
+            _acceptButton = e.NameScope.Get<Button>("PART_AcceptButton");
 
-            _monthUpButton = e.NameScope.Find<RepeatButton>("MonthUpButton");
+            _monthUpButton = e.NameScope.Find<RepeatButton>("PART_MonthUpButton");
             if (_monthUpButton != null)
             {
                 _monthUpButton.Click += OnSelectorButtonClick;
             }
-            _monthDownButton = e.NameScope.Find<RepeatButton>("MonthDownButton");
+            _monthDownButton = e.NameScope.Find<RepeatButton>("PART_MonthDownButton");
             if (_monthDownButton != null)
             {
                 _monthDownButton.Click += OnSelectorButtonClick;
             }
 
-            _dayUpButton = e.NameScope.Find<RepeatButton>("DayUpButton");
+            _dayUpButton = e.NameScope.Find<RepeatButton>("PART_DayUpButton");
             if (_dayUpButton != null)
             {
                 _dayUpButton.Click += OnSelectorButtonClick;
             }
-            _dayDownButton = e.NameScope.Find<RepeatButton>("DayDownButton");
+            _dayDownButton = e.NameScope.Find<RepeatButton>("PART_DayDownButton");
             if (_dayDownButton != null)
             {
                 _dayDownButton.Click += OnSelectorButtonClick;
             }
 
-            _yearUpButton = e.NameScope.Find<RepeatButton>("YearUpButton");
+            _yearUpButton = e.NameScope.Find<RepeatButton>("PART_YearUpButton");
             if (_yearUpButton != null)
             {
                 _yearUpButton.Click += OnSelectorButtonClick;
             }
-            _yearDownButton = e.NameScope.Find<RepeatButton>("YearDownButton");
+            _yearDownButton = e.NameScope.Find<RepeatButton>("PART_YearDownButton");
             if (_yearDownButton != null)
             {
                 _yearDownButton.Click += OnSelectorButtonClick;
             }
 
-            _dismissButton = e.NameScope.Find<Button>("DismissButton");
-            _spacer1 = e.NameScope.Find<Rectangle>("FirstSpacer");
-            _spacer2 = e.NameScope.Find<Rectangle>("SecondSpacer");
+            _dismissButton = e.NameScope.Find<Button>("PART_DismissButton");
+            _spacer1 = e.NameScope.Find<Rectangle>("PART_FirstSpacer");
+            _spacer2 = e.NameScope.Find<Rectangle>("PART_SecondSpacer");
 
             if (_acceptButton != null)
             {

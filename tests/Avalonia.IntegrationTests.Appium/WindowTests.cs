@@ -230,7 +230,7 @@ namespace Avalonia.IntegrationTests.Appium
                         PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text),
                         double.Parse(_session.FindElementByAccessibilityId("Scaling").Text));
                 }
-                catch (OpenQA.Selenium.NoSuchElementException e) when (retry++ < 3)
+                catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 3)
                 {
                     // MacOS sometimes seems to need a bit of time to get itself back in order after switching out
                     // of fullscreen.

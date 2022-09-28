@@ -1,7 +1,11 @@
-﻿<div id="container" class="avalonia-container" tabindex="0" oncontextmenu="return false;"
+﻿<div id="container" @ref="_containerElement"  
+     class="avalonia-container" 
+     tabindex="0" oncontextmenu="return false;"
      @onwheel="OnWheel"
      @onkeydown="OnKeyDown"
      @onkeyup="OnKeyUp"
+     @onkeyup:preventDefault="@KeyPreventDefault"
+     @onkeydown:preventDefault="@KeyPreventDefault"
      @onpointerdown="OnPointerDown"
      @onpointerup="OnPointerUp"
      @onpointermove="OnPointerMove"
@@ -12,10 +16,11 @@
 
 	<div id="nativeControlsContainer" @ref="_nativeControlsContainer" />
 
-    <input id="inputElement" @ref="_inputElement" type="text" @oninput="OnInput" 
-        onpaste="return false;"
+    <input id="inputElement" @ref="_inputElement" type="text" 
+           spellcheck="false" onpaste="return false;"
         oncopy="return false;" 
-        oncut="return false;"/>
+        oncut="return false;"
+        autocapitalize="none"/>
 </div>
 
 <style>
@@ -43,13 +48,20 @@
 }
 
 #inputElement {
-    opacity: 0.0;
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    top: 0px;
-    left: 0px;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    height: 20px;
     z-index: 1000;
+    overflow: hidden;
+    caret-color: transparent;
+    border-top-style: hidden;
+    border-bottom-style: hidden;
+    border-right-style: hidden;
+    border-left-style: hidden;
+    outline: none;
+    background: transparent;
+    color: transparent;
 }
 
 </style>

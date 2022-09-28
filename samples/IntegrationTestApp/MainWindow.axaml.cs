@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using Microsoft.CodeAnalysis;
 
 namespace IntegrationTestApp
 {
@@ -63,6 +65,17 @@ namespace IntegrationTestApp
                 WindowStartupLocation = (WindowStartupLocation)locationComboBox.SelectedIndex,
             };
 
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            {
+                // Make sure the windows have unique names and AutomationIds.
+                var existing = lifetime.Windows.OfType<ShowWindowTest>().Count();
+                if (existing > 0)
+                {
+                    AutomationProperties.SetAutomationId(window, window.Name + (existing + 1));
+                    window.Title += $" {existing + 1}";
+                }
+            }
+            
             if (size.HasValue)
             {
                 window.Width = size.Value.Width;

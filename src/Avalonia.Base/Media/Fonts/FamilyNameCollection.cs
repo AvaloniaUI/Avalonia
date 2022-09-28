@@ -77,7 +77,7 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override string ToString()
         {
-            var builder = new StringBuilder();
+            var builder = StringBuilderCache.Acquire();
 
             for (var index = 0; index < Names.Count; index++)
             {
@@ -91,7 +91,7 @@ namespace Avalonia.Media.Fonts
                 builder.Append(", ");
             }
 
-            return builder.ToString();
+            return StringBuilderCache.GetStringAndRelease(builder);
         }
 
         /// <summary>
