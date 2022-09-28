@@ -35,12 +35,10 @@ namespace Avalonia.Web
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
+            NativeControlHost = _avaloniaView.GetNativeControlHostImpl();
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
-
-
-        
 
         public void SetClientSize(Size newSize, double dpi)
         {
@@ -222,7 +220,7 @@ namespace Avalonia.Web
 
         public ITextInputMethodImpl TextInputMethod => _avaloniaView;
 
-        public INativeControlHostImpl? NativeControlHost => _avaloniaView.GetNativeControlHostImpl();
+        public INativeControlHostImpl? NativeControlHost { get; }
         public IStorageProvider StorageProvider { get; } = new BrowserStorageProvider();
     }
 }

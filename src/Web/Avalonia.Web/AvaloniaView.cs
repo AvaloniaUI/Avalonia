@@ -333,8 +333,7 @@ namespace Avalonia.Web
 
         internal INativeControlHostImpl GetNativeControlHostImpl()
         {
-            throw new NotImplementedException();
-            //return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
+            return new BrowserNativeControlHost(_nativeControlsContainer);
         }
 
         private void ForceBlit()
