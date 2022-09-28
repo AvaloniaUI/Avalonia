@@ -18,7 +18,7 @@ namespace Avalonia.Styling.Activators
             _sources.Add(activator);
         }
 
-        void IStyleActivatorSink.OnNext(bool value, int tag) => ReevaluateIsActive();
+        void IStyleActivatorSink.OnNext(bool value) => ReevaluateIsActive();
 
         protected override bool EvaluateIsActive()
         {
@@ -38,11 +38,9 @@ namespace Avalonia.Styling.Activators
         {
             if (_sources is object)
             {
-                var i = 0;
-
                 foreach (var source in _sources)
                 {
-                    source.Subscribe(this, i++);
+                    source.Subscribe(this);
                 }
             }
         }

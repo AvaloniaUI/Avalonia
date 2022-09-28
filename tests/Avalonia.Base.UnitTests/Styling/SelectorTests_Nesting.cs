@@ -300,7 +300,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
 
             public bool Active { get; private set; }
-            public void OnNext(bool value, int tag) => Active = value;
+            public void OnNext(bool value) => Active = value;
         }
     }
 }

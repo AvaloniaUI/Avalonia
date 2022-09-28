@@ -42,7 +42,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 observer.OnNext(_source.GetIsActive());
             }
 
-            void IStyleActivatorSink.OnNext(bool value, int tag)
+            void IStyleActivatorSink.OnNext(bool value)
             {
                 PublishNext(value);
             }

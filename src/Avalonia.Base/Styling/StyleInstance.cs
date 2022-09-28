@@ -79,7 +79,7 @@ namespace Avalonia.Styling
 
         public new void MakeShared() => base.MakeShared();
 
-        void IStyleActivatorSink.OnNext(bool value, int tag)
+        void IStyleActivatorSink.OnNext(bool value)
         {
             Owner?.OnFrameActivationChanged(this);
             _animationTrigger?.OnNext(value);

@@ -6,20 +6,18 @@ namespace Avalonia.Styling.Activators
     internal abstract class StyleActivatorBase : IStyleActivator
     {
         private IStyleActivatorSink? _sink;
-        private int _tag;
         private bool _value;
 
         public bool GetIsActive() => _value = EvaluateIsActive();
 
         public bool IsSubscribed => _sink is not null;
 
-        public void Subscribe(IStyleActivatorSink sink, int tag = 0)
+        public void Subscribe(IStyleActivatorSink sink)
         {
             if (_sink is null)
             {
                 Initialize();
                 _sink = sink;
-                _tag = tag;
             }
             else
             {
@@ -70,14 +68,14 @@ namespace Avalonia.Styling.Activators
             if (value != _value)
             {
                 _value = value;
-                _sink?.OnNext(value, _tag);
+                _sink?.OnNext(value);
             }
 
             return value;
         }
 
         /// <summary>
-        /// Called in response to a <see cref="Subscribe(IStyleActivatorSink, int)"/> to allow the
+        /// Called in response to a <see cref="Subscribe(IStyleActivatorSink)"/> to allow the
         /// derived class to set up any necessary subscriptions.
         /// </summary>
         protected abstract void Initialize();
