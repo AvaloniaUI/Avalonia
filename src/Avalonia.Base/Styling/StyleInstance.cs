@@ -22,6 +22,7 @@ namespace Avalonia.Styling
     internal class StyleInstance : ValueFrame, IStyleInstance, IStyleActivatorSink, IDisposable
     {
         private readonly IStyleActivator? _activator;
+        private bool _isActive;
         private List<ISetterInstance>? _setters;
         private List<IAnimation>? _animations;
         private Subject<bool>? _animationTrigger;
@@ -35,22 +36,10 @@ namespace Avalonia.Styling
 
         public bool HasActivator => _activator is object;
 
-        public override bool IsActive
-        {
-            get
-            {
-                if (_activator?.IsSubscribed == false)
-                {
-                    _activator.Subscribe(this);
-                    _animationTrigger?.OnNext(_activator.IsActive);
-                }
-                
-                return _activator?.IsActive ?? true;
-            }
-        }
-
         public IStyle Source { get; }
 
+        bool IStyleInstance.IsActive => _isActive;
+        
         public void Add(ISetterInstance instance)
         {
             if (instance is IValueEntry valueEntry)
@@ -94,6 +83,21 @@ namespace Avalonia.Styling
         {
             Owner?.OnFrameActivationChanged(this);
             _animationTrigger?.OnNext(value);
+        }
+
+        protected override bool GetIsActive(out bool hasChanged)
+        {
+            var previous = _isActive;
+
+            if (_activator?.IsSubscribed == false)
+            {
+                _activator.Subscribe(this);
+                _animationTrigger?.OnNext(_activator.IsActive);
+            }
+
+            _isActive = _activator?.IsActive ?? true;
+            hasChanged = _isActive != previous;
+            return _isActive;
         }
     }
 }

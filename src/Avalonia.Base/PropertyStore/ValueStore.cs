@@ -788,19 +788,29 @@ namespace Avalonia.PropertyStore
                     var frame = _frames[i];
                     var priority = frame.Priority;
 
-                    if (frame.TryGetEntry(property, out var entry) &&
-                        frame.IsActive &&
-                        entry.HasValue)
+                    if (frame.TryGetEntryIfActive(property, out var entry, out var activeChanged))
                     {
-                        if (current is not null)
+                        // If The active state of the frame has changed since the last read, and
+                        // the frame holds multiple values then we need to re-evaluate the
+                        // effective values of all properties.
+                        if (activeChanged && frame.EntryCount > 1)
                         {
-                            current.SetAndRaise(this, entry, priority);
+                            ReevaluateEffectiveValues();
+                            return;
                         }
-                        else
+
+                        if (entry.HasValue)
                         {
-                            current = property.CreateEffectiveValue(Owner);
-                            AddEffectiveValue(property, current);
-                            current.SetAndRaise(this, entry, priority);
+                            if (current is not null)
+                            {
+                                current.SetAndRaise(this, entry, priority);
+                            }
+                            else
+                            {
+                                current = property.CreateEffectiveValue(Owner);
+                                AddEffectiveValue(property, current);
+                                current.SetAndRaise(this, entry, priority);
+                            }
                         }
                     }
 
@@ -879,10 +889,13 @@ namespace Avalonia.PropertyStore
                         var property = entry.Property;
                         EffectiveValue? effectiveValue;
 
-                        // Skip if we already have a value/base value for this property.
+                        // Unsubscribe and skip if we already have a value/base value for this property.
                         if (_effectiveValues.TryGetValue(property, out effectiveValue) == true &&
                             effectiveValue.BasePriority < BindingPriority.Unset)
+                        {
+                            entry.Unsubscribe();
                             continue;
+                        }
 
                         if (!entry.HasValue)
                             continue;
@@ -950,8 +963,7 @@ namespace Avalonia.PropertyStore
                 }
 
                 if ((foundBaseValue || frame.Priority <= BindingPriority.Animation) &&
-                    frame.TryGetEntry(property, out var entry) &&
-                    frame.IsActive)
+                    frame.TryGetEntryIfActive(property, out var entry, out _))
                 {
                     entry.Unsubscribe();
                 }

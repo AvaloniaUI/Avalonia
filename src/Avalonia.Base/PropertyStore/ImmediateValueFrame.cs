@@ -14,8 +14,6 @@ namespace Avalonia.PropertyStore
             Priority = priority;
         }
 
-        public override bool IsActive => true;
-
         public TypedBindingEntry<T> AddBinding<T>(
             StyledPropertyBase<T> property,
             IObservable<BindingValue<T>> source)
@@ -54,6 +52,12 @@ namespace Avalonia.PropertyStore
         {
             Remove(value.Property);
             Owner?.OnValueEntryRemoved(this, value.Property);
+        }
+
+        protected override bool GetIsActive(out bool hasChanged)
+        {
+            hasChanged = false;
+            return true;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Avalonia.PropertyStore
         private bool _isShared;
 
         public int EntryCount => _entries.Count;
-        public abstract bool IsActive { get; }
+        public bool IsActive => GetIsActive(out _);
         public ValueStore? Owner => !_isShared ? _owner : 
             throw new AvaloniaInternalException("Cannot get owner for shared ValueFrame");
         public BindingPriority Priority { get; protected set; }
@@ -32,9 +32,16 @@ namespace Avalonia.PropertyStore
                 _owner = owner;
         }
 
-        public bool TryGetEntry(AvaloniaProperty property, [NotNullWhen(true)] out IValueEntry? entry)
+        public bool TryGetEntryIfActive(
+            AvaloniaProperty property,
+            [NotNullWhen(true)] out IValueEntry? entry,
+            out bool activeChanged)
         {
-            return _index.TryGetValue(property, out entry);
+            if (_index.TryGetValue(property, out entry) && 
+                GetIsActive(out activeChanged))
+                return true;
+            activeChanged = false;
+            return false;
         }
 
         public void OnBindingCompleted(IValueEntry binding)
@@ -48,6 +55,8 @@ namespace Avalonia.PropertyStore
             for (var i = 0; i < _entries.Count; ++i)
                 _entries[i].Unsubscribe();
         }
+
+        protected abstract bool GetIsActive(out bool hasChanged);
 
         protected void MakeShared()
         {
