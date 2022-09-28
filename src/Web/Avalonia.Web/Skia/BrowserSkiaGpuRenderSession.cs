@@ -1,7 +1,7 @@
 using Avalonia.Skia;
 using SkiaSharp;
 
-namespace Avalonia.Web
+namespace Avalonia.Web.Skia
 {
     internal class BrowserSkiaGpuRenderSession : ISkiaGpuRenderSession
     {

@@ -6,9 +6,11 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 using Avalonia.Web.Interop;
+using Avalonia.Web.Skia;
+
 using SkiaSharp;
 
 namespace Avalonia.Web
@@ -23,6 +25,7 @@ namespace Avalonia.Web
         private readonly JSObject _canvas;
         private readonly JSObject _nativeControlsContainer;
         private readonly JSObject _inputElement;
+        private readonly JSObject? _splash;
 
         private GLInfo? _jsGlInfo = null;
         private double _dpi = 1;
@@ -59,11 +62,23 @@ namespace Avalonia.Web
             _inputElement = hostContent.GetPropertyAsJSObject("inputElement")
                 ?? throw new InvalidOperationException("InputElement cannot be null");
 
+            _splash = DomHelper.GetElementById("avalonia-splash");
+
             _canvas.SetProperty("id", $"avaloniaCanvas{_canvasCount++}");
 
             _topLevelImpl = new BrowserTopLevelImpl(this);
 
-            _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+            _topLevel = new WebEmbeddableControlRoot(_topLevelImpl, () =>
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    if (_splash != null)
+                    {
+                        DomHelper.AddCssClass(_splash, "splash-close");
+                    }
+                });
+            });
+
             _topLevelImpl.SetCssCursor = (cursor) =>
             {
                 InputHelper.SetCursor(_containerElement, cursor); // macOS
@@ -318,14 +333,7 @@ namespace Avalonia.Web
 
         internal INativeControlHostImpl GetNativeControlHostImpl()
         {
-            throw new NotImplementedException();
-            //return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
-        }
-
-        internal IStorageProvider GetStorageProvider()
-        {
-            throw new NotImplementedException();
-            //return _storageProvider ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
+            return new BrowserNativeControlHost(_nativeControlsContainer);
         }
 
         private void ForceBlit()

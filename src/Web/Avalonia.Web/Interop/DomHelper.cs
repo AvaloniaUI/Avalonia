@@ -6,10 +6,13 @@ namespace Avalonia.Web.Interop;
 internal static partial class DomHelper
 {
     [JSImport("globalThis.document.getElementById")]
-    internal static partial JSObject GetElementById(string id);
+    internal static partial JSObject? GetElementById(string id);
 
     [JSImport("AvaloniaDOM.createAvaloniaHost", "avalonia.ts")]
     public static partial JSObject CreateAvaloniaHost(JSObject element);
+
+    [JSImport("AvaloniaDOM.addClass", "avalonia.ts")]
+    public static partial void AddCssClass(JSObject element, string className);
 
     [JSImport("SizeWatcher.observe", "avalonia.ts")]
     public static partial JSObject ObserveSize(

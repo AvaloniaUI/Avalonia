@@ -1,7 +1,7 @@
 using Avalonia.Web.Interop;
 using SkiaSharp;
 
-namespace Avalonia.Web
+namespace Avalonia.Web.Skia
 {
     internal class BrowserSkiaSurface : IBrowserSkiaSurface
     {
@@ -14,7 +14,7 @@ namespace Avalonia.Web
             Scaling = scaling;
             Origin = origin;
         }
-        
+
         public SKColorType ColorType { get; set; }
 
         public PixelSize Size { get; set; }

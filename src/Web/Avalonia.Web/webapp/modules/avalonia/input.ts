@@ -1,7 +1,6 @@
-import { CaretHelper } from "./CaretHelper"
+import { CaretHelper } from "./caretHelper";
 
-enum RawInputModifiers
-{
+enum RawInputModifiers {
     None = 0,
     Alt = 1,
     Control = 2,
@@ -24,12 +23,7 @@ export class InputHelper {
     public static subscribeKeyEvents(
         element: HTMLInputElement,
         keyDownCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean,
-        keyUpCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean,
-        inputCallback: (type: string, data: string|null) => boolean,
-        compositionStartCallback: (args: CompositionEvent) => boolean,
-        compositionUpdateCallback: (args: CompositionEvent) => boolean,
-        compositionEndCallback: (args: CompositionEvent) => boolean)
-    {
+        keyUpCallback: (code: string, key: string, modifiers: RawInputModifiers) => boolean) {
         const keyDownHandler = (args: KeyboardEvent) => {
             if (keyDownCallback(args.code, args.key, this.getModifiers(args))) {
                 args.preventDefault();
@@ -52,14 +46,13 @@ export class InputHelper {
     }
 
     public static subscribeTextEvents(
-        element: HTMLInputElement,        
+        element: HTMLInputElement,
         inputCallback: (type: string, data: string | null) => boolean,
         compositionStartCallback: (args: CompositionEvent) => boolean,
         compositionUpdateCallback: (args: CompositionEvent) => boolean,
         compositionEndCallback: (args: CompositionEvent) => boolean) {
-        
         const inputHandler = (args: Event) => {
-            var inputEvent = args as InputEvent;
+            const inputEvent = args as InputEvent;
 
             // todo check cast
             if (inputCallback(inputEvent.type, inputEvent.data)) {
@@ -102,31 +95,27 @@ export class InputHelper {
         pointerMoveCallback: (args: PointerEvent) => boolean,
         pointerDownCallback: (args: PointerEvent) => boolean,
         pointerUpCallback: (args: PointerEvent) => boolean,
-        wheelCallback: (args: WheelEvent) => boolean,
+        wheelCallback: (args: WheelEvent) => boolean
     ) {
         const pointerMoveHandler = (args: PointerEvent) => {
-            
             if (pointerMoveCallback(args)) {
                 args.preventDefault();
             }
         };
 
         const pointerDownHandler = (args: PointerEvent) => {
-
             if (pointerDownCallback(args)) {
                 args.preventDefault();
             }
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
-
             if (pointerUpCallback(args)) {
                 args.preventDefault();
             }
         };
 
         const wheelHandler = (args: WheelEvent) => {
-
             if (wheelCallback(args)) {
                 args.preventDefault();
             }
@@ -137,8 +126,6 @@ export class InputHelper {
         element.addEventListener("pointerup", pointerUpHandler);
         element.addEventListener("wheel", wheelHandler);
 
-       
-
         return () => {
             element.removeEventListener("pointerover", pointerMoveHandler);
             element.removeEventListener("pointerdown", pointerDownHandler);
@@ -146,7 +133,7 @@ export class InputHelper {
             element.removeEventListener("wheel", wheelHandler);
         };
     }
-    
+
     public static subscribeInputEvents(
         element: HTMLInputElement,
         inputCallback: (value: string) => boolean
@@ -179,18 +166,18 @@ export class InputHelper {
         inputElement.style.left = (x).toFixed(0) + "px";
         inputElement.style.top = (y).toFixed(0) + "px";
 
-        let { height, left, top } = CaretHelper.getCaretCoordinates(inputElement, caret);
+        const { left, top } = CaretHelper.getCaretCoordinates(inputElement, caret);
 
         inputElement.style.left = (x - left).toFixed(0) + "px";
         inputElement.style.top = (y - top).toFixed(0) + "px";
     }
 
     public static hide(inputElement: HTMLInputElement) {
-        inputElement.style.display = 'none';
+        inputElement.style.display = "none";
     }
 
     public static show(inputElement: HTMLInputElement) {
-        inputElement.style.display = 'block';
+        inputElement.style.display = "block";
     }
 
     public static setSurroundingText(inputElement: HTMLInputElement, text: string, start: number, end: number) {
@@ -201,20 +188,16 @@ export class InputHelper {
         inputElement.value = text;
         inputElement.setSelectionRange(start, end);
         inputElement.style.width = "20px";
-        inputElement.style.width = inputElement.scrollWidth + "px";
+        inputElement.style.width = `${inputElement.scrollWidth}px`;
     }
 
     private static getModifiers(args: KeyboardEvent): RawInputModifiers {
-        var modifiers = RawInputModifiers.None;
+        let modifiers = RawInputModifiers.None;
 
-        if (args.ctrlKey)
-            modifiers |= RawInputModifiers.Control;
-        if (args.altKey)
-            modifiers |= RawInputModifiers.Alt;
-        if (args.shiftKey)
-            modifiers |= RawInputModifiers.Shift;
-        if (args.metaKey)
-            modifiers |= RawInputModifiers.Meta;
+        if (args.ctrlKey) { modifiers |= RawInputModifiers.Control; }
+        if (args.altKey) { modifiers |= RawInputModifiers.Alt; }
+        if (args.shiftKey) { modifiers |= RawInputModifiers.Shift; }
+        if (args.metaKey) { modifiers |= RawInputModifiers.Meta; }
 
         return modifiers;
     }

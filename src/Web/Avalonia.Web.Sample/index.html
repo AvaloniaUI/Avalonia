@@ -10,10 +10,21 @@
     <link rel="modulepreload" href="./main.js" />
     <link rel="modulepreload" href="./dotnet.js" />
     <link rel="modulepreload" href="./avalonia.js" />
+    <link rel="stylesheet" href="./app.css" />
 </head>
 
 <body style="margin: 0px">
-    <div id="out" style="height: 100vh; width: 100vw"></div>
+    <div id="out">
+        <div id="avalonia-splash">
+            <div class="center">
+                <h2>Powered by</h2>
+                <a class="navbar-brand" href="https://www.avaloniaui.net/" target="_blank">
+                    <img src="Logo.svg" alt="Avalonia Logo" width="30" height="24" />
+                    Avalonia
+                </a>
+            </div>
+        </div>
+    </div>
     <script type='module' src="./main.js"></script>
 </body>
 

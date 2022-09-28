@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Avalonia.Web.Interop;
 
@@ -39,7 +37,7 @@ internal static partial class InputHelper
         Func<JSObject, bool> pointerUp,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
         Func<JSObject, bool> wheel);
-        
+
 
     [JSImport("InputHelper.subscribeInputEvents", "avalonia.ts")]
     public static partial void SubscribeInputEvents(
@@ -72,9 +70,9 @@ internal static partial class InputHelper
     [JSImport("InputHelper.setBounds", "avalonia.ts")]
     public static partial void SetBounds(JSObject htmlElement, int x, int y, int width, int height, int caret);
 
-    [JSImport("navigator.clipboard.readText")]
+    [JSImport("globalThis.navigator.clipboard.readText")]
     public static partial Task<string> ReadClipboardTextAsync();
 
-    [JSImport("navigator.clipboard.writeText")]
+    [JSImport("globalThis.navigator.clipboard.writeText")]
     public static partial Task WriteClipboardTextAsync(string text);
 }

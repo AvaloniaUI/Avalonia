@@ -1,4 +1,8 @@
 export class AvaloniaDOM {
+    public static addClass(element: HTMLElement, className: string): void {
+        element.classList.add(className);
+    }
+
     static createAvaloniaHost(host: HTMLElement) {
         // Root element
         host.classList.add("avalonia-container");
@@ -7,26 +11,24 @@ export class AvaloniaDOM {
 
         // Rendering target canvas
         const canvas = document.createElement("canvas");
-        canvas.classList.add('avalonia-canvas');
+        canvas.classList.add("avalonia-canvas");
         canvas.style.backgroundColor = "#ccc";
         canvas.style.width = "100%";
         canvas.style.height = "100%";
         canvas.style.position = "absolute";
-        host.appendChild(canvas);
-        
+
         // Native controls host
         const nativeHost = document.createElement("div");
-        nativeHost.classList.add('avalonia-native-host');
+        nativeHost.classList.add("avalonia-native-host");
         nativeHost.style.left = "0px";
         nativeHost.style.top = "0px";
         nativeHost.style.width = "100%";
         nativeHost.style.height = "100%";
         nativeHost.style.position = "absolute";
-        host.appendChild(nativeHost);
 
         // IME
         const inputElement = document.createElement("input");
-        inputElement.classList.add('avalonia-input-element');
+        inputElement.classList.add("avalonia-input-element");
         inputElement.autocapitalize = "none";
         inputElement.type = "text";
         inputElement.spellcheck = false;
@@ -43,7 +45,10 @@ export class AvaloniaDOM {
         inputElement.onpaste = function () { return false; };
         inputElement.oncopy = function () { return false; };
         inputElement.oncut = function () { return false; };
-        host.appendChild(inputElement);
+
+        host.prepend(inputElement);
+        host.prepend(nativeHost);
+        host.prepend(canvas);
 
         return {
             host,

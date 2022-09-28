@@ -3,6 +3,7 @@ using System;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
+using Avalonia.Web.Skia;
 
 namespace Avalonia.Web
 {

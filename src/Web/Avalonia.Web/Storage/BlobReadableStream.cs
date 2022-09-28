@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Web.Storage;
 
-[System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
+[System.Runtime.Versioning.SupportedOSPlatform("browser")]
 internal class BlobReadableStream : Stream
 {
     private JSObject? _jSReference;
@@ -20,7 +20,7 @@ internal class BlobReadableStream : Stream
         _length = StreamHelper.ByteLength(JSReference);
     }
 
-    private JSObject JSReference => _jSReference ?? throw new ObjectDisposedException(nameof(JSWriteableStream));
+    private JSObject JSReference => _jSReference ?? throw new ObjectDisposedException(nameof(WriteableStream));
 
     public override bool CanRead => true;
 
@@ -55,21 +55,8 @@ internal class BlobReadableStream : Stream
         => throw new NotSupportedException();
 
     public override int Read(byte[] buffer, int offset, int count)
-        => Read(buffer.AsSpan(offset, count));
-
-    public override int Read(Span<byte> buffer)
     {
-        var numBytesToRead = (int)Math.Min(buffer.Length, Length - _position);
-        var bytesRead = StreamHelper.Slice(JSReference, _position, numBytesToRead);
-        if (bytesRead.Length != numBytesToRead)
-        {
-            throw new EndOfStreamException("Failed to read the requested number of bytes from the stream.");
-        }
-
-        _position += bytesRead.Length;
-        bytesRead.CopyTo(buffer);
-
-        return bytesRead.Length;
+        throw new InvalidOperationException("Browser supports only ReadAsync");
     }
 
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -79,15 +66,15 @@ internal class BlobReadableStream : Stream
     {
         var numBytesToRead = (int)Math.Min(buffer.Length, Length - _position);
         var bytesRead = await StreamHelper.SliceAsync(JSReference, _position, numBytesToRead);
-        if (bytesRead.Count != numBytesToRead)
+        if (bytesRead.Length != numBytesToRead)
         {
             throw new EndOfStreamException("Failed to read the requested number of bytes from the stream.");
         }
 
-        _position += bytesRead.Count;
-        bytesRead.AsMemory().CopyTo(buffer);
+        _position += bytesRead.Length;
+        bytesRead.CopyTo(buffer);
 
-        return bytesRead.Count;
+        return bytesRead.Length;
     }
 
     protected override void Dispose(bool disposing)

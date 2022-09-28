@@ -1,5 +1,2 @@
-﻿export class StorageProvider {
-    static isFileApiSupported(): boolean {
-        return (globalThis as any).showOpenFilePicker !== undefined;
-    }
-}
+export { StorageItem, StorageItems } from "./storage/storageItem";
+export { StorageProvider } from "./storage/storageProvider";

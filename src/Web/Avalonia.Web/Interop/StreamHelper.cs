@@ -13,43 +13,28 @@ internal static partial class StreamHelper
     public static partial void Seek(JSObject stream, [JSMarshalAs<JSType.Number>] long position);
 
     [JSImport("StreamHelper.truncate", "avalonia.ts")]
-    public static partial void Truncate(JSObject stream, [JSMarshalAs<JSType.Number>] long position);
-
-    [JSImport("StreamHelper.write", "avalonia.ts")]
-    public static partial void Write(JSObject stream, [JSMarshalAs<JSType.MemoryView>] Span<byte> data);
+    public static partial void Truncate(JSObject stream, [JSMarshalAs<JSType.Number>] long size);
 
     [JSImport("StreamHelper.write", "avalonia.ts")]
     public static partial Task WriteAsync(JSObject stream, [JSMarshalAs<JSType.MemoryView>] ArraySegment<byte> data);
 
     [JSImport("StreamHelper.close", "avalonia.ts")]
-    public static partial void Close(JSObject stream);
-
-    [JSImport("StreamHelper.close", "avalonia.ts")]
     public static partial Task CloseAsync(JSObject stream);
-
-    [JSImport("StreamHelper.size", "avalonia.ts")]
-    [return: JSMarshalAs<JSType.Number>]
-    public static partial long Size(JSObject stream);
 
     [JSImport("StreamHelper.byteLength", "avalonia.ts")]
     [return: JSMarshalAs<JSType.Number>]
     public static partial long ByteLength(JSObject stream);
 
-    [JSImport("StreamHelper.sliceToArray", "avalonia.ts")]
-    [return: JSMarshalAs<JSType.MemoryView>]
-    public static partial Span<byte> Slice(JSObject stream, [JSMarshalAs<JSType.Number>] long offset, int count);
+    [JSImport("StreamHelper.sliceArrayBuffer", "avalonia.ts")]
+    private static partial Task<JSObject> SliceToArrayBuffer(JSObject stream, [JSMarshalAs<JSType.Number>] long offset, int count);
 
-    public static async Task<ArraySegment<byte>> SliceAsync(JSObject stream, long offset, int count)
+    [JSImport("StreamHelper.toMemoryView", "avalonia.ts")]
+    [return: JSMarshalAs<JSType.Array<JSType.Number>>]
+    private static partial byte[] ArrayBufferToMemoryView(JSObject stream);
+
+    public static async Task<byte[]> SliceAsync(JSObject stream, long offset, int count)
     {
-        using var buffer = await SliceToBufferAsync(stream, offset, count);
-        return BufferToArray(buffer);
+        using var buffer = await SliceToArrayBuffer(stream, offset, count);
+        return ArrayBufferToMemoryView(buffer);
     }
-
-    [JSImport("StreamHelper.slice", "avalonia.ts")]
-    [return: JSMarshalAs<JSType.Promise<JSType.Object>>]
-    private static partial Task<JSObject> SliceToBufferAsync(JSObject stream, [JSMarshalAs<JSType.Number>] long offset, int count);
-
-    [JSImport("StreamHelper.toArray", "avalonia.ts")]
-    [return: JSMarshalAs<JSType.MemoryView>]
-    private static partial ArraySegment<byte> BufferToArray(JSObject stream);
 }

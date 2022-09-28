@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Web.Storage;
 
-[System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
+[System.Runtime.Versioning.SupportedOSPlatform("browser")]
 // Loose wrapper implementaion of a stream on top of FileAPI FileSystemWritableFileStream
-internal sealed class JSWriteableStream : Stream
+internal sealed class WriteableStream : Stream
 {
     private JSObject? _jSReference;
 
     // Unfortunatelly we can't read current length/position, so we need to keep it C#-side only.
     private long _length, _position;
 
-    internal JSWriteableStream(JSObject jSReference, long initialLength)
+    internal WriteableStream(JSObject jSReference, long initialLength)
     {
         _jSReference = jSReference;
         _length = initialLength;
     }
 
-    private JSObject JSReference => _jSReference ?? throw new ObjectDisposedException(nameof(JSWriteableStream));
+    private JSObject JSReference => _jSReference ?? throw new ObjectDisposedException(nameof(WriteableStream));
 
     public override bool CanRead => false;
 
@@ -75,20 +75,7 @@ internal sealed class JSWriteableStream : Stream
 
     public override void Write(byte[] buffer, int offset, int count)
     {
-        StreamHelper.Write(JSReference, buffer.AsSpan(offset, count));
-    }
-
-    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
-        if (offset != 0 || count != buffer.Length)
-        {
-            // TODO, we need to pass prepared buffer to the JS
-            // Can't use ArrayPool as it can return bigger array than requested
-            // Can't use Span/Memory, as it's not supported by JS interop yet.
-            // Alternatively we can pass original buffer and offset+count, so it can be trimmed on the JS side (but is it more efficient tho?)
-            buffer = buffer.AsMemory(offset, count).ToArray();
-        }
-        return WriteAsyncInternal(buffer, cancellationToken);
+        throw new InvalidOperationException("Browser supports only WriteAsync");
     }
 
     public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
@@ -110,7 +97,7 @@ internal sealed class JSWriteableStream : Stream
             _jSReference = null;
             try
             {
-                StreamHelper.Close(JSReference);
+                _ = StreamHelper.CloseAsync(jsReference);
             }
             finally
             {
@@ -126,7 +113,7 @@ internal sealed class JSWriteableStream : Stream
             _jSReference = null;
             try
             {
-                await StreamHelper.CloseAsync(JSReference);
+                await StreamHelper.CloseAsync(jsReference);
             }
             finally
             {
