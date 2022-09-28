@@ -9,13 +9,6 @@ namespace Avalonia.X11
 {
     class X11IconLoader : IPlatformIconLoader
     {
-        private readonly X11Info _x11;
-
-        public X11IconLoader(X11Info x11)
-        {
-            _x11 = x11;
-        }
-        
         IWindowIconImpl LoadIcon(Bitmap bitmap)
         {
             var rv = new X11IconData(bitmap);
