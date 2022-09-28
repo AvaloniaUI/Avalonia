@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
@@ -7,7 +6,6 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Avalonia.Platform.Storage;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Web.Interop;
@@ -335,12 +333,6 @@ namespace Avalonia.Web
         {
             throw new NotImplementedException();
             //return _nativeControlHost ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
-        }
-
-        internal IStorageProvider GetStorageProvider()
-        {
-            throw new NotImplementedException();
-            //return _storageProvider ?? throw new InvalidOperationException("Blazor View wasn't initialized yet");
         }
 
         private void ForceBlit()

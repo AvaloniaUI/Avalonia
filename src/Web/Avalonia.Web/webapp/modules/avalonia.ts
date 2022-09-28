@@ -3,6 +3,8 @@ import { SizeWatcher, DpiWatcher, Canvas } from "./avalonia/canvas";
 
 import { InputHelper } from "./avalonia/input";
 import { AvaloniaDOM } from "./avalonia/dom";
+import { Caniuse } from "./avalonia/caniuse";
+import { StreamHelper } from "./avalonia/stream";
 
 export async function createAvaloniaRuntime(api: RuntimeAPI): Promise<void> {
     api.setModuleImports("avalonia.ts", {
@@ -10,6 +12,8 @@ export async function createAvaloniaRuntime(api: RuntimeAPI): Promise<void> {
         InputHelper,
         SizeWatcher,
         DpiWatcher,
-        AvaloniaDOM
+        AvaloniaDOM,
+        Caniuse,
+        StreamHelper
     });
 }

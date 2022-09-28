@@ -11,8 +11,7 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-
-#nullable enable
+using Avalonia.Web.Storage;
 
 namespace Avalonia.Web
 {
@@ -223,6 +222,6 @@ namespace Avalonia.Web
         public ITextInputMethodImpl TextInputMethod => _avaloniaView;
 
         public INativeControlHostImpl? NativeControlHost => _avaloniaView.GetNativeControlHostImpl();
-        public IStorageProvider StorageProvider => _avaloniaView.GetStorageProvider();
+        public IStorageProvider StorageProvider { get; } = new BrowserStorageProvider();
     }
 }
