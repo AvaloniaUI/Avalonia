@@ -389,7 +389,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     if (textLine.Width > 300 || currentHeight + textLine.Height > 240)
                     {
-                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(new ReadOnlySlice<char>(new[] { TextTrimming.s_defaultEllipsisChar }), 300, defaultProperties));
+                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(new ReadOnlySlice<char>(new[] { TextTrimming.DefaultEllipsisChar }), 300, defaultProperties));
                     }
 
                     currentHeight += textLine.Height;

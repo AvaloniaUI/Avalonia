@@ -202,7 +202,7 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Acquire();
 
             // Use a format similar to CSS. However:
             //   - To ensure precision is never lost, allow decimal places.
@@ -225,7 +225,7 @@ namespace Avalonia.Media
             sb.Append(A.ToString(CultureInfo.InvariantCulture));
             sb.Append(')');
 
-            return sb.ToString();
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
 
         /// <summary>

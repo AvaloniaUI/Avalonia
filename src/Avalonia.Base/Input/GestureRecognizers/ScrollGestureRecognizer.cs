@@ -71,7 +71,7 @@ namespace Avalonia.Input.GestureRecognizers
             {
                 EndGesture();
                 _tracking = e.Pointer;
-                _gestureId = ScrollGestureEventArgs.GetNextFreeId();;
+                _gestureId = ScrollGestureEventArgs.GetNextFreeId();
                 _trackedRootPoint = e.GetPosition(_target);
             }
         }

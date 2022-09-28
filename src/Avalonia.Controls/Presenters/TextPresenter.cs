@@ -9,7 +9,6 @@ using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Controls.Documents;
-using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -34,7 +33,7 @@ namespace Avalonia.Controls.Presenters
 
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
             AvaloniaProperty.Register<TextPresenter, IBrush?>(nameof(CaretBrush));
-        
+
         public static readonly DirectProperty<TextPresenter, int> SelectionStartProperty =
             TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
                 o => o.SelectionStart,
@@ -44,7 +43,7 @@ namespace Avalonia.Controls.Presenters
             TextBox.SelectionEndProperty.AddOwner<TextPresenter>(
                 o => o.SelectionEnd,
                 (o, v) => o.SelectionEnd = v);
-        
+
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
@@ -53,6 +52,15 @@ namespace Avalonia.Controls.Presenters
                 nameof(Text),
                 o => o.Text,
                 (o, v) => o.Text = v);
+
+        /// <summary>
+        /// Defines the <see cref="PreeditText"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TextPresenter, string?> PreeditTextProperty =
+            AvaloniaProperty.RegisterDirect<TextPresenter, string?>(
+                nameof(PreeditText),
+                o => o.PreeditText,
+                 (o, v) => o.PreeditText = v);
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
@@ -71,7 +79,7 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<double> LineHeightProperty =
             TextBlock.LineHeightProperty.AddOwner<TextPresenter>();
-        
+
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
@@ -90,6 +98,8 @@ namespace Avalonia.Controls.Presenters
         private CharacterHit _lastCharacterHit;
         private Rect _caretBounds;
         private Point _navigationPosition;
+        private string? _preeditText;
+        private CharacterHit _compositionStartHit = new CharacterHit(-1);
 
         static TextPresenter()
         {
@@ -104,7 +114,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         public event EventHandler? CaretBoundsChanged;
-        
+
         /// <summary>
         /// Gets or sets a brush used to paint the control's background.
         /// </summary>
@@ -122,6 +132,12 @@ namespace Avalonia.Controls.Presenters
         {
             get => _text;
             set => SetAndRaise(TextProperty, ref _text, value);
+        }
+
+        public string? PreeditText
+        {
+            get => _preeditText;
+            set => SetAndRaise(PreeditTextProperty, ref _preeditText, value);
         }
 
         /// <summary>
@@ -186,7 +202,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(TextWrappingProperty);
             set => SetValue(TextWrappingProperty, value);
         }
-        
+
         /// <summary>
         /// Gets or sets the line height. By default, this is set to <see cref="double.NaN"/>, which determines the appropriate height automatically.
         /// </summary>
@@ -216,11 +232,11 @@ namespace Avalonia.Controls.Presenters
                 {
                     return _textLayout;
                 }
-                
+
                 _textLayout = CreateTextLayout();
 
-                UpdateCaret(_lastCharacterHit);
-                
+                UpdateCaret(_lastCharacterHit, false);
+
                 return _textLayout;
             }
         }
@@ -269,7 +285,7 @@ namespace Avalonia.Controls.Presenters
             get => GetValue(CaretBrushProperty);
             set => SetValue(CaretBrushProperty, value);
         }
-        
+
         public int SelectionStart
         {
             get
@@ -297,7 +313,7 @@ namespace Avalonia.Controls.Presenters
                 SetAndRaise(SelectionEndProperty, ref _selectionEnd, value);
             }
         }
-        
+
         protected override bool BypassFlowDirectionPolicies => true;
 
         /// <summary>
@@ -314,9 +330,9 @@ namespace Avalonia.Controls.Presenters
             var foreground = Foreground;
             var maxWidth = MathUtilities.IsZero(constraint.Width) ? double.PositiveInfinity : constraint.Width;
             var maxHeight = MathUtilities.IsZero(constraint.Height) ? double.PositiveInfinity : constraint.Height;
-            
+
             var textLayout = new TextLayout(text, typeface, FontSize, foreground, TextAlignment,
-                TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides, 
+                TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides,
                 flowDirection: FlowDirection, lineHeight: LineHeight);
 
             return textLayout;
@@ -382,7 +398,7 @@ namespace Avalonia.Controls.Presenters
             {
                 return;
             }
-            
+
             var caretBrush = CaretBrush?.ToImmutable();
 
             if (caretBrush is null)
@@ -407,13 +423,13 @@ namespace Avalonia.Controls.Presenters
 
             context.DrawLine(new ImmutablePen(caretBrush), p1, p2);
         }
-        
+
         private (Point, Point) GetCaretPoints()
         {
             var x = Math.Floor(_caretBounds.X) + 0.5;
             var y = Math.Floor(_caretBounds.Y) + 0.5;
             var b = Math.Ceiling(_caretBounds.Bottom) - 0.5;
-            
+
             var caretIndex = _lastCharacterHit.FirstCharacterIndex + _lastCharacterHit.TrailingLength;
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, _lastCharacterHit.TrailingLength > 0);
             var textLine = TextLayout.TextLines[lineIndex];
@@ -422,7 +438,7 @@ namespace Avalonia.Controls.Presenters
             {
                 x -= 1;
             }
-            
+
             return (new Point(x, y), new Point(x, b));
         }
 
@@ -479,6 +495,18 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        private string? GetText()
+        {
+            if (!string.IsNullOrEmpty(_preeditText))
+            {
+                var text = _text?.Substring(0, _caretIndex) + _preeditText + _text?.Substring(_caretIndex);
+
+                return text;
+            }
+
+            return _text;
+        }
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -487,7 +515,7 @@ namespace Avalonia.Controls.Presenters
         {
             TextLayout result;
 
-            var text = Text;
+            var text = GetText();
 
             var typeface = new Typeface(FontFamily, FontStyle, FontWeight);
 
@@ -498,14 +526,31 @@ namespace Avalonia.Controls.Presenters
 
             IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null;
 
-            if (length > 0 && SelectionForegroundBrush != null)
+            var foreground = Foreground;
+
+            if (!string.IsNullOrEmpty(_preeditText))
             {
+                var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
+                        new GenericTextRunProperties(typeface, FontSize,
+                        foregroundBrush: foreground,
+                        textDecorations: TextDecorations.Underline));
+
                 textStyleOverrides = new[]
                 {
-                    new ValueSpan<TextRunProperties>(start, length,
+                    preeditHighlight
+                };
+            }
+            else
+            {
+                if (length > 0 && SelectionForegroundBrush != null)
+                {
+                    textStyleOverrides = new[]
+                    {
+                        new ValueSpan<TextRunProperties>(start, length,
                         new GenericTextRunProperties(typeface, FontSize,
                             foregroundBrush: SelectionForegroundBrush))
-                };
+                    };
+                }
             }
 
             if (PasswordChar != default(char) && !RevealPassword)
@@ -524,10 +569,9 @@ namespace Avalonia.Controls.Presenters
         protected virtual void InvalidateTextLayout()
         {
             _textLayout = null;
-            
+
             InvalidateMeasure();
         }
-
 
         protected override Size MeasureOverride(Size availableSize)
         {
@@ -573,7 +617,7 @@ namespace Avalonia.Controls.Presenters
         private void CaretTimerTick(object? sender, EventArgs e)
         {
             _caretBlink = !_caretBlink;
-            
+
             InvalidateVisual();
         }
 
@@ -583,7 +627,7 @@ namespace Avalonia.Controls.Presenters
             var textLine = TextLayout.TextLines[lineIndex];
 
             var characterHit = textLine.GetPreviousCaretCharacterHit(new CharacterHit(textPosition));
-            
+
             var nextCaretCharacterHit = textLine.GetNextCaretCharacterHit(characterHit);
 
             if (nextCaretCharacterHit.FirstCharacterIndex <= textPosition)
@@ -603,8 +647,8 @@ namespace Avalonia.Controls.Presenters
             _navigationPosition = _caretBounds.Position;
 
             CaretChanged();
-        } 
-        
+        }
+
         public void MoveCaretToPoint(Point point)
         {
             var hit = TextLayout.HitTestPoint(point);
@@ -635,7 +679,7 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 var textLine = TextLayout.TextLines[lineIndex];
-                
+
                 currentY += textLine.Height;
             }
             else
@@ -651,9 +695,9 @@ namespace Avalonia.Controls.Presenters
             }
 
             var navigationPosition = _navigationPosition;
-            
+
             MoveCaretToPoint(new Point(currentX, currentY));
-            
+
             _navigationPosition = navigationPosition.WithY(_caretBounds.Y);
 
             CaretChanged();
@@ -664,11 +708,11 @@ namespace Avalonia.Controls.Presenters
             if (Text is null)
             {
                 return default;
-            }          
+            }
 
             var characterHit = _lastCharacterHit;
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
-            
+
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, false);
 
             if (lineIndex < 0)
@@ -690,11 +734,11 @@ namespace Avalonia.Controls.Presenters
                     {
                         characterHit = new CharacterHit(caretIndex);
                     }
-                    
+
                     if (caretIndex >= Text.Length)
                     {
                         characterHit = new CharacterHit(Text.Length);
-                        
+
                         break;
                     }
 
@@ -706,10 +750,10 @@ namespace Avalonia.Controls.Presenters
                     if (caretIndex <= CaretIndex)
                     {
                         lineIndex++;
-                        
+
                         continue;
                     }
-                    
+
                     break;
                 }
             }
@@ -736,7 +780,7 @@ namespace Avalonia.Controls.Presenters
 
             return characterHit;
         }
-        
+
         public void MoveCaretHorizontal(LogicalDirection direction = LogicalDirection.Forward)
         {
             if (FlowDirection == FlowDirection.RightToLeft)
@@ -755,12 +799,12 @@ namespace Avalonia.Controls.Presenters
             CaretChanged();
         }
 
-        private void UpdateCaret(CharacterHit characterHit)
+        private void UpdateCaret(CharacterHit characterHit, bool updateCaretIndex = true)
         {
             _lastCharacterHit = characterHit;
-            
+
             var caretIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
-            
+
             var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(caretIndex, characterHit.TrailingLength > 0);
             var textLine = TextLayout.TextLines[lineIndex];
             var distanceX = textLine.GetDistanceFromCharacterHit(characterHit);
@@ -775,7 +819,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             var caretBounds = new Rect(distanceX, distanceY, 0, textLine.Height);
-            
+
             if (caretBounds != _caretBounds)
             {
                 _caretBounds = caretBounds;
@@ -783,7 +827,10 @@ namespace Avalonia.Controls.Presenters
                 CaretBoundsChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
+            if (updateCaretIndex)
+            {
+                SetAndRaise(CaretIndexProperty, ref _caretIndex, caretIndex);
+            }
         }
 
         internal Rect GetCursorRectangle()
@@ -796,39 +843,91 @@ namespace Avalonia.Controls.Presenters
             base.OnDetachedFromVisualTree(e);
 
             _caretTimer.Stop();
-            
+
             _caretTimer.Tick -= CaretTimerTick;
+        }
+
+        protected void OnPreeditTextChanged(string? oldValue, string? newValue)
+        {
+            InvalidateTextLayout();
+
+            if (string.IsNullOrEmpty(newValue))
+            {
+                if (!string.IsNullOrEmpty(oldValue))
+                {
+                    var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + newValue?.Length ?? 0;
+
+                    var characterHit = GetCharacterHitFromTextPosition(textPosition);
+
+                    UpdateCaret(characterHit, true);
+                }
+
+                _compositionStartHit = new CharacterHit(-1);
+            }
+            else
+            {
+                if (_compositionStartHit.FirstCharacterIndex == -1)
+                {
+                    _compositionStartHit = _lastCharacterHit;
+                }
+            }
+
+            if (_compositionStartHit.FirstCharacterIndex != -1)
+            {
+                var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + newValue?.Length ?? 0;
+
+                var characterHit = GetCharacterHitFromTextPosition(textPosition);
+
+                UpdateCaret(characterHit, false);
+            }
+        }
+
+        private CharacterHit GetCharacterHitFromTextPosition(int textPosition)
+        {
+            var lineIndex = TextLayout.GetLineIndexFromCharacterIndex(textPosition, true);
+
+            var textLine = TextLayout.TextLines[lineIndex];
+
+            var characterHit = textLine.GetNextCaretCharacterHit(new CharacterHit(textPosition - 1));
+
+            return characterHit;
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
-            
+
             switch (change.Property.Name)
             {
-                case nameof (Foreground):
-                case nameof (FontSize):
-                case nameof (FontStyle):
-                case nameof (FontWeight):
-                case nameof (FontFamily):
-                case nameof (FontStretch):
+                case nameof(PreeditText):
+                    {
+                        OnPreeditTextChanged(change.OldValue as string, change.NewValue as string);
+                        break;
+                    }
 
-                case nameof (Text):
-                case nameof (TextAlignment):
-                case nameof (TextWrapping):
+                case nameof(Foreground):
+                case nameof(FontSize):
+                case nameof(FontStyle):
+                case nameof(FontWeight):
+                case nameof(FontFamily):
+                case nameof(FontStretch):
 
-                case nameof (SelectionStart):
-                case nameof (SelectionEnd):
-                case nameof (SelectionForegroundBrush):
+                case nameof(Text):
+                case nameof(TextAlignment):
+                case nameof(TextWrapping):
 
-                case nameof (PasswordChar):
-                case nameof (RevealPassword):
+                case nameof(SelectionStart):
+                case nameof(SelectionEnd):
+                case nameof(SelectionForegroundBrush):
+
+                case nameof(PasswordChar):
+                case nameof(RevealPassword):
 
                 case nameof(FlowDirection):
-                {
-                    InvalidateTextLayout();
-                    break;
-                }
+                    {
+                        InvalidateTextLayout();
+                        break;
+                    }
             }
         }
     }

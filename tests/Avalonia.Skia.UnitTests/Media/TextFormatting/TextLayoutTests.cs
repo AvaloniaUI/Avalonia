@@ -1009,7 +1009,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                         currentX += glyphAdvance;
 
-                        cluster = clusters[j];
+                        if(glyphAdvance > 0)
+                        {
+                            cluster = clusters[j];
+                        }
                     }
                 }
             }

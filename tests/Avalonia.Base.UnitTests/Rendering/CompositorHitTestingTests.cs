@@ -432,6 +432,33 @@ public class CompositorHitTestingTests : CompositorTestsBase
             s.AssertHitTest(new Point(5, 10), null, targetRectangle);
         }
     }
+    
+    
+    [Fact]
+    public void HitTest_Filter_Should_Filter_Out_Children()
+    {
+        using (var s = new CompositorServices(new Size(200, 200)))
+        {
+            Border child, parent;
+            s.TopLevel.Content = parent = new Border
+            {
+                Width = 100,
+                Height = 100,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = child = new Border
+                {
+                    Background = Brushes.Red,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                }
+            };
+
+            s.AssertHitTest(new Point(100, 100), null, child, parent);
+            s.AssertHitTest(new Point(100, 100), v => v != parent);
+        }
+    }
 
     private IDisposable TestApplication()
     {

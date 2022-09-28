@@ -7,6 +7,7 @@ using Avalonia.Input.TextInput;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Web.Blazor.Interop;
 using SkiaSharp;
 
@@ -112,22 +113,32 @@ namespace Avalonia.Web.Blazor
             }
         }
 
-        public void RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
+        public bool RawKeyboardEvent(RawKeyEventType type, string code, string key, RawInputModifiers modifiers)
         {
             if (Keycodes.KeyCodes.TryGetValue(code, out var avkey))
             {
                 if (_inputRoot is { })
                 {
-                    Input?.Invoke(new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers));
+                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
+                    
+                    Input?.Invoke(args);
+                    
+                    return args.Handled;
                 }
             }
             else if (Keycodes.KeyCodes.TryGetValue(key, out avkey))
             {
                 if (_inputRoot is { })
                 {
-                    Input?.Invoke(new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers));
+                    var args = new RawKeyEventArgs(KeyboardDevice, Timestamp, _inputRoot, type, avkey, modifiers);
+                    
+                    Input?.Invoke(args);
+
+                    return args.Handled;
                 }
             }
+
+            return false;
         }
 
         public void RawTextEvent(string text)
@@ -146,7 +157,7 @@ namespace Avalonia.Web.Blazor
         public IRenderer CreateRenderer(IRenderRoot root)
         {
             var loop = AvaloniaLocator.Current.GetRequiredService<IRenderLoop>();
-            return new DeferredRenderer(root, loop);
+            return new CompositingRenderer(root, new Compositor(loop, null));
         }
 
         public void Invalidate(Rect rect)

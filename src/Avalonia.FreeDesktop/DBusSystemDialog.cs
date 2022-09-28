@@ -72,7 +72,7 @@ namespace Avalonia.FreeDesktop
             using var disposable = await request.WatchResponseAsync(x => tsc.SetResult(x.results["uris"] as string[]), tsc.SetException);
             var uris = await tsc.Task ?? Array.Empty<string>();
 
-            return uris.Select(path => new BclStorageFile(new FileInfo(new Uri(path).AbsolutePath))).ToList();
+            return uris.Select(path => new BclStorageFile(new FileInfo(new Uri(path).LocalPath))).ToList();
         }
 
         public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
@@ -96,7 +96,7 @@ namespace Avalonia.FreeDesktop
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync(x => tsc.SetResult(x.results["uris"] as string[]), tsc.SetException);
             var uris = await tsc.Task;
-            var path = uris?.FirstOrDefault() is { } filePath ? new Uri(filePath).AbsolutePath : null;
+            var path = uris?.FirstOrDefault() is { } filePath ? new Uri(filePath).LocalPath : null;
 
             if (path is null)
             {
@@ -126,7 +126,7 @@ namespace Avalonia.FreeDesktop
             var uris = await tsc.Task ?? Array.Empty<string>();
 
             return uris
-                .Select(path => new Uri(path).AbsolutePath)
+                .Select(path => new Uri(path).LocalPath)
                 // WSL2 freedesktop allows to select files as well in directory picker, filter it out.
                 .Where(Directory.Exists)
                 .Select(path => new BclStorageFolder(new DirectoryInfo(path))).ToList();

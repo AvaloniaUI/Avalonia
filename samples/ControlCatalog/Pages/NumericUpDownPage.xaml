@@ -1,6 +1,7 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=netstandard"
+             xmlns:converter="clr-namespace:ControlCatalog.Converter"
              x:Class="ControlCatalog.Pages.NumericUpDownPage">
   <StackPanel Orientation="Vertical" Spacing="4"
               MaxWidth="800">
@@ -96,6 +97,17 @@
             <sys:Exception /> 
           </DataValidationErrors.Error>
         </NumericUpDown>
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical" Margin="10">
+        <Label Target="HexUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown in HEX mode:</Label>
+        <NumericUpDown x:Name="HexUpDown" Value="0"
+                       VerticalAlignment="Center">
+          <NumericUpDown.TextConverter>
+            <converter:HexConverter></converter:HexConverter>
+          </NumericUpDown.TextConverter>
+        </NumericUpDown>
+        
       </StackPanel>
     </WrapPanel>
 

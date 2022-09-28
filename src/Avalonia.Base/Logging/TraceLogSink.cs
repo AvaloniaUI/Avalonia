@@ -46,7 +46,7 @@ namespace Avalonia.Logging
             object? source,
             object?[]? values)
         {
-            var result = new StringBuilder(template.Length);
+            var result = StringBuilderCache.Acquire(template.Length);
             var r = new CharacterReader(template.AsSpan());
             var i = 0;
 
@@ -89,7 +89,7 @@ namespace Avalonia.Logging
                 result.Append(')');
             }
 
-            return result.ToString();
+            return StringBuilderCache.GetStringAndRelease(result);
         }
 
         private static string Format(
@@ -98,7 +98,7 @@ namespace Avalonia.Logging
             object? source,
             object?[] v)
         {
-            var result = new StringBuilder(template.Length);
+            var result = StringBuilderCache.Acquire(template.Length);
             var r = new CharacterReader(template.AsSpan());
             var i = 0;
 

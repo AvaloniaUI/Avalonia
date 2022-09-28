@@ -378,8 +378,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Enables or disables resizing of the window.
-        /// Note that if <see cref="HasSystemDecorations"/> is set to False then this property
-        /// has no effect and should be treated as a recommendation for the user setting HasSystemDecorations.
         /// </summary>
         public bool CanResize
         {
