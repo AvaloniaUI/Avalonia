@@ -9,6 +9,8 @@ using Avalonia.Input.TextInput;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Web.Interop;
+using Avalonia.Web.Skia;
+
 using SkiaSharp;
 
 namespace Avalonia.Web

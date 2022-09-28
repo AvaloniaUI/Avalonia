@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Avalonia.Skia;
 
-namespace Avalonia.Web
+namespace Avalonia.Web.Skia
 {
     public class BrowserSkiaGpu : ISkiaGpu
     {

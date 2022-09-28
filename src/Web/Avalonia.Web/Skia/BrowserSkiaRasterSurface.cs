@@ -5,7 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Skia;
 using SkiaSharp;
 
-namespace Avalonia.Web
+namespace Avalonia.Web.Skia
 {
     internal class BrowserSkiaRasterSurface : IBrowserSkiaSurface, IFramebufferPlatformSurface, IDisposable
     {

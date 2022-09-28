@@ -1,4 +1,4 @@
-namespace Avalonia.Web
+namespace Avalonia.Web.Skia
 {
     internal interface IBrowserSkiaSurface
     {

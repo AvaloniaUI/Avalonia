@@ -11,6 +11,7 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Web.Skia;
 using Avalonia.Web.Storage;
 
 namespace Avalonia.Web
