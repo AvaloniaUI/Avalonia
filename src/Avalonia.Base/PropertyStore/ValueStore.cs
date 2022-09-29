@@ -821,7 +821,11 @@ namespace Avalonia.PropertyStore
                         current.Priority < BindingPriority.Unset &&
                         current.BasePriority < BindingPriority.Unset)
                     {
-                        UnsubscribeInactiveValues(i, property);
+                        // If the active state of one of the trailing frames has changed since 
+                        // the last read, then we need to re-evaluate the effective values of all
+                        // properties.
+                        if (UnsubscribeInactiveValues(i, property))
+                            ReevaluateEffectiveValues();
                         return;
                     }
                 }
@@ -948,9 +952,10 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        private void UnsubscribeInactiveValues(int activeFrameIndex, AvaloniaProperty property)
+        private bool UnsubscribeInactiveValues(int activeFrameIndex, AvaloniaProperty property)
         {
             var foundBaseValue = _frames[activeFrameIndex].Priority != BindingPriority.Animation;
+            var activeChanged = false;
 
             for (var i = activeFrameIndex - 1; i >= 0; --i)
             {
@@ -963,11 +968,15 @@ namespace Avalonia.PropertyStore
                 }
 
                 if ((foundBaseValue || frame.Priority <= BindingPriority.Animation) &&
-                    frame.TryGetEntryIfActive(property, out var entry, out _))
+                    frame.TryGetEntryIfActive(property, out var entry, out var changed))
                 {
+                    if (changed && frame.EntryCount > 1)
+                        activeChanged = true;
                     entry.Unsubscribe();
                 }
             }
+
+            return activeChanged;
         }
 
         private bool TryGetEffectiveValue(
