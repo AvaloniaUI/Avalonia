@@ -619,11 +619,29 @@ namespace Avalonia.PropertyStore
 
         public AvaloniaPropertyValue GetDiagnostic(AvaloniaProperty property)
         {
-            var effective = GetEffectiveValue(property);
+            object? value;
+            BindingPriority priority;
+
+            if (_effectiveValues.TryGetValue(property, out var v))
+            {
+                value = v.Value;
+                priority = v.Priority;
+            }
+            else if (property.Inherits && TryGetInheritedValue(property, out v))
+            {
+                value = v.Value;
+                priority = BindingPriority.Inherited;
+            }
+            else
+            {
+                value = GetDefaultValue(property);
+                priority = BindingPriority.Unset;
+            }
+
             return new AvaloniaPropertyValue(
                 property,
-                effective?.Value,
-                effective?.Priority ?? BindingPriority.Unset,
+                value,
+                priority,
                 null);
         }
 
