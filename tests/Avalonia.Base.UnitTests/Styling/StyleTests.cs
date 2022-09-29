@@ -292,6 +292,10 @@ namespace Avalonia.Base.UnitTests.Styling
 
             Assert.Equal("foo2", target.Foo);
             Assert.Equal(123.4, target.Double);
+
+            target.Classes.Remove("foo");
+
+            Assert.Equal(0, target.Double);
         }
 
         [Fact]
