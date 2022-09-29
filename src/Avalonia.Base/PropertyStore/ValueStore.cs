@@ -787,30 +787,28 @@ namespace Avalonia.PropertyStore
                 {
                     var frame = _frames[i];
                     var priority = frame.Priority;
-
-                    if (frame.TryGetEntryIfActive(property, out var entry, out var activeChanged))
+                    var foundEntry = frame.TryGetEntryIfActive(property, out var entry, out var activeChanged);
+                    
+                    // If the active state of the frame has changed since the last read, and
+                    // the frame holds multiple values then we need to re-evaluate the
+                    // effective values of all properties.
+                    if (activeChanged && frame.EntryCount > 1)
                     {
-                        // If The active state of the frame has changed since the last read, and
-                        // the frame holds multiple values then we need to re-evaluate the
-                        // effective values of all properties.
-                        if (activeChanged && frame.EntryCount > 1)
-                        {
-                            ReevaluateEffectiveValues();
-                            return;
-                        }
+                        ReevaluateEffectiveValues();
+                        return;
+                    }
 
-                        if (entry.HasValue)
+                    if (foundEntry && entry!.HasValue)
+                    {
+                        if (current is not null)
                         {
-                            if (current is not null)
-                            {
-                                current.SetAndRaise(this, entry, priority);
-                            }
-                            else
-                            {
-                                current = property.CreateEffectiveValue(Owner);
-                                AddEffectiveValue(property, current);
-                                current.SetAndRaise(this, entry, priority);
-                            }
+                            current.SetAndRaise(this, entry, priority);
+                        }
+                        else
+                        {
+                            current = property.CreateEffectiveValue(Owner);
+                            AddEffectiveValue(property, current);
+                            current.SetAndRaise(this, entry, priority);
                         }
                     }
 

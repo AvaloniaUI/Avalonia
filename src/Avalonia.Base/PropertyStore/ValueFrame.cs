@@ -37,9 +37,8 @@ namespace Avalonia.PropertyStore
             [NotNullWhen(true)] out IValueEntry? entry,
             out bool activeChanged)
         {
-            if (_index.TryGetValue(property, out entry) && 
-                GetIsActive(out activeChanged))
-                return true;
+            if (_index.TryGetValue(property, out entry))
+                return GetIsActive(out activeChanged);
             activeChanged = false;
             return false;
         }
