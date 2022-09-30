@@ -113,6 +113,30 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void Setting_InheritanceParent_Raises_PropertyChanged_When_Parent_And_Grandparent_Has_Value_Set()
+        {
+            Class1 grandparent = new Class1();
+            Class2 parent = new Class2 { Parent = grandparent };
+            bool raised = false;
+
+            grandparent.SetValue(Class1.BazProperty, "changed1");
+            parent.SetValue(Class1.BazProperty, "changed2");
+
+            Class2 child = new Class2();
+            child.PropertyChanged += (s, e) =>
+                raised = s == child &&
+                         e.Property == Class1.BazProperty &&
+                         (string)e.OldValue == "bazdefault" &&
+                         (string)e.NewValue == "changed2" &&
+                         e.Priority == BindingPriority.Inherited;
+
+            child.Parent = parent;
+
+            Assert.True(raised);
+            Assert.Equal("changed2", child.GetValue(Class1.BazProperty));
+        }
+
+        [Fact]
         public void Setting_InheritanceParent_Raises_PropertyChanged_For_Attached_Property_When_Parent_Has_Value_Set()
         {
             bool raised = false;
