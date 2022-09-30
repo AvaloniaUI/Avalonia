@@ -128,7 +128,7 @@ namespace Avalonia.Media.TextFormatting
 
             var collapsingProperties = collapsingPropertiesList[0];
 
-            if(collapsingProperties is null)
+            if (collapsingProperties is null)
             {
                 return this;
             }
@@ -192,7 +192,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 var currentRun = _textRuns[i];
 
-                if(currentRun is ShapedTextCharacters shapedRun && !shapedRun.ShapedBuffer.IsLeftToRight)
+                if (currentRun is ShapedTextCharacters shapedRun && !shapedRun.ShapedBuffer.IsLeftToRight)
                 {
                     var rightToLeftIndex = i;
                     currentPosition += currentRun.TextSourceLength;
@@ -213,14 +213,14 @@ namespace Avalonia.Media.TextFormatting
 
                     for (var j = i; i <= rightToLeftIndex; j++)
                     {
-                        if(j > _textRuns.Count - 1)
+                        if (j > _textRuns.Count - 1)
                         {
                             break;
                         }
 
                         currentRun = _textRuns[j];
 
-                        if(currentDistance + currentRun.Size.Width <= distance)
+                        if (currentDistance + currentRun.Size.Width <= distance)
                         {
                             currentDistance += currentRun.Size.Width;
                             currentPosition -= currentRun.TextSourceLength;
@@ -266,10 +266,6 @@ namespace Avalonia.Media.TextFormatting
                         {
                             offset = Math.Max(0, currentPosition - shapedRun.Text.Start);
                         }
-                        //else
-                        //{
-                        //    offset = Math.Max(0, currentPosition - shapedRun.Text.Start + shapedRun.Text.Length);
-                        //}
 
                         characterHit = new CharacterHit(characterHit.FirstCharacterIndex + offset, characterHit.TrailingLength);
 
@@ -326,11 +322,11 @@ namespace Avalonia.Media.TextFormatting
 
                                 continue;
                             }
-                            
+
                             break;
                         }
 
-                        if(i > index)
+                        if (i > index)
                         {
                             while (i >= index)
                             {
@@ -354,7 +350,7 @@ namespace Avalonia.Media.TextFormatting
                         }
                     }
 
-                    if (currentPosition + currentRun.TextSourceLength >= characterIndex && 
+                    if (currentPosition + currentRun.TextSourceLength >= characterIndex &&
                         TryGetDistanceFromCharacterHit(currentRun, characterHit, currentPosition, remainingLength, flowDirection, out var distance, out _))
                     {
                         return Math.Max(0, currentDistance + distance);
@@ -534,6 +530,8 @@ namespace Avalonia.Media.TextFormatting
             double currentWidth = 0;
             var currentRect = Rect.Empty;
 
+            TextRunBounds lastRunBounds = default;
+
             for (var index = 0; index < TextRuns.Count; index++)
             {
                 if (TextRuns[index] is not DrawableTextRun currentRun)
@@ -543,53 +541,93 @@ namespace Avalonia.Media.TextFormatting
 
                 var characterLength = 0;
                 var endX = startX;
-                var runWidth = 0.0;
-                TextRunBounds? currentRunBounds = null;
 
                 var currentShapedRun = currentRun as ShapedTextCharacters;
+
+                TextRunBounds currentRunBounds;
+
+                double combinedWidth;
+
+                if (currentPosition + currentRun.TextSourceLength <= firstTextSourceIndex)
+                {
+                    startX += currentRun.Size.Width;
+
+                    currentPosition += currentRun.TextSourceLength;
+
+                    continue;
+                }
 
                 if (currentShapedRun != null && !currentShapedRun.ShapedBuffer.IsLeftToRight)
                 {
                     var rightToLeftIndex = index;
-                    startX += currentShapedRun.Size.Width;
+                    var rightToLeftWidth = currentShapedRun.Size.Width;
 
-                    while (rightToLeftIndex + 1 <= _textRuns.Count - 1)
+                    while (rightToLeftIndex + 1 <= _textRuns.Count - 1 && _textRuns[rightToLeftIndex + 1] is ShapedTextCharacters nextShapedRun)
                     {
-                        var nextShapedRun = _textRuns[rightToLeftIndex + 1] as ShapedTextCharacters;
-
                         if (nextShapedRun == null || nextShapedRun.ShapedBuffer.IsLeftToRight)
                         {
                             break;
                         }
 
-                        startX += nextShapedRun.Size.Width;
-
                         rightToLeftIndex++;
+
+                        rightToLeftWidth += nextShapedRun.Size.Width;
+
+                        if (currentPosition + nextShapedRun.TextSourceLength > firstTextSourceIndex + textLength)
+                        {
+                            break;
+                        }
+
+                        currentShapedRun = nextShapedRun;
                     }
 
-                    if (TryGetTextRunBoundsRightToLeft(startX, firstTextSourceIndex, characterIndex, rightToLeftIndex, ref currentPosition, ref remainingLength, out currentRunBounds))
+                    startX = startX + rightToLeftWidth;
+
+                    currentRunBounds = GetRightToLeftTextRunBounds(currentShapedRun, startX, firstTextSourceIndex, characterIndex, currentPosition, remainingLength);
+
+                    remainingLength -= currentRunBounds.Length;
+                    currentPosition = currentRunBounds.TextSourceCharacterIndex + currentRunBounds.Length;
+                    endX = currentRunBounds.Rectangle.Right;
+                    startX = currentRunBounds.Rectangle.Left;
+
+                    var rightToLeftRunBounds = new List<TextRunBounds> { currentRunBounds };
+
+                    for (int i = rightToLeftIndex - 1; i >= index; i--)
                     {
-                        startX = currentRunBounds!.Rectangle.Left;
-                        endX = currentRunBounds.Rectangle.Right;
+                        currentShapedRun = TextRuns[i] as ShapedTextCharacters;
 
-                        runWidth = currentRunBounds.Rectangle.Width;
+                        if(currentShapedRun == null)
+                        {
+                            continue;
+                        }
+
+                        currentRunBounds = GetRightToLeftTextRunBounds(currentShapedRun, startX, firstTextSourceIndex, characterIndex, currentPosition, remainingLength);
+
+                        rightToLeftRunBounds.Insert(0, currentRunBounds);
+
+                        remainingLength -= currentRunBounds.Length;
+                        startX = currentRunBounds.Rectangle.Left;
+
+                        currentPosition += currentRunBounds.Length;
                     }
+
+                    combinedWidth = endX - startX;
+
+                    currentRect = new Rect(startX, 0, combinedWidth, Height);
 
                     currentDirection = FlowDirection.RightToLeft;
+
+                    if (!MathUtilities.IsZero(combinedWidth))
+                    {
+                        result.Add(new TextBounds(currentRect, currentDirection, rightToLeftRunBounds));
+                    }
+
+                    startX = endX;
                 }
                 else
                 {
                     if (currentShapedRun != null)
                     {
-                        if (currentPosition + currentRun.TextSourceLength <= firstTextSourceIndex)
-                        {
-                            startX += currentRun.Size.Width;
-
-                            currentPosition += currentRun.TextSourceLength;
-
-                            continue;
-                        }
-
                         var offset = Math.Max(0, firstTextSourceIndex - currentPosition);
 
                         currentPosition += offset;
@@ -665,43 +703,46 @@ namespace Avalonia.Media.TextFormatting
                         characterLength = NewLineLength;
                     }
 
-                    runWidth = endX - startX;
-                    currentRunBounds = new TextRunBounds(new Rect(startX, 0, runWidth, Height), currentPosition, characterLength, currentRun);
+                    combinedWidth = endX - startX;
+
+                    currentRunBounds = new TextRunBounds(new Rect(startX, 0, combinedWidth, Height), currentPosition, characterLength, currentRun);
 
                     currentPosition += characterLength;
 
                     remainingLength -= characterLength;
-                }                 
 
-                if (currentRunBounds != null && !MathUtilities.IsZero(runWidth) || NewLineLength > 0)
-                {
-                    if (lastDirection == currentDirection && result.Count > 0 && MathUtilities.AreClose(currentRect.Right, startX))
+                    startX = endX;
+
+                    if (currentRunBounds.TextRun != null && !MathUtilities.IsZero(combinedWidth) || NewLineLength > 0)
                     {
-                        currentRect = currentRect.WithWidth(currentWidth + runWidth);
+                        if (result.Count > 0 && lastDirection == currentDirection && MathUtilities.AreClose(currentRect.Left, lastRunBounds.Rectangle.Right))
+                        {
+                            currentRect = currentRect.WithWidth(currentWidth + combinedWidth);
 
-                        var textBounds = result[result.Count - 1];
+                            var textBounds = result[result.Count - 1];
 
-                        textBounds.Rectangle = currentRect;
+                            textBounds.Rectangle = currentRect;
 
-                        textBounds.TextRunBounds.Add(currentRunBounds!);
+                            textBounds.TextRunBounds.Add(currentRunBounds);
+                        }
+                        else
+                        {
+                            currentRect = currentRunBounds.Rectangle;
+
+                            result.Add(new TextBounds(currentRect, currentDirection, new List<TextRunBounds> { currentRunBounds }));
+                        }
                     }
-                    else
-                    {
-                        currentRect = currentRunBounds!.Rectangle;
 
-                        result.Add(new TextBounds(currentRect, currentDirection, new List<TextRunBounds> { currentRunBounds }));
-                    }
+                    lastRunBounds = currentRunBounds;
                 }
 
-                currentWidth += runWidth;
-              
+                currentWidth += combinedWidth;
 
                 if (remainingLength <= 0 || currentPosition >= characterIndex)
                 {
                     break;
                 }
 
-                startX = endX;
                 lastDirection = currentDirection;
             }
 
@@ -856,105 +897,45 @@ namespace Avalonia.Media.TextFormatting
             return result;
         }
 
-        private bool TryGetTextRunBoundsRightToLeft(double startX, int firstTextSourceIndex, int characterIndex, int runIndex, ref int currentPosition, ref int remainingLength, out TextRunBounds? textRunBounds)
+        private TextRunBounds GetRightToLeftTextRunBounds(ShapedTextCharacters currentRun, double endX, int firstTextSourceIndex, int characterIndex, int currentPosition, int remainingLength)
         {
-            textRunBounds = null;
+            var startX = endX;
 
-            for (var index = runIndex; index >= 0; index--)
+            var offset = Math.Max(0, firstTextSourceIndex - currentPosition);
+
+            currentPosition += offset;
+
+            var startIndex = currentRun.Text.Start + offset;
+
+            double startOffset;
+            double endOffset;
+
+            endOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex));
+
+            startOffset = currentRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex + remainingLength));
+
+            startX -= currentRun.Size.Width - startOffset;
+            endX -= currentRun.Size.Width - endOffset;
+
+            var endHit = currentRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _);
+            var startHit = currentRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
+
+            var characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
+
+            if (endX < startX)
             {
-                if (TextRuns[index] is not DrawableTextRun currentRun)
-                {
-                    continue;
-                }
-
-                if (currentPosition + currentRun.TextSourceLength <= firstTextSourceIndex)
-                {
-                    startX -= currentRun.Size.Width;
-
-                    currentPosition += currentRun.TextSourceLength;
-
-                    continue;
-                }
-
-                var characterLength = 0;
-                var endX = startX;
-
-                if (currentRun is ShapedTextCharacters currentShapedRun)
-                {
-                    var offset = Math.Max(0, firstTextSourceIndex - currentPosition);
-
-                    currentPosition += offset;
-
-                    var startIndex = currentRun.Text.Start + offset;
-                    double startOffset;
-                    double endOffset;
-
-                    if (currentShapedRun.ShapedBuffer.IsLeftToRight)
-                    {
-                        if (currentPosition < startIndex)
-                        {
-                            startOffset = endOffset = 0;
-                        }
-                        else
-                        {
-                            endOffset = currentShapedRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex + remainingLength));
-
-                            startOffset = currentShapedRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex));
-                        }
-                    }
-                    else
-                    {
-                        endOffset = currentShapedRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex));
-
-                        startOffset = currentShapedRun.GlyphRun.GetDistanceFromCharacterHit(new CharacterHit(startIndex + remainingLength));
-                    }
-
-                    startX -= currentRun.Size.Width - startOffset;
-                    endX -= currentRun.Size.Width - endOffset;
-
-                    var endHit = currentShapedRun.GlyphRun.GetCharacterHitFromDistance(endOffset, out _);
-                    var startHit = currentShapedRun.GlyphRun.GetCharacterHitFromDistance(startOffset, out _);
-
-                    characterLength = Math.Abs(startHit.FirstCharacterIndex + startHit.TrailingLength - endHit.FirstCharacterIndex - endHit.TrailingLength);
-                }
-                else
-                {
-                    if (currentPosition + currentRun.TextSourceLength <= characterIndex)
-                    {
-                        endX -= currentRun.Size.Width;
-                    }
-
-                    if (currentPosition < firstTextSourceIndex)
-                    {
-                        startX -= currentRun.Size.Width;
-
-                        characterLength = currentRun.TextSourceLength;
-                    }
-                }
-
-                if (endX < startX)
-                {
-                    (endX, startX) = (startX, endX);
-                }
-
-                //Lines that only contain a linebreak need to be covered here
-                if (characterLength == 0)
-                {
-                    characterLength = NewLineLength;
-                }
-
-                var runWidth = endX - startX;
-
-                remainingLength -= characterLength;
-
-                currentPosition += characterLength;
-
-                textRunBounds = new TextRunBounds(new Rect(Start + startX, 0, runWidth, Height), currentPosition, characterLength, currentRun);
-
-                return true;
+                (endX, startX) = (startX, endX);
             }
 
-            return false;
+            //Lines that only contain a linebreak need to be covered here
+            if (characterLength == 0)
+            {
+                characterLength = NewLineLength;
+            }
+
+            var runWidth = endX - startX;
+
+            return new TextRunBounds(new Rect(Start + startX, 0, runWidth, Height), currentPosition, characterLength, currentRun);
         }
 
         public override IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceIndex, int textLength)
@@ -1536,7 +1517,7 @@ namespace Avalonia.Media.TextFormatting
             var textAlignment = _paragraphProperties.TextAlignment;
             var paragraphFlowDirection = _paragraphProperties.FlowDirection;
 
-            if(textAlignment == TextAlignment.Justify)
+            if (textAlignment == TextAlignment.Justify)
             {
                 textAlignment = TextAlignment.Start;
             }
