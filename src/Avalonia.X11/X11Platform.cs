@@ -81,7 +81,7 @@ namespace Avalonia.X11
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
-                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
+                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             

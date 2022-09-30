@@ -87,12 +87,12 @@
     <Thickness x:Key="ComboBoxBorderThemeThickness">1</Thickness>
     <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
     <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
-    <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>    
+    <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>
     <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-    <StaticResource x:Key="ComboBoxItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />    
+    <StaticResource x:Key="ComboBoxItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundSelectedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
@@ -100,14 +100,14 @@
     <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
     <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
     <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />    
+    <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
     <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
     <StaticResource x:Key="ComboBoxItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
-    <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />    
+    <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush" />    
+    <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPressed" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />

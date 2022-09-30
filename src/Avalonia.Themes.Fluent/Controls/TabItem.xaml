@@ -28,7 +28,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Border
-            Name="PART_LayoutRoot"            
+            Name="PART_LayoutRoot"
             Background="{TemplateBinding Background}"
             BorderBrush="{TemplateBinding BorderBrush}"
             BorderThickness="{TemplateBinding BorderThickness}"
