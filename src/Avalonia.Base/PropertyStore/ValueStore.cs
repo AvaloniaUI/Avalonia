@@ -313,9 +313,14 @@ namespace Avalonia.PropertyStore
                         continue;
 
                     if (values.TryGetValue(key, out var existing))
-                        values[key] = existing.WithNewValue(value);
+                    {
+                        if (existing.NewValue is null)
+                            values[key] = existing.WithNewValue(value);
+                    }
                     else
+                    {
                         values.Add(key, new(null, value));
+                    }
                 }
 
                 f = f.InheritanceAncestor;
