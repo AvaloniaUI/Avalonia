@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Threading;
 
 namespace ControlCatalog.Pages
 {
@@ -40,7 +41,7 @@ namespace ControlCatalog.Pages
                     if (screen.Bounds.X / 10f < _leftMost)
                     {
                         _leftMost = screen.Bounds.X / 10f;
-                        InvalidateVisual();
+                        Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
                         return;
                     }
 
