@@ -361,7 +361,9 @@ namespace Avalonia.Media
 
                     characterIndex = cluster;
 
-                    if (currentX - advance < distance)
+                    var offsetX = currentX - advance;
+
+                    if (offsetX < distance)
                     {
                         break;
                     }
@@ -375,7 +377,8 @@ namespace Avalonia.Media
             var characterHit = FindNearestCharacterHit(characterIndex, out var width);
 
             var delta = width / 2;
-            var offset = IsLeftToRight ? distance - currentX : currentX - distance;
+            
+            var offset = IsLeftToRight ? Math.Round(distance - currentX, 3) : Math.Round(currentX - distance, 3);
 
             var isTrailing = offset > delta;
 
@@ -786,14 +789,15 @@ namespace Avalonia.Media
 
                     var clusterLength = 1;
 
-                    while (i - 1 >= 0)
+                    var j = i;
+
+                    while (j - 1 >= 0)
                     {
-                        var nextCluster = GlyphClusters[i - 1];
+                        var nextCluster = GlyphClusters[--j];
 
                         if (currentCluster == nextCluster)
                         {
-                            clusterLength++;
-                            i--;
+                            clusterLength++;                        
 
                             continue;
                         }
@@ -808,7 +812,7 @@ namespace Avalonia.Media
 
                     trailingWhitespaceLength += clusterLength;
 
-                    glyphCount++;
+                    glyphCount += clusterLength;
                 }
             }
 

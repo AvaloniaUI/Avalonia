@@ -19,6 +19,9 @@
       <TabItem Header="Acrylic">
         <pages:AcrylicPage />
       </TabItem>
+      <TabItem Header="AdornerLayer">
+        <pages:AdornerLayerPage />
+      </TabItem>
       <TabItem Header="AutoCompleteBox">
         <pages:AutoCompleteBoxPage />
       </TabItem>

@@ -81,12 +81,12 @@
     <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
     <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePressed" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-   
+
     <!-- Resources for ComboBox.xaml -->
-    <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>    
+    <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
     <Thickness x:Key="ComboBoxBorderThemeThickness">1</Thickness>
-    <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>    
-    <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>    
+    <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
+    <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
     <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>
     <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />

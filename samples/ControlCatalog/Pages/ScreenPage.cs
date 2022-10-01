@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -19,8 +18,10 @@ namespace ControlCatalog.Pages
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            Window w = (Window)VisualRoot!;
-            w.PositionChanged += (sender, args) => InvalidateVisual();
+            if(VisualRoot is Window w)
+            {
+                w.PositionChanged += (_, _) => InvalidateVisual();
+            }
         }
 
         public override void Render(DrawingContext context)
@@ -28,7 +29,7 @@ namespace ControlCatalog.Pages
             base.Render(context);
             if (!(VisualRoot is Window w))
             {
-                return;                
+                return;
             }
             var screens = w.Screens.All;
             var scaling = ((IRenderRoot)w).RenderScaling;

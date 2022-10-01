@@ -34,6 +34,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Cherokee, "Cher"},
                 { Script.Chorasmian, "Chrs"},
                 { Script.Coptic, "Copt"},
+                { Script.CyproMinoan, "Cpmn"},
                 { Script.Cypriot, "Cprt"},
                 { Script.Cyrillic, "Cyrl"},
                 { Script.Devanagari, "Deva"},
@@ -69,6 +70,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Javanese, "Java"},
                 { Script.KayahLi, "Kali"},
                 { Script.Katakana, "Kana"},
+                { Script.Kawi, "Kawi"},
                 { Script.Kharoshthi, "Khar"},
                 { Script.Khmer, "Khmr"},
                 { Script.Khojki, "Khoj"},
@@ -101,6 +103,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.MeeteiMayek, "Mtei"},
                 { Script.Multani, "Mult"},
                 { Script.Myanmar, "Mymr"},
+                { Script.NagMundari, "Nagm"},
                 { Script.Nandinagari, "Nand"},
                 { Script.OldNorthArabian, "Narb"},
                 { Script.Nabataean, "Nbat"},
@@ -113,6 +116,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Oriya, "Orya"},
                 { Script.Osage, "Osge"},
                 { Script.Osmanya, "Osma"},
+                { Script.OldUyghur, "Ougr"},
                 { Script.Palmyrene, "Palm"},
                 { Script.PauCinHau, "Pauc"},
                 { Script.OldPermic, "Perm"},
@@ -155,8 +159,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { Script.Thai, "Thai"},
                 { Script.Tibetan, "Tibt"},
                 { Script.Tirhuta, "Tirh"},
+                { Script.Tangsa, "Tnsa"},
+                { Script.Toto, "Toto"},
                 { Script.Ugaritic, "Ugar"},
                 { Script.Vai, "Vaii"},
+                { Script.Vithkuqi, "Vith"},
                 { Script.WarangCiti, "Wara"},
                 { Script.Wancho, "Wcho"},
                 { Script.OldPersian, "Xpeo"},
@@ -205,6 +212,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Cher", Script.Cherokee},
                 { "Chrs", Script.Chorasmian},
                 { "Copt", Script.Coptic},
+                { "Cpmn", Script.CyproMinoan},
                 { "Cprt", Script.Cypriot},
                 { "Cyrl", Script.Cyrillic},
                 { "Deva", Script.Devanagari},
@@ -240,6 +248,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Java", Script.Javanese},
                 { "Kali", Script.KayahLi},
                 { "Kana", Script.Katakana},
+                { "Kawi", Script.Kawi},
                 { "Khar", Script.Kharoshthi},
                 { "Khmr", Script.Khmer},
                 { "Khoj", Script.Khojki},
@@ -272,6 +281,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Mtei", Script.MeeteiMayek},
                 { "Mult", Script.Multani},
                 { "Mymr", Script.Myanmar},
+                { "Nagm", Script.NagMundari},
                 { "Nand", Script.Nandinagari},
                 { "Narb", Script.OldNorthArabian},
                 { "Nbat", Script.Nabataean},
@@ -284,6 +294,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Orya", Script.Oriya},
                 { "Osge", Script.Osage},
                 { "Osma", Script.Osmanya},
+                { "Ougr", Script.OldUyghur},
                 { "Palm", Script.Palmyrene},
                 { "Pauc", Script.PauCinHau},
                 { "Perm", Script.OldPermic},
@@ -326,8 +337,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "Thai", Script.Thai},
                 { "Tibt", Script.Tibetan},
                 { "Tirh", Script.Tirhuta},
+                { "Tnsa", Script.Tangsa},
+                { "Toto", Script.Toto},
                 { "Ugar", Script.Ugaritic},
                 { "Vaii", Script.Vai},
+                { "Vith", Script.Vithkuqi},
                 { "Wara", Script.WarangCiti},
                 { "Wcho", Script.Wancho},
                 { "Xpeo", Script.OldPersian},
@@ -453,23 +467,23 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return s_tagToLineBreakClass[tag];
         }
 
-        private static readonly Dictionary<string, BidiPairedBracketType> s_tagToBiDiPairedBracketType = 
+        private static readonly Dictionary<string, BidiPairedBracketType> s_tagToBidiPairedBracketType = 
             new Dictionary<string,BidiPairedBracketType>{
                 { "n", BidiPairedBracketType.None},
                 { "c", BidiPairedBracketType.Close},
                 { "o", BidiPairedBracketType.Open},
         };
 
-        public static BidiPairedBracketType GetBiDiPairedBracketType(string tag)
+        public static BidiPairedBracketType GetBidiPairedBracketType(string tag)
         {
-            if(!s_tagToBiDiPairedBracketType.ContainsKey(tag))
+            if(!s_tagToBidiPairedBracketType.ContainsKey(tag))
             {
                 return BidiPairedBracketType.None;
             }
-            return s_tagToBiDiPairedBracketType[tag];
+            return s_tagToBidiPairedBracketType[tag];
         }
 
-        private static readonly Dictionary<string, BidiClass> s_tagToBiDiClass = 
+        private static readonly Dictionary<string, BidiClass> s_tagToBidiClass = 
             new Dictionary<string,BidiClass>{
                 { "L", BidiClass.LeftToRight},
                 { "AL", BidiClass.ArabicLetter},
@@ -496,13 +510,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 { "WS", BidiClass.WhiteSpace},
         };
 
-        public static BidiClass GetBiDiClass(string tag)
+        public static BidiClass GetBidiClass(string tag)
         {
-            if(!s_tagToBiDiClass.ContainsKey(tag))
+            if(!s_tagToBidiClass.ContainsKey(tag))
             {
                 return BidiClass.LeftToRight;
             }
-            return s_tagToBiDiClass[tag];
+            return s_tagToBidiClass[tag];
         }
 
     }

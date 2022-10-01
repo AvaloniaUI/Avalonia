@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media;
@@ -27,8 +28,7 @@ public class CompositingRenderer : IRendererWithCompositor
     private HashSet<Visual> _dirty = new();
     private HashSet<Visual> _recalculateChildren = new();
     private bool _queuedUpdate;
-    private Action _update;
-    private Action _invalidateScene;
+    private Action<Task> _update;
     private bool _updating;
 
     internal CompositionTarget CompositionTarget;
@@ -47,7 +47,6 @@ public class CompositingRenderer : IRendererWithCompositor
         CompositionTarget = compositor.CreateCompositionTarget(root.CreateRenderTarget);
         CompositionTarget.Root = ((Visual)root!.VisualRoot!).AttachToCompositor(compositor);
         _update = Update;
-        _invalidateScene = InvalidateScene;
     }
 
     /// <inheritdoc/>
@@ -72,7 +71,7 @@ public class CompositingRenderer : IRendererWithCompositor
         if(_queuedUpdate)
             return;
         _queuedUpdate = true;
-        _compositor.InvokeWhenReadyForNextCommit(_update);
+        _compositor.InvokeBeforeNextCommit(_update);
     }
     
     /// <inheritdoc/>
@@ -151,12 +150,6 @@ public class CompositingRenderer : IRendererWithCompositor
         if (compositionChildren.Count == visualChildren.Count)
         {
             bool mismatch = false;
-            if (v.HasNonUniformZIndexChildren)
-            {
-                
-                
-            }
-
             if (sortedChildren != null)
                 for (var c = 0; c < visualChildren.Count; c++)
                 {
@@ -201,9 +194,6 @@ public class CompositingRenderer : IRendererWithCompositor
                     compositionChildren.Add(compositionChild);
             }
     }
-
-    private void InvalidateScene() =>
-        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
 
     private void UpdateCore()
     {
@@ -252,10 +242,15 @@ public class CompositingRenderer : IRendererWithCompositor
         _recalculateChildren.Clear();
         CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
-        Compositor.InvokeOnNextCommit(_invalidateScene);
     }
 
-    private void Update()
+    private async void TriggerSceneInvalidatedOnBatchCompletion(Task batchCompletion)
+    {
+        await batchCompletion;
+        SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
+    }
+    
+    private void Update(Task batchCompletion)
     {
         if(_updating)
             return;
@@ -276,10 +271,10 @@ public class CompositingRenderer : IRendererWithCompositor
 
     public void Paint(Rect rect)
     {
-        Update();
+        QueueUpdate();
         CompositionTarget.RequestRedraw();
         if(RenderOnlyOnRenderThread && Compositor.Loop.RunsInBackground)
-            Compositor.RequestCommitAsync().Wait();
+            Compositor.Commit().Wait();
         else
             CompositionTarget.ImmediateUIThreadRender();
     }
@@ -299,7 +294,7 @@ public class CompositingRenderer : IRendererWithCompositor
         // Wait for the composition batch to be applied and rendered to guarantee that
         // render target is not used anymore and can be safely disposed
         if (Compositor.Loop.RunsInBackground)
-            _compositor.RequestCommitAsync().Wait();
+            _compositor.Commit().Wait();
     }
 
     /// <summary>
