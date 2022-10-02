@@ -121,7 +121,7 @@ namespace Avalonia.Controls.Primitives
 
             if (pixelWidth != 0 && pixelHeight != 0)
             {
-                var bitmap = await ColorPickerHelpers.CreateComponentBitmapAsync(
+                ArrayList<byte> bgraPixelData = await ColorPickerHelpers.CreateComponentBitmapAsync(
                     pixelWidth,
                     pixelHeight,
                     Orientation,
@@ -131,18 +131,18 @@ namespace Avalonia.Controls.Primitives
                     IsAlphaMaxForced,
                     IsSaturationValueMaxForced);
 
-                if (bitmap != null)
+                if (bgraPixelData != null)
                 {
                     if (_backgroundBitmap != null)
                     {
                         // Re-use the existing WriteableBitmap
                         // This assumes the height, width and byte counts are the same and must be set to null
                         // elsewhere if that assumption is ever not true.
-                        ColorPickerHelpers.UpdateBitmapFromPixelData(_backgroundBitmap, bitmap);
+                        ColorPickerHelpers.UpdateBitmapFromPixelData(_backgroundBitmap, bgraPixelData);
                     }
                     else
                     {
-                        _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight);
+                        _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
                     }
 
                     Background = new ImageBrush(_backgroundBitmap);
