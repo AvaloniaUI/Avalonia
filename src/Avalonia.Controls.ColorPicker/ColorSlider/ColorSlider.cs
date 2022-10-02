@@ -385,11 +385,11 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            // Always keep the two color properties in sync
             if (change.Property == ColorProperty)
             {
                 ignorePropertyChanged = true;
 
+                // Always keep the two color properties in sync
                 HsvColor = Color.ToHsv();
 
                 SetColorToSliderValues();
@@ -402,7 +402,10 @@ namespace Avalonia.Controls.Primitives
 
                 ignorePropertyChanged = false;
             }
-            else if (change.Property == ColorModelProperty)
+            else if (change.Property == ColorComponentProperty ||
+                     change.Property == ColorModelProperty ||
+                     change.Property == IsAlphaMaxForcedProperty ||
+                     change.Property == IsSaturationValueMaxForcedProperty)
             {
                 ignorePropertyChanged = true;
 
@@ -416,6 +419,7 @@ namespace Avalonia.Controls.Primitives
             {
                 ignorePropertyChanged = true;
 
+                // Always keep the two color properties in sync
                 Color = HsvColor.ToRgb();
 
                 SetColorToSliderValues();
@@ -440,6 +444,7 @@ namespace Avalonia.Controls.Primitives
                 _backgroundBitmap = null;
 
                 UpdateBackground();
+                UpdatePseudoClasses();
             }
             else if (change.Property == ValueProperty ||
                      change.Property == MinimumProperty ||
