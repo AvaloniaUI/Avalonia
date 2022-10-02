@@ -627,6 +627,7 @@ namespace Avalonia.Controls.Primitives
 
         /// <summary>
         /// Updates the given <see cref="WriteableBitmap"/> with new, raw BGRA pre-multiplied alpha pixel data.
+        /// WARNING: THIS METHOD IS CURRENTLY PROVIDED AS REFERENCE BUT CAUSES INTERMITTENT CRASHES IF USED.
         /// WARNING: The bitmap's width, height and byte count MUST not have changed and MUST be enforced externally.
         /// </summary>
         /// <param name="bitmap">The existing <see cref="WriteableBitmap"/> to update.</param>
