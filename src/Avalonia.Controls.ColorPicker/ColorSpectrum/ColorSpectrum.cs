@@ -73,6 +73,8 @@ namespace Avalonia.Controls.Primitives
         private WriteableBitmap? _saturationMaximumBitmap;
 
         private WriteableBitmap? _valueBitmap;
+        private WriteableBitmap? _minBitmap;
+        private WriteableBitmap? _maxBitmap;
 
         // Fields used by UpdateEllipse() to ensure that it's using the data
         // associated with the last call to CreateBitmapsAndColorMap(),
@@ -1084,28 +1086,28 @@ namespace Avalonia.Controls.Primitives
 
                 ColorSpectrumComponents components2 = Components;
 
-                WriteableBitmap minBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMinPixelData, pixelWidth, pixelHeight);
-                WriteableBitmap maxBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMaxPixelData, pixelWidth, pixelHeight);
+                _minBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMinPixelData, pixelWidth, pixelHeight);
+                _maxBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMaxPixelData, pixelWidth, pixelHeight);
 
                 switch (components2)
                 {
                     case ColorSpectrumComponents.HueValue:
                     case ColorSpectrumComponents.ValueHue:
-                        _saturationMinimumBitmap = minBitmap;
-                        _saturationMaximumBitmap = maxBitmap;
+                        _saturationMinimumBitmap = _minBitmap;
+                        _saturationMaximumBitmap = _maxBitmap;
                         break;
                     case ColorSpectrumComponents.HueSaturation:
                     case ColorSpectrumComponents.SaturationHue:
-                        _valueBitmap = maxBitmap;
+                        _valueBitmap = _maxBitmap;
                         break;
                     case ColorSpectrumComponents.ValueSaturation:
                     case ColorSpectrumComponents.SaturationValue:
-                        _hueRedBitmap = minBitmap;
+                        _hueRedBitmap = _minBitmap;
                         _hueYellowBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle1PixelData, pixelWidth, pixelHeight);
                         _hueGreenBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle2PixelData, pixelWidth, pixelHeight);
                         _hueCyanBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle3PixelData, pixelWidth, pixelHeight);
                         _hueBlueBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraMiddle4PixelData, pixelWidth, pixelHeight);
-                        _huePurpleBitmap = maxBitmap;
+                        _huePurpleBitmap = _maxBitmap;
                         break;
                 }
 
