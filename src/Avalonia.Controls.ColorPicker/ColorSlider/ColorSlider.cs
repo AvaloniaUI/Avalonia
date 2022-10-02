@@ -33,6 +33,9 @@ namespace Avalonia.Controls.Primitives
         protected bool ignorePropertyChanged = false;
 
         private WriteableBitmap? _backgroundBitmap;
+        private int _backgroundBitmapPixelCount;
+        private int _backgroundBitmapPixelWidth;
+        private int _backgroundBitmapPixelHeight;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorSlider"/> class.
@@ -133,15 +136,21 @@ namespace Avalonia.Controls.Primitives
 
                 if (bitmap != null)
                 {
-                    if (_backgroundBitmap != null)
+                    if (_backgroundBitmap != null &&
+                        _backgroundBitmapPixelCount == bitmap.Length &&
+                        _backgroundBitmapPixelWidth == pixelWidth &&
+                        _backgroundBitmapPixelHeight == pixelHeight)
                     {
                         // Re-use the existing WriteableBitmap
-                        // This assumes the height, width and byte counts are the same and must be set to null
-                        // elsewhere if that assumption is ever not true.
                         ColorPickerHelpers.UpdateBitmapFromPixelData(_backgroundBitmap, bitmap);
                     }
                     else
                     {
+                        _backgroundBitmap?.Dispose();
+                        _backgroundBitmapPixelCount = bitmap.Length;
+                        _backgroundBitmapPixelWidth = pixelWidth;
+                        _backgroundBitmapPixelHeight = pixelHeight;
+
                         _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight);
                     }
 
@@ -438,6 +447,9 @@ namespace Avalonia.Controls.Primitives
                 // This means the existing bitmap must be released to be recreated correctly in UpdateBackground().
                 _backgroundBitmap?.Dispose();
                 _backgroundBitmap = null;
+                _backgroundBitmapPixelCount = 0;
+                _backgroundBitmapPixelWidth = 0;
+                _backgroundBitmapPixelHeight = 0;
 
                 UpdateBackground();
             }
