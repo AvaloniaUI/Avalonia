@@ -2,6 +2,7 @@
 using Avalonia.Controls.Metadata;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
@@ -31,11 +32,33 @@ namespace Avalonia.Controls.Primitives
 
         protected bool ignorePropertyChanged = false;
 
+        private WriteableBitmap? _backgroundBitmap;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorSlider"/> class.
         /// </summary>
         public ColorSlider() : base()
         {
+        }
+
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+
+            // Bitmaps were released when detached from the visual tree so they must be re-built
+            UpdateBackground();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+
+            // Clean-up all bitmaps
+            // https://github.com/AvaloniaUI/Avalonia/issues/9051
+            _backgroundBitmap?.Dispose();
+            _backgroundBitmap = null;
         }
 
         /// <summary>
@@ -110,7 +133,19 @@ namespace Avalonia.Controls.Primitives
 
                 if (bitmap != null)
                 {
-                    Background = new ImageBrush(ColorPickerHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight));
+                    if (_backgroundBitmap != null)
+                    {
+                        // Re-use the existing WriteableBitmap
+                        // This assumes the height, width and byte counts are the same and must be set to null
+                        // elsewhere if that assumption is ever not true.
+                        ColorPickerHelpers.UpdateBitmapFromPixelData(_backgroundBitmap, bitmap);
+                    }
+                    else
+                    {
+                        _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight);
+                    }
+
+                    Background = new ImageBrush(_backgroundBitmap);
                 }
             }
         }
@@ -399,6 +434,11 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == BoundsProperty)
             {
+                // If the control's overall dimensions have changed the background bitmap size also needs to change.
+                // This means the existing bitmap must be released to be recreated correctly in UpdateBackground().
+                _backgroundBitmap?.Dispose();
+                _backgroundBitmap = null;
+
                 UpdateBackground();
             }
             else if (change.Property == ValueProperty ||
