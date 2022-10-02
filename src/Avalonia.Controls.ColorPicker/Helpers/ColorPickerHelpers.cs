@@ -37,7 +37,7 @@ namespace Avalonia.Controls.Primitives
         /// during calculation with the HSVA color model.
         /// This will ensure colors are always discernible regardless of saturation/value.</param>
         /// <returns>A new bitmap representing a gradient of color component values.</returns>
-        public static async Task<byte[]> CreateComponentBitmapAsync(
+        public static async Task<ArrayList<byte>> CreateComponentBitmapAsync(
             int width,
             int height,
             Orientation orientation,
@@ -49,14 +49,14 @@ namespace Avalonia.Controls.Primitives
         {
             if (width == 0 || height == 0)
             {
-                return new byte[0];
+                return new ArrayList<byte>(0);
             }
 
-            var bitmap = await Task.Run<byte[]>(() =>
+            var bitmap = await Task.Run<ArrayList<byte>>(() =>
             {
                 int pixelDataIndex = 0;
                 double componentStep;
-                byte[] bgraPixelData;
+                ArrayList<byte> bgraPixelData;
                 Color baseRgbColor = Colors.White;
                 Color rgbColor;
                 int bgraPixelDataHeight;
@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Primitives
 
                 // Allocate the buffer
                 // BGRA formatted color components 1 byte each (4 bytes in a pixel)
-                bgraPixelData       = new byte[width * height * 4];
+                bgraPixelData       = new ArrayList<byte>(width * height * 4);
                 bgraPixelDataHeight = height * 4;
                 bgraPixelDataWidth  = width * 4;
 
@@ -604,7 +604,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="pixelHeight">The pixel height of the bitmap.</param>
         /// <returns>A new <see cref="WriteableBitmap"/>.</returns>
         public static WriteableBitmap CreateBitmapFromPixelData(
-            IList<byte> bgraPixelData,
+            ArrayList<byte> bgraPixelData,
             int pixelWidth,
             int pixelHeight)
         {
@@ -619,7 +619,7 @@ namespace Avalonia.Controls.Primitives
 
             using (var frameBuffer = bitmap.Lock())
             {
-                Marshal.Copy(bgraPixelData.ToArray(), 0, frameBuffer.Address, bgraPixelData.Count);
+                Marshal.Copy(bgraPixelData.Array, 0, frameBuffer.Address, bgraPixelData.Array.Length);
             }
 
             return bitmap;
@@ -633,11 +633,11 @@ namespace Avalonia.Controls.Primitives
         /// <param name="bgraPixelData">The bitmap (in raw BGRA pre-multiplied alpha pixels).</param>
         public static void UpdateBitmapFromPixelData(
             WriteableBitmap bitmap,
-            IList<byte> bgraPixelData)
+            ArrayList<byte> bgraPixelData)
         {
             using (var frameBuffer = bitmap.Lock())
             {
-                Marshal.Copy(bgraPixelData.ToArray(), 0, frameBuffer.Address, bgraPixelData.Count);
+                Marshal.Copy(bgraPixelData.Array, 0, frameBuffer.Address, bgraPixelData.Array.Length);
             }
 
             return;

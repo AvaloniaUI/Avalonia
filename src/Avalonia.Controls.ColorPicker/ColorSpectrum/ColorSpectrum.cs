@@ -994,13 +994,13 @@ namespace Avalonia.Controls.Primitives
 
             // The middle 4 are only needed and used in the case of hue as the third dimension.
             // Saturation and luminosity need only a min and max.
-            List<byte> bgraMinPixelData = new List<byte>();
-            List<byte> bgraMiddle1PixelData = new List<byte>();
-            List<byte> bgraMiddle2PixelData = new List<byte>();
-            List<byte> bgraMiddle3PixelData = new List<byte>();
-            List<byte> bgraMiddle4PixelData = new List<byte>();
-            List<byte> bgraMaxPixelData = new List<byte>();
-            List<Hsv> newHsvValues = new List<Hsv>();
+            ArrayList<byte> bgraMinPixelData;
+            ArrayList<byte> bgraMiddle1PixelData;
+            ArrayList<byte> bgraMiddle2PixelData;
+            ArrayList<byte> bgraMiddle3PixelData;
+            ArrayList<byte> bgraMiddle4PixelData;
+            ArrayList<byte> bgraMaxPixelData;
+            List<Hsv> newHsvValues;
 
             // In Avalonia, Bounds returns the actual device-independent pixel size of a control.
             // However, this is not necessarily the size of the control rendered on a display.
@@ -1011,20 +1011,27 @@ namespace Avalonia.Controls.Primitives
             int pixelDimension = (int)Math.Round(minDimension * scale);
             var pixelCount = pixelDimension * pixelDimension;
             var pixelDataSize = pixelCount * 4;
-            bgraMinPixelData.Capacity = pixelDataSize;
+
+            bgraMinPixelData = new ArrayList<byte>(pixelDataSize);
+            bgraMaxPixelData = new ArrayList<byte>(pixelDataSize);
+            newHsvValues = new List<Hsv>(pixelCount);
 
             // We'll only save pixel data for the middle bitmaps if our third dimension is hue.
             if (components == ColorSpectrumComponents.ValueSaturation ||
                 components == ColorSpectrumComponents.SaturationValue)
             {
-                bgraMiddle1PixelData.Capacity = pixelDataSize;
-                bgraMiddle2PixelData.Capacity = pixelDataSize;
-                bgraMiddle3PixelData.Capacity = pixelDataSize;
-                bgraMiddle4PixelData.Capacity = pixelDataSize;
+                bgraMiddle1PixelData = new ArrayList<byte>(pixelDataSize);
+                bgraMiddle2PixelData = new ArrayList<byte>(pixelDataSize);
+                bgraMiddle3PixelData = new ArrayList<byte>(pixelDataSize);
+                bgraMiddle4PixelData = new ArrayList<byte>(pixelDataSize);
             }
-
-            bgraMaxPixelData.Capacity = pixelDataSize;
-            newHsvValues.Capacity = pixelCount;
+            else
+            {
+                bgraMiddle1PixelData = new ArrayList<byte>(0);
+                bgraMiddle2PixelData = new ArrayList<byte>(0);
+                bgraMiddle3PixelData = new ArrayList<byte>(0);
+                bgraMiddle4PixelData = new ArrayList<byte>(0);
+            }
 
             await Task.Run(() =>
             {
@@ -1132,12 +1139,12 @@ namespace Avalonia.Controls.Primitives
             double maxSaturation,
             double minValue,
             double maxValue,
-            List<byte> bgraMinPixelData,
-            List<byte> bgraMiddle1PixelData,
-            List<byte> bgraMiddle2PixelData,
-            List<byte> bgraMiddle3PixelData,
-            List<byte> bgraMiddle4PixelData,
-            List<byte> bgraMaxPixelData,
+            ArrayList<byte> bgraMinPixelData,
+            ArrayList<byte> bgraMiddle1PixelData,
+            ArrayList<byte> bgraMiddle2PixelData,
+            ArrayList<byte> bgraMiddle3PixelData,
+            ArrayList<byte> bgraMiddle4PixelData,
+            ArrayList<byte> bgraMaxPixelData,
             List<Hsv> newHsvValues)
         {
             double hMin = minHue;
@@ -1292,12 +1299,12 @@ namespace Avalonia.Controls.Primitives
             double maxSaturation,
             double minValue,
             double maxValue,
-            List<byte> bgraMinPixelData,
-            List<byte> bgraMiddle1PixelData,
-            List<byte> bgraMiddle2PixelData,
-            List<byte> bgraMiddle3PixelData,
-            List<byte> bgraMiddle4PixelData,
-            List<byte> bgraMaxPixelData,
+            ArrayList<byte> bgraMinPixelData,
+            ArrayList<byte> bgraMiddle1PixelData,
+            ArrayList<byte> bgraMiddle2PixelData,
+            ArrayList<byte> bgraMiddle3PixelData,
+            ArrayList<byte> bgraMiddle4PixelData,
+            ArrayList<byte> bgraMaxPixelData,
             List<Hsv> newHsvValues)
         {
             double hMin = minHue;
