@@ -617,13 +617,30 @@ namespace Avalonia.Controls.Primitives
                 PixelFormat.Bgra8888,
                 AlphaFormat.Premul);
 
-            // Warning: This is highly questionable
             using (var frameBuffer = bitmap.Lock())
             {
                 Marshal.Copy(bgraPixelData.ToArray(), 0, frameBuffer.Address, bgraPixelData.Count);
             }
 
             return bitmap;
+        }
+
+        /// <summary>
+        /// Updates the given <see cref="WriteableBitmap"/> with new, raw BGRA pre-multiplied alpha pixel data.
+        /// WARNING: The bitmap's width, height and byte count MUST not have changed and MUST be enforced externally.
+        /// </summary>
+        /// <param name="bitmap">The existing <see cref="WriteableBitmap"/> to update.</param>
+        /// <param name="bgraPixelData">The bitmap (in raw BGRA pre-multiplied alpha pixels).</param>
+        public static void UpdateBitmapFromPixelData(
+            WriteableBitmap bitmap,
+            IList<byte> bgraPixelData)
+        {
+            using (var frameBuffer = bitmap.Lock())
+            {
+                Marshal.Copy(bgraPixelData.ToArray(), 0, frameBuffer.Address, bgraPixelData.Count);
+            }
+
+            return;
         }
     }
 }
