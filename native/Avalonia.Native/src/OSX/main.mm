@@ -3,7 +3,7 @@
 #include "common.h"
 
 static NSString* s_appTitle = @"Avalonia";
-static int disableSetProcessName;
+static int disableSetProcessName = 0;
 
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
