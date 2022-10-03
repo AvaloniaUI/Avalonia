@@ -102,6 +102,7 @@ namespace Avalonia.Native
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
 
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
+                _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
