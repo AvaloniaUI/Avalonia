@@ -75,7 +75,7 @@ export class CaretHelper {
 
         div.textContent = element.value.substring(0, position);
         // The second special handling for input type="text" vs textarea:
-        // spaces need to be replaced with non-breaking spaces - http://stackoverflow.com/a/13402035/1269037
+        // spaces need to be replaced with non-breaking spaces - https://stackoverflow.com/a/13402035/1269037
         if (isInput) div.textContent = div.textContent.replace(/\s/g, "\u00a0");
 
         const span = document.createElement("span");
