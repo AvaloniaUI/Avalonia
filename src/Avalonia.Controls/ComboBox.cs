@@ -21,8 +21,11 @@ namespace Avalonia.Controls
     /// A drop-down list control.
     /// </summary>
     [TemplatePart("PART_Popup", typeof(Popup))]
+    [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
+        public const string pcDropdownOpen = ":dropdownopen";
+        public const string pcPressed = ":pressed";
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
@@ -95,6 +98,7 @@ namespace Avalonia.Controls
             SelectedItemProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.SelectedItemChanged(e));
             KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), Interactivity.RoutingStrategies.Tunnel);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
+            IsDropDownOpenProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.DropdownChanged(e));
         }
 
         /// <summary>
@@ -268,6 +272,20 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            if(!e.Handled && e.Source is IVisual source)
+            {
+                if (_popup?.IsInsidePopup(source) == true)
+                {
+                    return;
+                }
+            }
+            PseudoClasses.Set(pcPressed, true);
+        }
+
+        /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             if (!e.Handled && e.Source is IVisual source)
@@ -286,9 +304,11 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
-
+            PseudoClasses.Set(pcPressed, false);
             base.OnPointerReleased(e);
+            
         }
+
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -469,6 +489,12 @@ namespace Avalonia.Controls
             {
                 MoveSelection(NavigationDirection.Previous, WrapSelection);
             }
+        }
+
+        private void DropdownChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            bool newValue = e.GetNewValue<bool>();
+            PseudoClasses.Set(pcDropdownOpen, newValue);
         }
     }
 }
