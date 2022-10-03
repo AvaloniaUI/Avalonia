@@ -115,14 +115,6 @@ namespace ControlCatalog.NetCore
                     UseDBusMenu = true,
                     EnableIme = true
                 })
-                .With(new MacOSPlatformOptions()
-                {
-                    DisableSetProcessName = true
-                })
-                .With(new AvaloniaNativePlatformOptions()
-                {
-                    AvaloniaNativeLibraryPath = "/Users/daniilpavliuchyk/Library/Developer/Xcode/DerivedData/Avalonia.Native.OSX-hchxgrlrewlcvufcdcugzgajjpdt/Build/Products/Debug/libAvalonia.Native.OSX.dylib"
-                })
                 .UseSkia()
                 .AfterSetup(builder =>
                 {

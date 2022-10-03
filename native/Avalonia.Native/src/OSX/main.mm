@@ -4,6 +4,7 @@
 
 static NSString* s_appTitle = @"Avalonia";
 static int disableSetProcessName;
+
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -101,9 +102,7 @@ void SetProcessName(NSString* appTitle) {
 
 class MacOptions : public ComSingleObject<IAvnMacOptions, &IID_IAvnMacOptions>
 {
-
 public:
-
     FORWARD_IUNKNOWN()
     
     virtual HRESULT SetApplicationTitle(char* utf8String) override
