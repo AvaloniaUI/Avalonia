@@ -668,7 +668,7 @@ namespace Avalonia.Controls
             Owner = parent;
             parent?.AddChild(this, false);
 
-            SetWindowStartupLocation(Owner?.PlatformImpl);
+            SetWindowStartupLocation(parent?.PlatformImpl);
 
             PlatformImpl?.Show(ShowActivated, false);
             Renderer?.Start();
@@ -830,10 +830,11 @@ namespace Avalonia.Controls
             var startupLocation = WindowStartupLocation;
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
-                Owner is Window ownerWindow &&
-                ownerWindow.WindowState == WindowState.Minimized)
+                (owner is null || 
+                 (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
+                )
             {
-                // If startup location is CenterOwner, but owner is minimized then fall back
+                // If startup location is CenterOwner, but owner is null or minimized then fall back
                 // to CenterScreen. This behavior is consistent with WPF.
                 startupLocation = WindowStartupLocation.CenterScreen;
             }
@@ -851,31 +852,24 @@ namespace Avalonia.Controls
 
                 if (owner is not null)
                 {
-                    screen = Screens.ScreenFromWindow(owner);
-
-                    screen ??= Screens.ScreenFromPoint(owner.Position);
+                    screen = Screens.ScreenFromWindow(owner) 
+                             ?? Screens.ScreenFromPoint(owner.Position);
                 }
 
-                if (screen is null)
-                {
-                    screen = Screens.ScreenFromPoint(Position);
-                }
+                screen ??= Screens.ScreenFromPoint(Position);
 
-                if (screen != null)
+                if (screen is not null)
                 {
                     Position = screen.WorkingArea.CenterRect(rect).Position;
                 }
             }
             else if (startupLocation == WindowStartupLocation.CenterOwner)
             {
-                if (owner != null)
-                {
-                    var ownerSize = owner.FrameSize ?? owner.ClientSize;
-                    var ownerRect = new PixelRect(
-                        owner.Position,
-                        PixelSize.FromSize(ownerSize, scaling));
-                    Position = ownerRect.CenterRect(rect).Position;
-                }
+                var ownerSize = owner!.FrameSize ?? owner.ClientSize;
+                var ownerRect = new PixelRect(
+                    owner.Position,
+                    PixelSize.FromSize(ownerSize, scaling));
+                Position = ownerRect.CenterRect(rect).Position;
             }
         }
 
