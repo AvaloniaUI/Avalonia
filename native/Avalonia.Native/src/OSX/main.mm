@@ -132,7 +132,6 @@ public:
             return S_OK;
         }
     }
-    
 };
 
 /// See "Using POSIX Threads in a Cocoa Application" section here:
@@ -369,6 +368,16 @@ public:
         }
     }
     
+    virtual HRESULT CreatePlatformBehaviorInhibition(IAvnPlatformBehaviorInhibition** ppv) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreatePlatformBehaviorInhibition();
+            return S_OK;
+        }
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

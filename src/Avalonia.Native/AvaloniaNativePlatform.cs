@@ -116,7 +116,8 @@ namespace Avalonia.Native
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
-                .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
+                .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()))
+                .Bind<IPlatformBehaviorInhibition>().ToConstant(new PlatformBehaviorInhibition(_factory.CreatePlatformBehaviorInhibition()));
 
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
@@ -157,27 +158,6 @@ namespace Avalonia.Native
         public IWindowImpl CreateEmbeddableWindow()
         {
             throw new NotImplementedException();
-        }
-    }
-
-    public class AvaloniaNativeMacOptions
-    {
-        private readonly IAvnMacOptions _opts;
-        private bool _showInDock;
-        internal AvaloniaNativeMacOptions(IAvnMacOptions opts)
-        {
-            _opts = opts;
-            ShowInDock = true;
-        }
-
-        public bool ShowInDock 
-        { 
-            get => _showInDock;
-            set
-            {
-                _showInDock = value;
-                _opts.SetShowInDock(value ? 1 : 0);
-            }
         }
     }
 }
