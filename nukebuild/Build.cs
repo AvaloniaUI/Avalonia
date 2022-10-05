@@ -225,7 +225,7 @@ partial class Build : NukeBuild
             void DoMemoryTest()
             {
                 var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
-                DotMemoryUnit(
+                 DotMemoryUnit(
                     $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
                     timeout: 120_000);
             }
