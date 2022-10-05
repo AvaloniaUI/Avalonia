@@ -163,7 +163,7 @@ partial class Build : NukeBuild
                 .EnableNoBuild()
                 .EnableNoRestore()
                 .When(Parameters.PublishTestResults, _ => _
-                    .SetLogger("trx")
+                    .SetLoggers("trx")
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
     }
@@ -229,7 +229,7 @@ partial class Build : NukeBuild
                     $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
                     timeout: 120_000);
             }
-            ControlFlow.ExecuteWithRetry(DoMemoryTest, waitInSeconds: 3);
+            ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromMilliseconds(3));
         });
 
     Target ZipFiles => _ => _

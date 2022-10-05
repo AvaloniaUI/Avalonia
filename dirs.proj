@@ -29,6 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SlnGen" Version="2.0.40" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="8.5.17" PrivateAssets="all" />
   </ItemGroup>
 </Project>
