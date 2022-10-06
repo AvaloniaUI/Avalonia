@@ -47,6 +47,7 @@ export class AvaloniaDOM {
         inputElement.style.color = "transparent";
         inputElement.style.display = "none";
         inputElement.style.height = "20px";
+        inputElement.style.zIndex = "-1";
         inputElement.onpaste = function () { return false; };
         inputElement.oncopy = function () { return false; };
         inputElement.oncut = function () { return false; };
