@@ -4,9 +4,9 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace></RootNamespace>
     <IsPackable>False</IsPackable>
-    <NoWarn>CS0649;CS0169</NoWarn>
+    <NoWarn>CS0649;CS0169;SYSLIB0011</NoWarn>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
  
  <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
@@ -39,6 +39,10 @@
     
   <ItemGroup>
     <Compile Remove="il-repack\ILRepack\Application.cs" />
+  </ItemGroup>
+    
+  <ItemGroup>
+    <Folder Include="Numerge\Numerge.Console\" />
   </ItemGroup>
 
 </Project>
