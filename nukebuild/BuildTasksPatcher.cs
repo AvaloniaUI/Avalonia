@@ -17,8 +17,12 @@ public class BuildTasksPatcher
             {
                 if (entry.Name == "Avalonia.Build.Tasks.dll")
                 {
-                    var temp = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".dll");
+                    var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                    Directory.CreateDirectory(tempDir);
+                    var temp = Path.Combine(tempDir, Guid.NewGuid() + ".dll");
                     var output = temp + ".output";
+                    File.Copy(typeof(Microsoft.Build.Framework.ITask).Assembly.GetModules()[0].FullyQualifiedName,
+                        Path.Combine(tempDir, "Microsoft.Build.Framework.dll"));
                     var patched = new MemoryStream();
                     try
                     {
@@ -57,10 +61,8 @@ public class BuildTasksPatcher
                     {
                         try
                         {
-                            if (File.Exists(temp))
-                                File.Delete(temp);
-                            if (File.Exists(output))
-                                File.Delete(output);
+                            if(Directory.Exists(tempDir))
+                                Directory.Delete(tempDir, true);
                         }
                         catch
                         {
