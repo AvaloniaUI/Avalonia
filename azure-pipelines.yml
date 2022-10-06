@@ -6,7 +6,6 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
-    
   - task: PowerShell@2
     displayName: Get PR Number
     inputs:
@@ -35,6 +34,17 @@ jobs:
     inputs:
       version: 6.0.401
 
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 7.0.100-rc.1.22431.12'
+    inputs:
+      version: 7.0.100-rc.1.22431.12
+
+  - task: CmdLine@2
+    displayName: 'Install Workloads'
+    inputs:
+      script: |
+       dotnet workload install wasm-tools wasm-experimental
+
   - task: CmdLine@2
     displayName: 'Run Build'
     inputs:
@@ -60,6 +70,17 @@ jobs:
     displayName: 'Use .NET Core SDK 6.0.401'
     inputs:
       version: 6.0.401
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 7.0.100-rc.1.22431.12'
+    inputs:
+      version: 7.0.100-rc.1.22431.12
+
+  - task: CmdLine@2
+    displayName: 'Install Workloads'
+    inputs:
+      script: |
+       dotnet workload install wasm-tools wasm-experimental
       
   - task: CmdLine@2
     displayName: 'Generate avalonia-native'
@@ -121,11 +142,16 @@ jobs:
     inputs:
       version: 6.0.401
 
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 7.0.100-rc.1.22431.12'
+    inputs:
+      version: 7.0.100-rc.1.22431.12
+
   - task: CmdLine@2
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios
+       dotnet workload install android ios wasm-tools wasm-experimental
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
