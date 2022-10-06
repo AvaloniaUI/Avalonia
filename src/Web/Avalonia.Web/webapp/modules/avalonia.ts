@@ -4,7 +4,7 @@ import { InputHelper } from "./avalonia/input";
 import { AvaloniaDOM } from "./avalonia/dom";
 import { Caniuse } from "./avalonia/caniuse";
 import { StreamHelper } from "./avalonia/stream";
-import { NativeControlHost } from "./avalonia/NativeControlHost";
+import { NativeControlHost } from "./avalonia/nativeControlHost";
 
 export async function createAvaloniaRuntime(api: RuntimeAPI): Promise<void> {
     api.setModuleImports("avalonia.ts", {
