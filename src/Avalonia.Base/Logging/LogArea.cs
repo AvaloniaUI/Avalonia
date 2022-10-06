@@ -36,23 +36,38 @@ namespace Avalonia.Logging
         public const string Control = "Control";
 
         /// <summary>
-        /// The log event comes from Win32Platform.
+        /// The log event comes from Win32 Platform.
         /// </summary>
         public const string Win32Platform = nameof(Win32Platform);
         
         /// <summary>
-        /// The log event comes from X11Platform.
+        /// The log event comes from X11 Platform.
         /// </summary>
         public const string X11Platform = nameof(X11Platform);
 
         /// <summary>
-        /// The log event comes from AndroidPlatform.
+        /// The log event comes from Android Platform.
         /// </summary>
         public const string AndroidPlatform = nameof(AndroidPlatform);
         
         /// <summary>
-        /// The log event comes from IOSPlatform.
+        /// The log event comes from iOS Platform.
         /// </summary>
         public const string IOSPlatform = nameof(IOSPlatform);
+
+        /// <summary>
+        /// The log event comes from LinuxFramebuffer Platform
+        /// </summary>
+        public const string LinuxFramebufferPlatform = nameof(LinuxFramebufferPlatform);
+
+        /// <summary>
+        /// The log event comes from FreeDesktop Platform
+        /// </summary>
+        public const string FreeDesktopPlatform = nameof(FreeDesktopPlatform);
+
+        /// <summary>
+        /// The log event comes from macOS Platform
+        /// </summary>
+        public const string macOSPlatform = nameof(macOSPlatform);
     }
 }
