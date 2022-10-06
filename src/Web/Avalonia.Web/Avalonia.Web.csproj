@@ -31,7 +31,7 @@
     </Content>
     <Content Include="interop.js">
       <Pack>true</Pack>
-      <PackagePath>buildTransitive/net7.0/interop.js</PackagePath>
+      <PackagePath>build/net7.0/interop.js</PackagePath>
     </Content>
   </ItemGroup>
 
