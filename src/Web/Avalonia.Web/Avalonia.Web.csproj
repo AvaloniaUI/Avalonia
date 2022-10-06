@@ -31,7 +31,11 @@
     </Content>
     <Content Include="interop.js">
       <Pack>true</Pack>
-      <PackagePath>build/net7.0/interop.js</PackagePath>
+      <PackagePath>build/interop.js;buildTransitive/interop.js</PackagePath>
+    </Content>
+    <Content Include="wwwroot/**/*.*">
+      <Pack>true</Pack>
+      <PackagePath>build\wwwroot;buildTransitive\wwwroot</PackagePath>
     </Content>
   </ItemGroup>
 
