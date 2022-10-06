@@ -163,7 +163,7 @@ partial class Build : NukeBuild
                 .EnableNoBuild()
                 .EnableNoRestore()
                 .When(Parameters.PublishTestResults, _ => _
-                    .SetLogger("trx")
+                    .SetLoggers("trx")
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
     }
@@ -215,8 +215,6 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.DesignerSupport.Tests");
         });
 
-    [PackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe")] readonly Tool DotMemoryUnit;
-
     Target RunLeakTests => _ => _
         .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
         .DependsOn(Compile)
@@ -224,12 +222,9 @@ partial class Build : NukeBuild
         {
             void DoMemoryTest()
             {
-                var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
-                DotMemoryUnit(
-                    $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
-                    timeout: 120_000);
+                RunCoreTest("Avalonia.LeakTests");
             }
-            ControlFlow.ExecuteWithRetry(DoMemoryTest, waitInSeconds: 3);
+            ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromMilliseconds(3));
         });
 
     Target ZipFiles => _ => _
