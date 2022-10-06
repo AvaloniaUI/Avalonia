@@ -789,14 +789,15 @@ namespace Avalonia.Media
 
                     var clusterLength = 1;
 
-                    while (i - 1 >= 0)
+                    var j = i;
+
+                    while (j - 1 >= 0)
                     {
-                        var nextCluster = GlyphClusters[i - 1];
+                        var nextCluster = GlyphClusters[--j];
 
                         if (currentCluster == nextCluster)
                         {
-                            clusterLength++;
-                            i--;
+                            clusterLength++;                        
 
                             continue;
                         }
@@ -811,7 +812,7 @@ namespace Avalonia.Media
 
                     trailingWhitespaceLength += clusterLength;
 
-                    glyphCount++;
+                    glyphCount += clusterLength;
                 }
             }
 

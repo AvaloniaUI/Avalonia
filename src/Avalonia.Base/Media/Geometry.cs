@@ -185,5 +185,18 @@ namespace Avalonia.Media
             var control = e.Sender as Geometry;
             control?.InvalidateGeometry();
         }
+
+        /// <summary>
+        /// Combines the two geometries using the specified <see cref="GeometryCombineMode"/> and applies the specified transform to the resulting geometry.
+        /// </summary>
+        /// <param name="geometry1">The first geometry to combine.</param>
+        /// <param name="geometry2">The second geometry to combine.</param>
+        /// <param name="combineMode">One of the enumeration values that specifies how the geometries are combined.</param>
+        /// <param name="transform">A transformation to apply to the combined geometry, or <c>null</c>.</param>
+        /// <returns></returns>
+        public static Geometry Combine(Geometry geometry1, RectangleGeometry geometry2, GeometryCombineMode combineMode, Transform? transform = null)
+        {
+            return new CombinedGeometry(combineMode, geometry1, geometry2, transform);
+        }
     }
 }

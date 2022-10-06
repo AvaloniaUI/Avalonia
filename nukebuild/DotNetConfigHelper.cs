@@ -46,7 +46,7 @@ public class DotNetConfigHelper
     public DotNetConfigHelper SetVerbosity(DotNetVerbosity verbosity)
     {
         Build = Build?.SetVerbosity(verbosity);
-        Pack = Pack?.SetVerbostiy(verbosity);
+        Pack = Pack?.SetVerbosity(verbosity);
         Test = Test?.SetVerbosity(verbosity);
         return this;
     }
