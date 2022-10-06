@@ -29,6 +29,10 @@
       <Pack>true</Pack>
       <PackagePath>build\;buildTransitive\</PackagePath>
     </Content>
+    <Content Include="interop.js">
+      <Pack>true</Pack>
+      <PackagePath>buildTransitive/net7.0/interop.js</PackagePath>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
