@@ -23,5 +23,7 @@ namespace Avalonia.LinuxFramebuffer
         /// Default: R0 G0 B0 A0
         /// </summary>
         public Color InitialBufferSwappingColor { get; set; } = new Color(0, 0, 0, 0);
+
+        public PixelSize? VideoMode { get; set; }
     }
 }
