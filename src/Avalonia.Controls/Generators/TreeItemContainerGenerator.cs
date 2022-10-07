@@ -83,7 +83,7 @@ namespace Avalonia.Controls.Generators
                 }
                 else
                 {
-                    result.SetValue(ContentProperty, item, BindingPriority.Style);
+                    result.SetValue(ContentProperty, template.Build(item), BindingPriority.Style);
                 }
 
                 var itemsSelector = template.ItemsSelector(item);
