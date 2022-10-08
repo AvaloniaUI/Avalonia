@@ -95,7 +95,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorSpectrum"/> class.
         /// </summary>
-        public ColorSpectrum()
+        public ColorSpectrum() : base()
         {
             _shapeFromLastBitmapCreation = Shape;
             _componentsFromLastBitmapCreation = Components;
