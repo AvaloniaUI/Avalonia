@@ -600,6 +600,10 @@ namespace Avalonia.Controls.Primitives
             RaiseColorChanged();
         }
 
+        /// <summary>
+        /// Updates the selected <see cref="HsvColor"/> and <see cref="Color"/> based on a point within the color spectrum.
+        /// </summary>
+        /// <param name="point">The point on the spectrum representing the color.</param>
         private void UpdateColorFromPoint(PointerPoint point)
         {
             // If we haven't initialized our HSV value array yet, then we should just ignore any user input -
@@ -676,6 +680,9 @@ namespace Avalonia.Controls.Primitives
             UpdateColor(hsvAtPoint);
         }
 
+        /// <summary>
+        /// Updates the position of the selection ellipse on the spectrum which indicates the selected color.
+        /// </summary>
         private void UpdateEllipse()
         {
             if (_selectionEllipsePanel == null)
