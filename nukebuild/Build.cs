@@ -23,6 +23,7 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
+using MicroCom.CodeGenerator;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -277,6 +278,14 @@ partial class Build : NukeBuild
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles);
+
+    Target GenerateCppHeaders => _ => _.Executes(() =>
+    {
+        var file = MicroComCodeGenerator.Parse(
+            File.ReadAllText(RootDirectory / "src" / "Avalonia.Native" / "avn.idl"));
+        File.WriteAllText(RootDirectory / "native" / "Avalonia.Native" / "inc" / "avalonia-native.h",
+            file.GenerateCppHeader());
+    });
 
 
     public static int Main() =>
