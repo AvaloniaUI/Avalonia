@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Text;
 using Avalonia.Animation.Animators;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -45,7 +45,7 @@ namespace Avalonia.Media
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Acquire();
 
             if (Count == 0)
             {
@@ -57,7 +57,7 @@ namespace Avalonia.Media
                 sb.AppendFormat("{0} ", boxShadow.ToString());
             }
 
-            return sb.ToString();
+            return StringBuilderCache.GetStringAndRelease(sb);
 
         }
 

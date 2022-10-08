@@ -66,6 +66,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         Javanese, //Java
         KayahLi, //Kali
         Katakana, //Kana
+        Kawi, //Kawi
         Kharoshthi, //Khar
         Khmer, //Khmr
         Khojki, //Khoj
@@ -98,6 +99,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         MeeteiMayek, //Mtei
         Multani, //Mult
         Myanmar, //Mymr
+        NagMundari, //Nagm
         Nandinagari, //Nand
         OldNorthArabian, //Narb
         Nabataean, //Nbat

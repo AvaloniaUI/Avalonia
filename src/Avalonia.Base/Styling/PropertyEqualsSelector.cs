@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Text;
 using Avalonia.Styling.Activators;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -42,7 +42,7 @@ namespace Avalonia.Styling
         {
             if (_selectorString == null)
             {
-                var builder = new StringBuilder();
+                var builder = StringBuilderCache.Acquire();
 
                 if (_previous != null)
                 {
@@ -67,7 +67,7 @@ namespace Avalonia.Styling
                 builder.Append(_value ?? string.Empty);
                 builder.Append(']');
 
-                _selectorString = builder.ToString();
+                _selectorString = StringBuilderCache.GetStringAndRelease(builder);
             }
 
             return _selectorString;

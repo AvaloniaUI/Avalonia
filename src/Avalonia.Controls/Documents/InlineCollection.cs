@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
 using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {
@@ -70,14 +70,14 @@ namespace Avalonia.Controls.Documents
         {
             get
             {
-                var builder = new StringBuilder();
+                var builder = StringBuilderCache.Acquire();
 
                 foreach (var inline in this)
                 {
                     inline.AppendText(builder);
                 }
 
-                return builder.ToString();
+                return StringBuilderCache.GetStringAndRelease(builder);
             }
 
         }
@@ -111,7 +111,7 @@ namespace Avalonia.Controls.Documents
 
         private void AddText(string text)
         {
-            if(Parent is RichTextBlock textBlock && !textBlock.HasComplexContent)
+            if (Parent is RichTextBlock textBlock && !textBlock.HasComplexContent)
             {
                 textBlock._text += text;
             }
@@ -156,7 +156,17 @@ namespace Avalonia.Controls.Documents
         {
             foreach (var child in this)
             {
-                ((ISetLogicalParent)child).SetParent(parent);
+                var oldParent = child.Parent;
+
+                if (oldParent != parent)
+                {
+                    if (oldParent != null)
+                    {
+                        ((ISetLogicalParent)child).SetParent(null);
+                    }
+
+                    ((ISetLogicalParent)child).SetParent(parent);
+                }
             }
         }
 

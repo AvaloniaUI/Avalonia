@@ -356,20 +356,28 @@ namespace Avalonia.Base.UnitTests.Input
             var impl = CreateTopLevelImplMock(renderer.Object);
 
             var invalidateRect = new Rect(0, 0, 15, 15);
+            var lastClientPosition = new Point(1, 5);
+
+            var result = new List<(object?, string, Point)>();
+            void HandleEvent(object? sender, PointerEventArgs e)
+            {
+                result.Add((sender, e.RoutedEvent!.Name, e.GetPosition(null)));
+            }
 
             Canvas canvas;
 
-            var root = CreateInputRoot(impl.Object, new Panel
+            var root = (Window)CreateInputRoot(impl.Object, new Panel
             {
                 Children =
                 {
                     (canvas = new Canvas())
                 }
             });
+            AddEnteredExitedHandlers(HandleEvent, root, canvas);
 
             // Let input know about latest device.
             SetHit(renderer, canvas);
-            impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root));
+            impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root, lastClientPosition));
             Assert.True(canvas.IsPointerOver);
 
             SetHit(renderer, canvas);
@@ -380,6 +388,52 @@ namespace Avalonia.Base.UnitTests.Input
             SetHit(renderer, null);
             renderer.Raise(r => r.SceneInvalidated += null, new SceneInvalidatedEventArgs((IRenderRoot)root, invalidateRect));
             Assert.False(canvas.IsPointerOver);
+
+            Assert.Equal(
+                new[]
+                {
+                    ((object?)canvas, nameof(InputElement.PointerEntered), lastClientPosition),
+                    (root, nameof(InputElement.PointerEntered), lastClientPosition),
+                    (canvas, nameof(InputElement.PointerExited), lastClientPosition),
+                    (root, nameof(InputElement.PointerExited), lastClientPosition),
+                },
+                result);
+        }
+
+        [Fact]
+        public void PointerOver_Invalidation_Should_Use_Previously_Captured_Element()
+        {
+            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+
+            var renderer = new Mock<IRenderer>();
+            var deviceMock = CreatePointerDeviceMock();
+            var impl = CreateTopLevelImplMock(renderer.Object);
+
+            var invalidateRect = new Rect(0, 0, 15, 15);
+
+            Canvas canvas1, canvas2;
+
+            var root = CreateInputRoot(impl.Object, new Panel
+            {
+                Children =
+                {
+                    (canvas1 = new Canvas()),
+                    (canvas2 = new Canvas())
+                }
+            });
+
+            canvas1.PointerMoved += (s, a) => a.Pointer.Capture(canvas1);
+
+            // Let input know about latest device.
+            SetHit(renderer, canvas1);
+            impl.Object.Input!(CreateRawPointerMovedArgs(deviceMock.Object, root));
+            Assert.True(canvas1.IsPointerOver);
+            Assert.False(canvas2.IsPointerOver);
+
+            SetHit(renderer, canvas2);
+            renderer.Raise(r => r.SceneInvalidated += null, new SceneInvalidatedEventArgs((IRenderRoot)root, invalidateRect));
+            Assert.False(canvas1.IsPointerOver);
+            Assert.True(canvas2.IsPointerOver);
         }
 
         // https://github.com/AvaloniaUI/Avalonia/issues/7748

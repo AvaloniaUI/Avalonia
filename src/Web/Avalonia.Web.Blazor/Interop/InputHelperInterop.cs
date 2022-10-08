@@ -1,41 +1,130 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using SkiaSharp;
 
 namespace Avalonia.Web.Blazor.Interop
 {
-    internal class InputHelperInterop : JSModuleInterop
+    internal class WebCompositionEventArgs : EventArgs
     {
-        private const string JsFilename = "./_content/Avalonia.Web.Blazor/InputHelper.js";
+        public enum WebCompositionEventType
+        {
+            Start,
+            Update,
+            End
+        }
+
+        public WebCompositionEventArgs(string type, string data)
+        {
+            Type = type switch
+            {
+                "compositionstart" => WebCompositionEventType.Start,
+                "compositionupdate" => WebCompositionEventType.Update,
+                "compositionend" => WebCompositionEventType.End,
+                _ => Type
+            };
+
+            Data = data;
+        }
+        
+        public WebCompositionEventType Type { get; }
+        
+        public string Data { get; }
+    }
+
+    internal class WebInputEventArgs
+    {
+        public WebInputEventArgs(string type, string data)
+        {
+            Type = type;
+            Data = data;
+        }
+
+        public string Type { get; }
+
+        public string Data { get; }
+
+        public bool Handled { get; set; }
+    }
+    
+    internal class InputHelperInterop
+    {
         private const string ClearSymbol = "InputHelper.clear";
         private const string FocusSymbol = "InputHelper.focus";
         private const string SetCursorSymbol = "InputHelper.setCursor";
         private const string HideSymbol = "InputHelper.hide";
         private const string ShowSymbol = "InputHelper.show";
+        private const string StartSymbol = "InputHelper.start";
+        private const string SetSurroundingTextSymbol = "InputHelper.setSurroundingText";
+        private const string SetBoundsSymbol = "InputHelper.setBounds";
 
-        private readonly ElementReference inputElement;
+        private readonly AvaloniaModule _module;
+        private readonly ElementReference _inputElement;
+        private readonly ActionHelper<string, string> _compositionAction;
+        private readonly ActionHelper<string, string> _inputAction;
 
-        public static async Task<InputHelperInterop> ImportAsync(IJSRuntime js, ElementReference element)
+        private DotNetObjectReference<ActionHelper<string, string>>? compositionActionReference;
+        private DotNetObjectReference<ActionHelper<string, string>>? inputActionReference;
+
+        public InputHelperInterop(AvaloniaModule module, ElementReference inputElement)
         {
-            var interop = new InputHelperInterop(js, element);
-            await interop.ImportAsync();
-            return interop;
+            _module = module;
+            _inputElement = inputElement;
+
+            _compositionAction = new ActionHelper<string, string>(OnCompositionEvent);
+            _inputAction = new ActionHelper<string, string>(OnInputEvent);
+
+            Start();
         }
 
-        public InputHelperInterop(IJSRuntime js, ElementReference element)
-            : base(js, JsFilename)
+        public event EventHandler<WebCompositionEventArgs>? CompositionEvent;
+        public event EventHandler<WebInputEventArgs>? InputEvent;
+
+        private void OnCompositionEvent(string type, string data)
         {
-            inputElement = element;
+            Console.WriteLine($"CompositionEvent Handler Helper {CompositionEvent == null} ");
+            CompositionEvent?.Invoke(this, new WebCompositionEventArgs(type, data));
         }
 
-        public void Clear() => Invoke(ClearSymbol, inputElement);
+        private void OnInputEvent(string type, string data)
+        {
+            Console.WriteLine($"InputEvent Handler Helper {InputEvent == null} ");
 
-        public void Focus() => Invoke(FocusSymbol, inputElement);
+            var args = new WebInputEventArgs(type, data);
 
-        public void SetCursor(string kind) => Invoke(SetCursorSymbol, inputElement, kind);
+            InputEvent?.Invoke(this, args);
+        }
 
-        public void Hide() => Invoke(HideSymbol, inputElement);
+        public void Clear() => _module.Invoke(ClearSymbol, _inputElement);
 
-        public void Show() => Invoke(ShowSymbol, inputElement);
+        public void Focus() => _module.Invoke(FocusSymbol, _inputElement);
+
+        public void SetCursor(string kind) => _module.Invoke(SetCursorSymbol, _inputElement, kind);
+
+        public void Hide() => _module.Invoke(HideSymbol, _inputElement);
+
+        public void Show() => _module.Invoke(ShowSymbol, _inputElement);
+
+        private void Start()
+        {
+            if(compositionActionReference != null)
+            {
+                return;
+            }
+                          
+            compositionActionReference = DotNetObjectReference.Create(_compositionAction);
+
+            inputActionReference = DotNetObjectReference.Create(_inputAction);
+
+            _module.Invoke(StartSymbol, _inputElement, compositionActionReference, inputActionReference);
+        }
+
+        public void SetSurroundingText(string text, int start, int end)
+        {
+            _module.Invoke(SetSurroundingTextSymbol, _inputElement, text, start, end);
+        }
+
+        public void SetBounds(PixelRect bounds, int caret)
+        {
+            _module.Invoke(SetBoundsSymbol, _inputElement, bounds.X, bounds.Y, bounds.Width, bounds.Height, caret);
+        }
     }
 }

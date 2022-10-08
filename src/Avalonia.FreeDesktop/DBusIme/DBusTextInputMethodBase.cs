@@ -40,6 +40,7 @@ namespace Avalonia.FreeDesktop.DBusIme
         private PixelRect? _lastReportedRect;
         private double _scaling = 1;
         private PixelPoint _windowPosition;
+        private ITextInputMethodClient? _client;
 
         protected bool IsConnected => _currentName != null;
 
@@ -50,6 +51,10 @@ namespace Avalonia.FreeDesktop.DBusIme
             _knownNames = knownNames;
             Watch();
         }
+
+        public ITextInputMethodClient Client => _client;
+
+        public bool IsActive => _client != null;
 
         async void Watch()
         {
@@ -202,7 +207,7 @@ namespace Avalonia.FreeDesktop.DBusIme
         
         void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
         {
-            _controlActive = client is { };
+            _client = client;
             UpdateActive();
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics
@@ -10,9 +11,9 @@ namespace Avalonia.Diagnostics
     {
         public static string PrintVisualTree(IVisual visual)
         {
-            StringBuilder result = new StringBuilder();
+            var result = StringBuilderCache.Acquire();
             PrintVisualTree(visual, result, 0);
-            return result.ToString();
+            return StringBuilderCache.GetStringAndRelease(result);
         }
 
         private static void PrintVisualTree(IVisual visual, StringBuilder builder, int indent)

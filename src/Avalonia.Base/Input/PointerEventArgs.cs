@@ -65,6 +65,7 @@ namespace Avalonia.Input
                 return default;
             if (relativeTo == null)
                 return pt;
+
             return pt * _rootVisual.TransformToVisual(relativeTo) ?? default;
         }
 

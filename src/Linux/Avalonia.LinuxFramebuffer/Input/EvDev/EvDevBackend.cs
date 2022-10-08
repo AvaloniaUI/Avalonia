@@ -13,7 +13,6 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
         private readonly EvDevDeviceDescription[] _deviceDescriptions;
         private readonly List<EvDevDeviceHandler> _handlers = new List<EvDevDeviceHandler>();
         private int _epoll;
-        private bool _isQueueHandlerTriggered;
         private object _lock = new object();
         private Action<RawInputEventArgs> _onInput;
         private IInputRoot _inputRoot;

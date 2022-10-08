@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Threading;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Threading;
 using static Avalonia.LinuxFramebuffer.Input.LibInput.LibInputNativeUnsafeMethods; 
 namespace Avalonia.LinuxFramebuffer.Input.LibInput
 {
@@ -29,8 +27,6 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             new Thread(()=>InputThread(ctx)).Start();
         }
 
-        
-        
         private unsafe void InputThread(IntPtr ctx)
         {
             var fd = libinput_get_fd(ctx);
@@ -143,8 +139,6 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
             }
             
         }
-            
-        
 
         public void Initialize(IScreenInfoProvider screen, Action<RawInputEventArgs> onInput)
         {
