@@ -31,12 +31,12 @@
         /// </summary>
         public bool IsPrimary { get; }
         
-        public Screen(double pixelDensity, PixelRect bounds, PixelRect workingArea, bool primary)
+        public Screen(double pixelDensity, PixelRect bounds, PixelRect workingArea, bool isPrimary)
         {
             this.PixelDensity = pixelDensity;
             this.Bounds = bounds;
             this.WorkingArea = workingArea;
-            this.IsPrimary = primary;
+            this.IsPrimary = isPrimary;
         } 
     }
 }
