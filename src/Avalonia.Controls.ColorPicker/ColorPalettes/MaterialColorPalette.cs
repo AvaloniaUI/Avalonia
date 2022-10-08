@@ -318,7 +318,6 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public int ColorCount
         {
-            // Table is transposed compared to the reference chart
             get
             {
                 if (_colorChart == null)
@@ -333,7 +332,6 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public int ShadeCount
         {
-            // Table is transposed compared to the reference chart
             get
             {
                 if (_colorChart == null)
@@ -353,7 +351,6 @@ namespace Avalonia.Controls
                 InitColorChart();
             }
 
-            // Table is transposed compared to the reference chart
             return _colorChart![
                 MathUtilities.Clamp(colorIndex, 0, _colorChartColorCount - 1),
                 MathUtilities.Clamp(shadeIndex, 0, _colorChartShadeCount - 1)];
