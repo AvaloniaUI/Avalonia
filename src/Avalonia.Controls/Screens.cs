@@ -8,13 +8,27 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Represents all screens available on a device.
+    /// </summary>
     public class Screens
     {
         private readonly IScreenImpl _iScreenImpl;
 
+        /// <summary>
+        /// Gets the total number of screens available on this device.
+        /// </summary>
         public int ScreenCount => _iScreenImpl?.ScreenCount ?? 0;
+
+        /// <summary>
+        /// Gets the list of all screens available on this device.
+        /// </summary>
         public IReadOnlyList<Screen> All => _iScreenImpl?.AllScreens ?? Array.Empty<Screen>();
-        public Screen? Primary => All.FirstOrDefault(x => x.Primary);
+
+        /// <summary>
+        /// Gets the primary screen on this device.
+        /// </summary>
+        public Screen? Primary => All.FirstOrDefault(x => x.IsPrimary);
 
         public Screens(IScreenImpl iScreenImpl)
         {

@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 
 namespace Avalonia.X11
 {
-    class X11Screens  : IScreenImpl
+    class X11Screens : IScreenImpl
     {
         private IX11Screens _impl;
 
@@ -218,7 +218,7 @@ namespace Avalonia.X11
         public int ScreenCount => _impl.Screens.Length;
 
         public IReadOnlyList<Screen> AllScreens =>
-            _impl.Screens.Select(s => new Screen(s.PixelDensity, s.Bounds, s.WorkingArea, s.Primary)).ToArray();
+            _impl.Screens.Select(s => new Screen(s.PixelDensity, s.Bounds, s.WorkingArea, s.IsPrimary)).ToArray();
     }
 
     interface IX11Screens
@@ -281,7 +281,7 @@ namespace Avalonia.X11
     {
         private const int FullHDWidth = 1920;
         private const int FullHDHeight = 1080;
-        public bool Primary { get; }
+        public bool IsPrimary { get; }
         public string Name { get; set; }
         public PixelRect Bounds { get; set; }
         public Size? PhysicalSize { get; set; }
@@ -291,7 +291,7 @@ namespace Avalonia.X11
         public X11Screen(PixelRect bounds, bool primary,
             string name, Size? physicalSize, double? pixelDensity)
         {
-            Primary = primary;
+            IsPrimary = primary;
             Name = name;
             Bounds = bounds;
             if (physicalSize == null && pixelDensity == null)

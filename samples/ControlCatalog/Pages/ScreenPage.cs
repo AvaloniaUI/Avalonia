@@ -65,7 +65,7 @@ namespace ControlCatalog.Pages
                     formattedText = CreateFormattedText($"Scaling: {screen.PixelDensity * 100}%");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 40));
 
-                    formattedText = CreateFormattedText($"Primary: {screen.Primary}");
+                    formattedText = CreateFormattedText($"Primary: {screen.IsPrimary}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 60));
 
                     formattedText =
