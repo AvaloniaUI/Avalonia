@@ -57,6 +57,7 @@ jobs:
       projects: 'samples/IntegrationTestApp/IntegrationTestApp.csproj'
 
   - task: DotNetCoreCLI@2
+    retryCountOnTaskFailure: 3
     inputs:
       command: 'test'
       projects: 'tests/Avalonia.IntegrationTests.Appium/Avalonia.IntegrationTests.Appium.csproj'
