@@ -171,6 +171,18 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnAttachedToVisualTree(e);
 
+            // If the color was updated while this ColorSpectrum was not part of the visual tree,
+            // the selection ellipse may be in an incorrect position. This is because the spectrum
+            // renders based on layout scaling to avoid color banding; however, layout scale is only
+            // available when the control is attached to the visual tree. The ColorSpectrum's color
+            // may be updated from code-behind or from binding with another control when it's not
+            // part of the visual tree.
+            //
+            //  See discussion: https://github.com/AvaloniaUI/Avalonia/discussions/9077
+            //
+            // To work-around this issue the selection ellipse is refreshed here.
+            UpdateEllipse();
+
             // OnAttachedToVisualTree is called after OnApplyTemplate so events cannot be connected here
         }
 
@@ -832,6 +844,8 @@ namespace Avalonia.Controls.Primitives
             }
 
             // Remember the bitmap size follows physical device pixels
+            // Warning: LayoutHelper.GetLayoutScale() doesn't work unless the control is visible
+            // This will not be true in all cases if the color is updated from another control or code-behind
             var scale = LayoutHelper.GetLayoutScale(this);
             Canvas.SetLeft(_selectionEllipsePanel, (xPosition / scale) - (_selectionEllipsePanel.Width / 2));
             Canvas.SetTop(_selectionEllipsePanel, (yPosition / scale) - (_selectionEllipsePanel.Height / 2));
