@@ -189,7 +189,7 @@
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
     </Style>
 
-    <Style Selector="^:hasnotime /template/ Button#FlyoutButton TextBlock">
+    <Style Selector="^:hasnotime /template/ Button#PART_FlyoutButton TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     </Style>
   </ControlTheme>
