@@ -3413,13 +3413,15 @@ namespace Avalonia.Collections
                 return;
             }
             
-            object removedItem = args.OldItems?[0];
-
             // fire notifications for removes
-            if (args.Action == NotifyCollectionChangedAction.Remove ||
-                args.Action == NotifyCollectionChangedAction.Replace)
+            if (args.OldItems != null && 
+                (args.Action == NotifyCollectionChangedAction.Remove ||
+                args.Action == NotifyCollectionChangedAction.Replace))
             {
-                ProcessRemoveEvent(removedItem, args.Action == NotifyCollectionChangedAction.Replace);
+                foreach (var removedItem in args.OldItems)
+                {
+                    ProcessRemoveEvent(removedItem, args.Action == NotifyCollectionChangedAction.Replace);
+                }
             }
 
             // fire notifications for adds
