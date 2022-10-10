@@ -20,7 +20,7 @@ internal class BrowserStorageProvider : IStorageProvider
     internal const string PickerCancelMessage = "The user aborted a request";
     internal const string NoPermissionsMessage = "Permissions denied";
 
-    private readonly Lazy<Task<JSObject>> _lazyModule = new(() => JSHost.ImportAsync("storage.ts", "./storage.js"));
+    private readonly Lazy<Task<JSObject>> _lazyModule = new(() => JSHost.ImportAsync("storage", "./storage.js"));
 
     public bool CanOpen => StorageHelper.CanShowOpenFilePicker();
     public bool CanSave => StorageHelper.CanShowSaveFilePicker();

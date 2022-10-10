@@ -9,26 +9,26 @@ namespace Avalonia.Web.Storage;
 /// </summary>
 internal static partial class StreamHelper
 {
-    [JSImport("StreamHelper.seek", "avalonia.ts")]
+    [JSImport("StreamHelper.seek", "avalonia")]
     public static partial void Seek(JSObject stream, [JSMarshalAs<JSType.Number>] long position);
 
-    [JSImport("StreamHelper.truncate", "avalonia.ts")]
+    [JSImport("StreamHelper.truncate", "avalonia")]
     public static partial void Truncate(JSObject stream, [JSMarshalAs<JSType.Number>] long size);
 
-    [JSImport("StreamHelper.write", "avalonia.ts")]
+    [JSImport("StreamHelper.write", "avalonia")]
     public static partial Task WriteAsync(JSObject stream, [JSMarshalAs<JSType.MemoryView>] ArraySegment<byte> data);
 
-    [JSImport("StreamHelper.close", "avalonia.ts")]
+    [JSImport("StreamHelper.close", "avalonia")]
     public static partial Task CloseAsync(JSObject stream);
 
-    [JSImport("StreamHelper.byteLength", "avalonia.ts")]
+    [JSImport("StreamHelper.byteLength", "avalonia")]
     [return: JSMarshalAs<JSType.Number>]
     public static partial long ByteLength(JSObject stream);
 
-    [JSImport("StreamHelper.sliceArrayBuffer", "avalonia.ts")]
+    [JSImport("StreamHelper.sliceArrayBuffer", "avalonia")]
     private static partial Task<JSObject> SliceToArrayBuffer(JSObject stream, [JSMarshalAs<JSType.Number>] long offset, int count);
 
-    [JSImport("StreamHelper.toMemoryView", "avalonia.ts")]
+    [JSImport("StreamHelper.toMemoryView", "avalonia")]
     [return: JSMarshalAs<JSType.Array<JSType.Number>>]
     private static partial byte[] ArrayBufferToMemoryView(JSObject stream);
 

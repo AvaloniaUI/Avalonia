@@ -1,44 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <Nullable>enable</Nullable>
-    <!--Temporal hack that fixes compilation in VS-->
-    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <EmccTotalMemory>16777216</EmccTotalMemory>
     <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
     <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
   </PropertyGroup>
 
-  <!-- In debug, make builds faster by reducing optimizations -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <WasmNativeStrip>false</WasmNativeStrip>
-    <EmccCompileOptimizationFlag>-O1</EmccCompileOptimizationFlag>
-    <RunAOTCompilation>false</RunAOTCompilation>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <Optimize>true</Optimize>
-    <WasmNativeStrip>true</WasmNativeStrip>
-    <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
-    <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
-    <RunAOTCompilation>false</RunAOTCompilation>
-    <DebuggerSupport>false</DebuggerSupport>
-    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
-    <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
-    <EventSourceSupport>false</EventSourceSupport>
-    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
-    <UseNativeHttpHandler>true</UseNativeHttpHandler>
-    <UseSystemResourceKeys>true</UseSystemResourceKeys>
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>link</TrimMode>
-    <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0-rc.1.22427.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0-rc.1.22427.2" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,8 +22,8 @@
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
 
-  <Import Project="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.targets" />
-  <Import Project="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.CompilationTuning.props" />
+  <Import Project="..\..\src\Web\Avalonia.Web\Avalonia.Web.props" />
+  <Import Project="..\..\src\Web\Avalonia.Web\Avalonia.Web.targets" />
 
 </Project>
 

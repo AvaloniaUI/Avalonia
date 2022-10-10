@@ -1,31 +1,28 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Media;
 
-namespace Avalonia.Web.Blazor
+namespace Avalonia.Web.Blazor;
+
+public static class WebAppBuilder
 {
-    public class BlazorSingleViewLifetime : ISingleViewApplicationLifetime
+    public static T SetupWithSingleViewLifetime<T>(
+        this T builder)
+        where T : AppBuilderBase<T>, new()
     {
-        public Control? MainView { get; set; }
+        return builder.SetupWithLifetime(new BlazorSingleViewLifetime());
     }
 
-    public static class WebAppBuilder
+    public static AppBuilder Configure<TApp>()
+        where TApp : Application, new()
     {
-        public static T SetupWithSingleViewLifetime<T>(
-            this T builder)
-            where T : AppBuilderBase<T>, new()
-        {
-            return builder.SetupWithLifetime(new BlazorSingleViewLifetime());
-        }
+        var builder = AppBuilder.Configure<TApp>()
+            .UseBrowser();
 
-        public static AvaloniaBlazorAppBuilder Configure<TApp>()
-            where TApp : Application, new()
-        {
-            var builder = AvaloniaBlazorAppBuilder.Configure<TApp>()
-                .UseSkia()
-                .With(new SkiaOptions { CustomGpuFactory = () => new BlazorSkiaGpu() });
+        return builder;
+    }
 
-            return builder;
-        }
+    internal class BlazorSingleViewLifetime : ISingleViewApplicationLifetime
+    {
+        public Control? MainView { get; set; }
     }
 }

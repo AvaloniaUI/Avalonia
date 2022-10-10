@@ -40,13 +40,12 @@ namespace Avalonia.Web
         private static int _canvasCount;
 
         public AvaloniaView(string divId)
+            : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id {divId} was not found in the html document."))
         {
-            var host = DomHelper.GetElementById(divId);
-            if (host == null)
-            {
-                throw new Exception($"Element with id {divId} was not found in the html document.");
-            }
+        }
 
+        public AvaloniaView(JSObject host)
+        {
             var hostContent = DomHelper.CreateAvaloniaHost(host);
             if (hostContent == null)
             {
@@ -137,7 +136,7 @@ namespace Avalonia.Web
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
-            DomHelper.ObserveSize(host, divId, OnSizeChanged);
+            DomHelper.ObserveSize(host, null, OnSizeChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
         }
@@ -387,7 +386,7 @@ namespace Avalonia.Web
             InputHelper.FocusElement(_containerElement);
         }
 
-        public void SetClient(ITextInputMethodClient? client)
+        void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
         {
             Console.WriteLine("Set Client");
             if (_client != null)
@@ -431,18 +430,18 @@ namespace Avalonia.Web
             }
         }
 
-        public void SetCursorRect(Rect rect)
+        void ITextInputMethodImpl.SetCursorRect(Rect rect)
         {
             InputHelper.FocusElement(_inputElement);
             InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height, _client?.SurroundingText.CursorOffset ?? 0);
             InputHelper.FocusElement(_inputElement);
         }
 
-        public void SetOptions(TextInputOptions options)
+        void ITextInputMethodImpl.SetOptions(TextInputOptions options)
         {
         }
 
-        public void Reset()
+        void ITextInputMethodImpl.Reset()
         {
             InputHelper.ClearInputElement(_inputElement);
             InputHelper.SetSurroundingText(_inputElement, "", 0, 0);

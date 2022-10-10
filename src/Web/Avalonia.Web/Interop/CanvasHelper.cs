@@ -29,13 +29,13 @@ internal static partial class CanvasHelper
         return glInfo;
     }
 
-    [JSImport("Canvas.requestAnimationFrame", "avalonia.ts")]
+    [JSImport("Canvas.requestAnimationFrame", "avalonia")]
     public static partial void RequestAnimationFrame(JSObject canvas, bool renderLoop);
 
-    [JSImport("Canvas.setCanvasSize", "avalonia.ts")]
+    [JSImport("Canvas.setCanvasSize", "avalonia")]
     public static partial void SetCanvasSize(JSObject canvas, int height, int width);
 
-    [JSImport("Canvas.initGL", "avalonia.ts")]
+    [JSImport("Canvas.initGL", "avalonia")]
     private static partial JSObject InitGL(
         JSObject canvas,
         string canvasId,

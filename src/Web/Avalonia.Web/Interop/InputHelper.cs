@@ -6,7 +6,7 @@ namespace Avalonia.Web.Interop;
 
 internal static partial class InputHelper
 {
-    [JSImport("InputHelper.subscribeKeyEvents", "avalonia.ts")]
+    [JSImport("InputHelper.subscribeKeyEvents", "avalonia")]
     public static partial void SubscribeKeyEvents(
         JSObject htmlElement,
         [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
@@ -14,7 +14,7 @@ internal static partial class InputHelper
         [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Number, JSType.Boolean>>]
         Func<string, string, int, bool> keyUp);
 
-    [JSImport("InputHelper.subscribeTextEvents", "avalonia.ts")]
+    [JSImport("InputHelper.subscribeTextEvents", "avalonia")]
     public static partial void SubscribeTextEvents(
         JSObject htmlElement,
         [JSMarshalAs<JSType.Function<JSType.String, JSType.String, JSType.Boolean>>]
@@ -26,7 +26,7 @@ internal static partial class InputHelper
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
         Func<JSObject, bool> onCompositionEnd);
 
-    [JSImport("InputHelper.subscribePointerEvents", "avalonia.ts")]
+    [JSImport("InputHelper.subscribePointerEvents", "avalonia")]
     public static partial void SubscribePointerEvents(
         JSObject htmlElement,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
@@ -39,35 +39,35 @@ internal static partial class InputHelper
         Func<JSObject, bool> wheel);
 
 
-    [JSImport("InputHelper.subscribeInputEvents", "avalonia.ts")]
+    [JSImport("InputHelper.subscribeInputEvents", "avalonia")]
     public static partial void SubscribeInputEvents(
         JSObject htmlElement,
         [JSMarshalAs<JSType.Function<JSType.String, JSType.Boolean>>]
         Func<string, bool> input);
 
 
-    [JSImport("InputHelper.clearInput", "avalonia.ts")]
+    [JSImport("InputHelper.clearInput", "avalonia")]
     public static partial void ClearInputElement(JSObject htmlElement);
 
-    [JSImport("InputHelper.isInputElement", "avalonia.ts")]
+    [JSImport("InputHelper.isInputElement", "avalonia")]
     public static partial void IsInputElement(JSObject htmlElement);
 
-    [JSImport("InputHelper.focusElement", "avalonia.ts")]
+    [JSImport("InputHelper.focusElement", "avalonia")]
     public static partial void FocusElement(JSObject htmlElement);
 
-    [JSImport("InputHelper.setCursor", "avalonia.ts")]
+    [JSImport("InputHelper.setCursor", "avalonia")]
     public static partial void SetCursor(JSObject htmlElement, string kind);
 
-    [JSImport("InputHelper.hide", "avalonia.ts")]
+    [JSImport("InputHelper.hide", "avalonia")]
     public static partial void HideElement(JSObject htmlElement);
 
-    [JSImport("InputHelper.show", "avalonia.ts")]
+    [JSImport("InputHelper.show", "avalonia")]
     public static partial void ShowElement(JSObject htmlElement);
 
-    [JSImport("InputHelper.setSurroundingText", "avalonia.ts")]
+    [JSImport("InputHelper.setSurroundingText", "avalonia")]
     public static partial void SetSurroundingText(JSObject htmlElement, string text, int start, int end);
 
-    [JSImport("InputHelper.setBounds", "avalonia.ts")]
+    [JSImport("InputHelper.setBounds", "avalonia")]
     public static partial void SetBounds(JSObject htmlElement, int x, int y, int width, int height, int caret);
 
     [JSImport("globalThis.navigator.clipboard.readText")]
