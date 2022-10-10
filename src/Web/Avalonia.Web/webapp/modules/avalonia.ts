@@ -7,10 +7,18 @@ import { StreamHelper } from "./avalonia/stream";
 import { NativeControlHost } from "./avalonia/nativeControlHost";
 
 async function registerAvaloniaModule(api: RuntimeAPI): Promise<void> {
-    api.setModuleImports("avalonia", avaloniaModule);
+    api.setModuleImports("avalonia", {
+        Caniuse,
+        Canvas,
+        InputHelper,
+        SizeWatcher,
+        DpiWatcher,
+        AvaloniaDOM,
+        StreamHelper,
+        NativeControlHost
+    });
 }
-
-export const avaloniaModule = {
+export {
     Caniuse,
     Canvas,
     InputHelper,

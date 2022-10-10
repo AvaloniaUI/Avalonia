@@ -24,6 +24,7 @@ public class AvaloniaView : ComponentBase
     {
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "id", _containerId);
+        builder.AddAttribute(2, "style", "width:100vw;height:100vh");
         builder.CloseElement();
     }
 
@@ -31,7 +32,7 @@ public class AvaloniaView : ComponentBase
     {
         if (OperatingSystem.IsBrowser())
         {
-            _ = await JSHost.ImportAsync("avalonia", "/_content/Avalonia.Web.Blazor/avalonia.js");
+            await Avalonia.Web.Interop.AvaloniaModule.ImportMain();
 
             _browserView = new BrowserView(_containerId);
             if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime lifetime)

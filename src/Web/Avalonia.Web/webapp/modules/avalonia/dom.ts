@@ -4,6 +4,8 @@ export class AvaloniaDOM {
     }
 
     static createAvaloniaHost(host: HTMLElement) {
+        const randomIdPart = Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 10);
+
         // Root element
         host.classList.add("avalonia-container");
         host.tabIndex = 0;
@@ -11,6 +13,7 @@ export class AvaloniaDOM {
 
         // Rendering target canvas
         const canvas = document.createElement("canvas");
+        canvas.id = `canvas${randomIdPart}`;
         canvas.classList.add("avalonia-canvas");
         canvas.style.backgroundColor = "#ccc";
         canvas.style.width = "100%";
@@ -19,6 +22,7 @@ export class AvaloniaDOM {
 
         // Native controls host
         const nativeHost = document.createElement("div");
+        canvas.id = `nativeHost${randomIdPart}`;
         nativeHost.classList.add("avalonia-native-host");
         nativeHost.style.left = "0px";
         nativeHost.style.top = "0px";
@@ -28,6 +32,7 @@ export class AvaloniaDOM {
 
         // IME
         const inputElement = document.createElement("input");
+        canvas.id = `input${randomIdPart}`;
         inputElement.classList.add("avalonia-input-element");
         inputElement.autocapitalize = "none";
         inputElement.type = "text";

@@ -37,7 +37,6 @@ namespace Avalonia.Web
 
         private bool _useGL;        
         private ITextInputMethodClient? _client;
-        private static int _canvasCount;
 
         public AvaloniaView(string divId)
             : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id {divId} was not found in the html document."))
@@ -62,8 +61,6 @@ namespace Avalonia.Web
                 ?? throw new InvalidOperationException("InputElement cannot be null");
 
             _splash = DomHelper.GetElementById("avalonia-splash");
-
-            _canvas.SetProperty("id", $"avaloniaCanvas{_canvasCount++}");
 
             _topLevelImpl = new BrowserTopLevelImpl(this);
 

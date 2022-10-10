@@ -2,33 +2,33 @@
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 
-namespace Avalonia.Web.Storage;
+namespace Avalonia.Web.Interop;
 
 /// <summary>
 /// Set of FileSystemWritableFileStream and Blob methods.
 /// </summary>
 internal static partial class StreamHelper
 {
-    [JSImport("StreamHelper.seek", "avalonia")]
+    [JSImport("StreamHelper.seek", AvaloniaModule.MainModuleName)]
     public static partial void Seek(JSObject stream, [JSMarshalAs<JSType.Number>] long position);
 
-    [JSImport("StreamHelper.truncate", "avalonia")]
+    [JSImport("StreamHelper.truncate", AvaloniaModule.MainModuleName)]
     public static partial void Truncate(JSObject stream, [JSMarshalAs<JSType.Number>] long size);
 
-    [JSImport("StreamHelper.write", "avalonia")]
+    [JSImport("StreamHelper.write", AvaloniaModule.MainModuleName)]
     public static partial Task WriteAsync(JSObject stream, [JSMarshalAs<JSType.MemoryView>] ArraySegment<byte> data);
 
-    [JSImport("StreamHelper.close", "avalonia")]
+    [JSImport("StreamHelper.close", AvaloniaModule.MainModuleName)]
     public static partial Task CloseAsync(JSObject stream);
 
-    [JSImport("StreamHelper.byteLength", "avalonia")]
+    [JSImport("StreamHelper.byteLength", AvaloniaModule.MainModuleName)]
     [return: JSMarshalAs<JSType.Number>]
     public static partial long ByteLength(JSObject stream);
 
-    [JSImport("StreamHelper.sliceArrayBuffer", "avalonia")]
+    [JSImport("StreamHelper.sliceArrayBuffer", AvaloniaModule.MainModuleName)]
     private static partial Task<JSObject> SliceToArrayBuffer(JSObject stream, [JSMarshalAs<JSType.Number>] long offset, int count);
 
-    [JSImport("StreamHelper.toMemoryView", "avalonia")]
+    [JSImport("StreamHelper.toMemoryView", AvaloniaModule.MainModuleName)]
     [return: JSMarshalAs<JSType.Array<JSType.Number>>]
     private static partial byte[] ArrayBufferToMemoryView(JSObject stream);
 

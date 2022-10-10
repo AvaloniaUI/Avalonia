@@ -7,8 +7,9 @@ public partial class App
 {
     protected override void OnParametersSet()
     {
-        WebAppBuilder.Configure<ControlCatalog.App>()
-            .With(new SkiaOptions { CustomGpuFactory = null }) // uncomment to disable GPU/GL rendering
+        AppBuilder.Configure<ControlCatalog.App>()
+            .UseBlazor()
+            // .With(new SkiaOptions { CustomGpuFactory = null }) // uncomment to disable GPU/GL rendering
             .SetupWithSingleViewLifetime();
 
         base.OnParametersSet();
