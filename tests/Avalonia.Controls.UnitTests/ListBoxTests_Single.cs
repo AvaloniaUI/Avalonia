@@ -60,6 +60,58 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Focusing_Item_With_Arrow_Key_And_Ctrl_Pressed_Should_Not_Select_It()
+        {
+            var target = new ListBox
+            {
+                Template = new FuncControlTemplate(CreateListBoxTemplate),
+                Items = new[] { "Foo", "Bar", "Baz " },
+            };
+
+            ApplyTemplate(target);
+
+            target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
+            {
+                RoutedEvent = InputElement.GotFocusEvent,
+                NavigationMethod = NavigationMethod.Directional,
+                KeyModifiers = KeyModifiers.Control
+            });
+
+            Assert.Equal(-1, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void Pressing_Space_On_Focused_Item_With_Ctrl_Pressed_Should_Select_It()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    Items = new[] { "Foo", "Bar", "Baz " },
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                ApplyTemplate(target);
+
+                target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
+                {
+                    RoutedEvent = InputElement.GotFocusEvent,
+                    NavigationMethod = NavigationMethod.Directional,
+                    KeyModifiers = KeyModifiers.Control
+                });
+
+                target.Presenter.Panel.Children[0].RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Space,
+                    KeyModifiers = KeyModifiers.Control
+                });
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
         public void Clicking_Item_Should_Select_It()
         {
             using (UnitTestApplication.Start())
