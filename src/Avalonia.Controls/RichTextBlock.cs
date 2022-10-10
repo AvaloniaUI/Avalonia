@@ -538,9 +538,14 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            LogicalChildren.Clear();
+            if(_textRuns != null)
+            {
+                LogicalChildren.Clear();
 
-            VisualChildren.Clear();
+                VisualChildren.Clear();
+
+                _textRuns = null;
+            }
 
             if (Inlines != null && Inlines.Count > 0)
             {
@@ -558,7 +563,7 @@ namespace Avalonia.Controls
                     if (textRun is EmbeddedControlRun controlRun &&
                         controlRun.Control is Control control)
                     {
-                        ((ISetLogicalParent)control).SetParent(this);
+                        LogicalChildren.Add(control);
 
                         VisualChildren.Add(control);
 
@@ -567,10 +572,6 @@ namespace Avalonia.Controls
                 }
 
                 _textRuns = textRuns;
-            }
-            else
-            {
-                _textRuns = null;
             }
 
             return base.MeasureOverride(availableSize);
