@@ -45,20 +45,12 @@ namespace Avalonia.Controls.Primitives
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-
-            // Bitmaps were released when detached from the visual tree so they must be re-built
-            UpdateBackground();
         }
 
         /// <inheritdoc/>
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-
-            // Clean-up all bitmaps
-            // https://github.com/AvaloniaUI/Avalonia/issues/9051
-            _backgroundBitmap?.Dispose();
-            _backgroundBitmap = null;
         }
 
         /// <summary>
