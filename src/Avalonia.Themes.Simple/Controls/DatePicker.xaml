@@ -170,7 +170,7 @@
     </Style>
 
     <!--  Changes foreground for watermark text when SelectedDate is null  -->
-    <Style Selector="^:hasnodate /template/ Button#FlyoutButton TextBlock">
+    <Style Selector="^:hasnodate /template/ Button#PART_FlyoutButton TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     </Style>
   </ControlTheme>
