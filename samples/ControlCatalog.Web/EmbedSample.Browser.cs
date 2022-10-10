@@ -1,7 +1,5 @@
 using System;
 using System.Runtime.InteropServices.JavaScript;
-
-using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Web;
 

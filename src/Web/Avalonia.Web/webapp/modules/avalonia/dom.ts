@@ -10,6 +10,7 @@ export class AvaloniaDOM {
         host.classList.add("avalonia-container");
         host.tabIndex = 0;
         host.oncontextmenu = function () { return false; };
+        host.style.overflow = "hidden";
 
         // Rendering target canvas
         const canvas = document.createElement("canvas");

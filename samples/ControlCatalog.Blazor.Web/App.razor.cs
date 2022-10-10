@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Web.Blazor;
 
-namespace ControlCatalog.Web;
+namespace ControlCatalog.Blazor.Web;
 
 public partial class App
 {
