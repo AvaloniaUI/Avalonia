@@ -23,12 +23,13 @@
     <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
   </ItemGroup>
   <!-- Build android and iOS projects only on Windows, where we have installed android workload -->
+
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
     <ProjectReference Remove="src/Android/**/*.*proj" />
     <ProjectReference Remove="src/iOS/**/*.*proj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SlnGen" Version="2.0.40" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="8.5.17" PrivateAssets="all" />
   </ItemGroup>
 </Project>

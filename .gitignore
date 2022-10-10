@@ -215,3 +215,4 @@ src/Web/Avalonia.Web.Blazor/Interop/Typescript/*.js
 node_modules
 src/Web/Avalonia.Web.Blazor/webapp/package-lock.json
 src/Web/Avalonia.Web.Blazor/wwwroot
+src/Web/Avalonia.Web/wwwroot

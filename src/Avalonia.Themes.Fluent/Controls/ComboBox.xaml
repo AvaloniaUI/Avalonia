@@ -57,17 +57,8 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Grid RowDefinitions="Auto, *, Auto" ColumnDefinitions="*,32">
-            <ContentPresenter x:Name="HeaderContentPresenter"
-                              Grid.Row="0"
-                              Grid.Column="0"
-                              Grid.ColumnSpan="2"
-                              IsVisible="False"
-                              FontWeight="{DynamicResource ComboBoxHeaderThemeFontWeight}"
-                              Margin="{DynamicResource ComboBoxTopHeaderMargin}"
-                              VerticalAlignment="Top" />
+          <Grid ColumnDefinitions="*,32">
             <Border x:Name="Background"
-                    Grid.Row="1"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Background="{TemplateBinding Background}"
@@ -76,7 +67,6 @@
                     CornerRadius="{TemplateBinding CornerRadius}"
                     MinWidth="{DynamicResource ComboBoxThemeMinWidth}" />
             <Border x:Name="HighlightBackground"
-                    Grid.Row="1"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Background="{DynamicResource ComboBoxBackgroundUnfocused}"
@@ -85,7 +75,6 @@
                     CornerRadius="{TemplateBinding CornerRadius}"
                     IsVisible="False"/>
             <TextBlock x:Name="PlaceholderTextBlock"
-                       Grid.Row="1"
                        Grid.Column="0"
                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -96,14 +85,12 @@
             <ContentControl x:Name="ContentPresenter"
                             Content="{TemplateBinding SelectionBoxItem}"
                             ContentTemplate="{TemplateBinding ItemTemplate}"
-                            Grid.Row="1"
                             Grid.Column="0"
                             Margin="{TemplateBinding Padding}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
 
             <Border x:Name="DropDownOverlay"
-                    Grid.Row="1"
                     Grid.Column="1"
                     Background="Transparent"
                     Margin="0,1,1,1"
@@ -112,7 +99,6 @@
                     HorizontalAlignment="Right" />
 
             <PathIcon x:Name="DropDownGlyph"
-                      Grid.Row="1"
                       Grid.Column="1"
                       UseLayoutRounding="False"
                       IsHitTestVisible="False"
@@ -207,9 +193,6 @@
       <Style Selector="^ /template/ Border#Background">
         <Setter Property="Background" Value="{DynamicResource ComboBoxBackgroundDisabled}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ComboBoxBorderBrushDisabled}" />
-      </Style>
-      <Style Selector="^ /template/ ContentPresenter#HeaderContentPresenter">
-        <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
       </Style>
       <Style Selector="^ /template/ ContentControl#ContentPresenter">
         <Setter Property="Foreground" Value="{DynamicResource ComboBoxForegroundDisabled}" />
