@@ -6,7 +6,7 @@ namespace Avalonia.Input
     /// <summary>
     /// 
     /// </summary>
-    internal interface IClickableControl
+    public interface IClickableControl
     {
         event EventHandler<RoutedEventArgs> Click;
         void RaiseClick();
