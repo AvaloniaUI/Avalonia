@@ -21,9 +21,9 @@
     <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <ItemGroup>
     <TrimmerRootDescriptor Include="Roots.xml" />
-  </PropertyGroup>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
