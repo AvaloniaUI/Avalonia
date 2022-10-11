@@ -55,6 +55,8 @@ namespace Avalonia.Skia
 
             IsFixedPitch = Typeface.IsFixedPitch;
 
+            GlyphCount = Typeface.GlyphCount;
+
             IsFakeBold = isFakeBold;
 
             IsFakeItalic = isFakeItalic;
@@ -94,6 +96,8 @@ namespace Avalonia.Skia
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public bool IsFixedPitch { get; }
+
+        public int GlyphCount { get; }
         
         public bool IsFakeBold { get; }
         

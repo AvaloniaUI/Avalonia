@@ -52,6 +52,11 @@ namespace Avalonia.Platform
         bool IsFixedPitch { get; }
 
         /// <summary>
+        ///     Gets the number of glyphs held by this glyph typeface. 
+        /// </summary>
+        int GlyphCount { get; }
+
+        /// <summary>
         ///     Returns an glyph index for the specified codepoint.
         /// </summary>
         /// <remarks>

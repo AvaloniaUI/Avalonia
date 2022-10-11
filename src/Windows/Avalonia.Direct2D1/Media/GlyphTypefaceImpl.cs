@@ -117,6 +117,8 @@ namespace Avalonia.Direct2D1.Media
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public bool IsFixedPitch { get; }
 
+        public int GlyphCount { get; set; }
+
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public ushort GetGlyph(uint codepoint)
         {

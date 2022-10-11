@@ -14,6 +14,7 @@ namespace Avalonia.UnitTests
         public int StrikethroughPosition { get; }
         public int StrikethroughThickness { get; }
         public bool IsFixedPitch { get; }
+        public int GlyphCount => 1337;
 
         public ushort GetGlyph(uint codepoint)
         {

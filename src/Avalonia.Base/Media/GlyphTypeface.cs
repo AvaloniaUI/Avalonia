@@ -68,6 +68,11 @@ namespace Avalonia.Media
         public bool IsFixedPitch => PlatformImpl.IsFixedPitch;
 
         /// <summary>
+        ///     Gets the number of glyphs held by this glyph typeface. 
+        /// </summary>
+        public int GlyphCount => PlatformImpl.GlyphCount;
+
+        /// <summary>
         ///     Returns an glyph index for the specified codepoint.
         /// </summary>
         /// <remarks>

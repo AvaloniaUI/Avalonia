@@ -95,6 +95,8 @@ namespace Avalonia.Headless
 
         public bool IsFixedPitch => true;
 
+        public int GlyphCount => 1337;
+
         public void Dispose()
         {
         }

@@ -126,6 +126,21 @@ namespace Avalonia.Base.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
+        public IGlyphRunBuffer AllocateGlyphRun(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            throw new NotImplementedException();
+        }
+
         class MockStreamGeometry : IStreamGeometryImpl
         {
             private MockStreamGeometryContext _impl = new MockStreamGeometryContext();

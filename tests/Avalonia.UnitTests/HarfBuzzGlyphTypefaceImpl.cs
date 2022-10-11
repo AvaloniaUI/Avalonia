@@ -44,6 +44,8 @@ namespace Avalonia.UnitTests
 
             IsFixedPitch = GetGlyphAdvance(GetGlyph('a')) == GetGlyphAdvance(GetGlyph('b'));
 
+            GlyphCount = Face.GlyphCount;
+
             IsFakeBold = isFakeBold;
 
             IsFakeItalic = isFakeItalic;
@@ -79,6 +81,8 @@ namespace Avalonia.UnitTests
 
         /// <inheritdoc cref="IGlyphTypefaceImpl"/>
         public bool IsFixedPitch { get; }
+
+        public int GlyphCount { get; set; }
         
         public bool IsFakeBold { get; }
         
