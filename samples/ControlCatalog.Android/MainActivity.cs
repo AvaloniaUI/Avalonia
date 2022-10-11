@@ -5,16 +5,8 @@ using Avalonia.Android;
 
 namespace ControlCatalog.Android
 {
-    [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", LaunchMode = LaunchMode.SingleInstance, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
-    public class MainActivity : AvaloniaActivity<App>
+    [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+    public class MainActivity : AvaloniaActivity
     {
-        protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
-        {
-            return base.CustomizeAppBuilder(builder)
-                .AfterSetup(_ =>
-                {
-                    Pages.EmbedSample.Implementation = new EmbedSampleAndroid();
-                });
-        }
     }
 }

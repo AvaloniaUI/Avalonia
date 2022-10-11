@@ -1,62 +1,42 @@
-using Android.OS;
-using AndroidX.AppCompat.App;
-using Android.Content.Res;
-using AndroidX.Lifecycle;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Controls;
-using Android.Runtime;
+using System;
 using Android.App;
 using Android.Content;
-using System;
+using Android.Content.Res;
+using Android.OS;
+using Android.Runtime;
+using AndroidX.AppCompat.App;
+using AndroidX.Lifecycle;
 
 namespace Avalonia.Android
 {
     public abstract class AvaloniaActivity : AppCompatActivity
     {
-        internal class SingleViewLifetime : ISingleViewApplicationLifetime
-        {
-            public AvaloniaView View { get; internal set; }
-
-            public Control MainView
-            {
-                get => (Control)View.Content;
-                set => View.Content = value;
-            }
-        }
-
         internal Action<int, Result, Intent> ActivityResult;
         internal AvaloniaView View;
         internal AvaloniaViewModel _viewModel;
 
-        protected abstract AppBuilder CreateAppBuilder();
-
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            var builder = CreateAppBuilder();
+            _viewModel = new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AvaloniaViewModel))) as AvaloniaViewModel;
 
-
-            var lifetime = new SingleViewLifetime();
-
-            builder.AfterSetup(x =>
+            View = new AvaloniaView(this);
+            if (_viewModel.Content != null)
             {
-                _viewModel = new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AvaloniaViewModel))) as AvaloniaViewModel;
+                View.Content = _viewModel.Content;
+            }
 
-                View = new AvaloniaView(this);
-                if (_viewModel.Content != null)
-                {
-                    View.Content = _viewModel.Content;
-                }
+            View.Prepare();
 
-                SetContentView(View);
+            if (Avalonia.Application.Current.ApplicationLifetime is SingleViewLifetime lifetime)
+            {
                 lifetime.View = View;
-
-                View.Prepare();
-            });
-
-            builder.SetupWithLifetime(lifetime);
+            }
 
             base.OnCreate(savedInstanceState);
+
+            SetContentView(View);
         }
+
         public object Content
         {
             get
@@ -88,18 +68,6 @@ namespace Avalonia.Android
             base.OnActivityResult(requestCode, resultCode, data);
 
             ActivityResult?.Invoke(requestCode, resultCode, data);
-        }
-    }
-
-    public abstract class AvaloniaActivity<TApp> : AvaloniaActivity where TApp : Application, new()
-    {
-        protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder.UseAndroid();
-
-        protected override AppBuilder CreateAppBuilder()
-        {
-            var builder = AppBuilder.Configure<TApp>();
-
-            return CustomizeAppBuilder(builder);
         }
     }
 }
