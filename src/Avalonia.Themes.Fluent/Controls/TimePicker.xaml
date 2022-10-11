@@ -181,11 +181,11 @@
       <Setter Property="Fill" Value="{DynamicResource TimePickerSpacerFillDisabled}"/>
     </Style>
 
-    <Style Selector="^:hasnotime /template/ Button#FlyoutButton TextBlock">
+    <Style Selector="^:hasnotime /template/ Button#PART_FlyoutButton TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
     </Style>
 
-    <Style Selector="^:error /template/ Button#FlyoutButton">
+    <Style Selector="^:error /template/ Button#PART_FlyoutButton">
       <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
     </Style>
   </ControlTheme>

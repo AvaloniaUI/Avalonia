@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "target": "es2016",
+      "module": "es2020",
+      "strict": true,
+      "sourceMap": true,
+      "noEmitOnError": true,
+      "isolatedModules": true, // we need it for esbuild
+      "lib": [
+        "dom",
+        "es2016",
+        "esnext.asynciterable"
+      ]
+    },
+    "exclude": [
+      "node_modules"
+    ]
+  }
+  
