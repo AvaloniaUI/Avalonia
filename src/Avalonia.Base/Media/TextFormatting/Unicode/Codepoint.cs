@@ -104,7 +104,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         
         /// <summary>
         /// Gets the canonical representation of a given codepoint.
-        /// <see href="http://www.unicode.org/L2/L2013/13123-norm-and-bpa.pdf"/>
+        /// <see href="https://www.unicode.org/L2/L2013/13123-norm-and-bpa.pdf"/>
         /// </summary>
         /// <param name="codePoint">The code point to be mapped.</param>
         /// <returns>The mapped canonical code point, or the passed <paramref name="codePoint"/>.</returns>
