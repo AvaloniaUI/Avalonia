@@ -51,14 +51,14 @@ namespace Avalonia.X11
         private IntPtr _renderHandle;
         private IntPtr _xSyncCounter;
         private XSyncValue _xSyncValue;
-        private XSyncState _xSyncState = 0;
+        private XSyncState _xSyncState;
         private bool _mapped;
-        private bool _wasMappedAtLeastOnce = false;
+        private bool _wasMappedAtLeastOnce;
         private double? _scalingOverride;
         private bool _disabled;
         private TransparencyHelper _transparencyHelper;
         private RawEventGrouper _rawEventGrouper;
-        private bool _useRenderWindow = false;
+        private bool _useRenderWindow;
 
         enum XSyncState
         {
@@ -373,9 +373,9 @@ namespace Avalonia.X11
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
-        public Thickness ExtendedMargins { get; } = new Thickness();
+        public Thickness ExtendedMargins { get; }
 
-        public Thickness OffScreenMargin { get; } = new Thickness();
+        public Thickness OffScreenMargin { get; }
 
         public bool IsClientAreaExtendedToDecorations { get; }
 
