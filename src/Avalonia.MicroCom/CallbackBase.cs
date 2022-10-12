@@ -4,7 +4,7 @@
     {
         private readonly object _lock = new object();
         private bool _referencedFromManaged = true;
-        private bool _referencedFromNative = false;
+        private bool _referencedFromNative;
         private bool _destroyed;
 
         public bool IsDestroyed => _destroyed;
