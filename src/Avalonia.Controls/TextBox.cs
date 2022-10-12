@@ -160,21 +160,40 @@ namespace Avalonia.Controls
                 (o, v) => o.UndoLimit = v,
                 unsetValue: -1);
 
+        /// <summary>
+        /// Defines the <see cref="CopyingToClipboard"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="CuttingToClipboard"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> CuttingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(CuttingToClipboard), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="PastingFromClipboard"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(PastingFromClipboard), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="TextChanged"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> TextChangedEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(TextChanged), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="TextChanging"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> TextChangingEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                nameof(TextChanging), RoutingStrategies.Bubble);
 
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -570,15 +589,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Occurs when text changes.
+        /// Occurs asynchronously after text changes and the new text is rendered.
         /// </summary>
-        /// <remarks>
-        /// This event is asynchronous and occurs after the new text is rendered.
-        /// </remarks>
         public event EventHandler<RoutedEventArgs>? TextChanged
         {
             add => AddHandler(TextChangedEvent, value);
             remove => RemoveHandler(TextChangedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs synchronously when text starts to change but before it is rendered.
+        /// </summary>
+        /// <remarks>
+        /// This event occurs just after the <see cref="Text"/> property value has been updated.
+        /// </remarks>
+        public event EventHandler<RoutedEventArgs>? TextChanging
+        {
+            add => AddHandler(TextChangingEvent, value);
+            remove => RemoveHandler(TextChangingEvent, value);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -1564,11 +1592,19 @@ namespace Avalonia.Controls
 
                 if (textChanged)
                 {
+                    // Note the following sequence of these events (following WinUI)
+                    // 1. TextChanging occurs synchronously when text starts to change but before it is rendered.
+                    //    This occurs after the Text property is set.
+                    // 2. TextChanged occurs asynchronously after text changes and the new text is rendered.
+
+                    var textChangingEventArgs = new RoutedEventArgs(TextChangingEvent);
+                    RaiseEvent(textChangingEventArgs);
+
                     Dispatcher.UIThread.Post(() =>
                     {
-                        var eventArgs = new RoutedEventArgs(TextChangedEvent);
-                        RaiseEvent(eventArgs);
-                    });
+                        var textChangedEventArgs = new RoutedEventArgs(TextChangedEvent);
+                        RaiseEvent(textChangedEventArgs);
+                    }, DispatcherPriority.Normal);
                 }
             }
             else
