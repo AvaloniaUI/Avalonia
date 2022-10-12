@@ -18,6 +18,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Automation.Peers;
 using System.Diagnostics;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -170,6 +171,10 @@ namespace Avalonia.Controls
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(PastingFromClipboard), RoutingStrategies.Bubble);
+
+        public static readonly RoutedEvent<RoutedEventArgs> TextChangedEvent =
+            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+                nameof(TextChanged), RoutingStrategies.Bubble);
 
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -359,8 +364,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double LineHeight
         {
-            get { return GetValue(LineHeightProperty); }
-            set { SetValue(LineHeightProperty, value); }
+            get => GetValue(LineHeightProperty);
+            set => SetValue(LineHeightProperty, value);
         }
 
         [Content]
@@ -562,6 +567,18 @@ namespace Avalonia.Controls
         {
             add => AddHandler(PastingFromClipboardEvent, value);
             remove => RemoveHandler(PastingFromClipboardEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs when text changes.
+        /// </summary>
+        /// <remarks>
+        /// This event is asynchronous and occurs after the new text is rendered.
+        /// </remarks>
+        public event EventHandler<RoutedEventArgs>? TextChanged
+        {
+            add => AddHandler(TextChangedEvent, value);
+            remove => RemoveHandler(TextChangedEvent, value);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -1543,7 +1560,16 @@ namespace Avalonia.Controls
         {
             if (raiseTextChanged)
             {
-                SetAndRaise(TextProperty, ref _text, value);
+                bool textChanged = SetAndRaise(TextProperty, ref _text, value);
+
+                if (textChanged)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        var eventArgs = new RoutedEventArgs(TextChangedEvent);
+                        RaiseEvent(eventArgs);
+                    });
+                }
             }
             else
             {
