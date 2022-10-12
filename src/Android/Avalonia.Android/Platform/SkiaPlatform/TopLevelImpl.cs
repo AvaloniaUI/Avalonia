@@ -294,7 +294,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             IsComposing = true;
 
-            _inputMethod.Client.SetPreeditText(ComposingText);
+            _inputMethod.Client?.SetPreeditText(ComposingText);
 
             return base.SetComposingText(text, newCursorPosition);
         }
