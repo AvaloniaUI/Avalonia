@@ -137,6 +137,9 @@ space_within_single_line_array_initializer_braces = true
 #Net Analyzer
 dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomment when all violations are fixed.
 
+#CA1805: Do not initialize unnecessarily
+dotnet_diagnostic.CA1805.severity = warning
+
 # Wrapping preferences
 csharp_wrap_before_ternary_opsigns = false
 
