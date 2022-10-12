@@ -2476,8 +2476,8 @@ namespace Avalonia.Win32.Interop
         public IntPtr hIcon;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string szTip;
-        public int dwState = 0;
-        public int dwStateMask = 0;
+        public int dwState;
+        public int dwStateMask;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
         public string szInfo;
         public int uTimeoutOrVersion;

@@ -44,7 +44,7 @@ namespace Avalonia.Direct2D1
         public static SharpDX.DXGI.Device1 DxgiDevice { get; private set; }
 
         private static readonly object s_initLock = new object();
-        private static bool s_initialized = false;
+        private static bool s_initialized;
 
         internal static void InitializeDirect2D()
         {

@@ -15,7 +15,7 @@ namespace Avalonia.Win32
         private readonly ITopLevelImpl _tl;
         private readonly IDragDropDevice _dragDevice;
         
-        private IDataObject _currentDrag = null;
+        private IDataObject _currentDrag;
 
         public OleDropTarget(ITopLevelImpl tl, IInputRoot target)
         {

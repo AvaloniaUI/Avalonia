@@ -17,7 +17,7 @@ namespace Avalonia.Win32.Input
         private WindowImpl _parent;
         private ITextInputMethodClient _client;
 
-        private Imm32CaretManager _caretManager = new();
+        private Imm32CaretManager _caretManager;
 
         private ushort _langId;
         private const int _caretMargin = 1;
