@@ -13,17 +13,17 @@
                 Margin="16"
                 HorizontalAlignment="Stretch"
                 Spacing="16">
-      <TextBlock FontSize="18">A simple DatePicker with a header</TextBlock>
+      <TextBlock FontSize="18">A simple DatePicker</TextBlock>
       <StackPanel Orientation="Vertical">
         <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
                 BorderThickness="1" Padding="15">
-          <DatePicker Header="Pick a date" />
+          <DatePicker />
         </Border>
         <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
           <TextBlock Padding="15">
             <TextBlock.Text>
               <x:String>
-                &lt;DatePicker Header="Pick a date" /&gt;
+                &lt;DatePicker/&gt;
               </x:String>
             </TextBlock.Text>
           </TextBlock>
@@ -33,7 +33,7 @@
       
       <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
               BorderThickness="1" Padding="15">
-        <DatePicker Header="Pick a date">
+        <DatePicker >
           <DataValidationErrors.Error>
             <sys:Exception /> 
           </DataValidationErrors.Error>
