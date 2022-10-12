@@ -288,7 +288,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public int? StartupScreenIndex { get; private set; } = default;
+        public int? StartupScreenIndex { get; private set; }
         
         [DependsOn(nameof(TreePageViewModel.SelectedNode))]
         [DependsOn(nameof(Content))]
