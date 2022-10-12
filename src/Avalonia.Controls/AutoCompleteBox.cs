@@ -381,7 +381,7 @@ namespace Avalonia.Controls
 
         private object? _selectedItem;
         private bool _isDropDownOpen;
-        private bool _isFocused = false;
+        private bool _isFocused;
 
         private string? _text = string.Empty;
         private string? _searchText = string.Empty;

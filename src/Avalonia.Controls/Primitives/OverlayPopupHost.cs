@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -18,7 +17,7 @@ namespace Avalonia.Controls.Primitives
             PopupRoot.TransformProperty.AddOwner<OverlayPopupHost>();
 
         private readonly OverlayLayer _overlayLayer;
-        private PopupPositionerParameters _positionerParameters = new PopupPositionerParameters();
+        private PopupPositionerParameters _positionerParameters;
         private ManagedPopupPositioner _positioner;
         private Point _lastRequestedPosition;
         private bool _shown;

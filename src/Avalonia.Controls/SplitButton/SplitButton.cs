@@ -58,13 +58,13 @@ namespace Avalonia.Controls
 
         private ICommand? _Command;
 
-        private Button? _primaryButton   = null;
-        private Button? _secondaryButton = null;
+        private Button? _primaryButton;
+        private Button? _secondaryButton;
 
-        private bool _commandCanExecute       = true;
-        private bool _isAttachedToLogicalTree = false;
-        private bool _isFlyoutOpen            = false;
-        private bool _isKeyboardPressed       = false;
+        private bool _commandCanExecute = true;
+        private bool _isAttachedToLogicalTree;
+        private bool _isFlyoutOpen;
+        private bool _isKeyboardPressed;
 
         private IDisposable? _flyoutPropertyChangedDisposable;
 

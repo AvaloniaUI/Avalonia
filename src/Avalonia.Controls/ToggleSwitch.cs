@@ -18,10 +18,10 @@ namespace Avalonia.Controls
     {
         private Panel? _knobsPanel;
         private Panel? _switchKnob;
-        private bool _knobsPanelPressed = false;
-        private Point _switchStartPoint = new Point();
+        private bool _knobsPanelPressed;
+        private Point _switchStartPoint;
         private double _initLeft = -1;
-        private bool _isDragging = false;
+        private bool _isDragging;
 
         static ToggleSwitch()
         {

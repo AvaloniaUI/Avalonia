@@ -8,13 +8,13 @@ namespace Avalonia.Controls.Converters
     {
         public double Indent { get; set; }
 
-        public bool Left { get; set; } = false;
+        public bool Left { get; set; }
 
-        public bool Top { get; set; } = false;
+        public bool Top { get; set; }
 
-        public bool Right { get; set; } = false;
+        public bool Right { get; set; }
 
-        public bool Bottom { get; set; } = false;
+        public bool Bottom { get; set; }
 
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {

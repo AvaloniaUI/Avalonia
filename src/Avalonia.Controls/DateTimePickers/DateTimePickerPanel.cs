@@ -53,7 +53,7 @@ namespace Avalonia.Controls.Primitives
         private int _increment = 1;
 
         //Helper fields
-        private int _selectedIndex = 0;
+        private int _selectedIndex;
         private int _totalItems;
         private int _numItemsAboveBelowSelected;
         private int _range;

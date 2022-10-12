@@ -101,7 +101,7 @@ namespace Avalonia.Controls
         //   starts and individual events are being fired. This was needed to avoid
         //   exceptions if new controls were added in the Loaded event itself.
 
-        private static bool _isLoadedProcessing = false;
+        private static bool _isLoadedProcessing;
         private static readonly HashSet<Control> _loadedQueue = new HashSet<Control>();
         private static readonly HashSet<Control> _loadedProcessingQueue = new HashSet<Control>();
 

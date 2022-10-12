@@ -96,7 +96,7 @@ namespace Avalonia.Controls
         private ICommand? _command;
         private bool _commandCanExecute = true;
         private KeyGesture? _hotkey;
-        private bool _isFlyoutOpen = false;
+        private bool _isFlyoutOpen;
 
         /// <summary>
         /// Initializes static members of the <see cref="Button"/> class.

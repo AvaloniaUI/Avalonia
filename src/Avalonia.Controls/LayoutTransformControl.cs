@@ -217,7 +217,7 @@ namespace Avalonia.Controls
         /// Transformation matrix corresponding to _matrixTransform.
         /// </summary>
         private Matrix _transformation;
-        private IDisposable? _transformChangedEvent = null;
+        private IDisposable? _transformChangedEvent;
 
         /// <summary>
         /// Returns true if Size a is smaller than Size b in either dimension.

@@ -237,11 +237,11 @@ namespace Avalonia.Controls
         private DateTime _selectedYear;
 
         private DateTime _displayDate = DateTime.Today;
-        private DateTime? _displayDateStart = null;
-        private DateTime? _displayDateEnd = null;
+        private DateTime? _displayDateStart;
+        private DateTime? _displayDateEnd;
 
         private bool _isShiftPressed;
-        private bool _displayDateIsChanging = false;
+        private bool _displayDateIsChanging;
 
         internal CalendarDayButton? FocusButton { get; set; }
         internal CalendarButton? FocusCalendarButton { get; set; }

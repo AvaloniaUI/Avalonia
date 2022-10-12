@@ -121,7 +121,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
 
-        private bool _isOpenRequested = false;
+        private bool _isOpenRequested;
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;

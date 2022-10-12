@@ -13,7 +13,7 @@ namespace Avalonia.Controls
         private KeyGesture? _gesture;
         private bool _isEnabled = true;
         private ICommand? _command;
-        private bool _isChecked = false;
+        private bool _isChecked;
         private NativeMenuItemToggleType _toggleType;
         private IBitmap? _icon;
         private readonly CanExecuteChangedSubscriber _canExecuteChangedSubscriber;

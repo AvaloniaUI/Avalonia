@@ -51,11 +51,11 @@ namespace Avalonia.Controls
         private bool _isDropDownOpen;
         private DateTime? _selectedDate;
         private string? _text;
-        private bool _suspendTextChangeHandler = false;
-        private bool _isPopupClosing = false;
-        private bool _ignoreButtonClick = false;
-        private bool _isFlyoutOpen = false;
-        private bool _isPressed = false;
+        private bool _suspendTextChangeHandler;
+        private bool _isPopupClosing;
+        private bool _ignoreButtonClick;
+        private bool _isFlyoutOpen;
+        private bool _isPressed;
 
         /// <summary>
         /// Occurs when the drop-down

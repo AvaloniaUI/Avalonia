@@ -85,7 +85,7 @@ namespace Avalonia.Controls
             TickBar.TicksProperty.AddOwner<Slider>();
 
         // Slider required parts
-        private bool _isDragging = false;
+        private bool _isDragging;
         private Track? _track;
         private Button? _decreaseButton;
         private Button? _increaseButton;

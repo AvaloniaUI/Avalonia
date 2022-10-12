@@ -44,9 +44,9 @@ namespace Avalonia.Controls.Primitives
         private ITemplate<IControl>? _dayTitleTemplate;
         
         private DateTime _currentMonth;
-        private bool _isMouseLeftButtonDown = false;
-        private bool _isMouseLeftButtonDownYearView = false;
-        private bool _isControlPressed = false;
+        private bool _isMouseLeftButtonDown;
+        private bool _isMouseLeftButtonDownYearView;
+        private bool _isControlPressed;
 
         private System.Globalization.Calendar _calendar = new System.Globalization.GregorianCalendar();
 
