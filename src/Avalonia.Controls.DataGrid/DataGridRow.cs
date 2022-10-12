@@ -888,7 +888,7 @@ namespace Avalonia.Controls
         }
 
         //TODO Cleanup
-        double? _previousDetailsHeight = null;
+        double? _previousDetailsHeight;
 
         //TODO Animation 
         private void DetailsContent_HeightChanged(double newValue)

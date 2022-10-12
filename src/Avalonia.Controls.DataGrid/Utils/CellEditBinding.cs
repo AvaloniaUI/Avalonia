@@ -54,8 +54,8 @@ namespace Avalonia.Controls.Utils
             private readonly CellEditBinding _editBinding;
             private IDisposable _subscription;
             private object _controlValue;
-            private bool _isControlValueSet = false;
-            private bool _settingSourceValue = false;
+            private bool _isControlValueSet;
+            private bool _settingSourceValue;
 
             public SubjectWrapper(ISubject<object> bindingSourceSubject, CellEditBinding editBinding)
             {

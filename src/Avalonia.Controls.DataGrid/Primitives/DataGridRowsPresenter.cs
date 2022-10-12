@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Primitives
             set;
         }
 
-        private double _measureHeightOffset = 0;
+        private double _measureHeightOffset;
 
         private double CalculateEstimatedAvailableHeight(Size availableSize)
         {
