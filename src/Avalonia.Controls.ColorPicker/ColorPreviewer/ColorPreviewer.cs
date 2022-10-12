@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<ColorChangedEventArgs>? ColorChanged;
 
-        private bool eventsConnected = false;
+        private bool eventsConnected;
 
         // XAML template parts
         private Border? _accentDecrement1Border;

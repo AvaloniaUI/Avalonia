@@ -23,10 +23,10 @@ namespace Avalonia.Controls
     {
         // See: https://material.io/design/color/the-color-system.html#tools-for-picking-colors
         // This is a reduced palette for uniformity
-        private static Color[,]? _colorChart = null;
-        private static int _colorChartColorCount = 0;
-        private static int _colorChartShadeCount = 0;
-        private static object _colorChartMutex = new object();
+        private static Color[,]? _colorChart;
+        private static int _colorChartColorCount;
+        private static int _colorChartShadeCount;
+        private static readonly object _colorChartMutex = new();
 
         /// <summary>
         /// Initializes all color chart colors.

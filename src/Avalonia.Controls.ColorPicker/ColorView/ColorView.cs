@@ -29,7 +29,7 @@ namespace Avalonia.Controls
         private TabControl? _tabControl;
 
         private ColorToHexConverter colorToHexConverter = new ColorToHexConverter();
-        protected bool ignorePropertyChanged = false;
+        protected bool ignorePropertyChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorView"/> class.

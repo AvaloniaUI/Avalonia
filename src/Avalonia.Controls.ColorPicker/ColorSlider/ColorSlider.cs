@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         private const double MaxHue = 359;
 
-        protected bool ignorePropertyChanged = false;
+        protected bool ignorePropertyChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorSlider"/> class.

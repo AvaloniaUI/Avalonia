@@ -42,10 +42,10 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<ColorChangedEventArgs>? ColorChanged;
 
-        private bool _updatingColor = false;
-        private bool _updatingHsvColor = false;
-        private bool _isPointerPressed = false;
-        private bool _shouldShowLargeSelection = false;
+        private bool _updatingColor;
+        private bool _updatingHsvColor;
+        private bool _isPointerPressed;
+        private bool _shouldShowLargeSelection;
         private List<Hsv> _hsvValues = new List<Hsv>();
 
         private IDisposable? _layoutRootDisposable;
@@ -80,14 +80,14 @@ namespace Avalonia.Controls.Primitives
         // is in progress.
         private ColorSpectrumShape _shapeFromLastBitmapCreation = ColorSpectrumShape.Box;
         private ColorSpectrumComponents _componentsFromLastBitmapCreation = ColorSpectrumComponents.HueSaturation;
-        private double _imageWidthFromLastBitmapCreation = 0.0;
-        private double _imageHeightFromLastBitmapCreation = 0.0;
-        private int _minHueFromLastBitmapCreation = 0;
-        private int _maxHueFromLastBitmapCreation = 0;
-        private int _minSaturationFromLastBitmapCreation = 0;
-        private int _maxSaturationFromLastBitmapCreation = 0;
-        private int _minValueFromLastBitmapCreation = 0;
-        private int _maxValueFromLastBitmapCreation = 0;
+        private double _imageWidthFromLastBitmapCreation;
+        private double _imageHeightFromLastBitmapCreation;
+        private int _minHueFromLastBitmapCreation;
+        private int _maxHueFromLastBitmapCreation;
+        private int _minSaturationFromLastBitmapCreation;
+        private int _maxSaturationFromLastBitmapCreation;
+        private int _minValueFromLastBitmapCreation;
+        private int _maxValueFromLastBitmapCreation;
 
         private Color _oldColor = Color.FromArgb(255, 255, 255, 255);
         private HsvColor _oldHsvColor = HsvColor.FromAhsv(0.0f, 0.0f, 1.0f, 1.0f);
