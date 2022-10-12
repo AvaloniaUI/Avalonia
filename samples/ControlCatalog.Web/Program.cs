@@ -1,7 +1,10 @@
+using System.Runtime.Versioning;
 using Avalonia;
 using Avalonia.Web;
 using ControlCatalog;
 using ControlCatalog.Web;
+
+[assembly:SupportedOSPlatform("browser")]
 
 internal partial class Program
 {
