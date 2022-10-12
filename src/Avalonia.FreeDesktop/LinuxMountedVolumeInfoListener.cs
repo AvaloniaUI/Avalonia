@@ -19,7 +19,7 @@ namespace Avalonia.FreeDesktop
         private const string ProcMountsDir = "/proc/mounts";
         private CompositeDisposable _disposables;
         private ObservableCollection<MountedVolumeInfo> _targetObs;
-        private bool _beenDisposed = false;
+        private bool _beenDisposed;
 
         public LinuxMountedVolumeInfoListener(ref ObservableCollection<MountedVolumeInfo> target)
         {

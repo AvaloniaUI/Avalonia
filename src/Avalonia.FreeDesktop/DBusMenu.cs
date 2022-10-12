@@ -36,10 +36,10 @@ namespace Avalonia.FreeDesktop.DBusMenu
     [Dictionary]
     class DBusMenuProperties
     {
-        public uint Version { get; set; } = default (uint);
-        public string? TextDirection { get; set; } = default (string);
-        public string? Status { get; set; } = default (string);
-        public string[]? IconThemePath { get; set; } = default (string[]);
+        public uint Version { get; set; }
+        public string? TextDirection { get; set; }
+        public string? Status { get; set; }
+        public string[]? IconThemePath { get; set; }
     }
 
 
