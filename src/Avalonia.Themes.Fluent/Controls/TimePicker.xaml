@@ -83,19 +83,8 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}" RowDefinitions="Auto,*">
-            <ContentPresenter x:Name="HeaderContentPresenter"
-                              Grid.Row="0"
-                              Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding HeaderTemplate}"
-                              Margin="{DynamicResource TimePickerTopHeaderMargin}"
-                              MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
-                              Foreground="{DynamicResource TimePickerHeaderForeground}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Top" />
-
+          <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}">
             <Button x:Name="PART_FlyoutButton"
-                    Grid.Row="1"
                     Theme="{StaticResource FluentTimePickerFlyoutButton}"
                     Foreground="{TemplateBinding Foreground}"
                     Background="{TemplateBinding Background}"
@@ -172,11 +161,7 @@
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
-
-    <Style Selector="^:disabled /template/ ContentPresenter#HeaderContentPresenter">
-      <Setter Property="Foreground" Value="{DynamicResource TimePickerHeaderForegroundDisabled}"/>
-    </Style>
-
+    
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Fill" Value="{DynamicResource TimePickerSpacerFillDisabled}"/>
     </Style>

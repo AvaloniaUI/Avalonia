@@ -90,20 +90,8 @@
       <ControlTemplate>
         <DataValidationErrors>
           <Grid Name="LayoutRoot"
-                Margin="{TemplateBinding Padding}"
-                RowDefinitions="Auto,*">
-            <ContentPresenter x:Name="HeaderContentPresenter"
-                              Grid.Row="0"
-                              MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
-                              Margin="{DynamicResource TimePickerTopHeaderMargin}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Top"
-                              Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding HeaderTemplate}"
-                              Foreground="{DynamicResource ThemeForegroundColor}" />
-
+                Margin="{TemplateBinding Padding}">
             <Button x:Name="PART_FlyoutButton"
-                    Grid.Row="1"
                     MinWidth="{DynamicResource TimePickerThemeMinWidth}"
                     MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
                     HorizontalAlignment="Stretch"
@@ -180,10 +168,6 @@
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
-
-    <Style Selector="^:disabled /template/ ContentPresenter#HeaderContentPresenter">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-    </Style>
 
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />
