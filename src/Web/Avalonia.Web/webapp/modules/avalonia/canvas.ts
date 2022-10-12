@@ -211,7 +211,7 @@ export class SizeWatcher {
     static observer: ResizeObserver;
     static elements: Map<string, HTMLElement>;
 
-    public static observe(element: HTMLElement, elementId: string, callback: (width: number, height: number) => void): void {
+    public static observe(element: HTMLElement, elementId: string | undefined, callback: (width: number, height: number) => void): void {
         if (!element || !callback) {
             return;
         }
@@ -223,7 +223,7 @@ export class SizeWatcher {
             callback
         };
 
-        SizeWatcher.elements.set(elementId, element);
+        SizeWatcher.elements.set(elementId ?? element.id, element);
         SizeWatcher.observer.observe(element);
 
         SizeWatcher.invoke(element);

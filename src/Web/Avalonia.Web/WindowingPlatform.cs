@@ -8,7 +8,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Web
 {
-    public class BrowserWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
+    internal class BrowserWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
     {
         private bool _signaled;
         private static KeyboardDevice? s_keyboard;

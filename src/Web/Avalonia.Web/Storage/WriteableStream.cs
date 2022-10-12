@@ -4,6 +4,8 @@ using System.Runtime.InteropServices.JavaScript;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Avalonia.Web.Interop;
+
 namespace Avalonia.Web.Storage;
 
 [System.Runtime.Versioning.SupportedOSPlatform("browser")]
