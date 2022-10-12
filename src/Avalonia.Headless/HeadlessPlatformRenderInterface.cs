@@ -129,7 +129,7 @@ namespace Avalonia.Headless
 
             public Rect Bounds { get; set; }
             
-            public double ContourLength { get; } = 0;
+            public double ContourLength { get; }
             
             public virtual bool FillContains(Point point) => Bounds.Contains(point);
 
