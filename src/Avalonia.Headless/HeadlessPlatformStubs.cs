@@ -75,8 +75,13 @@ namespace Avalonia.Headless
         public TimeSpan TouchDoubleClickTime => DoubleClickTime;
     }
 
-    class HeadlessGlyphTypefaceImpl : IGlyphTypefaceImpl
+    class HeadlessGlyphTypefaceImpl : IGlyphTypeface
     {
+        public FontMetrics Metrics => new FontMetrics
+        {
+
+        };
+
         public short DesignEmHeight => 10;
 
         public int Ascent => 5;
@@ -106,6 +111,13 @@ namespace Avalonia.Headless
             return 1;
         }
 
+        public bool TryGetGlyph(uint codepoint, out ushort glyph)
+        {
+            glyph = 1;
+
+            return true;
+        }
+
         public int GetGlyphAdvance(ushort glyph)
         {
             return 1;
@@ -119,6 +131,12 @@ namespace Avalonia.Headless
         public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
         {
             return codepoints.ToArray().Select(x => (ushort)x).ToArray();
+        }
+
+        public bool TryGetTable(uint tag, out byte[] table)
+        {
+            table = null;
+            return false;
         }
     }
 
@@ -136,7 +154,7 @@ namespace Avalonia.Headless
 
     class HeadlessFontManagerStub : IFontManagerImpl
     {
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             return new HeadlessGlyphTypefaceImpl();
         }

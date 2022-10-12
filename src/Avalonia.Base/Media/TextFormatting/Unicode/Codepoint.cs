@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -165,7 +166,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="index">The index to read at.</param>
         /// <param name="count">The count of character that were read.</param>
         /// <returns></returns>
-        public static Codepoint ReadAt(ReadOnlySlice<char> text, int index, out int count)
+        public static Codepoint ReadAt(ReadOnlySpan<char> text, int index, out int count)
         {
             count = 1;
 

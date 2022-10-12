@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Drawing.Drawing2D;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Platform;
 using HarfBuzzSharp;
 using SharpDX.DirectWrite;
+using FontMetrics = Avalonia.Media.FontMetrics;
 
 namespace Avalonia.Direct2D1.Media
 {
     [Unstable]
-    public class GlyphTypefaceImpl : IGlyphTypefaceImpl
+    public class GlyphTypefaceImpl : IGlyphTypeface
     {
         private bool _isDisposed;
 
@@ -26,40 +27,28 @@ namespace Avalonia.Direct2D1.Media
 
             Font.GetScale(out var xScale, out _);
 
-            DesignEmHeight = (short)xScale;
-
             if (!Font.TryGetHorizontalFontExtents(out var fontExtents))
             {
                 Font.TryGetVerticalFontExtents(out fontExtents);
             }
 
-            Ascent = -fontExtents.Ascender;
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineOffset, out var underlinePosition);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineSize, out var underlineThickness);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutOffset, out var strikethroughPosition);
+            Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutSize, out var strikethroughThickness);
 
-            Descent = -fontExtents.Descender;
-
-            LineGap = fontExtents.LineGap;
-
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineOffset, out var underlinePosition))
+            Metrics = new FontMetrics
             {
-                UnderlinePosition = underlinePosition;
-            }
-
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.UnderlineSize, out var underlineThickness))
-            {
-                UnderlineThickness = underlineThickness;
-            }
-
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutOffset, out var strikethroughPosition))
-            {
-                StrikethroughPosition = strikethroughPosition;
-            }
-
-            if (Font.OpenTypeMetrics.TryGetPosition(OpenTypeMetricsTag.StrikeoutSize, out var strikethroughThickness))
-            {
-                StrikethroughThickness = strikethroughThickness;
-            }
-
-            IsFixedPitch = FontFace.IsMonospacedFont;
+                DesignEmHeight = (short)xScale,
+                Ascent = -fontExtents.Ascender,
+                Descent = -fontExtents.Descender,
+                LineGap = fontExtents.LineGap,
+                UnderlinePosition = underlinePosition,
+                UnderlineThickness = underlineThickness,
+                StrikethroughPosition = strikethroughPosition,
+                StrikethroughThickness = strikethroughThickness,
+                IsFixedPitch = FontFace.IsMonospacedFont
+            };
         }
 
         private Blob GetTable(Face face, Tag tag)
@@ -89,37 +78,11 @@ namespace Avalonia.Direct2D1.Media
 
         public HarfBuzzSharp.Font Font { get; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public short DesignEmHeight { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int Ascent { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int Descent { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int LineGap { get; }
-
-        //ToDo: Read font table for these values
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int UnderlinePosition { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int UnderlineThickness { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int StrikethroughPosition { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int StrikethroughThickness { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public bool IsFixedPitch { get; }
+        public FontMetrics Metrics { get; }
 
         public int GlyphCount { get; set; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort GetGlyph(uint codepoint)
         {
             if (Font.TryGetGlyph(codepoint, out var glyph))
@@ -130,7 +93,14 @@ namespace Avalonia.Direct2D1.Media
             return 0;
         }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        public bool TryGetGlyph(uint codepoint, out ushort glyph)
+        {
+            glyph = GetGlyph(codepoint);
+
+            return glyph != 0;
+        }
+
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
         {
             var glyphs = new ushort[codepoints.Length];
@@ -146,13 +116,13 @@ namespace Avalonia.Direct2D1.Media
             return glyphs;
         }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public int GetGlyphAdvance(ushort glyph)
         {
             return Font.GetHorizontalGlyphAdvance(glyph);
         }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
         {
             var glyphIndices = new uint[glyphs.Length];
@@ -188,6 +158,21 @@ namespace Avalonia.Direct2D1.Media
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public bool TryGetTable(uint tag, out byte[] table)
+        {
+            table = null;
+            var blob = Face.ReferenceTable(tag);
+
+            if (blob.Length > 0)
+            {
+                table = blob.AsSpan().ToArray();
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

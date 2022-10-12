@@ -180,7 +180,7 @@ namespace Avalonia.Platform
         /// <remarks>
         /// This buffer only holds glyph indices.
         /// </remarks>
-        IGlyphRunBuffer AllocateGlyphRun(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
+        IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
 
         /// <summary>
         /// Allocates a horizontal platform glyph run buffer.
@@ -192,7 +192,7 @@ namespace Avalonia.Platform
         /// <remarks>
         /// This buffer holds glyph indices and glyph advances.
         /// </remarks>
-        IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
+        IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
 
         /// <summary>
         /// Allocates a positioned platform glyph run buffer.
@@ -204,7 +204,7 @@ namespace Avalonia.Platform
         /// <remarks>
         /// This buffer holds glyph indices, glyph advances and glyph positions.
         /// </remarks>
-        IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
+        IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
 
         /// <summary>
         /// Gets a value indicating whether the platform directly supports rectangles with rounded corners.

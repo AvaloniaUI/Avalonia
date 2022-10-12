@@ -13,8 +13,8 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class FontManager
     {
-        private readonly ConcurrentDictionary<Typeface, GlyphTypeface> _glyphTypefaceCache =
-            new ConcurrentDictionary<Typeface, GlyphTypeface>();
+        private readonly ConcurrentDictionary<Typeface, IGlyphTypeface> _glyphTypefaceCache =
+            new ConcurrentDictionary<Typeface, IGlyphTypeface>();
         private readonly FontFamily _defaultFontFamily;
         private readonly IReadOnlyList<FontFallback>? _fontFallbacks;
 
@@ -81,13 +81,13 @@ namespace Avalonia.Media
             PlatformImpl.GetInstalledFontFamilyNames(checkForUpdates);
 
         /// <summary>
-        ///     Returns a new <see cref="GlyphTypeface"/>, or an existing one if a matching <see cref="GlyphTypeface"/> exists.
+        ///     Returns a new <see cref="IGlyphTypeface"/>, or an existing one if a matching <see cref="GlyphTypeface"/> exists.
         /// </summary>
         /// <param name="typeface">The typeface.</param>
         /// <returns>
-        ///     The <see cref="GlyphTypeface"/>.
+        ///     The <see cref="IGlyphTypeface"/>.
         /// </returns>
-        public GlyphTypeface GetOrAddGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface GetOrAddGlyphTypeface(Typeface typeface)
         {
             while (true)
             {
@@ -96,7 +96,7 @@ namespace Avalonia.Media
                     return glyphTypeface;
                 }
 
-                glyphTypeface = new GlyphTypeface(typeface);
+                glyphTypeface = PlatformImpl.CreateGlyphTypeface(typeface);
 
                 if (_glyphTypefaceCache.TryAdd(typeface, glyphTypeface))
                 {

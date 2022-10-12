@@ -70,7 +70,7 @@ namespace Avalonia.Skia
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            if (glyphRun.GlyphTypeface.PlatformImpl is not GlyphTypefaceImpl glyphTypeface)
+            if (glyphRun.GlyphTypeface is not GlyphTypefaceImpl glyphTypeface)
             {
                 throw new InvalidOperationException("PlatformImpl can't be null.");
             }
@@ -244,13 +244,13 @@ namespace Avalonia.Skia
                 "Current GPU acceleration backend does not support OpenGL integration");
         }
 
-        public IGlyphRunBuffer AllocateGlyphRun(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) 
+        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) 
             => new SKGlyphRunBuffer(glyphTypeface, fontRenderingEmSize, length);
 
-        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) 
+        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) 
             => new SKHorizontalGlyphRunBuffer(glyphTypeface, fontRenderingEmSize, length);
 
-        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) 
+        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) 
             => new SKPositionedGlyphRunBuffer(glyphTypeface, fontRenderingEmSize, length);
 
         private abstract class SKGlyphRunBufferBase : IGlyphRunBuffer
@@ -258,11 +258,11 @@ namespace Avalonia.Skia
             protected readonly SKTextBlobBuilder _builder;
             protected readonly SKFont _font;
 
-            public SKGlyphRunBufferBase(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+            public SKGlyphRunBufferBase(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
             {
                 _builder = new SKTextBlobBuilder();
 
-                var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface.PlatformImpl;
+                var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
 
                 _font = new SKFont
                 {
@@ -289,7 +289,7 @@ namespace Avalonia.Skia
         {
             private readonly SKRunBuffer _buffer;
 
-            public SKGlyphRunBuffer(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) : base(glyphTypeface, fontRenderingEmSize, length)
+            public SKGlyphRunBuffer(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) : base(glyphTypeface, fontRenderingEmSize, length)
             {
                 _buffer = _builder.AllocateRun(_font, length, 0, 0);
             }
@@ -301,7 +301,7 @@ namespace Avalonia.Skia
         {
             private readonly SKHorizontalRunBuffer _buffer;
 
-            public SKHorizontalGlyphRunBuffer(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) : base(glyphTypeface, fontRenderingEmSize, length)
+            public SKHorizontalGlyphRunBuffer(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) : base(glyphTypeface, fontRenderingEmSize, length)
             {
                 _buffer = _builder.AllocateHorizontalRun(_font, length, 0);
             }
@@ -315,7 +315,7 @@ namespace Avalonia.Skia
         {
             private readonly SKPositionedRunBuffer _buffer;
 
-            public SKPositionedGlyphRunBuffer(GlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) : base(glyphTypeface, fontRenderingEmSize, length)
+            public SKPositionedGlyphRunBuffer(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) : base(glyphTypeface, fontRenderingEmSize, length)
             {
                 _buffer = _builder.AllocatePositionedRun(_font, length);
             }
