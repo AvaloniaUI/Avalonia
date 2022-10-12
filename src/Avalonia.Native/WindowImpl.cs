@@ -96,13 +96,13 @@ namespace Avalonia.Native
             set => _native.SetWindowState((AvnWindowState)value);
         }
 
-        public Action<WindowState> WindowStateChanged { get; set; }        
+        public Action<WindowState> WindowStateChanged { get; set; }
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
         public Thickness ExtendedMargins { get; private set; }
 
-        public Thickness OffScreenMargin { get; } = new Thickness();
+        public Thickness OffScreenMargin { get; }
 
         private bool _isExtended;
         public bool IsClientAreaExtendedToDecorations => _isExtended;

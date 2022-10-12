@@ -11,7 +11,7 @@ namespace Avalonia.Native
     internal class MacOSMountedVolumeInfoListener : IDisposable
     {
         private readonly CompositeDisposable _disposables;
-        private bool _beenDisposed = false;
+        private bool _beenDisposed;
         private ObservableCollection<MountedVolumeInfo> mountedDrives;
 
         public MacOSMountedVolumeInfoListener(ObservableCollection<MountedVolumeInfo> mountedDrives)

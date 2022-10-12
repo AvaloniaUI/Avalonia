@@ -52,9 +52,9 @@ namespace Avalonia.Native
         protected readonly IAvaloniaNativeFactory _factory;
         protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
-        private object _syncRoot = new object();
-        private bool _deferredRendering = false;
-        private bool _gpu = false;
+        private readonly object _syncRoot = new();
+        private bool _deferredRendering;
+        private bool _gpu;
         private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private readonly ICursorFactory _cursorFactory;
