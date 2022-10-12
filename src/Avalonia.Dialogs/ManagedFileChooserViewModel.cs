@@ -39,7 +39,7 @@ namespace Avalonia.Dialogs
         private bool _selectingDirectory;
         private bool _savingFile;
         private bool _scheduledSelectionValidation;
-        private bool _alreadyCancelled = false;
+        private bool _alreadyCancelled;
         private string _defaultExtension;
         private bool _overwritePrompt;
         private CompositeDisposable _disposables;
