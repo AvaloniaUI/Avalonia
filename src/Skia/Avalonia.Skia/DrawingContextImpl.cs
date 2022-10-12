@@ -40,7 +40,7 @@ namespace Avalonia.Skia
         private readonly SKPaint _boxShadowPaint = new SKPaint();
         private static SKShader s_acrylicNoiseShader;
         private readonly ISkiaGpuRenderSession _session;
-        private bool _leased = false;
+        private bool _leased;
 
         /// <summary>
         /// Context create info.
