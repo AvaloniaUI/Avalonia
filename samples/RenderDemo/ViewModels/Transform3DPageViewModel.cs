@@ -1,6 +1,4 @@
-﻿using System;
-using MiniMvvm;
-using Avalonia.Animation;
+﻿using MiniMvvm;
 
 namespace RenderDemo.ViewModels
 {
@@ -8,19 +6,19 @@ namespace RenderDemo.ViewModels
     {
         private double _depth = 200;
 
-        private double _centerX = 0;
-        private double _centerY = 0;
-        private double _centerZ = 0;
-        private double _angleX = 0;
-        private double _angleY = 0;
-        private double _angleZ = 0;
-        
+        private double _centerX;
+        private double _centerY;
+        private double _centerZ;
+        private double _angleX;
+        private double _angleY;
+        private double _angleZ;
+
         public double Depth
         {
             get => _depth;
             set => RaiseAndSetIfChanged(ref _depth, value);
         }
-        
+
         public double CenterX
         {
             get => _centerX;

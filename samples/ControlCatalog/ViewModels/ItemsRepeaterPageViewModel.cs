@@ -9,7 +9,7 @@ namespace ControlCatalog.ViewModels
     public class ItemsRepeaterPageViewModel : ViewModelBase
     {
         private int _newItemIndex = 1;
-        private int _newGenerationIndex = 0;
+        private int _newGenerationIndex;
         private ObservableCollection<Item> _items;
 
         public ItemsRepeaterPageViewModel()

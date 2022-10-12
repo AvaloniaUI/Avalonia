@@ -1,12 +1,11 @@
-﻿using System.Reactive;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MiniMvvm;
 
 namespace RenderDemo.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private bool drawDirtyRects = false;
+        private bool drawDirtyRects;
         private bool drawFps = true;
         private double width = 800;
         private double height = 600;

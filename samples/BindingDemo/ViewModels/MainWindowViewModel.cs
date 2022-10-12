@@ -1,14 +1,12 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using MiniMvvm;
-using Avalonia.Controls;
-using Avalonia.Metadata;
+using System.Threading.Tasks;
 using Avalonia.Controls.Selection;
+using Avalonia.Metadata;
+using MiniMvvm;
 
 namespace BindingDemo.ViewModels
 {
@@ -17,7 +15,7 @@ namespace BindingDemo.ViewModels
         private string _booleanString = "True";
         private double _doubleValue = 5.0;
         private string _stringValue = "Simple Binding";
-        private bool _booleanFlag = false;
+        private bool _booleanFlag;
         private string _currentTime;
         private NestedCommandViewModel _nested;
 
