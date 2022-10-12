@@ -24,7 +24,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
         private bool _disposed;
         private object _lock = new object();
         private AutoResetEvent _wakeup = new AutoResetEvent(false);
-        private FrameMessage _lastFrameMessage = null;
+        private FrameMessage _lastFrameMessage;
         private FrameMessage _lastSentFrameMessage = null;
         private Action<IAvaloniaRemoteTransportConnection, object> _onMessage;
         private Action<IAvaloniaRemoteTransportConnection, Exception> _onException;

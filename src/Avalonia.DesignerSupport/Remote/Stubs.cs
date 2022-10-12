@@ -43,13 +43,13 @@ namespace Avalonia.DesignerSupport.Remote
         public WindowState WindowState { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
-        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }        
+        public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
         public Action<bool> ExtendClientAreaToDecorationsChanged { get; set; }
 
-        public Thickness ExtendedMargins { get; } = new Thickness();
+        public Thickness ExtendedMargins { get; }
 
-        public Thickness OffScreenMargin { get; } = new Thickness();
+        public Thickness OffScreenMargin { get; }
 
         public WindowStub(IWindowImpl parent = null)
         {
