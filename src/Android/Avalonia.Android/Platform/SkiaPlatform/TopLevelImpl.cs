@@ -52,7 +52,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
 
             NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
-            StorageProvider = new AndroidStorageProvider((AvaloniaActivity)avaloniaView.Context);
+            StorageProvider = new AndroidStorageProvider((AvaloniaMainActivity)avaloniaView.Context);
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>

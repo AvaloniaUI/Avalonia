@@ -9,20 +9,19 @@ using AndroidX.Lifecycle;
 
 namespace Avalonia.Android
 {
-    public abstract class AvaloniaActivity : AppCompatActivity
+    public abstract class AvaloniaMainActivity : AppCompatActivity
     {
+        internal static object ViewContent;
+
         internal Action<int, Result, Intent> ActivityResult;
         internal AvaloniaView View;
-        internal AvaloniaViewModel _viewModel;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            _viewModel = new ViewModelProvider(this).Get(Java.Lang.Class.FromType(typeof(AvaloniaViewModel))) as AvaloniaViewModel;
-
             View = new AvaloniaView(this);
-            if (_viewModel.Content != null)
+            if (ViewContent != null)
             {
-                View.Content = _viewModel.Content;
+                View.Content = ViewContent;
             }
 
             View.Prepare();
@@ -41,11 +40,11 @@ namespace Avalonia.Android
         {
             get
             {
-                return _viewModel.Content;
+                return ViewContent;
             }
             set
             {
-                _viewModel.Content = value;
+                ViewContent = value;
                 if (View != null)
                     View.Content = value;
             }
