@@ -31,7 +31,7 @@ namespace Avalonia.Direct2D1.Media
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
-                var font = ((GlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((GlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 

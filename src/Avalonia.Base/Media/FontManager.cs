@@ -81,7 +81,7 @@ namespace Avalonia.Media
             PlatformImpl.GetInstalledFontFamilyNames(checkForUpdates);
 
         /// <summary>
-        ///     Returns a new <see cref="IGlyphTypeface"/>, or an existing one if a matching <see cref="GlyphTypeface"/> exists.
+        ///     Returns a new <see cref="IGlyphTypeface"/>, or an existing one if a matching <see cref="IGlyphTypeface"/> exists.
         /// </summary>
         /// <param name="typeface">The typeface.</param>
         /// <returns>
