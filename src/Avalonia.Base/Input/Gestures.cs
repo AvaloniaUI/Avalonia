@@ -6,7 +6,7 @@ namespace Avalonia.Input
 {
     public static class Gestures
     {
-        private static bool s_isDoubleTapped = false;
+        private static bool s_isDoubleTapped;
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "Tapped",
             RoutingStrategies.Bubble,

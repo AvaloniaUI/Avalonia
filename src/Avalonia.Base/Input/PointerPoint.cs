@@ -33,47 +33,47 @@ namespace Avalonia.Input
     /// <summary>
     /// Provides extended properties for a PointerPoint object.
     /// </summary>
-    public struct PointerPointProperties
+    public record PointerPointProperties
     {
         /// <summary>
         /// Gets a value that indicates whether the pointer input was triggered by the primary action mode of an input device.
         /// </summary>
-        public bool IsLeftButtonPressed { get; } = false;
+        public bool IsLeftButtonPressed { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the pointer input was triggered by the tertiary action mode of an input device.
         /// </summary>
-        public bool IsMiddleButtonPressed { get; } = false;
+        public bool IsMiddleButtonPressed { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the pointer input was triggered by the secondary action mode (if supported) of an input device.
         /// </summary>
-        public bool IsRightButtonPressed { get; } = false;
+        public bool IsRightButtonPressed { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the pointer input was triggered by the first extended mouse button (XButton1).
         /// </summary>
-        public bool IsXButton1Pressed { get; } = false;
+        public bool IsXButton1Pressed { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the pointer input was triggered by the second extended mouse button (XButton2).
         /// </summary>
-        public bool IsXButton2Pressed { get; } = false;
+        public bool IsXButton2Pressed { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the barrel button of the pen/stylus device is pressed.
         /// </summary>
-        public bool IsBarrelButtonPressed { get; } = false;
+        public bool IsBarrelButtonPressed { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the input is from a pen eraser.
         /// </summary>
-        public bool IsEraser { get; } = false;
+        public bool IsEraser { get; }
 
         /// <summary>
         /// Gets a value that indicates whether the digitizer pen is inverted.
         /// </summary>
-        public bool IsInverted { get; } = false;
+        public bool IsInverted { get; }
 
         /// <summary>
         /// Gets the clockwise rotation in degrees of a pen device around its own major axis (such as when the user spins the pen in their fingers).
@@ -81,7 +81,7 @@ namespace Avalonia.Input
         /// <returns>
         /// A value between 0.0 and 359.0 in degrees of rotation. The default value is 0.0.
         /// </returns>
-        public float Twist { get; } = 0.0F;
+        public float Twist { get; }
 
         /// <summary>
         /// Gets a value that indicates the force that the pointer device (typically a pen/stylus) exerts on the surface of the digitizer.
@@ -97,7 +97,7 @@ namespace Avalonia.Input
         /// <returns>
         /// The value is 0.0 when the finger or pen is perpendicular to the digitizer surface, between 0.0 and 90.0 when tilted to the right of perpendicular, and between 0.0 and -90.0 when tilted to the left of perpendicular. The default value is 0.0.
         /// </returns>
-        public float XTilt { get; } = 0.0F;
+        public float XTilt { get; }
 
         /// <summary>
         /// Gets the plane angle between the X-Z plane and the plane that contains the X axis and the axis of the input device (typically a pen/stylus).
@@ -105,7 +105,7 @@ namespace Avalonia.Input
         /// <returns>
         /// The value is 0.0 when the finger or pen is perpendicular to the digitizer surface, between 0.0 and 90.0 when tilted towards the user, and between 0.0 and -90.0 when tilted away from the user. The default value is 0.0.
         /// </returns>
-        public float YTilt { get; } = 0.0F;
+        public float YTilt { get; }
 
         /// <summary>
         /// Gets the kind of pointer state change.

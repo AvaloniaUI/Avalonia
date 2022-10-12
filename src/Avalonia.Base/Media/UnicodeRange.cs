@@ -12,6 +12,7 @@ namespace Avalonia.Media
         public readonly static UnicodeRange Default = Parse("0-10FFFD");
 
         private readonly UnicodeRangeSegment _single;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1805:Do not initialize unnecessarily", Justification = "<Pending>")]
         private readonly IReadOnlyList<UnicodeRangeSegment>? _segments = null;
 
         public UnicodeRange(int start, int end)

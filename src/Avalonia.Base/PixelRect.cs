@@ -12,7 +12,7 @@ namespace Avalonia
         /// <summary>
         /// An empty rectangle.
         /// </summary>
-        public static readonly PixelRect Empty = default;
+        public static readonly PixelRect Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PixelRect"/> structure.

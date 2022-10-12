@@ -16,7 +16,7 @@ namespace Avalonia.Utilities
     {
         private List<T> _list = new();
         private int _generation;
-        private int _enumCount = 0;
+        private int _enumCount;
 
         public int Count => _list.Count;
         internal List<T> Inner => _list;

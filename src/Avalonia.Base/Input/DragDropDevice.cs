@@ -9,8 +9,8 @@ namespace Avalonia.Input
     {
         public static readonly DragDropDevice Instance = new DragDropDevice();
         
-        private Interactive? _lastTarget = null;
-        
+        private Interactive? _lastTarget;
+
         private Interactive? GetTarget(IInputRoot root, Point local)
         {
             var target = root.InputHitTest(local)?.GetSelfAndVisualAncestors()?.OfType<Interactive>()?.FirstOrDefault();

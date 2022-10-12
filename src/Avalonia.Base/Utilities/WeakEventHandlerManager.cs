@@ -79,7 +79,7 @@ namespace Avalonia.Utilities
             private readonly Delegate _delegate;
 
             private Descriptor[] _data = new Descriptor[2];
-            private int _count = 0;
+            private int _count;
 
             delegate void CallerDelegate(TSubscriber s, object sender, T args);
             

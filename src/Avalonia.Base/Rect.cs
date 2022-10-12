@@ -18,7 +18,7 @@ namespace Avalonia
         /// <summary>
         /// An empty rectangle.
         /// </summary>
-        public static readonly Rect Empty = default(Rect);
+        public static readonly Rect Empty;
 
         /// <summary>
         /// The X position.

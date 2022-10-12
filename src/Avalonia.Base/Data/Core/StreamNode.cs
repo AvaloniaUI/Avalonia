@@ -6,7 +6,7 @@ namespace Avalonia.Data.Core
 {
     public class StreamNode : ExpressionNode
     {
-        private IStreamPlugin? _customPlugin = null;
+        private IStreamPlugin? _customPlugin;
         private IDisposable? _subscription;
 
         public override string Description => "^";
