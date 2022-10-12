@@ -141,6 +141,8 @@ dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomme
 dotnet_diagnostic.CA1802.severity = warning
 # CA1825: Avoid zero-length array allocations
 dotnet_diagnostic.CA1825.severity = warning
+#CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
+dotnet_diagnostic.CA1847.severity = warning
 
 # Wrapping preferences
 csharp_wrap_before_ternary_opsigns = false
