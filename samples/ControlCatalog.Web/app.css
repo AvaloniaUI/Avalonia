@@ -4,12 +4,15 @@
 }
 
 #avalonia-splash {
-    position: absolute;
+    position: relative;
     height: 100%;
     width: 100%;
     color: whitesmoke;
     background: #171C2C;
     font-family: 'Nunito', sans-serif;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 #avalonia-splash a{
@@ -24,15 +27,23 @@
 }
 
 .splash-close {
-    animation: fadeOut 1s forwards;
+    animation: slide 0.5s linear 1s forwards;
 }
 
-@keyframes fadeOut {
-    from {
-        opacity: 1;
+@keyframes slide {
+    0% {
+        top: 0%;
     }
 
-    to {
+    50% {
+        opacity: 80%;
+    }
+
+    100% {
+        top: 100%;
+        overflow: hidden;
         opacity: 0;
+        display: none;
+        visibility: collapse;
     }
 }
