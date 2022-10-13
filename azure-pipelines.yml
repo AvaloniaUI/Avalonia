@@ -51,13 +51,21 @@ jobs:
       script: |
         dotnet --info
         printenv
-        ./build.sh --target CiAzureLinux --configuration=Release
+        ./build.sh --target CiAzureLinux --configuration=Release --binlog $(Build.SourcesDirectory)/artifacts/avalonia_linux.binlog
 
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'VSTest'
       testResultsFiles: '$(Build.SourcesDirectory)/artifacts/test-results/*.trx'
     condition: not(canceled())
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/avalonia_linux.binlog'
+      artifactName: 'Binlog'
+    displayName: 'Publish Binlog'
+    condition: always()
+    continueOnError: true
      
 
 - job: macOS
@@ -111,7 +119,7 @@ jobs:
         which dotnet
         dotnet --info
         printenv
-        ./build.sh --target CiAzureOSX --configuration Release --skip-previewer
+        ./build.sh --target CiAzureOSX --configuration Release --skip-previewer --binlog $(Build.SourcesDirectory)/artifacts/avalonia_macOS.binlog
 
   - task: PublishTestResults@2
     inputs:
@@ -130,6 +138,14 @@ jobs:
       pathtoPublish: '$(Build.SourcesDirectory)/artifacts/nuget'
       artifactName: 'NuGetOSX'
     condition: succeeded()
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/avalonia_macOS.binlog'
+      artifactName: 'Binlog'
+    displayName: 'Publish Binlog'
+    condition: always()
+    continueOnError: true
 
 - job: Windows
   pool:
@@ -164,7 +180,7 @@ jobs:
     inputs:
       script: |
         set PATH=%PATH%;%USERPROFILE%\.dotnet\tools
-        nuke --target CiAzureWindows --configuration Release
+        nuke --target CiAzureWindows --configuration Release --binlog $(Build.SourcesDirectory)/artifacts/avalonia_win.binlog
       
   - task: PublishTestResults@2
     inputs:
@@ -183,4 +199,13 @@ jobs:
       pathToPublish: '$(Build.SourcesDirectory)/artifacts/zip'
       artifactName: 'Samples'
     condition: succeeded()
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.SourcesDirectory)/artifacts/avalonia_win.binlog'
+      artifactName: 'Binlog'
+    displayName: 'Publish Binlog'
+    condition: always()
+    continueOnError: true
+  
 

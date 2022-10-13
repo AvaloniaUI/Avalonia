@@ -22,6 +22,9 @@ public partial class Build
     [Parameter("skip-previewer")]
     public bool SkipPreviewer { get; set; }
 
+    [Parameter("binlog")]
+    public string Binlog { get; }
+
     public class BuildParameters
     {
         public string Configuration { get; }
@@ -57,6 +60,7 @@ public partial class Build
         public string FileZipSuffix { get; }
         public AbsolutePath ZipCoreArtifacts { get; }
         public AbsolutePath ZipNuGetArtifacts { get; }
+        public string Binlog { get; }
 
 
         public BuildParameters(Build b)
@@ -125,6 +129,7 @@ public partial class Build
             FileZipSuffix = Version + ".zip";
             ZipCoreArtifacts = ZipRoot / ("Avalonia-" + FileZipSuffix);
             ZipNuGetArtifacts = ZipRoot / ("Avalonia-NuGet-" + FileZipSuffix);
+            Binlog = b.Binlog;
         }
 
         string GetVersion()
