@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
