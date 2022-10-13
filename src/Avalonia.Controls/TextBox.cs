@@ -184,15 +184,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="TextChanged"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> TextChangedEvent =
-            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+        public static readonly RoutedEvent<TextChangedEventArgs> TextChangedEvent =
+            RoutedEvent.Register<TextBox, TextChangedEventArgs>(
                 nameof(TextChanged), RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="TextChanging"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> TextChangingEvent =
-            RoutedEvent.Register<TextBox, RoutedEventArgs>(
+        public static readonly RoutedEvent<TextChangingEventArgs> TextChangingEvent =
+            RoutedEvent.Register<TextBox, TextChangingEventArgs>(
                 nameof(TextChanging), RoutingStrategies.Bubble);
 
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
@@ -591,7 +591,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs asynchronously after text changes and the new text is rendered.
         /// </summary>
-        public event EventHandler<RoutedEventArgs>? TextChanged
+        public event EventHandler<TextChangedEventArgs>? TextChanged
         {
             add => AddHandler(TextChangedEvent, value);
             remove => RemoveHandler(TextChangedEvent, value);
@@ -603,7 +603,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This event occurs just after the <see cref="Text"/> property value has been updated.
         /// </remarks>
-        public event EventHandler<RoutedEventArgs>? TextChanging
+        public event EventHandler<TextChangingEventArgs>? TextChanging
         {
             add => AddHandler(TextChangingEvent, value);
             remove => RemoveHandler(TextChangingEvent, value);
@@ -1597,12 +1597,12 @@ namespace Avalonia.Controls
                     //    This occurs after the Text property is set.
                     // 2. TextChanged occurs asynchronously after text changes and the new text is rendered.
 
-                    var textChangingEventArgs = new RoutedEventArgs(TextChangingEvent);
+                    var textChangingEventArgs = new TextChangingEventArgs(TextChangingEvent);
                     RaiseEvent(textChangingEventArgs);
 
                     Dispatcher.UIThread.Post(() =>
                     {
-                        var textChangedEventArgs = new RoutedEventArgs(TextChangedEvent);
+                        var textChangedEventArgs = new TextChangedEventArgs(TextChangedEvent);
                         RaiseEvent(textChangedEventArgs);
                     }, DispatcherPriority.Normal);
                 }
