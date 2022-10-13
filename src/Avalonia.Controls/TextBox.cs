@@ -400,10 +400,18 @@ namespace Avalonia.Controls
                 CaretIndex = CoerceCaretIndex(caretIndex, value);
                 SelectionStart = CoerceCaretIndex(selectionStart, value);
                 SelectionEnd = CoerceCaretIndex(selectionEnd, value);
-                if (SetAndRaise(TextProperty, ref _text, value) && IsUndoEnabled && !_isUndoingRedoing)
+
+                var textChanged = SetAndRaise(TextProperty, ref _text, value);
+
+                if (textChanged && IsUndoEnabled && !_isUndoingRedoing)
                 {
                     _undoRedoHelper.Clear();
                     SnapshotUndoRedo(); // so we always have an initial state
+                }
+
+                if (textChanged)
+                {
+                    RaiseTextChangeEvents();
                 }
             }
         }
@@ -1297,7 +1305,7 @@ namespace Avalonia.Controls
 
                 if (text != null && _wordSelectionStart >= 0)
                 {
-                    var distance = caretIndex - _wordSelectionStart;                 
+                    var distance = caretIndex - _wordSelectionStart;
 
                     if (distance <= 0)
                     {
@@ -1584,6 +1592,29 @@ namespace Avalonia.Controls
             return text.Substring(start, end - start);
         }
 
+        /// <summary>
+        /// Raises both the <see cref="TextChanging"/> and <see cref="TextChanged"/> events.
+        /// </summary>
+        /// <remarks>
+        /// This must be called after the <see cref="Text"/> property is set.
+        /// </remarks>
+        private void RaiseTextChangeEvents()
+        {
+            // Note the following sequence of these events (following WinUI)
+            // 1. TextChanging occurs synchronously when text starts to change but before it is rendered.
+            //    This occurs after the Text property is set.
+            // 2. TextChanged occurs asynchronously after text changes and the new text is rendered.
+
+            var textChangingEventArgs = new TextChangingEventArgs(TextChangingEvent);
+            RaiseEvent(textChangingEventArgs);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                var textChangedEventArgs = new TextChangedEventArgs(TextChangedEvent);
+                RaiseEvent(textChangedEventArgs);
+            }, DispatcherPriority.Normal);
+        }
+
         private void SetTextInternal(string value, bool raiseTextChanged = true)
         {
             if (raiseTextChanged)
@@ -1592,19 +1623,7 @@ namespace Avalonia.Controls
 
                 if (textChanged)
                 {
-                    // Note the following sequence of these events (following WinUI)
-                    // 1. TextChanging occurs synchronously when text starts to change but before it is rendered.
-                    //    This occurs after the Text property is set.
-                    // 2. TextChanged occurs asynchronously after text changes and the new text is rendered.
-
-                    var textChangingEventArgs = new TextChangingEventArgs(TextChangingEvent);
-                    RaiseEvent(textChangingEventArgs);
-
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        var textChangedEventArgs = new TextChangedEventArgs(TextChangedEvent);
-                        RaiseEvent(textChangedEventArgs);
-                    }, DispatcherPriority.Normal);
+                    RaiseTextChangeEvents();
                 }
             }
             else
