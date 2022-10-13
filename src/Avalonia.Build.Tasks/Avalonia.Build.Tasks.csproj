@@ -9,6 +9,11 @@
         <NoWarn>NU1605;CS8632</NoWarn>
     </PropertyGroup>
 
+    <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
+    <PropertyGroup>
+      <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    </PropertyGroup>
+
     <ItemGroup>
       <Compile Include="../Avalonia.Base/Utilities/AvaloniaResourcesIndex.cs">
         <Link>Shared/AvaloniaResourcesIndex.cs</Link>
