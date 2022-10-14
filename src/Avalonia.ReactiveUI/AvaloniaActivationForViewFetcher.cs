@@ -26,15 +26,15 @@ namespace Avalonia.ReactiveUI
         public IObservable<bool> GetActivationForView(IActivatableView view)
         {
             if (!(view is IVisual visual)) return Observable.Return(false);
-            if (view is Control control) return GetActivationForControl(control);
-            return GetActivationForVisual(visual);
+            if (view is Control control) return AvaloniaActivationForViewFetcher.GetActivationForControl(control);
+            return AvaloniaActivationForViewFetcher.GetActivationForVisual(visual);
         }
 
         /// <summary>
         /// Listens to Loaded and Unloaded 
         /// events for Avalonia Control.
         /// </summary>
-        private IObservable<bool> GetActivationForControl(Control control) 
+        private static IObservable<bool> GetActivationForControl(Control control) 
         {
             var controlLoaded = Observable
                 .FromEventPattern<RoutedEventArgs>(
@@ -55,7 +55,7 @@ namespace Avalonia.ReactiveUI
         /// Listens to AttachedToVisualTree and DetachedFromVisualTree 
         /// events for Avalonia IVisuals.
         /// </summary>
-        private IObservable<bool> GetActivationForVisual(IVisual visual) 
+        private static IObservable<bool> GetActivationForVisual(IVisual visual) 
         {
             var visualLoaded = Observable
                 .FromEventPattern<VisualTreeAttachmentEventArgs>(
