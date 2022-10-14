@@ -288,10 +288,10 @@ namespace Avalonia.Win32
                 var byteArr = bytes is byte[] ? (byte[])bytes : bytes.ToArray();
                 return WriteBytesToHGlobal(ref hGlobal, byteArr);
             }
-            return WriteBytesToHGlobal(ref hGlobal, SerializeObject(data));
+            return WriteBytesToHGlobal(ref hGlobal, DataObject.SerializeObject(data));
         }
 
-        private byte[] SerializeObject(object data)
+        private static byte[] SerializeObject(object data)
         {
             using (var ms = new MemoryStream())
             {

@@ -15,7 +15,7 @@ namespace Avalonia.Win32
         private const int OleRetryCount = 10;
         private const int OleRetryDelay = 100;
 
-        private async Task<IDisposable> OpenClipboard()
+        private static async Task<IDisposable> OpenClipboard()
         {
             var i = OleRetryCount;
 
@@ -31,7 +31,7 @@ namespace Avalonia.Win32
 
         public async Task<string> GetTextAsync()
         {
-            using(await OpenClipboard())
+            using(await ClipboardImpl.OpenClipboard())
             {
                 IntPtr hText = UnmanagedMethods.GetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
                 if (hText == IntPtr.Zero)
@@ -58,7 +58,7 @@ namespace Avalonia.Win32
                 throw new ArgumentNullException(nameof(text));
             }
 
-            using(await OpenClipboard())
+            using(await ClipboardImpl.OpenClipboard())
             {
                 UnmanagedMethods.EmptyClipboard();
 
@@ -69,7 +69,7 @@ namespace Avalonia.Win32
 
         public async Task ClearAsync()
         {
-            using(await OpenClipboard())
+            using(await ClipboardImpl.OpenClipboard())
             {
                 UnmanagedMethods.EmptyClipboard();
             }
