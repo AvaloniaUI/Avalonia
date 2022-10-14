@@ -65,7 +65,7 @@ namespace Avalonia.Native
             }
         }
 
-        private NativeMenu CreateDefaultAppMenu()
+        private static NativeMenu CreateDefaultAppMenu()
         {
             var result = new NativeMenu();
 
@@ -167,7 +167,7 @@ namespace Avalonia.Native
 
                         if (appMenu == null)
                         {
-                            appMenu = CreateDefaultAppMenu();
+                            appMenu = AvaloniaNativeMenuExporter.CreateDefaultAppMenu();
                             NativeMenu.SetMenu(Application.Current, appMenu);
                         }
 

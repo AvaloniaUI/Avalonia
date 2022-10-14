@@ -19,8 +19,8 @@ namespace Avalonia.Native
         {
             _factory = factory;
         }
-        
-        TopLevel FindRoot(IInteractive interactive)
+
+        static TopLevel FindRoot(IInteractive interactive)
         {
             while (interactive != null && !(interactive is IVisual))
                 interactive = interactive.InteractiveParent;
@@ -48,7 +48,7 @@ namespace Avalonia.Native
         public Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
         {
             // Sanity check
-            var tl = FindRoot(triggerEvent.Source);
+            var tl = AvaloniaNativeDragSource.FindRoot(triggerEvent.Source);
             var view = tl?.PlatformImpl as WindowBaseImpl;
             if (view == null)
                 throw new ArgumentException();

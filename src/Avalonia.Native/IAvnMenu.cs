@@ -111,7 +111,7 @@ namespace Avalonia.Native.Interop.Impl
 
         private __MicroComIAvnMenuItemProxy CreateNewAt(IAvaloniaNativeFactory factory, int index, NativeMenuItemBase item)
         {
-            var result = CreateNew(factory, item);
+            var result = __MicroComIAvnMenuProxy.CreateNew(factory, item);
 
             result.Initialize(item);
 
@@ -123,7 +123,7 @@ namespace Avalonia.Native.Interop.Impl
             return result;
         }
 
-        private __MicroComIAvnMenuItemProxy CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
+        private static __MicroComIAvnMenuItemProxy CreateNew(IAvaloniaNativeFactory factory, NativeMenuItemBase item)
         {
             var nativeItem = (__MicroComIAvnMenuItemProxy)(item is NativeMenuItemSeparator ?
                 factory.CreateMenuItemSeparator() :
