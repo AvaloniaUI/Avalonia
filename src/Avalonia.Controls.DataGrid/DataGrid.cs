@@ -26,6 +26,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -236,6 +237,66 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<DataGridLength> ColumnWidthProperty =
             AvaloniaProperty.Register<DataGrid, DataGridLength>(nameof(ColumnWidth), defaultValue: DataGridLength.Auto);
+
+        /// <summary>
+        /// Identifies the <see cref="RowTheme"/> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme> RowThemeProperty =
+            AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(RowTheme));
+
+        /// <summary>
+        /// Gets or sets the theme applied to all rows.
+        /// </summary>
+        public ControlTheme RowTheme
+        {
+            get { return GetValue(RowThemeProperty); }
+            set { SetValue(RowThemeProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="CellTheme"/> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme> CellThemeProperty =
+            AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(CellTheme));
+
+        /// <summary>
+        /// Gets or sets the theme applied to all cells.
+        /// </summary>
+        public ControlTheme CellTheme
+        {
+            get { return GetValue(CellThemeProperty); }
+            set { SetValue(CellThemeProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="ColumnHeaderTheme"/> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme> ColumnHeaderThemeProperty =
+            AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(ColumnHeaderTheme));
+
+        /// <summary>
+        /// Gets or sets the theme applied to all column headers.
+        /// </summary>
+        public ControlTheme ColumnHeaderTheme
+        {
+            get { return GetValue(ColumnHeaderThemeProperty); }
+            set { SetValue(ColumnHeaderThemeProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="RowGroupTheme"/> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme> RowGroupThemeProperty =
+            AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(RowGroupTheme));
+
+        /// <summary>
+        /// Gets or sets the theme applied to all row groups.
+        /// </summary>
+        public ControlTheme RowGroupTheme
+        {
+            get { return GetValue(RowGroupThemeProperty); }
+            set { SetValue(RowGroupThemeProperty, value); }
+        }
 
         /// <summary>
         /// Gets or sets the standard width or automatic sizing mode of columns in the control.
@@ -3225,7 +3286,6 @@ namespace Avalonia.Controls
             }
         }
 
-        //TODO Styles
         private void AddNewCellPrivate(DataGridRow row, DataGridColumn column)
         {
             DataGridCell newCell = new DataGridCell();
@@ -3238,8 +3298,11 @@ namespace Avalonia.Controls
             {
                 newCell.OwningColumn = column;
                 newCell.IsVisible = column.IsVisible;
+                if (row.OwningGrid.CellTheme is {} cellTheme)
+                {
+                    newCell.SetValue(ThemeProperty, cellTheme, BindingPriority.TemplatedParent);
+                }
             }
-            //newCell.EnsureStyle(null);
             row.Cells.Insert(column.Index, newCell);
         }
 
@@ -4520,7 +4583,6 @@ namespace Avalonia.Controls
             FlushCurrentCellChanged();
         }
 
-        //TODO Styles
         private void PopulateCellContent(bool isCellEdited,
                                          DataGridColumn dataGridColumn,
                                          DataGridRow dataGridRow,
