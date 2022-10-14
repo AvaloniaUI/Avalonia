@@ -246,23 +246,6 @@ namespace Avalonia.Controls
             set { SetValue(ColumnWidthProperty, value); }
         }
 
-        public static readonly StyledProperty<IBrush> AlternatingRowBackgroundProperty =
-            AvaloniaProperty.Register<DataGrid, IBrush>(nameof(AlternatingRowBackground));
-
-        /// <summary>
-        /// Gets or sets the <see cref="T:System.Windows.Media.Brush" /> that is used to paint the background of odd-numbered rows.
-        /// </summary>
-        /// <returns>
-        /// The brush that is used to paint the background of odd-numbered rows. The default is a
-        /// <see cref="T:System.Windows.Media.SolidColorBrush" /> with a
-        /// <see cref="P:System.Windows.Media.SolidColorBrush.Color" /> value of white (ARGB value #00FFFFFF).
-        /// </returns>
-        public IBrush AlternatingRowBackground
-        {
-            get { return GetValue(AlternatingRowBackgroundProperty); }
-            set { SetValue(AlternatingRowBackgroundProperty, value); }
-        }
-
         public static readonly StyledProperty<int> FrozenColumnCountProperty =
             AvaloniaProperty.Register<DataGrid, int>(
                 nameof(FrozenColumnCount),
@@ -2058,7 +2041,7 @@ namespace Avalonia.Controls
                     forceHorizontalScroll: true);
             }
         }
-        
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -2167,7 +2150,7 @@ namespace Avalonia.Controls
 
             return desiredSize;
         }
-        
+
         /// <inheritdoc/>
         protected override void OnDataContextBeginUpdate()
         {
@@ -2183,7 +2166,7 @@ namespace Avalonia.Controls
 
             NotifyDataContextPropertyForAllRowCells(GetAllRows(), false);
         }
-        
+
         /// <summary>
         /// Raises the BeginningEdit event.
         /// </summary>
@@ -4575,7 +4558,7 @@ namespace Avalonia.Controls
                 dataGridCell.Content = element;
             }
 
-            
+
         }
 
         private void PreparingCellForEditPrivate(Control editingElement)

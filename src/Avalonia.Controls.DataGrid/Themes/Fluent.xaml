@@ -232,7 +232,7 @@
         <Setter Property="Data" Value="{StaticResource DataGridSortIconDescendingPath}" />
       </Style>
     </ControlTheme>
-    
+
     <ControlTheme x:Key="DataGridTopLeftColumnHeader" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
       <Setter Property="Template">
         <ControlTemplate>
@@ -336,10 +336,6 @@
           </Border>
         </ControlTemplate>
       </Setter>
-
-      <Style Selector="^:nth-child(even)">
-        <Setter Property="Background" Value="{Binding $parent[DataGrid].AlternatingRowBackground}" />
-      </Style>
 
       <Style Selector="^:invalid">
         <Style Selector="^ /template/ Rectangle#InvalidVisualElement">
@@ -484,7 +480,6 @@
 
     <ControlTheme x:Key="{x:Type DataGrid}" TargetType="DataGrid">
       <Setter Property="RowBackground" Value="Transparent" />
-      <Setter Property="AlternatingRowBackground" Value="Transparent" />
       <Setter Property="HeadersVisibility" Value="Column" />
       <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />
       <Setter Property="VerticalScrollBarVisibility" Value="Auto" />

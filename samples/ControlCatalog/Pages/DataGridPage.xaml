@@ -45,8 +45,7 @@
           <CheckBox x:Name="ShowGDP"  IsChecked="True"  Content="Toggle GDP Column Visibility"
                     DockPanel.Dock="Top"/>
           <DataGrid Name="dataGrid1" Margin="12" CanUserResizeColumns="True" CanUserReorderColumns="True" CanUserSortColumns="True" HeadersVisibility="All"
-                    RowBackground="#1000"
-                    AlternatingRowBackground="#1fff">
+                    RowBackground="#1000">
             <DataGrid.Columns>
               <!-- Using HeaderTemplate -->
               <DataGridTextColumn Header="Country" HeaderTemplate="{StaticResource Demo.DataTemplates.CountryHeader}" Binding="{Binding Name}" Width="6*" />
