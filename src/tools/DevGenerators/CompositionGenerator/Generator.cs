@@ -35,16 +35,14 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             GenerateAnimations();
         }
 
+        static string ServerName(string? c) => c != null ? ("Server" + c) : "ServerObject";
+        static string ChangesName(string? c) => c != null ? (c + "Changes") : "ChangeSet";
+        static string ChangedFieldsTypeName(GClass c) => c.Name + "ChangedFields";
+        static string ChangedFieldsFieldName(GClass c) =>  "_changedFieldsOf" + c.Name;
+        static string PropertyBackingFieldName(GProperty prop) => "_" + prop.Name.WithLowerFirst();
+        static string CompositionPropertyField(GProperty prop) => "s_IdOf" + prop.Name + "Property";
 
-
-        string ServerName(string? c) => c != null ? ("Server" + c) : "ServerObject";
-        string ChangesName(string? c) => c != null ? (c + "Changes") : "ChangeSet";
-        string ChangedFieldsTypeName(GClass c) => c.Name + "ChangedFields";
-        string ChangedFieldsFieldName(GClass c) =>  "_changedFieldsOf" + c.Name;
-        string PropertyBackingFieldName(GProperty prop) => "_" + prop.Name.WithLowerFirst();
-        string CompositionPropertyField(GProperty prop) => "s_IdOf" + prop.Name + "Property";
-
-        ExpressionSyntax ClientProperty(GClass c, GProperty p) =>
+        static ExpressionSyntax ClientProperty(GClass c, GProperty p) =>
             MemberAccess(ServerName(c.Name), CompositionPropertyField(p));
 
         void GenerateClass(GClass cl)
