@@ -56,8 +56,3 @@
         public int StrikethroughThickness { get; init; }
     }
 }
-
-namespace System.Runtime.CompilerServices
-{
-    public class IsExternalInit { }
-}
