@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Data;
+﻿using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
@@ -11,6 +10,9 @@ namespace Avalonia.PropertyStore
     /// </remarks>
     internal abstract class EffectiveValue
     {
+        private IValueEntry? _valueEntry;
+        private IValueEntry? _baseValueEntry;
+
         /// <summary>
         /// Gets the current effective value as a boxed value.
         /// </summary>
@@ -33,51 +35,65 @@ namespace Avalonia.PropertyStore
         public BindingPriority BasePriority { get; protected set; }
 
         /// <summary>
-        /// Sets the value and base value, raising <see cref="AvaloniaObject.PropertyChanged"/>
-        /// where necessary.
+        /// Begins a reevaluation pass on the effective value.
+        /// </summary>
+        /// <param name="clearLocalValue">
+        /// Determines whether any current local value should be cleared.
+        /// </param>
+        /// <remarks>
+        /// This method resets the <see cref="Priority"/> and <see cref="BasePriority"/> properties
+        /// to Unset, pending reevaluation.
+        /// </remarks>
+        public void BeginReevaluation(bool clearLocalValue = false)
+        {
+            if (clearLocalValue || Priority != BindingPriority.LocalValue)
+                Priority = BindingPriority.Unset;
+            if (clearLocalValue || BasePriority != BindingPriority.LocalValue)
+                BasePriority = BindingPriority.Unset;
+        }
+
+        public void EndReevaluation()
+        {
+            if (Priority == BindingPriority.Unset)
+            {
+                _valueEntry?.Unsubscribe();
+                _valueEntry = null;
+            }
+
+            if (BasePriority == BindingPriority.Unset)
+            {
+                _baseValueEntry?.Unsubscribe();
+                _baseValueEntry = null;
+            }
+        }
+
+        /// <summary>
+        /// Sets the value and base value for a non-LocalValue priority, raising 
+        /// <see cref="AvaloniaObject.PropertyChanged"/> where necessary.
         /// </summary>
         /// <param name="owner">The associated value store.</param>
-        /// <param name="property">The property being changed.</param>
         /// <param name="value">The new value of the property.</param>
         /// <param name="priority">The priority of the new value.</param>
         public abstract void SetAndRaise(
             ValueStore owner,
-            AvaloniaProperty property,
-            object? value,
+            IValueEntry value,
             BindingPriority priority);
 
         /// <summary>
-        /// Sets the value and base value, raising <see cref="AvaloniaObject.PropertyChanged"/>
-        /// where necessary.
+        /// Sets the value and base value for a non-LocalValue priority, raising 
+        /// <see cref="AvaloniaObject.PropertyChanged"/> where necessary.
         /// </summary>
         /// <param name="owner">The associated value store.</param>
-        /// <param name="property">The property being changed.</param>
         /// <param name="value">The new value of the property.</param>
         /// <param name="priority">The priority of the new value.</param>
         /// <param name="baseValue">The new base value of the property.</param>
         /// <param name="basePriority">The priority of the new base value.</param>
         public abstract void SetAndRaise(
             ValueStore owner,
-            AvaloniaProperty property,
-            object? value,
+            IValueEntry value,
             BindingPriority priority,
-            object? baseValue,
+            IValueEntry baseValue,
             BindingPriority basePriority);
-
-        /// <summary>
-        /// Sets the value, raising <see cref="AvaloniaObject.PropertyChanged"/>
-        /// where necessary.
-        /// </summary>
-        /// <param name="owner">The associated value store.</param>
-        /// <param name="entry">The value entry with the new value of the property.</param>
-        /// <param name="priority">The priority of the new value.</param>
-        /// <remarks>
-        /// This method does not set the base value.
-        /// </remarks>
-        public abstract void SetAndRaise(
-            ValueStore owner,
-            IValueEntry entry,
-            BindingPriority priority);
 
         /// <summary>
         /// Set the value priority, but leaves the value unchanged.
@@ -104,6 +120,14 @@ namespace Avalonia.PropertyStore
             EffectiveValue? newValue);
 
         /// <summary>
+        /// Removes the current animation value and reverts to the base value, raising
+        /// <see cref="AvaloniaObject.PropertyChanged"/> where necessary.
+        /// </summary>
+        /// <param name="owner">The associated value store.</param>
+        /// <param name="property">The property being changed.</param>
+        public abstract void RemoveAnimationAndRaise(ValueStore owner, AvaloniaProperty property);
+
+        /// <summary>
         /// Coerces the property value.
         /// </summary>
         /// <param name="owner">The associated value store.</param>
@@ -120,5 +144,28 @@ namespace Avalonia.PropertyStore
 
         protected abstract object? GetBoxedValue();
         protected abstract object? GetBoxedBaseValue();
+
+        protected void UpdateValueEntry(IValueEntry? entry, BindingPriority priority)
+        {
+            if (priority <= Priority && entry != _valueEntry)
+            {
+                _valueEntry?.Unsubscribe();
+                _valueEntry = entry;
+            }
+
+            if (priority <= BasePriority &&
+                priority >= BindingPriority.LocalValue &&
+                entry != _baseValueEntry)
+            {
+                _baseValueEntry?.Unsubscribe();
+                _baseValueEntry = entry;
+            }
+        }
+
+        protected void UnsubscribeValueEntries()
+        {
+            _valueEntry?.Unsubscribe();
+            _baseValueEntry?.Unsubscribe();
+        }
     }
 }

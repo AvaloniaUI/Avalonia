@@ -41,7 +41,7 @@ namespace Avalonia.PropertyStore
             return e;
         }
 
-        public IDisposable AddValue<T>(StyledPropertyBase<T> property, T value)
+        public ImmediateValueEntry<T> AddValue<T>(StyledPropertyBase<T> property, T value)
         {
             var e = new ImmediateValueEntry<T>(this, property, value);
             Add(e);

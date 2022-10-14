@@ -143,7 +143,7 @@ namespace Avalonia.PropertyStore
                     _value = value.Value;
                     _hasValue = true;
                     if (_subscription is not null && _subscription != s_creatingQuiet)
-                        Frame.Owner?.OnBindingValueChanged(Property, Frame.Priority, value.Value);
+                        Frame.Owner?.OnBindingValueChanged(this, Frame.Priority);
                 }
             }
             else if (value.Type != BindingValueType.DoNothing)
