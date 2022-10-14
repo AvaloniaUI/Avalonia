@@ -140,7 +140,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 IsWebsocketRequest = true;
                 if (headers.TryGetValue("Sec-WebSocket-Protocol", out h))
                     WebSocketProtocols = h.Split(',').Select(x => x.Trim()).ToArray();
-                else WebSocketProtocols = new string[0];
+                else WebSocketProtocols = Array.Empty<string>();
             }
         }
 
