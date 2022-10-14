@@ -3,7 +3,6 @@ using Microsoft.Maui.Handlers;
 
 namespace Avalonia.Maui.Handlers
 {
-#if ANDROID
     public partial class AvaloniaViewHandler
     {
         public static IPropertyMapper<AvaloniaView, AvaloniaViewHandler> PropertyMapper = new PropertyMapper<AvaloniaView, AvaloniaViewHandler>(ViewHandler.ViewMapper)
@@ -15,5 +14,4 @@ namespace Avalonia.Maui.Handlers
         {
         }
     }
-#endif
 }

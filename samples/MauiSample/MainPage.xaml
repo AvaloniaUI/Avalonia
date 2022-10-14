@@ -5,20 +5,10 @@
              xmlns:catalog="clr-namespace:ControlCatalog;assembly=ControlCatalog"
              xmlns:ava="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls"
              x:Class="MauiSample.MainPage">
-    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-    <avalonia:AvaloniaView Grid.Row="0"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
-      <avalonia:AvaloniaView.Content>
-        <ava:Label x:Name="La" Content="{Binding Label}"/>
-      </avalonia:AvaloniaView.Content>
+  <Grid  HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+    <avalonia:AvaloniaView HorizontalOptions="Start" VerticalOptions="FillAndExpand">
+      <ava:Label   x:Name="La" Content="Hello" VerticalAlignment="Stretch"/>
     </avalonia:AvaloniaView>
-        <HorizontalStackLayout HeightRequest="100" Grid.Row="1" Spacing="20" HorizontalOptions="FillAndExpand">
-            <Button Text="{Binding Label}" VerticalOptions="Center"/>
-            <Label Text="Hey There" VerticalOptions="Center"/>
-        </HorizontalStackLayout>
-    </Grid>
+  </Grid>
 
 </ContentPage>

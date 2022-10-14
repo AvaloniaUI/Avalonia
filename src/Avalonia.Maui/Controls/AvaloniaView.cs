@@ -1,5 +1,6 @@
 ﻿namespace Avalonia.Maui.Controls
 {
+    [ContentProperty(nameof(Content))]
     public class AvaloniaView : View
     {
         public static readonly BindableProperty ContentProperty =
