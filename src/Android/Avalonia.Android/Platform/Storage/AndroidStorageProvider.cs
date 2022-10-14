@@ -14,10 +14,10 @@ namespace Avalonia.Android.Platform.Storage;
 
 internal class AndroidStorageProvider : IStorageProvider
 {
-    private readonly AvaloniaActivity _activity;
+    private readonly AvaloniaMainActivity _activity;
     private int _lastRequestCode = 20000;
 
-    public AndroidStorageProvider(AvaloniaActivity activity)
+    public AndroidStorageProvider(AvaloniaMainActivity activity)
     {
         _activity = activity;
     }
