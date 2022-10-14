@@ -28,7 +28,7 @@ public class ManagedStorageProvider<T> : BclStorageProvider where T : Window, ne
     public override async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
         var model = new ManagedFileChooserViewModel(options, _managedOptions);
-        var results = await Show(model, _parent);
+        var results = await ManagedStorageProvider<T>.Show(model, _parent);
 
         return results.Select(f => new BclStorageFile(new FileInfo(f))).ToArray();
     }
@@ -36,7 +36,7 @@ public class ManagedStorageProvider<T> : BclStorageProvider where T : Window, ne
     public override async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
         var model = new ManagedFileChooserViewModel(options, _managedOptions);
-        var results = await Show(model, _parent);
+        var results = await ManagedStorageProvider<T>.Show(model, _parent);
 
         return results.FirstOrDefault() is { } result
             ? new BclStorageFile(new FileInfo(result))
@@ -46,12 +46,12 @@ public class ManagedStorageProvider<T> : BclStorageProvider where T : Window, ne
     public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {
         var model = new ManagedFileChooserViewModel(options, _managedOptions);
-        var results = await Show(model, _parent);
+        var results = await ManagedStorageProvider<T>.Show(model, _parent);
 
         return results.Select(f => new BclStorageFolder(new DirectoryInfo(f))).ToArray();
     }
             
-    private async Task<string[]> Show(ManagedFileChooserViewModel model, Window parent)
+    private static async Task<string[]> Show(ManagedFileChooserViewModel model, Window parent)
     {
         var dialog = new T
         {
