@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
 
                 textbox.Text = String.Empty;
                 Dispatcher.UIThread.RunJobs();
-                Assert.True(control.SearchText == String.Empty);
+                Assert.True(string.IsNullOrEmpty(control.SearchText));
                 Assert.False(control.IsDropDownOpen);
                 Assert.True(closeEvent);
             });

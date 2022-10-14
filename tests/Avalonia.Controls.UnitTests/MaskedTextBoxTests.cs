@@ -559,7 +559,7 @@ namespace Avalonia.Controls.UnitTests
                     Text = "0123456789"
                 };
 
-                Assert.True(target.SelectedText == "");
+                Assert.True(string.IsNullOrEmpty(target.SelectedText));
 
                 target.SelectionStart = 2;
                 target.SelectionEnd = 4;

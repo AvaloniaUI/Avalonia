@@ -68,7 +68,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
 
                         var graphemeChars = elements[0].Replace(" × ", " ").Split(' ');
 
-                        var codepoints = graphemeChars.Where(x => x != "" && x != "×")
+                        var codepoints = graphemeChars.Where(x => !string.IsNullOrEmpty(x) && x != "×")
                             .Select(x => Convert.ToInt32(x, 16)).ToList();
 
                         var grapheme = codepoints.ToArray();
@@ -77,10 +77,10 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                         {
                             var remainingChars = elements[1].Replace(" × ", " ").Split(' ');
 
-                            var remaining = remainingChars.Where(x => x != "" && x != "×").Select(x => Convert.ToInt32(x, 16)).ToArray();
+                            var remaining = remainingChars.Where(x => !string.IsNullOrEmpty(x) && x != "×").Select(x => Convert.ToInt32(x, 16)).ToArray();
 
                             codepoints.AddRange(remaining);
-                        }                     
+                        }
 
                         var data = new GraphemeBreakData
                         {

@@ -129,7 +129,7 @@ namespace Avalonia.Controls
             get => _clockIdentifier;
             set
             {
-                if (!(string.IsNullOrEmpty(value) || value == "" || value == "12HourClock" || value == "24HourClock"))
+                if (!(string.IsNullOrEmpty(value) || value == "12HourClock" || value == "24HourClock"))
                     throw new ArgumentException("Invalid ClockIdentifier");
                 SetAndRaise(ClockIdentifierProperty, ref _clockIdentifier, value);
                 SetGrid();
