@@ -397,9 +397,9 @@ namespace Avalonia.Controls
                 var selectionStart = SelectionStart;
                 var selectionEnd = SelectionEnd;
 
-                CaretIndex = CoerceCaretIndex(caretIndex, value);
-                SelectionStart = CoerceCaretIndex(selectionStart, value);
-                SelectionEnd = CoerceCaretIndex(selectionEnd, value);
+                CaretIndex = TextBox.CoerceCaretIndex(caretIndex, value);
+                SelectionStart = TextBox.CoerceCaretIndex(selectionStart, value);
+                SelectionEnd = TextBox.CoerceCaretIndex(selectionEnd, value);
 
                 var textChanged = SetAndRaise(TextProperty, ref _text, value);
 
@@ -1380,9 +1380,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text);
+        private int CoerceCaretIndex(int value) => TextBox.CoerceCaretIndex(value, Text);
 
-        private int CoerceCaretIndex(int value, string? text)
+        private static int CoerceCaretIndex(int value, string? text)
         {
             if (text == null)
             {

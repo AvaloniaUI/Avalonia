@@ -18,7 +18,7 @@ namespace Avalonia.Automation.Peers
 
         public new ComboBox Owner => (ComboBox)base.Owner;
 
-        public ExpandCollapseState ExpandCollapseState => ToState(Owner.IsDropDownOpen);
+        public ExpandCollapseState ExpandCollapseState => ComboBoxAutomationPeer.ToState(Owner.IsDropDownOpen);
         public bool ShowsMenu => true;
         public void Collapse() => Owner.IsDropDownOpen = false;
         public void Expand() => Owner.IsDropDownOpen = true;
@@ -66,12 +66,12 @@ namespace Avalonia.Automation.Peers
             {
                 RaisePropertyChangedEvent(
                     ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty,
-                    ToState((bool)e.OldValue!),
-                    ToState((bool)e.NewValue!));
+                    ComboBoxAutomationPeer.ToState((bool)e.OldValue!),
+                    ComboBoxAutomationPeer.ToState((bool)e.NewValue!));
             }
         }
 
-        private ExpandCollapseState ToState(bool value)
+        private static ExpandCollapseState ToState(bool value)
         {
             return value ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
         }

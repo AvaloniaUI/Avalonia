@@ -475,7 +475,7 @@ namespace Avalonia.Controls.Primitives
 
             _openState = new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup);
 
-            WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
+            Popup.WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
 
             popupHost.Show();
 
@@ -639,7 +639,7 @@ namespace Avalonia.Controls.Primitives
             return Disposable.Create((unsubscribe, target, handler), state => state.unsubscribe(state.target, state.handler));
         }
 
-        private void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
+        private static void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
         {
             if(host is PopupRoot pr && pr.PlatformImpl is not null)
             {

@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void ClearItems()
         {
-            EnsureValidThread();
+            CalendarBlackoutDatesCollection.EnsureValidThread();
 
             base.ClearItems();
             _owner.UpdateMonths();
@@ -140,7 +140,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void InsertItem(int index, CalendarDateRange item)
         {
-            EnsureValidThread();
+            CalendarBlackoutDatesCollection.EnsureValidThread();
 
             if (!IsValid(item))
             {
@@ -162,7 +162,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void RemoveItem(int index)
         {
-            EnsureValidThread();
+            CalendarBlackoutDatesCollection.EnsureValidThread();
 
             base.RemoveItem(index);
             _owner.UpdateMonths();
@@ -182,7 +182,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void SetItem(int index, CalendarDateRange item)
         {
-            EnsureValidThread();
+            CalendarBlackoutDatesCollection.EnsureValidThread();
 
             if (!IsValid(item))
             {
@@ -206,7 +206,7 @@ namespace Avalonia.Controls.Primitives
             return true;
         }
         
-        private void EnsureValidThread()
+        private static void EnsureValidThread()
         {
             Dispatcher.UIThread.VerifyAccess();
         }

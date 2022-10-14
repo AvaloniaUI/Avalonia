@@ -545,8 +545,8 @@ namespace Avalonia.Controls.Primitives
 
         private void OnItemTapped(object? sender, TappedEventArgs e)
         {
-            if (e.Source is IVisual source && 
-                GetItemFromSource(source) is ListBoxItem listBoxItem &&
+            if (e.Source is IVisual source &&
+                DateTimePickerPanel.GetItemFromSource(source) is ListBoxItem listBoxItem &&
                 listBoxItem.Tag is int tag)
             {
                 SelectedValue = tag;
@@ -555,7 +555,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         //Helper to get ListBoxItem from pointerevent source
-        private ListBoxItem? GetItemFromSource(IVisual src)
+        private static ListBoxItem? GetItemFromSource(IVisual src)
         {
             var item = src;
             while (item != null && !(item is ListBoxItem))

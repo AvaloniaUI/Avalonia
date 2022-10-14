@@ -236,7 +236,7 @@ namespace Avalonia.Controls
             else if (IsDropDownOpen && SelectedIndex < 0 && ItemCount > 0 &&
                       (e.Key == Key.Up || e.Key == Key.Down) && IsFocused == true)
             {
-                var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
+                var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => ComboBox.CanFocus(c));
                 if (firstChild != null)
                 {
                     FocusManager.Instance?.Focus(firstChild, NavigationMethod.Directional);
@@ -341,7 +341,7 @@ namespace Avalonia.Controls
         {
             _subscriptionsOnOpen.Clear();
 
-            if (CanFocus(this))
+            if (ComboBox.CanFocus(this))
             {
                 Focus();
             }
@@ -403,14 +403,14 @@ namespace Avalonia.Controls
                     container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 }
 
-                if (container != null && CanFocus(container))
+                if (container != null && ComboBox.CanFocus(container))
                 {
                     container.Focus();
                 }
             }
         }
 
-        private bool CanFocus(IControl control) => control.Focusable && control.IsEffectivelyEnabled && control.IsVisible;
+        private static bool CanFocus(IControl control) => control.Focusable && control.IsEffectivelyEnabled && control.IsVisible;
 
         private void UpdateSelectionBoxItem(object? item)
         {

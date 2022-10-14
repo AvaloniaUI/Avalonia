@@ -288,13 +288,13 @@ namespace Avalonia.Controls
                     _resizeData.Definition1 = GetGridDefinition(_resizeData.Grid, index1, _resizeData.ResizeDirection);
                     _resizeData.OriginalDefinition1Length =
                         _resizeData.Definition1.UserSizeValueCache; // Save Size if user cancels.
-                    _resizeData.OriginalDefinition1ActualLength = GetActualLength(_resizeData.Definition1);
+                    _resizeData.OriginalDefinition1ActualLength = GridSplitter.GetActualLength(_resizeData.Definition1);
 
                     _resizeData.Definition2Index = index2;
                     _resizeData.Definition2 = GetGridDefinition(_resizeData.Grid, index2, _resizeData.ResizeDirection);
                     _resizeData.OriginalDefinition2Length =
                         _resizeData.Definition2.UserSizeValueCache; // Save Size if user cancels.
-                    _resizeData.OriginalDefinition2ActualLength = GetActualLength(_resizeData.Definition2);
+                    _resizeData.OriginalDefinition2ActualLength = GridSplitter.GetActualLength(_resizeData.Definition2);
 
                     // Determine how to resize the columns.
                     bool isStar1 = IsStar(_resizeData.Definition1);
@@ -516,7 +516,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Retrieves the ActualWidth or ActualHeight of the definition depending on its type Column or Row.
         /// </summary>
-        private double GetActualLength(DefinitionBase definition)
+        private static double GetActualLength(DefinitionBase definition)
         {
             var column = definition as ColumnDefinition;
 
@@ -537,11 +537,11 @@ namespace Avalonia.Controls
         /// </summary>
         private void GetDeltaConstraints(out double minDelta, out double maxDelta)
         {
-            double definition1Len = GetActualLength(_resizeData!.Definition1!);
+            double definition1Len = GridSplitter.GetActualLength(_resizeData!.Definition1!);
             double definition1Min = _resizeData.Definition1!.UserMinSizeValueCache;
             double definition1Max = _resizeData.Definition1.UserMaxSizeValueCache;
 
-            double definition2Len = GetActualLength(_resizeData.Definition2!);
+            double definition2Len = GridSplitter.GetActualLength(_resizeData.Definition2!);
             double definition2Min = _resizeData.Definition2!.UserMinSizeValueCache;
             double definition2Max = _resizeData.Definition2.UserMaxSizeValueCache;
 
@@ -590,7 +590,7 @@ namespace Avalonia.Controls
                     }
                     else if (IsStar(definition))
                     {
-                        SetDefinitionLength(definition, new GridLength(GetActualLength(definition), GridUnitType.Star));
+                        SetDefinitionLength(definition, new GridLength(GridSplitter.GetActualLength(definition), GridUnitType.Star));
                     }
                 }
             }
@@ -629,8 +629,8 @@ namespace Avalonia.Controls
 
             if (definition1 != null && definition2 != null)
             {
-                double actualLength1 = GetActualLength(definition1);
-                double actualLength2 = GetActualLength(definition2);
+                double actualLength1 = GridSplitter.GetActualLength(definition1);
+                double actualLength2 = GridSplitter.GetActualLength(definition2);
                 double pixelLength = 1 / _resizeData.Scaling;
                 double epsilon = pixelLength + LayoutHelper.LayoutEpsilon;
 

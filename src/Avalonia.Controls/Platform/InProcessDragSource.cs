@@ -64,12 +64,12 @@ namespace Avalonia.Platform
             var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
             tl?.PlatformImpl?.Input?.Invoke(rawEvent);
 
-            var effect = GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
+            var effect = InProcessDragSource.GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
             UpdateCursor(root, effect);
             return effect;
         }
 
-        private DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
+        private static DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
         {
             if (effect == DragDropEffects.Copy || effect == DragDropEffects.Move || effect == DragDropEffects.Link || effect == DragDropEffects.None)
                 return effect; // No need to check for the modifiers.

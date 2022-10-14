@@ -32,7 +32,7 @@ namespace Avalonia.Controls
 
         public void PutElement(IControl element, string key, IControl? owner)
         {
-            var ownerAsPanel = EnsureOwnerIsPanelOrNull(owner);
+            var ownerAsPanel = RecyclePool.EnsureOwnerIsPanelOrNull(owner);
             var elementInfo = new ElementInfo(element, ownerAsPanel);
 
             if (!_elements.TryGetValue(key, out var pool))
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
                     var elementInfo = elements.FirstOrDefault(x => x.Owner == owner) ?? elements.LastOrDefault();
                     elements.Remove(elementInfo!);
 
-                    var ownerAsPanel = EnsureOwnerIsPanelOrNull(owner);
+                    var ownerAsPanel = RecyclePool.EnsureOwnerIsPanelOrNull(owner);
                     if (elementInfo!.Owner != null && elementInfo.Owner != ownerAsPanel)
                     {
                         // Element is still under its parent. remove it from its parent.
@@ -80,10 +80,10 @@ namespace Avalonia.Controls
             return null;
         }
 
-        internal string GetReuseKey(IControl element) => ((Control)element).GetValue(ReuseKeyProperty);
-        internal void SetReuseKey(IControl element, string value) => ((Control)element).SetValue(ReuseKeyProperty, value);
+        internal static string GetReuseKey(IControl element) => ((Control)element).GetValue(ReuseKeyProperty);
+        internal static void SetReuseKey(IControl element, string value) => ((Control)element).SetValue(ReuseKeyProperty, value);
 
-        private IPanel? EnsureOwnerIsPanelOrNull(IControl? owner)
+        private static IPanel? EnsureOwnerIsPanelOrNull(IControl? owner)
         {
             if (owner is IPanel panel)
             {

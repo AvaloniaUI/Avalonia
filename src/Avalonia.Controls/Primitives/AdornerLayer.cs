@@ -211,7 +211,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
                         child.RenderTransformOrigin = new RelativePoint(new Point(0, 0), RelativeUnit.Absolute);
-                        UpdateClip(child, info.Bounds.Value, isClipEnabled);
+                        AdornerLayer.UpdateClip(child, info.Bounds.Value, isClipEnabled);
                         child.Arrange(info.Bounds.Value.Bounds);
                     }
                     else
@@ -232,7 +232,7 @@ namespace Avalonia.Controls.Primitives
             layer?.UpdateAdornedElement(adorner, adorned);
         }
 
-        private void UpdateClip(IControl control, TransformedBounds bounds, bool isEnabled)
+        private static void UpdateClip(IControl control, TransformedBounds bounds, bool isEnabled)
         {
             if (!isEnabled)
             {

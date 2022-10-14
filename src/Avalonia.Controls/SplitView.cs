@@ -431,7 +431,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private string GetPseudoClass(SplitViewDisplayMode mode)
+        private static string GetPseudoClass(SplitViewDisplayMode mode)
         {
             return mode switch
             {
@@ -463,8 +463,8 @@ namespace Avalonia.Controls
 
         private void OnDisplayModeChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldState = GetPseudoClass(e.GetOldValue<SplitViewDisplayMode>());
-            var newState = GetPseudoClass(e.GetNewValue<SplitViewDisplayMode>());
+            var oldState = SplitView.GetPseudoClass(e.GetOldValue<SplitViewDisplayMode>());
+            var newState = SplitView.GetPseudoClass(e.GetNewValue<SplitViewDisplayMode>());
 
             PseudoClasses.Remove($":{oldState}");
             PseudoClasses.Add($":{newState}");

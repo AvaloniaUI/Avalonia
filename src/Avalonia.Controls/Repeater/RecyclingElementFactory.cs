@@ -72,7 +72,7 @@ namespace Avalonia.Controls
                 element = dataTemplate.Build(args.Data)!;
 
                 // Associate ReuseKey with element
-                RecyclePool.SetReuseKey(element, templateKey);
+                Avalonia.Controls.RecyclePool.SetReuseKey(element, templateKey);
             }
 
             return element;
@@ -81,7 +81,7 @@ namespace Avalonia.Controls
         protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
         {
             var element = args.Element!;
-            var key = RecyclePool.GetReuseKey(element);
+            var key = Avalonia.Controls.RecyclePool.GetReuseKey(element);
             RecyclePool.PutElement(element, key, args.Parent);
         }
 

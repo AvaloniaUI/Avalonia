@@ -133,7 +133,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void ClearItems()
         {
-            EnsureValidThread();
+            SelectedDatesCollection.EnsureValidThread();
 
             Collection<DateTime> addedItems = new Collection<DateTime>();
             Collection<DateTime> removedItems = new Collection<DateTime>();
@@ -170,7 +170,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void InsertItem(int index, DateTime item)
         {
-            EnsureValidThread();
+            SelectedDatesCollection.EnsureValidThread();
 
             if (!Contains(item))
             {
@@ -233,7 +233,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void RemoveItem(int index)
         {
-            EnsureValidThread();
+            SelectedDatesCollection.EnsureValidThread();
 
             if (index >= Count)
             {
@@ -284,7 +284,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void SetItem(int index, DateTime item)
         {
-            EnsureValidThread();
+            SelectedDatesCollection.EnsureValidThread();
 
             if (!Contains(item))
             {
@@ -353,7 +353,7 @@ namespace Avalonia.Controls.Primitives
             return true;
         }
         
-        private void EnsureValidThread()
+        private static void EnsureValidThread()
         {
             Dispatcher.UIThread.VerifyAccess();
         }

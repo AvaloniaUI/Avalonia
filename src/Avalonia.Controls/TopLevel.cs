@@ -429,7 +429,7 @@ namespace Avalonia.Controls
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
-        private bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
+        private static bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
         {
             if(requested == received)
             {
@@ -449,7 +449,7 @@ namespace Avalonia.Controls
             {
                 if(transparencyLevel == WindowTransparencyLevel.None || 
                     TransparencyLevelHint == WindowTransparencyLevel.None || 
-                    !TransparencyLevelsMatch(TransparencyLevelHint, transparencyLevel))
+                    !TopLevel.TransparencyLevelsMatch(TransparencyLevelHint, transparencyLevel))
                 {
                     _transparencyFallbackBorder.Background = TransparencyBackgroundFallback;
                 }

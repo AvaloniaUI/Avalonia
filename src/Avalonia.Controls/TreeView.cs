@@ -284,7 +284,7 @@ namespace Avalonia.Controls
 
                     foreach (IControl container in ItemContainerGenerator.Index!.Containers)
                     {
-                        MarkContainerSelected(container, false);
+                        TreeView.MarkContainerSelected(container, false);
                     }
 
                     if (SelectedItems.Count > 0)
@@ -339,7 +339,7 @@ namespace Avalonia.Controls
         {
             var container = ItemContainerGenerator.Index!.ContainerFromItem(item)!;
 
-            MarkContainerSelected(container, selected);
+            TreeView.MarkContainerSelected(container, selected);
         }
 
         private void SelectedItemsAdded(IList items)
@@ -826,7 +826,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="selected">Whether the control is selected</param>
-        private void MarkContainerSelected(IControl container, bool selected)
+        private static void MarkContainerSelected(IControl container, bool selected)
         {
             if (container == null)
             {

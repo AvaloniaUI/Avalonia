@@ -1117,7 +1117,7 @@ namespace Avalonia.Controls
             else
             {
                 //  otherwise...
-                cellMeasureWidth = GetMeasureSizeForRange(
+                cellMeasureWidth = Grid.GetMeasureSizeForRange(
                                         DefinitionsU,
                                         PrivateCells[cell].ColumnIndex,
                                         PrivateCells[cell].ColumnSpan);
@@ -1137,7 +1137,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                cellMeasureHeight = GetMeasureSizeForRange(
+                cellMeasureHeight = Grid.GetMeasureSizeForRange(
                                         DefinitionsV,
                                         PrivateCells[cell].RowIndex,
                                         PrivateCells[cell].RowSpan);
@@ -1165,7 +1165,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// For "Auto" definitions MinWidth is used in place of PreferredSize.
         /// </remarks>
-        private double GetMeasureSizeForRange(
+        private static double GetMeasureSizeForRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
             int count)
