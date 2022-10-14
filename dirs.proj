@@ -14,6 +14,7 @@
     <ProjectReference Remove="samples/MobileSandbox.iOS/MobileSandbox.iOS.csproj" />
     <ProjectReference Remove="samples/ControlCatalog.iOS.Legacy/ControlCatalog.iOS.Legacy.csproj" />
     <ProjectReference Remove="samples/ControlCatalog.Android/ControlCatalog.Android.csproj" />
+    <ProjectReference Remove="samples/MauiSample/MauiSample.csproj" />
     <ProjectReference Remove="samples/MobileSandbox.Android/MobileSandbox.Android.csproj" />
     <ProjectReference Remove="src/Android/Avalonia.AndroidTestApplication/Avalonia.AndroidTestApplication.csproj" />
   </ItemGroup>
