@@ -35,7 +35,7 @@ namespace Avalonia.Controls
         /// This is pulled out separately to lazy load for performance.
         /// If no material color palette is ever used, no colors will be created.
         /// </remarks>
-        private void InitColorChart()
+        private static void InitColorChart()
         {
             lock (_colorChartMutex)
             {
@@ -322,7 +322,7 @@ namespace Avalonia.Controls
             {
                 if (_colorChart == null)
                 {
-                    InitColorChart();
+                    MaterialColorPalette.InitColorChart();
                 }
 
                 return _colorChartColorCount;
@@ -336,7 +336,7 @@ namespace Avalonia.Controls
             {
                 if (_colorChart == null)
                 {
-                    InitColorChart();
+                    MaterialColorPalette.InitColorChart();
                 }
 
                 return _colorChartShadeCount;
@@ -348,7 +348,7 @@ namespace Avalonia.Controls
         {
             if (_colorChart == null)
             {
-                InitColorChart();
+                MaterialColorPalette.InitColorChart();
             }
 
             return _colorChart![
