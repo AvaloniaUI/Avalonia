@@ -126,7 +126,7 @@ namespace Avalonia.Platform
             uri = uri.EnsureAbsolute(baseUri);
             if (uri.IsAvares())
             {
-                var (asm, path) = GetResAsmAndPath(uri);
+                var (asm, path) = AssetLoader.GetResAsmAndPath(uri);
                 if (asm == null)
                 {
                     throw new ArgumentException(
@@ -171,7 +171,7 @@ namespace Avalonia.Platform
 
             if (uri.IsAvares())
             {
-                var (asm, path) = GetResAsmAndPath(uri);
+                var (asm, path) = AssetLoader.GetResAsmAndPath(uri);
                 if (asm.AvaloniaResources == null)
                     return null;
                 asm.AvaloniaResources.TryGetValue(path, out var desc);
@@ -181,7 +181,7 @@ namespace Avalonia.Platform
             throw new ArgumentException($"Unsupported url type: " + uri.Scheme, nameof(uri));
         }
 
-        private (IAssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
+        private static (IAssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
         {
             var asm = s_assemblyDescriptorResolver.GetAssembly(uri.Authority);
             return (asm, uri.GetUnescapeAbsolutePath());
@@ -194,7 +194,7 @@ namespace Avalonia.Platform
                 if (!uri.IsAbsoluteUri)
                     return null;
                 if (uri.IsAvares())
-                    return GetResAsmAndPath(uri).asm;
+                    return AssetLoader.GetResAsmAndPath(uri).asm;
 
                 if (uri.IsResm())
                 {

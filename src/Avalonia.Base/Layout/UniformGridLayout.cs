@@ -432,7 +432,7 @@ namespace Avalonia.Layout
             var gridState = (UniformGridLayoutState)context.LayoutState!;
             gridState.EnsureElementSize(availableSize, context, _minItemWidth, _minItemHeight, _itemsStretch, Orientation, MinRowSpacing, MinColumnSpacing, _maximumRowsOrColumns);
 
-            var desiredSize = GetFlowAlgorithm(context).Measure(
+            var desiredSize = UniformGridLayout.GetFlowAlgorithm(context).Measure(
                 availableSize,
                 context,
                 true,
@@ -452,7 +452,7 @@ namespace Avalonia.Layout
 
         protected internal override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
         {
-            var value = GetFlowAlgorithm(context).Arrange(
+            var value = UniformGridLayout.GetFlowAlgorithm(context).Arrange(
                finalSize,
                context,
                true,
@@ -463,7 +463,7 @@ namespace Avalonia.Layout
 
         protected internal override void OnItemsChangedCore(VirtualizingLayoutContext context, object? source, NotifyCollectionChangedEventArgs args)
         {
-            GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
+            UniformGridLayout.GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
             // Always invalidate layout to keep the view accurate.
             InvalidateLayout();
 
@@ -557,6 +557,6 @@ namespace Avalonia.Layout
 
         private void InvalidateLayout() => InvalidateMeasure();
 
-        private FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((UniformGridLayoutState)context.LayoutState!).FlowAlgorithm;
+        private static FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((UniformGridLayoutState)context.LayoutState!).FlowAlgorithm;
     }
 }

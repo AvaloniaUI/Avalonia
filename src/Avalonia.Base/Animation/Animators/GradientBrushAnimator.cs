@@ -28,7 +28,7 @@ namespace Avalonia.Animation.Animators
             {
                 case IRadialGradientBrush oldRadial when newValue is IRadialGradientBrush newRadial:
                     return new ImmutableRadialGradientBrush(
-                        InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
+                        GradientBrushAnimator.InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
                         oldValue.Transform is { } ? new ImmutableTransform(oldValue.Transform.Value) : null,
                         s_relativePointAnimator.Interpolate(progress, oldValue.TransformOrigin, newValue.TransformOrigin),
@@ -39,7 +39,7 @@ namespace Avalonia.Animation.Animators
 
                 case IConicGradientBrush oldConic when newValue is IConicGradientBrush newConic:
                     return new ImmutableConicGradientBrush(
-                        InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
+                        GradientBrushAnimator.InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
                         oldValue.Transform is { } ? new ImmutableTransform(oldValue.Transform.Value) : null,
                         s_relativePointAnimator.Interpolate(progress, oldValue.TransformOrigin, newValue.TransformOrigin),
@@ -49,7 +49,7 @@ namespace Avalonia.Animation.Animators
 
                 case ILinearGradientBrush oldLinear when newValue is ILinearGradientBrush newLinear:
                     return new ImmutableLinearGradientBrush(
-                        InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
+                        GradientBrushAnimator.InterpolateStops(progress, oldValue.GradientStops, newValue.GradientStops),
                         s_doubleAnimator.Interpolate(progress, oldValue.Opacity, newValue.Opacity),
                         oldValue.Transform is { } ? new ImmutableTransform(oldValue.Transform.Value) : null,
                         s_relativePointAnimator.Interpolate(progress, oldValue.TransformOrigin, newValue.TransformOrigin),
@@ -72,7 +72,7 @@ namespace Avalonia.Animation.Animators
             return control.Bind((AvaloniaProperty<IBrush?>)Property, instance, BindingPriority.Animation);
         }
 
-        private IReadOnlyList<ImmutableGradientStop> InterpolateStops(double progress, IReadOnlyList<IGradientStop> oldValue, IReadOnlyList<IGradientStop> newValue)
+        private static IReadOnlyList<ImmutableGradientStop> InterpolateStops(double progress, IReadOnlyList<IGradientStop> oldValue, IReadOnlyList<IGradientStop> newValue)
         {
             var resultCount = Math.Max(oldValue.Count, newValue.Count);
             var stops = new ImmutableGradientStop[resultCount];

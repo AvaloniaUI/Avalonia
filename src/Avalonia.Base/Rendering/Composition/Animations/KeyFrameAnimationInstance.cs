@@ -87,7 +87,7 @@ namespace Avalonia.Rendering.Composition.Animations
             if (elapsed < _delayTime)
             {
                 if (_delayBehavior == AnimationDelayBehavior.SetInitialValueBeforeDelay)
-                    return ExpressionVariant.Create(GetKeyFrame(ref ctx, _keyFrames[0]));
+                    return ExpressionVariant.Create(KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, _keyFrames[0]));
                 return currentValue;
             }
 
@@ -95,7 +95,7 @@ namespace Avalonia.Rendering.Composition.Animations
             var iterationNumber = elapsed.Ticks / _duration.Ticks;
             if (_iterationBehavior == AnimationIterationBehavior.Count
                 && iterationNumber >= _iterationCount)
-                return ExpressionVariant.Create(GetKeyFrame(ref ctx, _keyFrames[_keyFrames.Length - 1]));
+                return ExpressionVariant.Create(KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, _keyFrames[_keyFrames.Length - 1]));
             
             
             var evenIterationNumber = iterationNumber % 2 == 0;
@@ -124,7 +124,7 @@ namespace Avalonia.Rendering.Composition.Animations
                 {
                     // this is the last frame
                     if (c == _keyFrames.Length - 1)
-                        return ExpressionVariant.Create(GetKeyFrame(ref ctx, kf));
+                        return ExpressionVariant.Create(KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, kf));
 
                     left = kf;
                     right = _keyFrames[c + 1];
@@ -139,13 +139,13 @@ namespace Avalonia.Rendering.Composition.Animations
                 return currentValue;
             
             return ExpressionVariant.Create(_interpolator.Interpolate(
-                GetKeyFrame(ref ctx, left),
-                GetKeyFrame(ref ctx, right),
+                KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, left),
+                KeyFrameAnimationInstance<T>.GetKeyFrame(ref ctx, right),
                 easedKeyProgress
             ));
         }
 
-        T GetKeyFrame(ref ExpressionEvaluationContext ctx, ServerKeyFrame<T> f)
+        static T GetKeyFrame(ref ExpressionEvaluationContext ctx, ServerKeyFrame<T> f)
         {
             if (f.Expression != null)
                 return f.Expression.Evaluate(ref ctx).CastOrDefault<T>();

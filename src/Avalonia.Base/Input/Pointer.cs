@@ -19,7 +19,7 @@ namespace Avalonia.Input
 
         public int Id { get; }
 
-        IInputElement? FindCommonParent(IInputElement? control1, IInputElement? control2)
+        static IInputElement? FindCommonParent(IInputElement? control1, IInputElement? control2)
         {
             if (control1 == null || control2 == null)
                 return null;
@@ -41,7 +41,7 @@ namespace Avalonia.Input
             PlatformCapture(control);
             if (oldCapture != null)
             {
-                var commonParent = FindCommonParent(control, oldCapture);
+                var commonParent = Pointer.FindCommonParent(control, oldCapture);
                 foreach (var notifyTarget in oldCapture.GetSelfAndVisualAncestors().OfType<IInputElement>())
                 {
                     if (notifyTarget == commonParent)

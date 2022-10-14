@@ -44,11 +44,11 @@ namespace Avalonia.Data.Core.Plugins
                     {
                         case TaskStatus.RanToCompletion:
                         case TaskStatus.Faulted:
-                            return HandleCompleted(task);
+                            return TaskStreamPlugin.HandleCompleted(task);
                         default:
                             var subject = new Subject<object?>();
                             task.ContinueWith(
-                                    x => HandleCompleted(task).Subscribe(subject),
+                                    x => TaskStreamPlugin.HandleCompleted(task).Subscribe(subject),
                                     TaskScheduler.FromCurrentSynchronizationContext())
                                 .ConfigureAwait(false);
                             return subject;
@@ -59,7 +59,7 @@ namespace Avalonia.Data.Core.Plugins
             return Observable.Empty<object?>();
         }
 
-        private IObservable<object?> HandleCompleted(Task task)
+        private static IObservable<object?> HandleCompleted(Task task)
         {
             var resultProperty = task.GetType().GetRuntimeProperty("Result");
             

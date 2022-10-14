@@ -70,7 +70,7 @@ namespace Avalonia.Data.Core.Parsers
 
             if (node.Indexer == AvaloniaObjectIndexer)
             {
-                var property = GetArgumentExpressionValue<AvaloniaProperty>(node.Arguments[0]);
+                var property = ExpressionVisitorNodeBuilder.GetArgumentExpressionValue<AvaloniaProperty>(node.Arguments[0]);
                 Nodes.Add(new AvaloniaPropertyAccessorNode(property, _enableDataValidation));
             }
             else
@@ -81,7 +81,7 @@ namespace Avalonia.Data.Core.Parsers
             return node;
         }
 
-        private T GetArgumentExpressionValue<T>(Expression expr)
+        private static T GetArgumentExpressionValue<T>(Expression expr)
         {
             try
             {
@@ -162,7 +162,7 @@ namespace Avalonia.Data.Core.Parsers
             if (node.Method == CreateDelegateMethod)
             {
                 var visited = Visit(node.Arguments[1]);
-                Nodes.Add(new PropertyAccessorNode(GetArgumentExpressionValue<MethodInfo>(node.Object!).Name, _enableDataValidation));
+                Nodes.Add(new PropertyAccessorNode(ExpressionVisitorNodeBuilder.GetArgumentExpressionValue<MethodInfo>(node.Object!).Name, _enableDataValidation));
                 return node;
             }
             else if (node.Method.Name == StreamBindingExtensions.StreamBindingName || node.Method.Name.StartsWith(StreamBindingExtensions.StreamBindingName + '`'))

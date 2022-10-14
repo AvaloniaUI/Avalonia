@@ -138,7 +138,7 @@ namespace Avalonia.Data.Core
 
             if (target == null)
             {
-                ValueChanged(TargetNullNotification());
+                ValueChanged(ExpressionNode.TargetNullNotification());
                 _listening = false;
             }
             else if (target != AvaloniaProperty.UnsetValue)
@@ -159,7 +159,7 @@ namespace Avalonia.Data.Core
             _listening = false;
         }
 
-        private BindingNotification TargetNullNotification()
+        private static BindingNotification TargetNullNotification()
         {
             return new BindingNotification(
                 new MarkupBindingChainException("Null value"),

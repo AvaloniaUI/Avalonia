@@ -57,13 +57,13 @@ namespace Avalonia.Data.Core.Plugins
                 else
                 {
                     base.InnerValueChanged(new BindingNotification(
-                        CreateException(errors),
+                        Accessor.CreateException(errors),
                         BindingErrorType.DataValidationError,
                         value));
                 }
             }
 
-            private Exception CreateException(IList<ValidationResult> errors)
+            private static Exception CreateException(IList<ValidationResult> errors)
             {
                 if (errors.Count == 1)
                 {

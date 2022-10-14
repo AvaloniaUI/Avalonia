@@ -92,7 +92,7 @@ namespace Avalonia.Data.Core.Plugins
                     if (errors?.Count > 0)
                     {
                         return new BindingNotification(
-                            GenerateException(errors),
+                            Validator.GenerateException(errors),
                             BindingErrorType.DataValidationError,
                             value);
                     }
@@ -108,7 +108,7 @@ namespace Avalonia.Data.Core.Plugins
                 return target;
             }
 
-            private Exception GenerateException(IList<object> errors)
+            private static Exception GenerateException(IList<object> errors)
             {
                 if (errors.Count == 1)
                 {

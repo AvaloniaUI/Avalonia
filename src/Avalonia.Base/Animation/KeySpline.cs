@@ -98,7 +98,7 @@ namespace Avalonia.Animation
             get => _controlPointX1;
             set
             {
-                if (IsValidXValue(value))
+                if (KeySpline.IsValidXValue(value))
                 {
                     _controlPointX1 = value;
                     _isDirty = true;
@@ -131,7 +131,7 @@ namespace Avalonia.Animation
             get => _controlPointX2;
             set
             {
-                if (IsValidXValue(value))
+                if (KeySpline.IsValidXValue(value))
                 {
                     _controlPointX2 = value;
                     _isDirty = true;
@@ -188,7 +188,7 @@ namespace Avalonia.Animation
         /// acceptable range; false otherwise.</returns>
         public bool IsValid()
         {
-            return IsValidXValue(_controlPointX1) && IsValidXValue(_controlPointX2);
+            return KeySpline.IsValidXValue(_controlPointX1) && KeySpline.IsValidXValue(_controlPointX2);
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        private bool IsValidXValue(double value)
+        private static bool IsValidXValue(double value)
         {
             return value >= 0.0 && value <= 1.0;
         }

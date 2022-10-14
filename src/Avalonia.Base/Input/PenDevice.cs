@@ -56,7 +56,7 @@ namespace Avalonia.Input
                     e.Handled = PenUp(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
                     break;
                 case RawPointerEventType.Move:
-                    e.Handled = PenMove(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult, e.IntermediatePoints);
+                    e.Handled = PenDevice.PenMove(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult, e.IntermediatePoints);
                     break;
             }
 
@@ -98,7 +98,7 @@ namespace Avalonia.Input
             return false;
         }
 
-        private bool PenMove(Pointer pointer, ulong timestamp,
+        private static bool PenMove(Pointer pointer, ulong timestamp,
             IInputRoot root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers, IInputElement? hitTest,
             Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints)

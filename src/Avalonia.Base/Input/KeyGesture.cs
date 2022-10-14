@@ -138,7 +138,7 @@ namespace Avalonia.Input
         public bool Matches(KeyEventArgs keyEvent) =>
             keyEvent != null &&
             keyEvent.KeyModifiers == KeyModifiers &&
-            ResolveNumPadOperationKey(keyEvent.Key) == ResolveNumPadOperationKey(Key);
+            KeyGesture.ResolveNumPadOperationKey(keyEvent.Key) == KeyGesture.ResolveNumPadOperationKey(Key);
 
         // TODO: Move that to external key parser
         private static Key ParseKey(string key)
@@ -166,7 +166,7 @@ namespace Avalonia.Input
             return EnumHelper.Parse<KeyModifiers>(modifier.ToString(), true);
         }
 
-        private Key ResolveNumPadOperationKey(Key key)
+        private static Key ResolveNumPadOperationKey(Key key)
         {
             switch (key)
             {

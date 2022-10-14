@@ -63,7 +63,7 @@ namespace Avalonia.Controls
         /// </remarks>
         public override void Add(string name)
         {
-            ThrowIfPseudoclass(name, "added");
+            Classes.ThrowIfPseudoclass(name, "added");
 
             if (!Contains(name))
             {
@@ -87,7 +87,7 @@ namespace Avalonia.Controls
 
             foreach (var name in names)
             {
-                ThrowIfPseudoclass(name, "added");
+                Classes.ThrowIfPseudoclass(name, "added");
 
                 if (!Contains(name))
                 {
@@ -127,7 +127,7 @@ namespace Avalonia.Controls
         /// </remarks>
         public override void Insert(int index, string name)
         {
-            ThrowIfPseudoclass(name, "added");
+            Classes.ThrowIfPseudoclass(name, "added");
 
             if (!Contains(name))
             {
@@ -152,7 +152,7 @@ namespace Avalonia.Controls
 
             foreach (var name in names)
             {
-                ThrowIfPseudoclass(name, "added");
+                Classes.ThrowIfPseudoclass(name, "added");
 
                 if (!Contains(name))
                 {
@@ -180,7 +180,7 @@ namespace Avalonia.Controls
         /// </remarks>
         public override bool Remove(string name)
         {
-            ThrowIfPseudoclass(name, "removed");
+            Classes.ThrowIfPseudoclass(name, "removed");
 
             if (base.Remove(name))
             {
@@ -206,7 +206,7 @@ namespace Avalonia.Controls
 
             foreach (var name in names)
             {
-                ThrowIfPseudoclass(name, "removed");
+                Classes.ThrowIfPseudoclass(name, "removed");
 
                 toRemove ??= new List<string>();
 
@@ -232,7 +232,7 @@ namespace Avalonia.Controls
         public override void RemoveAt(int index)
         {
             var name = this[index];
-            ThrowIfPseudoclass(name, "removed");
+            Classes.ThrowIfPseudoclass(name, "removed");
             base.RemoveAt(index);
             NotifyChanged();
         }
@@ -258,7 +258,7 @@ namespace Avalonia.Controls
 
             foreach (var name in source)
             {
-                ThrowIfPseudoclass(name, "added");
+                Classes.ThrowIfPseudoclass(name, "added");
             }
 
             foreach (var name in this)
@@ -320,7 +320,7 @@ namespace Avalonia.Controls
                 listener.Changed();
         }
 
-        private void ThrowIfPseudoclass(string name, string operation)
+        private static void ThrowIfPseudoclass(string name, string operation)
         {
             if (name.StartsWith(":"))
             {

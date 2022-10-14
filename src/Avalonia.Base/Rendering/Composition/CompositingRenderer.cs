@@ -124,7 +124,7 @@ public class CompositingRenderer : IRendererWithCompositor
         QueueUpdate();
     }
 
-    private void SyncChildren(Visual v)
+    private static void SyncChildren(Visual v)
     {
         //TODO: Optimize by moving that logic to Visual itself
         if(v.CompositionVisual == null)
@@ -233,11 +233,11 @@ public class CompositingRenderer : IRendererWithCompositor
             visual.Render(_recordingContext);
             comp.DrawList = _recorder.EndUpdate();
 
-            SyncChildren(visual);
+            CompositingRenderer.SyncChildren(visual);
         }
         foreach(var v in _recalculateChildren)
             if (!_dirty.Contains(v))
-                SyncChildren(v);
+                CompositingRenderer.SyncChildren(v);
         _dirty.Clear();
         _recalculateChildren.Clear();
         CompositionTarget.Size = _root.ClientSize;
