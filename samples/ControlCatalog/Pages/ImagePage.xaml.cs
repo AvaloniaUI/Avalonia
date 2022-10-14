@@ -52,13 +52,13 @@ namespace ControlCatalog.Pages
                 var comboxBox = (ComboBox)sender;
                 if (_croppedImage.Source is CroppedBitmap croppedBitmap)
                 {
-                    croppedBitmap.SourceRect = GetCropRect(comboxBox.SelectedIndex);
+                    croppedBitmap.SourceRect = ImagePage.GetCropRect(comboxBox.SelectedIndex);
                 }
                 
             }
         }
 
-        private PixelRect GetCropRect(int index)
+        private static PixelRect GetCropRect(int index)
         {
             var bitmapWidth = 640;
             var bitmapHeight = 426;

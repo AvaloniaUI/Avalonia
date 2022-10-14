@@ -22,10 +22,10 @@ public partial class CompositionPage : UserControl
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        this.Get<ItemsControl>("Items").Items = CreateColorItems();
+        this.Get<ItemsControl>("Items").Items = CompositionPage.CreateColorItems();
     }
 
-    private List<CompositionPageColorItem> CreateColorItems()
+    private static List<CompositionPageColorItem> CreateColorItems()
     {
         var list = new List<CompositionPageColorItem>();
 

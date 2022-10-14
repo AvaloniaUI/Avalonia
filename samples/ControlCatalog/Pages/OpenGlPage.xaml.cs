@@ -247,7 +247,7 @@ namespace ControlCatalog.Pages
 
         }
 
-        private void CheckError(GlInterface gl)
+        private static void CheckError(GlInterface gl)
         {
             int err;
             while ((err = gl.GetError()) != GL_NO_ERROR)
@@ -256,7 +256,7 @@ namespace ControlCatalog.Pages
 
         protected unsafe override void OnOpenGlInit(GlInterface GL, int fb)
         {
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
 
             Info = $"Renderer: {GL.GetString(GL_RENDERER)} Version: {GL.GetString(GL_VERSION)}";
             
@@ -277,13 +277,13 @@ namespace ControlCatalog.Pages
             GL.BindAttribLocationString(_shaderProgram, positionLocation, "aPos");
             GL.BindAttribLocationString(_shaderProgram, normalLocation, "aNormal");
             Console.WriteLine(GL.LinkProgramAndGetError(_shaderProgram));
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
 
             // Create the vertex buffer object (VBO) for the vertex data.
             _vertexBufferObject = GL.GenBuffer();
             // Bind the VBO and copy the vertex data into it.
             GL.BindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
             var vertexSize = Marshal.SizeOf<Vertex>();
             fixed (void* pdata = _points)
                 GL.BufferData(GL_ARRAY_BUFFER, new IntPtr(_points.Length * vertexSize),
@@ -291,21 +291,21 @@ namespace ControlCatalog.Pages
 
             _indexBufferObject = GL.GenBuffer();
             GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
             fixed (void* pdata = _indices)
                 GL.BufferData(GL_ELEMENT_ARRAY_BUFFER, new IntPtr(_indices.Length * sizeof(ushort)), new IntPtr(pdata),
                     GL_STATIC_DRAW);
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
             GL.VertexAttribPointer(positionLocation, 3, GL_FLOAT,
                 0, vertexSize, IntPtr.Zero);
             GL.VertexAttribPointer(normalLocation, 3, GL_FLOAT,
                 0, vertexSize, new IntPtr(12));
             GL.EnableVertexAttribArray(positionLocation);
             GL.EnableVertexAttribArray(normalLocation);
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
 
         }
 
@@ -339,7 +339,7 @@ namespace ControlCatalog.Pages
             GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
             GL.BindVertexArray(_vertexArrayObject);
             GL.UseProgram(_shaderProgram);
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
             var projection =
                 Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)(Bounds.Width / Bounds.Height),
                     0.01f, 1000);
@@ -361,10 +361,10 @@ namespace ControlCatalog.Pages
             GL.Uniform1f(minYLoc, _minY);
             GL.Uniform1f(timeLoc, (float)St.Elapsed.TotalSeconds);
             GL.Uniform1f(discoLoc, _disco);
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
             GL.DrawElements(GL_TRIANGLES, _indices.Length, GL_UNSIGNED_SHORT, IntPtr.Zero);
 
-            CheckError(GL);
+            OpenGlPageControl.CheckError(GL);
             if (_disco > 0.01)
                 Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
         }

@@ -32,7 +32,7 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private StateData[] BuildAllStates()
+        private static StateData[] BuildAllStates()
         {
             return new StateData[]
             {
@@ -90,7 +90,7 @@ namespace ControlCatalog.Pages
         }
         public StateData[] States { get; private set; }
         
-        private LinkedList<string>[] BuildAllSentences()
+        private static LinkedList<string>[] BuildAllSentences()
         {
             return new string[]
             {
@@ -108,8 +108,8 @@ namespace ControlCatalog.Pages
         {
             this.InitializeComponent();
 
-            States = BuildAllStates();
-            Sentences = BuildAllSentences();
+            States = AutoCompleteBoxPage.BuildAllStates();
+            Sentences = AutoCompleteBoxPage.BuildAllSentences();
 
             foreach (AutoCompleteBox box in GetAllAutoCompleteBox().Where(x => x.Name != "CustomAutocompleteBox"))
             {

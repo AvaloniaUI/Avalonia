@@ -55,21 +55,21 @@ namespace ControlCatalog.Pages
                     context.DrawRectangle(p, workingAreaRect);
 
 
-                    var formattedText = CreateFormattedText($"Bounds: {screen.Bounds.Width}:{screen.Bounds.Height}");
+                    var formattedText = ScreenPage.CreateFormattedText($"Bounds: {screen.Bounds.Width}:{screen.Bounds.Height}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height));
 
                     formattedText =
-                        CreateFormattedText($"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}");
+                        ScreenPage.CreateFormattedText($"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 20));
 
-                    formattedText = CreateFormattedText($"Scaling: {screen.PixelDensity * 100}%");
+                    formattedText = ScreenPage.CreateFormattedText($"Scaling: {screen.PixelDensity * 100}%");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 40));
 
-                    formattedText = CreateFormattedText($"Primary: {screen.Primary}");
+                    formattedText = ScreenPage.CreateFormattedText($"Primary: {screen.Primary}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 60));
 
                     formattedText =
-                        CreateFormattedText(
+                        ScreenPage.CreateFormattedText(
                             $"Current: {screen.Equals(w.Screens.ScreenFromBounds(new PixelRect(w.Position, PixelSize.FromSize(w.Bounds.Size, scaling))))}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 80));
                 }
@@ -77,7 +77,7 @@ namespace ControlCatalog.Pages
             context.DrawRectangle(p, new Rect(w.Position.X / 10f + Math.Abs(_leftMost), w.Position.Y / 10f, w.Bounds.Width / 10, w.Bounds.Height / 10));
         }
 
-        private FormattedText CreateFormattedText(string textToFormat)
+        private static FormattedText CreateFormattedText(string textToFormat)
         {
             return new FormattedText(textToFormat, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                 Typeface.Default, 12, Brushes.Green);
