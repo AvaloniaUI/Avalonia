@@ -9,11 +9,11 @@ using AndroidX.Lifecycle;
 
 namespace Avalonia.Android
 {
-    public abstract class AvaloniaMainActivity : AppCompatActivity
+    public abstract class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler
     {
         internal static object ViewContent;
 
-        internal Action<int, Result, Intent> ActivityResult;
+        public Action<int, Result, Intent> ActivityResult { get; set; }
         internal AvaloniaView View;
 
         protected override void OnCreate(Bundle savedInstanceState)

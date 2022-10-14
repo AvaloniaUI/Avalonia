@@ -229,6 +229,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Blazor.Web",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Web", "samples\ControlCatalog.Web\ControlCatalog.Web.csproj", "{8B3E8405-DE18-4048-A459-9CA4AC3319A2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Maui", "src\Avalonia.Maui\Avalonia.Maui.csproj", "{62B773DF-D9B5-4E3D-B5B3-E2AAE2BC56DE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiSample", "samples\MauiSample\MauiSample.csproj", "{75F41E0E-A323-4CD4-8A5B-CE03B5039E39}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -539,6 +543,16 @@ Global
 		{8B3E8405-DE18-4048-A459-9CA4AC3319A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B3E8405-DE18-4048-A459-9CA4AC3319A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B3E8405-DE18-4048-A459-9CA4AC3319A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62B773DF-D9B5-4E3D-B5B3-E2AAE2BC56DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62B773DF-D9B5-4E3D-B5B3-E2AAE2BC56DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62B773DF-D9B5-4E3D-B5B3-E2AAE2BC56DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62B773DF-D9B5-4E3D-B5B3-E2AAE2BC56DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75F41E0E-A323-4CD4-8A5B-CE03B5039E39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75F41E0E-A323-4CD4-8A5B-CE03B5039E39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75F41E0E-A323-4CD4-8A5B-CE03B5039E39}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{75F41E0E-A323-4CD4-8A5B-CE03B5039E39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75F41E0E-A323-4CD4-8A5B-CE03B5039E39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75F41E0E-A323-4CD4-8A5B-CE03B5039E39}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -603,6 +617,7 @@ Global
 		{62D392C9-81CF-487F-92E8-598B2AF3FDCE} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{6A710364-AE6D-40BD-968B-024311527AC2} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{8B3E8405-DE18-4048-A459-9CA4AC3319A2} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{75F41E0E-A323-4CD4-8A5B-CE03B5039E39} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

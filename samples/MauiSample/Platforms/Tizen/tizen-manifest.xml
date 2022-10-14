@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest package="maui-application-id-placeholder" version="0.0.0" api-version="7" xmlns="http://tizen.org/ns/packages">
+  <profile name="common" />
+  <ui-application appid="maui-application-id-placeholder" exec="MauiSample.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" launch_mode="single">
+    <label>maui-application-title-placeholder</label>
+    <icon>maui-appicon-placeholder</icon>
+    <metadata key="http://tizen.org/metadata/prefer_dotnet_aot" value="true" />
+  </ui-application>
+  <shortcut-list />
+  <privileges>
+    <privilege>http://tizen.org/privilege/internet</privilege>
+  </privileges> 
+  <dependencies />
+  <provides-appdefined-privileges />
+</manifest>

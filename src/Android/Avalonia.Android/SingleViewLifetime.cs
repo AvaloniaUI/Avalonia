@@ -3,13 +3,13 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Android
 {
-    internal class SingleViewLifetime : ISingleViewApplicationLifetime
+    public class SingleViewLifetime : ISingleViewApplicationLifetime
     {
         private AvaloniaView _view;
 
         public AvaloniaView View
         {
-            get => _view; internal set
+            get => _view; set
             {
                 if (_view != null)
                 {
