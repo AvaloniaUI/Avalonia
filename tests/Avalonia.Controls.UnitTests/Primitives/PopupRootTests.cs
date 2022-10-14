@@ -325,7 +325,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        private PopupRoot CreateTarget(TopLevel popupParent, IPopupImpl impl = null)
+        private static PopupRoot CreateTarget(TopLevel popupParent, IPopupImpl impl = null)
         {
             impl ??= popupParent.PlatformImpl.CreatePopup();
 

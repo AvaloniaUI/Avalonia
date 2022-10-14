@@ -43,7 +43,7 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("Goodbye cruel world :(", target.Text);
         }
 
-        private Mock<IControl> CreateTarget(
+        private static Mock<IControl> CreateTarget(
             ITemplatedControl templatedParent = null,
             string text = null)
         {

@@ -32,7 +32,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             Assert.IsType<TextBlock>(child);
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ContentControl>((parent, scope) =>
             {

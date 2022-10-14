@@ -207,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(200, 200), target.DesiredSize);
         }
 
-        private bool TryGetScale(Viewbox viewbox, out Vector scale)
+        private static bool TryGetScale(Viewbox viewbox, out Vector scale)
         {
             if (viewbox.InternalTransform is null)
             {

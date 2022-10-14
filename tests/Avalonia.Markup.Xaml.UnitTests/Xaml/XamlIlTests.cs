@@ -162,7 +162,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             
         }
 
-        void AssertThrows(Action callback, Func<Exception, bool> check)
+        static void AssertThrows(Action callback, Func<Exception, bool> check)
         {
             try
             {
@@ -182,7 +182,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         public void Bug2570()
         {
             SomeStaticProperty = "123";
-            AssertThrows(() => AvaloniaRuntimeXamlLoader
+            XamlIlTests.AssertThrows(() => AvaloniaRuntimeXamlLoader
                     .Load(@"
 <UserControl 
     xmlns='https://github.com/avaloniaui'

@@ -546,13 +546,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
-                    WindowStyle(),
+                    StaticResourceExtensionTests.WindowStyle(),
                 });
 
             return UnitTestApplication.Start(services);
         }
 
-        private Style WindowStyle()
+        private static Style WindowStyle()
         {
             return new Style(x => x.OfType<Window>())
             {

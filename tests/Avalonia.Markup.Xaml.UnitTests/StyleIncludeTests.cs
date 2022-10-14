@@ -18,7 +18,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
     </Style.Resources>
 </Style>";
 
-            using (StartWithResources(("test:style.xaml", styleXaml)))
+            using (StyleIncludeTests.StartWithResources(("test:style.xaml", styleXaml)))
             {
                 var xaml = @"
 <Application xmlns='https://github.com/avaloniaui'
@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             }
         }
 
-        private IDisposable StartWithResources(params (string, string)[] assets)
+        private static IDisposable StartWithResources(params (string, string)[] assets)
         {
             var assetLoader = new MockAssetLoader(assets);
             var services = new TestServices(assetLoader: assetLoader);

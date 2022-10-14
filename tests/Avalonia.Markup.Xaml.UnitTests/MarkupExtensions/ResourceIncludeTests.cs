@@ -20,7 +20,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
 </ResourceDictionary>
 ";
-                using (StartWithResources(("test:include.xaml", includeXaml)))
+                using (StaticResourceExtensionTests.StartWithResources(("test:include.xaml", includeXaml)))
                 {
                     var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
@@ -53,7 +53,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <StaticResource x:Key='brush' ResourceKey='missing' />
 </ResourceDictionary>";
 
-                using (StartWithResources(("test:style.xaml", styleXaml)))
+                using (StaticResourceExtensionTests.StartWithResources(("test:style.xaml", styleXaml)))
                 {
                     var xaml = @"
 <Application xmlns='https://github.com/avaloniaui'
@@ -80,7 +80,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 }
             }
 
-            private IDisposable StartWithResources(params (string, string)[] assets)
+            private static IDisposable StartWithResources(params (string, string)[] assets)
             {
                 var assetLoader = new MockAssetLoader(assets);
                 var services = new TestServices(assetLoader: assetLoader);

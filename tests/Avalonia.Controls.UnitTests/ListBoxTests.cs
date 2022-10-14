@@ -607,7 +607,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private FuncControlTemplate ListBoxItemTemplate()
+        private static FuncControlTemplate ListBoxItemTemplate()
         {
             return new FuncControlTemplate<ListBoxItem>((parent, scope) =>
                 new ContentPresenter
@@ -618,7 +618,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private FuncControlTemplate ScrollViewerTemplate()
+        private static FuncControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
                 new Panel

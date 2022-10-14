@@ -28,7 +28,7 @@ namespace Avalonia.Controls.UnitTests
                 (c.name, c.width, c.minWidth, ColumnDefinition.MaxWidthProperty.GetDefaultValue(typeof(ColumnDefinition)))).ToArray());
         }
 
-        private Grid CreateGrid(params (string name, GridLength width, double minWidth, double maxWidth)[] columns)
+        private static Grid CreateGrid(params (string name, GridLength width, double minWidth, double maxWidth)[] columns)
         {
             var grid = new Grid();
             foreach (var k in columns.Select(c => new ColumnDefinition

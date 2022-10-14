@@ -90,7 +90,7 @@ namespace Avalonia.Controls.UnitTests
             textShaperImpl: new MockTextShaperImpl(),
             fontManagerImpl: new MockFontManagerImpl());
 
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<TextBox>((control, scope) =>
                 new TextPresenter

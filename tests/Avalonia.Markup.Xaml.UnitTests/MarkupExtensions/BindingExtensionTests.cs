@@ -17,7 +17,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void BindingExtension_Binds_To_Source()
         {
-            using (StyledWindow())
+            using (BindingExtensionTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void BindingExtension_Binds_To_TargetNullValue()
         {
-            using (StyledWindow())
+            using (BindingExtensionTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -66,7 +66,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void BindingExtension_TargetNullValue_UnsetByDefault()
         {
-            using (StyledWindow())
+            using (BindingExtensionTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -137,19 +137,19 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             public object Foo { get; } = null;
         }
 
-        private IDisposable StyledWindow(params (string, string)[] assets)
+        private static IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
                 assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
-                    WindowStyle(),
+                    BindingExtensionTests.WindowStyle(),
                 });
 
             return UnitTestApplication.Start(services);
         }
 
-        private Style WindowStyle()
+        private static Style WindowStyle()
         {
             return new Style(x => x.OfType<Window>())
             {

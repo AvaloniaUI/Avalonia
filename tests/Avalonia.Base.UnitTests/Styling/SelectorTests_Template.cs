@@ -151,7 +151,7 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Equal(0, ((Classes)styleable.Object.Classes).ListenerCount);
         }
 
-        private void BuildVisualTree<T>(Mock<T> templatedControl) where T : class, IVisual
+        private static void BuildVisualTree<T>(Mock<T> templatedControl) where T : class, IVisual
         {
             templatedControl.Setup(x => x.VisualChildren).Returns(new Controls.Controls
             {

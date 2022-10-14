@@ -889,7 +889,7 @@ namespace Avalonia.Base.UnitTests
         /// <typeparam name="T">The type of the observable.</typeparam>
         /// <param name="value">The value.</param>
         /// <returns>The observable.</returns>
-        private IObservable<T> Single<T>(T value)
+        private static IObservable<T> Single<T>(T value)
         {
             return Observable.Never<T>().StartWith(value);
         }

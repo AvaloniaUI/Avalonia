@@ -35,7 +35,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<UserControl>((parent, scope) =>
             {

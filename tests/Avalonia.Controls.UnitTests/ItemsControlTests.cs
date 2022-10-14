@@ -747,7 +747,7 @@ namespace Avalonia.Controls.UnitTests
             public string Value { get; }
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ItemsControl>((parent, scope) =>
             {

@@ -279,13 +279,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
-                    WindowStyle(),
+                    ResourceDictionaryTests.WindowStyle(),
                 });
 
             return UnitTestApplication.Start(services);
         }
 
-        private Style WindowStyle()
+        private static Style WindowStyle()
         {
             return new Style(x => x.OfType<Window>())
             {

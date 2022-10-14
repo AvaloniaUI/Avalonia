@@ -179,7 +179,7 @@ namespace Avalonia.Base.UnitTests
             ImmediateRenderer.Render(control, ctx);
         }
 
-        private DrawingContext CreateDrawingContext()
+        private static DrawingContext CreateDrawingContext()
         {
             return new DrawingContext(Mock.Of<IDrawingContextImpl>());
         }

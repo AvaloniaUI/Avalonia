@@ -1087,7 +1087,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 KeyModifiers.None);
         }
 
-        private Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object content = null)
         {
             var w = new Window { Content = content };
             w.ApplyTemplate();

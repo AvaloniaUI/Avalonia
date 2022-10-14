@@ -378,7 +378,7 @@ namespace Avalonia.Base.UnitTests.Interactivity
             Assert.Equal(new[] { "3", "2b", "1" }, invoked);
         }
 
-        private TestInteractive CreateTree(
+        private static TestInteractive CreateTree(
             RoutedEvent ev,
             EventHandler<RoutedEventArgs> handler,
             RoutingStrategies handlerRoutes,

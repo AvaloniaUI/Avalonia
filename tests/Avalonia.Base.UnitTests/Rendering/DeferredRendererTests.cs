@@ -745,7 +745,7 @@ namespace Avalonia.Base.UnitTests.Rendering
             return target;
         }
 
-        private Mock<IDrawingContextImpl> GetLayerContext(DeferredRenderer renderer, IControl layerRoot)
+        private static Mock<IDrawingContextImpl> GetLayerContext(DeferredRenderer renderer, IControl layerRoot)
         {
             return Mock.Get(renderer.Layers[layerRoot].Bitmap.Item.CreateDrawingContext(null));
         }

@@ -1293,12 +1293,12 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
-        private void CreateNodeDataTemplate(IControl control)
+        private static void CreateNodeDataTemplate(IControl control)
         {
             control.DataTemplates.Add(new TestTreeDataTemplate());
         }
 
-        private IControlTemplate CreateTreeViewTemplate()
+        private static IControlTemplate CreateTreeViewTemplate()
         {
             return new FuncControlTemplate<TreeView>((parent, scope) => new ItemsPresenter
             {
@@ -1307,7 +1307,7 @@ namespace Avalonia.Controls.UnitTests
             }.RegisterInNameScope(scope));
         }
 
-        private IControlTemplate CreateTreeViewItemTemplate()
+        private static IControlTemplate CreateTreeViewItemTemplate()
         {
             return new FuncControlTemplate<TreeViewItem>((parent, scope) => new Panel
             {
@@ -1327,7 +1327,7 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        private void ExpandAll(TreeView tree)
+        private static void ExpandAll(TreeView tree)
         {
             foreach (var i in tree.ItemContainerGenerator.Containers)
             {
@@ -1373,7 +1373,7 @@ namespace Avalonia.Controls.UnitTests
             _mouse.Click(container, modifiers: modifiers);
         }
 
-        private void AssertChildrenSelected(TreeView treeView, Node rootNode)
+        private static void AssertChildrenSelected(TreeView treeView, Node rootNode)
         {
             foreach (var child in rootNode.Children)
             {
@@ -1383,7 +1383,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private IDisposable Application()
+        private static IDisposable Application()
         {
             return UnitTestApplication.Start(
                 TestServices.MockThreadingInterface.With(
