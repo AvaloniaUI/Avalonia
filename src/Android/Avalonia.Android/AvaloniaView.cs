@@ -74,7 +74,7 @@ namespace Avalonia.Android
 
         class ViewImpl : TopLevelImpl
         {
-            public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView, true)
+            public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
                 View.Focusable = true;
                 View.FocusChange += ViewImpl_FocusChange;
