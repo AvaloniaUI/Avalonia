@@ -137,6 +137,11 @@ space_within_single_line_array_initializer_braces = true
 #Net Analyzer
 dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomment when all violations are fixed.
 
+# CA1802: Use literals where appropriate
+dotnet_diagnostic.CA1802.severity = warning
+# CA1825: Avoid zero-length array allocations
+dotnet_diagnostic.CA1825.severity = warning
+
 # Wrapping preferences
 csharp_wrap_before_ternary_opsigns = false
 
