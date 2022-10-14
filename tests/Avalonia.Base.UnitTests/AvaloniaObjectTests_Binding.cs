@@ -4,13 +4,13 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Base.UnitTests.Styling;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
-using Microsoft.Reactive.Testing;
 using Moq;
 using Xunit;
 
@@ -489,17 +489,14 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Observable_Is_Unsubscribed_When_Subscription_Disposed()
         {
-            var scheduler = new TestScheduler();
-            var source = scheduler.CreateColdObservable<BindingValue<string>>();
+            var source = new TestSubject<BindingValue<string>>("foo");
             var target = new Class1();
 
             var subscription = target.Bind(Class1.FooProperty, source);
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source.SubscriberCount);
 
             subscription.Dispose();
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.Equal(0, source.Subscriptions[0].Unsubscribe);
+            Assert.Equal(0, source.SubscriberCount);
         }
 
         [Theory]
@@ -508,40 +505,32 @@ namespace Avalonia.Base.UnitTests
         [InlineData(BindingPriority.Animation)]
         public void Observable_Is_Unsubscribed_When_New_Binding_Of_Same_Priority_Is_Added(BindingPriority priority)
         {
-            var scheduler = new TestScheduler();
-            var source1 = scheduler.CreateColdObservable<BindingValue<string>>();
-            var source2 = scheduler.CreateColdObservable<BindingValue<string>>();
+            var source1 = new TestSubject<BindingValue<string>>("foo");
+            var source2 = new TestSubject<BindingValue<string>>("bar");
             var target = new Class1();
 
             target.Bind(Class1.FooProperty, source1, priority);
-            Assert.Equal(1, source1.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source1.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source1.SubscriberCount);
 
             target.Bind(Class1.FooProperty, source2, priority);
-            Assert.Equal(1, source2.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source2.Subscriptions[0].Unsubscribe);
-            Assert.Equal(1, source1.Subscriptions.Count);
-            Assert.Equal(0, source1.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source2.SubscriberCount);
+            Assert.Equal(0, source1.SubscriberCount);
         }
 
         [Theory]
         [InlineData(BindingPriority.Style)]
         public void Observable_Is_Unsubscribed_When_New_Binding_Of_Higher_Priority_Is_Added(BindingPriority priority)
         {
-            var scheduler = new TestScheduler();
-            var source1 = scheduler.CreateColdObservable<BindingValue<string>>();
-            var source2 = scheduler.CreateColdObservable<BindingValue<string>>();
+            var source1 = new TestSubject<BindingValue<string>>("foo");
+            var source2 = new TestSubject<BindingValue<string>>("bar");
             var target = new Class1();
 
             target.Bind(Class1.FooProperty, source1, priority);
-            Assert.Equal(1, source1.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source1.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source1.SubscriberCount);
 
             target.Bind(Class1.FooProperty, source2, priority - 1);
-            Assert.Equal(1, source2.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source2.Subscriptions[0].Unsubscribe);
-            Assert.Equal(1, source1.Subscriptions.Count);
-            Assert.Equal(0, source1.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source2.SubscriberCount);
+            Assert.Equal(0, source1.SubscriberCount);
         }
 
         [Theory]
@@ -549,34 +538,28 @@ namespace Avalonia.Base.UnitTests
         [InlineData(BindingPriority.Animation)]
         public void Observable_Is_Unsubscribed_When_New_Value_Of_Same_Priority_Is_Added(BindingPriority priority)
         {
-            var scheduler = new TestScheduler();
-            var source = scheduler.CreateColdObservable<BindingValue<string>>();
+            var source = new TestSubject<BindingValue<string>>("foo");
             var target = new Class1();
 
             target.Bind(Class1.FooProperty, source, priority);
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source.SubscriberCount);
 
             target.SetValue(Class1.FooProperty, "foo", priority);
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.Equal(0, source.Subscriptions[0].Unsubscribe);
+            Assert.Equal(0, source.SubscriberCount);
         }
 
         [Theory]
         [InlineData(BindingPriority.Style)]
         public void Observable_Is_Unsubscribed_When_New_Value_Of_Higher_Priority_Is_Added(BindingPriority priority)
         {
-            var scheduler = new TestScheduler();
-            var source = scheduler.CreateColdObservable<BindingValue<string>>();
+            var source = new TestSubject<BindingValue<string>>("foo");
             var target = new Class1();
 
             target.Bind(Class1.FooProperty, source, priority);
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source.SubscriberCount);
 
             target.SetValue(Class1.FooProperty, "foo", priority - 1);
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.Equal(0, source.Subscriptions[0].Unsubscribe);
+            Assert.Equal(0, source.SubscriberCount);
         }
 
         [Theory]
@@ -584,36 +567,29 @@ namespace Avalonia.Base.UnitTests
         [InlineData(BindingPriority.Style)]
         public void Observable_Is_Not_Unsubscribed_When_Animation_Binding_Is_Added(BindingPriority priority)
         {
-            var scheduler = new TestScheduler();
-            var source1 = scheduler.CreateColdObservable<BindingValue<string>>();
-            var source2 = scheduler.CreateColdObservable<BindingValue<string>>();
+            var source1 = new TestSubject<BindingValue<string>>("foo");
+            var source2 = new TestSubject<BindingValue<string>>("bar");
             var target = new Class1();
 
             target.Bind(Class1.FooProperty, source1, priority);
-            Assert.Equal(1, source1.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source1.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source1.SubscriberCount);
 
             target.Bind(Class1.FooProperty, source2, BindingPriority.Animation);
-            Assert.Equal(1, source2.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source2.Subscriptions[0].Unsubscribe);
-            Assert.Equal(1, source1.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source1.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source1.SubscriberCount);
+            Assert.Equal(1, source2.SubscriberCount);
         }
 
         [Fact]
         public void LocalValue_Binding_Is_Not_Unsubscribed_When_LocalValue_Is_Set()
         {
-            var scheduler = new TestScheduler();
-            var source = scheduler.CreateColdObservable<BindingValue<string>>();
+            var source = new TestSubject<BindingValue<string>>("foo");
             var target = new Class1();
 
             target.Bind(Class1.FooProperty, source);
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source.SubscriberCount);
 
             target.SetValue(Class1.FooProperty, "foo");
-            Assert.Equal(1, source.Subscriptions.Count);
-            Assert.Equal(Subscription.Infinite, source.Subscriptions[0].Unsubscribe);
+            Assert.Equal(1, source.SubscriberCount);
         }
 
         [Fact]
