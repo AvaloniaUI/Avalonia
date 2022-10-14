@@ -111,7 +111,7 @@ DEALINGS IN THE SOFTWARE.
 
 # Metsys.Bson
 
-Copyright (c) 2010, Karl Seguin - http://www.openmymind.net/
+Copyright (c) 2010, Karl Seguin - https://www.openmymind.net/
 All rights reserved.
  
 Redistribution and use in source and binary forms, with or without
