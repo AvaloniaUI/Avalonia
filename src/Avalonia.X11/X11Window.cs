@@ -463,7 +463,7 @@ namespace Avalonia.X11
                                 : new Vector(-1, 0);
                     ScheduleInput(new RawMouseWheelEventArgs(_mouse, (ulong)ev.ButtonEvent.time.ToInt64(),
                         _inputRoot, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), delta,
-                        TranslateModifiers(ev.ButtonEvent.state)), ref ev);
+                        X11Window.TranslateModifiers(ev.ButtonEvent.state)), ref ev);
                 }
                 
             }
@@ -683,7 +683,7 @@ namespace Avalonia.X11
 
         }
 
-        RawInputModifiers TranslateModifiers(XModifierMask state)
+        static RawInputModifiers TranslateModifiers(XModifierMask state)
         {
             var rv = default(RawInputModifiers);
             if (state.HasAllFlags(XModifierMask.Button1Mask))
@@ -760,7 +760,7 @@ namespace Avalonia.X11
         {
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
-                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods));
+                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), X11Window.TranslateModifiers(mods));
             ScheduleInput(mev, ref ev);
         }
 

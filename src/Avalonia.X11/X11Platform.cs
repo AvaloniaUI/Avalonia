@@ -42,10 +42,10 @@ namespace Avalonia.X11
             Options = options;
             
             bool useXim = false;
-            if (EnableIme(options))
+            if (AvaloniaX11Platform.EnableIme(options))
             {
                 // Attempt to configure DBus-based input method and check if we can fall back to XIM
-                if (!X11DBusImeHelper.DetectAndRegister() && ShouldUseXim())
+                if (!X11DBusImeHelper.DetectAndRegister() && AvaloniaX11Platform.ShouldUseXim())
                     useXim = true;
             }
 
@@ -143,7 +143,7 @@ namespace Avalonia.X11
             throw new NotSupportedException();
         }
 
-        bool EnableIme(X11PlatformOptions options)
+        static bool EnableIme(X11PlatformOptions options)
         {
             // Disable if explicitly asked by user
             var avaloniaImModule = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
@@ -164,8 +164,8 @@ namespace Avalonia.X11
 
             return isCjkLocale;
         }
-        
-        bool ShouldUseXim()
+
+        static bool ShouldUseXim()
         {
             // Check if we are forbidden from using IME
             if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
