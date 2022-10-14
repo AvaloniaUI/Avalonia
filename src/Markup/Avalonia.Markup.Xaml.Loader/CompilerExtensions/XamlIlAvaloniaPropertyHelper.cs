@@ -67,10 +67,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             string propertyName, IXamlAstTypeReference selectorTypeReference, IXamlLineInfo lineInfo)
         {
             XamlAstNamePropertyReference forgedReference;
-            
-            var parser = new PropertyParser();
-            
-            var parsedPropertyName = parser.Parse(new CharacterReader(propertyName.AsSpan()));
+
+            var parsedPropertyName = PropertyParser.Parse(new CharacterReader(propertyName.AsSpan()));
             if(parsedPropertyName.owner == null)
                 forgedReference = new XamlAstNamePropertyReference(lineInfo, selectorTypeReference,
                     propertyName, selectorTypeReference);

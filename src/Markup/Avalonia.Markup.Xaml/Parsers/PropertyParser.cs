@@ -7,7 +7,7 @@ namespace Avalonia.Markup.Xaml.Parsers
 {
     internal class PropertyParser
     {
-        public (string ns, string owner, string name) Parse(CharacterReader r)
+        public static (string ns, string owner, string name) Parse(CharacterReader r)
         {
             if (r.End)
             {

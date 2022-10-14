@@ -20,7 +20,7 @@ namespace Avalonia.Markup.Xaml.Converters
             var path = value as string;
             if (path != null)
             {
-                return CreateIconFromPath(context, path);
+                return IconTypeConverter.CreateIconFromPath(context, path);
             }
 
             var bitmap = value as IBitmap;
@@ -32,7 +32,7 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotSupportedException();
         }
 
-        private WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string s)
+        private static WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string s)
         {
             var uri = s.StartsWith("/")
                 ? new Uri(s, UriKind.Relative)

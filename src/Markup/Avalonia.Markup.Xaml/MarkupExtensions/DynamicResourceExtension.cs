@@ -56,19 +56,19 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             if (control != null)
             {
-                var source = control.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
+                var source = control.GetResourceObservable(ResourceKey, DynamicResourceExtension.GetConverter(targetProperty));
                 return InstancedBinding.OneWay(source, _priority);
             }
             else if (_anchor is IResourceProvider resourceProvider)
             {
-                var source = resourceProvider.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
+                var source = resourceProvider.GetResourceObservable(ResourceKey, DynamicResourceExtension.GetConverter(targetProperty));
                 return InstancedBinding.OneWay(source, _priority);
             }
 
             return null;
         }
 
-        private Func<object?, object?>? GetConverter(AvaloniaProperty? targetProperty)
+        private static Func<object?, object?>? GetConverter(AvaloniaProperty? targetProperty)
         {
             if (targetProperty?.PropertyType == typeof(IBrush))
             {

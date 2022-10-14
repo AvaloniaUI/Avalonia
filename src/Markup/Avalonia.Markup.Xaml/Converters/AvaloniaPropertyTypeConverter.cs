@@ -22,8 +22,8 @@ namespace Avalonia.Markup.Xaml.Converters
         {
             var registry = AvaloniaPropertyRegistry.Instance;
             var parser = new PropertyParser();
-            var (ns, owner, propertyName) = parser.Parse(new CharacterReader(((string)value).AsSpan()));
-            var ownerType = TryResolveOwnerByName(context, ns, owner);
+            var (ns, owner, propertyName) = PropertyParser.Parse(new CharacterReader(((string)value).AsSpan()));
+            var ownerType = AvaloniaPropertyTypeConverter.TryResolveOwnerByName(context, ns, owner);
             var targetType = context.GetFirstParent<ControlTemplate>()?.TargetType ??
                 context.GetFirstParent<Style>()?.Selector?.TargetType ??
                 typeof(Control);
@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Xaml.Converters
 
             if (effectiveOwner != targetType &&
                 !property.IsAttached &&
-                !registry.IsRegistered(targetType, property))
+                !AvaloniaPropertyRegistry.Instance.IsRegistered(targetType, property))
             {
                 Logger.TryGet(LogEventLevel.Warning, LogArea.Property)?.Log(
                     this,
@@ -50,7 +50,7 @@ namespace Avalonia.Markup.Xaml.Converters
             return property;
         }
 
-        private Type TryResolveOwnerByName(ITypeDescriptorContext context, string ns, string owner)
+        private static Type TryResolveOwnerByName(ITypeDescriptorContext context, string ns, string owner)
         {
             if (owner != null)
             {
