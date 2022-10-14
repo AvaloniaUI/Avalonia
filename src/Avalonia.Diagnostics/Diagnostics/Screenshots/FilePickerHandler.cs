@@ -47,7 +47,7 @@ namespace Avalonia.Diagnostics.Screenshots
         /// </summary>
         public string Title { get; } = "Save Screenshot to ...";
 
-        Window GetWindow(IControl control)
+        static Window GetWindow(IControl control)
         {
             var window = control.VisualRoot as Window;
             var app = Application.Current;
@@ -61,7 +61,7 @@ namespace Avalonia.Diagnostics.Screenshots
         protected async override Task<Stream?> GetStream(IControl control)
         {
             Stream? output = default;
-            var result = await GetWindow(control).StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            var result = await FilePickerHandler.GetWindow(control).StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 SuggestedStartLocation = new BclStorageFolder(new DirectoryInfo(ScreenshotsRoot)),
                 Title = Title,

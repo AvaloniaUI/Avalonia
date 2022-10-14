@@ -83,7 +83,7 @@ namespace Avalonia.Diagnostics.ViewModels
                             {
                                 var setterValue = regularSetter.Value;
 
-                                var resourceInfo = GetResourceInfo(setterValue);
+                                var resourceInfo = ControlDetailsViewModel.GetResourceInfo(setterValue);
 
                                 SetterViewModel setterVm;
 
@@ -122,7 +122,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public bool CanNavigateToParentProperty => _selectedEntitiesStack.Count >= 1;
 
-        private (object resourceKey, bool isDynamic)? GetResourceInfo(object? value)
+        private static (object resourceKey, bool isDynamic)? GetResourceInfo(object? value)
         {
             if (value is StaticResourceExtension staticResource)
             {
