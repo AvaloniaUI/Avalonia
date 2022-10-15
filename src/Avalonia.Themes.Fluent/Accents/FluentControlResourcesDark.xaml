@@ -358,7 +358,6 @@
     <x:Double x:Key="SliderOutsideTickBarThemeHeight">4</x:Double>
     <x:Double x:Key="SliderTrackThemeHeight">2</x:Double>
     <Thickness x:Key="SliderBorderThemeThickness">0</Thickness>
-    <FontWeight x:Key="SliderHeaderThemeFontWeight">Normal</FontWeight>
     <StaticResource x:Key="SliderContainerBackground" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="SystemControlTransparentBrush" />
@@ -375,8 +374,6 @@
     <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
     <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="SystemControlHighlightAccentBrush" />
     <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
-    <StaticResource x:Key="SliderHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <StaticResource x:Key="SliderHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="SliderTickBarFill" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
     <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="SystemControlBackgroundAltHighBrush" />
@@ -424,7 +421,6 @@
     <!-- Resources for DatePicker.xaml-->
     <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
     <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
-    <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
     <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
@@ -455,8 +451,6 @@
     <!-- Resources for TimePicker.xaml -->
     <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
     <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
-    <StaticResource x:Key="TimePickerHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <StaticResource x:Key="TimePickerHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="TimePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <StaticResource x:Key="TimePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
     <StaticResource x:Key="TimePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
@@ -595,7 +589,6 @@
     <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <StaticResource x:Key="CalendarDatePickerHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
     <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
     <StaticResource x:Key="CalendarDatePickerBackgroundPressed" ResourceKey="SystemControlBackgroundBaseLowBrush" />
