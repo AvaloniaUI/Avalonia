@@ -8,13 +8,13 @@ namespace Avalonia.Media.TextFormatting
     {
         private static readonly IComparer<GlyphInfo> s_clusterComparer = new CompareClusters();
 
-        public ShapedBuffer(ReadOnlySlice<char> text, int length, GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
+        public ShapedBuffer(ReadOnlySlice<char> text, int length, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
             : this(text, new GlyphInfo[length], glyphTypeface, fontRenderingEmSize, bidiLevel)
         {
 
         }
 
-        internal ShapedBuffer(ReadOnlySlice<char> text, ArraySlice<GlyphInfo> glyphInfos, GlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
+        internal ShapedBuffer(ReadOnlySlice<char> text, ArraySlice<GlyphInfo> glyphInfos, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
             Text = text;
             GlyphInfos = glyphInfos;
@@ -29,7 +29,7 @@ namespace Avalonia.Media.TextFormatting
 
         public int Length => GlyphInfos.Length;
 
-        public GlyphTypeface GlyphTypeface { get; }
+        public IGlyphTypeface GlyphTypeface { get; }
 
         public double FontRenderingEmSize { get; }
 
