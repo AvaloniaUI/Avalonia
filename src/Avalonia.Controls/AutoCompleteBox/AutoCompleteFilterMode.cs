@@ -3,13 +3,13 @@
 // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using System;
+
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Specifies how text in the text box portion of the
-    /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control is used
-    /// to filter items specified by the
-    /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+    /// Specifies how text in the text box portion of the <see cref="AutoCompleteBox" />
+    /// control is used to filter items specified by the <see cref="AutoCompleteBox.Items" />
     /// property for display in the drop-down.
     /// </summary>
     public enum AutoCompleteFilterMode
@@ -22,9 +22,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Specifies a culture-sensitive, case-insensitive filter where the
         /// returned items start with the specified text. The filter uses the
-        /// <see cref="M:System.String.StartsWith(System.String,System.StringComparison)" />
+        /// <see cref="String.StartsWith(String,StringComparison)" />
         /// method, specifying
-        /// <see cref="P:System.StringComparer.CurrentCultureIgnoreCase" /> as
+        /// <see cref="StringComparer.CurrentCultureIgnoreCase" /> as
         /// the string comparison criteria.
         /// </summary>
         StartsWith = 1,
@@ -32,9 +32,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Specifies a culture-sensitive, case-sensitive filter where the
         /// returned items start with the specified text. The filter uses the
-        /// <see cref="M:System.String.StartsWith(System.String,System.StringComparison)" />
+        /// <see cref="String.StartsWith(String,StringComparison)" />
         /// method, specifying
-        /// <see cref="P:System.StringComparer.CurrentCulture" /> as the string
+        /// <see cref="StringComparer.CurrentCulture" /> as the string
         /// comparison criteria.
         /// </summary>
         StartsWithCaseSensitive = 2,
@@ -42,9 +42,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Specifies an ordinal, case-insensitive filter where the returned
         /// items start with the specified text. The filter uses the
-        /// <see cref="M:System.String.StartsWith(System.String,System.StringComparison)" />
+        /// <see cref="String.StartsWith(String,StringComparison)" />
         /// method, specifying
-        /// <see cref="P:System.StringComparer.OrdinalIgnoreCase" /> as the
+        /// <see cref="StringComparer.OrdinalIgnoreCase" /> as the
         /// string comparison criteria.
         /// </summary>
         StartsWithOrdinal = 3,
@@ -52,8 +52,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Specifies an ordinal, case-sensitive filter where the returned items
         /// start with the specified text. The filter uses the
-        /// <see cref="M:System.String.StartsWith(System.String,System.StringComparison)" />
-        /// method, specifying <see cref="P:System.StringComparer.Ordinal" /> as
+        /// <see cref="String.StartsWith(String,StringComparison)" />
+        /// method, specifying <see cref="StringComparer.Ordinal" /> as
         /// the string comparison criteria.
         /// </summary>
         StartsWithOrdinalCaseSensitive = 4,
@@ -85,9 +85,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Specifies a culture-sensitive, case-insensitive filter where the
         /// returned items equal the specified text. The filter uses the
-        /// <see cref="M:System.String.Equals(System.String,System.StringComparison)" />
+        /// <see cref="String.Equals(String,StringComparison)" />
         /// method, specifying
-        /// <see cref="P:System.StringComparer.CurrentCultureIgnoreCase" /> as
+        /// <see cref="StringComparer.CurrentCultureIgnoreCase" /> as
         /// the search comparison criteria.
         /// </summary>
         Equals = 9,
@@ -95,9 +95,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Specifies a culture-sensitive, case-sensitive filter where the
         /// returned items equal the specified text. The filter uses the
-        /// <see cref="M:System.String.Equals(System.String,System.StringComparison)" />
+        /// <see cref="String.Equals(String,StringComparison)" />
         /// method, specifying
-        /// <see cref="P:System.StringComparer.CurrentCulture" /> as the string
+        /// <see cref="StringComparer.CurrentCulture" /> as the string
         /// comparison criteria.
         /// </summary>
         EqualsCaseSensitive = 10,
@@ -105,9 +105,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// Specifies an ordinal, case-insensitive filter where the returned
         /// items equal the specified text. The filter uses the
-        /// <see cref="M:System.String.Equals(System.String,System.StringComparison)" />
+        /// <see cref="String.Equals(String,StringComparison)" />
         /// method, specifying
-        /// <see cref="P:System.StringComparer.OrdinalIgnoreCase" /> as the
+        /// <see cref="StringComparer.OrdinalIgnoreCase" /> as the
         /// string comparison criteria.
         /// </summary>
         EqualsOrdinal = 11,
@@ -115,17 +115,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Specifies an ordinal, case-sensitive filter where the returned items
         /// equal the specified text. The filter uses the
-        /// <see cref="M:System.String.Equals(System.String,System.StringComparison)" />
-        /// method, specifying <see cref="P:System.StringComparer.Ordinal" /> as
+        /// <see cref="String.Equals(String,StringComparison)" />
+        /// method, specifying <see cref="StringComparer.Ordinal" /> as
         /// the string comparison criteria.
         /// </summary>
         EqualsOrdinalCaseSensitive = 12,
 
         /// <summary>
         /// Specifies that a custom filter is used. This mode is used when the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.TextFilter" />
-        /// or
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemFilter" />
+        /// <see cref="AutoCompleteBox.TextFilter" /> or <see cref="AutoCompleteBox.ItemFilter" />
         /// properties are set.
         /// </summary>
         Custom = 13,
