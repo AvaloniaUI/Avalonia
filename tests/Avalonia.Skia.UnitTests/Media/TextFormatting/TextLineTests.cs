@@ -12,7 +12,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
     public class TextLineTests
     {
-        private static readonly string s_multiLineText = "012345678\r\r0123456789";
+        private const string s_multiLineText = "012345678\r\r0123456789";
 
         [Fact]
         public void Should_Get_First_CharacterHit()
