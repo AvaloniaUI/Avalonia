@@ -149,6 +149,14 @@ namespace Avalonia.Controls
                 true);
 
         /// <summary>
+        /// Defines the <see cref="IsHostedInColorPicker"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsHostedInColorPickerProperty =
+            AvaloniaProperty.Register<ColorView, bool>(
+                nameof(IsHostedInColorPicker),
+                false);
+
+        /// <summary>
         /// Defines the <see cref="MaxHue"/> property.
         /// </summary>
         public static readonly StyledProperty<int> MaxHueProperty =
@@ -393,6 +401,22 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsHexInputVisibleProperty);
             set => SetValue(IsHexInputVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="ColorView"/> is hosted
+        /// inside a <see cref="ColorPicker"/>'s control template.
+        /// </summary>
+        /// <remarks>
+        /// This is a special property to change how the <see cref="ColorView"/> internally
+        /// processes property updates. When a <see cref="ColorView"/> is hosted within a
+        /// <see cref="ColorPicker"/>, it does not need to handle most property changes.
+        /// Instead, the primary calculations are done within the <see cref="ColorPicker"/> itself.
+        /// </remarks>
+        public bool IsHostedInColorPicker
+        {
+            get => GetValue(IsHostedInColorPickerProperty);
+            set => SetValue(IsHostedInColorPickerProperty, value);
         }
 
         /// <inheritdoc cref="ColorSpectrum.MaxHue"/>

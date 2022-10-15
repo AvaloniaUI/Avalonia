@@ -206,6 +206,26 @@ namespace Avalonia.Controls
                 return;
             }
 
+            // Special handling for when hosted within a ColorPicker and the ColorPicker is
+            // responsible for most of the internal processing and property updates.
+            if (IsHostedInColorPicker)
+            {
+                if (change.Property == ColorProperty ||
+                    change.Property == HsvColorProperty)
+                {
+                    ignorePropertyChanged = true;
+
+                    // The Hex text isn't currently bound with the ColorPicker and therefore
+                    // must still be updated here.
+                    SetColorToHexTextBox();
+
+                    ignorePropertyChanged = false;
+                }
+
+                base.OnPropertyChanged(change);
+                return;
+            }
+
             // Always keep the two color properties in sync
             if (change.Property == ColorProperty)
             {
