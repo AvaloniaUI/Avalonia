@@ -8,7 +8,6 @@
                     x:CompileBindings="True">
 
   <pc:ContrastBrushConverter x:Key="ContrastBrushConverter" />
-  <pc:ThirdComponentConverter x:Key="ThirdComponentConverter" />
   <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayNameConverter" />
   <converters:ColorToHexConverter x:Key="ColorToHexConverter" />
   <converters:DoNothingForNullConverter x:Key="DoNothingForNullConverter" />
@@ -368,7 +367,7 @@
                                         IsSaturationValueMaxForced="False"
                                         Orientation="Vertical"
                                         ColorModel="Hsva"
-                                        ColorComponent="{Binding Components, ElementName=ColorSpectrum, Converter={StaticResource ThirdComponentConverter}}"
+                                        ColorComponent="{Binding ThirdComponent, ElementName=ColorSpectrum}"
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Stretch"

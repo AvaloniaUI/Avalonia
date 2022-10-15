@@ -503,6 +503,23 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == ComponentsProperty)
             {
+                // Calculate and update the ThirdComponent value
+                switch (Components)
+                {
+                    case ColorSpectrumComponents.HueSaturation:
+                    case ColorSpectrumComponents.SaturationHue:
+                        ThirdComponent = (ColorComponent)HsvComponent.Value;
+                        break;
+                    case ColorSpectrumComponents.HueValue:
+                    case ColorSpectrumComponents.ValueHue:
+                        ThirdComponent = (ColorComponent)HsvComponent.Saturation;
+                        break;
+                    case ColorSpectrumComponents.SaturationValue:
+                    case ColorSpectrumComponents.ValueSaturation:
+                        ThirdComponent = (ColorComponent)HsvComponent.Hue;
+                        break;
+                }
+
                 CreateBitmapsAndColorMap();
             }
 
