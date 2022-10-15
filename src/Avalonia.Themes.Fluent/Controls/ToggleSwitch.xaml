@@ -135,7 +135,7 @@
     </Style>
 
     <!--  NormalState  -->
-    <Style Selector="^:not(:dragging) /template/ Grid#MovingKnobs">
+    <Style Selector="^:not(:dragging) /template/ Grid#PART_MovingKnobs">
       <Setter Property="Transitions">
         <Transitions>
           <DoubleTransition

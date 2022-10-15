@@ -33,7 +33,7 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             return new MockGlyphTypeface();
         }
