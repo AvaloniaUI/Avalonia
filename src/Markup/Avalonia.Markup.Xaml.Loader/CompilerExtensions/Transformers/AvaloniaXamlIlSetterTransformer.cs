@@ -1,19 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Data.Core;
-using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
 using XamlX.IL;
 using XamlX.Transform;
-using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     using XamlParseException = XamlX.XamlParseException;
-    using XamlLoadException = XamlX.XamlLoadException;
     class AvaloniaXamlIlSetterTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
@@ -22,35 +17,23 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                   && on.Type.GetClrType().FullName == "Avalonia.Styling.Setter"))
                 return node;
 
-            var parent = context.ParentNodes().OfType<XamlAstObjectNode>()
-                .FirstOrDefault(p => p.Type.GetClrType().FullName == "Avalonia.Styling.Style");
-            
-            if (parent == null)
-                throw new XamlParseException(
-                    "Avalonia.Styling.Setter is only valid inside Avalonia.Styling.Style", node);
-            var selectorProperty = parent.Children.OfType<XamlAstXamlPropertyValueNode>()
-                .FirstOrDefault(p => p.Property.GetClrProperty().Name == "Selector");
-            if (selectorProperty == null)
-                throw new XamlParseException(
-                    "Can not find parent Style Selector", node);
-            var selector = selectorProperty.Values.FirstOrDefault() as XamlIlSelectorNode;
-            if (selector?.TargetType == null)
-                throw new XamlParseException(
-                    "Can not resolve parent Style Selector type", node);
+            var targetTypeNode = context.ParentNodes()
+                .OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
+                .FirstOrDefault(x => x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style) ??
+                throw new XamlParseException("Can not find parent Style Selector or ControlTemplate TargetType", node);
 
             IXamlType propType = null;
             var property = @on.Children.OfType<XamlAstXamlPropertyValueNode>()
                 .FirstOrDefault(x => x.Property.GetClrProperty().Name == "Property");
             if (property != null)
             {
-
                 var propertyName = property.Values.OfType<XamlAstTextNode>().FirstOrDefault()?.Text;
                 if (propertyName == null)
                     throw new XamlParseException("Setter.Property must be a string", node);
 
 
                 var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
-                    new XamlAstClrTypeReference(selector, selector.TargetType, false), property.Values[0]);
+                    new XamlAstClrTypeReference(targetTypeNode, targetTypeNode.TargetType.GetClrType(), false), property.Values[0]);
                 property.Values = new List<IXamlAstValueNode> {avaloniaPropertyNode};
                 propType = avaloniaPropertyNode.AvaloniaPropertyType;
             }
@@ -92,17 +75,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 Getter = setterType.Methods.First(m => m.Name == "get_Value");
                 var method = setterType.Methods.First(m => m.Name == "set_Value");
-                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.IBinding));
-                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.UnsetValueType));
-                Setters.Add(new XamlIlDirectCallPropertySetter(method, targetType));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.IBinding, false));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.UnsetValueType, false));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, targetType, targetType.AcceptsNull()));
             }
             
-            class XamlIlDirectCallPropertySetter : IXamlPropertySetter, IXamlEmitablePropertySetter<IXamlILEmitter>
+            sealed class XamlIlDirectCallPropertySetter : IXamlPropertySetter, IXamlEmitablePropertySetter<IXamlILEmitter>
             {
                 private readonly IXamlMethod _method;
                 private readonly IXamlType _type;
                 public IXamlType TargetType { get; }
-                public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters();
+                public PropertySetterBinderParameters BinderParameters { get; }
                 public IReadOnlyList<IXamlType> Parameters { get; }
                 public void Emit(IXamlILEmitter codegen)
                 {
@@ -111,13 +94,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     codegen.EmitCall(_method, true);
                 }
 
-                public XamlIlDirectCallPropertySetter(IXamlMethod method, IXamlType type)
+                public XamlIlDirectCallPropertySetter(IXamlMethod method, IXamlType type, bool allowNull)
                 {
                     _method = method;
                     _type = type;
                     Parameters = new[] {type};
                     TargetType = method.ThisOrFirstParameter();
+                    BinderParameters = new PropertySetterBinderParameters
+                    {
+                        AllowXNull = allowNull,
+                        AllowRuntimeNull = allowNull
+                    };
                 }
+
+                private bool Equals(XamlIlDirectCallPropertySetter other) 
+                    => Equals(_method, other._method) && Equals(_type, other._type);
+
+                public override bool Equals(object obj) 
+                    => Equals(obj as XamlIlDirectCallPropertySetter);
+
+                public override int GetHashCode() 
+                    => (_method.GetHashCode() * 397) ^ _type.GetHashCode();
             }
         }
     }

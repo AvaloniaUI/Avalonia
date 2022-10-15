@@ -19,7 +19,7 @@ namespace ControlCatalog.ViewModels
     {
         public TransitioningContentControlPageViewModel()
         {
-            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assetLoader = AvaloniaLocator.Current?.GetService<IAssetLoader>()!;
 
             var images = new string[] 
             { 
@@ -36,8 +36,8 @@ namespace ControlCatalog.ViewModels
 
             SetupTransitions();
 
-            SelectedTransition = PageTransitions[1];
-            SelectedImage = Images[0];
+            _SelectedTransition = PageTransitions[1];
+            _SelectedImage = Images[0];
         }
 
         public List<PageTransition> PageTransitions { get; } = new List<PageTransition>();
@@ -45,12 +45,12 @@ namespace ControlCatalog.ViewModels
         public List<Bitmap> Images { get; } = new List<Bitmap>();
 
 
-        private Bitmap? _SelectedImage;
+        private Bitmap _SelectedImage;
 
         /// <summary>
         /// Gets or Sets the selected image
         /// </summary>
-        public Bitmap? SelectedImage
+        public Bitmap SelectedImage
         {
             get { return _SelectedImage; }
             set { this.RaiseAndSetIfChanged(ref _SelectedImage, value); }
@@ -117,9 +117,9 @@ namespace ControlCatalog.ViewModels
             PageTransitions[3].Transition = new PageSlide(TimeSpan.FromMilliseconds(Duration), PageSlide.SlideAxis.Vertical);
 
             var compositeTransition = new CompositePageTransition();
-            compositeTransition.PageTransitions.Add(PageTransitions[1].Transition);
-            compositeTransition.PageTransitions.Add(PageTransitions[2].Transition);
-            compositeTransition.PageTransitions.Add(PageTransitions[3].Transition);
+            compositeTransition.PageTransitions.Add(PageTransitions[1].Transition!);
+            compositeTransition.PageTransitions.Add(PageTransitions[2].Transition!);
+            compositeTransition.PageTransitions.Add(PageTransitions[3].Transition!);
             PageTransitions[4].Transition = compositeTransition;
 
             PageTransitions[5].Transition = new CustomTransition(TimeSpan.FromMilliseconds(Duration));
@@ -160,12 +160,12 @@ namespace ControlCatalog.ViewModels
         public string DisplayTitle { get; }
 
 
-        private IPageTransition _Transition;
+        private IPageTransition? _Transition;
 
         /// <summary>
         /// Gets or sets the transition
         /// </summary>
-        public IPageTransition Transition
+        public IPageTransition? Transition
         {
             get { return _Transition; }
             set { this.RaiseAndSetIfChanged(ref _Transition, value); }
@@ -201,7 +201,7 @@ namespace ControlCatalog.ViewModels
         /// </summary>
         public TimeSpan Duration { get; set; }
 
-        public async Task Start(Visual from, Visual to, bool forward, CancellationToken cancellationToken)
+        public async Task Start(Visual? from, Visual? to, bool forward, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {

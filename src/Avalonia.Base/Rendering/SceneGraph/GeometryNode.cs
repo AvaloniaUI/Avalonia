@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -18,19 +17,18 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="brush">The fill brush.</param>
         /// <param name="pen">The stroke pen.</param>
         /// <param name="geometry">The geometry.</param>
-        /// <param name="childScenes">Child scenes for drawing visual brushes.</param>
+        /// <param name="aux">Auxiliary data required to draw the brush.</param>
         public GeometryNode(Matrix transform,
             IBrush? brush,
             IPen? pen,
             IGeometryImpl geometry,
-            IDictionary<IVisual, Scene>? childScenes = null)
-            : base(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen), transform)
+            IDisposable? aux)
+            : base(geometry.GetRenderBounds(pen).CalculateBoundsWithLineCaps(pen), transform, aux)
         {
             Transform = transform;
             Brush = brush?.ToImmutable();
             Pen = pen?.ToImmutable();
             Geometry = geometry;
-            ChildScenes = childScenes;
         }
 
         /// <summary>
@@ -52,9 +50,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// Gets the geometry to draw.
         /// </summary>
         public IGeometryImpl Geometry { get; }
-
-        /// <inheritdoc/>
-        public override IDictionary<IVisual, Scene>? ChildScenes { get; }
 
         /// <summary>
         /// Determines if this draw operation equals another.

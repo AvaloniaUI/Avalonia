@@ -64,7 +64,7 @@ namespace Avalonia.Markup.Xaml.Styling
 
         IReadOnlyList<IStyle> IStyle.Children => _loaded ?? Array.Empty<IStyle>();
 
-        public event EventHandler OwnerChanged
+        public event EventHandler? OwnerChanged
         {
             add
             {
@@ -82,7 +82,7 @@ namespace Avalonia.Markup.Xaml.Styling
             }
         }
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => Loaded.TryAttach(target, host);
+        public SelectorMatchResult TryAttach(IStyleable target, object? host) => Loaded.TryAttach(target, host);
 
         public bool TryGetResource(object key, out object? value)
         {

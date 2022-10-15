@@ -49,9 +49,9 @@ namespace Avalonia.Build.Tasks
             string projectDirectory,
             string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom, bool skipXamlCompilation, bool debuggerLaunch)
         {
-            var typeSystem = new CecilTypeSystem(references
-                .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
-                .Concat(new[] { input }), input);
+            var typeSystem = new CecilTypeSystem(
+                references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")),
+                input);
 
             var asm = typeSystem.TargetAssemblyDefinition;
 
@@ -251,7 +251,8 @@ namespace Avalonia.Build.Tasks
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
                             typeSystem.CreateTypeBuilder(classTypeDefinition);
-                        compiler.Compile(parsed, contextClass,
+                        compiler.Compile(parsed, 
+                            contextClass,
                             compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
                                 classTypeDefinition == null),
                             buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true),
@@ -325,8 +326,8 @@ namespace Avalonia.Build.Tasks
                                         var op = i[c].Operand as MethodReference;
                                         
                                         // TODO: Throw an error
-                                        // This usually happens when same XAML resource was added twice for some weird reason
-                                        // We currently support it for dual-named default theme resource
+                                        // This usually happens when the same XAML resource was added twice for some weird reason
+                                        // We currently support it for dual-named default theme resources
                                         if (op != null
                                             && op.Name == TrampolineName)
                                         {

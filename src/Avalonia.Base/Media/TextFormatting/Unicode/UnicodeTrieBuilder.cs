@@ -5,7 +5,7 @@
 // not use this product except in compliance with the License. You may obtain 
 // a copy of the License at
 // 
-// http://www.apache.org/licenses/LICENSE-2.0
+// https://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software 
 // distributed under the License is distributed on an "AS IS" BASIS, WITHOUT 
@@ -368,24 +368,24 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             // calculate the sizes of, and allocate, the index and data arrays
             var indexLength = allIndexesLength + _dataLength;
-            var data = new int[indexLength];
+            var data = new uint[indexLength];
 
             // write the index-2 array values shifted right by INDEX_SHIFT, after adding dataMove
             var destIdx = 0;
             for (i = 0; i < INDEX_2_BMP_LENGTH; i++)
             {
-                data[destIdx++] = ((_index2[i] + dataMove) >> INDEX_SHIFT);
+                data[destIdx++] = (uint)((_index2[i] + dataMove) >> INDEX_SHIFT);
             }
 
             // write UTF-8 2-byte index-2 values, not right-shifted
             for (i = 0; i < 0xc2 - 0xc0; i++)
             { // C0..C1
-                data[destIdx++] = (dataMove + BAD_UTF8_DATA_OFFSET);
+                data[destIdx++] = (uint)(dataMove + BAD_UTF8_DATA_OFFSET);
             }
 
             for (; i < 0xe0 - 0xc0; i++)
             { // C2..DF
-                data[destIdx++] = (dataMove + _index2[i << (6 - SHIFT_2)]);
+                data[destIdx++] = (uint)(dataMove + _index2[i << (6 - SHIFT_2)]);
             }
 
             if (_highStart > 0x10000)
@@ -396,21 +396,21 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 // write 16-bit index-1 values for supplementary code points
                 for (i = 0; i < index1Length; i++)
                 {
-                    data[destIdx++] = (INDEX_2_OFFSET + _index1[i + OMITTED_BMP_INDEX_1_LENGTH]);
+                    data[destIdx++] = (uint)(INDEX_2_OFFSET + _index1[i + OMITTED_BMP_INDEX_1_LENGTH]);
                 }
 
                 // write the index-2 array values for supplementary code points,
                 // shifted right by INDEX_SHIFT, after adding dataMove
                 for (i = 0; i < _index2Length - index2Offset; i++)
                 {
-                    data[destIdx++] = ((dataMove + _index2[index2Offset + i]) >> INDEX_SHIFT);
+                    data[destIdx++] = (uint)((dataMove + _index2[index2Offset + i]) >> INDEX_SHIFT);
                 }
             }
 
             // write 16-bit data values
             for (i = 0; i < _dataLength; i++)
             {
-                data[destIdx++] = (int)_data[i];
+                data[destIdx++] = _data[i];
             }
 
             return new UnicodeTrie(data, _highStart, _errorValue);

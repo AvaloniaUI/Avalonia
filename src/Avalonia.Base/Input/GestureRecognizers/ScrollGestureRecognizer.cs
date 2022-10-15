@@ -66,11 +66,12 @@ namespace Avalonia.Input.GestureRecognizers
         
         public void PointerPressed(PointerPressedEventArgs e)
         {
-            if (e.Pointer.IsPrimary && e.Pointer.Type == PointerType.Touch)
+            if (e.Pointer.IsPrimary && 
+                (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
                 EndGesture();
                 _tracking = e.Pointer;
-                _gestureId = ScrollGestureEventArgs.GetNextFreeId();;
+                _gestureId = ScrollGestureEventArgs.GetNextFreeId();
                 _trackedRootPoint = e.GetPosition(_target);
             }
         }
@@ -101,7 +102,7 @@ namespace Avalonia.Input.GestureRecognizers
                 if (_scrolling)
                 {
                     var vector = _trackedRootPoint - rootPoint;
-                    var elapsed = _lastMoveTimestamp.HasValue ?
+                    var elapsed = _lastMoveTimestamp.HasValue && _lastMoveTimestamp < e.Timestamp ?
                         TimeSpan.FromMilliseconds(e.Timestamp - _lastMoveTimestamp.Value) :
                         TimeSpan.Zero;
                     

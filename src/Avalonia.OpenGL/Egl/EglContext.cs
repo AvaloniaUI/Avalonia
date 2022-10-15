@@ -24,7 +24,7 @@ namespace Avalonia.OpenGL.Egl
             SampleCount = sampleCount;
             StencilSize = stencilSize;
             using (MakeCurrent())
-                GlInterface = GlInterface.FromNativeUtf8GetProcAddress(version, b => _egl.GetProcAddress(b));
+                GlInterface = GlInterface.FromNativeUtf8GetProcAddress(version, _egl.GetProcAddress);
         }
 
         public IntPtr Context { get; }

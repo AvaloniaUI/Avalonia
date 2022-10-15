@@ -80,16 +80,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Window, SizeToContent>(nameof(SizeToContent));
 
         /// <summary>
-        /// Enables or disables system window decorations (title bar, buttons, etc)
-        /// </summary>
-        [Obsolete("Use SystemDecorationsProperty instead")]
-        public static readonly DirectProperty<Window, bool> HasSystemDecorationsProperty =
-            AvaloniaProperty.RegisterDirect<Window, bool>(
-                nameof(HasSystemDecorations),
-                o => o.HasSystemDecorations,
-                (o, v) => o.HasSystemDecorations = v);
-
-        /// <summary>
         /// Defines the <see cref="ExtendClientAreaToDecorationsHint"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> ExtendClientAreaToDecorationsHintProperty =
@@ -290,25 +280,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Enables or disables system window decorations (title bar, buttons, etc)
-        /// </summary>
-        [Obsolete("Use SystemDecorations instead")]
-        public bool HasSystemDecorations
-        {
-            get => SystemDecorations == SystemDecorations.Full;
-            set
-            {
-                var oldValue = HasSystemDecorations;
-
-                if (oldValue != value)
-                {
-                    SystemDecorations = value ? SystemDecorations.Full : SystemDecorations.None;
-                    RaisePropertyChanged(HasSystemDecorationsProperty, oldValue, value);
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets or sets if the ClientArea is Extended into the Window Decorations (chrome or border).
         /// </summary>
         public bool ExtendClientAreaToDecorationsHint
@@ -407,8 +378,6 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Enables or disables resizing of the window.
-        /// Note that if <see cref="HasSystemDecorations"/> is set to False then this property
-        /// has no effect and should be treated as a recommendation for the user setting HasSystemDecorations.
         /// </summary>
         public bool CanResize
         {
@@ -681,8 +650,8 @@ namespace Avalonia.Controls
             IsVisible = true;
 
             var initialSize = new Size(
-                double.IsNaN(Width) ? ClientSize.Width : Width,
-                double.IsNaN(Height) ? ClientSize.Height : Height);
+                double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
+                double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
 
             if (initialSize != ClientSize)
             {
@@ -699,7 +668,7 @@ namespace Avalonia.Controls
             Owner = parent;
             parent?.AddChild(this, false);
 
-            SetWindowStartupLocation(Owner?.PlatformImpl);
+            SetWindowStartupLocation(parent?.PlatformImpl);
 
             PlatformImpl?.Show(ShowActivated, false);
             Renderer?.Start();
@@ -861,20 +830,21 @@ namespace Avalonia.Controls
             var startupLocation = WindowStartupLocation;
 
             if (startupLocation == WindowStartupLocation.CenterOwner &&
-                Owner is Window ownerWindow &&
-                ownerWindow.WindowState == WindowState.Minimized)
+                (owner is null || 
+                 (Owner is Window ownerWindow && ownerWindow.WindowState == WindowState.Minimized))
+                )
             {
-                // If startup location is CenterOwner, but owner is minimized then fall back
+                // If startup location is CenterOwner, but owner is null or minimized then fall back
                 // to CenterScreen. This behavior is consistent with WPF.
                 startupLocation = WindowStartupLocation.CenterScreen;
             }
 
             var scaling = owner?.DesktopScaling ?? PlatformImpl?.DesktopScaling ?? 1;
 
-            // TODO: We really need non-client size here.
-            var rect = new PixelRect(
-                PixelPoint.Origin,
-                PixelSize.FromSize(ClientSize, scaling));
+            // Use frame size, falling back to client size if the platform can't give it to us.
+            var rect = FrameSize.HasValue ?
+                new PixelRect(PixelSize.FromSize(FrameSize.Value, scaling)) :
+                new PixelRect(PixelSize.FromSize(ClientSize, scaling));
 
             if (startupLocation == WindowStartupLocation.CenterScreen)
             {
@@ -882,31 +852,24 @@ namespace Avalonia.Controls
 
                 if (owner is not null)
                 {
-                    screen = Screens.ScreenFromWindow(owner);
-
-                    screen ??= Screens.ScreenFromPoint(owner.Position);
+                    screen = Screens.ScreenFromWindow(owner) 
+                             ?? Screens.ScreenFromPoint(owner.Position);
                 }
 
-                if (screen is null)
-                {
-                    screen = Screens.ScreenFromPoint(Position);
-                }
+                screen ??= Screens.ScreenFromPoint(Position);
 
-                if (screen != null)
+                if (screen is not null)
                 {
                     Position = screen.WorkingArea.CenterRect(rect).Position;
                 }
             }
             else if (startupLocation == WindowStartupLocation.CenterOwner)
             {
-                if (owner != null)
-                {
-                    // TODO: We really need non-client size here.
-                    var ownerRect = new PixelRect(
-                        owner.Position,
-                        PixelSize.FromSize(owner.ClientSize, scaling));
-                    Position = ownerRect.CenterRect(rect).Position;
-                }
+                var ownerSize = owner!.FrameSize ?? owner.ClientSize;
+                var ownerRect = new PixelRect(
+                    owner.Position,
+                    PixelSize.FromSize(ownerSize, scaling));
+                Position = ownerRect.CenterRect(rect).Position;
             }
         }
 
@@ -985,34 +948,31 @@ namespace Avalonia.Controls
             Owner = null;
         }
 
-        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
-        protected sealed override void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
-
         /// <inheritdoc/>
         protected sealed override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
-            if (ClientSize == clientSize)
-                return;
-
-            var sizeToContent = SizeToContent;
-
-            // If auto-sizing is enabled, and the resize came from a user resize (or the reason was
-            // unspecified) then turn off auto-resizing for any window dimension that is not equal
-            // to the requested size.
-            if (sizeToContent != SizeToContent.Manual &&
-                CanResize &&
-                reason == PlatformResizeReason.Unspecified ||  
-                reason == PlatformResizeReason.User)
+            if (ClientSize != clientSize || double.IsNaN(Width) || double.IsNaN(Height))
             {
-                if (clientSize.Width != ClientSize.Width)
-                    sizeToContent &= ~SizeToContent.Width;
-                if (clientSize.Height != ClientSize.Height)
-                    sizeToContent &= ~SizeToContent.Height;
-                SizeToContent = sizeToContent;
-            }
+                var sizeToContent = SizeToContent;
 
-            Width = clientSize.Width;
-            Height = clientSize.Height;
+                // If auto-sizing is enabled, and the resize came from a user resize (or the reason was
+                // unspecified) then turn off auto-resizing for any window dimension that is not equal
+                // to the requested size.
+                if (sizeToContent != SizeToContent.Manual &&
+                    CanResize &&
+                    reason == PlatformResizeReason.Unspecified ||
+                    reason == PlatformResizeReason.User)
+                {
+                    if (clientSize.Width != ClientSize.Width)
+                        sizeToContent &= ~SizeToContent.Width;
+                    if (clientSize.Height != ClientSize.Height)
+                        sizeToContent &= ~SizeToContent.Height;
+                    SizeToContent = sizeToContent;
+                }
+
+                Width = clientSize.Width;
+                Height = clientSize.Height;
+            }
 
             base.HandleResized(clientSize, reason);
         }
@@ -1033,19 +993,9 @@ namespace Avalonia.Controls
             base.OnPropertyChanged(change);
             if (change.Property == SystemDecorationsProperty)
             {
-                var (typedOldValue, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
+                var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
-
-                var o = typedOldValue == SystemDecorations.Full;
-                var n = typedNewValue == SystemDecorations.Full;
-
-                if (o != n)
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    RaisePropertyChanged(HasSystemDecorationsProperty, o, n);
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
             }
         }
 

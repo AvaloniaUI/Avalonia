@@ -15,7 +15,7 @@
             <Thickness x:Key="DatePickerHostPadding">0,1,0,2</Thickness>
             <Thickness x:Key="DatePickerHostMonthPadding">9,0,0,1</Thickness>
             <Thickness x:Key="ComboBoxEditableTextPadding">10,0,30,0</Thickness>
-            <Thickness x:Key="ComboBoxMinHeight">24</Thickness>
+            <x:Double x:Key="ComboBoxMinHeight">24</x:Double>
             <Thickness x:Key="ComboBoxPadding">12,1,0,3</Thickness>
             <x:Double x:Key="NavigationViewItemOnLeftMinHeight">32</x:Double>
         </Style.Resources>

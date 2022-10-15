@@ -12,7 +12,7 @@ namespace ControlCatalog
     public class MainWindow : Window
     {
         private WindowNotificationManager _notificationArea;
-        private NativeMenu _recentMenu;
+        private NativeMenu? _recentMenu;
 
         public MainWindow()
         {
@@ -28,9 +28,7 @@ namespace ControlCatalog
             };
 
             DataContext = new MainWindowViewModel(_notificationArea);
-            _recentMenu = ((NativeMenu.GetMenu(this).Items[0] as NativeMenuItem).Menu.Items[2] as NativeMenuItem).Menu;
-
-            ExtendClientAreaChromeHints = Avalonia.Platform.ExtendClientAreaChromeHints.OSXThickTitleBar;
+            _recentMenu = ((NativeMenu.GetMenu(this)?.Items[0] as NativeMenuItem)?.Menu?.Items[2] as NativeMenuItem)?.Menu;
         }
 
         public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";
@@ -41,7 +39,7 @@ namespace ControlCatalog
 
         public void OnOpenClicked(object sender, EventArgs args)
         {
-            _recentMenu.Items.Insert(0, new NativeMenuItem("Item " + (_recentMenu.Items.Count + 1)));
+            _recentMenu?.Items.Insert(0, new NativeMenuItem("Item " + (_recentMenu.Items.Count + 1)));
         }
 
         public void OnCloseClicked(object sender, EventArgs args)

@@ -127,7 +127,11 @@
         [self updateRenderTarget];
 
         auto reason = [self inLiveResize] ? ResizeUser : _resizeReason;
-        _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height}, reason);
+        
+        if(_parent->IsShown())
+        {
+            _parent->BaseEvents->Resized(AvnSize{newSize.width, newSize.height}, reason);
+        }
     }
 }
 
@@ -222,7 +226,7 @@
 
 - (void)mouseEvent:(NSEvent *)event withType:(AvnRawMouseEventType) type
 {
-    bool triggerInputWhenDisabled = type != Move;
+    bool triggerInputWhenDisabled = type != Move && type != LeaveWindow;
 
     if([self ignoreUserInput: triggerInputWhenDisabled])
     {
@@ -439,7 +443,12 @@
 
     if(_parent != nullptr)
     {
-        _lastKeyHandled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
+        auto handled = _parent->BaseEvents->RawKeyEvent(type, timestamp, modifiers, key);
+        if (key != LeftCtrl && key != RightCtrl) {
+          _lastKeyHandled = handled;
+        } else {
+          _lastKeyHandled = false;
+        }
     }
 }
 

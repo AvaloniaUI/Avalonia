@@ -10,7 +10,7 @@ namespace Avalonia.FreeDesktop
         public IDisposable Listen(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {
             Contract.Requires<ArgumentNullException>(mountedDrives != null);
-            return new LinuxMountedVolumeInfoListener(ref mountedDrives);
+            return new LinuxMountedVolumeInfoListener(ref mountedDrives!);
         }
     }
 }

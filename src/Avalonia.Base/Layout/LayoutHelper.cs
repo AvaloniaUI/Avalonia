@@ -36,11 +36,28 @@ namespace Avalonia.Layout
         public static Size MeasureChild(ILayoutable? control, Size availableSize, Thickness padding,
             Thickness borderThickness)
         {
-            return MeasureChild(control, availableSize, padding + borderThickness);
+            if (IsParentLayoutRounded(control, out double scale))
+            {
+                padding = RoundLayoutThickness(padding, scale, scale);
+                borderThickness = RoundLayoutThickness(borderThickness, scale, scale);
+            }
+
+            if (control != null)
+            {
+                control.Measure(availableSize.Deflate(padding + borderThickness));
+                return control.DesiredSize.Inflate(padding + borderThickness);
+            }
+
+            return new Size().Inflate(padding + borderThickness);
         }
 
         public static Size MeasureChild(ILayoutable? control, Size availableSize, Thickness padding)
         {
+            if (IsParentLayoutRounded(control, out double scale))
+            {
+                padding = RoundLayoutThickness(padding, scale, scale);
+            }
+
             if (control != null)
             {
                 control.Measure(availableSize.Deflate(padding));
@@ -137,7 +154,7 @@ namespace Avalonia.Layout
 
         /// <summary>
         /// Rounds a size to integer values for layout purposes, compensating for high DPI screen
-        /// coordinates.
+        /// coordinates by rounding the size up to the nearest pixel.
         /// </summary>
         /// <param name="size">Input size.</param>
         /// <param name="dpiScaleX">DPI along x-dimension.</param>
@@ -149,9 +166,9 @@ namespace Avalonia.Layout
         /// associated with the UseLayoutRounding property and should not be used as a general rounding
         /// utility.
         /// </remarks>
-        public static Size RoundLayoutSize(Size size, double dpiScaleX, double dpiScaleY)
+        public static Size RoundLayoutSizeUp(Size size, double dpiScaleX, double dpiScaleY)
         {
-            return new Size(RoundLayoutValue(size.Width, dpiScaleX), RoundLayoutValue(size.Height, dpiScaleY));
+            return new Size(RoundLayoutValueUp(size.Width, dpiScaleX), RoundLayoutValueUp(size.Height, dpiScaleY));
         }
 
         /// <summary>
@@ -178,10 +195,9 @@ namespace Avalonia.Layout
             );
         }
 
-
-
         /// <summary>
-        /// Calculates the value to be used for layout rounding at high DPI.
+        /// Calculates the value to be used for layout rounding at high DPI by rounding the value
+        /// up or down to the nearest pixel.
         /// </summary>
         /// <param name="value">Input value to be rounded.</param>
         /// <param name="dpiScale">Ratio of screen's DPI to layout DPI</param>
@@ -217,7 +233,57 @@ namespace Avalonia.Layout
 
             return newValue;
         }
-        
+
+        /// <summary>
+        /// Calculates the value to be used for layout rounding at high DPI by rounding the value up
+        /// to the nearest pixel.
+        /// </summary>
+        /// <param name="value">Input value to be rounded.</param>
+        /// <param name="dpiScale">Ratio of screen's DPI to layout DPI</param>
+        /// <returns>Adjusted value that will produce layout rounding on screen at high dpi.</returns>
+        /// <remarks>
+        /// This is a layout helper method. It takes DPI into account and also does not return
+        /// the rounded value if it is unacceptable for layout, e.g. Infinity or NaN. It's a helper
+        /// associated with the UseLayoutRounding property and should not be used as a general rounding
+        /// utility.
+        /// </remarks>
+        public static double RoundLayoutValueUp(double value, double dpiScale)
+        {
+            double newValue;
+
+            // Round the value to avoid FP errors. This is needed because if `value` has a floating
+            // point precision error (e.g. 79.333333333333343) then when it's multiplied by
+            // `dpiScale` and rounded up, it will be rounded up to a value one greater than it
+            // should be.
+#if NET6_0_OR_GREATER
+            value = Math.Round(value, 8, MidpointRounding.ToZero);
+#else
+            // MidpointRounding.ToZero isn't available in netstandard2.0.
+            value = Math.Truncate(value * 1e8) / 1e8;
+#endif
+
+            // If DPI == 1, don't use DPI-aware rounding.
+            if (!MathUtilities.IsOne(dpiScale))
+            {
+                newValue = Math.Ceiling(value * dpiScale) / dpiScale;
+
+                // If rounding produces a value unacceptable to layout (NaN, Infinity or MaxValue),
+                // use the original value.
+                if (double.IsNaN(newValue) ||
+                    double.IsInfinity(newValue) ||
+                    MathUtilities.AreClose(newValue, double.MaxValue))
+                {
+                    newValue = value;
+                }
+            }
+            else
+            {
+                newValue = Math.Ceiling(value);
+            }
+
+            return newValue;
+        }
+
         /// <summary>
         /// Calculates the min and max height for a control. Ported from WPF.
         /// </summary>

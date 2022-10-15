@@ -120,16 +120,18 @@ namespace Avalonia.Win32.WinRT.Composition
 
         private void RunLoop()
         {
+            var cts = new CancellationTokenSource();
+            AppDomain.CurrentDomain.ProcessExit += (sender, args) =>
+                cts.Cancel();
+                
+            using (var act = _compositor5.RequestCommitAsync())
+                act.SetCompleted(new RunLoopHandler(this));
+
+            while (!cts.IsCancellationRequested)
             {
-                var st = Stopwatch.StartNew();
-                using (var act = _compositor5.RequestCommitAsync())
-                    act.SetCompleted(new RunLoopHandler(this));
-                while (true)
-                {
-                    UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
-                    lock (_pumpLock)
-                        UnmanagedMethods.DispatchMessage(ref msg);
-                }
+                UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
+                lock (_pumpLock)
+                    UnmanagedMethods.DispatchMessage(ref msg);
             }
         }
 
@@ -302,5 +304,6 @@ namespace Avalonia.Win32.WinRT.Composition
         }
 
         public event Action<TimeSpan> Tick;
+        public bool RunsInBackground => true;
     }
 }

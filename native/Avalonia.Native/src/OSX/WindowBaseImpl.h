@@ -26,7 +26,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual ~WindowBaseImpl();
 
-    WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl);
+    WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel = false);
 
     virtual HRESULT ObtainNSWindowHandle(void **ret) override;
 
@@ -38,7 +38,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual NSWindow *GetNSWindow() override;
 
-    virtual NSView *GetNSView() override;
+    virtual AvnView *GetNSView() override;
 
     virtual HRESULT Show(bool activate, bool isDialog) override;
 
@@ -99,18 +99,17 @@ BEGIN_INTERFACE_MAP()
     virtual bool IsDialog();
 
     id<AvnWindowProtocol> GetWindowProtocol ();
+                           
+    virtual void BringToFront ();
 
 protected:
     virtual NSWindowStyleMask GetStyle();
 
     void UpdateStyle();
-                           
-    virtual void OnInitialiseNSWindow ();
 
 private:
     void CreateNSWindow (bool isDialog);
     void CleanNSWindow ();
-    void InitialiseNSWindow ();
 
     NSCursor *cursor;
     ComPtr<IAvnGlContext> _glContext;

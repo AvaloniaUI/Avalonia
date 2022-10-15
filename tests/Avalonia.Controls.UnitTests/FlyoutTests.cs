@@ -433,6 +433,48 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Reset_Popup_Parent_On_Target_Detached()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var userControl = new UserControl();
+                var window = PreparedWindow(userControl);
+                window.Show();
+                
+                var flyout = new TestFlyout();
+                flyout.ShowAt(userControl);
+                
+                var popup = Assert.IsType<Popup>(flyout.Popup);
+                Assert.NotNull(popup.Parent);
+                
+                window.Content = null;
+                Assert.Null(popup.Parent);
+            }
+        }
+        
+        [Fact]
+        public void Should_Reset_Popup_Parent_On_Target_Attach_Following_Detach()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var userControl = new UserControl();
+                var window = PreparedWindow(userControl);
+                window.Show();
+                
+                var flyout = new TestFlyout();
+                flyout.ShowAt(userControl);
+                
+                var popup = Assert.IsType<Popup>(flyout.Popup);
+                Assert.NotNull(popup.Parent);
+                
+                flyout.Hide();
+                
+                flyout.ShowAt(userControl);
+                Assert.NotNull(popup.Parent);
+            }
+        }
+
+        [Fact]
         public void ContextFlyout_Can_Be_Set_In_Styles()
         {
             using (CreateServicesWithFocus())
@@ -548,6 +590,11 @@ namespace Avalonia.Controls.UnitTests
                 0,
                 new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
                 KeyModifiers.None);
+        }
+        
+        public class TestFlyout : Flyout
+        {
+            public new Popup Popup => base.Popup;
         }
     }
 }

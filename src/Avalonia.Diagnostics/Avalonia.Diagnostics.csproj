@@ -10,16 +10,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj" />
     <ProjectReference Include="..\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+    <ProjectReference Include="..\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.4.0" />

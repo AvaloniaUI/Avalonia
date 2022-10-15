@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using Avalonia.Data;
 
 namespace Avalonia.Benchmarks

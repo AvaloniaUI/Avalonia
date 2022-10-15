@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Moq;
@@ -11,71 +14,79 @@ using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
 {
-    public class MouseDeviceTests
+    public class MouseDeviceTests : PointerTestsBase
     {
-#pragma warning disable CS0618 // Type or member is obsolete
         [Fact]
         public void Capture_Is_Transferred_To_Parent_When_Control_Removed()
         {
+            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+
+            var renderer = new Mock<IRenderer>();
+            var device = new MouseDevice();
+            var impl = CreateTopLevelImplMock(renderer.Object);
+
             Canvas control;
-            var root = new TestRoot
+            Panel rootChild;
+            var root = CreateInputRoot(impl.Object, rootChild = new Panel
             {
-                Child = control = new Canvas(),
+                Children =
+                {
+                    (control = new Canvas())
+                }
+            });
+
+            // Synthesize event to receive a pointer.
+            IPointer result = null;
+            root.PointerMoved += (_, a) =>
+            {
+                result = a.Pointer;
             };
-            var target = new MouseDevice();
+            SetHit(renderer, control);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root));
 
-            target.Capture(control);
-            Assert.Same(control, target.Captured);
+            Assert.NotNull(result);
+            
+            result.Capture(control);
+            Assert.Same(control, result.Captured);
 
-            root.Child = null;
+            rootChild.Children.Clear();
 
-            Assert.Same(root, target.Captured);
+            Assert.Same(rootChild, result.Captured);
         }
-#pragma warning restore CS0618 // Type or member is obsolete
 
         [Fact]
         public void GetPosition_Should_Respect_Control_RenderTransform()
         {
+            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
+
             var renderer = new Mock<IRenderer>();
+            var device = new MouseDevice();
+            var impl = CreateTopLevelImplMock(renderer.Object);
 
-            using (TestApplication(renderer.Object))
+            Border border;
+            var root = CreateInputRoot(impl.Object, new Panel
             {
-                var inputManager = InputManager.Instance;
-
-                var root = new TestRoot
+                Children =
                 {
-                    MouseDevice = new MouseDevice(),
-                    Child = new Border
+                    (border = new Border
                     {
                         Background = Brushes.Black,
                         RenderTransform = new TranslateTransform(10, 0),
-                    }
-                };
+                    })
+                }
+            });
+            
+            
+            Point? result = null;
+            root.PointerMoved += (_, a) =>
+            {
+                result = a.GetPosition(border);
+            };
 
-                SendMouseMove(inputManager, root, new Point(11, 11));
+            SetHit(renderer, border);
+            impl.Object.Input!(CreateRawPointerMovedArgs(device, root, new Point(11, 11)));
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                var result = root.MouseDevice.GetPosition(root.Child);
-#pragma warning restore CS0618 // Type or member is obsolete
-                Assert.Equal(new Point(1, 11), result);
-            }
-        }
-
-        private void SendMouseMove(IInputManager inputManager, TestRoot root, Point p = new Point())
-        {
-            inputManager.ProcessInput(new RawPointerEventArgs(
-                root.MouseDevice,
-                0,
-                root,
-                RawPointerEventType.Move,
-                p,
-                RawInputModifiers.None));
-        }
-
-        private IDisposable TestApplication(IRenderer renderer)
-        {
-            return UnitTestApplication.Start(
-                new TestServices(inputManager: new InputManager()));
+            Assert.Equal(new Point(1, 11), result);
         }
     }
 }

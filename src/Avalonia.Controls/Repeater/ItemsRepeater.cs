@@ -421,6 +421,7 @@ namespace Avalonia.Controls
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            base.OnAttachedToVisualTree(e);
             InvalidateMeasure();
             _viewportManager.ResetScrollers();
         }

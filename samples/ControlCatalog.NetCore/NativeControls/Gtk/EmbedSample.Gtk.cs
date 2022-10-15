@@ -22,8 +22,7 @@ public class EmbedSampleGtk : INativeDemoControl
 
         var control = createDefault();
         var nodes = Path.GetFullPath(Path.Combine(typeof(EmbedSample).Assembly.GetModules()[0].FullyQualifiedName,
-            "..",
-            "nodes.mp4"));
+            "..", "NativeControls", "Gtk", "nodes.mp4"));
         _mplayer = Process.Start(new ProcessStartInfo("mplayer",
             $"-vo x11 -zoom -loop 0 -wid {control.Handle.ToInt64()} \"{nodes}\"")
         {

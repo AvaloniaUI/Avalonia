@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
@@ -154,7 +155,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     {
                         j += inner.Current.Text.Length;
 
-                        if(j + i > text.Length)
+                        if (j + i > text.Length)
                         {
                             break;
                         }
@@ -577,9 +578,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var glyphTypeface = Typeface.Default.GlyphTypeface;
 
-                var emHeight = glyphTypeface.DesignEmHeight;
+                var emHeight = glyphTypeface.Metrics.DesignEmHeight;
 
-                var lineHeight = (glyphTypeface.Descent - glyphTypeface.Ascent) * (12.0 / emHeight);
+                var lineHeight = glyphTypeface.Metrics.LineSpacing * (12.0 / emHeight);
 
                 var layout = new TextLayout(
                     text,
@@ -738,7 +739,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine = layout.TextLines[0];
 
                 var start = textLine.GetDistanceFromCharacterHit(new CharacterHit(5, 1));
-                
+
                 var end = textLine.GetDistanceFromCharacterHit(new CharacterHit(6, 1));
 
                 var rects = layout.HitTestTextRange(0, 7).ToArray();
@@ -746,7 +747,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(1, rects.Length);
 
                 var expected = rects[0];
-                
+
                 Assert.Equal(expected.Left, start);
                 Assert.Equal(expected.Right, end);
             }
@@ -818,11 +819,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         var expected = text.Substring(textLine.FirstTextSourceIndex, textLine.Length);
 
                         Assert.Equal(expected, actual);
-                    }                  
+                    }
                 }
             }
         }
-        
+
         [Fact]
         public void Should_Layout_Empty_String()
         {
@@ -833,8 +834,187 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Typeface.Default,
                     12,
                     Brushes.Black);
-                
+
                 Assert.True(layout.Bounds.Height > 0);
+            }
+        }
+
+        [Fact]
+        public void Should_HitTestPoint_RightToLeft()
+        {
+            using (Start())
+            {
+                var text = "אאא AAA";
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black,
+                    flowDirection: FlowDirection.RightToLeft);
+
+                var firstRun = layout.TextLines[0].TextRuns[0] as ShapedTextCharacters;
+
+                var hit = layout.HitTestPoint(new Point());
+
+                Assert.Equal(4, hit.TextPosition);
+
+                var currentX = 0.0;
+
+                for (var i = 0; i < firstRun.GlyphRun.GlyphClusters.Count; i++)
+                {
+                    var cluster = firstRun.GlyphRun.GlyphClusters[i];
+                    var advance = firstRun.GlyphRun.GlyphAdvances[i];
+
+                    hit = layout.HitTestPoint(new Point(currentX, 0));
+
+                    Assert.Equal(cluster, hit.TextPosition);
+
+                    var hitRange = layout.HitTestTextRange(hit.TextPosition, 1);
+
+                    var distance = hitRange.First().Left;
+
+                    Assert.Equal(currentX, distance);
+
+                    currentX += advance;
+                }
+
+                var secondRun = layout.TextLines[0].TextRuns[1] as ShapedTextCharacters;
+
+                hit = layout.HitTestPoint(new Point(firstRun.Size.Width, 0));
+
+                Assert.Equal(7, hit.TextPosition);
+
+                hit = layout.HitTestPoint(new Point(layout.TextLines[0].WidthIncludingTrailingWhitespace, 0));
+
+                Assert.Equal(0, hit.TextPosition);
+
+                currentX = firstRun.Size.Width + 0.5;
+
+                for (var i = 0; i < secondRun.GlyphRun.GlyphClusters.Count; i++)
+                {
+                    var cluster = secondRun.GlyphRun.GlyphClusters[i];
+                    var advance = secondRun.GlyphRun.GlyphAdvances[i];
+
+                    hit = layout.HitTestPoint(new Point(currentX, 0));
+
+                    Assert.Equal(cluster, hit.CharacterHit.FirstCharacterIndex);
+
+                    var hitRange = layout.HitTestTextRange(hit.CharacterHit.FirstCharacterIndex, hit.CharacterHit.TrailingLength);
+
+                    var distance = hitRange.First().Left + 0.5;
+
+                    Assert.Equal(currentX, distance);
+
+                    currentX += advance;
+                }
+            }
+        }
+
+        [Fact]
+        public void Should_Get_CharacterHit_From_Distance_RTL()
+        {
+            using (Start())
+            {
+                var text = "أَبْجَدِيَّة عَرَبِيَّة";
+
+                var layout = new TextLayout(
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black);
+
+                var textLine = layout.TextLines[0];
+
+                var firstRun = (ShapedTextCharacters)textLine.TextRuns[0];
+
+                var firstCluster = firstRun.ShapedBuffer.GlyphClusters[0];
+
+                var characterHit = textLine.GetCharacterHitFromDistance(0);
+
+                Assert.Equal(firstCluster, characterHit.FirstCharacterIndex);
+
+                Assert.Equal(text.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+
+                var distance = textLine.GetDistanceFromCharacterHit(characterHit);
+
+                Assert.Equal(0, distance);
+
+                distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(characterHit.FirstCharacterIndex));
+
+                var firstAdvance = firstRun.ShapedBuffer.GlyphAdvances[0];
+
+                Assert.Equal(firstAdvance, distance, 5);
+
+                var rect = layout.HitTestTextPosition(22);
+
+                Assert.Equal(firstAdvance, rect.Left, 5);
+
+                rect = layout.HitTestTextPosition(23);
+
+                Assert.Equal(0, rect.Left, 5);
+
+            }
+        }
+
+        [Fact]
+        public void Should_Get_CharacterHit_From_Distance_RTL_With_TextStyles()
+        {
+            using (Start())
+            {
+                var text = "أَبْجَدِيَّة عَرَبِيَّة";
+
+                var i = 0;
+
+                var graphemeEnumerator = new GraphemeEnumerator(text.AsMemory());
+
+                while (graphemeEnumerator.MoveNext())
+                {
+                    var grapheme = graphemeEnumerator.Current;
+
+                    var textStyleOverrides = new[] { new ValueSpan<TextRunProperties>(i, grapheme.Text.Length, new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Red)) };
+
+                    i += grapheme.Text.Length;
+
+                    var layout = new TextLayout(
+                        text,
+                        Typeface.Default,
+                        12,
+                        Brushes.Black,
+                        textStyleOverrides: textStyleOverrides);
+
+                    var textLine = layout.TextLines[0];
+
+                    var shapedRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+
+                    var clusters = shapedRuns.SelectMany(x => x.ShapedBuffer.GlyphClusters).ToList();
+
+                    var glyphAdvances = shapedRuns.SelectMany(x => x.ShapedBuffer.GlyphAdvances).ToList();
+
+                    var currentX = 0.0;
+
+                    var cluster = text.Length;
+
+                    for (int j = 0; j < clusters.Count - 1; j++)
+                    {                     
+                        var glyphAdvance = glyphAdvances[j];
+
+                        var characterHit = textLine.GetCharacterHitFromDistance(currentX);
+
+                        Assert.Equal(cluster, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+
+                        var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
+
+                        Assert.Equal(currentX, distance, 5);
+
+                        currentX += glyphAdvance;
+
+                        if(glyphAdvance > 0)
+                        {
+                            cluster = clusters[j];
+                        }
+                    }
+                }
             }
         }
 

@@ -109,7 +109,7 @@ namespace Avalonia.Win32
 
                             if (_owner is Window window)
                             {
-                                var visual = window.Renderer.HitTestFirst(position, _owner as Window, x =>
+                                var visual = window.Renderer.HitTestFirst(position, _owner, x =>
                                 {
                                     if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsVisible))
                                     {

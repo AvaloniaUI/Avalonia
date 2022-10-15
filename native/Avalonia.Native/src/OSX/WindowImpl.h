@@ -8,10 +8,12 @@
 
 #import "WindowBaseImpl.h"
 #include "IWindowStateChanged.h"
+#include <list>
 
 class WindowImpl : public virtual WindowBaseImpl, public virtual IAvnWindow, public IWindowStateChanged
 {
 private:
+    bool _isEnabled;
     bool _canResize;
     bool _fullScreenActive;
     SystemDecorations _decorations;
@@ -22,6 +24,8 @@ private:
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
     bool _isDialog;
+    WindowImpl* _parent;
+    std::list<WindowImpl*> _children;
     AvnExtendClientAreaChromeHints _extendClientHints;
 
     FORWARD_IUNKNOWN()
@@ -89,12 +93,15 @@ BEGIN_INTERFACE_MAP()
 
     virtual bool IsDialog() override;
     
-    virtual void OnInitialiseNSWindow() override;
+    virtual void BringToFront () override;
+    
+    bool CanBecomeKeyWindow ();
 
 protected:
     virtual NSWindowStyleMask GetStyle() override;
 
 private:
+    void OnInitialiseNSWindow();
     NSString *_lastTitle;
 };
 

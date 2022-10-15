@@ -21,7 +21,7 @@ namespace ControlCatalog.Pages
             var dataGridSortDescription = DataGridSortDescription.FromPath(nameof(Country.Region), ListSortDirection.Ascending, new ReversedStringComparer());
             var collectionView1 = new DataGridCollectionView(Countries.All);
             collectionView1.SortDescriptions.Add(dataGridSortDescription);
-            var dg1 = this.FindControl<DataGrid>("dataGrid1");
+            var dg1 = this.Get<DataGrid>("dataGrid1");
             dg1.IsReadOnly = true;
             dg1.LoadingRow += Dg1_LoadingRow;
             dg1.Sorting += (s, a) =>
@@ -37,7 +37,7 @@ namespace ControlCatalog.Pages
             };
             dg1.Items = collectionView1;
 
-            var dg2 = this.FindControl<DataGrid>("dataGridGrouping");
+            var dg2 = this.Get<DataGrid>("dataGridGrouping");
             dg2.IsReadOnly = true;
 
             var collectionView2 = new DataGridCollectionView(Countries.All);
@@ -45,7 +45,7 @@ namespace ControlCatalog.Pages
 
             dg2.Items = collectionView2;
 
-            var dg3 = this.FindControl<DataGrid>("dataGridEdit");
+            var dg3 = this.Get<DataGrid>("dataGridEdit");
             dg3.IsReadOnly = false;
 
             var items = new List<Person>
@@ -58,11 +58,11 @@ namespace ControlCatalog.Pages
 
             dg3.Items = collectionView3;
 
-            var addButton = this.FindControl<Button>("btnAdd");
+            var addButton = this.Get<Button>("btnAdd");
             addButton.Click += (a, b) => collectionView3.AddNew();
         }
 
-        private void Dg1_LoadingRow(object sender, DataGridRowEventArgs e)
+        private void Dg1_LoadingRow(object? sender, DataGridRowEventArgs e)
         {
             e.Row.Header = e.Row.GetIndex() + 1;
         }
@@ -74,7 +74,7 @@ namespace ControlCatalog.Pages
 
         private class ReversedStringComparer : IComparer<object>, IComparer
         {
-            public int Compare(object x, object y)
+            public int Compare(object? x, object? y)
             {
                 if (x is string left && y is string right)
                 {

@@ -32,11 +32,8 @@ namespace Avalonia.Input
         DragCopy,
         DragLink,
         None,
-
-        [Obsolete("Use BottomSide")]
-        BottomSize = BottomSide
-
-        // Not available in GTK directly, see http://www.pixelbeat.org/programming/x_cursors/ 
+        
+        // Not available in GTK directly, see https://www.pixelbeat.org/programming/x_cursors/
         // We might enable them later, preferably, by loading pixmax directly from theme with fallback image
         // SizeNorthWestSouthEast,
         // SizeNorthEastSouthWest,

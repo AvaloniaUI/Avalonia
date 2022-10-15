@@ -3,7 +3,7 @@ using System;
 namespace Avalonia.Utilities
 {
     /// <summary>
-    /// Defines a listener to a event subscribed vis the <see cref="WeakSubscriptionManager"/>.
+    /// Defines a listener to a event subscribed vis the <see cref="WeakObservable"/>.
     /// </summary>
     /// <typeparam name="T">The type of the event arguments.</typeparam>
     public interface IWeakSubscriber<T> where T : EventArgs

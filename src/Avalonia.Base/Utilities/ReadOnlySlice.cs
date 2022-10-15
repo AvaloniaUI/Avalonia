@@ -214,6 +214,8 @@ namespace Avalonia.Utilities
             return new ReadOnlySlice<T>(memory);
         }
 
+        public static implicit operator ReadOnlySpan<T>(ReadOnlySlice<T> slice) => slice.Span;
+
         internal class ReadOnlySliceDebugView
         {
             private readonly ReadOnlySlice<T> _readOnlySlice;

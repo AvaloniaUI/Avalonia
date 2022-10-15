@@ -49,6 +49,7 @@
         <Compile Include="Templates\Template.cs" />
         <Compile Include="Templates\TemplateContent.cs" />
         <Compile Include="Templates\TreeDataTemplate.cs" />
+        <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlControlTemplateProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
         <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />

@@ -59,6 +59,13 @@ namespace Avalonia.Platform
         IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2);
 
         /// <summary>
+        /// Created a geometry implementation for the glyph run.
+        /// </summary>
+        /// <param name="glyphRun">The glyph run to build a geometry from.</param>
+        /// <returns>The geometry returned contains the combined geometry of all glyphs in the glyph run.</returns>
+        IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun);
+
+        /// <summary>
         /// Creates a renderer.
         /// </summary>
         /// <param name="surfaces">
@@ -164,11 +171,40 @@ namespace Avalonia.Platform
         IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride);
 
         /// <summary>
-        /// Creates a platform implementation of a glyph run.
+        /// Allocates a platform glyph run buffer.
         /// </summary>
-        /// <param name="glyphRun">The glyph run.</param>
-        /// <returns></returns>
-        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun);
+        /// <param name="glyphTypeface">The glyph typeface.</param>
+        /// <param name="fontRenderingEmSize">The font rendering em size.</param>
+        /// <param name="length">The length.</param>
+        /// <returns>An <see cref="IGlyphRunBuffer"/>.</returns>
+        /// <remarks>
+        /// This buffer only holds glyph indices.
+        /// </remarks>
+        IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
+
+        /// <summary>
+        /// Allocates a horizontal platform glyph run buffer.
+        /// </summary>
+        /// <param name="glyphTypeface">The glyph typeface.</param>
+        /// <param name="fontRenderingEmSize">The font rendering em size.</param>
+        /// <param name="length">The length.</param>
+        /// <returns>An <see cref="IGlyphRunBuffer"/>.</returns>
+        /// <remarks>
+        /// This buffer holds glyph indices and glyph advances.
+        /// </remarks>
+        IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
+
+        /// <summary>
+        /// Allocates a positioned platform glyph run buffer.
+        /// </summary>
+        /// <param name="glyphTypeface">The glyph typeface.</param>
+        /// <param name="fontRenderingEmSize">The font rendering em size.</param>
+        /// <param name="length">The length.</param>
+        /// <returns>An <see cref="IGlyphRunBuffer"/>.</returns>
+        /// <remarks>
+        /// This buffer holds glyph indices, glyph advances and glyph positions.
+        /// </remarks>
+        IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
 
         /// <summary>
         /// Gets a value indicating whether the platform directly supports rectangles with rounded corners.

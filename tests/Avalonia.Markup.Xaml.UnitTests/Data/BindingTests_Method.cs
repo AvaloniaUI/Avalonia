@@ -142,6 +142,28 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         }
 
         [Fact]
+        public void Binding_Method_Preserves_Correct_Order()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Button Name='button' Command='{Binding Method3}' CommandParameter='5'/>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var button = window.FindControl<Button>("button");
+                var vm = new ViewModel();
+
+                button.DataContext = vm;
+                window.ApplyTemplate();
+                PerformClick(button);
+                Assert.Equal("Called Method with parameter of object type. Argument value is 5", vm.Value);
+            }
+        }
+
+        [Fact]
         public void Binding_Method_To_Command_Collected()
         {
             WeakReference<ViewModel> MakeRef()
@@ -198,8 +220,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
             public event PropertyChangedEventHandler PropertyChanged;
 
             public string Method() => Value = "Called";
-            public string Method1(int i) => Value = $"Called {i}";
+            public string Method1(object i) => Value = $"Called {i}";
             public string Method2(int i, int j) => Value = $"Called {i},{j}";
+            public string Method3() => Value = "Called";
+            public string Method3(object obj) => Value = $"Called Method with parameter of object type. Argument value is {obj}";
             public string Value { get; private set; } = "Not called";
 
             object _parameter;

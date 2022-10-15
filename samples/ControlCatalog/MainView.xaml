@@ -13,8 +13,14 @@
       </Style>
     </Grid.Styles>
     <controls:HamburgerMenu Name="Sidebar">
+      <TabItem Header="Composition">
+        <pages:CompositionPage/>
+      </TabItem>
       <TabItem Header="Acrylic">
         <pages:AcrylicPage />
+      </TabItem>
+      <TabItem Header="AdornerLayer">
+        <pages:AdornerLayerPage />
       </TabItem>
       <TabItem Header="AutoCompleteBox">
         <pages:AutoCompleteBoxPage />
@@ -69,6 +75,9 @@
       <TabItem Header="CalendarDatePicker">
         <pages:CalendarDatePickerPage />
       </TabItem>
+      <TabItem Header="Dialogs">
+        <pages:DialogsPage />
+      </TabItem>
       <TabItem Header="Drag+Drop">
         <pages:DragAndDropPage />
       </TabItem>
@@ -109,7 +118,7 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
-      <TabItem Header="Pointers (Touch)">
+      <TabItem Header="Pointers">
         <pages:PointersPage />
       </TabItem>
       <TabItem Header="ProgressBar">
@@ -181,8 +190,8 @@
               <ComboBox.Items>
                 <models:CatalogTheme>FluentLight</models:CatalogTheme>
                 <models:CatalogTheme>FluentDark</models:CatalogTheme>
-                <models:CatalogTheme>DefaultLight</models:CatalogTheme>
-                <models:CatalogTheme>DefaultDark</models:CatalogTheme>
+                <models:CatalogTheme>SimpleLight</models:CatalogTheme>
+                <models:CatalogTheme>SimpleDark</models:CatalogTheme>
               </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="TransparencyLevels"

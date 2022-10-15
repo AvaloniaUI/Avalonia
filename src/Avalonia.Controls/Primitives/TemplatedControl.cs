@@ -285,19 +285,18 @@ namespace Avalonia.Controls.Primitives
                     Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(this, "Creating control template");
 
                     var (child, nameScope) = template.Build(this);
-                    ApplyTemplatedParent(child);
+                    ApplyTemplatedParent(child, this);
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
                     
                     // Existing code kinda expect to see a NameScope even if it's empty
                     if (nameScope == null)
+                    {
                         nameScope = new NameScope();
+                    }
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
-#pragma warning disable CS0618 // Type or member is obsolete
-                    OnTemplateApplied(e);
-#pragma warning restore CS0618 // Type or member is obsolete
                     RaiseEvent(e);
                 }
 
@@ -365,13 +364,15 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
-        /// <summary>
-        /// Called when the control's template is applied.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        [Obsolete("Use OnApplyTemplate")]
-        protected virtual void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ThemeProperty)
+            {
+                foreach (var child in this.GetTemplateChildren())
+                    child.InvalidateStyles();
+            }
         }
 
         /// <summary>
@@ -387,18 +388,19 @@ namespace Avalonia.Controls.Primitives
         /// Sets the TemplatedParent property for the created template children.
         /// </summary>
         /// <param name="control">The control.</param>
-        private void ApplyTemplatedParent(IControl control)
+        /// <param name="templatedParent">The templated parent to apply.</param>
+        internal static void ApplyTemplatedParent(IStyledElement control, ITemplatedControl? templatedParent)
         {
-            control.SetValue(TemplatedParentProperty, this);
+            control.SetValue(TemplatedParentProperty, templatedParent);
 
             var children = control.LogicalChildren;
             var count = children.Count;
 
             for (var i = 0; i < count; i++)
             {
-                if (children[i] is IControl child)
+                if (children[i] is IStyledElement child && child.TemplatedParent is null)
                 {
-                    ApplyTemplatedParent(child);
+                    ApplyTemplatedParent(child, templatedParent);
                 }
             }
         }

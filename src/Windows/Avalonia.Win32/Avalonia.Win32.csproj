@@ -16,6 +16,13 @@
     <MicroComIdl Include="WinRT\winrt.idl" CSharpInteropPath="WinRT\WinRT.Generated.cs" />
     <MicroComIdl Include="Win32Com\win32.idl" CSharpInteropPath="Win32Com\Win32.Generated.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="..\..\Shared\ModuleInitializer.cs" />
+  </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <PropertyGroup Label="Warnings">
+    <NoWarn Condition="'$(NoWarn)' == ''">CA1416</NoWarn>
+    <NoWarn Condition="'$(NoWarn)' != ''">$(NoWarn),CA1416</NoWarn>
+  </PropertyGroup>
 </Project>

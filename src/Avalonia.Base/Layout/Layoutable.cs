@@ -463,20 +463,6 @@ namespace Avalonia.Layout
         /// <summary>
         /// Marks a property as affecting the control's measurement.
         /// </summary>
-        /// <param name="properties">The properties.</param>
-        /// <remarks>
-        /// After a call to this method in a control's static constructor, any change to the
-        /// property will cause <see cref="InvalidateMeasure"/> to be called on the element.
-        /// </remarks>
-        [Obsolete("Use AffectsMeasure<T> and specify the control type.")]
-        protected static void AffectsMeasure(params AvaloniaProperty[] properties)
-        {
-            AffectsMeasure<Layoutable>(properties);
-        }
-
-        /// <summary>
-        /// Marks a property as affecting the control's measurement.
-        /// </summary>
         /// <typeparam name="T">The control which the property affects.</typeparam>
         /// <param name="properties">The properties.</param>
         /// <remarks>
@@ -495,20 +481,6 @@ namespace Avalonia.Layout
             {
                 property.Changed.Subscribe(Invalidate);
             }
-        }
-
-        /// <summary>
-        /// Marks a property as affecting the control's arrangement.
-        /// </summary>
-        /// <param name="properties">The properties.</param>
-        /// <remarks>
-        /// After a call to this method in a control's static constructor, any change to the
-        /// property will cause <see cref="InvalidateArrange"/> to be called on the element.
-        /// </remarks>
-        [Obsolete("Use AffectsArrange<T> and specify the control type.")]
-        protected static void AffectsArrange(params AvaloniaProperty[] properties)
-        {
-            AffectsArrange<Layoutable>(properties);
         }
 
         /// <summary>
@@ -548,6 +520,14 @@ namespace Avalonia.Layout
             if (IsVisible)
             {
                 var margin = Margin;
+                var useLayoutRounding = UseLayoutRounding;
+                var scale = 1.0;
+
+                if (useLayoutRounding)
+                {
+                    scale = LayoutHelper.GetLayoutScale(this);
+                    margin = LayoutHelper.RoundLayoutThickness(margin, scale, scale);
+                }
 
                 ApplyStyling();
                 ApplyTemplate();
@@ -584,15 +564,13 @@ namespace Avalonia.Layout
                 height = Math.Min(height, MaxHeight);
                 height = Math.Max(height, MinHeight);
 
+                if (useLayoutRounding)
+                {
+                    (width, height) = LayoutHelper.RoundLayoutSizeUp(new Size(width, height), scale, scale);
+                }
+
                 width = Math.Min(width, availableSize.Width);
                 height = Math.Min(height, availableSize.Height);
-
-                if (UseLayoutRounding)
-                {
-                    var scale = LayoutHelper.GetLayoutScale(this);
-                    width = LayoutHelper.RoundLayoutValue(width, scale);
-                    height = LayoutHelper.RoundLayoutValue(height, scale);
-                }
 
                 return NonNegative(new Size(width, height).Inflate(margin));
             }
@@ -678,8 +656,8 @@ namespace Avalonia.Layout
 
                 if (useLayoutRounding)
                 {
-                    size = LayoutHelper.RoundLayoutSize(size, scale, scale);
-                    availableSizeMinusMargins = LayoutHelper.RoundLayoutSize(availableSizeMinusMargins, scale, scale);
+                    size = LayoutHelper.RoundLayoutSizeUp(size, scale, scale);
+                    availableSizeMinusMargins = LayoutHelper.RoundLayoutSizeUp(availableSizeMinusMargins, scale, scale);
                 }
 
                 size = ArrangeOverride(size).Constrain(size);

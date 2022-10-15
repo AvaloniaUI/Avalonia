@@ -637,6 +637,17 @@ namespace Avalonia.Markup.UnitTests.Data
             Assert.Equal("baz", source["Foo"]);
         }
 
+        [Fact]
+        public void Binding_To_Types_Should_Work()
+        {
+            var type = typeof(string);
+            var textBlock = new TextBlock() { DataContext = type };
+            using (textBlock.Bind(TextBlock.TextProperty, new Binding("Name")))
+            {
+                Assert.Equal("String", textBlock.Text);
+            };
+        }
+
         private class StyledPropertyClass : AvaloniaObject
         {
             public static readonly StyledProperty<double> DoubleValueProperty =

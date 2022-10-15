@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
 using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {
@@ -12,40 +12,53 @@ namespace Avalonia.Controls.Documents
     [WhitespaceSignificantCollection]
     public class InlineCollection : AvaloniaList<Inline>
     {
-        private readonly IInlineHost? _host;
-        private string? _text = string.Empty;
+        private ILogical? _parent;
+        private IInlineHost? _inlineHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InlineCollection"/> class.
         /// </summary>
-        public InlineCollection(ILogical parent) : this(parent, null) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InlineCollection"/> class.
-        /// </summary>
-        internal InlineCollection(ILogical parent, IInlineHost? host = null) : base(0)
+        public InlineCollection()
         {
-            _host = host;
-
             ResetBehavior = ResetBehavior.Remove;
-            
+
             this.ForEachItem(
                 x =>
                 {
-                    ((ISetLogicalParent)x).SetParent(parent);
-                    x.InlineHost = host;
-                    host?.Invalidate();
+                    ((ISetLogicalParent)x).SetParent(Parent);
+                    x.InlineHost = InlineHost;
+                    Invalidate();
                 },
                 x =>
                 {
                     ((ISetLogicalParent)x).SetParent(null);
-                    x.InlineHost = host;
-                    host?.Invalidate();
+                    x.InlineHost = InlineHost;
+                    Invalidate();
                 },
-                () => throw new NotSupportedException());         
+                () => throw new NotSupportedException());
         }
 
-        public bool HasComplexContent => Count > 0;
+        internal ILogical? Parent
+        {
+            get => _parent;
+            set
+            {
+                _parent = value;
+
+                OnParentChanged(value);
+            }
+        }
+
+        internal IInlineHost? InlineHost
+        {
+            get => _inlineHost;
+            set
+            {
+                _inlineHost = value;
+
+                OnInlineHostChanged(value);
+            }
+        }
 
         /// <summary>
         /// Gets or adds the text held by the inlines collection.
@@ -57,31 +70,16 @@ namespace Avalonia.Controls.Documents
         {
             get
             {
-                if (!HasComplexContent)
-                {
-                    return _text;
-                }
-                
-                var builder = new StringBuilder();
+                var builder = StringBuilderCache.Acquire();
 
-                foreach(var inline in this)
+                foreach (var inline in this)
                 {
                     inline.AppendText(builder);
                 }
 
-                return builder.ToString();
+                return StringBuilderCache.GetStringAndRelease(builder);
             }
-            set
-            {
-                if (HasComplexContent)
-                {
-                    Add(new Run(value));
-                }
-                else
-                {
-                    _text = value;
-                }
-            }
+
         }
 
         /// <summary>
@@ -94,36 +92,46 @@ namespace Avalonia.Controls.Documents
         /// <param name="text"></param>
         public void Add(string text)
         {
-            if (HasComplexContent)
-            {
-                Add(new Run(text));
-            }
-            else
-            {
-                _text += text;
-            }
+            AddText(text);
+        }
+
+        public override void Add(Inline inline)
+        {
+            OnAdd();
+
+            base.Add(inline);
         }
 
         public void Add(IControl child)
         {
-            var implicitRun = new InlineUIContainer(child);
+            OnAdd();
 
-            Add(implicitRun);
+            base.Add(new InlineUIContainer(child));
         }
 
-        public override void Add(Inline item)
+        private void AddText(string text)
         {
-            if (!HasComplexContent)
+            if (Parent is RichTextBlock textBlock && !textBlock.HasComplexContent)
             {
-                if (!string.IsNullOrEmpty(_text))
-                {
-                    base.Add(new Run(_text));
-                }
-                             
-                _text = string.Empty;
+                textBlock._text += text;
             }
-            
-            base.Add(item);
+            else
+            {
+                base.Add(new Run(text));
+            }
+        }
+
+        private void OnAdd()
+        {
+            if (Parent is RichTextBlock textBlock)
+            {
+                if (!textBlock.HasComplexContent && !string.IsNullOrEmpty(textBlock._text))
+                {
+                    base.Add(new Run(textBlock._text));
+
+                    textBlock._text = null;
+                }
+            }
         }
 
         /// <summary>
@@ -136,14 +144,38 @@ namespace Avalonia.Controls.Documents
         /// </summary>
         protected void Invalidate()
         {
-            if(_host != null)
+            if (InlineHost != null)
             {
-                _host.Invalidate();
+                InlineHost.Invalidate();
             }
 
             Invalidated?.Invoke(this, EventArgs.Empty);
         }
 
-        private void Invalidate(object? sender, EventArgs e) => Invalidate();
+        private void OnParentChanged(ILogical? parent)
+        {
+            foreach (var child in this)
+            {
+                var oldParent = child.Parent;
+
+                if (oldParent != parent)
+                {
+                    if (oldParent != null)
+                    {
+                        ((ISetLogicalParent)child).SetParent(null);
+                    }
+
+                    ((ISetLogicalParent)child).SetParent(parent);
+                }
+            }
+        }
+
+        private void OnInlineHostChanged(IInlineHost? inlineHost)
+        {
+            foreach (var child in this)
+            {
+                child.InlineHost = inlineHost;
+            }
+        }
     }
 }

@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
-
-#nullable enable
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -14,6 +13,8 @@ namespace Avalonia.Controls
     /// </remarks>
     public class Classes : AvaloniaList<string>, IPseudoClasses
     {
+        private SafeEnumerableList<IClassesChangedListener>? _listeners;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Classes"/> class.
         /// </summary>
@@ -40,6 +41,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets the number of listeners subscribed to this collection for unit testing purposes.
+        /// </summary>
+        internal int ListenerCount => _listeners?.Count ?? 0;
+
+        /// <summary>
         /// Parses a classes string.
         /// </summary>
         /// <param name="s">The string.</param>
@@ -62,6 +68,7 @@ namespace Avalonia.Controls
             if (!Contains(name))
             {
                 base.Add(name);
+                NotifyChanged();
             }
         }
 
@@ -89,6 +96,7 @@ namespace Avalonia.Controls
             }
 
             base.AddRange(c);
+            NotifyChanged();
         }
 
         /// <summary>
@@ -103,6 +111,8 @@ namespace Avalonia.Controls
                     RemoveAt(i);
                 }
             }
+
+            NotifyChanged();
         }
 
         /// <summary>
@@ -122,6 +132,7 @@ namespace Avalonia.Controls
             if (!Contains(name))
             {
                 base.Insert(index, name);
+                NotifyChanged();
             }
         }
 
@@ -154,6 +165,7 @@ namespace Avalonia.Controls
             if (toInsert != null)
             {
                 base.InsertRange(index, toInsert);
+                NotifyChanged();
             }
         }
 
@@ -169,7 +181,14 @@ namespace Avalonia.Controls
         public override bool Remove(string name)
         {
             ThrowIfPseudoclass(name, "removed");
-            return base.Remove(name);
+
+            if (base.Remove(name))
+            {
+                NotifyChanged();
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -197,6 +216,7 @@ namespace Avalonia.Controls
             if (toRemove != null)
             {
                 base.RemoveAll(toRemove);
+                NotifyChanged();
             }
         }
 
@@ -214,6 +234,7 @@ namespace Avalonia.Controls
             var name = this[index];
             ThrowIfPseudoclass(name, "removed");
             base.RemoveAt(index);
+            NotifyChanged();
         }
 
         /// <summary>
@@ -224,6 +245,7 @@ namespace Avalonia.Controls
         public override void RemoveRange(int index, int count)
         {
             base.RemoveRange(index, count);
+            NotifyChanged();
         }
 
         /// <summary>
@@ -255,6 +277,7 @@ namespace Avalonia.Controls
             }
 
             base.AddRange(source);
+            NotifyChanged();
         }
 
         /// <inheritdoc/>
@@ -263,13 +286,38 @@ namespace Avalonia.Controls
             if (!Contains(name))
             {
                 base.Add(name);
+                NotifyChanged();
             }
         }
 
         /// <inheritdoc/>
         bool IPseudoClasses.Remove(string name)
         {
-            return base.Remove(name);
+            if (base.Remove(name))
+            {
+                NotifyChanged();
+                return true;
+            }
+
+            return false;
+        }
+
+        internal void AddListener(IClassesChangedListener listener)
+        {
+            (_listeners ??= new()).Add(listener);
+        }
+
+        internal void RemoveListener(IClassesChangedListener listener)
+        {
+            _listeners?.Remove(listener);
+        }
+
+        private void NotifyChanged()
+        {
+            if (_listeners is null)
+                return;
+            foreach (var listener in _listeners)
+                listener.Changed();
         }
 
         private void ThrowIfPseudoclass(string name, string operation)

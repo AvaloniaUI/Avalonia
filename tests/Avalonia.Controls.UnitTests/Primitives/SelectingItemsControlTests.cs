@@ -14,6 +14,7 @@ using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Data;
 using Avalonia.Platform;
@@ -1115,42 +1116,48 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_SelectedItem_With_Pointer_Should_Set_TabOnceActiveElement()
         {
-            var target = new ListBox
+            using (UnitTestApplication.Start())
             {
-                Template = Template(),
-                Items = new[] { "Foo", "Bar", "Baz " },
-            };
+                var target = new ListBox
+                {
+                    Template = Template(),
+                    Items = new[] { "Foo", "Bar", "Baz " },
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                Prepare(target);
+                _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
 
-            Prepare(target);
-            _helper.Down((Interactive)target.Presenter.Panel.Children[1]);
+                var panel = target.Presenter.Panel;
 
-            var panel = target.Presenter.Panel;
-
-            Assert.Equal(
-                KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel),
-                panel.Children[1]);
+                Assert.Equal(
+                    KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel),
+                    panel.Children[1]);
+            }
         }
 
         [Fact]
         public void Removing_SelectedItem_Should_Clear_TabOnceActiveElement()
         {
-            var items = new ObservableCollection<string>(new[] { "Foo", "Bar", "Baz " });
-
-            var target = new ListBox
+            using (UnitTestApplication.Start())
             {
-                Template = Template(),
-                Items = items,
-            };
+                var items = new ObservableCollection<string>(new[] { "Foo", "Bar", "Baz " });
 
-            Prepare(target);
+                var target = new ListBox
+                {
+                    Template = Template(),
+                    Items = items,
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                Prepare(target);
 
-            _helper.Down(target.Presenter.Panel.Children[1]);
+                _helper.Down(target.Presenter.Panel.Children[1]);
 
-            items.RemoveAt(1);
+                items.RemoveAt(1);
 
-            var panel = target.Presenter.Panel;
+                var panel = target.Presenter.Panel;
 
-            Assert.Null(KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel));
+                Assert.Null(KeyboardNavigation.GetTabOnceActiveElement((InputElement)panel));
+            }
         }
 
         [Fact]
@@ -1230,31 +1237,37 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Should_Select_Correct_Item_When_Duplicate_Items_Are_Present()
         {
-            var target = new ListBox
+            using (UnitTestApplication.Start())
             {
-                Template = Template(),
-                Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
-            };
+                var target = new ListBox
+                {
+                    Template = Template(),
+                    Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                Prepare(target);
+                _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
-            Prepare(target);
-            _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
-
-            Assert.Equal(3, target.SelectedIndex);
+                Assert.Equal(3, target.SelectedIndex);
+            }
         }
 
         [Fact]
         public void Should_Apply_Selected_Pseudoclass_To_Correct_Item_When_Duplicate_Items_Are_Present()
         {
-            var target = new ListBox
+            using (UnitTestApplication.Start())
             {
-                Template = Template(),
-                Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
-            };
+                var target = new ListBox
+                {
+                    Template = Template(),
+                    Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                Prepare(target);
+                _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
 
-            Prepare(target);
-            _helper.Down((Interactive)target.Presenter.Panel.Children[3]);
-
-            Assert.Equal(new[] { ":pressed", ":selected" }, target.Presenter.Panel.Children[3].Classes);
+                Assert.Equal(new[] { ":pressed", ":selected" }, target.Presenter.Panel.Children[3].Classes);
+            }
         }
 
         [Fact]
@@ -1595,8 +1608,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { "Bar" }, selectedItems);
         }
 
-        [Fact]
-        public void MoveSelection_Wrap_Does_Not_Hang_With_No_Focusable_Controls()
+        [Fact(Timeout = 2000)]
+        public async Task MoveSelection_Wrap_Does_Not_Hang_With_No_Focusable_Controls()
         {
             // Issue #3094.
             var target = new TestSelector
@@ -1612,11 +1625,34 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
-            target.MoveSelection(NavigationDirection.Next, true);
+
+            // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
+            // https://github.com/xunit/xunit/issues/2222
+            await Task.Run(() => target.MoveSelection(NavigationDirection.Next, true));
         }
 
-        [Fact(Timeout = 2000)]
-        public async Task MoveSelection_Does_Not_Hang_With_No_Focusable_Controls_And_Moving_Selection_To_The_First_Item()
+        [Fact]
+        public void MoveSelection_Skips_Non_Focusable_Controls_When_Moving_To_Last_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem(),
+                    new ListBoxItem { Focusable = false },
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.Last, true);
+
+            Assert.Equal(0, target.SelectedIndex);
+        }
+
+        [Fact]
+        public void MoveSelection_Skips_Non_Focusable_Controls_When_Moving_To_First_Item()
         {
             var target = new TestSelector
             {
@@ -1630,22 +1666,43 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
+            target.MoveSelection(NavigationDirection.Last, true);
 
-            // Timeout in xUnit doesen't work with synchronous methods so we need to apply hack below.
+            Assert.Equal(1, target.SelectedIndex);
+        }
+
+        [Fact(Timeout = 2000)]
+        public async Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_First_Item()
+        {
+            var target = new TestSelector
+            {
+                Template = Template(),
+                Items = new[]
+                {
+                    new ListBoxItem { Focusable = false },
+                    new ListBoxItem { Focusable = false },
+                }
+            };
+
+            target.Measure(new Size(100, 100));
+            target.Arrange(new Rect(0, 0, 100, 100));
+
+            // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
             // https://github.com/xunit/xunit/issues/2222
             await Task.Run(() => target.MoveSelection(NavigationDirection.First, true));
+
             Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact(Timeout = 2000)]
-        public async Task MoveSelection_Does_Not_Hang_With_No_Focusable_Controls_And_Moving_Selection_To_The_Last_Item()
+        public async Task MoveSelection_Does_Not_Hang_When_All_Items_Are_Non_Focusable_And_We_Move_To_Last_Item()
         {
             var target = new TestSelector
             {
                 Template = Template(),
                 Items = new[]
                 {
-                    new ListBoxItem(),
+                    new ListBoxItem { Focusable = false },
                     new ListBoxItem { Focusable = false },
                 }
             };
@@ -1653,9 +1710,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.Measure(new Size(100, 100));
             target.Arrange(new Rect(0, 0, 100, 100));
 
-            // Timeout in xUnit doesen't work with synchronous methods so we need to apply hack below.
+            // Timeout in xUnit doesn't work with synchronous methods so we need to apply hack below.
             // https://github.com/xunit/xunit/issues/2222
             await Task.Run(() => target.MoveSelection(NavigationDirection.Last, true));
+
             Assert.Equal(-1, target.SelectedIndex);
         }
 

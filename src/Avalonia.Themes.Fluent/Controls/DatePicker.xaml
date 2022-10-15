@@ -1,129 +1,77 @@
 <!--
 // (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 -->
 
-<Styles xmlns="https://github.com/avaloniaui"
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=netstandard"
         x:CompileBindings="True">
   <Design.PreviewWith>
-    <Border Padding="20">
-      <DatePicker CornerRadius="10" />
+    <Border Padding="20" Height="500">
+      <StackPanel Spacing="20" VerticalAlignment="Center">
+        <DatePicker />
+        <DatePicker CornerRadius="10" />
+        <DatePicker IsEnabled="False" />
+        <DatePicker>
+          <DataValidationErrors.Error>
+            <sys:Exception>
+              <x:Arguments>
+                <x:String>Error</x:String>
+              </x:Arguments>
+            </sys:Exception>
+          </DataValidationErrors.Error>
+        </DatePicker>
+      </StackPanel>
     </Border>
   </Design.PreviewWith>
-  
-  <Styles.Resources>
-    <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,4</Thickness>
-    <x:Double x:Key="DatePickerFlyoutPresenterHighlightHeight">40</x:Double>
-    <x:Double x:Key="DatePickerFlyoutPresenterItemHeight">40</x:Double>
-    <x:Double x:Key="DatePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
-    <x:Double x:Key="DatePickerThemeMinWidth">296</x:Double>
-    <x:Double x:Key="DatePickerThemeMaxWidth">456</x:Double>
-    <Thickness x:Key="DatePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
-    <Thickness x:Key="DatePickerFlyoutPresenterMonthPadding">9,3,0,6</Thickness>
-    <Thickness x:Key="DatePickerHostPadding">0,3,0,6</Thickness>
-    <Thickness x:Key="DatePickerHostMonthPadding">9,3,0,6</Thickness>
-    <x:Double x:Key="DatePickerSpacerThemeWidth">1</x:Double>
-  </Styles.Resources>
 
-  <!-- Styles for the items displayed in the selectors -->
-  <Style Selector="ListBoxItem.DateTimePickerItem">
-    <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterItemPadding}"/>
-    <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="HorizontalContentAlignment" Value="Center" />
-  </Style>
-  <Style Selector="ListBoxItem.DateTimePickerItem:selected">
-    <Setter Property="IsHitTestVisible" Value="False"/>
-  </Style>
-  <Style Selector="ListBoxItem.DateTimePickerItem:selected /template/ Rectangle#PressedBackground">
-    <Setter Property="Fill" Value="Transparent"/>
-  </Style>
-  <Style Selector="ListBoxItem.DateTimePickerItem:selected /template/ ContentPresenter">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
-  </Style>
-  <Style Selector="ListBoxItem.DateTimePickerItem.MonthItem">
-    <Setter Property="Padding" Value="{DynamicResource DatePickerFlyoutPresenterMonthPadding}"/>
-    <Setter Property="VerticalContentAlignment" Value="Center" />
-    <Setter Property="HorizontalContentAlignment" Value="Left" />
-  </Style>
+  <x:Double x:Key="DatePickerFlyoutPresenterHighlightHeight">40</x:Double>
+  <x:Double x:Key="DatePickerFlyoutPresenterItemHeight">40</x:Double>
+  <x:Double x:Key="DatePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
+  <x:Double x:Key="DatePickerThemeMinWidth">296</x:Double>
+  <x:Double x:Key="DatePickerThemeMaxWidth">456</x:Double>
+  <Thickness x:Key="DatePickerFlyoutPresenterItemPadding">0,3,0,6</Thickness>
+  <Thickness x:Key="DatePickerFlyoutPresenterMonthPadding">9,3,0,6</Thickness>
+  <Thickness x:Key="DatePickerHostPadding">0,3,0,6</Thickness>
+  <Thickness x:Key="DatePickerHostMonthPadding">9,3,0,6</Thickness>
+  <x:Double x:Key="DatePickerSpacerThemeWidth">1</x:Double>
 
-
-  <!-- This is used for both the accept/dismiss & repeatbuttons in the presenter-->
-  <Style Selector=":is(Button).DateTimeFlyoutButtonStyle">
-    <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackground}" />
-    <Setter Property="HorizontalContentAlignment" Value="Center"/>
-    <Setter Property="VerticalContentAlignment" Value="Center"/>
-    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+  <ControlTheme x:Key="FluentDatePickerFlyoutButton" TargetType="Button">
+    <Setter Property="RenderTransform" Value="none" />
     <Setter Property="Template">
       <ControlTemplate>
-        <!-- 
-                The background is doubled here for the loopingselector up/down repeat buttons 
-                that appear opaque. Not sure how MS does it though I suspect this is it
-                but source isn't MIT yet, so this is my solution -->
-        <Border Background="{TemplateBinding Background}">
-          <ContentPresenter x:Name="ContentPresenter"
-                  Background="{TemplateBinding Background}"
-                  BorderBrush="{DynamicResource DateTimePickerFlyoutButtonBorderBrush}"
-                  BorderThickness="{DynamicResource DateTimeFlyoutButtonBorderThickness}"
-                  Content="{TemplateBinding Content}"
-                  Foreground="{DynamicResource SystemControlHighlightAltBaseHighBrush}"
-                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                  Padding="{TemplateBinding Padding}"
-                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                  CornerRadius="{TemplateBinding CornerRadius}"/>
-        </Border>
+        <ContentPresenter Name="PART_ContentPresenter"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          Background="{TemplateBinding Background}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          Content="{TemplateBinding Content}"
+                          Foreground="{TemplateBinding Foreground}"
+                          HorizontalContentAlignment="Stretch"
+                          VerticalContentAlignment="Stretch"
+                          CornerRadius="{TemplateBinding CornerRadius}"/>
       </ControlTemplate>
     </Setter>
-  </Style>
+    
+    <Style Selector="^:pressed">
+      <Setter Property="RenderTransform" Value="scale(0.98)" />
+    </Style>
+    
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundPressed}"/>
+      <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundPressed}"/>
+    </Style>
 
-  <Style Selector=":is(Button).DateTimeFlyoutButtonStyle:pointerover /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPointerOver}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPointerOver}"/>
-    <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPointerOver}"/>
-  </Style>
-
-  <Style Selector=":is(Button).DateTimeFlyoutButtonStyle:pressed /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource DateTimePickerFlyoutButtonBackgroundPressed}"/>
-    <Setter Property="BorderBrush" Value="{DynamicResource DateTimePickerFlyoutButtonBorderBrushPressed}"/>
-    <Setter Property="Foreground" Value="{DynamicResource DateTimePickerFlyoutButtonForegroundPressed}"/>
-  </Style>
-
-
-  <Style Selector="RepeatButton.UpButton">
-    <Setter Property="VerticalAlignment" Value="Top"/>
-    <Setter Property="Height" Value="22" />
-    <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="Focusable" Value="False" />
-    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
-    <Setter Property="Content">
-      <Template>
-        <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,9 L 9,0 L 18,9"/>
-        </Viewbox>
-      </Template>
-    </Setter>
-  </Style>
-  <Style Selector="RepeatButton.DownButton">
-    <Setter Property="VerticalAlignment" Value="Bottom"/>
-    <Setter Property="Height" Value="22" />
-    <Setter Property="HorizontalAlignment" Value="Stretch" />
-    <Setter Property="Focusable" Value="False" />
-    <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
-    <Setter Property="Content">
-      <Template>
-        <Viewbox Height="10" Width="10" HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Path Stroke="{Binding $parent[RepeatButton].Foreground}" StrokeThickness="1" Data="M 0,0 L 9,9 L 18,0"/>
-        </Viewbox>
-      </Template>
-    </Setter>
-  </Style>
-
-  <Style Selector="DatePicker">    
+    <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrushDisabled}"/>
+      <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundDisabled}"/>
+      <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundDisabled}"/>
+    </Style>
+  </ControlTheme>
+  
+  <ControlTheme x:Key="{x:Type DatePicker}" TargetType="DatePicker">
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForeground}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackground}"/>
@@ -135,16 +83,9 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}" RowDefinitions="Auto,*">
-            <ContentPresenter Name="HeaderContentPresenter" Grid.Row="0"
-                              Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding HeaderTemplate}"
-                              Margin="{DynamicResource DatePickerTopHeaderMargin}"
-                              MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Top"/>
-
-            <Button Name="FlyoutButton" Grid.Row="1"
+          <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}">
+            <Button Name="PART_FlyoutButton"
+                    Theme="{StaticResource FluentDatePickerFlyoutButton}"
                     Foreground="{TemplateBinding Foreground}"
                     Background="{TemplateBinding Background}"
                     BorderBrush="{TemplateBinding BorderBrush}"
@@ -155,44 +96,29 @@
                     MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
-                    HorizontalContentAlignment="Stretch"
-                    VerticalContentAlignment="Stretch"
                     TemplatedControl.IsTemplateFocusTarget="True">
-              <Button.Template>
-                <ControlTemplate>
-                  <ContentPresenter Name="ContentPresenter"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    Background="{TemplateBinding Background}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Content="{TemplateBinding Content}"
-                                    Foreground="{TemplateBinding Foreground}"
-                                    HorizontalContentAlignment="Stretch"
-                                    VerticalContentAlignment="Stretch"
-                                    CornerRadius="{TemplateBinding CornerRadius}"/>
-                </ControlTemplate>
-              </Button.Template>
-              <Grid Name="ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*">
-                <TextBlock Name="DayText" Text="day" HorizontalAlignment="Center"
+              <Grid Name="PART_ButtonContentGrid" ColumnDefinitions="78*,Auto,132*,Auto,78*">
+                <TextBlock Name="PART_DayTextBlock" Text="day" HorizontalAlignment="Center"
                            Padding="{DynamicResource DatePickerHostPadding}"
                            FontFamily="{TemplateBinding FontFamily}"
                            FontWeight="{TemplateBinding FontWeight}"
                            FontSize="{TemplateBinding FontSize}"/>
-                <TextBlock Name="MonthText" Text="month" TextAlignment="Left"
+                <TextBlock Name="PART_MonthTextBlock" Text="month" TextAlignment="Left"
                            Padding="{DynamicResource DatePickerHostMonthPadding}"
                            FontFamily="{TemplateBinding FontFamily}"
                            FontWeight="{TemplateBinding FontWeight}"
                            FontSize="{TemplateBinding FontSize}"/>
-                <TextBlock Name="YearText" Text="year" HorizontalAlignment="Center"
+                <TextBlock Name="PART_YearTextBlock" Text="year" HorizontalAlignment="Center"
                            Padding="{DynamicResource DatePickerHostPadding}"
                            FontFamily="{TemplateBinding FontFamily}"
                            FontWeight="{TemplateBinding FontWeight}"
                            FontSize="{TemplateBinding FontSize}"/>
-                <Rectangle x:Name="FirstSpacer"
+                <Rectangle x:Name="PART_FirstSpacer"
                       Fill="{DynamicResource DatePickerSpacerFill}"
                       HorizontalAlignment="Center"
                       Width="1"
                       Grid.Column="1" />
-                <Rectangle x:Name="SecondSpacer"
+                <Rectangle x:Name="PART_SecondSpacer"
                       Fill="{DynamicResource DatePickerSpacerFill}"
                       HorizontalAlignment="Center"
                       Width="1"
@@ -200,57 +126,36 @@
               </Grid>
             </Button>
 
-            <Popup Name="Popup" WindowManagerAddShadowHint="False"
+            <Popup Name="PART_Popup" WindowManagerAddShadowHint="False"
                    IsLightDismissEnabled="True" PlacementTarget="{TemplateBinding}"
                    PlacementMode="Bottom">
-              <DatePickerPresenter Name="PickerPresenter" />
+              <DatePickerPresenter Name="PART_PickerPresenter" />
             </Popup>
 
           </Grid>
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
-  </Style>
-  <Style Selector="DatePicker /template/ ContentPresenter#HeaderContentPresenter">
-    <Setter Property="Foreground" Value="{DynamicResource DatePickerHeaderForeground}"/>
-  </Style>
-  <Style Selector="DatePicker:disabled /template/ Rectangle">
-    <Setter Property="Fill" Value="{DynamicResource DatePickerSpacerFillDisabled}"/>
-  </Style>
 
-  <Style Selector="DatePicker /template/ Button#FlyoutButton:pointerover /template/ ContentPresenter">
-    <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrushPointerOver}"/>
-    <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundPointerOver}"/>
-    <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundPointerOver}"/>
-  </Style>
+    <Style Selector="^:disabled /template/ Rectangle">
+      <Setter Property="Fill" Value="{DynamicResource DatePickerSpacerFillDisabled}"/>
+    </Style>
 
-  <Style Selector="DatePicker /template/ Button#FlyoutButton:pressed /template/ ContentPresenter">
-    <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrushPressed}"/>
-    <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundPressed}"/>
-    <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundPressed}"/>
-  </Style>
+    <!-- Changes foreground for watermark text when SelectedDate is null-->
+    <Style Selector="^:hasnodate /template/ Button#PART_FlyoutButton TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
+    </Style>
 
-  <Style Selector="DatePicker /template/ Button#FlyoutButton:disabled /template/ ContentPresenter">
-    <Setter Property="BorderBrush" Value="{DynamicResource DatePickerButtonBorderBrushDisabled}"/>
-    <Setter Property="Background" Value="{DynamicResource DatePickerButtonBackgroundDisabled}"/>
-    <Setter Property="Foreground" Value="{DynamicResource DatePickerButtonForegroundDisabled}"/>
-  </Style>
-
-  <!-- Changes foreground for watermark text when SelectedDate is null-->
-  <Style Selector="DatePicker:hasnodate /template/ Button#FlyoutButton TextBlock">
-    <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
-  </Style>
-  
-  <Style Selector="DatePicker:error /template/ Button#FlyoutButton /template/ ContentPresenter">
-    <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
-  </Style>
-  
+    <Style Selector="^:error /template/ Button#PART_FlyoutButton">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
+    </Style>
+  </ControlTheme>
 
   <!--WinUI: DatePickerFlyoutPresenter-->
-  <Style Selector="DatePickerPresenter">
+  <ControlTheme x:Key="{x:Type DatePickerPresenter}" TargetType="DatePickerPresenter">
     <Setter Property="Width" Value="296" />
     <Setter Property="MinWidth" Value="296" />
-    <Setter Property="MaxHeight" Value="398" />    
+    <Setter Property="MaxHeight" Value="398" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
     <Setter Property="Background" Value="{DynamicResource DatePickerFlyoutPresenterBackground}" />
@@ -265,90 +170,103 @@
                 Padding="{DynamicResource DateTimeFlyoutBorderPadding}"
                 MaxHeight="398" CornerRadius="{TemplateBinding CornerRadius}">
           <Grid Name="ContentRoot" RowDefinitions="*,Auto">
-            <Grid Name="PickerContainer">
+            <Grid Name="PART_PickerContainer">
+              <Grid.Styles>
+                <Style Selector="DateTimePickerPanel > ListBoxItem">
+                  <Setter Property="Theme" Value="{StaticResource FluentDateTimePickerItem}" />
+                </Style>
+              </Grid.Styles>
               <!--Column Definitions set in code, ignore here-->
-              <Panel Name="MonthHost">
+              <Panel Name="PART_MonthHost">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Hidden">
-                  <DateTimePickerPanel Name="MonthSelector"
-                                      PanelType="Month"
-                                      ItemHeight="{DynamicResource DatePickerFlyoutPresenterItemHeight}"
-                                      ShouldLoop="True" />
+                  <DateTimePickerPanel Name="PART_MonthSelector"
+                                       PanelType="Month"
+                                       ItemHeight="{DynamicResource DatePickerFlyoutPresenterItemHeight}"
+                                       ShouldLoop="True" />
                 </ScrollViewer>
-                <RepeatButton Name="MonthUpButton"
-                              Classes="DateTimeFlyoutButtonStyle UpButton"/>
-                <RepeatButton Name="MonthDownButton"
-                              Classes="DateTimeFlyoutButtonStyle DownButton"/>
+                <RepeatButton Name="PART_MonthUpButton" Theme="{StaticResource FluentDateTimePickerUpButton}"/>
+                <RepeatButton Name="PART_MonthDownButton" Theme="{StaticResource FluentDateTimePickerDownButton}"/>
               </Panel>
-              <Panel Name="DayHost">
+              <Panel Name="PART_DayHost">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Hidden">
-                  <DateTimePickerPanel Name="DaySelector"
-                                      PanelType="Day"
-                                      ItemHeight="{DynamicResource DatePickerFlyoutPresenterItemHeight}"
-                                      ShouldLoop="True" />
+                  <DateTimePickerPanel Name="PART_DaySelector"
+                                       PanelType="Day"
+                                       ItemHeight="{DynamicResource DatePickerFlyoutPresenterItemHeight}"
+                                       ShouldLoop="True" />
                 </ScrollViewer>
-                <RepeatButton Name="DayUpButton"
-                              Classes="DateTimeFlyoutButtonStyle UpButton"/>
-                <RepeatButton Name="DayDownButton"
-                              Classes="DateTimeFlyoutButtonStyle DownButton"/>
+                <RepeatButton Name="PART_DayUpButton" Theme="{StaticResource FluentDateTimePickerUpButton}"/>
+                <RepeatButton Name="PART_DayDownButton" Theme="{StaticResource FluentDateTimePickerDownButton}"/>
               </Panel>
-              <Panel Name="YearHost">
+              <Panel Name="PART_YearHost">
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Hidden">
-                  <DateTimePickerPanel Name="YearSelector"
-                                      PanelType="Year"
-                                      ItemHeight="{DynamicResource DatePickerFlyoutPresenterItemHeight}"
-                                      ShouldLoop="False" />
+                  <DateTimePickerPanel Name="PART_YearSelector"
+                                       PanelType="Year"
+                                       ItemHeight="{DynamicResource DatePickerFlyoutPresenterItemHeight}"
+                                       ShouldLoop="False" />
                 </ScrollViewer>
-                <RepeatButton Name="YearUpButton"
-                              Classes="DateTimeFlyoutButtonStyle UpButton"/>
-                <RepeatButton Name="YearDownButton"
-                              Classes="DateTimeFlyoutButtonStyle DownButton"/>
+                <RepeatButton Name="PART_YearUpButton" Theme="{StaticResource FluentDateTimePickerUpButton}"/>
+                <RepeatButton Name="PART_YearDownButton" Theme="{StaticResource FluentDateTimePickerDownButton}"/>
               </Panel>
               <Rectangle Name="HighlightRect" IsHitTestVisible="False" ZIndex="-1"
                          Fill="{DynamicResource DatePickerFlyoutPresenterHighlightFill}"
                          Grid.Column="0" Grid.ColumnSpan="5" VerticalAlignment="Center"
                          Height="{DynamicResource DatePickerFlyoutPresenterHighlightHeight}" />
-              <Rectangle Name="FirstSpacer"
+              <Rectangle Name="PART_FirstSpacer"
                          Fill="{DynamicResource DatePickerFlyoutPresenterSpacerFill}"
                          HorizontalAlignment="Center"
                          Width="{DynamicResource DatePickerSpacerThemeWidth}"
                          Grid.Column="1" />
-              <Rectangle Name="SecondSpacer"
+              <Rectangle Name="PART_SecondSpacer"
                          Fill="{DynamicResource DatePickerFlyoutPresenterSpacerFill}"
                          HorizontalAlignment="Center"
                          Width="{DynamicResource DatePickerSpacerThemeWidth}"
                          Grid.Column="3" />
             </Grid>
-            <Grid Grid.Row="1" Height="{DynamicResource DatePickerFlyoutPresenterAcceptDismissHostGridHeight}"
-                  Name="AcceptDismissGrid" ColumnDefinitions="*,*">
-              <Rectangle Height="{DynamicResource DatePickerSpacerThemeWidth}" VerticalAlignment="Top"
+
+            <Grid Name="AcceptDismissGrid"
+                  Grid.Row="1"
+                  ColumnDefinitions="*,*">
+              <Rectangle Height="{DynamicResource DatePickerSpacerThemeWidth}" 
+                         VerticalAlignment="Top"
                          Fill="{DynamicResource DatePickerFlyoutPresenterSpacerFill}"
                          Grid.ColumnSpan="2"/>
-              <Button Name="AcceptButton" Grid.Column="0" Classes="DateTimeFlyoutButtonStyle"
-                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Path Stroke="{Binding $parent[Button].Foreground}" StrokeLineCap="Round"
-                      StrokeThickness="0.75" Data="M0.5,8.5 5,13.5 15.5,3" />
+              <Button Name="PART_AcceptButton"
+                      Grid.Column="0"
+                      Theme="{StaticResource FluentDateTimePickerButton}"
+                      Height="{DynamicResource DatePickerFlyoutPresenterAcceptDismissHostGridHeight}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch">
+                <Path Stroke="{Binding $parent[Button].Foreground}"
+                      StrokeLineCap="Round"
+                      StrokeThickness="0.75"
+                      Data="M0.5,8.5 5,13.5 15.5,3" />
               </Button>
-              <Button Name="DismissButton" Grid.Column="1" Classes="DateTimeFlyoutButtonStyle"
-                         FontSize="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Path Stroke="{Binding $parent[Button].Foreground}" StrokeLineCap="Round"
-                      StrokeThickness="0.75" Data="M2,2 14,14 M2,14 14 2" />
+              <Button Name="PART_DismissButton"
+                      Grid.Column="1"
+                      Theme="{StaticResource FluentDateTimePickerButton}"
+                      Height="{DynamicResource DatePickerFlyoutPresenterAcceptDismissHostGridHeight}"
+                      HorizontalAlignment="Stretch" 
+                      VerticalAlignment="Stretch">
+                <Path Stroke="{Binding $parent[Button].Foreground}" 
+                      StrokeLineCap="Round"
+                      StrokeThickness="0.75" 
+                      Data="M2,2 14,14 M2,14 14 2" />
               </Button>
             </Grid>
           </Grid>
         </Border>
       </ControlTemplate>
     </Setter>
-  </Style>
 
-  <Style Selector="DatePickerPresenter /template/ Panel RepeatButton">
-    <Setter Property="IsVisible" Value="False" />
-  </Style>
+    <Style Selector="^ /template/ Panel">
+      <Style Selector="^:pointerover RepeatButton">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+    </Style>
+  </ControlTheme>
 
-  <Style Selector="DatePickerPresenter /template/ Panel:pointerover RepeatButton">
-    <Setter Property="IsVisible" Value="True" />
-  </Style>
-  
-</Styles>
+
+</ResourceDictionary>

@@ -15,7 +15,7 @@ namespace Avalonia.Android
         private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
 
-        private IDisposable? _timerSubscription;
+        private IDisposable _timerSubscription;
 
         public AvaloniaView(Context context) : base(context)
         {

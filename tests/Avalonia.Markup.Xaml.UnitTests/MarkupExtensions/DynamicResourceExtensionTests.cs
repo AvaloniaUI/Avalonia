@@ -845,7 +845,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal("bar", border.Tag);
 
             var resourceProvider = (TrackingResourceProvider)window.Resources.MergedDictionaries[0];
-            Assert.Equal(new[] { "bar" }, resourceProvider.RequestedResources);
+            Assert.Contains("bar", resourceProvider.RequestedResources);
+            Assert.DoesNotContain("foo", resourceProvider.RequestedResources);
         }
 
         [Fact]
@@ -883,7 +884,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.Equal("bar", border.Tag);
 
             var resourceProvider = (TrackingResourceProvider)window.Resources.MergedDictionaries[0];
-            Assert.Equal(new[] { "bar" }, resourceProvider.RequestedResources);
+            Assert.Contains("bar", resourceProvider.RequestedResources);
+            Assert.DoesNotContain("foo", resourceProvider.RequestedResources);
         }
 
         private IDisposable StyledWindow(params (string, string)[] assets)

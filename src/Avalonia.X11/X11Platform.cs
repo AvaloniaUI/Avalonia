@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Dialogs;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
@@ -13,9 +14,9 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
-using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -29,6 +30,7 @@ namespace Avalonia.X11
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
+        public Compositor Compositor { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
@@ -79,8 +81,7 @@ namespace Avalonia.X11
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
                 .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
-                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
-                .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog())
+                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
@@ -101,7 +102,13 @@ namespace Avalonia.X11
                     GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
             }
 
-            
+            var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            if (gl != null)
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformGpu>().ToConstant(gl);
+
+            if (options.UseCompositor)
+                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
+
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -210,9 +217,15 @@ namespace Avalonia
 
         /// <summary>
         /// Enables global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
-        /// The default value is false.
+        /// The default value is true.
         /// </summary>
-        public bool UseDBusMenu { get; set; }
+        public bool UseDBusMenu { get; set; } = true;
+
+        /// <summary>
+        /// Enables DBus file picker instead of GTK.
+        /// The default value is true.
+        /// </summary>
+        public bool UseDBusFilePicker { get; set; } = true;
 
         /// <summary>
         /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
@@ -222,6 +235,8 @@ namespace Avalonia
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
+
+        public bool UseCompositor { get; set; } = true;
 
         /// <summary>
         /// Determines whether to use IME.
@@ -262,7 +277,9 @@ namespace Avalonia
             // and sometimes attempts to use GLX might cause a segfault
             "llvmpipe"
         };
-        public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
+
+        
+        public string WmClass { get; set; }
 
         /// <summary>
         /// Enables multitouch support. The default value is true.
@@ -271,6 +288,18 @@ namespace Avalonia
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
+
+        public X11PlatformOptions()
+        {
+            try
+            {
+                WmClass = Assembly.GetEntryAssembly()?.GetName()?.Name;
+            }
+            catch
+            {
+                //
+            }
+        }
     }
     public static class AvaloniaX11PlatformExtensions
     {

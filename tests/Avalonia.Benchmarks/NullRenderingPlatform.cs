@@ -112,9 +112,24 @@ namespace Avalonia.Benchmarks
             return new MockFontManagerImpl();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            return new NullGlyphRun();
+            return new MockStreamGeometryImpl();
+        }
+
+        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            throw new NotImplementedException();
         }
 
         public bool SupportsIndividualRoundRects => true;

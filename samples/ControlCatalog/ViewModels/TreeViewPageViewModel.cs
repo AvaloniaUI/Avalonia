@@ -92,7 +92,7 @@ namespace ControlCatalog.ViewModels
 
         public class Node
         {
-            private ObservableCollection<Node> _children;
+            private ObservableCollection<Node>? _children;
             private int _childIndex = 10;
 
             public Node()
@@ -106,7 +106,7 @@ namespace ControlCatalog.ViewModels
                 Header = parent.Header + ' ' + index;
             }
 
-            public Node Parent { get; }
+            public Node? Parent { get; }
             public string Header { get; }
             public bool AreChildrenInitialized => _children != null;
             public ObservableCollection<Node> Children => _children ??= CreateChildren();

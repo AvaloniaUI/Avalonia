@@ -21,6 +21,7 @@ csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
+# trim_trailing_whitespace = true
 
 # Indentation preferences
 csharp_indent_block_contents = true
@@ -133,8 +134,21 @@ csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 space_within_single_line_array_initializer_braces = true
 
+#Net Analyzer
+dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomment when all violations are fixed.
+
+# CA1802: Use literals where appropriate
+dotnet_diagnostic.CA1802.severity = warning
+# CA1825: Avoid zero-length array allocations
+dotnet_diagnostic.CA1825.severity = warning
+# CA1821: Remove empty finalizers
+dotnet_diagnostic.CA1821.severity = warning
+
 # Wrapping preferences
 csharp_wrap_before_ternary_opsigns = false
+
+# Avalonia DevAnalyzer preferences
+dotnet_diagnostic.AVADEV2001.severity = error
 
 # Xaml files
 [*.{xaml,axaml}]

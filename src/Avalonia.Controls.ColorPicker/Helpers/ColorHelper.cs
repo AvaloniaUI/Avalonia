@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Collections.Generic;
 using Avalonia.Media;
-using System.Text;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -64,6 +64,10 @@ namespace Avalonia.Controls.Primitives
             // It is also needlessly large as there are only ~140 known/named colors.
             // Therefore, rounding of the input color's component values is done to
             // reduce the color space into something more useful.
+            //
+            // The rounding value of 5 is specially chosen.
+            // It is a factor of 255 and therefore evenly divisible which improves
+            // the quality of the calculations.
             double rounding = 5;
             var roundedColor = new Color(
                 0xFF,
@@ -109,7 +113,7 @@ namespace Avalonia.Controls.Primitives
             // Cache results for next time as well
             if (closestKnownColor != KnownColor.None)
             {
-                StringBuilder sb = new StringBuilder(); 
+                var sb = StringBuilderCache.Acquire();
                 string name = closestKnownColor.ToString();
 
                 // Add spaces converting PascalCase to human-readable names
@@ -124,7 +128,7 @@ namespace Avalonia.Controls.Primitives
                     sb.Append(name[i]);
                 }
 
-                string displayName = sb.ToString();
+                string displayName = StringBuilderCache.GetStringAndRelease(sb);
 
                 lock (cacheMutex)
                 {

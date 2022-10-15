@@ -30,7 +30,7 @@ namespace Avalonia.UnitTests
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
 
-                var font = ((HarfBuzzGlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((HarfBuzzGlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 
@@ -80,7 +80,7 @@ namespace Avalonia.UnitTests
             
             var second = glyphInfos[length - 1];
 
-            if (!new Codepoint((int)second.Codepoint).IsBreakChar)
+            if (!new Codepoint(second.Codepoint).IsBreakChar)
             {
                 return;
             }

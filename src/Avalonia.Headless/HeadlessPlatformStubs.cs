@@ -12,6 +12,8 @@ using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Utilities;
 
 namespace Avalonia.Headless
@@ -73,21 +75,13 @@ namespace Avalonia.Headless
         public TimeSpan TouchDoubleClickTime => DoubleClickTime;
     }
 
-    class HeadlessSystemDialogsStub : ISystemDialogImpl
+    class HeadlessGlyphTypefaceImpl : IGlyphTypeface
     {
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent)
+        public FontMetrics Metrics => new FontMetrics
         {
-            return Task.Run(() => (string[])null);
-        }
 
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent)
-        {
-            return Task.Run(() => (string)null);
-        }
-    }
+        };
 
-    class HeadlessGlyphTypefaceImpl : IGlyphTypefaceImpl
-    {
         public short DesignEmHeight => 10;
 
         public int Ascent => 5;
@@ -106,6 +100,8 @@ namespace Avalonia.Headless
 
         public bool IsFixedPitch => true;
 
+        public int GlyphCount => 1337;
+
         public void Dispose()
         {
         }
@@ -113,6 +109,13 @@ namespace Avalonia.Headless
         public ushort GetGlyph(uint codepoint)
         {
             return 1;
+        }
+
+        public bool TryGetGlyph(uint codepoint, out ushort glyph)
+        {
+            glyph = 1;
+
+            return true;
         }
 
         public int GetGlyphAdvance(ushort glyph)
@@ -128,6 +131,12 @@ namespace Avalonia.Headless
         public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
         {
             return codepoints.ToArray().Select(x => (ushort)x).ToArray();
+        }
+
+        public bool TryGetTable(uint tag, out byte[] table)
+        {
+            table = null;
+            return false;
         }
     }
 
@@ -145,7 +154,7 @@ namespace Avalonia.Headless
 
     class HeadlessFontManagerStub : IFontManagerImpl
     {
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             return new HeadlessGlyphTypefaceImpl();
         }
@@ -217,6 +226,27 @@ namespace Avalonia.Headless
         public Screen ScreenFromWindow(IWindowBaseImpl window)
         {
             return ScreenHelper.ScreenFromWindow(window, AllScreens);
+        }
+    }
+
+    internal class NoopStorageProvider : BclStorageProvider
+    {
+        public override bool CanOpen => false;
+        public override Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+        {
+            return Task.FromResult<IReadOnlyList<IStorageFile>>(Array.Empty<IStorageFile>());
+        }
+
+        public override bool CanSave => false;
+        public override Task<IStorageFile> SaveFilePickerAsync(FilePickerSaveOptions options)
+        {
+            return Task.FromResult<IStorageFile>(null);
+        }
+
+        public override bool CanPickFolder => false;
+        public override Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
+        {
+            return Task.FromResult<IReadOnlyList<IStorageFolder>>(Array.Empty<IStorageFolder>());
         }
     }
 }

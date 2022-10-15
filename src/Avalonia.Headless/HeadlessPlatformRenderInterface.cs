@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -109,9 +110,24 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(destinationSize, new Vector(96, 96));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            return new HeadlessGlyphRunStub();
+            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
+        }
+
+        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return new HeadlessGlyphRunBufferStub();
+        }
+
+        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return new HeadlessHorizontalGlyphRunBufferStub();
+        }
+
+        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return new HeadlessPositionedGlyphRunBufferStub();
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -195,6 +211,26 @@ namespace Avalonia.Headless
 
             public IGeometryImpl SourceGeometry { get; }
             public Matrix Transform { get; }
+        }
+
+        class HeadlessGlyphRunBufferStub : IGlyphRunBuffer
+        {
+            public Span<ushort> GlyphIndices => Span<ushort>.Empty;
+
+            public IGlyphRunImpl Build()
+            {
+                return new HeadlessGlyphRunStub();
+            }
+        }
+
+        class HeadlessHorizontalGlyphRunBufferStub : HeadlessGlyphRunBufferStub, IHorizontalGlyphRunBuffer
+        {
+            public Span<float> GlyphPositions => Span<float>.Empty;
+        }
+
+        class HeadlessPositionedGlyphRunBufferStub : HeadlessGlyphRunBufferStub, IPositionedGlyphRunBuffer
+        {
+            public Span<System.Drawing.PointF> GlyphPositions => Span<System.Drawing.PointF>.Empty;
         }
 
         class HeadlessGlyphRunStub : IGlyphRunImpl
@@ -344,6 +380,7 @@ namespace Avalonia.Headless
             }
 
             public Matrix Transform { get; set; }
+
             public void Clear(Color color)
             {
 
@@ -409,9 +446,13 @@ namespace Avalonia.Headless
 
             }
 
+            public object GetFeature(Type t)
+            {
+                return null;
+            }
+
             public void DrawLine(IPen pen, Point p1, Point p2)
             {
-                throw new NotImplementedException();
             }
 
             public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)

@@ -50,7 +50,9 @@ namespace Avalonia.Themes.Fluent
         /// <param name="serviceProvider">The XAML service provider.</param>
         public FluentTheme(IServiceProvider serviceProvider)
         {
-            _baseUri = ((IUriContext)serviceProvider.GetService(typeof(IUriContext))).BaseUri;
+            var ctx  = serviceProvider.GetService(typeof(IUriContext)) as IUriContext
+                 ?? throw new NullReferenceException("Unable retrive UriContext");
+            _baseUri = ctx.BaseUri;
             InitStyles(_baseUri);
         }
 
@@ -81,6 +83,14 @@ namespace Avalonia.Themes.Fluent
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
+            
+            if (_loaded is null)
+            {
+                // If style wasn't yet loaded, no need to change children styles,
+                // it will be applied later in Loaded getter.
+                return;
+            }
+            
             if (change.Property == ModeProperty)
             {
                 if (Mode == FluentThemeMode.Dark)
@@ -146,7 +156,7 @@ namespace Avalonia.Themes.Fluent
 
         IReadOnlyList<IStyle> IStyle.Children => _loaded?.Children ?? Array.Empty<IStyle>();
 
-        public event EventHandler OwnerChanged
+        public event EventHandler? OwnerChanged
         {
             add
             {
@@ -164,7 +174,7 @@ namespace Avalonia.Themes.Fluent
             }
         }
 
-        public SelectorMatchResult TryAttach(IStyleable target, IStyleHost? host) => Loaded.TryAttach(target, host);
+        public SelectorMatchResult TryAttach(IStyleable target, object? host) => Loaded.TryAttach(target, host);
 
         public bool TryGetResource(object key, out object? value)
         {

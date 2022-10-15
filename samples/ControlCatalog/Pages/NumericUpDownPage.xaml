@@ -1,6 +1,7 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sys="clr-namespace:System;assembly=netstandard"
+             xmlns:converter="clr-namespace:ControlCatalog.Converter"
              x:Class="ControlCatalog.Pages.NumericUpDownPage">
   <StackPanel Orientation="Vertical" Spacing="4"
               MaxWidth="800">
@@ -54,18 +55,18 @@
       <Grid Grid.Row="0" Grid.Column="2" Margin="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Minimum:</TextBlock>
         <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding #upDown.Minimum}"
-                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
+                       NumberFormat="{Binding #upDown.NumberFormat}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Maximum:</TextBlock>
         <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding #upDown.Maximum}"
-                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
+                       NumberFormat="{Binding #upDown.NumberFormat}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Increment:</TextBlock>
         <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding #upDown.Increment}" VerticalAlignment="Center"
                        Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Value:</TextBlock>
-        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding #upDown.Value}" VerticalAlignment="Center"
+        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding DecimalValue}" VerticalAlignment="Center"
                        Margin="2" HorizontalAlignment="Center"/>
 
 
@@ -76,26 +77,37 @@
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="upDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of decimal NumericUpDown:</Label>
         <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
-                       CultureInfo="en-US" VerticalAlignment="Center" Value="{Binding DecimalValue}"
+                       VerticalAlignment="Center" Value="{Binding DecimalValue}"
                        Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
       </StackPanel>
 
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="DoubleUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of double NumericUpDown:</Label>
         <NumericUpDown Name="DoubleUpDown" Minimum="0" Maximum="10" Increment="0.5"
-                       CultureInfo="en-US" VerticalAlignment="Center" Value="{Binding DoubleValue}"
+                       VerticalAlignment="Center" Value="{Binding DoubleValue}"
                        Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
       </StackPanel>
       
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="ValidationUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown with Validation Errors:</Label>
         <NumericUpDown x:Name="ValidationUpDown" Minimum="0" Maximum="10" Increment="0.5"
-                       CultureInfo="en-US" VerticalAlignment="Center"
+                       VerticalAlignment="Center"
                        Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}">
           <DataValidationErrors.Error>
             <sys:Exception /> 
           </DataValidationErrors.Error>
         </NumericUpDown>
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical" Margin="10">
+        <Label Target="HexUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown in HEX mode:</Label>
+        <NumericUpDown x:Name="HexUpDown" Value="0"
+                       VerticalAlignment="Center">
+          <NumericUpDown.TextConverter>
+            <converter:HexConverter></converter:HexConverter>
+          </NumericUpDown.TextConverter>
+        </NumericUpDown>
+        
       </StackPanel>
     </WrapPanel>
 

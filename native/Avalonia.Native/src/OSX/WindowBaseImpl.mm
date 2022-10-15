@@ -21,7 +21,7 @@ WindowBaseImpl::~WindowBaseImpl() {
     Window = nullptr;
 }
 
-WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) {
+WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, bool usePanel) {
     _shown = false;
     _inResize = false;
     BaseEvents = events;
@@ -36,8 +36,18 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl) 
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
 
-    Window = nullptr;
     lastMenu = nullptr;
+    
+    CreateNSWindow(usePanel);
+    
+    [Window setContentView:StandardContainer];
+    [Window setStyleMask:NSWindowStyleMaskBorderless];
+    [Window setBackingType:NSBackingStoreBuffered];
+
+    [Window setContentMinSize:lastMinSize];
+    [Window setContentMaxSize:lastMaxSize];
+
+    [Window setOpaque:false];
 }
 
 HRESULT WindowBaseImpl::ObtainNSViewHandle(void **ret) {
@@ -68,7 +78,7 @@ NSWindow *WindowBaseImpl::GetNSWindow() {
     return Window;
 }
 
-NSView *WindowBaseImpl::GetNSView() {
+AvnView *WindowBaseImpl::GetNSView() {
     return View;
 }
 
@@ -88,9 +98,8 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
-        CreateNSWindow(isDialog);
-        InitialiseNSWindow();
-
+        [Window setContentSize:lastSize];
+        
         if(hasPosition)
         {
             SetPosition(lastPositionSet);
@@ -100,6 +109,8 @@ HRESULT WindowBaseImpl::Show(bool activate, bool isDialog) {
         }
 
         UpdateStyle();
+        
+        [Window invalidateShadow];
 
         if (ShouldTakeFocusOnShow() && activate) {
             [Window orderFront:Window];
@@ -143,8 +154,6 @@ HRESULT WindowBaseImpl::Hide() {
     @autoreleasepool {
         if (Window != nullptr) {
             [Window orderOut:Window];
-
-            [GetWindowProtocol() restoreParentWindow];
         }
 
         return S_OK;
@@ -214,7 +223,7 @@ HRESULT WindowBaseImpl::GetFrameSize(AvnSize *ret) {
         if (ret == nullptr)
             return E_POINTER;
 
-        if(Window != nullptr){
+        if(Window != nullptr && _shown){
             auto frame = [Window frame];
             ret->Width = frame.size.width;
             ret->Height = frame.size.height;
@@ -288,15 +297,15 @@ HRESULT WindowBaseImpl::Resize(double x, double y, AvnPlatformResizeReason reaso
         }
 
         @try {
-            lastSize = NSSize {x, y};
+            if(x != lastSize.width || y != lastSize.height) {
+                lastSize = NSSize{x, y};
 
-            if (!_shown) {
-                BaseEvents->Resized(AvnSize{x, y}, reason);
-            }
-
-            if(Window != nullptr) {
-                [Window setContentSize:lastSize];
-                [Window invalidateShadow];
+                if (!_shown) {
+                    BaseEvents->Resized(AvnSize{x, y}, reason);
+                } else if (Window != nullptr) {
+                    [Window setContentSize:lastSize];
+                    [Window invalidateShadow];
+                }
             }
         }
         @finally {
@@ -558,6 +567,8 @@ void WindowBaseImpl::CreateNSWindow(bool isDialog) {
             CleanNSWindow();
 
             Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
+            
+            [Window setHidesOnDeactivate:false];
         }
     } else {
         if (![Window isKindOfClass:[AvnWindow class]]) {
@@ -568,37 +579,6 @@ void WindowBaseImpl::CreateNSWindow(bool isDialog) {
     }
 }
 
-void WindowBaseImpl::OnInitialiseNSWindow()
-{
-    
-}
-
-void WindowBaseImpl::InitialiseNSWindow() {
-    if(Window != nullptr) {
-        [Window setContentView:StandardContainer];
-        [Window setStyleMask:NSWindowStyleMaskBorderless];
-        [Window setBackingType:NSBackingStoreBuffered];
-
-        [Window setContentSize:lastSize];
-        [Window setContentMinSize:lastMinSize];
-        [Window setContentMaxSize:lastMaxSize];
-
-        [Window setOpaque:false];
-        
-        [Window invalidateShadow];
-
-        if (lastMenu != nullptr) {
-            [GetWindowProtocol() applyMenu:lastMenu];
-
-            if ([Window isKeyWindow]) {
-                [GetWindowProtocol() showWindowMenuWithAppMenu];
-            }
-        }
-        
-        OnInitialiseNSWindow();
-    }
-}
-
 id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
     if(Window == nullptr)
     {
@@ -606,6 +586,11 @@ id <AvnWindowProtocol> WindowBaseImpl::GetWindowProtocol() {
     }
 
     return (id <AvnWindowProtocol>) Window;
+}
+
+void WindowBaseImpl::BringToFront()
+{
+    // do nothing.
 }
 
 extern IAvnWindow* CreateAvnWindow(IAvnWindowEvents*events, IAvnGlContext* gl)

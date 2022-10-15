@@ -16,6 +16,11 @@ namespace ControlCatalog.Pages
         public CarouselPage()
         {
             this.InitializeComponent();
+            _carousel = this.Get<Carousel>("carousel");
+            _left = this.Get<Button>("left");
+            _right = this.Get<Button>("right");
+            _transition = this.Get<ComboBox>("transition");
+            _orientation = this.Get<ComboBox>("orientation");
             _left.Click += (s, e) => _carousel.Previous();
             _right.Click += (s, e) => _carousel.Next();
             _transition.SelectionChanged += TransitionChanged;
@@ -25,14 +30,10 @@ namespace ControlCatalog.Pages
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-            _carousel = this.FindControl<Carousel>("carousel");
-            _left = this.FindControl<Button>("left");
-            _right = this.FindControl<Button>("right");
-            _transition = this.FindControl<ComboBox>("transition");
-            _orientation = this.FindControl<ComboBox>("orientation");
+
         }
 
-        private void TransitionChanged(object sender, SelectionChangedEventArgs e)
+        private void TransitionChanged(object? sender, SelectionChangedEventArgs e)
         {
             switch (_transition.SelectedIndex)
             {

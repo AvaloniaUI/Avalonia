@@ -1,37 +1,49 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
-using Avalonia.Metadata;
-
-#nullable enable
+using Avalonia.Controls.Templates;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// An indexed dictionary of resources.
     /// </summary>
-    public class ResourceDictionary : AvaloniaDictionary<object, object?>, IResourceDictionary
+    public class ResourceDictionary : IResourceDictionary
     {
+        private Dictionary<object, object?>? _inner;
         private IResourceHost? _owner;
         private AvaloniaList<IResourceProvider>? _mergedDictionaries;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
         /// </summary>
-        public ResourceDictionary()
-        {
-            CollectionChanged += OnCollectionChanged;
-        }
+        public ResourceDictionary() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
         /// </summary>
-        public ResourceDictionary(IResourceHost owner)
-            : this()
+        public ResourceDictionary(IResourceHost owner) => Owner = owner;
+
+        public int Count => _inner?.Count ?? 0;
+
+        public object? this[object key]
         {
-            Owner = owner;
+            get
+            {
+                TryGetValue(key, out var value);
+                return value;
+            }
+            set
+            {
+                Inner[key] = value;
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            }
         }
+
+        public ICollection<object> Keys => (ICollection<object>?)_inner?.Keys ?? Array.Empty<object>();
+        public ICollection<object?> Values => (ICollection<object?>?)_inner?.Values ?? Array.Empty<object?>();
 
         public IResourceHost? Owner
         {
@@ -80,7 +92,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (Count > 0)
+                if (_inner?.Count > 0)
                 {
                     return true;
                 }
@@ -100,14 +112,50 @@ namespace Avalonia.Controls
             }
         }
 
+        bool ICollection<KeyValuePair<object, object?>>.IsReadOnly => false;
+
+        private Dictionary<object, object?> Inner => _inner ??= new();
+
         public event EventHandler? OwnerChanged;
+
+        public void Add(object key, object? value)
+        {
+            Inner.Add(key, value);
+            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+        }
+
+        public void AddDeferred(object key, Func<IServiceProvider?, object?> factory)
+        {
+            Inner.Add(key, new DeferredItem(factory));
+            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+        }
+
+        public void Clear()
+        {
+            if (_inner?.Count > 0)
+            {
+                _inner.Clear();
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            }
+        }
+
+        public bool ContainsKey(object key) => _inner?.ContainsKey(key) ?? false;
+
+        public bool Remove(object key)
+        {
+            if (_inner?.Remove(key) == true)
+            {
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                return true;
+            }
+
+            return false;
+        }
 
         public bool TryGetResource(object key, out object? value)
         {
             if (TryGetValue(key, out value))
-            {
                 return true;
-            }
 
             if (_mergedDictionaries != null)
             {
@@ -118,6 +166,70 @@ namespace Avalonia.Controls
                         return true;
                     }
                 }
+            }
+
+            value = null;
+            return false;
+        }
+
+        public bool TryGetValue(object key, out object? value)
+        {
+            if (_inner is not null && _inner.TryGetValue(key, out value))
+            {
+                if (value is DeferredItem deffered)
+                {
+                    _inner[key] = value = deffered.Factory(null) switch
+                    {
+                        ITemplateResult t => t.Result,
+                        object v => v,
+                        _ => null,
+                    };
+                }
+                return true;
+            }
+
+            value = null;
+            return false;
+        }
+
+        public IEnumerator<KeyValuePair<object, object?>> GetEnumerator()
+        {
+            return _inner?.GetEnumerator() ?? Enumerable.Empty<KeyValuePair<object, object?>>().GetEnumerator();
+        }
+
+        void ICollection<KeyValuePair<object, object?>>.Add(KeyValuePair<object, object?> item)
+        {
+            Add(item.Key, item.Value);
+        }
+
+        bool ICollection<KeyValuePair<object, object?>>.Contains(KeyValuePair<object, object?> item)
+        {
+            return (_inner as ICollection<KeyValuePair<object, object?>>)?.Contains(item) ?? false;
+        }
+
+        void ICollection<KeyValuePair<object, object?>>.CopyTo(KeyValuePair<object, object?>[] array, int arrayIndex)
+        {
+            (_inner as ICollection<KeyValuePair<object, object?>>)?.CopyTo(array, arrayIndex);
+        }
+
+        bool ICollection<KeyValuePair<object, object?>>.Remove(KeyValuePair<object, object?> item)
+        {
+            if ((_inner as ICollection<KeyValuePair<object, object?>>)?.Remove(item) == true)
+            {
+                Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+                return true;
+            }
+
+            return false;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        internal bool ContainsDeferredKey(object key)
+        {
+            if (_inner is not null && _inner.TryGetValue(key, out var result))
+            {
+                return result is DeferredItem;
             }
 
             return false;
@@ -134,7 +246,7 @@ namespace Avalonia.Controls
             
             Owner = owner;
 
-            var hasResources = Count > 0;
+            var hasResources = _inner?.Count > 0;
             
             if (_mergedDictionaries is object)
             {
@@ -159,7 +271,7 @@ namespace Avalonia.Controls
             {
                 Owner = null;
 
-                var hasResources = Count > 0;
+                var hasResources = _inner?.Count > 0;
 
                 if (_mergedDictionaries is object)
                 {
@@ -177,9 +289,10 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private class DeferredItem
         {
-            Owner?.NotifyHostedResourcesChanged(ResourcesChangedEventArgs.Empty);
+            public DeferredItem(Func<IServiceProvider?, object?> factory) => Factory = factory;
+            public Func<IServiceProvider?, object?> Factory { get; }
         }
     }
 }

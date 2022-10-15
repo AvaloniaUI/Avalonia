@@ -9,7 +9,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -19,7 +18,7 @@ namespace Avalonia.Controls.UnitTests
     public class ListBoxTests
     {
         private MouseTestHelper _mouse = new MouseTestHelper();
-        
+
         [Fact]
         public void Should_Use_ItemTemplate_To_Create_Item_Content()
         {
@@ -91,6 +90,50 @@ namespace Avalonia.Controls.UnitTests
                     .ToList();
 
                 Assert.Equal(items, text);
+            }
+        }
+
+        [Fact]
+        public void Container_Should_Have_Theme_Set_To_ItemContainerTheme()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = new[] { "Foo", "Bar", "Baz " };
+                var theme = new ControlTheme();
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    Items = items,
+                    ItemContainerTheme = theme,
+                };
+
+                Prepare(target);
+
+                var container = (ListBoxItem)target.Presenter.Panel.Children[0];
+
+                Assert.Same(container.Theme, theme);
+            }
+        }
+
+        [Fact]
+        public void Inline_Item_Should_Have_Theme_Set_To_ItemContainerTheme()
+        {
+            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            {
+                var items = new[] { "Foo", "Bar", "Baz " };
+                var theme = new ControlTheme();
+                var target = new ListBox
+                {
+                    Template = ListBoxTemplate(),
+                    Items = new[] { new ListBoxItem() },
+                    ItemContainerTheme = theme,
+                };
+
+                Prepare(target);
+
+                var container = (ListBoxItem)target.Presenter.Panel.Children[0];
+
+                Assert.Same(container.Theme, theme);
             }
         }
 
@@ -390,6 +433,47 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ListBox_Should_Be_Valid_After_Remove_Of_Item_In_NonVisibleArea()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var items = new AvaloniaList<string>(Enumerable.Range(1, 30).Select(v => v.ToString()));
+
+                var wnd = new Window() { Width = 100, Height = 100, IsVisible = true };
+
+                var target = new ListBox()
+                {
+                    AutoScrollToSelectedItem = true,
+                    Height = 100,
+                    Width = 50,
+                    VirtualizationMode = ItemVirtualizationMode.Simple,
+                    ItemTemplate = new FuncDataTemplate<object>((c, _) => new Border() { Height = 10 }),
+                    Items = items,
+                };
+                wnd.Content = target;
+
+                var lm = wnd.LayoutManager;
+
+                lm.ExecuteInitialLayoutPass();
+
+                //select last / scroll to last item
+                target.SelectedItem = items.Last();
+
+                lm.ExecuteLayoutPass();
+
+                //remove the first item (in non realized area of the listbox)
+                items.Remove("1");
+                lm.ExecuteLayoutPass();
+
+                Assert.Equal("30", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 1).DataContext);
+                Assert.Equal("29", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 2).DataContext);
+                Assert.Equal("28", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 3).DataContext);
+                Assert.Equal("27", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 4).DataContext);
+                Assert.Equal("26", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 5).DataContext);
+            }
+        }
+
+        [Fact]
         public void Clicking_Item_Should_Raise_BringIntoView_For_Correct_Control()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -612,7 +696,6 @@ namespace Avalonia.Controls.UnitTests
             public string Value { get; }
         }
 
-
         [Fact]
         public void SelectedItem_Validation()
         {
@@ -626,11 +709,11 @@ namespace Avalonia.Controls.UnitTests
             };
 
             Prepare(target);
-            
+
             var exception = new System.InvalidCastException("failed validation");
             var textObservable = new BehaviorSubject<BindingNotification>(new BindingNotification(exception, BindingErrorType.DataValidationError));
             target.Bind(ComboBox.SelectedItemProperty, textObservable);
-                
+
             Assert.True(DataValidationErrors.GetHasErrors(target));
             Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
         }

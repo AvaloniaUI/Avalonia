@@ -9,13 +9,6 @@ namespace Avalonia.X11
 {
     class X11IconLoader : IPlatformIconLoader
     {
-        private readonly X11Info _x11;
-
-        public X11IconLoader(X11Info x11)
-        {
-            _x11 = x11;
-        }
-        
         IWindowIconImpl LoadIcon(Bitmap bitmap)
         {
             var rv = new X11IconData(bitmap);
@@ -48,12 +41,6 @@ namespace Avalonia.X11
             _width = Math.Min(bitmap.PixelSize.Width, 128);
             _height = Math.Min(bitmap.PixelSize.Height, 128);
             _bdata = new uint[_width * _height];
-            fixed (void* ptr = _bdata)
-            {
-                var iptr = (int*)ptr;
-                iptr[0] = _width;
-                iptr[1] = _height;
-            }
             using(var rt = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>().CreateRenderTarget(new[]{this}))
             using (var ctx = rt.CreateDrawingContext(null))
                 ctx.DrawBitmap(bitmap.PlatformImpl, 1, new Rect(bitmap.Size),
@@ -65,7 +52,7 @@ namespace Avalonia.X11
             {
                 var r = y * _width;
                 for (var x = 0; x < _width; x++)
-                    Data[r + x] = new UIntPtr(_bdata[r + x]);
+                    Data[r + x + 2] = new UIntPtr(_bdata[r + x]);
             }
 
             _bdata = null;
@@ -74,9 +61,7 @@ namespace Avalonia.X11
         public void Save(Stream outputStream)
         {
             using (var wr =
-#pragma warning disable CS0618 // Type or member is obsolete
                 new WriteableBitmap(new PixelSize(_width, _height), new Vector(96, 96), PixelFormat.Bgra8888))
-#pragma warning restore CS0618 // Type or member is obsolete
             {
                 using (var fb = wr.Lock())
                 {
@@ -86,7 +71,7 @@ namespace Avalonia.X11
                         var r = y * _width;
                         var fbr = y * fb.RowBytes / 4;
                         for (var x = 0; x < _width; x++)
-                            fbp[fbr + x] = Data[r + x].ToUInt32();
+                            fbp[fbr + x] = Data[r + x + 2].ToUInt32();
                     }
                 }
                 wr.Save(outputStream);

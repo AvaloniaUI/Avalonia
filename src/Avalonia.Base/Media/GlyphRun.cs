@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -15,7 +16,7 @@ namespace Avalonia.Media
         private static readonly IComparer<int> s_descendingComparer = new ReverseComparer<int>();
 
         private IGlyphRunImpl? _glyphRunImpl;
-        private GlyphTypeface _glyphTypeface;
+        private IGlyphTypeface _glyphTypeface;
         private double _fontRenderingEmSize;
         private int _biDiLevel;
         private Point? _baselineOrigin;
@@ -42,7 +43,7 @@ namespace Avalonia.Media
         /// <param name="glyphClusters">The glyph clusters.</param>
         /// <param name="biDiLevel">The bidi level.</param>
         public GlyphRun(
-            GlyphTypeface glyphTypeface,
+            IGlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             ReadOnlySlice<char> characters,
             IReadOnlyList<ushort> glyphIndices,
@@ -69,9 +70,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Gets the <see cref="Media.GlyphTypeface"/> for the <see cref="GlyphRun"/>.
+        ///     Gets the <see cref="IGlyphTypeface"/> for the <see cref="GlyphRun"/>.
         /// </summary>
-        public GlyphTypeface GlyphTypeface => _glyphTypeface;
+        public IGlyphTypeface GlyphTypeface => _glyphTypeface;
 
         /// <summary>
         ///     Gets or sets the em size used for rendering the <see cref="GlyphRun"/>.
@@ -171,7 +172,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the scale of the current <see cref="Media.GlyphTypeface"/>
         /// </summary>
-        internal double Scale => FontRenderingEmSize / GlyphTypeface.DesignEmHeight;
+        internal double Scale => FontRenderingEmSize / GlyphTypeface.Metrics.DesignEmHeight;
 
         /// <summary>
         /// Returns <c>true</c> if the text direction is left-to-right. Otherwise, returns <c>false</c>.
@@ -192,6 +193,19 @@ namespace Avalonia.Media
 
                 return _glyphRunImpl!;
             }
+        }
+
+        /// <summary>
+        /// Obtains geometry for the glyph run.
+        /// </summary>
+        /// <returns>The geometry returned contains the combined geometry of all glyphs in the glyph run.</returns>
+        public Geometry BuildGeometry()
+        {
+            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+
+            var geometryImpl = platformRenderInterface.BuildGlyphRunGeometry(this);
+
+            return new PlatformGeometry(geometryImpl);
         }
 
         /// <summary>
@@ -252,7 +266,7 @@ namespace Avalonia.Media
                 //RightToLeft
                 var glyphIndex = FindGlyphIndex(characterIndex);
 
-                if (GlyphClusters != null)
+                if (GlyphClusters != null && GlyphClusters.Count > 0)
                 {
                     if (characterIndex > GlyphClusters[0])
                     {
@@ -348,7 +362,9 @@ namespace Avalonia.Media
 
                     characterIndex = cluster;
 
-                    if (currentX - advance < distance)
+                    var offsetX = currentX - advance;
+
+                    if (offsetX < distance)
                     {
                         break;
                     }
@@ -362,7 +378,8 @@ namespace Avalonia.Media
             var characterHit = FindNearestCharacterHit(characterIndex, out var width);
 
             var delta = width / 2;
-            var offset = IsLeftToRight ? distance - currentX : currentX - distance;
+            
+            var offset = IsLeftToRight ? Math.Round(distance - currentX, 3) : Math.Round(currentX - distance, 3);
 
             var isTrailing = offset > delta;
 
@@ -432,7 +449,7 @@ namespace Avalonia.Media
         /// </returns>
         public int FindGlyphIndex(int characterIndex)
         {
-            if (GlyphClusters == null)
+            if (GlyphClusters == null || GlyphClusters.Count == 0)
             {
                 return characterIndex;
             }
@@ -596,22 +613,34 @@ namespace Avalonia.Media
         /// <returns>The baseline origin.</returns>
         private Point CalculateBaselineOrigin()
         {
-            return new Point(0, -GlyphTypeface.Ascent * Scale);
+            return new Point(0, -GlyphTypeface.Metrics.Ascent * Scale);
         }
 
         private GlyphRunMetrics CreateGlyphRunMetrics()
         {
+            var firstCluster = 0;
+            var lastCluster = Characters.Length - 1;
+
+            if (!IsLeftToRight)
+            {
+                var cluster = firstCluster;
+                firstCluster = lastCluster;
+                lastCluster = cluster;
+            }
+
             if (GlyphClusters != null && GlyphClusters.Count > 0)
             {
-                var firstCluster = GlyphClusters[0];
+                firstCluster = GlyphClusters[0];
+                lastCluster = GlyphClusters[GlyphClusters.Count - 1];
 
                 _offsetToFirstCharacter = Math.Max(0, Characters.Start - firstCluster);
             }
 
-            var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
+            var isReversed = firstCluster > lastCluster;
+            var height = GlyphTypeface.Metrics.LineSpacing * Scale;
             var widthIncludingTrailingWhitespace = 0d;
 
-            var trailingWhitespaceLength = GetTrailingWhitespaceLength(out var newLineLength, out var glyphCount);
+            var trailingWhitespaceLength = GetTrailingWhitespaceLength(isReversed, out var newLineLength, out var glyphCount);
 
             for (var index = 0; index < GlyphIndices.Count; index++)
             {
@@ -622,16 +651,16 @@ namespace Avalonia.Media
 
             var width = widthIncludingTrailingWhitespace;
 
-            if (IsLeftToRight)
+            if (isReversed)
             {
-                for (var index = GlyphIndices.Count - glyphCount; index < GlyphIndices.Count; index++)
+                for (var index = 0; index < glyphCount; index++)
                 {
                     width -= GetGlyphAdvance(index, out _);
                 }
             }
             else
             {
-                for (var index = 0; index < glyphCount; index++)
+                for (var index = GlyphIndices.Count - glyphCount; index < GlyphIndices.Count; index++)
                 {
                     width -= GetGlyphAdvance(index, out _);
                 }
@@ -641,16 +670,15 @@ namespace Avalonia.Media
                 height);
         }
 
-        private int GetTrailingWhitespaceLength(out int newLineLength, out int glyphCount)
-        {
-            glyphCount = 0;
-            newLineLength = 0;
-
-            if (Characters.IsEmpty)
+        private int GetTrailingWhitespaceLength(bool isReversed, out int newLineLength, out int glyphCount)
+        {          
+            if (isReversed)
             {
-                return 0;
+                return GetTralingWhitespaceLengthRightToLeft(out newLineLength, out glyphCount);
             }
 
+            glyphCount = 0;
+            newLineLength = 0;
             var trailingWhitespaceLength = 0;
 
             if (GlyphClusters == null)
@@ -719,12 +747,84 @@ namespace Avalonia.Media
             return trailingWhitespaceLength;
         }
 
+        private int GetTralingWhitespaceLengthRightToLeft(out int newLineLength, out int glyphCount)
+        {
+            glyphCount = 0;
+            newLineLength = 0;
+            var trailingWhitespaceLength = 0;
+
+            if (GlyphClusters == null)
+            {
+                for (var i = 0; i < Characters.Length;)
+                {
+                    var codepoint = Codepoint.ReadAt(_characters, i, out var count);
+
+                    if (!codepoint.IsWhiteSpace)
+                    {
+                        break;
+                    }
+
+                    if (codepoint.IsBreakChar)
+                    {
+                        newLineLength++;
+                    }
+
+                    trailingWhitespaceLength++;
+
+                    i += count;
+                    glyphCount++;
+                }
+            }
+            else
+            {
+                for (var i = 0; i < GlyphClusters.Count; i++)
+                {
+                    var currentCluster = GlyphClusters[i];
+                    var characterIndex = Math.Max(0, currentCluster - _characters.BufferOffset);
+                    var codepoint = Codepoint.ReadAt(_characters, characterIndex, out _);
+
+                    if (!codepoint.IsWhiteSpace)
+                    {
+                        break;
+                    }
+
+                    var clusterLength = 1;
+
+                    var j = i;
+
+                    while (j - 1 >= 0)
+                    {
+                        var nextCluster = GlyphClusters[--j];
+
+                        if (currentCluster == nextCluster)
+                        {
+                            clusterLength++;                        
+
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    if (codepoint.IsBreakChar)
+                    {
+                        newLineLength += clusterLength;
+                    }
+
+                    trailingWhitespaceLength += clusterLength;
+
+                    glyphCount += clusterLength;
+                }
+            }
+
+            return trailingWhitespaceLength;
+        }
+
         private void Set<T>(ref T field, T value)
         {
-            if (_glyphRunImpl != null)
-            {
-                throw new InvalidOperationException("GlyphRun can't be changed after it has been initialized.'");
-            }
+            _glyphRunImpl?.Dispose();
+
+            _glyphRunImpl = null;
 
             _glyphRunMetrics = null;
 
@@ -755,9 +855,87 @@ namespace Avalonia.Media
                 throw new InvalidOperationException();
             }
 
-            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+            _glyphRunImpl = CreateGlyphRunImpl();
+        }
 
-            _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this);
+        private IGlyphRunImpl CreateGlyphRunImpl()
+        {
+            IGlyphRunImpl glyphRunImpl;
+
+            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+            var count = GlyphIndices.Count;
+            var scale = (float)(FontRenderingEmSize / GlyphTypeface.Metrics.DesignEmHeight);
+
+            if (GlyphOffsets == null)
+            {
+                if (GlyphTypeface.Metrics.IsFixedPitch)
+                {
+                    var buffer = platformRenderInterface.AllocateGlyphRun(GlyphTypeface, (float)FontRenderingEmSize, count);
+
+                    var glyphs = buffer.GlyphIndices;
+
+                    for (int i = 0; i < glyphs.Length; i++)
+                    {
+                        glyphs[i] = GlyphIndices[i];
+                    }
+
+                    glyphRunImpl = buffer.Build();
+                }
+                else
+                {
+                    var buffer = platformRenderInterface.AllocateHorizontalGlyphRun(GlyphTypeface, (float)FontRenderingEmSize, count);
+                    var glyphs = buffer.GlyphIndices;
+                    var positions = buffer.GlyphPositions;
+                    var width = 0d;
+
+                    for (var i = 0; i < count; i++)
+                    {
+                        positions[i] = (float)width;
+
+                        if (GlyphAdvances == null)
+                        {
+                            width += GlyphTypeface.GetGlyphAdvance(GlyphIndices[i]) * scale;
+                        }
+                        else
+                        {
+                            width += GlyphAdvances[i];
+                        }
+
+                        glyphs[i] = GlyphIndices[i];
+                    }
+
+                    glyphRunImpl = buffer.Build();
+                }
+            }
+            else
+            {
+                var buffer = platformRenderInterface.AllocatePositionedGlyphRun(GlyphTypeface, (float)FontRenderingEmSize, count);
+                var glyphs = buffer.GlyphIndices;
+                var glyphPositions = buffer.GlyphPositions;
+                var currentX = 0.0;
+
+                for (var i = 0; i < count; i++)
+                {
+                    var glyphOffset = GlyphOffsets[i];
+
+                    glyphPositions[i] = new PointF((float)(currentX + glyphOffset.X), (float)glyphOffset.Y);
+
+                    if (GlyphAdvances == null)
+                    {
+                        currentX += GlyphTypeface.GetGlyphAdvance(GlyphIndices[i]) * scale;
+                    }
+                    else
+                    {
+                        currentX += GlyphAdvances[i];
+                    }
+
+                    glyphs[i] = GlyphIndices[i];
+                }
+
+                glyphRunImpl = buffer.Build();
+            }
+
+            return glyphRunImpl;
         }
 
         void IDisposable.Dispose()

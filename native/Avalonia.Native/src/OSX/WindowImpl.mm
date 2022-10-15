@@ -10,6 +10,8 @@
 #include "WindowProtocol.h"
 
 WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBaseImpl(events, gl) {
+    _isEnabled = true;
+    _children = std::list<WindowImpl*>();
     _isClientAreaExtended = false;
     _extendClientHints = AvnDefaultChrome;
     _fullScreenActive = false;
@@ -20,7 +22,12 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     _lastWindowState = Normal;
     _actualWindowState = Normal;
     _lastTitle = @"";
+    _parent = nullptr;
     WindowEvents = events;
+
+    [Window setHasShadow:true];
+    
+    OnInitialiseNSWindow();
 }
 
 void WindowImpl::HideOrShowTrafficLights() {
@@ -28,28 +35,17 @@ void WindowImpl::HideOrShowTrafficLights() {
         return;
     }
 
-    for (id subview in Window.contentView.superview.subviews) {
-        if ([subview isKindOfClass:NSClassFromString(@"NSTitlebarContainerView")]) {
-            NSView *titlebarView = [subview subviews][0];
-            for (id button in titlebarView.subviews) {
-                if ([button isKindOfClass:[NSButton class]]) {
-                    if (_isClientAreaExtended) {
-                        auto wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-
-                        [button setHidden:!wantsChrome];
-                    } else {
-                        [button setHidden:(_decorations != SystemDecorationsFull)];
-                    }
-
-                    [button setWantsLayer:true];
-                }
-            }
-        }
-    }
+    bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
+    
+    [[Window standardWindowButton:NSWindowCloseButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowZoomButton] setHidden:!hasTrafficLights];
 }
 
 void WindowImpl::OnInitialiseNSWindow(){
     [GetWindowProtocol() setCanBecomeKeyWindow:true];
+    
     [Window disableCursorRects];
     [Window setTabbingMode:NSWindowTabbingModeDisallowed];
     [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -81,7 +77,9 @@ HRESULT WindowImpl::SetEnabled(bool enable) {
     START_COM_CALL;
 
     @autoreleasepool {
+        _isEnabled = enable;
         [GetWindowProtocol() setEnabled:enable];
+        UpdateStyle();
         return S_OK;
     }
 }
@@ -90,26 +88,69 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
     START_COM_CALL;
 
     @autoreleasepool {
-        if (parent == nullptr)
-            return E_POINTER;
+        if(_parent != nullptr)
+        {
+            _parent->_children.remove(this);
+        }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
-        if (cparent == nullptr)
-            return E_INVALIDARG;
+        
+        _parent = cparent;
+        
+        if(_parent != nullptr && Window != nullptr){
+            // If one tries to show a child window with a minimized parent window, then the parent window will be
+            // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
+            // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
+            if (cparent->WindowState() == Minimized)
+                cparent->SetWindowState(Normal);
 
-        // If one tries to show a child window with a minimized parent window, then the parent window will be
-        // restored but macOS isn't kind enough to *tell* us that, so the window will be left in a non-interactive
-        // state. Detect this and explicitly restore the parent window ourselves to avoid this situation.
-        if (cparent->WindowState() == Minimized)
-            cparent->SetWindowState(Normal);
-
-        [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-        [cparent->Window addChildWindow:Window ordered:NSWindowAbove];
-
-        UpdateStyle();
+            [Window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+                
+            cparent->_children.push_back(this);
+                
+            UpdateStyle();
+        }
 
         return S_OK;
     }
+}
+
+void WindowImpl::BringToFront()
+{
+    if(Window != nullptr)
+    {
+        if ([Window isVisible] && ![Window isMiniaturized])
+        {
+            if(IsDialog())
+            {
+                Activate();
+            }
+            else
+            {
+                [Window orderFront:nullptr];
+            }
+        }
+        
+        [Window invalidateShadow];
+        
+        for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
+        {
+            (*iterator)->BringToFront();
+        }
+    }
+}
+
+bool WindowImpl::CanBecomeKeyWindow()
+{
+    for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
+    {
+        if((*iterator)->IsDialog())
+        {
+            return false;
+        }
+    }
+    
+    return true;
 }
 
 void WindowImpl::StartStateTransition() {
@@ -450,6 +491,8 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
         }
 
         if (_shown) {
+            _actualWindowState = _lastWindowState;
+
             switch (state) {
                 case Maximized:
                     if (currentState == FullScreen) {
@@ -507,7 +550,6 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
                     break;
             }
 
-            _actualWindowState = _lastWindowState;
             WindowEvents->WindowStateChanged(_actualWindowState);
         }
 
@@ -523,7 +565,12 @@ bool WindowImpl::IsDialog() {
 }
 
 NSWindowStyleMask WindowImpl::GetStyle() {
-    unsigned long s = this->_isDialog ? NSWindowStyleMaskDocModalWindow : NSWindowStyleMaskBorderless;
+    unsigned long s = NSWindowStyleMaskBorderless;
+    
+    if(_actualWindowState == FullScreen)
+    {
+        s |= NSWindowStyleMaskFullScreen;
+    }
 
     switch (_decorations) {
         case SystemDecorationsNone:
@@ -535,15 +582,15 @@ NSWindowStyleMask WindowImpl::GetStyle() {
             break;
 
         case SystemDecorationsFull:
-            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskBorderless;
+            s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable;
 
-            if (_canResize) {
+            if (_canResize && _isEnabled) {
                 s = s | NSWindowStyleMaskResizable;
             }
             break;
     }
 
-    if ([Window parentWindow] == nullptr) {
+    if (!IsDialog()) {
         s |= NSWindowStyleMaskMiniaturizable;
     }
 
