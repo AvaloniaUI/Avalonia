@@ -1,33 +1,33 @@
 ﻿namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
-    /// A metric that holds information about font specific measurements.
+    /// A metric that holds information about text specific measurements.
     /// </summary>
-    public readonly struct FontMetrics
+    public readonly struct TextMetrics
     {
-        public FontMetrics(Typeface typeface, double fontRenderingEmSize)
+        public TextMetrics(Typeface typeface, double fontRenderingEmSize)
         {
-            var glyphTypeface = typeface.GlyphTypeface;
+            var fontMetrics = typeface.GlyphTypeface.Metrics;
 
-            var scale = fontRenderingEmSize / glyphTypeface.DesignEmHeight;
+            var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
 
             FontRenderingEmSize = fontRenderingEmSize;
 
-            Ascent = glyphTypeface.Ascent * scale;
+            Ascent = fontMetrics.Ascent * scale;
 
-            Descent = glyphTypeface.Descent * scale;
+            Descent = fontMetrics.Descent * scale;
 
-            LineGap = glyphTypeface.LineGap * scale;
+            LineGap = fontMetrics.LineGap * scale;
 
             LineHeight = Descent - Ascent + LineGap;
 
-            UnderlineThickness = glyphTypeface.UnderlineThickness * scale;
+            UnderlineThickness = fontMetrics.UnderlineThickness * scale;
 
-            UnderlinePosition = glyphTypeface.UnderlinePosition * scale;
+            UnderlinePosition = fontMetrics.UnderlinePosition * scale;
 
-            StrikethroughThickness = glyphTypeface.StrikethroughThickness * scale;
+            StrikethroughThickness = fontMetrics.StrikethroughThickness * scale;
 
-            StrikethroughPosition = glyphTypeface.StrikethroughPosition * scale;
+            StrikethroughPosition = fontMetrics.StrikethroughPosition * scale;
         }
 
         /// <summary>
