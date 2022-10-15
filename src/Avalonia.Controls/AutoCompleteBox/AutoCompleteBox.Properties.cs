@@ -19,26 +19,18 @@ namespace Avalonia.Controls
             TextBox.WatermarkProperty.AddOwner<AutoCompleteBox>();
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.MinimumPrefixLength" />
-        /// dependency property.
+        /// Identifies the <see cref="MinimumPrefixLength" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.MinimumPrefixLength" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="MinimumPrefixLength" /> property.</value>
         public static readonly StyledProperty<int> MinimumPrefixLengthProperty =
             AvaloniaProperty.Register<AutoCompleteBox, int>(
                 nameof(MinimumPrefixLength), 1,
                 validate: IsValidMinimumPrefixLength);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.MinimumPopulateDelay" />
-        /// dependency property.
+        /// Identifies the <see cref="MinimumPopulateDelay" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.MinimumPopulateDelay" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="MinimumPopulateDelay" /> property.</value>
         public static readonly StyledProperty<TimeSpan> MinimumPopulateDelayProperty =
             AvaloniaProperty.Register<AutoCompleteBox, TimeSpan>(
                 nameof(MinimumPopulateDelay),
@@ -46,13 +38,9 @@ namespace Avalonia.Controls
                 validate: IsValidMinimumPopulateDelay);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.MaxDropDownHeight" />
-        /// dependency property.
+        /// Identifies the <see cref="MaxDropDownHeight" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.MaxDropDownHeight" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="MaxDropDownHeight" /> property.</value>
         public static readonly StyledProperty<double> MaxDropDownHeightProperty =
             AvaloniaProperty.Register<AutoCompleteBox, double>(
                 nameof(MaxDropDownHeight),
@@ -60,35 +48,23 @@ namespace Avalonia.Controls
                 validate: IsValidMaxDropDownHeight);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.IsTextCompletionEnabled" />
-        /// dependency property.
+        /// Identifies the <see cref="IsTextCompletionEnabled" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.IsTextCompletionEnabled" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="IsTextCompletionEnabled" /> property.</value>
         public static readonly StyledProperty<bool> IsTextCompletionEnabledProperty =
             AvaloniaProperty.Register<AutoCompleteBox, bool>(nameof(IsTextCompletionEnabled));
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemTemplate" />
-        /// dependency property.
+        /// Identifies the <see cref="ItemTemplate" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemTemplate" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="ItemTemplate" /> property.</value>
         public static readonly StyledProperty<IDataTemplate> ItemTemplateProperty =
             AvaloniaProperty.Register<AutoCompleteBox, IDataTemplate>(nameof(ItemTemplate));
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.IsDropDownOpen" />
-        /// dependency property.
+        /// Identifies the <see cref="IsDropDownOpen" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.IsDropDownOpen" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="IsDropDownOpen" /> property.</value>
         public static readonly DirectProperty<AutoCompleteBox, bool> IsDropDownOpenProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, bool>(
                 nameof(IsDropDownOpen),
@@ -96,13 +72,9 @@ namespace Avalonia.Controls
                 (o, v) => o.IsDropDownOpen = v);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.SelectedItem" />
-        /// dependency property.
+        /// Identifies the <see cref="SelectedItem" /> property.
         /// </summary>
-        /// <value>The identifier the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.SelectedItem" />
-        /// dependency property.</value>
+        /// <value>The identifier the <see cref="SelectedItem" /> property.</value>
         public static readonly DirectProperty<AutoCompleteBox, object?> SelectedItemProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, object?>(
                 nameof(SelectedItem),
@@ -112,13 +84,9 @@ namespace Avalonia.Controls
                 enableDataValidation: true);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.Text" />
-        /// dependency property.
+        /// Identifies the <see cref="Text" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.Text" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="Text" /> property.</value>
         public static readonly DirectProperty<AutoCompleteBox, string?> TextProperty =
             TextBlock.TextProperty.AddOwnerWithDataValidation<AutoCompleteBox>(
                 o => o.Text,
@@ -127,13 +95,9 @@ namespace Avalonia.Controls
                 enableDataValidation: true);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.SearchText" />
-        /// dependency property.
+        /// Identifies the <see cref="SearchText" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.SearchText" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="SearchText" /> property.</value>
         public static readonly DirectProperty<AutoCompleteBox, string?> SearchTextProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, string?>(
                 nameof(SearchText),
@@ -141,9 +105,7 @@ namespace Avalonia.Controls
                 unsetValue: string.Empty);
 
         /// <summary>
-        /// Gets the identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.FilterMode" />
-        /// dependency property.
+        /// Gets the identifier for the <see cref="FilterMode" /> property.
         /// </summary>
         public static readonly StyledProperty<AutoCompleteFilterMode> FilterModeProperty =
             AvaloniaProperty.Register<AutoCompleteBox, AutoCompleteFilterMode>(
@@ -152,13 +114,9 @@ namespace Avalonia.Controls
                 validate: IsValidFilterMode);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemFilter" />
-        /// dependency property.
+        /// Identifies the <see cref="ItemFilter" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemFilter" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="ItemFilter" /> property.</value>
         public static readonly DirectProperty<AutoCompleteBox, AutoCompleteFilterPredicate<object?>?> ItemFilterProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteFilterPredicate<object?>?>(
                 nameof(ItemFilter),
@@ -166,13 +124,9 @@ namespace Avalonia.Controls
                 (o, v) => o.ItemFilter = v);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.TextFilter" />
-        /// dependency property.
+        /// Identifies the <see cref="TextFilter" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.TextFilter" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="TextFilter" /> property.</value>
         public static readonly DirectProperty<AutoCompleteBox, AutoCompleteFilterPredicate<string?>?> TextFilterProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteFilterPredicate<string?>?>(
                 nameof(TextFilter),
@@ -181,13 +135,9 @@ namespace Avalonia.Controls
                 unsetValue: AutoCompleteSearch.GetFilter(AutoCompleteFilterMode.StartsWith));
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemSelector" />
-        /// dependency property.
+        /// Identifies the <see cref="ItemSelector" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemSelector" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="ItemSelector" /> property.</value>
         public static readonly DirectProperty<AutoCompleteBox, AutoCompleteSelector<object>?> ItemSelectorProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteSelector<object>?>(
                 nameof(ItemSelector),
@@ -195,13 +145,9 @@ namespace Avalonia.Controls
                 (o, v) => o.ItemSelector = v);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.TextSelector" />
-        /// dependency property.
+        /// Identifies the <see cref="TextSelector" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.TextSelector" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="TextSelector" /> property.</value>
         public static readonly DirectProperty<AutoCompleteBox, AutoCompleteSelector<string?>?> TextSelectorProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, AutoCompleteSelector<string?>?>(
                 nameof(TextSelector),
@@ -209,13 +155,9 @@ namespace Avalonia.Controls
                 (o, v) => o.TextSelector = v);
 
         /// <summary>
-        /// Identifies the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
-        /// dependency property.
+        /// Identifies the <see cref="Items" /> property.
         /// </summary>
-        /// <value>The identifier for the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
-        /// dependency property.</value>
+        /// <value>The identifier for the <see cref="Items" /> property.</value>
         public static readonly DirectProperty<AutoCompleteBox, IEnumerable?> ItemsProperty =
             AvaloniaProperty.RegisterDirect<AutoCompleteBox, IEnumerable?>(
                 nameof(Items),
@@ -230,14 +172,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the minimum number of characters required to be entered
-        /// in the text box before the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> displays
-        /// possible matches.
-        /// matches.
+        /// in the text box before the <see cref="AutoCompleteBox" /> displays possible matches.
         /// </summary>
         /// <value>
         /// The minimum number of characters to be entered in the text box
-        /// before the <see cref="T:Avalonia.Controls.AutoCompleteBox" />
+        /// before the <see cref="AutoCompleteBox" />
         /// displays possible matches. The default is 1.
         /// </value>
         /// <remarks>
@@ -291,12 +230,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the minimum delay, after text is typed
         /// in the text box before the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control
+        /// <see cref="AutoCompleteBox" /> control
         /// populates the list of possible matches in the drop-down.
         /// </summary>
         /// <value>The minimum delay, after text is typed in
         /// the text box, but before the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> populates
+        /// <see cref="AutoCompleteBox" /> populates
         /// the list of possible matches in the drop-down. The default is 0.</value>
         public TimeSpan MinimumPopulateDelay
         {
@@ -306,10 +245,10 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the maximum height of the drop-down portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.
+        /// <see cref="AutoCompleteBox" /> control.
         /// </summary>
         /// <value>The maximum height of the drop-down portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.
+        /// <see cref="AutoCompleteBox" /> control.
         /// The default is <see cref="F:System.Double.PositiveInfinity" />.</value>
         /// <exception cref="T:System.ArgumentException">The specified value is less than 0.</exception>
         public double MaxDropDownHeight
@@ -335,7 +274,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the  <see cref="T:Avalonia.Data.Binding" /> that
         /// is used to get the values for display in the text portion of
-        /// the <see cref="T:Avalonia.Controls.AutoCompleteBox" />
+        /// the <see cref="AutoCompleteBox" />
         /// control.
         /// </summary>
         /// <value>The <see cref="T:Avalonia.Data.IBinding" /> object used
@@ -372,10 +311,10 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the text in the text box portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.
+        /// <see cref="AutoCompleteBox" /> control.
         /// </summary>
         /// <value>The text in the text box portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.</value>
+        /// <see cref="AutoCompleteBox" /> control.</value>
         public string? Text
         {
             get => _text;
@@ -384,12 +323,10 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets the text that is used to filter items in the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
-        /// item collection.
+        /// <see cref="Items" /> item collection.
         /// </summary>
         /// <value>The text that is used to filter items in the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
-        /// item collection.</value>
+        /// <see cref="Items" /> item collection.</value>
         /// <remarks>
         /// The SearchText value is typically the same as the
         /// Text property, but is set after the TextChanged event occurs
@@ -414,17 +351,13 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets how the text in the text box is used to filter items
-        /// specified by the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// specified by the <see cref="Items" />
         /// property for display in the drop-down.
         /// </summary>
-        /// <value>One of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteFilterMode" />
-        /// values The default is
-        /// <see cref="F:Avalonia.Controls.AutoCompleteFilterMode.StartsWith" />.</value>
-        /// <exception cref="T:System.ArgumentException">The specified value is
-        /// not a valid
-        /// <see cref="T:Avalonia.Controls.AutoCompleteFilterMode" />.</exception>
+        /// <value>One of the <see cref="AutoCompleteFilterMode" />
+        /// values The default is <see cref="AutoCompleteFilterMode.StartsWith" />.</value>
+        /// <exception cref="T:System.ArgumentException">The specified value is not a valid
+        /// <see cref="AutoCompleteFilterMode" />.</exception>
         /// <remarks>
         /// Use the FilterMode property to specify how possible matches are
         /// filtered. For example, possible matches can be filtered in a
@@ -445,13 +378,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the custom method that uses user-entered text to filter
-        /// the items specified by the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// the items specified by the <see cref="Items" />
         /// property for display in the drop-down.
         /// </summary>
         /// <value>The custom method that uses the user-entered text to filter
-        /// the items specified by the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// the items specified by the <see cref="Items" />
         /// property. The default is null.</value>
         /// <remarks>
         /// The filter mode is automatically set to Custom if you set the
@@ -465,13 +396,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the custom method that uses the user-entered text to
-        /// filter items specified by the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// filter items specified by the <see cref="Items" />
         /// property in a text-based way for display in the drop-down.
         /// </summary>
         /// <value>The custom method that uses the user-entered text to filter
-        /// items specified by the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// items specified by the <see cref="Items" />
         /// property in a text-based way for display in the drop-down.</value>
         /// <remarks>
         /// The search mode is automatically set to Custom if you set the
@@ -485,13 +414,11 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the custom method that combines the user-entered
-        /// text and one of the items specified by the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />.
+        /// text and one of the items specified by the <see cref="Items" />.
         /// </summary>
         /// <value>
         /// The custom method that combines the user-entered
-        /// text and one of the items specified by the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />.
+        /// text and one of the items specified by the <see cref="Items" />.
         /// </value>
         public AutoCompleteSelector<object>? ItemSelector
         {
@@ -502,13 +429,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the custom method that combines the user-entered
         /// text and one of the items specified by the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
-        /// in a text-based way.
+        /// <see cref="Items" /> in a text-based way.
         /// </summary>
         /// <value>
         /// The custom method that combines the user-entered
-        /// text and one of the items specified by the
-        /// <see cref="P:Avalonia.Controls.AutoCompleteBox.ItemsSource" />
+        /// text and one of the items specified by the <see cref="Items" />
         /// in a text-based way.
         /// </value>
         public AutoCompleteSelector<string?>? TextSelector
@@ -525,12 +450,10 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Gets or sets a collection that is used to generate the items for the
-        /// drop-down portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.
+        /// drop-down portion of the <see cref="AutoCompleteBox" /> control.
         /// </summary>
         /// <value>The collection that is used to generate the items of the
-        /// drop-down portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.</value>
+        /// drop-down portion of the <see cref="AutoCompleteBox" /> control.</value>
         public IEnumerable? Items
         {
             get => _itemsEnumerable;
