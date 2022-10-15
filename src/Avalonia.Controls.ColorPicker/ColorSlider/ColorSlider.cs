@@ -127,14 +127,14 @@ namespace Avalonia.Controls.Primitives
                 {
                     if (_backgroundBitmap != null)
                     {
-                        // CURRENTLY DISABLED DUE TO INTERMITTENT CRASHES IN SKIA/RENDERER
+                        // TODO: CURRENTLY DISABLED DUE TO INTERMITTENT CRASHES IN SKIA/RENDERER
                         //
                         // Re-use the existing WriteableBitmap
                         // This assumes the height, width and byte counts are the same and must be set to null
                         // elsewhere if that assumption is ever not true.
                         // ColorPickerHelpers.UpdateBitmapFromPixelData(_backgroundBitmap, bgraPixelData);
 
-                        // ALSO DISABLED DISPOSE DUE TO INTERMITTENT CRASHES
+                        // TODO: ALSO DISABLED DISPOSE DUE TO INTERMITTENT CRASHES
                         //_backgroundBitmap?.Dispose();
                         _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
                     }
