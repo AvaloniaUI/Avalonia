@@ -898,8 +898,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public int MinimumPrefixLength
         {
-            get { return GetValue(MinimumPrefixLengthProperty); }
-            set { SetValue(MinimumPrefixLengthProperty, value); }
+            get => GetValue(MinimumPrefixLengthProperty);
+            set => SetValue(MinimumPrefixLengthProperty, value);
         }
 
         /// <summary>
@@ -914,8 +914,8 @@ namespace Avalonia.Controls
         /// </value>
         public bool IsTextCompletionEnabled
         {
-            get { return GetValue(IsTextCompletionEnabledProperty); }
-            set { SetValue(IsTextCompletionEnabledProperty, value); }
+            get => GetValue(IsTextCompletionEnabledProperty);
+            set => SetValue(IsTextCompletionEnabledProperty, value);
         }
 
         /// <summary>
@@ -934,8 +934,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public IDataTemplate ItemTemplate
         {
-            get { return GetValue(ItemTemplateProperty); }
-            set { SetValue(ItemTemplateProperty, value); }
+            get => GetValue(ItemTemplateProperty);
+            set => SetValue(ItemTemplateProperty, value);
         }
 
         /// <summary>
@@ -950,8 +950,8 @@ namespace Avalonia.Controls
         /// the list of possible matches in the drop-down. The default is 0.</value>
         public TimeSpan MinimumPopulateDelay
         {
-            get { return GetValue(MinimumPopulateDelayProperty); }
-            set { SetValue(MinimumPopulateDelayProperty, value); }
+            get => GetValue(MinimumPopulateDelayProperty);
+            set => SetValue(MinimumPopulateDelayProperty, value);
         }
 
         /// <summary>
@@ -964,8 +964,8 @@ namespace Avalonia.Controls
         /// <exception cref="T:System.ArgumentException">The specified value is less than 0.</exception>
         public double MaxDropDownHeight
         {
-            get { return GetValue(MaxDropDownHeightProperty); }
-            set { SetValue(MaxDropDownHeightProperty, value); }
+            get => GetValue(MaxDropDownHeightProperty);
+            set => SetValue(MaxDropDownHeightProperty, value);
         }
 
         /// <summary>
@@ -978,8 +978,8 @@ namespace Avalonia.Controls
         /// </value>
         public bool IsDropDownOpen
         {
-            get { return  _isDropDownOpen; }
-            set { SetAndRaise(IsDropDownOpenProperty, ref  _isDropDownOpen, value); }
+            get => _isDropDownOpen;
+            set => SetAndRaise(IsDropDownOpenProperty, ref  _isDropDownOpen, value);
         }
 
         /// <summary>
@@ -993,7 +993,7 @@ namespace Avalonia.Controls
         [AssignBinding]
         public IBinding? ValueMemberBinding
         {
-            get { return _valueBindingEvaluator?.ValueBinding; }
+            get => _valueBindingEvaluator?.ValueBinding;
             set
             {
                 if (ValueMemberBinding != value)
@@ -1016,8 +1016,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public object? SelectedItem
         {
-            get { return _selectedItem; }
-            set { SetAndRaise(SelectedItemProperty, ref _selectedItem, value); }
+            get => _selectedItem;
+            set => SetAndRaise(SelectedItemProperty, ref _selectedItem, value);
         }
 
         /// <summary>
@@ -1028,8 +1028,8 @@ namespace Avalonia.Controls
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.</value>
         public string? Text
         {
-            get { return _text; }
-            set { SetAndRaise(TextProperty, ref _text, value); }
+            get => _text;
+            set => SetAndRaise(TextProperty, ref _text, value);
         }
 
         /// <summary>
@@ -1047,7 +1047,7 @@ namespace Avalonia.Controls
         /// </remarks>
         public string? SearchText
         {
-            get { return _searchText; }
+            get => _searchText;
             private set
             {
                 try
@@ -1083,14 +1083,14 @@ namespace Avalonia.Controls
         /// </remarks>
         public AutoCompleteFilterMode FilterMode
         {
-            get { return GetValue(FilterModeProperty); }
-            set { SetValue(FilterModeProperty, value); }
+            get => GetValue(FilterModeProperty);
+            set => SetValue(FilterModeProperty, value);
         }
 
         public string? Watermark
         {
-            get { return GetValue(WatermarkProperty); }
-            set { SetValue(WatermarkProperty, value); }
+            get => GetValue(WatermarkProperty);
+            set => SetValue(WatermarkProperty, value);
         }
 
         /// <summary>
@@ -1109,8 +1109,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public AutoCompleteFilterPredicate<object?>? ItemFilter
         {
-            get { return _itemFilter; }
-            set { SetAndRaise(ItemFilterProperty, ref _itemFilter, value); }
+            get => _itemFilter;
+            set => SetAndRaise(ItemFilterProperty, ref _itemFilter, value);
         }
 
         /// <summary>
@@ -1129,8 +1129,8 @@ namespace Avalonia.Controls
         /// </remarks>
         public AutoCompleteFilterPredicate<string?>? TextFilter
         {
-            get { return _textFilter; }
-            set { SetAndRaise(TextFilterProperty, ref _textFilter, value); }
+            get => _textFilter;
+            set => SetAndRaise(TextFilterProperty, ref _textFilter, value);
         }
 
         /// <summary>
@@ -1145,8 +1145,8 @@ namespace Avalonia.Controls
         /// </value>
         public AutoCompleteSelector<object>? ItemSelector
         {
-            get { return _itemSelector; }
-            set { SetAndRaise(ItemSelectorProperty, ref _itemSelector, value); }
+            get => _itemSelector;
+            set => SetAndRaise(ItemSelectorProperty, ref _itemSelector, value);
         }
 
         /// <summary>
@@ -1163,14 +1163,14 @@ namespace Avalonia.Controls
         /// </value>
         public AutoCompleteSelector<string?>? TextSelector
         {
-            get { return _textSelector; }
-            set { SetAndRaise(TextSelectorProperty, ref _textSelector, value); }
+            get => _textSelector;
+            set => SetAndRaise(TextSelectorProperty, ref _textSelector, value);
         }
 
         public Func<string?, CancellationToken, Task<IEnumerable<object>>>? AsyncPopulator
         {
-            get { return _asyncPopulator; }
-            set { SetAndRaise(AsyncPopulatorProperty, ref _asyncPopulator, value); }
+            get => _asyncPopulator;
+            set => SetAndRaise(AsyncPopulatorProperty, ref _asyncPopulator, value);
         }
 
         /// <summary>
@@ -1183,8 +1183,8 @@ namespace Avalonia.Controls
         /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> control.</value>
         public IEnumerable? Items
         {
-            get { return _itemsEnumerable; }
-            set { SetAndRaise(ItemsProperty, ref _itemsEnumerable, value); }
+            get => _itemsEnumerable;
+            set => SetAndRaise(ItemsProperty, ref _itemsEnumerable, value);
         }
 
         /// <summary>
@@ -1197,7 +1197,7 @@ namespace Avalonia.Controls
         /// </summary>
         private TextBox? TextBox
         {
-            get { return _textBox; }
+            get => _textBox;
             set
             {
                 _textBoxSubscriptions?.Dispose();
@@ -1261,7 +1261,7 @@ namespace Avalonia.Controls
         /// </remarks>
         protected ISelectionAdapter? SelectionAdapter
         {
-            get { return _adapter; }
+            get => _adapter;
             set
             {
                 if (_adapter != null)
@@ -2748,8 +2748,6 @@ namespace Avalonia.Controls
             /// </summary>
             private IBinding? _binding;
 
-            #region public T Value
-
             /// <summary>
             /// Identifies the Value dependency property.
             /// </summary>
@@ -2761,18 +2759,16 @@ namespace Avalonia.Controls
             /// </summary>
             public T Value
             {
-                get { return GetValue(ValueProperty); }
-                set { SetValue(ValueProperty, value); }
+                get => GetValue(ValueProperty);
+                set => SetValue(ValueProperty, value);
             }
-
-            #endregion public string Value
 
             /// <summary>
             /// Gets or sets the value binding.
             /// </summary>
             public IBinding? ValueBinding
             {
-                get { return _binding; }
+                get => _binding;
                 set
                 {
                     _binding = value;
