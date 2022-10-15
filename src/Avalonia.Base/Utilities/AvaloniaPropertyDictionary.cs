@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.Utilities
 {
@@ -159,9 +160,7 @@ namespace Avalonia.Utilities
         {
             if (TryGetEntry(property.Id, out var index))
             {
-                Array.Copy(_entries, index + 1, _entries, index, _entryCount - index - 1);
-                _entryCount--;
-                _entries[_entryCount] = default;
+                RemoveAt(index);
                 return true;
             }
 
@@ -183,14 +182,26 @@ namespace Avalonia.Utilities
             if (TryGetEntry(property.Id, out var index))
             {
                 value = _entries[index].Value;
-                Array.Copy(_entries, index + 1, _entries, index, _entryCount - index - 1);
-                _entryCount--;
-                _entries[_entryCount] = default;
+                RemoveAt(index);
                 return true;
             }
 
             value = default;
             return false;
+        }
+
+        /// <summary>
+        /// Removes the element at the specified index from the collection.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        public void RemoveAt(int index)
+        {
+            if (_entries is null)
+                throw new IndexOutOfRangeException();
+
+            Array.Copy(_entries, index + 1, _entries, index, _entryCount - index - 1);
+            _entryCount--;
+            _entries[_entryCount] = default;
         }
 
         /// <summary>

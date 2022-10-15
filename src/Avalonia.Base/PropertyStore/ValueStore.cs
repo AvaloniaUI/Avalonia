@@ -690,6 +690,13 @@ namespace Avalonia.PropertyStore
             effectiveValue.SetAndRaise(this, entry, priority);
         }
 
+        private void RemoveEffectiveValue(AvaloniaProperty property, int index)
+        {
+            _effectiveValues.RemoveAt(index);
+            if (property.Inherits && --_inheritedValueCount == 0)
+                OnInheritanceAncestorChanged(InheritanceAncestor);
+        }
+
         private bool RemoveEffectiveValue(AvaloniaProperty property)
         {
             if (_effectiveValues.Remove(property))
@@ -869,13 +876,10 @@ namespace Avalonia.PropertyStore
                         var entry = frame.GetEntry(j);
                         var property = entry.Property;
 
-                        // Unsubscribe and skip if we already have a value/base value for this property.
-                        if (_effectiveValues.TryGetValue(property, out var effectiveValue) == true &&
+                        // Skip if we already have a value/base value for this property.
+                        if (_effectiveValues.TryGetValue(property, out var effectiveValue) &&
                             effectiveValue.BasePriority < BindingPriority.Unset)
-                        {
-                            entry.Unsubscribe();
                             continue;
-                        }
 
                         if (!entry.HasValue)
                             continue;
@@ -897,30 +901,16 @@ namespace Avalonia.PropertyStore
                 }
 
                 // Remove all effective values that are still unset.
-                PooledList<AvaloniaProperty>? remove = null;
-
-                count = _effectiveValues.Count;
-
-                for (var i = 0; i < count; ++i)
+                for (var i = _effectiveValues.Count - 1; i >= 0; --i)
                 {
                     _effectiveValues.GetKeyValue(i, out var key, out var e);
                     e.EndReevaluation();
 
                     if (e.Priority == BindingPriority.Unset)
                     {
-                        remove ??= new();
-                        remove.Add(key);
+                        RemoveEffectiveValue(key, i);
+                        e.DisposeAndRaiseUnset(this, key);
                     }
-                }
-
-                if (remove is not null)
-                {
-                    foreach (var v in remove)
-                    {
-                        if (RemoveEffectiveValue(v, out var e))
-                            e.DisposeAndRaiseUnset(this, v);
-                    }
-                    remove.Dispose();
                 }
             }
             finally

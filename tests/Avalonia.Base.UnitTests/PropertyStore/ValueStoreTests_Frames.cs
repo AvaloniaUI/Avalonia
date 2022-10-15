@@ -69,8 +69,8 @@ namespace Avalonia.Base.UnitTests.PropertyStore
 
             Assert.Equal(new PropertyChange[]
             {
-                new(Class1.FooProperty, "foo", "foodefault"),
                 new(Class1.BarProperty, "bar", "bardefault"),
+                new(Class1.FooProperty, "foo", "foodefault"),
             }, result);
         }
 
