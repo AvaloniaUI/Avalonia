@@ -610,6 +610,13 @@ namespace Avalonia.Controls
                 o => o.AsyncPopulator,
                 (o, v) => o.AsyncPopulator = v);
 
+        /// <summary>
+        /// Defines the <see cref="TextChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextChangedEventArgs> TextChangedEvent =
+            RoutedEvent.Register<AutoCompleteBox, TextChangedEventArgs>(
+                nameof(TextChanged), RoutingStrategies.Bubble);
+
         private static bool IsValidMinimumPrefixLength(int value) => value >= -1;
 
         private static bool IsValidMinimumPopulateDelay(TimeSpan value) => value.TotalMilliseconds >= 0.0;
@@ -1529,10 +1536,14 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Occurs when the text in the text box portion of the
-        /// <see cref="T:Avalonia.Controls.AutoCompleteBox" /> changes.
+        /// Occurs asynchronously when the text in the <see cref="TextBox"/> portion of the
+        /// <see cref="AutoCompleteBox" /> changes.
         /// </summary>
-        public event EventHandler? TextChanged;
+        public event EventHandler<TextChangedEventArgs>? TextChanged
+        {
+            add => AddHandler(TextChangedEvent, value);
+            remove => RemoveHandler(TextChangedEvent, value);
+        }
 
         /// <summary>
         /// Occurs when the
@@ -1690,15 +1701,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Raises the
-        /// <see cref="E:Avalonia.Controls.AutoCompleteBox.TextChanged" />
-        /// event.
+        /// Raises the <see cref="TextChanged" /> event.
         /// </summary>
-        /// <param name="e">A <see cref="T:Avalonia.RoutedEventArgs" />
-        /// that contains the event data.</param>
-        protected virtual void OnTextChanged(RoutedEventArgs e)
+        /// <param name="e">A <see cref="TextChangedEventArgs" /> that contains the event data.</param>
+        protected virtual void OnTextChanged(TextChangedEventArgs e)
         {
-            TextChanged?.Invoke(this, e);
+            RaiseEvent(e);
         }
 
         /// <summary>
@@ -1985,7 +1993,7 @@ namespace Avalonia.Controls
 
             if (callTextChanged)
             {
-                OnTextChanged(new RoutedEventArgs());
+                OnTextChanged(new TextChangedEventArgs(TextChangedEvent));
             }
         }
 
