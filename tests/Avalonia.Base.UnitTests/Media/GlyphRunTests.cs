@@ -185,7 +185,7 @@ namespace Avalonia.Base.UnitTests.Media
 
             var characters = new ReadOnlySlice<char>(Enumerable.Repeat('a', count).ToArray(), start, count);
 
-            return new GlyphRun(new GlyphTypeface(new MockGlyphTypeface()), 10, characters, glyphIndices, glyphAdvances,
+            return new GlyphRun(new MockGlyphTypeface(), 10, characters, glyphIndices, glyphAdvances,
                 glyphClusters: glyphClusters, biDiLevel: bidiLevel);
         }
     }

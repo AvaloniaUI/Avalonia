@@ -237,7 +237,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var glyph = typeface.GlyphTypeface.GetGlyph('a');
 
                 var advance = typeface.GlyphTypeface.GetGlyphAdvance(glyph) *
-                              (12.0 / typeface.GlyphTypeface.DesignEmHeight);
+                              (12.0 / typeface.GlyphTypeface.Metrics.DesignEmHeight);
 
                 var paragraphWidth = advance * numberOfCharactersPerLine;
 
