@@ -405,7 +405,7 @@ partial class AvaloniaView
             // TODO: Query from the input client
             Logger.TryGet(LogEventLevel.Debug, ImeLog)?
                 .Log(null, "IUITextInput:GetSelectionRect");
-            return new UITextSelectionRect[0];
+            return Array.Empty<UITextSelectionRect>();
         }
 
         [Export("textStylingAtPosition:inDirection:")]
