@@ -30,7 +30,7 @@ namespace Avalonia.UnitTests
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
 
-                var font = ((HarfBuzzGlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((HarfBuzzGlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 

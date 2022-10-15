@@ -35,18 +35,6 @@ namespace Avalonia.Controls
                 x => x.MinuteIncrement, (x, v) => x.MinuteIncrement = v);
 
         /// <summary>
-        /// Defines the <see cref="Header"/> property
-        /// </summary>
-        public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<TimePicker, object>(nameof(Header));
-
-        /// <summary>
-        /// Defines the <see cref="HeaderTemplate"/> property
-        /// </summary>
-        public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<TimePicker, IDataTemplate>(nameof(HeaderTemplate));
-
-        /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property
         /// </summary>
         public static readonly DirectProperty<TimePicker, string> ClockIdentifierProperty =
@@ -101,24 +89,6 @@ namespace Avalonia.Controls
                 SetAndRaise(MinuteIncrementProperty, ref _minuteIncrement, value);
                 SetSelectedTimeText();
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the header
-        /// </summary>
-        public object Header
-        {
-            get => GetValue(HeaderProperty);
-            set => SetValue(HeaderProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the header template
-        /// </summary>
-        public IDataTemplate HeaderTemplate
-        {
-            get => GetValue(HeaderTemplateProperty);
-            set => SetValue(HeaderTemplateProperty, value);
         }
 
         /// <summary>
