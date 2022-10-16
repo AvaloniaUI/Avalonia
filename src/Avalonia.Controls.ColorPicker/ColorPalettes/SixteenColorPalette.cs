@@ -55,101 +55,22 @@ namespace Avalonia.Controls
         /// </summary>
         public const int DefaultShadeIndex = 0;
 
-        /// <summary>
-        /// The index in the color palette of the 'White' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int WhiteIndex = 0;
-
-        /// <summary>
-        /// The index in the color palette of the 'Silver' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int SilverIndex = 1;
-
-        /// <summary>
-        /// The index in the color palette of the 'Gray' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int GrayIndex = 2;
-
-        /// <summary>
-        /// The index in the color palette of the 'Black' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int BlackIndex = 3;
-
-        /// <summary>
-        /// The index in the color palette of the 'Red' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int RedIndex = 4;
-
-        /// <summary>
-        /// The index in the color palette of the 'Maroon' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int MaroonIndex = 5;
-
-        /// <summary>
-        /// The index in the color palette of the 'Yellow' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int YellowIndex = 6;
-
-        /// <summary>
-        /// The index in the color palette of the 'Olive' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int OliveIndex = 7;
-
-        /// <summary>
-        /// The index in the color palette of the 'Lime' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int LimeIndex = 8;
-
-        /// <summary>
-        /// The index in the color palette of the 'Green' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int GreenIndex = 9;
-
-        /// <summary>
-        /// The index in the color palette of the 'Aqua' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int AquaIndex = 10;
-
-        /// <summary>
-        /// The index in the color palette of the 'Teal' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int TealIndex = 11;
-
-        /// <summary>
-        /// The index in the color palette of the 'Blue' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int BlueIndex = 12;
-
-        /// <summary>
-        /// The index in the color palette of the 'Navy' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int NavyIndex = 13;
-
-        /// <summary>
-        /// The index in the color palette of the 'Fuchsia' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int FuchsiaIndex = 14;
-
-        /// <summary>
-        /// The index in the color palette of the 'Purple' color.
-        /// This index can correspond to multiple color shades.
-        /// </summary>
-        public const int PurpleIndex = 15;
+        private const int WhiteIndex = 0;
+        private const int SilverIndex = 1;
+        private const int GrayIndex = 2;
+        private const int BlackIndex = 3;
+        private const int RedIndex = 4;
+        private const int MaroonIndex = 5;
+        private const int YellowIndex = 6;
+        private const int OliveIndex = 7;
+        private const int LimeIndex = 8;
+        private const int GreenIndex = 9;
+        private const int AquaIndex = 10;
+        private const int TealIndex = 11;
+        private const int BlueIndex = 12;
+        private const int NavyIndex = 13;
+        private const int FuchsiaIndex = 14;
+        private const int PurpleIndex = 15;
 
         /// <inheritdoc/>
         public int ColorCount
