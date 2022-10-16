@@ -1877,7 +1877,7 @@ namespace Avalonia.Win32.Interop
 
         public static uint LGID(IntPtr HKL)
         {
-            return (uint)(HKL.ToInt32() & 0xffff);
+            return (uint)(HKL.ToInt64() & 0xffff);
         }
 
         public const int SORT_DEFAULT = 0;
