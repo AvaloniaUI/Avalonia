@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -15,7 +16,7 @@ namespace Avalonia.Media
         private static readonly IComparer<int> s_descendingComparer = new ReverseComparer<int>();
 
         private IGlyphRunImpl? _glyphRunImpl;
-        private GlyphTypeface _glyphTypeface;
+        private IGlyphTypeface _glyphTypeface;
         private double _fontRenderingEmSize;
         private int _biDiLevel;
         private Point? _baselineOrigin;
@@ -42,7 +43,7 @@ namespace Avalonia.Media
         /// <param name="glyphClusters">The glyph clusters.</param>
         /// <param name="biDiLevel">The bidi level.</param>
         public GlyphRun(
-            GlyphTypeface glyphTypeface,
+            IGlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             ReadOnlySlice<char> characters,
             IReadOnlyList<ushort> glyphIndices,
@@ -69,9 +70,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Gets the <see cref="Media.GlyphTypeface"/> for the <see cref="GlyphRun"/>.
+        ///     Gets the <see cref="IGlyphTypeface"/> for the <see cref="GlyphRun"/>.
         /// </summary>
-        public GlyphTypeface GlyphTypeface => _glyphTypeface;
+        public IGlyphTypeface GlyphTypeface => _glyphTypeface;
 
         /// <summary>
         ///     Gets or sets the em size used for rendering the <see cref="GlyphRun"/>.
@@ -171,7 +172,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the scale of the current <see cref="Media.GlyphTypeface"/>
         /// </summary>
-        internal double Scale => FontRenderingEmSize / GlyphTypeface.DesignEmHeight;
+        internal double Scale => FontRenderingEmSize / GlyphTypeface.Metrics.DesignEmHeight;
 
         /// <summary>
         /// Returns <c>true</c> if the text direction is left-to-right. Otherwise, returns <c>false</c>.
@@ -612,7 +613,7 @@ namespace Avalonia.Media
         /// <returns>The baseline origin.</returns>
         private Point CalculateBaselineOrigin()
         {
-            return new Point(0, -GlyphTypeface.Ascent * Scale);
+            return new Point(0, -GlyphTypeface.Metrics.Ascent * Scale);
         }
 
         private GlyphRunMetrics CreateGlyphRunMetrics()
@@ -636,7 +637,7 @@ namespace Avalonia.Media
             }
 
             var isReversed = firstCluster > lastCluster;
-            var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
+            var height = GlyphTypeface.Metrics.LineSpacing * Scale;
             var widthIncludingTrailingWhitespace = 0d;
 
             var trailingWhitespaceLength = GetTrailingWhitespaceLength(isReversed, out var newLineLength, out var glyphCount);
@@ -854,9 +855,87 @@ namespace Avalonia.Media
                 throw new InvalidOperationException();
             }
 
-            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+            _glyphRunImpl = CreateGlyphRunImpl();
+        }
 
-            _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this);
+        private IGlyphRunImpl CreateGlyphRunImpl()
+        {
+            IGlyphRunImpl glyphRunImpl;
+
+            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+            var count = GlyphIndices.Count;
+            var scale = (float)(FontRenderingEmSize / GlyphTypeface.Metrics.DesignEmHeight);
+
+            if (GlyphOffsets == null)
+            {
+                if (GlyphTypeface.Metrics.IsFixedPitch)
+                {
+                    var buffer = platformRenderInterface.AllocateGlyphRun(GlyphTypeface, (float)FontRenderingEmSize, count);
+
+                    var glyphs = buffer.GlyphIndices;
+
+                    for (int i = 0; i < glyphs.Length; i++)
+                    {
+                        glyphs[i] = GlyphIndices[i];
+                    }
+
+                    glyphRunImpl = buffer.Build();
+                }
+                else
+                {
+                    var buffer = platformRenderInterface.AllocateHorizontalGlyphRun(GlyphTypeface, (float)FontRenderingEmSize, count);
+                    var glyphs = buffer.GlyphIndices;
+                    var positions = buffer.GlyphPositions;
+                    var width = 0d;
+
+                    for (var i = 0; i < count; i++)
+                    {
+                        positions[i] = (float)width;
+
+                        if (GlyphAdvances == null)
+                        {
+                            width += GlyphTypeface.GetGlyphAdvance(GlyphIndices[i]) * scale;
+                        }
+                        else
+                        {
+                            width += GlyphAdvances[i];
+                        }
+
+                        glyphs[i] = GlyphIndices[i];
+                    }
+
+                    glyphRunImpl = buffer.Build();
+                }
+            }
+            else
+            {
+                var buffer = platformRenderInterface.AllocatePositionedGlyphRun(GlyphTypeface, (float)FontRenderingEmSize, count);
+                var glyphs = buffer.GlyphIndices;
+                var glyphPositions = buffer.GlyphPositions;
+                var currentX = 0.0;
+
+                for (var i = 0; i < count; i++)
+                {
+                    var glyphOffset = GlyphOffsets[i];
+
+                    glyphPositions[i] = new PointF((float)(currentX + glyphOffset.X), (float)glyphOffset.Y);
+
+                    if (GlyphAdvances == null)
+                    {
+                        currentX += GlyphTypeface.GetGlyphAdvance(GlyphIndices[i]) * scale;
+                    }
+                    else
+                    {
+                        currentX += GlyphAdvances[i];
+                    }
+
+                    glyphs[i] = GlyphIndices[i];
+                }
+
+                glyphRunImpl = buffer.Build();
+            }
+
+            return glyphRunImpl;
         }
 
         void IDisposable.Dispose()

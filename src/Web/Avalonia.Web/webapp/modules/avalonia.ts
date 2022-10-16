@@ -6,8 +6,8 @@ import { Caniuse } from "./avalonia/caniuse";
 import { StreamHelper } from "./avalonia/stream";
 import { NativeControlHost } from "./avalonia/nativeControlHost";
 
-export async function createAvaloniaRuntime(api: RuntimeAPI): Promise<void> {
-    api.setModuleImports("avalonia.ts", {
+async function registerAvaloniaModule(api: RuntimeAPI): Promise<void> {
+    api.setModuleImports("avalonia", {
         Caniuse,
         Canvas,
         InputHelper,
@@ -18,3 +18,15 @@ export async function createAvaloniaRuntime(api: RuntimeAPI): Promise<void> {
         NativeControlHost
     });
 }
+export {
+    Caniuse,
+    Canvas,
+    InputHelper,
+    SizeWatcher,
+    DpiWatcher,
+    AvaloniaDOM,
+    StreamHelper,
+    NativeControlHost,
+
+    registerAvaloniaModule
+};

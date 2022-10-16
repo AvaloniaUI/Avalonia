@@ -5,6 +5,11 @@
     <IsPackable>true</IsPackable>
     <PackageId>Avalonia.Markup.Xaml.Loader</PackageId>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
+    <LangVersion>10</LangVersion>
+  </PropertyGroup>
+  <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
   </PropertyGroup>
   <Import Project="IncludeXamlIlSre.props" />
   <ItemGroup>

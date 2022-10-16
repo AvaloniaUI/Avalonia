@@ -5,7 +5,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Web
 {
-    public class CssCursor : ICursorImpl
+    internal class CssCursor : ICursorImpl
     {
         public const string Default = "default";
         public string? Value { get; set; }

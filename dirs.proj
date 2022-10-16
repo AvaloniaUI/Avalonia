@@ -9,21 +9,18 @@
     <ProjectReference Remove="**/*.shproj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/*.*proj" />
-    <ProjectReference Remove="tests/Avalonia.ReactiveUI.Events.UnitTests/Avalonia.ReactiveUI.Events.UnitTests.csproj" />
-    <ProjectReference Remove="samples/ControlCatalog.iOS/ControlCatalog.iOS.csproj" />
-    <ProjectReference Remove="samples/MobileSandbox.iOS/MobileSandbox.iOS.csproj" />
-    <ProjectReference Remove="samples/ControlCatalog.iOS.Legacy/ControlCatalog.iOS.Legacy.csproj" />
-    <ProjectReference Remove="samples/ControlCatalog.Android/ControlCatalog.Android.csproj" />
-    <ProjectReference Remove="samples/MobileSandbox.Android/MobileSandbox.Android.csproj" />
-    <ProjectReference Remove="src/Android/Avalonia.AndroidTestApplication/Avalonia.AndroidTestApplication.csproj" />
+    <!-- Exclude iOS, Android and Web samples from build -->
+    <ProjectReference Remove="samples/*.iOS/*.csproj" />
+    <ProjectReference Remove="samples/*.Android/*.csproj" />
+    <ProjectReference Remove="samples/*.Web/*.csproj" />
   </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildRuntimeType)' != 'Full'">
     <ProjectReference Remove="src/Windows/Avalonia.Win32.Interop/Avalonia.Win32.Interop.csproj" />
     <ProjectReference Remove="samples/interop/**/*.*proj" />
     <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
   </ItemGroup>
-  <!-- Build android and iOS projects only on Windows, where we have installed android workload -->
 
+  <!-- Build android and iOS projects only on Windows, where we have installed android workload -->
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
     <ProjectReference Remove="src/Android/**/*.*proj" />
     <ProjectReference Remove="src/iOS/**/*.*proj" />

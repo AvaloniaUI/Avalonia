@@ -6,7 +6,7 @@ namespace Avalonia.Native
     // OSX doesn't have a concept of *window* icon. 
     // Icons in the title bar are only shown if there is 
     // an opened file (on disk) associated with the current window
-    // see http://stackoverflow.com/a/7038671/2231814
+    // see https://stackoverflow.com/a/7038671/2231814
     class IconLoader : IPlatformIconLoader
     {
         class IconStub : IWindowIconImpl

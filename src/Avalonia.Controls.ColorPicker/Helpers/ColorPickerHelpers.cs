@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (width == 0 || height == 0)
             {
-                return new byte[0];
+                return Array.Empty<byte>();
             }
 
             var bitmap = await Task.Run<byte[]>(() =>
