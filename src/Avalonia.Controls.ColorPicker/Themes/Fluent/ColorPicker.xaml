@@ -43,11 +43,7 @@
           </DropDownButton.Content>
           <DropDownButton.Flyout>
             <Flyout FlyoutPresenterClasses="nopadding">
-              <!-- Note that IsHostedInColorPicker should always be set first.
-                   This tells the ColorView to avoid some internal processing that may
-                   conflict with the ColorPicker that is now the primary control. -->
               <ColorView x:Name="FlyoutColorView"
-                         IsHostedInColorPicker="True"
                          Color="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                          ColorModel="{Binding ColorModel, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                          ColorSpectrumComponents="{TemplateBinding ColorSpectrumComponents}"
