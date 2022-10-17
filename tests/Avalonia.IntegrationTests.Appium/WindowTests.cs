@@ -57,7 +57,42 @@ namespace Avalonia.IntegrationTests.Appium
                 }
             }
         }
-        
+
+        [Theory]
+        [MemberData(nameof(WindowStateData))]
+        public void WindowState(Size? size, ShowWindowMode mode, WindowState state)
+        {
+            using var window = OpenWindow(size, mode, state: state);
+
+            try
+            {
+                var info = GetWindowInfo();
+
+                Assert.Equal(state, info.WindowState);
+
+                switch (state)
+                {
+                    case Controls.WindowState.Normal:
+                        Assert.True(info.FrameSize.Width * info.Scaling < info.ScreenRect.Size.Width);
+                        Assert.True(info.FrameSize.Height * info.Scaling < info.ScreenRect.Size.Height);
+                        break;
+                    case Controls.WindowState.Maximized:
+                    case Controls.WindowState.FullScreen:
+                        Assert.True(info.FrameSize.Width * info.Scaling >= info.ScreenRect.Size.Width);
+                        Assert.True(info.FrameSize.Height * info.Scaling >= info.ScreenRect.Size.Height);
+                        break;
+                }
+            }
+            finally
+            {
+                try
+                {
+                    _session.FindElementByAccessibilityId("WindowState").SendClick();
+                    _session.FindElementByName("Normal").SendClick();
+                } catch { /* Ignore errors in cleanup */ }
+            }
+        }
+
         [PlatformFact(TestPlatforms.Windows)]
         public void OnWindows_Docked_Windows_Retain_Size_Position_When_Restored()
         {
@@ -100,7 +135,7 @@ namespace Avalonia.IntegrationTests.Appium
         [InlineData(ShowWindowMode.NonOwned)]
         [InlineData(ShowWindowMode.Owned)]
         [InlineData(ShowWindowMode.Modal)]
-        public void WindowState(ShowWindowMode mode)
+        public void ShowMode(ShowWindowMode mode)
         {
             using var window = OpenWindow(null, mode, WindowStartupLocation.Manual);
             var windowState = _session.FindElementByAccessibilityId("WindowState");
@@ -123,8 +158,8 @@ namespace Avalonia.IntegrationTests.Appium
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || mode == ShowWindowMode.NonOwned)
             {
                 windowState.Click();
-                _session.FindElementByName("Fullscreen").SendClick();
-                Assert.Equal("Fullscreen", windowState.GetComboBoxValue());
+                _session.FindElementByName("FullScreen").SendClick();
+                Assert.Equal("FullScreen", windowState.GetComboBoxValue());
 
                 current = GetWindowInfo();
                 var clientSize = PixelSize.FromSize(current.ClientSize, current.Scaling);
@@ -163,6 +198,27 @@ namespace Avalonia.IntegrationTests.Appium
             return data;
         }
 
+        public static TheoryData<Size?, ShowWindowMode, WindowState> WindowStateData()
+        {
+            var sizes = new Size?[] { null, new Size(400, 300) };
+            var data = new TheoryData<Size?, ShowWindowMode, WindowState>();
+
+            foreach (var size in sizes)
+            {
+                foreach (var mode in Enum.GetValues<ShowWindowMode>())
+                {
+                    foreach (var state in Enum.GetValues<WindowState>())
+                    {
+                        // Not sure how to handle testing minimized windows currently.
+                        if (state != Controls.WindowState.Minimized)
+                            data.Add(size, mode, state);
+                    }
+                }
+            }
+
+            return data;
+        }
+
         private static void AssertCloseEnough(PixelPoint expected, PixelPoint actual)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -189,11 +245,16 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        private IDisposable OpenWindow(Size? size, ShowWindowMode mode, WindowStartupLocation location)
+        private IDisposable OpenWindow(
+            Size? size,
+            ShowWindowMode mode,
+            WindowStartupLocation location = WindowStartupLocation.Manual,
+            WindowState state = Controls.WindowState.Normal)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
             var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
+            var stateComboBox = _session.FindElementByAccessibilityId("ShowWindowState");
             var showButton = _session.FindElementByAccessibilityId("ShowWindow");
 
             if (size.HasValue)
@@ -204,6 +265,9 @@ namespace Avalonia.IntegrationTests.Appium
 
             locationComboBox.Click();
             _session.FindElementByName(location.ToString()).SendClick();
+
+            stateComboBox.Click();
+            _session.FindElementByName(state.ToString()).SendClick();
 
             return showButton.OpenWindowWithClick();
         }
@@ -228,7 +292,8 @@ namespace Avalonia.IntegrationTests.Appium
                         PixelPoint.Parse(_session.FindElementByAccessibilityId("Position").Text),
                         ReadOwnerRect(),
                         PixelRect.Parse(_session.FindElementByAccessibilityId("ScreenRect").Text),
-                        double.Parse(_session.FindElementByAccessibilityId("Scaling").Text));
+                        double.Parse(_session.FindElementByAccessibilityId("Scaling").Text),
+                        Enum.Parse<WindowState>(_session.FindElementByAccessibilityId("WindowState").Text));
                 }
                 catch (OpenQA.Selenium.NoSuchElementException) when (retry++ < 3)
                 {
@@ -252,6 +317,7 @@ namespace Avalonia.IntegrationTests.Appium
             PixelPoint Position,
             PixelRect? OwnerRect,
             PixelRect ScreenRect,
-            double Scaling);
+            double Scaling,
+            WindowState WindowState);
     }
 }

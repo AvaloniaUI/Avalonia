@@ -57,6 +57,7 @@ namespace IntegrationTestApp
             var sizeTextBox = this.GetControl<TextBox>("ShowWindowSize");
             var modeComboBox = this.GetControl<ComboBox>("ShowWindowMode");
             var locationComboBox = this.GetControl<ComboBox>("ShowWindowLocation");
+            var stateComboBox = this.GetControl<ComboBox>("ShowWindowState");
             var size = !string.IsNullOrWhiteSpace(sizeTextBox.Text) ? Size.Parse(sizeTextBox.Text) : (Size?)null;
             var owner = (Window)this.GetVisualRoot()!;
 
@@ -83,6 +84,7 @@ namespace IntegrationTestApp
             }
 
             sizeTextBox.Text = string.Empty;
+            window.WindowState = (WindowState)stateComboBox.SelectedIndex;
 
             switch (modeComboBox.SelectedIndex)
             {

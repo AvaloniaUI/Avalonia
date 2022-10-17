@@ -109,6 +109,12 @@
             <ComboBoxItem>CenterScreen</ComboBoxItem>
             <ComboBoxItem>CenterOwner</ComboBoxItem>
           </ComboBox>
+          <ComboBox Name="ShowWindowState" SelectedIndex="0">
+            <ComboBoxItem>Normal</ComboBoxItem>
+            <ComboBoxItem>Minimized</ComboBoxItem>
+            <ComboBoxItem>Maximized</ComboBoxItem>
+            <ComboBoxItem>FullScreen</ComboBoxItem>
+          </ComboBox>
           <Button Name="ShowWindow">Show Window</Button>
           <Button Name="SendToBack">Send to Back</Button>
           <Button Name="ExitFullscreen">Exit Fullscreen</Button>
