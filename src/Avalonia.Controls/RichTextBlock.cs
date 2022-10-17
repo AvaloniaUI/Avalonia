@@ -584,6 +584,8 @@ namespace Avalonia.Controls
 
         protected override Size ArrangeOverride(Size finalSize)
         {
+            finalSize = base.ArrangeOverride(finalSize);
+
             if (HasComplexContent)
             {
                 var scale = LayoutHelper.GetLayoutScale(this);
@@ -613,8 +615,8 @@ namespace Avalonia.Controls
                     currentY += textLine.Height;
                 }
             }
-           
-            return base.ArrangeOverride(finalSize);
+
+            return finalSize;
         }
 
         private string GetSelection()

@@ -665,7 +665,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (!breakFound)
                 {
-                    currentLength += currentRun.Text.Length;
+                    currentLength += currentRun.TextSourceLength;
 
                     continue;
                 }
