@@ -267,6 +267,11 @@ namespace Avalonia.Win32
         {
             get
             {
+                if (!IsWindowVisible(_hwnd))
+                {
+                    return _showWindowState;
+                }
+
                 if (_isFullScreenActive)
                 {
                     return WindowState.FullScreen;
@@ -560,6 +565,9 @@ namespace Avalonia.Win32
 
         public void Resize(Size value, PlatformResizeReason reason)
         {
+            if (WindowState is WindowState.Maximized or WindowState.FullScreen)
+                return;
+
             int requestedClientWidth = (int)(value.Width * RenderScaling);
             int requestedClientHeight = (int)(value.Height * RenderScaling);
 
