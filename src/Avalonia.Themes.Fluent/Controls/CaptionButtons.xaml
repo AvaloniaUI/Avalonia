@@ -41,7 +41,7 @@
                   Theme="{StaticResource FluentCaptionButton}"
                   IsVisible="False">
             <Viewbox Width="11" Margin="2">
-              <Path Name="PART_FullScreenButtonPath"
+              <Path Name="FullScreenButtonPath"
                     Stretch="UniformToFill"
                     Fill="{TemplateBinding Foreground}"
                     Data="M2048 2048v-819h-205v469l-1493 -1493h469v-205h-819v819h205v-469l1493 1493h-469v205h819z" />
@@ -83,7 +83,7 @@
     <Style Selector="^:maximized /template/ Path#PART_RestoreButtonPath">
       <Setter Property="Data" Value="M2048 410h-410v-410h-1638v1638h410v410h1638v-1638zM1434 1434h-1229v-1229h1229v1229zM1843 1843h-1229v-205h1024v-1024h205v1229z" />
     </Style>
-    <Style Selector="^:fullscreen /template/ Path#PART_FullScreenButtonPath">
+    <Style Selector="^:fullscreen /template/ Path#FullScreenButtonPath">
       <Setter Property="IsVisible" Value="True" />
       <Setter Property="Data" Value="M205 1024h819v-819h-205v469l-674 -674l-145 145l674 674h-469v205zM1374 1229h469v-205h-819v819h205v-469l674 674l145 -145z" />
     </Style>
