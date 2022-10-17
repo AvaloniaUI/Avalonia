@@ -9,6 +9,7 @@ using System;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
+using static Avalonia.Utilities.SpanHelpers;
 #endif
 
 namespace Avalonia.Media
@@ -295,9 +296,7 @@ namespace Avalonia.Media
                     return false;
                 }
 
-                // TODO: (netstandard 2.1) Can use allocation free parsing.
-                if (!uint.TryParse(input.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
-                    out var parsed))
+                if (!input.TryParseFromHexToUInt(out var parsed))
                 {
                     return false;
                 }
