@@ -3,7 +3,6 @@ using System.Text;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {
@@ -59,56 +58,11 @@ namespace Avalonia.Controls.Documents
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            if(InlineHost == null)
-            {
-                return;
-            }
-
-            ((ISetLogicalParent)Child).SetParent(InlineHost);
-
-            InlineHost.AddVisualChild(Child);
-
-            textRuns.Add(new InlineRun(Child, CreateTextRunProperties()));
+            textRuns.Add(new EmbeddedControlRun(Child, CreateTextRunProperties()));
         }
 
         internal override void AppendText(StringBuilder stringBuilder)
         {
-        }
-
-        private class InlineRun : DrawableTextRun
-        {
-            public InlineRun(IControl control, TextRunProperties properties)
-            {
-                Control = control;
-                Properties = properties;
-            }
-
-            public IControl Control { get; }
-
-            public override TextRunProperties? Properties { get; }
-
-            public override Size Size => Control.DesiredSize;
-
-            public override double Baseline
-            {
-                get
-                {
-                    double baseline = Size.Height;
-                    double baselineOffsetValue = Control.GetValue<double>(TextBlock.BaselineOffsetProperty);
-
-                    if (!MathUtilities.IsZero(baselineOffsetValue))
-                    {
-                        baseline = baselineOffsetValue;
-                    }
-
-                    return -baseline;
-                }
-            }
-
-            public override void Draw(DrawingContext drawingContext, Point origin)
-            {             
-                //noop            
-            }
         }
     }
 }
