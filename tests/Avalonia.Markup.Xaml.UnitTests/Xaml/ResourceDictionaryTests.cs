@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void StaticResource_Works_In_ResourceDictionary()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -39,7 +39,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
   <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
 </ResourceDictionary>";
 
-            using (StyledWindow(assets: ("test:dict.xaml", dictionaryXaml)))
+            using (ResourceDictionaryTests.StyledWindow(assets: ("test:dict.xaml", dictionaryXaml)))
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -70,7 +70,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_ResourceDictionary_As_Deferred()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -86,7 +86,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Added_To_ResourceDictionary_Is_UnDeferred_On_Read()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -106,7 +106,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_Window_Resources_As_Deferred()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -125,7 +125,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_Window_MergedDictionaries_As_Deferred()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -150,7 +150,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_Style_Resources_As_Deferred()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <Style xmlns='https://github.com/avaloniaui'
@@ -169,7 +169,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_Styles_Resources_As_Deferred()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
@@ -188,7 +188,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Can_Be_StaticReferenced_As_Deferred()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -214,7 +214,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_StaticReferenced_Is_UnDeferred_On_Read()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -242,7 +242,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Value_Type_With_Parse_Converter_Should_Not_Be_Deferred()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -259,7 +259,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Value_Type_With_Ctor_Converter_Should_Not_Be_Deferred()
         {
-            using (StyledWindow())
+            using (ResourceDictionaryTests.StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -273,7 +273,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-        private IDisposable StyledWindow(params (string, string)[] assets)
+        private static IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
                 assetLoader: new MockAssetLoader(assets),

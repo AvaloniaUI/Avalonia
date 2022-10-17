@@ -131,10 +131,10 @@ namespace Avalonia.Win32
         internal static Compositor Compositor { get; private set; }
 
         public Size DoubleClickSize => new Size(
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
+            GetSystemMetrics(SystemMetric.SM_CXDOUBLECLK),
+            GetSystemMetrics(SystemMetric.SM_CYDOUBLECLK));
 
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
+        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(GetDoubleClickTime());
 
         /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
         public Size TouchDoubleClickSize => new Size(16,16);
@@ -185,16 +185,16 @@ namespace Avalonia.Win32
         public bool HasMessages()
         {
             UnmanagedMethods.MSG msg;
-            return UnmanagedMethods.PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
+            return PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
         }
 
         public void ProcessMessage()
         {
 
-            if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
+            if (GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
             {
-                UnmanagedMethods.TranslateMessage(ref msg);
-                UnmanagedMethods.DispatchMessage(ref msg);
+                TranslateMessage(ref msg);
+                DispatchMessage(ref msg);
             }
             else
             {
@@ -208,10 +208,10 @@ namespace Avalonia.Win32
         {
             var result = 0;
             while (!cancellationToken.IsCancellationRequested 
-                && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
+                && (result = GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
             {
-                UnmanagedMethods.TranslateMessage(ref msg);
-                UnmanagedMethods.DispatchMessage(ref msg);
+                TranslateMessage(ref msg);
+                DispatchMessage(ref msg);
             }
             if (result < 0)
             {
@@ -225,7 +225,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.TimerProc timerDelegate =
                 (hWnd, uMsg, nIDEvent, dwTime) => callback();
 
-            IntPtr handle = UnmanagedMethods.SetTimer(
+            IntPtr handle = SetTimer(
                 IntPtr.Zero,
                 IntPtr.Zero,
                 (uint)interval.TotalMilliseconds,
@@ -237,7 +237,7 @@ namespace Avalonia.Win32
             return Disposable.Create(() =>
             {
                 _delegates.Remove(timerDelegate);
-                UnmanagedMethods.KillTimer(IntPtr.Zero, handle);
+                KillTimer(IntPtr.Zero, handle);
             });
         }
 
@@ -246,9 +246,9 @@ namespace Avalonia.Win32
 
         public void Signal(DispatcherPriority prio)
         {
-            UnmanagedMethods.PostMessage(
+            PostMessage(
                 _hwnd,
-                (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
+                (int)WindowsMessage.WM_DISPATCH_WORK_ITEM,
                 new IntPtr(SignalW),
                 new IntPtr(SignalL));
         }
@@ -262,7 +262,7 @@ namespace Avalonia.Win32
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            if (msg == (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
+            if (msg == (int)WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
             {
                 Signaled?.Invoke(null);
             }
@@ -284,7 +284,7 @@ namespace Avalonia.Win32
             
             TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
 
-            return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+            return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
         private void CreateMessageWindow()
@@ -296,18 +296,18 @@ namespace Avalonia.Win32
             {
                 cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = UnmanagedMethods.GetModuleHandle(null),
+                hInstance = GetModuleHandle(null),
                 lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
             };
 
-            ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
+            ushort atom = RegisterClassEx(ref wndClassEx);
 
             if (atom == 0)
             {
                 throw new Win32Exception();
             }
 
-            _hwnd = UnmanagedMethods.CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            _hwnd = CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
             if (_hwnd == IntPtr.Zero)
             {

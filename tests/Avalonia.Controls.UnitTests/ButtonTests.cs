@@ -379,7 +379,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private KeyEventArgs CreateKeyDownEvent(Key key, IInteractive source = null)
+        private static KeyEventArgs CreateKeyDownEvent(Key key, IInteractive source = null)
         {
             return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
         }

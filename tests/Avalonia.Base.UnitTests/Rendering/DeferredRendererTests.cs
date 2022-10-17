@@ -726,7 +726,7 @@ namespace Avalonia.Base.UnitTests.Rendering
             }
         }
 
-        private DeferredRenderer CreateTargetAndRunFrame(
+        private static DeferredRenderer CreateTargetAndRunFrame(
             TestRoot root,
             Mock<IRenderTimer> timer = null,
             ISceneBuilder sceneBuilder = null,
@@ -750,25 +750,25 @@ namespace Avalonia.Base.UnitTests.Rendering
             return Mock.Get(renderer.Layers[layerRoot].Bitmap.Item.CreateDrawingContext(null));
         }
 
-        private void IgnoreFirstFrame(IRenderLoopTask task, Mock<ISceneBuilder> sceneBuilder)
+        private static void IgnoreFirstFrame(IRenderLoopTask task, Mock<ISceneBuilder> sceneBuilder)
         {
             RunFrame(task);
             sceneBuilder.Invocations.Clear();
         }
 
-        private void RunFrame(IRenderLoopTask task)
+        private static void RunFrame(IRenderLoopTask task)
         {
             task.Update(TimeSpan.Zero);
             task.Render();
         }
 
-        private IRenderTargetBitmapImpl CreateLayer()
+        private static IRenderTargetBitmapImpl CreateLayer()
         {
             return Mock.Of<IRenderTargetBitmapImpl>(x =>
                 x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
         }
 
-        private Mock<ISceneBuilder> MockSceneBuilder(IRenderRoot root)
+        private static Mock<ISceneBuilder> MockSceneBuilder(IRenderRoot root)
         {
             var result = new Mock<ISceneBuilder>();
             result.Setup(x => x.UpdateAll(It.IsAny<Scene>()))

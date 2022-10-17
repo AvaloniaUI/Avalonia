@@ -374,7 +374,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Converter()
         {
-            using (StyledWindow())
+            using (StaticResourceExtensionTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -400,7 +400,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Binding_Converter_In_DataTemplate()
         {
-            using (StyledWindow())
+            using (StaticResourceExtensionTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -435,7 +435,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         {
             // this tests if IAmbientProviders in DataTemplate contexts are in correct order
             // if they wouldn't be, Purple brush would be bound to
-            using (StyledWindow())
+            using (StaticResourceExtensionTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -516,7 +516,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void Automatically_Converts_Color_To_SolidColorBrush_From_Setter()
         {
-            using (StyledWindow())
+            using (StaticResourceExtensionTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -540,13 +540,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
 
-        private IDisposable StyledWindow(params (string, string)[] assets)
+        private static IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
                 assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
-                    StaticResourceExtensionTests.WindowStyle(),
+                    WindowStyle(),
                 });
 
             return UnitTestApplication.Start(services);

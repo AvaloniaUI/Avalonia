@@ -455,7 +455,7 @@ namespace Avalonia.Controls.UnitTests
         /// Creates a large list of strings for AutoCompleteBox testing.
         /// </summary>
         /// <returns>Returns a new List of string values.</returns>
-        private IList<string> CreateSimpleStringArray()
+        private static IList<string> CreateSimpleStringArray()
         {
             return new List<string>
             {

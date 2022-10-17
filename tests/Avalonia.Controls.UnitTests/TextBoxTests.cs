@@ -578,7 +578,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target1.Focus();
                 Assert.True(target1.IsFocused);
-                
+
                 RaiseKeyEvent(target1, key, KeyModifiers.None);
             }
         }
@@ -747,7 +747,7 @@ namespace Avalonia.Controls.UnitTests
                     
                     var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
                     clipboard.SetTextAsync(textInput).GetAwaiter().GetResult();
-                    
+
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
                     clipboard.ClearAsync().GetAwaiter().GetResult();
                 }
@@ -904,7 +904,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
+        private static void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
         {
             textBox.RaiseEvent(new KeyEventArgs
             {
@@ -914,7 +914,7 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        private void RaiseTextEvent(TextBox textBox, string text)
+        private static void RaiseTextEvent(TextBox textBox, string text)
         {
             textBox.RaiseEvent(new TextInputEventArgs
             {

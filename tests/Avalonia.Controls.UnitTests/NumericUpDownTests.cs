@@ -75,7 +75,7 @@ namespace Avalonia.Controls.UnitTests
                           .OfType<TextBox>()
                           .First();
         }
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<NumericUpDown>((control, scope) =>
             {

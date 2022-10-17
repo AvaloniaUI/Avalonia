@@ -221,7 +221,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void DynamicResource_From_Style_Can_Be_Assigned_To_Setter()
         {
-            using (StyledWindow())
+            using (DynamicResourceExtensionTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -262,7 +262,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Style>
 </Styles>";
 
-            using (StyledWindow(assets: ("test:style.xaml", styleXaml)))
+            using (DynamicResourceExtensionTests.StyledWindow(assets: ("test:style.xaml", styleXaml)))
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -300,7 +300,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     </Style>
 </Styles>";
 
-            using (StyledWindow(assets: ("test:style.xaml", styleXaml)))
+            using (DynamicResourceExtensionTests.StyledWindow(assets: ("test:style.xaml", styleXaml)))
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -567,7 +567,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
   </Style.Resources>
 </Style>";
-            using (StyledWindow(
+            using (DynamicResourceExtensionTests.StyledWindow(
                 ("test:style1.xaml", style1Xaml), 
                 ("test:style2.xaml", style2Xaml)))
             {
@@ -606,7 +606,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
   </Style.Resources>
 </Style>";
-            using (StyledWindow(
+            using (DynamicResourceExtensionTests.StyledWindow(
                 ("test:style1.xaml", style1Xaml),
                 ("test:style2.xaml", style2Xaml)))
             {
@@ -631,7 +631,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void Control_Property_Is_Updated_When_Parent_Is_Changed()
         {
-            using (StyledWindow())
+            using (DynamicResourceExtensionTests.StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -813,7 +813,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void Resource_In_Non_Matching_Style_Is_Not_Resolved()
         {
-            using var app = StyledWindow();
+            using var app = DynamicResourceExtensionTests.StyledWindow();
 
             var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -852,7 +852,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void Resource_In_Non_Active_Style_Is_Not_Resolved()
         {
-            using var app = StyledWindow();
+            using var app = DynamicResourceExtensionTests.StyledWindow();
 
             var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -888,13 +888,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             Assert.DoesNotContain("foo", resourceProvider.RequestedResources);
         }
 
-        private IDisposable StyledWindow(params (string, string)[] assets)
+        private static IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
                 assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
-                    DynamicResourceExtensionTests.WindowStyle(),
+                    WindowStyle(),
                 });
 
             return UnitTestApplication.Start(services);

@@ -639,7 +639,7 @@ namespace Avalonia.Win32
         public Point PointToClient(PixelPoint point)
         {
             var p = new POINT { X = point.X, Y = point.Y };
-            UnmanagedMethods.ScreenToClient(_hwnd, ref p);
+            ScreenToClient(_hwnd, ref p);
             return new Point(p.X, p.Y) / RenderScaling;
         }
 
@@ -1321,12 +1321,13 @@ namespace Avalonia.Win32
         private const int MF_DISABLED = 0x2;
         private const int SC_CLOSE = 0xF060;
 
-        void DisableCloseButton(IntPtr hwnd)
+        static void DisableCloseButton(IntPtr hwnd)
         {
             EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
                            MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
         }
-        void EnableCloseButton(IntPtr hwnd)
+
+        static void EnableCloseButton(IntPtr hwnd)
         {
             EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
                            MF_BYCOMMAND | MF_ENABLED);

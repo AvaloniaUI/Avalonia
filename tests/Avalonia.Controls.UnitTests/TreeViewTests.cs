@@ -1247,7 +1247,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private TreeViewItem GetItem(TreeView target, params int[] indexes)
+        private static TreeViewItem GetItem(TreeView target, params int[] indexes)
         {
             var c = (ItemsControl)target;
 

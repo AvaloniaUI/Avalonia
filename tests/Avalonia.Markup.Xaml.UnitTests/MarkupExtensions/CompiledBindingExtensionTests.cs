@@ -1568,8 +1568,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal(typeof(string), node.Property.PropertyType);
             }
         }
-        
-        void Throws(string type, Action cb)
+
+        static void Throws(string type, Action cb)
         {
             try
             {
@@ -1583,8 +1583,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             throw new Exception("Expected " + type);
         }
 
-        void ThrowsXamlParseException(Action cb) => Throws("XamlParseException", cb);
-        void ThrowsXamlTransformException(Action cb) => Throws("XamlTransformException", cb);
+        static void ThrowsXamlParseException(Action cb) => Throws("XamlParseException", cb);
+        static void ThrowsXamlTransformException(Action cb) => Throws("XamlTransformException", cb);
 
 
         static void PerformClick(Button button)
@@ -1592,7 +1592,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             button.RaiseEvent(new KeyEventArgs
             {
                 RoutedEvent = InputElement.KeyDownEvent,
-                Key = Input.Key.Enter,
+                Key = Key.Enter,
             });
         }
     }

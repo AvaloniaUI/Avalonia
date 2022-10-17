@@ -182,7 +182,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
         public void Bug2570()
         {
             SomeStaticProperty = "123";
-            XamlIlTests.AssertThrows(() => AvaloniaRuntimeXamlLoader
+            AssertThrows(() => AvaloniaRuntimeXamlLoader
                     .Load(@"
 <UserControl 
     xmlns='https://github.com/avaloniaui'
