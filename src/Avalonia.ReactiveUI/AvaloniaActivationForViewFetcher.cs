@@ -26,8 +26,8 @@ namespace Avalonia.ReactiveUI
         public IObservable<bool> GetActivationForView(IActivatableView view)
         {
             if (!(view is IVisual visual)) return Observable.Return(false);
-            if (view is Control control) return AvaloniaActivationForViewFetcher.GetActivationForControl(control);
-            return AvaloniaActivationForViewFetcher.GetActivationForVisual(visual);
+            if (view is Control control) return GetActivationForControl(control);
+            return GetActivationForVisual(visual);
         }
 
         /// <summary>

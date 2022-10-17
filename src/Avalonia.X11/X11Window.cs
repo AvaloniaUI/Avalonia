@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
@@ -463,7 +461,7 @@ namespace Avalonia.X11
                                 : new Vector(-1, 0);
                     ScheduleInput(new RawMouseWheelEventArgs(_mouse, (ulong)ev.ButtonEvent.time.ToInt64(),
                         _inputRoot, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), delta,
-                        X11Window.TranslateModifiers(ev.ButtonEvent.state)), ref ev);
+                        TranslateModifiers(ev.ButtonEvent.state)), ref ev);
                 }
                 
             }
@@ -760,7 +758,7 @@ namespace Avalonia.X11
         {
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
-                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), X11Window.TranslateModifiers(mods));
+                type, new Point(ev.ButtonEvent.x, ev.ButtonEvent.y), TranslateModifiers(mods));
             ScheduleInput(mev, ref ev);
         }
 

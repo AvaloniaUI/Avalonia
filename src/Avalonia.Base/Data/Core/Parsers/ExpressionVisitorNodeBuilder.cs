@@ -70,7 +70,7 @@ namespace Avalonia.Data.Core.Parsers
 
             if (node.Indexer == AvaloniaObjectIndexer)
             {
-                var property = ExpressionVisitorNodeBuilder.GetArgumentExpressionValue<AvaloniaProperty>(node.Arguments[0]);
+                var property = GetArgumentExpressionValue<AvaloniaProperty>(node.Arguments[0]);
                 Nodes.Add(new AvaloniaPropertyAccessorNode(property, _enableDataValidation));
             }
             else
@@ -162,7 +162,7 @@ namespace Avalonia.Data.Core.Parsers
             if (node.Method == CreateDelegateMethod)
             {
                 var visited = Visit(node.Arguments[1]);
-                Nodes.Add(new PropertyAccessorNode(ExpressionVisitorNodeBuilder.GetArgumentExpressionValue<MethodInfo>(node.Object!).Name, _enableDataValidation));
+                Nodes.Add(new PropertyAccessorNode(GetArgumentExpressionValue<MethodInfo>(node.Object!).Name, _enableDataValidation));
                 return node;
             }
             else if (node.Method.Name == StreamBindingExtensions.StreamBindingName || node.Method.Name.StartsWith(StreamBindingExtensions.StreamBindingName + '`'))
@@ -193,7 +193,7 @@ namespace Avalonia.Data.Core.Parsers
             throw new ExpressionParseException(0, $"Invalid method call in binding expression: '{node.Method.DeclaringType!.AssemblyQualifiedName}.{node.Method.Name}'.");
         }
 
-        private PropertyInfo? TryGetPropertyFromMethod(MethodInfo method)
+        private static PropertyInfo? TryGetPropertyFromMethod(MethodInfo method)
         {
             var type = method.DeclaringType;
             return type?.GetRuntimeProperties().FirstOrDefault(prop => prop.GetMethod == method);

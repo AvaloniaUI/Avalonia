@@ -90,7 +90,7 @@ namespace Avalonia.Layout
             // Constants
             int itemsCount = context.ItemCount;
             var stackState = (StackLayoutState)context.LayoutState!;
-            double averageElementSize = StackLayout.GetAverageElementSize(availableSize, context, stackState) + Spacing;
+            double averageElementSize = GetAverageElementSize(availableSize, context, stackState) + Spacing;
 
             _orientation.SetMinorSize(ref extent, stackState.MaxArrangeBounds);
             _orientation.SetMajorSize(ref extent, Math.Max(0.0f, itemsCount * averageElementSize - Spacing));
@@ -178,7 +178,7 @@ namespace Avalonia.Layout
             {
                 index = targetIndex;
                 var state = (StackLayoutState)context.LayoutState!;
-                double averageElementSize = StackLayout.GetAverageElementSize(availableSize, context, state) + Spacing;
+                double averageElementSize = GetAverageElementSize(availableSize, context, state) + Spacing;
                 offset = index * averageElementSize + _orientation.MajorStart(state.FlowAlgorithm.LastExtent);
             }
 
@@ -237,7 +237,7 @@ namespace Avalonia.Layout
                 var state = (StackLayoutState)context.LayoutState!;
                 var lastExtent = state.FlowAlgorithm.LastExtent;
 
-                double averageElementSize = StackLayout.GetAverageElementSize(availableSize, context, state) + Spacing;
+                double averageElementSize = GetAverageElementSize(availableSize, context, state) + Spacing;
                 double realizationWindowOffsetInExtent = _orientation.MajorStart(realizationRect) - _orientation.MajorStart(lastExtent);
                 double majorSize = _orientation.MajorSize(lastExtent) == 0 ? Math.Max(0.0, averageElementSize * itemsCount - Spacing) : _orientation.MajorSize(lastExtent);
                 if (itemsCount > 0 &&
@@ -359,6 +359,6 @@ namespace Avalonia.Layout
 
         private void InvalidateLayout() => InvalidateMeasure();
 
-        private FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((StackLayoutState)context.LayoutState!).FlowAlgorithm;
+        private static FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((StackLayoutState)context.LayoutState!).FlowAlgorithm;
     }
 }

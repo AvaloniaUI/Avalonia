@@ -96,7 +96,7 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             SelectedItemProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.SelectedItemChanged(e));
-            KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), Interactivity.RoutingStrategies.Tunnel);
+            KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), RoutingStrategies.Tunnel);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
             IsDropDownOpenProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.DropdownChanged(e));
         }
@@ -178,8 +178,8 @@ namespace Avalonia.Controls
         {
             return new ItemContainerGenerator<ComboBoxItem>(
                 this,
-                ComboBoxItem.ContentProperty,
-                ComboBoxItem.ContentTemplateProperty);
+                ContentControl.ContentProperty,
+                ContentControl.ContentTemplateProperty);
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -236,7 +236,7 @@ namespace Avalonia.Controls
             else if (IsDropDownOpen && SelectedIndex < 0 && ItemCount > 0 &&
                       (e.Key == Key.Up || e.Key == Key.Down) && IsFocused == true)
             {
-                var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => ComboBox.CanFocus(c));
+                var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
                 if (firstChild != null)
                 {
                     FocusManager.Instance?.Focus(firstChild, NavigationMethod.Directional);
@@ -341,7 +341,7 @@ namespace Avalonia.Controls
         {
             _subscriptionsOnOpen.Clear();
 
-            if (ComboBox.CanFocus(this))
+            if (CanFocus(this))
             {
                 Focus();
             }
@@ -363,7 +363,7 @@ namespace Avalonia.Controls
                     {
                         ev.Handled = true;
                     }
-                }, Interactivity.RoutingStrategies.Tunnel).DisposeWith(_subscriptionsOnOpen);
+                }, RoutingStrategies.Tunnel).DisposeWith(_subscriptionsOnOpen);
             }
 
             this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
@@ -403,7 +403,7 @@ namespace Avalonia.Controls
                     container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
                 }
 
-                if (container != null && ComboBox.CanFocus(container))
+                if (container != null && CanFocus(container))
                 {
                     container.Focus();
                 }

@@ -1,14 +1,11 @@
 ﻿using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 using System;
-using System.Reactive.Disposables;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
@@ -443,7 +440,7 @@ namespace Avalonia.Controls
             };
         }
         
-        private string GetPseudoClass(SplitViewPanePlacement placement)
+        private static string GetPseudoClass(SplitViewPanePlacement placement)
         {
             return placement switch
             {
@@ -463,8 +460,8 @@ namespace Avalonia.Controls
 
         private void OnDisplayModeChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            var oldState = SplitView.GetPseudoClass(e.GetOldValue<SplitViewDisplayMode>());
-            var newState = SplitView.GetPseudoClass(e.GetNewValue<SplitViewDisplayMode>());
+            var oldState = GetPseudoClass(e.GetOldValue<SplitViewDisplayMode>());
+            var newState = GetPseudoClass(e.GetNewValue<SplitViewDisplayMode>());
 
             PseudoClasses.Remove($":{oldState}");
             PseudoClasses.Add($":{newState}");

@@ -455,7 +455,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     Height = ItemHeight,
                     Classes = new Classes($"{PanelType}Item"),
-                    VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    VerticalContentAlignment = Layout.VerticalAlignment.Center,
                     Focusable = false
                 });
             }
@@ -546,7 +546,7 @@ namespace Avalonia.Controls.Primitives
         private void OnItemTapped(object? sender, TappedEventArgs e)
         {
             if (e.Source is IVisual source &&
-                DateTimePickerPanel.GetItemFromSource(source) is ListBoxItem listBoxItem &&
+                GetItemFromSource(source) is ListBoxItem listBoxItem &&
                 listBoxItem.Tag is int tag)
             {
                 SelectedValue = tag;

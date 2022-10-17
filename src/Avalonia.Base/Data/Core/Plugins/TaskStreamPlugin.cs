@@ -44,11 +44,11 @@ namespace Avalonia.Data.Core.Plugins
                     {
                         case TaskStatus.RanToCompletion:
                         case TaskStatus.Faulted:
-                            return TaskStreamPlugin.HandleCompleted(task);
+                            return HandleCompleted(task);
                         default:
                             var subject = new Subject<object?>();
                             task.ContinueWith(
-                                    x => TaskStreamPlugin.HandleCompleted(task).Subscribe(subject),
+                                    x => HandleCompleted(task).Subscribe(subject),
                                     TaskScheduler.FromCurrentSynchronizationContext())
                                 .ConfigureAwait(false);
                             return subject;

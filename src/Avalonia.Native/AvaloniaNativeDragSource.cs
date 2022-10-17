@@ -48,7 +48,7 @@ namespace Avalonia.Native
         public Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
         {
             // Sanity check
-            var tl = AvaloniaNativeDragSource.FindRoot(triggerEvent.Source);
+            var tl = FindRoot(triggerEvent.Source);
             var view = tl?.PlatformImpl as WindowBaseImpl;
             if (view == null)
                 throw new ArgumentException();

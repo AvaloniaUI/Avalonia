@@ -1,6 +1,4 @@
-﻿using System;
-using Avalonia.Data.Core;
-using Avalonia.Markup.Parsers;
+﻿using Avalonia.Data.Core;
 using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Xaml.Parsers

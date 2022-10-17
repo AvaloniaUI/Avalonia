@@ -26,7 +26,7 @@ namespace Avalonia.Input
 
         public IInputElement? FocusedElement => _focusedElement;
 
-        private void ClearFocusWithinAncestors(IInputElement? element)
+        private static void ClearFocusWithinAncestors(IInputElement? element)
         {
             var el = element;
             
@@ -65,7 +65,7 @@ namespace Avalonia.Input
         {
             if (newElement == null && oldElement != null)
             {
-                ClearFocusWithinAncestors(oldElement);
+                KeyboardDevice.ClearFocusWithinAncestors(oldElement);
                 return;
             }
             

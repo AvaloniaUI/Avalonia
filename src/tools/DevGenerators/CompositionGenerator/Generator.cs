@@ -540,7 +540,7 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
             return cl.AddMembers(method);
         }
 
-        ClassDeclarationSyntax WithStartAnimation(ClassDeclarationSyntax cl, BlockSyntax body)
+        static ClassDeclarationSyntax WithStartAnimation(ClassDeclarationSyntax cl, BlockSyntax body)
         {
             body = body.AddStatements(
                 ExpressionStatement(InvocationExpression(MemberAccess("base", "StartAnimation"),

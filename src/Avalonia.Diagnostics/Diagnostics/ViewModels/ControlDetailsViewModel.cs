@@ -34,8 +34,8 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _avaloniaObject = avaloniaObject;
 
-            TreePage = treePage;            
-                        Layout =  avaloniaObject is IVisual 
+            TreePage = treePage;
+                        Layout = avaloniaObject is IVisual 
                 ?  new ControlLayoutViewModel((IVisual)avaloniaObject)
                 : default;
 
@@ -83,7 +83,7 @@ namespace Avalonia.Diagnostics.ViewModels
                             {
                                 var setterValue = regularSetter.Value;
 
-                                var resourceInfo = ControlDetailsViewModel.GetResourceInfo(setterValue);
+                                var resourceInfo = GetResourceInfo(setterValue);
 
                                 SetterViewModel setterVm;
 
@@ -137,7 +137,7 @@ namespace Avalonia.Diagnostics.ViewModels
             return null;
         }
 
-        private bool IsBinding(object? value)
+        private static bool IsBinding(object? value)
         {
             switch (value)
             {
@@ -254,7 +254,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private IEnumerable<PropertyViewModel> GetAvaloniaProperties(object o)
+        private static IEnumerable<PropertyViewModel> GetAvaloniaProperties(object o)
         {
             if (o is AvaloniaObject ao)
             {
@@ -268,7 +268,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private IEnumerable<PropertyViewModel> GetClrProperties(object o, bool showImplementedInterfaces)
+        private static IEnumerable<PropertyViewModel> GetClrProperties(object o, bool showImplementedInterfaces)
         {
             foreach (var p in GetClrProperties(o, o.GetType()))
             {
@@ -287,7 +287,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private IEnumerable<PropertyViewModel> GetClrProperties(object o, Type t)
+        private static IEnumerable<PropertyViewModel> GetClrProperties(object o, Type t)
         {
             return t.GetProperties()
                 .Where(x => x.GetIndexParameters().Length == 0)
@@ -412,7 +412,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             }
 
-            private int GroupIndex(string? group)
+            private static int GroupIndex(string? group)
             {
                 switch (group)
                 {

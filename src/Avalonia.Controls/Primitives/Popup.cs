@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Mixins;
@@ -15,7 +14,6 @@ using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using Avalonia.Media;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -475,7 +473,7 @@ namespace Avalonia.Controls.Primitives
 
             _openState = new PopupOpenState(placementTarget, topLevel, popupHost, cleanupPopup);
 
-            Popup.WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
+            WindowManagerAddShadowHintChanged(popupHost, WindowManagerAddShadowHint);
 
             popupHost.Show();
 
@@ -769,7 +767,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void PassThroughEvent(PointerPressedEventArgs e)
+        private static void PassThroughEvent(PointerPressedEventArgs e)
         {
             if (e.Source is LightDismissOverlayLayer layer &&
                 layer.GetVisualRoot() is IInputElement root)

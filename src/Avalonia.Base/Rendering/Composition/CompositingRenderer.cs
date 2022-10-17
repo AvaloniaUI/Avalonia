@@ -233,11 +233,11 @@ public class CompositingRenderer : IRendererWithCompositor
             visual.Render(_recordingContext);
             comp.DrawList = _recorder.EndUpdate();
 
-            CompositingRenderer.SyncChildren(visual);
+            SyncChildren(visual);
         }
         foreach(var v in _recalculateChildren)
             if (!_dirty.Contains(v))
-                CompositingRenderer.SyncChildren(v);
+                SyncChildren(v);
         _dirty.Clear();
         _recalculateChildren.Clear();
         CompositionTarget.Size = _root.ClientSize;

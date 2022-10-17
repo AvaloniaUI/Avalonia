@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Dialogs;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
@@ -42,10 +41,10 @@ namespace Avalonia.X11
             Options = options;
             
             bool useXim = false;
-            if (AvaloniaX11Platform.EnableIme(options))
+            if (EnableIme(options))
             {
                 // Attempt to configure DBus-based input method and check if we can fall back to XIM
-                if (!X11DBusImeHelper.DetectAndRegister() && AvaloniaX11Platform.ShouldUseXim())
+                if (!X11DBusImeHelper.DetectAndRegister() && ShouldUseXim())
                     useXim = true;
             }
 
@@ -85,7 +84,7 @@ namespace Avalonia.X11
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
-            X11Screens = Avalonia.X11.X11Screens.Init(this);
+            X11Screens = X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
             if (Info.XInputVersion != null)
             {

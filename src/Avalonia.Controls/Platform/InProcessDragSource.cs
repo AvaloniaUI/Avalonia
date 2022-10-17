@@ -64,7 +64,7 @@ namespace Avalonia.Platform
             var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
             tl?.PlatformImpl?.Input?.Invoke(rawEvent);
 
-            var effect = InProcessDragSource.GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
+            var effect = GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
             UpdateCursor(root, effect);
             return effect;
         }
@@ -80,7 +80,7 @@ namespace Avalonia.Platform
             return DragDropEffects.Move;
         }
 
-        private StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
+        private static StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
         {
             if (effects.HasAllFlags(DragDropEffects.Copy))
                 return StandardCursorType.DragCopy;

@@ -31,7 +31,7 @@ namespace Avalonia.Win32
 
         public async Task<string> GetTextAsync()
         {
-            using(await ClipboardImpl.OpenClipboard())
+            using(await OpenClipboard())
             {
                 IntPtr hText = UnmanagedMethods.GetClipboardData(UnmanagedMethods.ClipboardFormat.CF_UNICODETEXT);
                 if (hText == IntPtr.Zero)
@@ -58,7 +58,7 @@ namespace Avalonia.Win32
                 throw new ArgumentNullException(nameof(text));
             }
 
-            using(await ClipboardImpl.OpenClipboard())
+            using(await OpenClipboard())
             {
                 UnmanagedMethods.EmptyClipboard();
 
@@ -69,7 +69,7 @@ namespace Avalonia.Win32
 
         public async Task ClearAsync()
         {
-            using(await ClipboardImpl.OpenClipboard())
+            using(await OpenClipboard())
             {
                 UnmanagedMethods.EmptyClipboard();
             }

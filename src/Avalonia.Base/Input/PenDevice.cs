@@ -56,7 +56,7 @@ namespace Avalonia.Input
                     e.Handled = PenUp(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
                     break;
                 case RawPointerEventType.Move:
-                    e.Handled = PenDevice.PenMove(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult, e.IntermediatePoints);
+                    e.Handled = PenMove(pointer, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult, e.IntermediatePoints);
                     break;
             }
 

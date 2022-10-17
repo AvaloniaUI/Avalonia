@@ -57,7 +57,7 @@ namespace Avalonia.Data.Core.Plugins
                 else
                 {
                     base.InnerValueChanged(new BindingNotification(
-                        Accessor.CreateException(errors),
+                        CreateException(errors),
                         BindingErrorType.DataValidationError,
                         value));
                 }

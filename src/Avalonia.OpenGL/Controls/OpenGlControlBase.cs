@@ -27,7 +27,7 @@ namespace Avalonia.OpenGL.Controls
                 _context.GlInterface.BindFramebuffer(GL_FRAMEBUFFER, _fb);
                 EnsureTextureAttachment();
                 EnsureDepthBufferAttachment(_context.GlInterface);
-                if(!OpenGlControlBase.CheckFramebufferStatus(_context.GlInterface))
+                if(!CheckFramebufferStatus(_context.GlInterface))
                     return;
                 
                 OnOpenGlRender(_context.GlInterface, _fb);
@@ -186,7 +186,7 @@ namespace Avalonia.OpenGL.Controls
                     EnsureDepthBufferAttachment(gl);
                     EnsureTextureAttachment();
 
-                    return OpenGlControlBase.CheckFramebufferStatus(gl);
+                    return CheckFramebufferStatus(gl);
                 }
                 catch(Exception e)
                 {

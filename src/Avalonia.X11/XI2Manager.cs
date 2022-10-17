@@ -193,7 +193,7 @@ namespace Avalonia.X11
             {
                 var rev = (XIEnterLeaveEvent*)xev;
                 if (_clients.TryGetValue(rev->EventWindow, out var client))
-                    XI2Manager.OnEnterLeaveEvent(client, ref *rev);
+                    OnEnterLeaveEvent(client, ref *rev);
             }
         }
 

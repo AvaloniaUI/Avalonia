@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using Avalonia.Controls;
-using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
 {
@@ -111,7 +110,7 @@ namespace Avalonia.Native.Interop.Impl
 
         private __MicroComIAvnMenuItemProxy CreateNewAt(IAvaloniaNativeFactory factory, int index, NativeMenuItemBase item)
         {
-            var result = __MicroComIAvnMenuProxy.CreateNew(factory, item);
+            var result = CreateNew(factory, item);
 
             result.Initialize(item);
 

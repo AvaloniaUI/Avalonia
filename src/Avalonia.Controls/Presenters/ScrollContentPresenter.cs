@@ -295,7 +295,7 @@ namespace Avalonia.Controls.Presenters
                 // arrange then that change wasn't just due to scrolling (as scrolling doesn't adjust
                 // relative positions within Child).
                 if (_anchorElement != null &&
-                    ScrollContentPresenter.TranslateBounds(_anchorElement, Child!, out var updatedBounds) &&
+                    TranslateBounds(_anchorElement, Child!, out var updatedBounds) &&
                     updatedBounds.Position != _anchorElementBounds.Position)
                 {
                     var offset = updatedBounds.Position - _anchorElementBounds.Position;
@@ -588,7 +588,7 @@ namespace Avalonia.Controls.Presenters
 
         private bool GetViewportBounds(IControl element, out Rect bounds)
         {
-            if (ScrollContentPresenter.TranslateBounds(element, Child!, out var childBounds))
+            if (TranslateBounds(element, Child!, out var childBounds))
             {
                 // We want the bounds relative to the new Offset, regardless of whether the child
                 // control has actually been arranged to this offset yet, so translate first to the
@@ -603,9 +603,9 @@ namespace Avalonia.Controls.Presenters
             return false;
         }
 
-        private Rect TranslateBounds(IControl control, IControl to)
+        private static Rect TranslateBounds(IControl control, IControl to)
         {
-            if (ScrollContentPresenter.TranslateBounds(control, to, out var bounds))
+            if (TranslateBounds(control, to, out var bounds))
             {
                 return bounds;
             }

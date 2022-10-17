@@ -1117,7 +1117,7 @@ namespace Avalonia.Controls
             else
             {
                 //  otherwise...
-                cellMeasureWidth = Grid.GetMeasureSizeForRange(
+                cellMeasureWidth = GetMeasureSizeForRange(
                                         DefinitionsU,
                                         PrivateCells[cell].ColumnIndex,
                                         PrivateCells[cell].ColumnSpan);
@@ -1137,7 +1137,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                cellMeasureHeight = Grid.GetMeasureSizeForRange(
+                cellMeasureHeight = GetMeasureSizeForRange(
                                         DefinitionsV,
                                         PrivateCells[cell].RowIndex,
                                         PrivateCells[cell].RowSpan);
@@ -1192,7 +1192,7 @@ namespace Avalonia.Controls
         /// <param name="start">Starting index of the range.</param>
         /// <param name="count">Number of definitions included in the range.</param>
         /// <returns>Length type for given range.</returns>
-        private LayoutTimeSizeType GetLengthTypeForRange(
+        private static LayoutTimeSizeType GetLengthTypeForRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
             int count)
@@ -1721,7 +1721,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="definitions">Array of definitions to use for calculations.</param>
         /// <returns>Desired size.</returns>
-        private double CalculateDesiredSize(
+        private static double CalculateDesiredSize(
             IReadOnlyList<DefinitionBase> definitions)
         {
             double desiredSize = 0;
@@ -2281,7 +2281,7 @@ namespace Avalonia.Controls
         /// <param name="start">Start of the range.</param>
         /// <param name="count">Number of items in the range.</param>
         /// <returns>Final size.</returns>
-        private double GetFinalSizeForRange(
+        private static double GetFinalSizeForRange(
             IReadOnlyList<DefinitionBase> definitions,
             int start,
             int count)

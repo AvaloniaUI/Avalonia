@@ -92,7 +92,7 @@ namespace Avalonia.Data.Core.Plugins
                     if (errors?.Count > 0)
                     {
                         return new BindingNotification(
-                            Validator.GenerateException(errors),
+                            GenerateException(errors),
                             BindingErrorType.DataValidationError,
                             value);
                     }

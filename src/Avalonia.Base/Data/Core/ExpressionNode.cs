@@ -138,7 +138,7 @@ namespace Avalonia.Data.Core
 
             if (target == null)
             {
-                ValueChanged(ExpressionNode.TargetNullNotification());
+                ValueChanged(TargetNullNotification());
                 _listening = false;
             }
             else if (target != AvaloniaProperty.UnsetValue)

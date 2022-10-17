@@ -36,12 +36,12 @@ namespace Avalonia.FreeDesktop
 
         private static string GetSymlinkTarget(string x) => Path.GetFullPath(Path.Combine(DevByLabelDir, NativeMethods.ReadLink(x)));
 
-        private string UnescapeString(string input, string regexText, int escapeBase) =>
+        private static string UnescapeString(string input, string regexText, int escapeBase) =>
             new Regex(regexText).Replace(input, m => Convert.ToChar(Convert.ToByte(m.Groups[1].Value, escapeBase)).ToString());
 
-        private string UnescapePathFromProcMounts(string input) => UnescapeString(input, @"\\(\d{3})", 8);
+        private static string UnescapePathFromProcMounts(string input) => UnescapeString(input, @"\\(\d{3})", 8);
 
-        private string UnescapeDeviceLabel(string input) => UnescapeString(input, @"\\x([0-9a-f]{2})", 16);
+        private static string UnescapeDeviceLabel(string input) => UnescapeString(input, @"\\x([0-9a-f]{2})", 16);
 
         private void Poll(long _)
         {
@@ -61,7 +61,7 @@ namespace Avalonia.FreeDesktop
                                new DirectoryInfo(DevByLabelDir).GetFiles() : Enumerable.Empty<FileInfo>();
 
             var labelDevPathPairs = labelDirEnum
-                                    .Select(x => (LinuxMountedVolumeInfoListener.GetSymlinkTarget(x.FullName), UnescapeDeviceLabel(x.Name)));
+                                    .Select(x => (GetSymlinkTarget(x.FullName), UnescapeDeviceLabel(x.Name)));
 
             var q1 = from mount in fProcMounts
                      join device in fProcPartitions on mount.Item1 equals device.Item2

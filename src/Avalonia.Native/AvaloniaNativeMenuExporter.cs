@@ -167,7 +167,7 @@ namespace Avalonia.Native
 
                         if (appMenu == null)
                         {
-                            appMenu = AvaloniaNativeMenuExporter.CreateDefaultAppMenu();
+                            appMenu = CreateDefaultAppMenu();
                             NativeMenu.SetMenu(Application.Current, appMenu);
                         }
 

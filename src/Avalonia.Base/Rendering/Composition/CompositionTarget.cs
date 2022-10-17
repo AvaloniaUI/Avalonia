@@ -53,7 +53,7 @@ namespace Avalonia.Rendering.Composition
             var m = Matrix.Identity;
             while (v != null)
             {
-                if (!CompositionTarget.TryGetInvertedTransform(v, out var cm))
+                if (!TryGetInvertedTransform(v, out var cm))
                     return null;
                 m = m * cm;
                 v = v.Parent;
@@ -75,10 +75,10 @@ namespace Avalonia.Rendering.Composition
             return m33.TryInvert(out matrix);
         }
 
-        bool TryTransformTo(CompositionVisual visual, Point globalPoint, out Point v)
+        static bool TryTransformTo(CompositionVisual visual, Point globalPoint, out Point v)
         {
             v = default;
-            if (CompositionTarget.TryGetInvertedTransform(visual, out var m))
+            if (TryGetInvertedTransform(visual, out var m))
             {
                 v = globalPoint * m;
                 return true;

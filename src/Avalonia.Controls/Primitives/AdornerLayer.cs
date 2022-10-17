@@ -139,7 +139,7 @@ namespace Avalonia.Controls.Primitives
 
         private static void Attach(Visual visual, Control adorner)
         {
-            var layer = AdornerLayer.GetAdornerLayer(visual);
+            var layer = GetAdornerLayer(visual);
             AddVisualAdorner(visual, adorner, layer);
             visual.SetValue(s_savedAdornerLayerProperty, layer);
         }
@@ -158,8 +158,8 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            AdornerLayer.SetAdornedElement(adorner, visual);
-            AdornerLayer.SetIsClipEnabled(adorner, false);
+            SetAdornedElement(adorner, visual);
+            SetIsClipEnabled(adorner, false);
 
             ((ISetLogicalParent) adorner).SetParent(visual);
             layer.Children.Add(adorner);
@@ -211,7 +211,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
                         child.RenderTransformOrigin = new RelativePoint(new Point(0, 0), RelativeUnit.Absolute);
-                        AdornerLayer.UpdateClip(child, info.Bounds.Value, isClipEnabled);
+                        UpdateClip(child, info.Bounds.Value, isClipEnabled);
                         child.Arrange(info.Bounds.Value.Bounds);
                     }
                     else

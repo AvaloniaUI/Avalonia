@@ -67,7 +67,7 @@ namespace Avalonia.Layout
         {
             if (this is VirtualizingLayout virtualizingLayout)
             {
-                var virtualizingContext = AttachedLayout.GetVirtualizingLayoutContext(context);
+                var virtualizingContext = GetVirtualizingLayoutContext(context);
                 virtualizingLayout.InitializeForContextCore(virtualizingContext);
             }
             else if (this is NonVirtualizingLayout nonVirtualizingLayout)
@@ -92,7 +92,7 @@ namespace Avalonia.Layout
         {
             if (this is VirtualizingLayout virtualizingLayout)
             {
-                var virtualizingContext = AttachedLayout.GetVirtualizingLayoutContext(context);
+                var virtualizingContext = GetVirtualizingLayoutContext(context);
                 virtualizingLayout.UninitializeForContextCore(virtualizingContext);
             }
             else if (this is NonVirtualizingLayout nonVirtualizingLayout)
@@ -126,7 +126,7 @@ namespace Avalonia.Layout
         {
             if (this is VirtualizingLayout virtualizingLayout)
             {
-                var virtualizingContext = AttachedLayout.GetVirtualizingLayoutContext(context);
+                var virtualizingContext = GetVirtualizingLayoutContext(context);
                 return virtualizingLayout.MeasureOverride(virtualizingContext, availableSize);
             }
             else if (this is NonVirtualizingLayout nonVirtualizingLayout)
@@ -157,7 +157,7 @@ namespace Avalonia.Layout
         {
             if (this is VirtualizingLayout virtualizingLayout)
             {
-                var virtualizingContext = AttachedLayout.GetVirtualizingLayoutContext(context);
+                var virtualizingContext = GetVirtualizingLayoutContext(context);
                 return virtualizingLayout.ArrangeOverride(virtualizingContext, finalSize);
             }
             else if (this is NonVirtualizingLayout nonVirtualizingLayout)

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -107,7 +106,7 @@ namespace Avalonia.X11
             
             var filtered = ScheduleKeyInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot,
                 ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                X11KeyTransform.ConvertKey(key), X11Window.TranslateModifiers(ev.KeyEvent.state)), ref ev, (int)key, ev.KeyEvent.keycode);
+                X11KeyTransform.ConvertKey(key), TranslateModifiers(ev.KeyEvent.state)), ref ev, (int)key, ev.KeyEvent.keycode);
            
             if (ev.type == XEventName.KeyPress && !filtered) 
                 TriggerClassicTextInputEvent(ref ev);

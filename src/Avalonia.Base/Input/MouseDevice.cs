@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -71,7 +67,7 @@ namespace Avalonia.Input
                 case RawPointerEventType.MiddleButtonDown:
                 case RawPointerEventType.XButton1Down:
                 case RawPointerEventType.XButton2Down:
-                    if (MouseDevice.ButtonCount(props) > 1)
+                    if (ButtonCount(props) > 1)
                         e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult);
                     else
                         e.Handled = MouseDown(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
@@ -81,7 +77,7 @@ namespace Avalonia.Input
                 case RawPointerEventType.MiddleButtonUp:
                 case RawPointerEventType.XButton1Up:
                 case RawPointerEventType.XButton2Up:
-                    if (MouseDevice.ButtonCount(props) != 0)
+                    if (ButtonCount(props) != 0)
                         e.Handled = MouseMove(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.IntermediatePoints, e.InputHitTestResult);
                     else
                         e.Handled = MouseUp(mouse, e.Timestamp, e.Root, e.Position, props, keyModifiers, e.InputHitTestResult);
@@ -106,9 +102,10 @@ namespace Avalonia.Input
 
         private void LeaveWindow()
         {
+
         }
 
-        PointerPointProperties CreateProperties(RawPointerEventArgs args)
+        static PointerPointProperties CreateProperties(RawPointerEventArgs args)
         {
             return new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind());
         }

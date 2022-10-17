@@ -126,7 +126,7 @@ namespace Avalonia.Platform
             uri = uri.EnsureAbsolute(baseUri);
             if (uri.IsAvares())
             {
-                var (asm, path) = AssetLoader.GetResAsmAndPath(uri);
+                var (asm, path) = GetResAsmAndPath(uri);
                 if (asm == null)
                 {
                     throw new ArgumentException(
@@ -171,7 +171,7 @@ namespace Avalonia.Platform
 
             if (uri.IsAvares())
             {
-                var (asm, path) = AssetLoader.GetResAsmAndPath(uri);
+                var (asm, path) = GetResAsmAndPath(uri);
                 if (asm.AvaloniaResources == null)
                     return null;
                 asm.AvaloniaResources.TryGetValue(path, out var desc);
@@ -187,14 +187,14 @@ namespace Avalonia.Platform
             return (asm, uri.GetUnescapeAbsolutePath());
         }
         
-        private IAssemblyDescriptor? GetAssembly(Uri? uri)
+        private static IAssemblyDescriptor? GetAssembly(Uri? uri)
         {
             if (uri != null)
             {
                 if (!uri.IsAbsoluteUri)
                     return null;
                 if (uri.IsAvares())
-                    return AssetLoader.GetResAsmAndPath(uri).asm;
+                    return GetResAsmAndPath(uri).asm;
 
                 if (uri.IsResm())
                 {

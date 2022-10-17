@@ -20,7 +20,7 @@ namespace Avalonia.Markup.Xaml.Converters
             var path = value as string;
             if (path != null)
             {
-                return IconTypeConverter.CreateIconFromPath(context, path);
+                return CreateIconFromPath(context, path);
             }
 
             var bitmap = value as IBitmap;

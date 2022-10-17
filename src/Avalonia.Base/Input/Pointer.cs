@@ -41,7 +41,7 @@ namespace Avalonia.Input
             PlatformCapture(control);
             if (oldCapture != null)
             {
-                var commonParent = Pointer.FindCommonParent(control, oldCapture);
+                var commonParent = FindCommonParent(control, oldCapture);
                 foreach (var notifyTarget in oldCapture.GetSelfAndVisualAncestors().OfType<IInputElement>())
                 {
                     if (notifyTarget == commonParent)
@@ -54,7 +54,7 @@ namespace Avalonia.Input
                 Captured.DetachedFromVisualTree += OnCaptureDetached;
         }
 
-        IInputElement? GetNextCapture(IVisual parent)
+        static IInputElement? GetNextCapture(IVisual parent)
         {
             return parent as IInputElement ?? parent.FindAncestorOfType<IInputElement>();
         }

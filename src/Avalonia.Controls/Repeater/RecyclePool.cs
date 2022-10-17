@@ -32,7 +32,7 @@ namespace Avalonia.Controls
 
         public void PutElement(IControl element, string key, IControl? owner)
         {
-            var ownerAsPanel = RecyclePool.EnsureOwnerIsPanelOrNull(owner);
+            var ownerAsPanel = EnsureOwnerIsPanelOrNull(owner);
             var elementInfo = new ElementInfo(element, ownerAsPanel);
 
             if (!_elements.TryGetValue(key, out var pool))
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
                     var elementInfo = elements.FirstOrDefault(x => x.Owner == owner) ?? elements.LastOrDefault();
                     elements.Remove(elementInfo!);
 
-                    var ownerAsPanel = RecyclePool.EnsureOwnerIsPanelOrNull(owner);
+                    var ownerAsPanel = EnsureOwnerIsPanelOrNull(owner);
                     if (elementInfo!.Owner != null && elementInfo.Owner != ownerAsPanel)
                     {
                         // Element is still under its parent. remove it from its parent.

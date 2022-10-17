@@ -3,13 +3,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
@@ -284,7 +282,7 @@ namespace Avalonia.Controls
 
                     foreach (IControl container in ItemContainerGenerator.Index!.Containers)
                     {
-                        TreeView.MarkContainerSelected(container, false);
+                        MarkContainerSelected(container, false);
                     }
 
                     if (SelectedItems.Count > 0)
@@ -339,7 +337,7 @@ namespace Avalonia.Controls
         {
             var container = ItemContainerGenerator.Index!.ContainerFromItem(item)!;
 
-            TreeView.MarkContainerSelected(container, selected);
+            MarkContainerSelected(container, selected);
         }
 
         private void SelectedItemsAdded(IList items)

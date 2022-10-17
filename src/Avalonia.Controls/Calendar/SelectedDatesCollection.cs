@@ -6,7 +6,6 @@
 using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
-using System.Threading;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -133,7 +132,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void ClearItems()
         {
-            SelectedDatesCollection.EnsureValidThread();
+            EnsureValidThread();
 
             Collection<DateTime> addedItems = new Collection<DateTime>();
             Collection<DateTime> removedItems = new Collection<DateTime>();
@@ -170,7 +169,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void InsertItem(int index, DateTime item)
         {
-            SelectedDatesCollection.EnsureValidThread();
+            EnsureValidThread();
 
             if (!Contains(item))
             {
@@ -233,7 +232,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void RemoveItem(int index)
         {
-            SelectedDatesCollection.EnsureValidThread();
+            EnsureValidThread();
 
             if (index >= Count)
             {
@@ -284,7 +283,7 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected override void SetItem(int index, DateTime item)
         {
-            SelectedDatesCollection.EnsureValidThread();
+            EnsureValidThread();
 
             if (!Contains(item))
             {

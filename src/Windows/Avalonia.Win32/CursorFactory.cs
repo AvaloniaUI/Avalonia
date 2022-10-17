@@ -92,7 +92,7 @@ namespace Avalonia.Win32
 
         public ICursorImpl CreateCursor(IBitmapImpl cursor, PixelPoint hotSpot)
         {
-            using var source = CursorFactory.LoadSystemDrawingBitmap(cursor);
+            using var source = LoadSystemDrawingBitmap(cursor);
             using var mask = AlphaToMask(source);
 
             var info = new UnmanagedMethods.ICONINFO

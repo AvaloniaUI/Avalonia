@@ -138,7 +138,7 @@ namespace Avalonia.Input
         public bool Matches(KeyEventArgs keyEvent) =>
             keyEvent != null &&
             keyEvent.KeyModifiers == KeyModifiers &&
-            KeyGesture.ResolveNumPadOperationKey(keyEvent.Key) == KeyGesture.ResolveNumPadOperationKey(Key);
+            ResolveNumPadOperationKey(keyEvent.Key) == ResolveNumPadOperationKey(Key);
 
         // TODO: Move that to external key parser
         private static Key ParseKey(string key)

@@ -40,22 +40,22 @@ namespace Avalonia.Input
         
         private DragDropEffects DragEnter(IInputRoot inputRoot, Point point, IDataObject data, DragDropEffects effects, KeyModifiers modifiers)
         {
-            _lastTarget = DragDropDevice.GetTarget(inputRoot, point);
-            return DragDropDevice.RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DragEnterEvent, effects, data, modifiers);
+            _lastTarget = GetTarget(inputRoot, point);
+            return RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DragEnterEvent, effects, data, modifiers);
         }
 
         private DragDropEffects DragOver(IInputRoot inputRoot, Point point, IDataObject data, DragDropEffects effects, KeyModifiers modifiers)
         {
-            var target = DragDropDevice.GetTarget(inputRoot, point);
+            var target = GetTarget(inputRoot, point);
 
             if (target == _lastTarget)
-                return DragDropDevice.RaiseDragEvent(target, inputRoot, point, DragDrop.DragOverEvent, effects, data, modifiers);
+                return RaiseDragEvent(target, inputRoot, point, DragDrop.DragOverEvent, effects, data, modifiers);
             
             try
             {
                 if (_lastTarget != null)
                     _lastTarget.RaiseEvent(new RoutedEventArgs(DragDrop.DragLeaveEvent));
-                return DragDropDevice.RaiseDragEvent(target, inputRoot, point, DragDrop.DragEnterEvent, effects, data, modifiers);
+                return RaiseDragEvent(target, inputRoot, point, DragDrop.DragEnterEvent, effects, data, modifiers);
             }
             finally
             {
@@ -81,7 +81,7 @@ namespace Avalonia.Input
         {
             try
             {
-                return DragDropDevice.RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DropEvent, effects, data, modifiers);
+                return RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DropEvent, effects, data, modifiers);
             }
             finally 
             {

@@ -429,7 +429,7 @@ namespace Avalonia.Skia
                         var spread = (float)boxShadow.Spread;
                         var offsetX = (float)boxShadow.OffsetX;
                         var offsetY = (float)boxShadow.OffsetY;
-                        var outerRect = DrawingContextImpl.AreaCastingShadowInHole(rc, (float)boxShadow.Blur, spread, offsetX, offsetY);
+                        var outerRect = AreaCastingShadowInHole(rc, (float)boxShadow.Blur, spread, offsetX, offsetY);
 
                         Canvas.Save();
                         using var shadowRect = new SKRoundRect(skRoundRect);
@@ -1044,7 +1044,7 @@ namespace Avalonia.Skia
 
             if (brush is IGradientBrush gradient)
             {
-                DrawingContextImpl.ConfigureGradientBrush(ref paintWrapper, targetSize, gradient);
+                ConfigureGradientBrush(ref paintWrapper, targetSize, gradient);
 
                 return paintWrapper;
             }
