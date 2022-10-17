@@ -14,12 +14,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 {
     class AvaloniaXamlIlLanguageParseIntrinsics
     {
-#if NET6_0_OR_GREATER
-        private const string Colon = ":";
-#else
-        private const string Colon = ":";
-#endif
-
         public static bool TryConvert(AstTransformationContext context, IXamlAstValueNode node, string text, IXamlType type, AvaloniaXamlIlWellKnownTypes types, out IXamlAstValueNode result)
         {
             if (type.FullName == "System.TimeSpan")
@@ -29,7 +23,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 if (!TimeSpan.TryParse(tsText, CultureInfo.InvariantCulture, out var timeSpan))
                 {
                     // // shorthand seconds format (ie. "0.25")
-                    if (!tsText.Contains(Colon) && double.TryParse(tsText,
+                    if (!tsText.Contains(":") && double.TryParse(tsText,
                         NumberStyles.Float | NumberStyles.AllowThousands,
                         CultureInfo.InvariantCulture, out var seconds))
                         timeSpan = TimeSpan.FromSeconds(seconds);

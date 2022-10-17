@@ -597,7 +597,7 @@ namespace Avalonia.Controls.Primitives
             for (int i = presenter.Classes.Count - 1; i >= 0; i--)
             {
                 if (!classes.Contains(presenter.Classes[i]) &&
-                    !presenter.Classes[i].Contains(':'))
+                    !presenter.Classes[i].Contains(":"))
                 {
                     presenter.Classes.RemoveAt(i);
                 }

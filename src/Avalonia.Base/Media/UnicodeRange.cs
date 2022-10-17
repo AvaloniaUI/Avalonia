@@ -104,11 +104,6 @@ namespace Avalonia.Media
 
     public readonly struct UnicodeRangeSegment
     {
-#if NET6_0_OR_GREATER
-        private const char Question = '?';
-#else
-        private const string Question = "?";
-#endif
         private static Regex s_regex = new Regex(@"^(?:[uU]\+)?(?:([0-9a-fA-F](?:[0-9a-fA-F?]{1,5})?))$");
 
         public UnicodeRangeSegment(int start, int end)
@@ -168,7 +163,7 @@ namespace Avalonia.Media
                             throw new FormatException("Could not parse specified Unicode range segment.");
                         }
 
-                        if (!single.Value.Contains(Question))
+                        if (!single.Value.Contains("?"))
                         {
                             start = int.Parse(single.Groups[1].Value, System.Globalization.NumberStyles.HexNumber);
                             end = start;

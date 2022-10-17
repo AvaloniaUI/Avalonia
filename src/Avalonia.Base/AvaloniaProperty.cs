@@ -12,12 +12,6 @@ namespace Avalonia
     /// </summary>
     public abstract class AvaloniaProperty : IEquatable<AvaloniaProperty>, IPropertyInfo
     {
-#if NET6_0_OR_GREATER
-        internal const char Period = '.';
-#else
-        internal const string Period = ".";
-#endif
-
         /// <summary>
         /// Represents an unset property value.
         /// </summary>
@@ -47,7 +41,7 @@ namespace Avalonia
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
-            if (name.Contains(Period))
+            if (name.Contains("."))
             {
                 throw new ArgumentException("'name' may not contain periods.");
             }
