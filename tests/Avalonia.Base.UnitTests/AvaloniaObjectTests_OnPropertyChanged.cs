@@ -49,6 +49,26 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void OnPropertyChangedCore_Is_Called_On_Non_Effective_Property_Binding_Value_Change()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<BindingValue<string>>("styled1");
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.Style);
+            target.SetValue(Class1.FooProperty, "newvalue", BindingPriority.Animation);
+            source.OnNext("styled2");
+
+            Assert.Equal(3, target.CoreChanges.Count);
+
+            var change = (AvaloniaPropertyChangedEventArgs<string>)target.CoreChanges[2];
+            
+            Assert.Equal("styled2", change.NewValue.Value);
+            Assert.False(change.OldValue.HasValue);
+            Assert.Equal(BindingPriority.Style, change.Priority);
+            Assert.False(change.IsEffectiveValueChange);
+        }
+
+        [Fact]
         public void OnPropertyChanged_Is_Called_Only_For_Effective_Value_Changes()
         {
             var target = new Class1();

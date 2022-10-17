@@ -1,4 +1,5 @@
-﻿using Avalonia.Data;
+﻿using System.Diagnostics;
+using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
@@ -147,18 +148,41 @@ namespace Avalonia.PropertyStore
 
         protected void UpdateValueEntry(IValueEntry? entry, BindingPriority priority)
         {
-            if (priority <= Priority && entry != _valueEntry)
+            Debug.Assert(priority != BindingPriority.LocalValue);
+
+            if (priority <= BindingPriority.Animation)
             {
+                // If we've received an animation value and the current value is a non-animation
+                // value, then the current entry becomes our base entry.
+                if (Priority > BindingPriority.LocalValue && Priority < BindingPriority.Inherited)
+                {
+                    Debug.Assert(_valueEntry is not null);
+                    _baseValueEntry = _valueEntry;
+                    _valueEntry = null;
+                }
+
+                if (_valueEntry != entry)
+                {
+                    _valueEntry?.Unsubscribe();
+                    _valueEntry = entry;
+                }
+            }
+            else if (Priority <= BindingPriority.Animation)
+            {
+                // We've received a non-animation value and have an active animation value, so the
+                // new entry becomes our base entry.
+                if (_baseValueEntry != entry)
+                {
+                    _baseValueEntry?.Unsubscribe();
+                    _baseValueEntry = entry;
+                }
+            }
+            else if (_valueEntry != entry)
+            {
+                // Both the current value and the new value are non-animation values, so the new
+                // entry replaces the existing entry.
                 _valueEntry?.Unsubscribe();
                 _valueEntry = entry;
-            }
-
-            if (priority <= BasePriority &&
-                priority >= BindingPriority.LocalValue &&
-                entry != _baseValueEntry)
-            {
-                _baseValueEntry?.Unsubscribe();
-                _baseValueEntry = entry;
             }
         }
 

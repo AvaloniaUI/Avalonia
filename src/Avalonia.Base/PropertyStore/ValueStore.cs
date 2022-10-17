@@ -369,7 +369,7 @@ namespace Avalonia.PropertyStore
 
             if (TryGetEffectiveValue(property, out var existing))
             {
-                if (priority <= existing.Priority)
+                if (priority <= existing.BasePriority)
                     ReevaluateEffectiveValue(property, existing);
             }
             else

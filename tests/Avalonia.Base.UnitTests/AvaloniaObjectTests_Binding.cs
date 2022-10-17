@@ -565,6 +565,21 @@ namespace Avalonia.Base.UnitTests
         [Theory]
         [InlineData(BindingPriority.LocalValue)]
         [InlineData(BindingPriority.Style)]
+        public void Observable_Is_Not_Unsubscribed_When_Animation_Value_Is_Set(BindingPriority priority)
+        {
+            var source = new TestSubject<BindingValue<string>>("foo");
+            var target = new Class1();
+
+            target.Bind(Class1.FooProperty, source, priority);
+            Assert.Equal(1, source.SubscriberCount);
+
+            target.SetValue(Class1.FooProperty, "bar", BindingPriority.Animation);
+            Assert.Equal(1, source.SubscriberCount);
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
         public void Observable_Is_Not_Unsubscribed_When_Animation_Binding_Is_Added(BindingPriority priority)
         {
             var source1 = new TestSubject<BindingValue<string>>("foo");
