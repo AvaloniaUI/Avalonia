@@ -206,7 +206,15 @@ namespace Avalonia
         /// </summary>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
-        public object? GetValue(AvaloniaProperty property) => property.RouteGetValue(this);
+        public object? GetValue(AvaloniaProperty property)
+        {
+            _ = property ?? throw new ArgumentNullException(nameof(property));
+
+            if (property.IsDirect)
+                return property.RouteGetValue(this);
+            else
+                return _values.GetValue(property);
+        }
 
         /// <summary>
         /// Gets a <see cref="AvaloniaProperty"/> value.

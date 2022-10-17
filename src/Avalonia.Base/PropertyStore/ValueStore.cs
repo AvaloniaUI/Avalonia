@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Avalonia.Collections.Pooled;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.Utilities;
-using JetBrains.Annotations;
 
 namespace Avalonia.PropertyStore
 {
