@@ -56,7 +56,8 @@ namespace Avalonia.PropertyStore
             else
             {
                 var effective = GetEffectiveValue(property);
-                var frame = GetOrCreateImmediateValueFrame(property, priority, out var frameIndex);
+
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
                 var result = frame.AddBinding(property, source);
 
                 if (effective is null || priority <= effective.Priority)
@@ -83,7 +84,8 @@ namespace Avalonia.PropertyStore
             else
             {
                 var effective = GetEffectiveValue(property);
-                var frame = GetOrCreateImmediateValueFrame(property, priority, out var frameIndex);
+
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
                 var result = frame.AddBinding(property, source);
 
                 if (effective is null || priority <= effective.Priority)
@@ -110,7 +112,8 @@ namespace Avalonia.PropertyStore
             else
             {
                 var effective = GetEffectiveValue(property);
-                var frame = GetOrCreateImmediateValueFrame(property, priority, out var frameIndex);
+
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
                 var result = frame.AddBinding(property, source);
 
                 if (effective is null || priority <= effective.Priority)
@@ -168,7 +171,7 @@ namespace Avalonia.PropertyStore
 
             if (priority != BindingPriority.LocalValue)
             {
-                var frame = GetOrCreateImmediateValueFrame(property, priority, out var frameIndex);
+                var frame = GetOrCreateImmediateValueFrame(property, priority, out _);
                 var result = frame.AddValue(property, value);
 
                 if (TryGetEffectiveValue(property, out var existing))
@@ -274,7 +277,7 @@ namespace Avalonia.PropertyStore
             return false;
         }
 
-        public void SetInheritanceParent(AvaloniaObject? oldParent, AvaloniaObject? newParent)
+        public void SetInheritanceParent(AvaloniaObject? newParent)
         {
             var values = AvaloniaPropertyDictionaryPool<OldNewValue>.Get();
             var oldAncestor = InheritanceAncestor;

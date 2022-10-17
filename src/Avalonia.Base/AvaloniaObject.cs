@@ -70,13 +70,10 @@ namespace Avalonia
 
                 if (_inheritanceParent != value)
                 {
-                    var oldParent = _inheritanceParent;
-                    var valuestore = _values;
-
                     _inheritanceParent?.RemoveInheritanceChild(this);
                     _inheritanceParent = value;
                     _inheritanceParent?.AddInheritanceChild(this);
-                    _values.SetInheritanceParent(oldParent, value);
+                    _values.SetInheritanceParent(value);
                 }
             }
         }
