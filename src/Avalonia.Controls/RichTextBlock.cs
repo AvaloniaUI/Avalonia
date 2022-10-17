@@ -6,6 +6,7 @@ using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
@@ -549,6 +550,10 @@ namespace Avalonia.Controls
 
             if (Inlines != null && Inlines.Count > 0)
             {
+                var scale = LayoutHelper.GetLayoutScale(this);
+
+                var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+
                 var inlines = Inlines;
 
                 var textRuns = new List<TextRun>();
@@ -566,8 +571,8 @@ namespace Avalonia.Controls
                         LogicalChildren.Add(control);
 
                         VisualChildren.Add(control);
-
-                        control.Measure(Size.Infinity);
+                       
+                        control.Measure(availableSize.Deflate(padding));
                     }
                 }
 
@@ -581,11 +586,15 @@ namespace Avalonia.Controls
         {
             if (HasComplexContent)
             {
-                var currentY = 0.0;
+                var scale = LayoutHelper.GetLayoutScale(this);
+
+                var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
+
+                var currentY = padding.Top;
 
                 foreach (var textLine in TextLayout.TextLines)
                 {
-                    var currentX = textLine.Start;
+                    var currentX = padding.Left + textLine.Start;
 
                     foreach (var run in textLine.TextRuns)
                     {
