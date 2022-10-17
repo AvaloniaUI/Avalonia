@@ -21,295 +21,529 @@ namespace Avalonia.Controls
     /// </remarks>
     public class MaterialColorPalette : IColorPalette
     {
+        /// <summary>
+        /// Defines all colors in the <see cref="MaterialColorPalette"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is done in an enum to ensure it is compiled into the assembly improving
+        /// startup performance.
+        /// </remarks>
+        public enum MaterialColor : uint
+        {
+            // Red
+            Red50  = 0xFFFFEBEE,
+            Red100 = 0xFFFFCDD2,
+            Red200 = 0xFFEF9A9A,
+            Red300 = 0xFFE57373,
+            Red400 = 0xFFEF5350,
+            Red500 = 0xFFF44336,
+            Red600 = 0xFFE53935,
+            Red700 = 0xFFD32F2F,
+            Red800 = 0xFFC62828,
+            Red900 = 0xFFB71C1C,
+
+            // Pink
+            Pink50  = 0xFFFCE4EC,
+            Pink100 = 0xFFF8BBD0,
+            Pink200 = 0xFFF48FB1,
+            Pink300 = 0xFFF06292,
+            Pink400 = 0xFFEC407A,
+            Pink500 = 0xFFE91E63,
+            Pink600 = 0xFFD81B60,
+            Pink700 = 0xFFC2185B,
+            Pink800 = 0xFFAD1457,
+            Pink900 = 0xFF880E4F,
+
+            // Purple
+            Purple50  = 0xFFF3E5F5,
+            Purple100 = 0xFFE1BEE7,
+            Purple200 = 0xFFCE93D8,
+            Purple300 = 0xFFBA68C8,
+            Purple400 = 0xFFAB47BC,
+            Purple500 = 0xFF9C27B0,
+            Purple600 = 0xFF8E24AA,
+            Purple700 = 0xFF7B1FA2,
+            Purple800 = 0xFF6A1B9A,
+            Purple900 = 0xFF4A148C,
+
+            // Deep Purple
+            DeepPurple50  = 0xFFEDE7F6,
+            DeepPurple100 = 0xFFD1C4E9,
+            DeepPurple200 = 0xFFB39DDB,
+            DeepPurple300 = 0xFF9575CD,
+            DeepPurple400 = 0xFF7E57C2,
+            DeepPurple500 = 0xFF673AB7,
+            DeepPurple600 = 0xFF5E35B1,
+            DeepPurple700 = 0xFF512DA8,
+            DeepPurple800 = 0xFF4527A0,
+            DeepPurple900 = 0xFF311B92,
+
+            // Indigo
+            Indigo50  = 0xFFE8EAF6,
+            Indigo100 = 0xFFC5CAE9,
+            Indigo200 = 0xFF9FA8DA,
+            Indigo300 = 0xFF7986CB,
+            Indigo400 = 0xFF5C6BC0,
+            Indigo500 = 0xFF3F51B5,
+            Indigo600 = 0xFF3949AB,
+            Indigo700 = 0xFF303F9F,
+            Indigo800 = 0xFF283593,
+            Indigo900 = 0xFF1A237E,
+
+            // Blue
+            Blue50  = 0xFFE3F2FD,
+            Blue100 = 0xFFBBDEFB,
+            Blue200 = 0xFF90CAF9,
+            Blue300 = 0xFF64B5F6,
+            Blue400 = 0xFF42A5F5,
+            Blue500 = 0xFF2196F3,
+            Blue600 = 0xFF1E88E5,
+            Blue700 = 0xFF1976D2,
+            Blue800 = 0xFF1565C0,
+            Blue900 = 0xFF0D47A1,
+
+            // Light Blue
+            LightBlue50  = 0xFFE1F5FE,
+            LightBlue100 = 0xFFB3E5FC,
+            LightBlue200 = 0xFF81D4FA,
+            LightBlue300 = 0xFF4FC3F7,
+            LightBlue400 = 0xFF29B6F6,
+            LightBlue500 = 0xFF03A9F4,
+            LightBlue600 = 0xFF039BE5,
+            LightBlue700 = 0xFF0288D1,
+            LightBlue800 = 0xFF0277BD,
+            LightBlue900 = 0xFF01579B,
+
+            // Cyan
+            Cyan50  = 0xFFE0F7FA,
+            Cyan100 = 0xFFB2EBF2,
+            Cyan200 = 0xFF80DEEA,
+            Cyan300 = 0xFF4DD0E1,
+            Cyan400 = 0xFF26C6DA,
+            Cyan500 = 0xFF00BCD4,
+            Cyan600 = 0xFF00ACC1,
+            Cyan700 = 0xFF0097A7,
+            Cyan800 = 0xFF00838F,
+            Cyan900 = 0xFF006064,
+
+            // Teal
+            Teal50  = 0xFFE0F2F1,
+            Teal100 = 0xFFB2DFDB,
+            Teal200 = 0xFF80CBC4,
+            Teal300 = 0xFF4DB6AC,
+            Teal400 = 0xFF26A69A,
+            Teal500 = 0xFF009688,
+            Teal600 = 0xFF00897B,
+            Teal700 = 0xFF00796B,
+            Teal800 = 0xFF00695C,
+            Teal900 = 0xFF004D40,
+
+            // Green
+            Green50  = 0xFFE8F5E9,
+            Green100 = 0xFFC8E6C9,
+            Green200 = 0xFFA5D6A7,
+            Green300 = 0xFF81C784,
+            Green400 = 0xFF66BB6A,
+            Green500 = 0xFF4CAF50,
+            Green600 = 0xFF43A047,
+            Green700 = 0xFF388E3C,
+            Green800 = 0xFF2E7D32,
+            Green900 = 0xFF1B5E20,
+
+            // Light Green
+            LightGreen50  = 0xFFF1F8E9,
+            LightGreen100 = 0xFFDCEDC8,
+            LightGreen200 = 0xFFC5E1A5,
+            LightGreen300 = 0xFFAED581,
+            LightGreen400 = 0xFF9CCC65,
+            LightGreen500 = 0xFF8BC34A,
+            LightGreen600 = 0xFF7CB342,
+            LightGreen700 = 0xFF689F38,
+            LightGreen800 = 0xFF558B2F,
+            LightGreen900 = 0xFF33691E,
+
+            // Lime
+            Lime50  = 0xFFF9FBE7,
+            Lime100 = 0xFFF0F4C3,
+            Lime200 = 0xFFE6EE9C,
+            Lime300 = 0xFFDCE775,
+            Lime400 = 0xFFD4E157,
+            Lime500 = 0xFFCDDC39,
+            Lime600 = 0xFFC0CA33,
+            Lime700 = 0xFFAFB42B,
+            Lime800 = 0xFF9E9D24,
+            Lime900 = 0xFF827717,
+
+            // Yellow
+            Yellow50  = 0xFFFFFDE7,
+            Yellow100 = 0xFFFFF9C4,
+            Yellow200 = 0xFFFFF59D,
+            Yellow300 = 0xFFFFF176,
+            Yellow400 = 0xFFFFEE58,
+            Yellow500 = 0xFFFFEB3B,
+            Yellow600 = 0xFFFDD835,
+            Yellow700 = 0xFFFBC02D,
+            Yellow800 = 0xFFF9A825,
+            Yellow900 = 0xFFF57F17,
+
+            // Amber
+            Amber50  = 0xFFFFF8E1,
+            Amber100 = 0xFFFFECB3,
+            Amber200 = 0xFFFFE082,
+            Amber300 = 0xFFFFD54F,
+            Amber400 = 0xFFFFCA28,
+            Amber500 = 0xFFFFC107,
+            Amber600 = 0xFFFFB300,
+            Amber700 = 0xFFFFA000,
+            Amber800 = 0xFFFF8F00,
+            Amber900 = 0xFFFF6F00,
+
+            // Orange
+            Orange50  = 0xFFFFF3E0,
+            Orange100 = 0xFFFFE0B2,
+            Orange200 = 0xFFFFCC80,
+            Orange300 = 0xFFFFB74D,
+            Orange400 = 0xFFFFA726,
+            Orange500 = 0xFFFF9800,
+            Orange600 = 0xFFFB8C00,
+            Orange700 = 0xFFF57C00,
+            Orange800 = 0xFFEF6C00,
+            Orange900 = 0xFFE65100,
+
+            // Deep Orange
+            DeepOrange50  = 0xFFFBE9E7,
+            DeepOrange100 = 0xFFFFCCBC,
+            DeepOrange200 = 0xFFFFAB91,
+            DeepOrange300 = 0xFFFF8A65,
+            DeepOrange400 = 0xFFFF7043,
+            DeepOrange500 = 0xFFFF5722,
+            DeepOrange600 = 0xFFF4511E,
+            DeepOrange700 = 0xFFE64A19,
+            DeepOrange800 = 0xFFD84315,
+            DeepOrange900 = 0xFFBF360C,
+
+            // Brown
+            Brown50  = 0xFFEFEBE9,
+            Brown100 = 0xFFD7CCC8,
+            Brown200 = 0xFFBCAAA4,
+            Brown300 = 0xFFA1887F,
+            Brown400 = 0xFF8D6E63,
+            Brown500 = 0xFF795548,
+            Brown600 = 0xFF6D4C41,
+            Brown700 = 0xFF5D4037,
+            Brown800 = 0xFF4E342E,
+            Brown900 = 0xFF3E2723,
+
+            // Gray
+            Gray50  = 0xFFFAFAFA,
+            Gray100 = 0xFFF5F5F5,
+            Gray200 = 0xFFEEEEEE,
+            Gray300 = 0xFFE0E0E0,
+            Gray400 = 0xFFBDBDBD,
+            Gray500 = 0xFF9E9E9E,
+            Gray600 = 0xFF757575,
+            Gray700 = 0xFF616161,
+            Gray800 = 0xFF424242,
+            Gray900 = 0xFF212121,
+
+            // Blue Gray
+            BlueGray50  = 0xFFECEFF1,
+            BlueGray100 = 0xFFCFD8DC,
+            BlueGray200 = 0xFFB0BEC5,
+            BlueGray300 = 0xFF90A4AE,
+            BlueGray400 = 0xFF78909C,
+            BlueGray500 = 0xFF607D8B,
+            BlueGray600 = 0xFF546E7A,
+            BlueGray700 = 0xFF455A64,
+            BlueGray800 = 0xFF37474F,
+            BlueGray900 = 0xFF263238,
+        }
+
         // See: https://material.io/design/color/the-color-system.html#tools-for-picking-colors
         // This is a reduced palette for uniformity
-        private static Color[,]? _colorChart = null;
-        private static int _colorChartColorCount = 0;
-        private static int _colorChartShadeCount = 0;
-        private static object _colorChartMutex = new object();
+        protected static Color[,]? _colorChart = null;
+        protected static object _colorChartMutex = new object();
 
         /// <summary>
         /// Initializes all color chart colors.
         /// </summary>
-        /// <remarks>
-        /// This is pulled out separately to lazy load for performance.
-        /// If no material color palette is ever used, no colors will be created.
-        /// </remarks>
-        private static void InitColorChart()
+        protected void InitColorChart()
         {
             lock (_colorChartMutex)
             {
+                if (_colorChart != null)
+                {
+                    return;
+                }
+
                 _colorChart = new Color[,]
                 {
                     // Red
                     {
-                        Color.FromArgb(0xFF, 0xFF, 0xEB, 0xEE),
-                        Color.FromArgb(0xFF, 0xFF, 0xCD, 0xD2),
-                        Color.FromArgb(0xFF, 0xEF, 0x9A, 0x9A),
-                        Color.FromArgb(0xFF, 0xE5, 0x73, 0x73),
-                        Color.FromArgb(0xFF, 0xEF, 0x53, 0x50),
-                        Color.FromArgb(0xFF, 0xF4, 0x43, 0x36),
-                        Color.FromArgb(0xFF, 0xE5, 0x39, 0x35),
-                        Color.FromArgb(0xFF, 0xD3, 0x2F, 0x2F),
-                        Color.FromArgb(0xFF, 0xC6, 0x28, 0x28),
-                        Color.FromArgb(0xFF, 0xB7, 0x1C, 0x1C),
+                        Color.FromUInt32((uint)MaterialColor.Red50),
+                        Color.FromUInt32((uint)MaterialColor.Red100),
+                        Color.FromUInt32((uint)MaterialColor.Red200),
+                        Color.FromUInt32((uint)MaterialColor.Red300),
+                        Color.FromUInt32((uint)MaterialColor.Red400),
+                        Color.FromUInt32((uint)MaterialColor.Red500),
+                        Color.FromUInt32((uint)MaterialColor.Red600),
+                        Color.FromUInt32((uint)MaterialColor.Red700),
+                        Color.FromUInt32((uint)MaterialColor.Red800),
+                        Color.FromUInt32((uint)MaterialColor.Red900),
                     },
 
                     // Pink
                     {
-                        Color.FromArgb(0xFF, 0xFC, 0xE4, 0xEC),
-                        Color.FromArgb(0xFF, 0xF8, 0xBB, 0xD0),
-                        Color.FromArgb(0xFF, 0xF4, 0x8F, 0xB1),
-                        Color.FromArgb(0xFF, 0xF0, 0x62, 0x92),
-                        Color.FromArgb(0xFF, 0xEC, 0x40, 0x7A),
-                        Color.FromArgb(0xFF, 0xE9, 0x1E, 0x63),
-                        Color.FromArgb(0xFF, 0xD8, 0x1B, 0x60),
-                        Color.FromArgb(0xFF, 0xC2, 0x18, 0x5B),
-                        Color.FromArgb(0xFF, 0xAD, 0x14, 0x57),
-                        Color.FromArgb(0xFF, 0x88, 0x0E, 0x4F),
+                        Color.FromUInt32((uint)MaterialColor.Pink50),
+                        Color.FromUInt32((uint)MaterialColor.Pink100),
+                        Color.FromUInt32((uint)MaterialColor.Pink200),
+                        Color.FromUInt32((uint)MaterialColor.Pink300),
+                        Color.FromUInt32((uint)MaterialColor.Pink400),
+                        Color.FromUInt32((uint)MaterialColor.Pink500),
+                        Color.FromUInt32((uint)MaterialColor.Pink600),
+                        Color.FromUInt32((uint)MaterialColor.Pink700),
+                        Color.FromUInt32((uint)MaterialColor.Pink800),
+                        Color.FromUInt32((uint)MaterialColor.Pink900),
                     },
 
                     // Purple
                     {
-                        Color.FromArgb(0xFF, 0xF3, 0xE5, 0xF5),
-                        Color.FromArgb(0xFF, 0xE1, 0xBE, 0xE7),
-                        Color.FromArgb(0xFF, 0xCE, 0x93, 0xD8),
-                        Color.FromArgb(0xFF, 0xBA, 0x68, 0xC8),
-                        Color.FromArgb(0xFF, 0xAB, 0x47, 0xBC),
-                        Color.FromArgb(0xFF, 0x9C, 0x27, 0xB0),
-                        Color.FromArgb(0xFF, 0x8E, 0x24, 0xAA),
-                        Color.FromArgb(0xFF, 0x7B, 0x1F, 0xA2),
-                        Color.FromArgb(0xFF, 0x6A, 0x1B, 0x9A),
-                        Color.FromArgb(0xFF, 0x4A, 0x14, 0x8C),
+                        Color.FromUInt32((uint)MaterialColor.Purple50),
+                        Color.FromUInt32((uint)MaterialColor.Purple100),
+                        Color.FromUInt32((uint)MaterialColor.Purple200),
+                        Color.FromUInt32((uint)MaterialColor.Purple300),
+                        Color.FromUInt32((uint)MaterialColor.Purple400),
+                        Color.FromUInt32((uint)MaterialColor.Purple500),
+                        Color.FromUInt32((uint)MaterialColor.Purple600),
+                        Color.FromUInt32((uint)MaterialColor.Purple700),
+                        Color.FromUInt32((uint)MaterialColor.Purple800),
+                        Color.FromUInt32((uint)MaterialColor.Purple900),
                     },
 
                     // Deep Purple
                     {
-                        Color.FromArgb(0xFF, 0xED, 0xE7, 0xF6),
-                        Color.FromArgb(0xFF, 0xD1, 0xC4, 0xE9),
-                        Color.FromArgb(0xFF, 0xB3, 0x9D, 0xDB),
-                        Color.FromArgb(0xFF, 0x95, 0x75, 0xCD),
-                        Color.FromArgb(0xFF, 0x7E, 0x57, 0xC2),
-                        Color.FromArgb(0xFF, 0x67, 0x3A, 0xB7),
-                        Color.FromArgb(0xFF, 0x5E, 0x35, 0xB1),
-                        Color.FromArgb(0xFF, 0x51, 0x2D, 0xA8),
-                        Color.FromArgb(0xFF, 0x45, 0x27, 0xA0),
-                        Color.FromArgb(0xFF, 0x31, 0x1B, 0x92),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple50),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple100),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple200),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple300),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple400),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple500),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple600),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple700),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple800),
+                        Color.FromUInt32((uint)MaterialColor.DeepPurple900),
                     },
 
                     // Indigo
                     {
-                        Color.FromArgb(0xFF, 0xE8, 0xEA, 0xF6),
-                        Color.FromArgb(0xFF, 0xC5, 0xCA, 0xE9),
-                        Color.FromArgb(0xFF, 0x9F, 0xA8, 0xDA),
-                        Color.FromArgb(0xFF, 0x79, 0x86, 0xCB),
-                        Color.FromArgb(0xFF, 0x5C, 0x6B, 0xC0),
-                        Color.FromArgb(0xFF, 0x3F, 0x51, 0xB5),
-                        Color.FromArgb(0xFF, 0x39, 0x49, 0xAB),
-                        Color.FromArgb(0xFF, 0x30, 0x3F, 0x9F),
-                        Color.FromArgb(0xFF, 0x28, 0x35, 0x93),
-                        Color.FromArgb(0xFF, 0x1A, 0x23, 0x7E),
+                        Color.FromUInt32((uint)MaterialColor.Indigo50),
+                        Color.FromUInt32((uint)MaterialColor.Indigo100),
+                        Color.FromUInt32((uint)MaterialColor.Indigo200),
+                        Color.FromUInt32((uint)MaterialColor.Indigo300),
+                        Color.FromUInt32((uint)MaterialColor.Indigo400),
+                        Color.FromUInt32((uint)MaterialColor.Indigo500),
+                        Color.FromUInt32((uint)MaterialColor.Indigo600),
+                        Color.FromUInt32((uint)MaterialColor.Indigo700),
+                        Color.FromUInt32((uint)MaterialColor.Indigo800),
+                        Color.FromUInt32((uint)MaterialColor.Indigo900),
                     },
 
                     // Blue
                     {
-                        Color.FromArgb(0xFF, 0xE3, 0xF2, 0xFD),
-                        Color.FromArgb(0xFF, 0xBB, 0xDE, 0xFB),
-                        Color.FromArgb(0xFF, 0x90, 0xCA, 0xF9),
-                        Color.FromArgb(0xFF, 0x64, 0xB5, 0xF6),
-                        Color.FromArgb(0xFF, 0x42, 0xA5, 0xF5),
-                        Color.FromArgb(0xFF, 0x21, 0x96, 0xF3),
-                        Color.FromArgb(0xFF, 0x1E, 0x88, 0xE5),
-                        Color.FromArgb(0xFF, 0x19, 0x76, 0xD2),
-                        Color.FromArgb(0xFF, 0x15, 0x65, 0xC0),
-                        Color.FromArgb(0xFF, 0x0D, 0x47, 0xA1),
+                        Color.FromUInt32((uint)MaterialColor.Blue50),
+                        Color.FromUInt32((uint)MaterialColor.Blue100),
+                        Color.FromUInt32((uint)MaterialColor.Blue200),
+                        Color.FromUInt32((uint)MaterialColor.Blue300),
+                        Color.FromUInt32((uint)MaterialColor.Blue400),
+                        Color.FromUInt32((uint)MaterialColor.Blue500),
+                        Color.FromUInt32((uint)MaterialColor.Blue600),
+                        Color.FromUInt32((uint)MaterialColor.Blue700),
+                        Color.FromUInt32((uint)MaterialColor.Blue800),
+                        Color.FromUInt32((uint)MaterialColor.Blue900),
                     },
 
                     // Light Blue
                     {
-                        Color.FromArgb(0xFF, 0xE1, 0xF5, 0xFE),
-                        Color.FromArgb(0xFF, 0xB3, 0xE5, 0xFC),
-                        Color.FromArgb(0xFF, 0x81, 0xD4, 0xFA),
-                        Color.FromArgb(0xFF, 0x4F, 0xC3, 0xF7),
-                        Color.FromArgb(0xFF, 0x29, 0xB6, 0xF6),
-                        Color.FromArgb(0xFF, 0x03, 0xA9, 0xF4),
-                        Color.FromArgb(0xFF, 0x03, 0x9B, 0xE5),
-                        Color.FromArgb(0xFF, 0x02, 0x88, 0xD1),
-                        Color.FromArgb(0xFF, 0x02, 0x77, 0xBD),
-                        Color.FromArgb(0xFF, 0x01, 0x57, 0x9B),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue50),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue100),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue200),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue300),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue400),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue500),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue600),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue700),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue800),
+                        Color.FromUInt32((uint)MaterialColor.LightBlue900),
                     },
 
                     // Cyan
                     {
-                        Color.FromArgb(0xFF, 0xE0, 0xF7, 0xFA),
-                        Color.FromArgb(0xFF, 0xB2, 0xEB, 0xF2),
-                        Color.FromArgb(0xFF, 0x80, 0xDE, 0xEA),
-                        Color.FromArgb(0xFF, 0x4D, 0xD0, 0xE1),
-                        Color.FromArgb(0xFF, 0x26, 0xC6, 0xDA),
-                        Color.FromArgb(0xFF, 0x00, 0xBC, 0xD4),
-                        Color.FromArgb(0xFF, 0x00, 0xAC, 0xC1),
-                        Color.FromArgb(0xFF, 0x00, 0x97, 0xA7),
-                        Color.FromArgb(0xFF, 0x00, 0x83, 0x8F),
-                        Color.FromArgb(0xFF, 0x00, 0x60, 0x64),
+                        Color.FromUInt32((uint)MaterialColor.Cyan50),
+                        Color.FromUInt32((uint)MaterialColor.Cyan100),
+                        Color.FromUInt32((uint)MaterialColor.Cyan200),
+                        Color.FromUInt32((uint)MaterialColor.Cyan300),
+                        Color.FromUInt32((uint)MaterialColor.Cyan400),
+                        Color.FromUInt32((uint)MaterialColor.Cyan500),
+                        Color.FromUInt32((uint)MaterialColor.Cyan600),
+                        Color.FromUInt32((uint)MaterialColor.Cyan700),
+                        Color.FromUInt32((uint)MaterialColor.Cyan800),
+                        Color.FromUInt32((uint)MaterialColor.Cyan900),
                     },
 
                     // Teal
                     {
-                        Color.FromArgb(0xFF, 0xE0, 0xF2, 0xF1),
-                        Color.FromArgb(0xFF, 0xB2, 0xDF, 0xDB),
-                        Color.FromArgb(0xFF, 0x80, 0xCB, 0xC4),
-                        Color.FromArgb(0xFF, 0x4D, 0xB6, 0xAC),
-                        Color.FromArgb(0xFF, 0x26, 0xA6, 0x9A),
-                        Color.FromArgb(0xFF, 0x00, 0x96, 0x88),
-                        Color.FromArgb(0xFF, 0x00, 0x89, 0x7B),
-                        Color.FromArgb(0xFF, 0x00, 0x79, 0x6B),
-                        Color.FromArgb(0xFF, 0x00, 0x69, 0x5C),
-                        Color.FromArgb(0xFF, 0x00, 0x4D, 0x40),
+                        Color.FromUInt32((uint)MaterialColor.Teal50),
+                        Color.FromUInt32((uint)MaterialColor.Teal100),
+                        Color.FromUInt32((uint)MaterialColor.Teal200),
+                        Color.FromUInt32((uint)MaterialColor.Teal300),
+                        Color.FromUInt32((uint)MaterialColor.Teal400),
+                        Color.FromUInt32((uint)MaterialColor.Teal500),
+                        Color.FromUInt32((uint)MaterialColor.Teal600),
+                        Color.FromUInt32((uint)MaterialColor.Teal700),
+                        Color.FromUInt32((uint)MaterialColor.Teal800),
+                        Color.FromUInt32((uint)MaterialColor.Teal900),
                     },
 
                     // Green
                     {
-                        Color.FromArgb(0xFF, 0xE8, 0xF5, 0xE9),
-                        Color.FromArgb(0xFF, 0xC8, 0xE6, 0xC9),
-                        Color.FromArgb(0xFF, 0xA5, 0xD6, 0xA7),
-                        Color.FromArgb(0xFF, 0x81, 0xC7, 0x84),
-                        Color.FromArgb(0xFF, 0x66, 0xBB, 0x6A),
-                        Color.FromArgb(0xFF, 0x4C, 0xAF, 0x50),
-                        Color.FromArgb(0xFF, 0x43, 0xA0, 0x47),
-                        Color.FromArgb(0xFF, 0x38, 0x8E, 0x3C),
-                        Color.FromArgb(0xFF, 0x2E, 0x7D, 0x32),
-                        Color.FromArgb(0xFF, 0x1B, 0x5E, 0x20),
+                        Color.FromUInt32((uint)MaterialColor.Green50),
+                        Color.FromUInt32((uint)MaterialColor.Green100),
+                        Color.FromUInt32((uint)MaterialColor.Green200),
+                        Color.FromUInt32((uint)MaterialColor.Green300),
+                        Color.FromUInt32((uint)MaterialColor.Green400),
+                        Color.FromUInt32((uint)MaterialColor.Green500),
+                        Color.FromUInt32((uint)MaterialColor.Green600),
+                        Color.FromUInt32((uint)MaterialColor.Green700),
+                        Color.FromUInt32((uint)MaterialColor.Green800),
+                        Color.FromUInt32((uint)MaterialColor.Green900),
                     },
 
                     // Light Green
                     {
-                        Color.FromArgb(0xFF, 0xF1, 0xF8, 0xE9),
-                        Color.FromArgb(0xFF, 0xDC, 0xED, 0xC8),
-                        Color.FromArgb(0xFF, 0xC5, 0xE1, 0xA5),
-                        Color.FromArgb(0xFF, 0xAE, 0xD5, 0x81),
-                        Color.FromArgb(0xFF, 0x9C, 0xCC, 0x65),
-                        Color.FromArgb(0xFF, 0x8B, 0xC3, 0x4A),
-                        Color.FromArgb(0xFF, 0x7C, 0xB3, 0x42),
-                        Color.FromArgb(0xFF, 0x68, 0x9F, 0x38),
-                        Color.FromArgb(0xFF, 0x55, 0x8B, 0x2F),
-                        Color.FromArgb(0xFF, 0x33, 0x69, 0x1E),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen50),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen100),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen200),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen300),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen400),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen500),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen600),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen700),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen800),
+                        Color.FromUInt32((uint)MaterialColor.LightGreen900),
                     },
 
                     // Lime
                     {
-                        Color.FromArgb(0xFF, 0xF9, 0xFB, 0xE7),
-                        Color.FromArgb(0xFF, 0xF0, 0xF4, 0xC3),
-                        Color.FromArgb(0xFF, 0xE6, 0xEE, 0x9C),
-                        Color.FromArgb(0xFF, 0xDC, 0xE7, 0x75),
-                        Color.FromArgb(0xFF, 0xD4, 0xE1, 0x57),
-                        Color.FromArgb(0xFF, 0xCD, 0xDC, 0x39),
-                        Color.FromArgb(0xFF, 0xC0, 0xCA, 0x33),
-                        Color.FromArgb(0xFF, 0xAF, 0xB4, 0x2B),
-                        Color.FromArgb(0xFF, 0x9E, 0x9D, 0x24),
-                        Color.FromArgb(0xFF, 0x82, 0x77, 0x17),
+                        Color.FromUInt32((uint)MaterialColor.Lime50),
+                        Color.FromUInt32((uint)MaterialColor.Lime100),
+                        Color.FromUInt32((uint)MaterialColor.Lime200),
+                        Color.FromUInt32((uint)MaterialColor.Lime300),
+                        Color.FromUInt32((uint)MaterialColor.Lime400),
+                        Color.FromUInt32((uint)MaterialColor.Lime500),
+                        Color.FromUInt32((uint)MaterialColor.Lime600),
+                        Color.FromUInt32((uint)MaterialColor.Lime700),
+                        Color.FromUInt32((uint)MaterialColor.Lime800),
+                        Color.FromUInt32((uint)MaterialColor.Lime900),
                     },
 
                     // Yellow
                     {
-                        Color.FromArgb(0xFF, 0xFF, 0xFD, 0xE7),
-                        Color.FromArgb(0xFF, 0xFF, 0xF9, 0xC4),
-                        Color.FromArgb(0xFF, 0xFF, 0xF5, 0x9D),
-                        Color.FromArgb(0xFF, 0xFF, 0xF1, 0x76),
-                        Color.FromArgb(0xFF, 0xFF, 0xEE, 0x58),
-                        Color.FromArgb(0xFF, 0xFF, 0xEB, 0x3B),
-                        Color.FromArgb(0xFF, 0xFD, 0xD8, 0x35),
-                        Color.FromArgb(0xFF, 0xFB, 0xC0, 0x2D),
-                        Color.FromArgb(0xFF, 0xF9, 0xA8, 0x25),
-                        Color.FromArgb(0xFF, 0xF5, 0x7F, 0x17),
+                        Color.FromUInt32((uint)MaterialColor.Yellow50),
+                        Color.FromUInt32((uint)MaterialColor.Yellow100),
+                        Color.FromUInt32((uint)MaterialColor.Yellow200),
+                        Color.FromUInt32((uint)MaterialColor.Yellow300),
+                        Color.FromUInt32((uint)MaterialColor.Yellow400),
+                        Color.FromUInt32((uint)MaterialColor.Yellow500),
+                        Color.FromUInt32((uint)MaterialColor.Yellow600),
+                        Color.FromUInt32((uint)MaterialColor.Yellow700),
+                        Color.FromUInt32((uint)MaterialColor.Yellow800),
+                        Color.FromUInt32((uint)MaterialColor.Yellow900),
                     },
 
                     // Amber
                     {
-                        Color.FromArgb(0xFF, 0xFF, 0xF8, 0xE1),
-                        Color.FromArgb(0xFF, 0xFF, 0xEC, 0xB3),
-                        Color.FromArgb(0xFF, 0xFF, 0xE0, 0x82),
-                        Color.FromArgb(0xFF, 0xFF, 0xD5, 0x4F),
-                        Color.FromArgb(0xFF, 0xFF, 0xCA, 0x28),
-                        Color.FromArgb(0xFF, 0xFF, 0xC1, 0x07),
-                        Color.FromArgb(0xFF, 0xFF, 0xB3, 0x00),
-                        Color.FromArgb(0xFF, 0xFF, 0xA0, 0x00),
-                        Color.FromArgb(0xFF, 0xFF, 0x8F, 0x00),
-                        Color.FromArgb(0xFF, 0xFF, 0x6F, 0x00),
+                        Color.FromUInt32((uint)MaterialColor.Amber50),
+                        Color.FromUInt32((uint)MaterialColor.Amber100),
+                        Color.FromUInt32((uint)MaterialColor.Amber200),
+                        Color.FromUInt32((uint)MaterialColor.Amber300),
+                        Color.FromUInt32((uint)MaterialColor.Amber400),
+                        Color.FromUInt32((uint)MaterialColor.Amber500),
+                        Color.FromUInt32((uint)MaterialColor.Amber600),
+                        Color.FromUInt32((uint)MaterialColor.Amber700),
+                        Color.FromUInt32((uint)MaterialColor.Amber800),
+                        Color.FromUInt32((uint)MaterialColor.Amber900),
                     },
 
                     // Orange
                     {
-                        Color.FromArgb(0xFF, 0xFF, 0xF3, 0xE0),
-                        Color.FromArgb(0xFF, 0xFF, 0xE0, 0xB2),
-                        Color.FromArgb(0xFF, 0xFF, 0xCC, 0x80),
-                        Color.FromArgb(0xFF, 0xFF, 0xB7, 0x4D),
-                        Color.FromArgb(0xFF, 0xFF, 0xA7, 0x26),
-                        Color.FromArgb(0xFF, 0xFF, 0x98, 0x00),
-                        Color.FromArgb(0xFF, 0xFB, 0x8C, 0x00),
-                        Color.FromArgb(0xFF, 0xF5, 0x7C, 0x00),
-                        Color.FromArgb(0xFF, 0xEF, 0x6C, 0x00),
-                        Color.FromArgb(0xFF, 0xE6, 0x51, 0x00),
+                        Color.FromUInt32((uint)MaterialColor.Orange50),
+                        Color.FromUInt32((uint)MaterialColor.Orange100),
+                        Color.FromUInt32((uint)MaterialColor.Orange200),
+                        Color.FromUInt32((uint)MaterialColor.Orange300),
+                        Color.FromUInt32((uint)MaterialColor.Orange400),
+                        Color.FromUInt32((uint)MaterialColor.Orange500),
+                        Color.FromUInt32((uint)MaterialColor.Orange600),
+                        Color.FromUInt32((uint)MaterialColor.Orange700),
+                        Color.FromUInt32((uint)MaterialColor.Orange800),
+                        Color.FromUInt32((uint)MaterialColor.Orange900),
                     },
 
                     // Deep Orange
                     {
-                        Color.FromArgb(0xFF, 0xFB, 0xE9, 0xE7),
-                        Color.FromArgb(0xFF, 0xFF, 0xCC, 0xBC),
-                        Color.FromArgb(0xFF, 0xFF, 0xAB, 0x91),
-                        Color.FromArgb(0xFF, 0xFF, 0x8A, 0x65),
-                        Color.FromArgb(0xFF, 0xFF, 0x70, 0x43),
-                        Color.FromArgb(0xFF, 0xFF, 0x57, 0x22),
-                        Color.FromArgb(0xFF, 0xF4, 0x51, 0x1E),
-                        Color.FromArgb(0xFF, 0xE6, 0x4A, 0x19),
-                        Color.FromArgb(0xFF, 0xD8, 0x43, 0x15),
-                        Color.FromArgb(0xFF, 0xBF, 0x36, 0x0C),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange50),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange100),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange200),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange300),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange400),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange500),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange600),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange700),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange800),
+                        Color.FromUInt32((uint)MaterialColor.DeepOrange900),
                     },
 
                     // Brown
                     {
-                        Color.FromArgb(0xFF, 0xEF, 0xEB, 0xE9),
-                        Color.FromArgb(0xFF, 0xD7, 0xCC, 0xC8),
-                        Color.FromArgb(0xFF, 0xBC, 0xAA, 0xA4),
-                        Color.FromArgb(0xFF, 0xA1, 0x88, 0x7F),
-                        Color.FromArgb(0xFF, 0x8D, 0x6E, 0x63),
-                        Color.FromArgb(0xFF, 0x79, 0x55, 0x48),
-                        Color.FromArgb(0xFF, 0x6D, 0x4C, 0x41),
-                        Color.FromArgb(0xFF, 0x5D, 0x40, 0x37),
-                        Color.FromArgb(0xFF, 0x4E, 0x34, 0x2E),
-                        Color.FromArgb(0xFF, 0x3E, 0x27, 0x23),
+                        Color.FromUInt32((uint)MaterialColor.Brown50),
+                        Color.FromUInt32((uint)MaterialColor.Brown100),
+                        Color.FromUInt32((uint)MaterialColor.Brown200),
+                        Color.FromUInt32((uint)MaterialColor.Brown300),
+                        Color.FromUInt32((uint)MaterialColor.Brown400),
+                        Color.FromUInt32((uint)MaterialColor.Brown500),
+                        Color.FromUInt32((uint)MaterialColor.Brown600),
+                        Color.FromUInt32((uint)MaterialColor.Brown700),
+                        Color.FromUInt32((uint)MaterialColor.Brown800),
+                        Color.FromUInt32((uint)MaterialColor.Brown900),
                     },
 
                     // Gray
                     {
-                        Color.FromArgb(0xFF, 0xFA, 0xFA, 0xFA),
-                        Color.FromArgb(0xFF, 0xF5, 0xF5, 0xF5),
-                        Color.FromArgb(0xFF, 0xEE, 0xEE, 0xEE),
-                        Color.FromArgb(0xFF, 0xE0, 0xE0, 0xE0),
-                        Color.FromArgb(0xFF, 0xBD, 0xBD, 0xBD),
-                        Color.FromArgb(0xFF, 0x9E, 0x9E, 0x9E),
-                        Color.FromArgb(0xFF, 0x75, 0x75, 0x75),
-                        Color.FromArgb(0xFF, 0x61, 0x61, 0x61),
-                        Color.FromArgb(0xFF, 0x42, 0x42, 0x42),
-                        Color.FromArgb(0xFF, 0x21, 0x21, 0x21),
+                        Color.FromUInt32((uint)MaterialColor.Gray50),
+                        Color.FromUInt32((uint)MaterialColor.Gray100),
+                        Color.FromUInt32((uint)MaterialColor.Gray200),
+                        Color.FromUInt32((uint)MaterialColor.Gray300),
+                        Color.FromUInt32((uint)MaterialColor.Gray400),
+                        Color.FromUInt32((uint)MaterialColor.Gray500),
+                        Color.FromUInt32((uint)MaterialColor.Gray600),
+                        Color.FromUInt32((uint)MaterialColor.Gray700),
+                        Color.FromUInt32((uint)MaterialColor.Gray800),
+                        Color.FromUInt32((uint)MaterialColor.Gray900),
                     },
 
                     // Blue Gray
                     {
-                        Color.FromArgb(0xFF, 0xEC, 0xEF, 0xF1),
-                        Color.FromArgb(0xFF, 0xCF, 0xD8, 0xDC),
-                        Color.FromArgb(0xFF, 0xB0, 0xBE, 0xC5),
-                        Color.FromArgb(0xFF, 0x90, 0xA4, 0xAE),
-                        Color.FromArgb(0xFF, 0x78, 0x90, 0x9C),
-                        Color.FromArgb(0xFF, 0x60, 0x7D, 0x8B),
-                        Color.FromArgb(0xFF, 0x54, 0x6E, 0x7A),
-                        Color.FromArgb(0xFF, 0x45, 0x5A, 0x64),
-                        Color.FromArgb(0xFF, 0x37, 0x47, 0x4F),
-                        Color.FromArgb(0xFF, 0x26, 0x32, 0x38),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray50),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray100),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray200),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray300),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray400),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray500),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray600),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray700),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray800),
+                        Color.FromUInt32((uint)MaterialColor.BlueGray900),
                     },
                 };
-
-                _colorChartColorCount = _colorChart.GetLength(0);
-                _colorChartShadeCount = _colorChart.GetLength(1);
             }
 
             return;
@@ -318,29 +552,13 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         public int ColorCount
         {
-            get
-            {
-                if (_colorChart == null)
-                {
-                    MaterialColorPalette.InitColorChart();
-                }
-
-                return _colorChartColorCount;
-            }
+            get => 19;
         }
 
         /// <inheritdoc/>
         public int ShadeCount
         {
-            get
-            {
-                if (_colorChart == null)
-                {
-                    MaterialColorPalette.InitColorChart();
-                }
-
-                return _colorChartShadeCount;
-            }
+            get => 10;
         }
 
         /// <inheritdoc/>
@@ -348,12 +566,12 @@ namespace Avalonia.Controls
         {
             if (_colorChart == null)
             {
-                MaterialColorPalette.InitColorChart();
+                InitColorChart();
             }
 
             return _colorChart![
-                MathUtilities.Clamp(colorIndex, 0, _colorChartColorCount - 1),
-                MathUtilities.Clamp(shadeIndex, 0, _colorChartShadeCount - 1)];
+                MathUtilities.Clamp(colorIndex, 0, ColorCount - 1),
+                MathUtilities.Clamp(shadeIndex, 0, ShadeCount - 1)];
         }
     }
 }

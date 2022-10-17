@@ -139,10 +139,12 @@ dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomme
 
 # CA1802: Use literals where appropriate
 dotnet_diagnostic.CA1802.severity = warning
-# CA1825: Avoid zero-length array allocations
-dotnet_diagnostic.CA1825.severity = warning
+# CA1821: Remove empty finalizers
+dotnet_diagnostic.CA1821.severity = warning
 # CA1822: Mark members as static
 dotnet_diagnostic.CA1822.severity = warning
+# CA1825: Avoid zero-length array allocations
+dotnet_diagnostic.CA1825.severity = warning
 
 # Wrapping preferences
 csharp_wrap_before_ternary_opsigns = false

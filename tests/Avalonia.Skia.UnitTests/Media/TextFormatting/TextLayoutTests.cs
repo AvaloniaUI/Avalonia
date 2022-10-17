@@ -578,9 +578,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var glyphTypeface = Typeface.Default.GlyphTypeface;
 
-                var emHeight = glyphTypeface.DesignEmHeight;
+                var emHeight = glyphTypeface.Metrics.DesignEmHeight;
 
-                var lineHeight = (glyphTypeface.Descent - glyphTypeface.Ascent) * (12.0 / emHeight);
+                var lineHeight = glyphTypeface.Metrics.LineSpacing * (12.0 / emHeight);
 
                 var layout = new TextLayout(
                     text,

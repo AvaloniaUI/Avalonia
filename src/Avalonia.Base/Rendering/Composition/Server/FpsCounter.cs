@@ -25,7 +25,7 @@ internal class FpsCounter
     // ASCII chars
     private GlyphRun[] _runs = new GlyphRun[LastChar - FirstChar + 1];
     
-    public FpsCounter(GlyphTypeface typeface)
+    public FpsCounter(IGlyphTypeface typeface)
     {
         for (var c = FirstChar; c <= LastChar; c++)
         {
