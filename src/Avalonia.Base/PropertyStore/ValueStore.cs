@@ -707,19 +707,6 @@ namespace Avalonia.PropertyStore
             return false;
         }
 
-        private bool RemoveEffectiveValue(AvaloniaProperty property, [NotNullWhen(true)] out EffectiveValue? result)
-        {
-            if (_effectiveValues.Remove(property, out result))
-            {
-                if (property.Inherits && --_inheritedValueCount == 0)
-                    OnInheritanceAncestorChanged(InheritanceAncestor);
-                return true;
-            }
-
-            result = null;
-            return false;
-        }
-
         private void InheritedValueChanged(
             AvaloniaProperty property,
             EffectiveValue? oldValue,
