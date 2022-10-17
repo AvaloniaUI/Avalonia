@@ -900,11 +900,10 @@ namespace Avalonia.Win32
 
                 var window_rect = monitor_info.rcMonitor.ToPixelRect();
 
+                _isFullScreenActive = true;
                 SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
                              window_rect.Width, window_rect.Height,
                              SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
-
-                _isFullScreenActive = true;
             }
             else
             {
