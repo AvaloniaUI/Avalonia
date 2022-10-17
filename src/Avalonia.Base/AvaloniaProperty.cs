@@ -41,7 +41,7 @@ namespace Avalonia
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
-            if (name.Contains("."))
+            if (name.Contains('.'))
             {
                 throw new ArgumentException("'name' may not contain periods.");
             }
