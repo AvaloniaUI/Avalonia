@@ -27,5 +27,29 @@ namespace Avalonia.Utilities
             return int.TryParse(span, out value);
 #endif
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryParseNumberToDouble(this ReadOnlySpan<char> span, out double value)
+        {
+#if NETSTANDARD2_0
+            return double.TryParse(span.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture,
+                    out value);
+#else
+            return double.TryParse(span, NumberStyles.Number, CultureInfo.InvariantCulture,
+                    out value);
+#endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryParseNumberToByte(this ReadOnlySpan<char> span, out byte value)
+        {
+#if NETSTANDARD2_0
+            return byte.TryParse(span.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture,
+                    out value);
+#else
+            return byte.TryParse(span, NumberStyles.Number, CultureInfo.InvariantCulture,
+                    out value);
+#endif
+        }
     }
 }

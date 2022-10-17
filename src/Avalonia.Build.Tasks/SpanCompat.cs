@@ -99,11 +99,25 @@ namespace System
             return int.TryParse(ToString(), out value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryParseNumberToDouble(out double value)
+        {
+            return double.TryParse(ToString(), NumberStyles.Number, CultureInfo.InvariantCulture,
+                    out value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryParseNumberToByte(out byte value)
+        {
+            return byte.TryParse(ToString(), NumberStyles.Number, CultureInfo.InvariantCulture,
+                    out value);
+        }
+
         public override string ToString() => _length == 0 ? string.Empty : _s.Substring(_start, _length);
 
-        internal int IndexOf(string v, StringComparison ordinal, int start = 0)
+        internal int IndexOf(ReadOnlySpan<char> v, StringComparison ordinal, int start = 0)
         {
-            if(Length == 0 || string.IsNullOrEmpty(v))
+            if(Length == 0 || v.IsEmpty)
             {
                 return -1;
             }

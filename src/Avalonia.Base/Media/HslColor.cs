@@ -302,9 +302,9 @@ namespace Avalonia.Media
 
             if (components.Length == 3) // HSL
             {
-                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
-                    TryInternalParse(components[1], out double saturation) &&
-                    TryInternalParse(components[2], out double lightness))
+                if (components[0].AsSpan().TryParseNumberToDouble(out double hue) &&
+                    TryInternalParse(components[1].AsSpan(), out double saturation) &&
+                    TryInternalParse(components[2].AsSpan(), out double lightness))
                 {
                     hslColor = new HslColor(1.0, hue, saturation, lightness);
                     return true;
@@ -312,10 +312,10 @@ namespace Avalonia.Media
             }
             else if (components.Length == 4) // HSLA
             {
-                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
-                    TryInternalParse(components[1], out double saturation) &&
-                    TryInternalParse(components[2], out double lightness) &&
-                    TryInternalParse(components[3], out double alpha))
+                if (components[0].AsSpan().TryParseNumberToDouble(out double hue) &&
+                    TryInternalParse(components[1].AsSpan(), out double saturation) &&
+                    TryInternalParse(components[2].AsSpan(), out double lightness) &&
+                    TryInternalParse(components[3].AsSpan(), out double alpha))
                 {
                     hslColor = new HslColor(alpha, hue, saturation, lightness);
                     return true;
@@ -323,28 +323,22 @@ namespace Avalonia.Media
             }
 
             // Local function to specially parse a double value with an optional percentage sign
-            bool TryInternalParse(string inString, out double outDouble)
+            bool TryInternalParse(ReadOnlySpan<char> inString, out double outDouble)
             {
                 // The percent sign, if it exists, must be at the end of the number
-                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+                int percentIndex = inString.IndexOf("%".AsSpan(), StringComparison.Ordinal);
 
                 if (percentIndex >= 0)
                 {
-                    var result = double.TryParse(
-                        inString.Substring(0, percentIndex),
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
-                        out double percentage);
+                    var result = inString.Slice(0, percentIndex).TryParseNumberToDouble(
+                         out double percentage);
 
                     outDouble = percentage / 100.0;
                     return result;
                 }
                 else
                 {
-                    return double.TryParse(
-                        inString,
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
+                    return inString.TryParseNumberToDouble(
                         out outDouble);
                 }
             }
