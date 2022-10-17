@@ -11,7 +11,7 @@ namespace Avalonia.Utilities
     static class MathUtilities
     {
         // smallest such that 1.0+DoubleEpsilon != 1.0
-        internal static readonly double DoubleEpsilon = 2.2204460492503131e-016;
+        internal const double DoubleEpsilon = 2.2204460492503131e-016;
 
         private const float FloatEpsilon = 1.192092896e-07F;
 

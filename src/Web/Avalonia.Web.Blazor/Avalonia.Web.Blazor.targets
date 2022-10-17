@@ -1,6 +1,0 @@
-<Project>
-  <ItemGroup>
-    <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)\2.0.23\libHarfBuzzSharp.a" />
-    <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\2.0.23\libSkiaSharp.a" />
-  </ItemGroup>
-</Project>
