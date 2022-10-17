@@ -61,7 +61,7 @@
               <Viewbox.RenderTransform>
                 <RotateTransform Angle="-90" />
               </Viewbox.RenderTransform>
-              <Path Name="PART_RestoreButtonPath"
+              <Path Name="RestoreButtonPath"
                     Stretch="UniformToFill"
                     Fill="{TemplateBinding Foreground}"
                     Data="M2048 2048v-2048h-2048v2048h2048zM1843 1843h-1638v-1638h1638v1638z"/>
@@ -80,7 +80,7 @@
         </StackPanel>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:maximized /template/ Path#PART_RestoreButtonPath">
+    <Style Selector="^:maximized /template/ Path#RestoreButtonPath">
       <Setter Property="Data" Value="M2048 410h-410v-410h-1638v1638h410v410h1638v-1638zM1434 1434h-1229v-1229h1229v1229zM1843 1843h-1229v-205h1024v-1024h205v1229z" />
     </Style>
     <Style Selector="^:fullscreen /template/ Path#FullScreenButtonPath">
