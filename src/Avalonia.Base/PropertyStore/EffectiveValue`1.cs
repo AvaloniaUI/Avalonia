@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
-using JetBrains.Annotations;
 
 namespace Avalonia.PropertyStore
 {

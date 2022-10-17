@@ -53,6 +53,12 @@ namespace Avalonia.PropertyStore
                 BasePriority = BindingPriority.Unset;
         }
 
+        /// <summary>
+        /// Ends a reevaluation pass on the effective value.
+        /// </summary>
+        /// <remarks>
+        /// This method unsubscribes from any unused value entries.
+        /// </remarks>
         public void EndReevaluation()
         {
             if (Priority == BindingPriority.Unset)
@@ -95,16 +101,6 @@ namespace Avalonia.PropertyStore
             BindingPriority priority,
             IValueEntry baseValue,
             BindingPriority basePriority);
-
-        /// <summary>
-        /// Set the value priority, but leaves the value unchanged.
-        /// </summary>
-        public void SetPriority(BindingPriority priority) => Priority = BindingPriority.Unset;
-
-        /// <summary>
-        /// Set the base value priority, but leaves the base value unchanged.
-        /// </summary>
-        public void SetBasePriority(BindingPriority priority) => BasePriority = BindingPriority.Unset;
 
         /// <summary>
         /// Raises <see cref="AvaloniaObject.PropertyChanged"/> in response to an inherited value
