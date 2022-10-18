@@ -163,7 +163,7 @@ namespace Avalonia.Media
                             throw new FormatException("Could not parse specified Unicode range segment.");
                         }
 
-                        if (!single.Value.Contains("?"))
+                        if (!single.Value.Contains('?'))
                         {
                             start = int.Parse(single.Groups[1].Value, System.Globalization.NumberStyles.HexNumber);
                             end = start;
