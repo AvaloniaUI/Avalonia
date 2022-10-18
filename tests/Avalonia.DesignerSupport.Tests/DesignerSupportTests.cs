@@ -19,7 +19,7 @@ namespace Avalonia.DesignerSupport.Tests
 {
     public class DesignerSupportTests
     {
-        private const string DesignerAppPath = "../../../../../src/tools/Avalonia.Designer.HostApp/bin/$BUILD/netstandard2.1/Avalonia.Designer.HostApp.dll";
+        private const string DesignerAppPath = "../../../../../src/tools/Avalonia.Designer.HostApp/bin/$BUILD/netcoreapp2.0/Avalonia.Designer.HostApp.dll";
         private readonly Xunit.Abstractions.ITestOutputHelper outputHelper;
 
         public DesignerSupportTests(Xunit.Abstractions.ITestOutputHelper outputHelper)
