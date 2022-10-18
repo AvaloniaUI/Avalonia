@@ -1,97 +1,74 @@
 ﻿#nullable enable
 using System;
-using System.Globalization;
-using System.Reflection;
-using Avalonia.Data.Converters;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Styling;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;
 
-public class OnPlatformExtension
+public class On
 {
-    private static readonly  object s_unset = new object();
+    public string Platform { get; set; } = "Unknown";
+
+    [Content]
+    public object? Content { get; set; }
+}
+
+public class OnPlatformExtension<TReturn> : IAddChild<On>
+{
+    private readonly Dictionary<string, TReturn?> _values = new();
 
     public OnPlatformExtension()
     {
-        
+
     }
-    
-    public OnPlatformExtension(object defaultValue)
+
+    public OnPlatformExtension(TReturn defaultValue)
     {
         Default = defaultValue;
     }
-    
-    [Content]
-    public object? Default { get; set; } = s_unset;
-    public object? Windows { get; set; } = s_unset;
-    public object? macOS { get; set; } = s_unset;
-    public object? Linux { get; set; } = s_unset;
-    public object? Android { get; set; } = s_unset;
-    public object? iOS { get; set; } = s_unset;
-    public object? Browser { get; set; } = s_unset;
 
-    public IValueConverter? Converter { get; set; }
+    public TReturn? Default { get => _values.TryGetValue(nameof(Default), out var value) ? value : default; set { _values[nameof(Default)] = value; } }
+    public TReturn? Windows { get => _values.TryGetValue(nameof(Windows), out var value) ? value : default; set { _values[nameof(Windows)] = value; } }
+    public TReturn? macOS { get => _values.TryGetValue(nameof(macOS), out var value) ? value : default; set { _values[nameof(macOS)] = value; } }
+    public TReturn? Linux { get => _values.TryGetValue(nameof(Linux), out var value) ? value : default; set { _values[nameof(Linux)] = value; } }
+    public TReturn? Android { get => _values.TryGetValue(nameof(Android), out var value) ? value : default; set { _values[nameof(Android)] = value; } }
+    public TReturn? iOS { get => _values.TryGetValue(nameof(iOS), out var value) ? value : default; set { _values[nameof(iOS)] = value; } }
+    public TReturn? Browser { get => _values.TryGetValue(nameof(Browser), out var value) ? value : default; set { _values[nameof(Browser)] = value; } }
 
-    public object? ConverterParameter { get; set; }
-
-    public object? ProvideValue(IServiceProvider serviceProvider)
+    public object? ProvideValue()
     {
-        if (Default == s_unset
-            && Windows == s_unset
-            && macOS == s_unset
-            && Linux == s_unset
-            && Android == s_unset
-            && iOS == s_unset
-            && Browser == s_unset)
+        if (!_values.Any())
         {
             throw new InvalidOperationException("OnPlatformExtension requires a value to be specified for at least one platform or Default.");
         }
 
-        var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
-
-        var targetType = provideTarget.TargetProperty switch
-        {
-            AvaloniaProperty ap => ap.PropertyType,
-            PropertyInfo pi => pi.PropertyType,
-            _ => null,
-        };
-
-        if (provideTarget.TargetObject is Setter setter)
-        {
-            targetType = setter.Property?.PropertyType ?? targetType;
-        }
-        
-        if (!TryGetValueForPlatform(out var value))
-        {
-            return AvaloniaProperty.UnsetValue;
-        }
-
-        if (targetType is null)
-        {
-            return value;
-        }
-        
-        var converter = Converter ?? DefaultValueConverter.Instance;
-        return converter.Convert(value, targetType, ConverterParameter, CultureInfo.CurrentUICulture);
+        var (value, hasValue) = TryGetValueForPlatform();
+        return !hasValue ? AvaloniaProperty.UnsetValue : value;
     }
 
-    private bool TryGetValueForPlatform(out object? value)
+    private (TReturn? value, bool hasValue) TryGetValueForPlatform()
     {
         var runtimeInfo = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().GetRuntimeInfo();
 
-        value = runtimeInfo.OperatingSystem switch
+        return runtimeInfo.OperatingSystem switch
         {
-            OperatingSystemType.WinNT when Windows != s_unset => Windows,
-            OperatingSystemType.Linux when Linux != s_unset => Linux,
-            OperatingSystemType.OSX when macOS != s_unset => macOS,
-            OperatingSystemType.Android when Android != s_unset => Android,
-            OperatingSystemType.iOS when iOS != s_unset => iOS,
-            OperatingSystemType.Browser when Browser != s_unset => Browser,
-            _ => Default
+            OperatingSystemType.WinNT => _values.TryGetValue(nameof(Windows), out var val) ? (val, true) : default,
+            OperatingSystemType.OSX => _values.TryGetValue(nameof(macOS), out var val) ? (val, true) : default,
+            OperatingSystemType.Linux  => _values.TryGetValue(nameof(Linux), out var val) ? (val, true) : default,
+            OperatingSystemType.Android => _values.TryGetValue(nameof(Android), out var val) ? (val, true) : default,
+            OperatingSystemType.iOS => _values.TryGetValue(nameof(iOS), out var val) ? (val, true) : default,
+            OperatingSystemType.Browser => _values.TryGetValue(nameof(Browser), out var val) ? (val, true) : default,
+            _ => _values.TryGetValue(nameof(Default), out var val) ? (val, true) : default
         };
+    }
 
-        return value != s_unset;
+    public void AddChild(On child)
+    {
+        foreach (var platform in child.Platform.Split(new [] { "," }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            _values[platform.Trim()] = (TReturn?)child.Content;
+        }
     }
 }

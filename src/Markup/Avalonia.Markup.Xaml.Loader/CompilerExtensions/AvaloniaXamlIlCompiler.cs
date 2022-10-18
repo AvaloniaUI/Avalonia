@@ -21,20 +21,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         private AvaloniaXamlIlCompiler(TransformerConfiguration configuration, XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emitMappings)
             : base(configuration, emitMappings, true)
         {
-            void InsertAfter<T>(params IXamlAstTransformer[] t) 
+            void InsertAfter<T>(params IXamlAstTransformer[] t)
                 => Transformers.InsertRange(Transformers.FindIndex(x => x is T) + 1, t);
 
-            void InsertBefore<T>(params IXamlAstTransformer[] t) 
+            void InsertBefore<T>(params IXamlAstTransformer[] t)
                 => Transformers.InsertRange(Transformers.FindIndex(x => x is T), t);
 
 
             // Before everything else
-            
+
             Transformers.Insert(0, new XNameTransformer());
             Transformers.Insert(1, new IgnoredDirectivesTransformer());
             Transformers.Insert(2, _designTransformer = new AvaloniaXamlIlDesignPropertiesTransformer());
             Transformers.Insert(3, _bindingTransformer = new AvaloniaBindingExtensionTransformer());
-            
+
             // Targeted
             InsertBefore<PropertyReferenceResolver>(
                 new AvaloniaXamlIlResolveClassesPropertiesTransformer(),
@@ -48,7 +48,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertBefore<ContentConvertTransformer>(
                 new AvaloniaXamlIlControlThemeTransformer(),
                 new AvaloniaXamlIlSelectorTransformer(),
-                new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),                 
+                new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
@@ -57,6 +57,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
             );
 
+            InsertBefore<TypeReferenceResolver>(
+                new OnPlatformTransformer());
             InsertAfter<TypeReferenceResolver>(
                 new XDataTypeTransformer());
 
@@ -87,14 +89,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             _contextType = CreateContextType(contextTypeBuilder);
         }
 
-        
+
         public AvaloniaXamlIlCompiler(TransformerConfiguration configuration,
             XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emitMappings,
             IXamlType contextType) : this(configuration, emitMappings)
         {
             _contextType = contextType;
         }
-        
+
         public const string PopulateName = "__AvaloniaXamlIlPopulate";
         public const string BuildName = "__AvaloniaXamlIlBuild";
 
@@ -116,7 +118,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 {XamlNamespaces.Blend2008, XamlNamespaces.Blend2008}
             });
-            
+
             var rootObject = (XamlAstObjectNode)parsed.Root;
 
             var classDirective = rootObject.Children
@@ -131,8 +133,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         false) :
                     TypeReferenceResolver.ResolveType(CreateTransformationContext(parsed, true),
                         (XamlAstXmlTypeReference)rootObject.Type, true);
-            
-            
+
+
             if (overrideRootType != null)
             {
                 if (!rootType.Type.IsAssignableFrom(overrideRootType))
@@ -145,7 +147,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             Transform(parsed);
             Compile(parsed, tb, _contextType, PopulateName, BuildName, "__AvaloniaXamlIlNsInfo", baseUri, fileSource);
-            
+
         }
 
         public void OverrideRootType(XamlDocument doc, IXamlAstTypeReference newType)

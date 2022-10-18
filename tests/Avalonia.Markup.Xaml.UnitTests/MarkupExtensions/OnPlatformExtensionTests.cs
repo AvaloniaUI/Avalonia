@@ -4,7 +4,6 @@ using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.PlatformSupport;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;
@@ -18,7 +17,7 @@ public class OnPlatformExtensionTests : XamlTestBase
         {
             AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
                 .ToConstant(new TestRuntimePlatform(OperatingSystemType.Unknown));
-            
+
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
@@ -31,7 +30,7 @@ public class OnPlatformExtensionTests : XamlTestBase
             Assert.Equal("Hello World", textBlock.Text);
         }
     }
-    
+
     [Fact]
     public void Should_Resolve_Default_Value_From_Ctor()
     {
@@ -39,7 +38,7 @@ public class OnPlatformExtensionTests : XamlTestBase
         {
             AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
                 .ToConstant(new TestRuntimePlatform(OperatingSystemType.Unknown));
-            
+
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
@@ -52,7 +51,7 @@ public class OnPlatformExtensionTests : XamlTestBase
             Assert.Equal("Hello World", textBlock.Text);
         }
     }
-    
+
     [Theory]
     [InlineData(OperatingSystemType.WinNT, "Im Windows")]
     [InlineData(OperatingSystemType.OSX, "Im macOS")]
@@ -67,7 +66,7 @@ public class OnPlatformExtensionTests : XamlTestBase
         {
             AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
                 .ToConstant(new TestRuntimePlatform(currentPlatform));
-            
+
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
@@ -91,7 +90,7 @@ public class OnPlatformExtensionTests : XamlTestBase
         {
             AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
                 .ToConstant(new TestRuntimePlatform(OperatingSystemType.WinNT));
-            
+
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
@@ -104,7 +103,7 @@ public class OnPlatformExtensionTests : XamlTestBase
             Assert.Equal(50.1, border.Height);
         }
     }
-    
+
     [Fact]
     public void Should_Convert_Avalonia_Type()
     {
@@ -112,7 +111,7 @@ public class OnPlatformExtensionTests : XamlTestBase
         {
             AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
                 .ToConstant(new TestRuntimePlatform(OperatingSystemType.WinNT));
-            
+
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
@@ -123,6 +122,27 @@ public class OnPlatformExtensionTests : XamlTestBase
             var border = (Border)userControl.Content!;
 
             Assert.Equal(new Thickness(10, 8, 10, 8), border.Padding);
+        }
+    }
+
+    [Fact]
+    public void Should_Respect_Custom_TypeArgument()
+    {
+        using (AvaloniaLocator.EnterScope())
+        {
+            AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
+                .ToConstant(new TestRuntimePlatform(OperatingSystemType.WinNT));
+
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <TextBlock DataContext='{OnPlatform Windows=""10, 10, 10, 10"", x:TypeArguments=Thickness}'/>
+</UserControl>";
+
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var textBlock = (TextBlock)userControl.Content!;
+
+            Assert.Equal(new Thickness(10, 10, 10, 10), textBlock.DataContext);
         }
     }
 
@@ -149,32 +169,7 @@ public class OnPlatformExtensionTests : XamlTestBase
             Assert.Equal(Color.Parse("#ff506070"), ((ISolidColorBrush)border.Background!).Color);
         }
     }
-    
-    [Fact]
-    public void Should_Use_Converter_If_Provided()
-    {
-        using (AvaloniaLocator.EnterScope())
-        {
-            AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
-                .ToConstant(new TestRuntimePlatform(OperatingSystemType.WinNT));
 
-            var xaml = @"
-<UserControl xmlns='https://github.com/avaloniaui'
-             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-             xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'>
-    <UserControl.Resources>
-        <local:TestOnPlatformConverter x:Key='TestConverter' />
-    </UserControl.Resources>
-    <Border Padding='{OnPlatform Windows=""My Value"", ConverterParameter=""My Parameter"", Converter={StaticResource TestConverter}}'/>
-</UserControl>";
-
-            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
-            var border = (Border)userControl.Content!;
-
-            Assert.Equal(new Thickness(4), border.Padding);
-        }
-    }
-    
     [Fact]
     public void Should_Support_Xml_Syntax()
     {
@@ -203,7 +198,64 @@ public class OnPlatformExtensionTests : XamlTestBase
             Assert.Equal(Color.Parse("#ff506070"), ((ISolidColorBrush)border.Background!).Color);
         }
     }
-    
+
+    [Fact]
+    public void Should_Support_Xml_Syntax_With_Custom_TypeArguments()
+    {
+        using (AvaloniaLocator.EnterScope())
+        {
+            AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
+                .ToConstant(new TestRuntimePlatform(OperatingSystemType.WinNT));
+
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border>
+        <Border.Tag>
+            <OnPlatform x:TypeArguments='Thickness' Windows='10, 10, 10, 10' />
+        </Border.Tag>
+    </Border>
+</UserControl>";
+
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var border = (Border)userControl.Content!;
+
+            Assert.Equal(new Thickness(10, 10, 10, 10), border.Tag);
+        }
+    }
+
+    [Fact]
+    public void Should_Support_Special_On_Syntax()
+    {
+        using (AvaloniaLocator.EnterScope())
+        {
+            AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
+                .ToConstant(new TestRuntimePlatform(OperatingSystemType.OSX));
+
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border>
+        <Border.Background>
+            <OnPlatform>
+                <On Platform='Windows, macOS'>
+                    <SolidColorBrush Color='#ff506070' />
+                </On>
+                <On Platform='Linux'>
+                    <SolidColorBrush Color='#000' />
+                </On>
+            </OnPlatform>
+        </Border.Background>
+    </Border>
+</UserControl>";
+
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var border = (Border)userControl.Content!;
+
+            Assert.Equal(Color.Parse("#ff506070"), ((ISolidColorBrush)border.Background!).Color);
+        }
+    }
+
     [Fact]
     public void Should_Support_Control_Inside_Xml_Syntax()
     {
@@ -232,12 +284,12 @@ public class OnPlatformExtensionTests : XamlTestBase
     private class TestRuntimePlatform : StandardRuntimePlatform
     {
         private readonly OperatingSystemType _operatingSystemType;
-        
+
         public TestRuntimePlatform(OperatingSystemType operatingSystemType)
         {
             _operatingSystemType = operatingSystemType;
         }
-        
+
         public override RuntimePlatformInfo GetRuntimeInfo()
         {
             return new RuntimePlatformInfo() { OperatingSystem = _operatingSystemType };
