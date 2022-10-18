@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
   </PropertyGroup>
   <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
   <PropertyGroup>
