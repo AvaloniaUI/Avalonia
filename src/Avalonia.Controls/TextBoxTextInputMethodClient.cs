@@ -64,7 +64,7 @@ namespace Avalonia.Controls
 
                 return new TextInputMethodSurroundingText
                 {
-                    Text = lineText ?? "",                   
+                    Text = lineText ?? "",
                     AnchorOffset = anchorOffset,
                     CursorOffset = cursorOffset
                 };

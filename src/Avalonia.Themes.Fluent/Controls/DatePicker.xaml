@@ -1,7 +1,7 @@
 <!--
 // (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 -->
 
@@ -28,7 +28,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,4</Thickness>
   <x:Double x:Key="DatePickerFlyoutPresenterHighlightHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterItemHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
@@ -84,18 +83,8 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}" RowDefinitions="Auto,*">
-            <ContentPresenter Name="HeaderContentPresenter" Grid.Row="0"
-                              Content="{TemplateBinding Header}"
-                              Foreground="{DynamicResource DatePickerHeaderForeground}"
-                              ContentTemplate="{TemplateBinding HeaderTemplate}"
-                              Margin="{DynamicResource DatePickerTopHeaderMargin}"
-                              MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Top"/>
-
+          <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}">
             <Button Name="PART_FlyoutButton"
-                    Grid.Row="1"
                     Theme="{StaticResource FluentDatePickerFlyoutButton}"
                     Foreground="{TemplateBinding Foreground}"
                     Background="{TemplateBinding Background}"
@@ -153,11 +142,11 @@
     </Style>
 
     <!-- Changes foreground for watermark text when SelectedDate is null-->
-    <Style Selector="^:hasnodate /template/ Button#FlyoutButton TextBlock">
+    <Style Selector="^:hasnodate /template/ Button#PART_FlyoutButton TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource TextControlPlaceholderForeground}"/>
     </Style>
-    
-    <Style Selector="^:error /template/ Button#FlyoutButton">
+
+    <Style Selector="^:error /template/ Button#PART_FlyoutButton">
       <Setter Property="BorderBrush" Value="{DynamicResource SystemControlErrorTextForegroundBrush}"/>
     </Style>
   </ControlTheme>

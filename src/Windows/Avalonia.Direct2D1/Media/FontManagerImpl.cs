@@ -62,7 +62,7 @@ namespace Avalonia.Direct2D1.Media
             return false;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             return new GlyphTypefaceImpl(typeface);
         }
