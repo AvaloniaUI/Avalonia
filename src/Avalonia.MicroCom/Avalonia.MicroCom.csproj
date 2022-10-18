@@ -3,9 +3,6 @@
       <TargetFramework>netstandard2.0</TargetFramework>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <PropertyGroup>
-    <_AvaloniaPatchComInterop>true</_AvaloniaPatchComInterop>
-  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
