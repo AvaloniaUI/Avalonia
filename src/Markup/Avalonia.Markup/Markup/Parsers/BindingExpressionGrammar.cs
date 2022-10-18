@@ -16,7 +16,7 @@ namespace Avalonia.Markup.Parsers
         Control
     }
 
-    internal static class BindingExpressionGrammar
+    internal unsafe static class BindingExpressionGrammar
     {
         public static (List<INode> Nodes, SourceMode Mode) Parse(ref CharacterReader r)
         {

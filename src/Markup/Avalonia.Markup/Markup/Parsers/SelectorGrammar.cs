@@ -12,7 +12,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers
 {
-    internal static class SelectorGrammar
+    internal unsafe static class SelectorGrammar
     {
         private enum State
         {

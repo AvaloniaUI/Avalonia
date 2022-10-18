@@ -5,6 +5,7 @@
     <IsPackable>true</IsPackable>
     <PackageId>Avalonia.Markup.Xaml.Loader</PackageId>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <Import Project="IncludeXamlIlSre.props" />
   <ItemGroup>
