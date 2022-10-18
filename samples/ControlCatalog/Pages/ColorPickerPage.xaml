@@ -11,16 +11,17 @@
              x:Class="ControlCatalog.Pages.ColorPickerPage">
 
   <UserControl.Resources>
-    <pc:ThirdComponentConverter x:Key="ThirdComponent" />
   </UserControl.Resources>
 
-  <Grid ColumnDefinitions="Auto,10,Auto,10,Auto"
+  <Grid x:Name="LayoutRoot"
+        ColumnDefinitions="Auto,10,Auto"
         RowDefinitions="Auto,Auto">
     <ColorView Grid.Column="0"
                Grid.Row="0"
                ColorSpectrumShape="Ring" />
     <ColorPicker Grid.Column="0"
                  Grid.Row="1"
+                 HsvColor="hsv(120, 1, 1)"
                  Margin="0,50,0,0">
       <ColorPicker.Palette>
         <controls:FlatColorPalette />
@@ -55,9 +56,6 @@
       <ColorPreviewer Grid.Row="5"
                       IsAccentColorsVisible="False"
                       HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
-    </Grid>
-    <Grid Grid.Column="4"
-          Grid.Row="0">
     </Grid>
   </Grid>
 </UserControl>
