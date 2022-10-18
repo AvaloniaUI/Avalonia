@@ -14,10 +14,10 @@ namespace Avalonia.Android.Platform.Storage;
 
 internal class AndroidStorageProvider : IStorageProvider
 {
-    private readonly AvaloniaMainActivity _activity;
+    private readonly Activity _activity;
     private int _lastRequestCode = 20000;
 
-    public AndroidStorageProvider(AvaloniaMainActivity activity)
+    public AndroidStorageProvider(Activity activity)
     {
         _activity = activity;
     }
@@ -119,7 +119,10 @@ internal class AndroidStorageProvider : IStorageProvider
         var tcs = new TaskCompletionSource<Intent?>();
         var currentRequestCode = _lastRequestCode++;
 
-        _activity.ActivityResult += OnActivityResult;
+        if (_activity is IActivityResultHandler mainActivity)
+        {
+            mainActivity.ActivityResult += OnActivityResult;
+        }
         _activity.StartActivityForResult(pickerIntent, currentRequestCode);
 
         var result = await tcs.Task;
@@ -158,7 +161,11 @@ internal class AndroidStorageProvider : IStorageProvider
                 return;
             }
 
-            _activity.ActivityResult -= OnActivityResult;
+
+            if (_activity is IActivityResultHandler mainActivity)
+            {
+                mainActivity.ActivityResult -= OnActivityResult;
+            }
 
             _ = tcs.TrySetResult(resultCode == Result.Ok ? data : null);
         }
