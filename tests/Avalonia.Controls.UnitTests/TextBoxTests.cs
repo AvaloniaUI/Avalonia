@@ -473,7 +473,7 @@ namespace Avalonia.Controls.UnitTests
                 
                 target.ApplyTemplate();
 
-                Assert.True(string.IsNullOrEmpty(target.SelectedText));
+                Assert.True(target.SelectedText == "");
 
                 target.SelectionStart = 2;
                 target.SelectionEnd = 4;
