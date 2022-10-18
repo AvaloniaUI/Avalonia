@@ -7,6 +7,7 @@ public class TextInputOptions
         var result = new TextInputOptions
         {
             ContentType = GetContentType(avaloniaObject),
+            ReturnKeyType = GetReturnKeyType(avaloniaObject),
             Multiline = GetMultiline(avaloniaObject),
             AutoCapitalization = GetAutoCapitalization(avaloniaObject),
             IsSensitive = GetIsSensitive(avaloniaObject),
@@ -52,6 +53,41 @@ public class TextInputOptions
     /// The content type (mostly for determining the shape of the virtual keyboard)
     /// </summary>
     public TextInputContentType ContentType { get; set; }
+    
+    
+    /// <summary>
+    /// Defines the <see cref="ReturnKeyType"/> property.
+    /// </summary>
+    public static readonly AttachedProperty<TextInputReturnKeyType> ReturnKeyTypeProperty =
+        AvaloniaProperty.RegisterAttached<TextInputOptions, StyledElement, TextInputReturnKeyType>(
+            "ReturnKeyType",
+            defaultValue: TextInputReturnKeyType.Default,
+            inherits: true);
+    
+    /// <summary>
+    /// Sets the value of the attached <see cref="ReturnKeyTypeProperty"/> on a control.
+    /// </summary>
+    /// <param name="avaloniaObject">The control.</param>
+    /// <param name="value">The property value to set.</param>
+    public static void SetReturnKeyType(StyledElement avaloniaObject, TextInputReturnKeyType value)
+    {
+        avaloniaObject.SetValue(ReturnKeyTypeProperty, value);
+    }
+
+    /// <summary>
+    /// Gets the value of the attached <see cref="ReturnKeyTypeProperty"/>.
+    /// </summary>
+    /// <param name="avaloniaObject">The target.</param>
+    /// <returns>TextInputReturnKeyType</returns>
+    public static TextInputReturnKeyType GetReturnKeyType(StyledElement avaloniaObject)
+    {
+        return avaloniaObject.GetValue(ReturnKeyTypeProperty);
+    }
+    
+    /// <summary>
+    /// Determines what the Return key says and how it behaves.
+    /// </summary>
+    public TextInputReturnKeyType ReturnKeyType { get; set; }
     
     /// <summary>
     /// Defines the <see cref="Multiline"/> property.

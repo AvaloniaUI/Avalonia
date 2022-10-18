@@ -71,9 +71,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             // Resolve the BidiCharacterType, paired bracket type and paired
             // bracket values for all code points
-            HasBrackets = false;
-            HasEmbeddings = false;
-            HasIsolates = false;
 
             int i = Length;
              

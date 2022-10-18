@@ -81,6 +81,225 @@
   <!-- This radius should follow ControlCornerRadius -->
   <CornerRadius x:Key="ColorViewTabBackgroundCornerRadius">3</CornerRadius>
 
+  <ControlTheme x:Key="ColorViewPaletteListBoxTheme"
+                TargetType="ListBox">
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="ScrollViewer.IsScrollChainingEnabled" Value="True" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="border"
+                ClipToBounds="{TemplateBinding ClipToBounds}"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer Name="PART_ScrollViewer"
+                        HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                        IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                        AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
+            <ItemsPresenter Name="PART_ItemsPresenter"
+                            Items="{TemplateBinding Items}"
+                            ItemsPanel="{TemplateBinding ItemsPanel}"
+                            ItemTemplate="{TemplateBinding ItemTemplate}"
+                            Margin="{TemplateBinding Padding}"
+                            VirtualizationMode="{TemplateBinding VirtualizationMode}" />
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <ControlTheme x:Key="ColorViewPaletteListBoxItemTheme"
+                TargetType="ListBoxItem">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <ControlTemplate TargetType="{x:Type ListBoxItem}">
+        <Grid UseLayoutRounding="False">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Content="{TemplateBinding Content}"
+                            Padding="{TemplateBinding Padding}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+          <Rectangle x:Name="BorderRectangle"
+                     IsHitTestVisible="False"
+                     StrokeThickness="3"
+                     HorizontalAlignment="Stretch"
+                     VerticalAlignment="Stretch" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^ /template/ Rectangle#BorderRectangle">
+      <Setter Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+
+    <Style Selector="^:pointerover /template/ Rectangle#BorderRectangle"
+           x:DataType="Color">
+      <Setter Property="Stroke" Value="{Binding Converter={StaticResource ContrastBrushConverter}}" />
+      <Setter Property="Opacity" Value="0.5" />
+    </Style>
+
+    <Style Selector="^:selected /template/ Rectangle#BorderRectangle"
+           x:DataType="Color">
+      <!-- The below and above lines really should be:
+             'Value="{Binding Converter={StaticResource ContrastBrushConverter}, ConverterParameter={DynamicResource TextControlForeground}}"'
+           However, DynamicResource and Binding is not currently supported in Avalonia for converter parameters.
+           This means certain colors with transparency less than 50% may have a selection border that is difficult
+           to see over top of the default control/window background. Since palettes do not usually have transparency
+           it is considered better to disable this functionality rather than work around it with a multi-value
+           converter. This should be revisited if Avalonia supports the above code in the future. -->
+      <Setter Property="Stroke" Value="{Binding Converter={StaticResource ContrastBrushConverter}}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+  </ControlTheme>
+
+  <!-- Based on the Fluent ToggleButton ControlTheme -->
+  <ControlTheme x:Key="ColorViewColorModelRadioButtonTheme"
+                TargetType="RadioButton">
+    <Setter Property="Background" Value="{DynamicResource ToggleButtonBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ToggleButtonBorderThemeThickness}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+    <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="FontWeight" Value="Normal" />
+    <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ContentPresenter x:Name="PART_ContentPresenter"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          Content="{TemplateBinding Content}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Padding="{TemplateBinding Padding}"
+                          RecognizesAccessKey="True"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPointerOver}" />
+      <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPointerOver}" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPressed}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPressed}" />
+      <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPressed}" />
+    </Style>
+
+    <Style Selector="^:checked">
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundChecked}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushChecked}" />
+        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundChecked}" />
+      </Style>
+
+      <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPointerOver}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushCheckedPointerOver}" />
+        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPointerOver}" />
+      </Style>
+
+      <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPressed}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushCheckedPressed}" />
+        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPressed}" />
+      </Style>
+    </Style>
+  </ControlTheme>
+
+  <!-- Based on the Fluent TabItem ControlTheme -->
+  <ControlTheme x:Key="ColorViewTabItemTheme"
+                TargetType="TabItem">
+    <Setter Property="FontSize" Value="{DynamicResource TabItemHeaderFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TabItemHeaderThemeFontWeight}" />
+    <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselected}" />
+    <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselected}" />
+    <Setter Property="Padding" Value="6,0,6,0" />
+    <Setter Property="Margin" Value="0" />
+    <Setter Property="MinHeight" Value="{DynamicResource ColorViewTabStripHeight}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+            Name="PART_LayoutRoot"
+            Background="{TemplateBinding Background}"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}"
+            CornerRadius="{TemplateBinding CornerRadius}"
+            Padding="{TemplateBinding Padding}">
+          <Panel>
+            <ContentPresenter
+                Name="PART_ContentPresenter"
+                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                Content="{TemplateBinding Header}"
+                ContentTemplate="{TemplateBinding HeaderTemplate}"
+                FontFamily="{TemplateBinding FontFamily}"
+                FontSize="{TemplateBinding FontSize}"
+                FontWeight="{TemplateBinding FontWeight}" />
+            <Border Name="PART_SelectedPipe"
+                    Height="{DynamicResource TabItemPipeThickness}"
+                    Margin="0,0,0,2"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Bottom"
+                    Background="{DynamicResource TabItemHeaderSelectedPipeFill}"
+                    CornerRadius="{DynamicResource ControlCornerRadius}"
+                    IsVisible="False"/>
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelected}" />
+      <Setter Property="Foreground" Value="{DynamicResource TabItemHeaderForegroundSelected}" />
+    </Style>
+    <Style Selector="^:selected /template/ Border#PART_SelectedPipe">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+
+    <Style Selector="^:pointerover /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPointerOver}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPointerOver}" />
+    </Style>
+
+    <Style Selector="^:selected:pointerover /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPointerOver}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPointerOver}" />
+    </Style>
+
+    <Style Selector="^:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundUnselectedPressed}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundUnselectedPressed}" />
+    </Style>
+
+    <Style Selector="^:selected:pressed /template/ Border#PART_LayoutRoot">
+      <Setter Property="Background" Value="{DynamicResource TabItemHeaderBackgroundSelectedPressed}" />
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource TabItemHeaderForegroundSelectedPressed}" />
+    </Style>
+  </ControlTheme>
+
   <ControlTheme x:Key="{x:Type ColorView}"
                 TargetType="ColorView">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
@@ -92,7 +311,7 @@
         <Grid RowDefinitions="Auto,Auto">
 
           <!-- Backgrounds -->
-          <!-- These are separated for Fluent v2 re-styling without having to re-template. -->
+          <!-- TODO: Background="{DynamicResource ColorViewTabBackgroundBrush}" -->
           <Border x:Name="TabBackgroundBorder"
                   Grid.Row="0"
                   Grid.RowSpan="2"
@@ -100,6 +319,7 @@
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Top"
                   Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                  BorderBrush="{DynamicResource ColorViewTabBorderBrush}"
                   CornerRadius="{DynamicResource ColorViewTabBackgroundCornerRadius}" />
           <Border x:Name="ContentBackgroundBorder"
                   Grid.Row="0"
@@ -108,32 +328,25 @@
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
                   CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource BottomCornerRadiusFilterConverter}}"
-                  Background="Transparent"
-                  BorderBrush="Transparent"
+                  Background="{DynamicResource ColorViewContentBackgroundBrush}"
+                  BorderBrush="{DynamicResource ColorViewContentBorderBrush}"
                   BorderThickness="0,1,0,0" />
 
           <TabControl x:Name="PART_TabControl"
                       Grid.Row="0"
                       Height="338"
                       Width="350"
+                      Padding="0"
                       SelectedIndex="{Binding SelectedIndex, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
-            <TabControl.Resources>
-              <Thickness x:Key="TabItemMargin">0,0,0,0</Thickness>
-            </TabControl.Resources>
-            <TabControl.Styles>
-              <Style Selector="TabControl">
-                <Setter Property="ItemsPanel">
-                  <Setter.Value>
-                    <ItemsPanelTemplate>
-                      <UniformGrid Columns="0"
-                                   Rows="1" />
-                    </ItemsPanelTemplate>
-                  </Setter.Value>
-                </Setter>
-              </Style>
-            </TabControl.Styles>
+            <TabControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Columns="0"
+                             Rows="1" />
+              </ItemsPanelTemplate>
+            </TabControl.ItemsPanel>
             <!-- Spectrum Tab -->
-            <TabItem IsVisible="{TemplateBinding IsColorSpectrumVisible}">
+            <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
+                     IsVisible="{TemplateBinding IsColorSpectrumVisible}">
               <TabItem.Header>
                 <Border Height="{DynamicResource ColorViewTabStripHeight}">
                   <PathIcon Width="20"
@@ -197,7 +410,8 @@
               </Grid>
             </TabItem>
             <!-- Palette Tab -->
-            <TabItem IsVisible="{TemplateBinding IsColorPaletteVisible}">
+            <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
+                     IsVisible="{TemplateBinding IsColorPaletteVisible}">
               <TabItem.Header>
                 <Border Height="{DynamicResource ColorViewTabStripHeight}">
                   <PathIcon Width="20"
@@ -205,62 +419,12 @@
                             Data="{DynamicResource ColorViewPaletteIconGeometry}" />
                 </Border>
               </TabItem.Header>
-              <ListBox Items="{TemplateBinding PaletteColors}"
+              <ListBox Theme="{StaticResource ColorViewPaletteListBoxTheme}"
+                       ItemContainerTheme="{StaticResource ColorViewPaletteListBoxItemTheme}"
+                       Items="{TemplateBinding PaletteColors}"
                        SelectedItem="{Binding Color, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource DoNothingForNullConverter}, Mode=TwoWay}"
                        UseLayoutRounding="False"
                        Margin="12">
-                <ListBox.Styles>
-
-                  <Style Selector="ListBoxItem">
-                    <Setter Property="Background" Value="Transparent" />
-                    <Setter Property="Padding" Value="0" />
-                    <Setter Property="Template">
-                      <ControlTemplate TargetType="{x:Type ListBoxItem}">
-                        <Grid UseLayoutRounding="False">
-                          <ContentPresenter Name="PART_ContentPresenter"
-                                            Background="{TemplateBinding Background}"
-                                            BorderBrush="{TemplateBinding BorderBrush}"
-                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                            CornerRadius="{TemplateBinding CornerRadius}"
-                                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                                            Content="{TemplateBinding Content}"
-                                            Padding="{TemplateBinding Padding}"
-                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
-                          <Rectangle x:Name="BorderRectangle"
-                                     IsHitTestVisible="False"
-                                     StrokeThickness="3"
-                                     HorizontalAlignment="Stretch"
-                                     VerticalAlignment="Stretch" />
-                        </Grid>
-                      </ControlTemplate>
-                    </Setter>
-
-                    <Style Selector="^ /template/ Rectangle#BorderRectangle">
-                      <Setter Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-                      <Setter Property="Opacity" Value="0" />
-                    </Style>
-
-                    <Style Selector="^:pointerover /template/ Rectangle#BorderRectangle">
-                      <Setter Property="Stroke" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
-                      <Setter Property="Opacity" Value="1" />
-                    </Style>
-
-                    <Style Selector="^:selected /template/ Rectangle#BorderRectangle"
-                           x:DataType="Color">
-                      <!-- The below line really should be:
-                             'Value="{Binding Converter={StaticResource ContrastBrushConverter}, ConverterParameter={DynamicResource TextControlForeground}}"'
-                           However, DynamicResource and Binding is not currently supported in Avalonia for converter parameters.
-                           This means certain colors with transparency less than 50% may have a selection border that is difficult
-                           to see over top of the default control/window background. Since palettes do not usually have transparency
-                           it is considered better to disable this functionality rather than work around it with a multi-value
-                           converter. This should be revisited if Avalonia supports the above code in the future. -->
-                      <Setter Property="Stroke" Value="{Binding Converter={StaticResource ContrastBrushConverter}}" />
-                      <Setter Property="Opacity" Value="1" />
-                    </Style>
-                  </Style>
-
-                </ListBox.Styles>
                 <ListBox.ItemTemplate>
                   <DataTemplate DataType="{x:Type Color}">
                     <Border AutomationProperties.Name="{Binding Converter={StaticResource ColorToDisplayNameConverter}}"
@@ -281,7 +445,8 @@
               </ListBox>
             </TabItem>
             <!-- Components Tab -->
-            <TabItem IsVisible="{TemplateBinding IsColorComponentsVisible}">
+            <TabItem Theme="{StaticResource ColorViewTabItemTheme}"
+                     IsVisible="{TemplateBinding IsColorComponentsVisible}">
               <TabItem.Header>
                 <Border Height="{DynamicResource ColorViewTabStripHeight}">
                   <PathIcon Width="20"
@@ -301,82 +466,19 @@
                   <!-- RadioButtons are styled to look like a 'SegmentedControl' or 'ButtonGroup' -->
                   <Grid ColumnDefinitions="1*,1*"
                         IsVisible="{TemplateBinding IsColorModelVisible}">
-                    <Grid.Styles>
-
-                      <Style Selector="RadioButton">
-                        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackground}" />
-                        <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
-                        <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                        <Setter Property="BorderThickness" Value="1" />
-                        <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-                        <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
-                        <Setter Property="HorizontalAlignment" Value="Stretch" />
-                        <Setter Property="VerticalAlignment" Value="Center" />
-                        <Setter Property="HorizontalContentAlignment" Value="Center" />
-                        <Setter Property="VerticalContentAlignment" Value="Center" />
-                        <Setter Property="FontWeight" Value="Normal" />
-                        <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
-                        <Setter Property="Template">
-                          <ControlTemplate TargetType="{x:Type RadioButton}">
-                            <ContentPresenter x:Name="PART_ContentPresenter"
-                                              Background="{TemplateBinding Background}"
-                                              BorderBrush="{TemplateBinding BorderBrush}"
-                                              BorderThickness="{TemplateBinding BorderThickness}"
-                                              CornerRadius="{TemplateBinding CornerRadius}"
-                                              Content="{TemplateBinding Content}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                                              Padding="{TemplateBinding Padding}"
-                                              RecognizesAccessKey="True"
-                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                          </ControlTemplate>
-                        </Setter>
-
-                        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-                          <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
-                        </Style>
-
-                        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
-                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPointerOver}" />
-                        </Style>
-
-                        <Style Selector="^:pressed  /template/ ContentPresenter#PART_ContentPresenter">
-                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPressed}" />
-                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPressed}" />
-                        </Style>
-
-                        <Style Selector="^:checked /template/ ContentPresenter#PART_ContentPresenter">
-                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundChecked}" />
-                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundChecked}" />
-                        </Style>
-
-                        <Style Selector="^:checked:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPointerOver}" />
-                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPointerOver}" />
-                        </Style>
-
-                        <Style Selector="^:checked:pressed /template/ ContentPresenter#PART_ContentPresenter">
-                          <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedPressed}" />
-                          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightAccentBrush}" />
-                          <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundCheckedPressed}" />
-                        </Style>
-                      </Style>
-
-                    </Grid.Styles>
                     <RadioButton x:Name="RgbRadioButton"
+                                 Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
                                  Grid.Column="0"
                                  Content="RGB"
                                  CornerRadius="4,0,0,4"
+                                 BorderThickness="1,1,0,1"
                                  IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Rgba}, Mode=TwoWay}" />
                     <RadioButton x:Name="HsvRadioButton"
+                                 Theme="{StaticResource ColorViewColorModelRadioButtonTheme}"
                                  Grid.Column="1"
                                  Content="HSV"
                                  CornerRadius="0,4,4,0"
+                                 BorderThickness="0,1,1,1"
                                  IsChecked="{TemplateBinding ColorModel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter={x:Static controls:ColorModel.Hsva}, Mode=TwoWay}" />
                   </Grid>
                   <Grid x:Name="HexInputGrid"

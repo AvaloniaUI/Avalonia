@@ -9,6 +9,9 @@
     <RuntimeIdentifier>iossimulator-x64</RuntimeIdentifier>
     <!--    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>-->
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <CodesignKey>iPhone Developer</CodesignKey>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\iOS\Avalonia.iOS\Avalonia.iOS.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />

@@ -23,6 +23,7 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
+using MicroCom.CodeGenerator;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -163,7 +164,7 @@ partial class Build : NukeBuild
                 .EnableNoBuild()
                 .EnableNoRestore()
                 .When(Parameters.PublishTestResults, _ => _
-                    .SetLogger("trx")
+                    .SetLoggers("trx")
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
     }
@@ -215,8 +216,6 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.DesignerSupport.Tests");
         });
 
-    [PackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe")] readonly Tool DotMemoryUnit;
-
     Target RunLeakTests => _ => _
         .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
         .DependsOn(Compile)
@@ -224,12 +223,9 @@ partial class Build : NukeBuild
         {
             void DoMemoryTest()
             {
-                var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
-                DotMemoryUnit(
-                    $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
-                    timeout: 120_000);
+                RunCoreTest("Avalonia.LeakTests");
             }
-            ControlFlow.ExecuteWithRetry(DoMemoryTest, waitInSeconds: 3);
+            ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromMilliseconds(3));
         });
 
     Target ZipFiles => _ => _
@@ -282,6 +278,14 @@ partial class Build : NukeBuild
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles);
+
+    Target GenerateCppHeaders => _ => _.Executes(() =>
+    {
+        var file = MicroComCodeGenerator.Parse(
+            File.ReadAllText(RootDirectory / "src" / "Avalonia.Native" / "avn.idl"));
+        File.WriteAllText(RootDirectory / "native" / "Avalonia.Native" / "inc" / "avalonia-native.h",
+            file.GenerateCppHeader());
+    });
 
 
     public static int Main() =>
