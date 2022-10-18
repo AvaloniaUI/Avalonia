@@ -109,7 +109,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.Manual))
             {
-                mainWindow.Click();
+                mainWindow.SendClick();
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
                 Assert.Equal(1, secondaryWindowIndex);
             }
