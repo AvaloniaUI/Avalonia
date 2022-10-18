@@ -228,7 +228,7 @@ namespace Avalonia
             _ = type ?? throw new ArgumentNullException(nameof(type));
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
-            if (name.Contains("."))
+            if (name.Contains('.'))
             {
                 throw new InvalidOperationException("Attached properties not supported.");
             }
