@@ -92,14 +92,14 @@
     <Style Selector="^:maximized /template/ Path#RestoreButtonPath">
       <Setter Property="Data" Value="M2048 410h-410v-410h-1638v1638h410v410h1638v-1638zM1434 1434h-1229v-1229h1229v1229zM1843 1843h-1229v-205h1024v-1024h205v1229z" />
     </Style>
-    <Style Selector="^:fullscreen /template/ Path#PART_FullScreenButtonPath">
+    <Style Selector="^:fullscreen /template/ Path#FullScreenButtonPath">
       <Setter Property="IsVisible" Value="True" />
       <Setter Property="Data" Value="M205 1024h819v-819h-205v469l-674 -674l-145 145l674 674h-469v205zM1374 1229h469v-205h-819v819h205v-469l674 674l145 -145z" />
     </Style>
-    <Style Selector="^:fullscreen /template/ Panel#PART_RestoreButton">
+    <Style Selector="^:fullscreen /template/ Button#PART_RestoreButton">
       <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="^:fullscreen /template/ Panel#PART_MinimiseButton">
+    <Style Selector="^:fullscreen /template/ Button#PART_MinimiseButton">
       <Setter Property="IsVisible" Value="False" />
     </Style>
   </ControlTheme>

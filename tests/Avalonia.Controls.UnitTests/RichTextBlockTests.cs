@@ -1,4 +1,6 @@
 ﻿using Avalonia.Controls.Documents;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Templates;
 using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
@@ -90,6 +92,40 @@ namespace Avalonia.Controls.UnitTests
                 target.Inlines = new InlineCollection { run };
 
                 Assert.Equal(target, run.Parent);
+            }
+        }
+
+        [Fact]
+        public void InlineUIContainer_Child_Schould_Be_Arranged()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new RichTextBlock();
+
+                var button = new Button { Content = "12345678" };
+
+                button.Template = new FuncControlTemplate<Button>((parent, scope) =>           
+                        new TextBlock
+                        {
+                            Name = "PART_ContentPresenter",
+                            [!TextBlock.TextProperty] = parent[!ContentControl.ContentProperty],
+                        }.RegisterInNameScope(scope)                                       
+                );
+
+                target.Inlines!.Add("123456");
+                target.Inlines.Add(new InlineUIContainer(button));
+                target.Inlines.Add("123456");
+
+                target.Measure(Size.Infinity);
+
+                Assert.True(button.IsMeasureValid);
+                Assert.Equal(80, button.DesiredSize.Width);
+
+                target.Arrange(new Rect(new Size(200, 50)));
+
+                Assert.True(button.IsArrangeValid);
+
+                Assert.Equal(60, button.Bounds.Left);
             }
         }
     }
