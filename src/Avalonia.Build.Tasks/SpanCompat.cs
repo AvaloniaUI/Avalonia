@@ -87,30 +87,27 @@ namespace System
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryParseFromHexToUInt(out uint value)
+        public bool TryParseUInt(NumberStyles style, IFormatProvider provider, out uint value)
         {
-            return uint.TryParse(ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
-                    out value);
+            return uint.TryParse(ToString(), style, provider, out value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryParseToInt(out int value)
+        public bool TryParseInt(out int value)
         {
             return int.TryParse(ToString(), out value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryParseNumberToDouble(out double value)
+        public bool TryParseDouble(NumberStyles style, IFormatProvider provider, out double value)
         {
-            return double.TryParse(ToString(), NumberStyles.Number, CultureInfo.InvariantCulture,
-                    out value);
+            return double.TryParse(ToString(), style, provider, out value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryParseNumberToByte(out byte value)
+        public bool TryParseByte(NumberStyles style, IFormatProvider provider, out byte value)
         {
-            return byte.TryParse(ToString(), NumberStyles.Number, CultureInfo.InvariantCulture,
-                    out value);
+            return byte.TryParse(ToString(), style, provider, out value);
         }
 
         public override string ToString() => _length == 0 ? string.Empty : _s.Substring(_start, _length);

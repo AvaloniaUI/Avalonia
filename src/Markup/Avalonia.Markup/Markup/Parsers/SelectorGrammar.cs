@@ -417,7 +417,7 @@ namespace Avalonia.Markup.Parsers
                 {
                     stepOrOffset = -1;
                 }
-                else if (!stepOrOffsetStr.TryParseToInt(out stepOrOffset))
+                else if (!stepOrOffsetStr.TryParseInt(out stepOrOffset))
                 {
                     throw new ExpressionParseException(r.Position, "Couldn't parse nth-child step or offset value. Integer was expected.");
                 }
@@ -462,7 +462,7 @@ namespace Avalonia.Markup.Parsers
                         r.SkipWhitespace();
 
                         if (sign != 0
-                            && !r.TakeUntil(')').TryParseToInt(out offset))
+                            && !r.TakeUntil(')').TryParseInt(out offset))
                         {
                             throw new ExpressionParseException(r.Position, "Couldn't parse nth-child offset value. Integer was expected.");
                         }

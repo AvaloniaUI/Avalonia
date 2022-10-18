@@ -296,7 +296,7 @@ namespace Avalonia.Media
                     return false;
                 }
 
-                if (!input.TryParseFromHexToUInt(out var parsed))
+                if (!input.TryParseUInt(NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var parsed))
                 {
                     return false;
                 }
@@ -409,7 +409,7 @@ namespace Avalonia.Media
 
                 if (percentIndex >= 0)
                 {
-                    var result = inString.Slice(0, percentIndex).TryParseNumberToDouble(
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out double percentage);
 
                     outByte = (byte)Math.Round((percentage / 100.0) * 255.0);
@@ -417,7 +417,7 @@ namespace Avalonia.Media
                 }
                 else
                 {
-                    return inString.TryParseNumberToByte(
+                    return inString.TryParseByte(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out outByte);
                 }
             }
@@ -430,7 +430,7 @@ namespace Avalonia.Media
 
                 if (percentIndex >= 0)
                 {
-                    var result = inString.Slice(0, percentIndex).TryParseNumberToDouble(
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                          out double percentage);
 
                     outDouble = percentage / 100.0;
@@ -438,7 +438,7 @@ namespace Avalonia.Media
                 }
                 else
                 {
-                    return inString.TryParseNumberToDouble(
+                    return inString.TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out outDouble);
                 }
             }

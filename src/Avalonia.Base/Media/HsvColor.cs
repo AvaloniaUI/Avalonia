@@ -302,7 +302,7 @@ namespace Avalonia.Media
 
             if (components.Length == 3) // HSV
             {
-                if (components[0].AsSpan().TryParseNumberToDouble(out double hue) &&
+                if (components[0].AsSpan().TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
                     TryInternalParse(components[1].AsSpan(), out double saturation) &&
                     TryInternalParse(components[2].AsSpan(), out double value))
                 {
@@ -312,7 +312,7 @@ namespace Avalonia.Media
             }
             else if (components.Length == 4) // HSVA
             {
-                if (components[0].AsSpan().TryParseNumberToDouble(out double hue) &&
+                if (components[0].AsSpan().TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
                     TryInternalParse(components[1].AsSpan(), out double saturation) &&
                     TryInternalParse(components[2].AsSpan(), out double value) &&
                     TryInternalParse(components[3].AsSpan(), out double alpha))
@@ -330,7 +330,7 @@ namespace Avalonia.Media
 
                 if (percentIndex >= 0)
                 {
-                    var result = inString.Slice(0, percentIndex).TryParseNumberToDouble(
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                          out double percentage);
 
                     outDouble = percentage / 100.0;
@@ -338,7 +338,7 @@ namespace Avalonia.Media
                 }
                 else
                 {
-                    return inString.TryParseNumberToDouble(
+                    return inString.TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out outDouble);
                 }
             }
