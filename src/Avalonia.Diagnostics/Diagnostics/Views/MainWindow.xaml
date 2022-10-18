@@ -3,8 +3,7 @@
         xmlns:views="clr-namespace:Avalonia.Diagnostics.Views"
         xmlns:diag="clr-namespace:Avalonia.Diagnostics"
         Title="Avalonia DevTools"
-        x:Class="Avalonia.Diagnostics.Views.MainWindow"
-        Theme="{StaticResource {x:Type Window}}">
+        x:Class="Avalonia.Diagnostics.Views.MainWindow">
   <Window.DataTemplates>
     <diag:ViewLocator/>
   </Window.DataTemplates>
