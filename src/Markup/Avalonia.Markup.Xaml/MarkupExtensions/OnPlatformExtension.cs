@@ -70,7 +70,7 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
                 break;
 
             case OperatingSystemType.Linux:
-                if (_values.TryGetValue(nameof(macOS), out val))
+                if (_values.TryGetValue(nameof(Linux), out val))
                 {
                     return (val, true);
                 }
