@@ -24,6 +24,11 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
         Default = defaultValue;
     }
 
+    public OnPlatformExtension()
+    {
+        
+    }
+
     public TReturn? Default { get => _values.TryGetValue(nameof(Default), out var value) ? value : default; set { _values[nameof(Default)] = value; } }
     public TReturn? Windows { get => _values.TryGetValue(nameof(Windows), out var value) ? value : default; set { _values[nameof(Windows)] = value; } }
     public TReturn? macOS { get => _values.TryGetValue(nameof(macOS), out var value) ? value : default; set { _values[nameof(macOS)] = value; } }
@@ -31,11 +36,6 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
     public TReturn? Android { get => _values.TryGetValue(nameof(Android), out var value) ? value : default; set { _values[nameof(Android)] = value; } }
     public TReturn? iOS { get => _values.TryGetValue(nameof(iOS), out var value) ? value : default; set { _values[nameof(iOS)] = value; } }
     public TReturn? Browser { get => _values.TryGetValue(nameof(Browser), out var value) ? value : default; set { _values[nameof(Browser)] = value; } }
-    
-    public TReturn? Desktop { get => _values.TryGetValue(nameof(Desktop), out var value) ? value : default; set { _values[nameof(Desktop)] = value; } }
-    public TReturn? Mobile { get => _values.TryGetValue(nameof(Mobile), out var value) ? value : default; set { _values[nameof(Mobile)] = value; } }
-    
-
     public object? ProvideValue()
     {
         if (!_values.Any())
@@ -47,53 +47,63 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
         return !hasValue ? AvaloniaProperty.UnsetValue : value;
     }
 
-    private (TReturn? value, bool hasValue) TryGetFormFactorValues(RuntimePlatformInfo runtimeInfo)
-    {
-        if (runtimeInfo.IsDesktop)
-        {
-            if (_values.TryGetValue(nameof(Desktop), out var val1))
-            {
-                return (val1, true);
-            }
-        }
-
-        if (runtimeInfo.IsMobile)
-        {
-            if (_values.TryGetValue(nameof(Mobile), out var val1))
-            {
-                return (val1, true);
-            }
-        }
-        
-        return default;
-    }
-
     private (TReturn? value, bool hasValue) TryGetValueForPlatform()
     {
         var runtimeInfo = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().GetRuntimeInfo();
 
-        return runtimeInfo.OperatingSystem switch
+        TReturn val;
+        
+        switch (runtimeInfo.OperatingSystem)
         {
-            OperatingSystemType.WinNT => _values.TryGetValue(nameof(Windows), out var val) ?
-                (val, true) :
-                TryGetFormFactorValues(runtimeInfo),
-            OperatingSystemType.OSX => _values.TryGetValue(nameof(macOS), out var val) ?
-                (val, true) :
-                TryGetFormFactorValues(runtimeInfo),
-            OperatingSystemType.Linux => _values.TryGetValue(nameof(Linux), out var val) ?
-                (val, true) :
-                TryGetFormFactorValues(runtimeInfo),
-            OperatingSystemType.Android => _values.TryGetValue(nameof(Android), out var val) ?
-                (val, true) :
-                TryGetFormFactorValues(runtimeInfo),
-            OperatingSystemType.iOS => _values.TryGetValue(nameof(iOS), out var val) ?
-                (val, true) :
-                TryGetFormFactorValues(runtimeInfo),
-            OperatingSystemType.Browser => _values.TryGetValue(nameof(Browser), out var val) ?
-                (val, true) :
-                TryGetFormFactorValues(runtimeInfo),
-            _ => _values.TryGetValue(nameof(Default), out var val) ? (val, true) : TryGetFormFactorValues(runtimeInfo)
+            case OperatingSystemType.WinNT:
+                if (_values.TryGetValue(nameof(Windows), out val))
+                {
+                    return (val, true);
+                }
+                break;
+
+            case OperatingSystemType.OSX:
+                if (_values.TryGetValue(nameof(macOS), out val))
+                {
+                    return (val, true);
+                }
+                break;
+
+            case OperatingSystemType.Linux:
+                if (_values.TryGetValue(nameof(macOS), out val))
+                {
+                    return (val, true);
+                }
+                break;
+            
+            case OperatingSystemType.Android:
+                if (_values.TryGetValue(nameof(Android), out val))
+                {
+                    return (val, true);
+                }
+                break;
+            
+            case OperatingSystemType.iOS:
+                if (_values.TryGetValue(nameof(iOS), out val))
+                {
+                    return (val, true);
+                }
+                break;
+            
+            case OperatingSystemType.Browser:
+                if (_values.TryGetValue(nameof(Browser), out val))
+                {
+                    return (val, true);
+                }
+                break;
+        }
+        
+        if (_values.TryGetValue(nameof(Default), out val))
+        {
+            return (val, true);
         };
+
+        return default;
     }
 
     public void AddChild(On child)

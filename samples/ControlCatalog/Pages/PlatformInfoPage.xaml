@@ -6,8 +6,40 @@
              d:DesignHeight="800"
              d:DesignWidth="400"
              mc:Ignorable="d">
-  <StackPanel>
-    <TextBlock Text="{OnPlatform Unknown, Mobile=Mobile, Desktop=Desktop}" /> 
+  <StackPanel Spacing="20">
+    <TextBlock Text="{OnFormFactor Unknown, Mobile=Mobile, Desktop=Desktop}" /> 
+    
     <TextBlock Text="{Binding PlatformInfo}" />
+    
+    <StackPanel TextElement.Foreground="White">
+      <StackPanel Orientation="Horizontal">
+        <Border Height="100" Width="100" Background="{OnFormFactor Gray, Desktop=Green}">
+          <TextBlock Text="Desktop" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnFormFactor Gray, Mobile=Green}">
+          <TextBlock Text="Mobile" />
+        </Border>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal">
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, Windows=Green}">
+          <TextBlock Text="Windows" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, macOS=Green}">
+          <TextBlock Text="macOS" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, Linux=Green}">
+          <TextBlock Text="Linux" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, Browser=Green}">
+          <TextBlock Text="Browser" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, iOS=Green}">
+          <TextBlock Text="iOS" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, Android=Green}">
+          <TextBlock Text="Android" />
+        </Border>
+      </StackPanel>
+    </StackPanel>
   </StackPanel>
 </UserControl>
