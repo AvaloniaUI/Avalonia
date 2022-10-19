@@ -92,7 +92,7 @@ namespace Avalonia.Native
             _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
-            var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+            var monitor = Screen.AllScreens.OrderBy(x => x.Scale)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
 
             Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), PlatformResizeReason.Layout);

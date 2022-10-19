@@ -216,7 +216,7 @@ namespace Avalonia.Win32
                 {
                     Anchor = PopupAnchor.TopLeft,
                     Gravity = PopupGravity.BottomRight,
-                    AnchorRectangle = new Rect(Position.ToPoint(1) / Screens.Primary.PixelDensity, new Size(1, 1)),
+                    AnchorRectangle = new Rect(Position.ToPoint(1) / Screens.Primary.Scale, new Size(1, 1)),
                     Size = finalRect.Size,
                     ConstraintAdjustment = PopupPositionerConstraintAdjustment.FlipX | PopupPositionerConstraintAdjustment.FlipY,
                 });
@@ -244,16 +244,16 @@ namespace Avalonia.Win32
                     {
                         var point = _hiddenWindow.Screens.Primary.Bounds.TopLeft;
                         var size = _hiddenWindow.Screens.Primary.Bounds.Size;
-                        return new Rect(point.X, point.Y, size.Width * _hiddenWindow.Screens.Primary.PixelDensity, size.Height * _hiddenWindow.Screens.Primary.PixelDensity);
+                        return new Rect(point.X, point.Y, size.Width * _hiddenWindow.Screens.Primary.Scale, size.Height * _hiddenWindow.Screens.Primary.Scale);
                     }
                 }
 
                 public void MoveAndResize(Point devicePoint, Size virtualSize)
                 {
-                    _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, _hiddenWindow.Screens.Primary.PixelDensity);
+                    _moveResize(new PixelPoint((int)devicePoint.X, (int)devicePoint.Y), virtualSize, _hiddenWindow.Screens.Primary.Scale);
                 }
 
-                public double Scaling => _hiddenWindow.Screens.Primary.PixelDensity;
+                public double Scaling => _hiddenWindow.Screens.Primary.Scale;
             }
         }
 

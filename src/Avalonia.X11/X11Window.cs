@@ -120,7 +120,7 @@ namespace Avalonia.X11
 
             if (!_popup && Screen != null)
             {
-                var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+                var monitor = Screen.AllScreens.OrderBy(x => x.Scale)
                    .FirstOrDefault(m => m.Bounds.Contains(Position));
 
                 if (monitor != null)

@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Platform
+﻿using System;
+
+namespace Avalonia.Platform
 {
     /// <summary>
     /// Represents a single display screen.
@@ -6,34 +8,47 @@
     public class Screen
     {
         /// <summary>
-        /// Gets the pixel density of the screen.
-        /// This is a scaling factor so multiply by 100 to get a percentage.
+        /// Gets the scaling factor applied to the screen by the operating system.
         /// </summary>
         /// <remarks>
-        /// Both X and Y density are assumed uniform.
+        /// Multiply this value by 100 to get a percentage.
+        /// Both X and Y scaling factors are assumed uniform.
         /// </remarks>
-        public double PixelDensity { get; }
+        public double Scale { get; }
+
+        /// <inheritdoc cref="Scale"/>
+        [Obsolete("Use the Scale property instead.")]
+        public double PixelDensity => Scale;
 
         /// <summary>
         /// Gets the overall pixel-size of the screen.
-        /// This generally is the raw pixel counts in both the X and Y direction.
         /// </summary>
+        /// <remarks>
+        /// This generally is the raw pixel counts in both the X and Y direction.
+        /// </remarks>
         public PixelRect Bounds { get; }
 
         /// <summary>
         /// Gets the actual working-area pixel-size of the screen.
-        /// This may be smaller to account for notches and other block-out areas.
         /// </summary>
+        /// <remarks>
+        /// This area may be smaller than <see href="Bounds"/> to account for notches and
+        /// other block-out areas such as taskbars etc.
+        /// </remarks>
         public PixelRect WorkingArea { get; }
 
         /// <summary>
         /// Gets a value indicating whether the screen is the primary one.
         /// </summary>
         public bool IsPrimary { get; }
-        
-        public Screen(double pixelDensity, PixelRect bounds, PixelRect workingArea, bool isPrimary)
+
+        /// <inheritdoc cref="IsPrimary"/>
+        [Obsolete("Use the IsPrimary property instead.")]
+        public bool Primary => IsPrimary;
+
+        public Screen(double scale, PixelRect bounds, PixelRect workingArea, bool isPrimary)
         {
-            this.PixelDensity = pixelDensity;
+            this.Scale = scale;
             this.Bounds = bounds;
             this.WorkingArea = workingArea;
             this.IsPrimary = isPrimary;
