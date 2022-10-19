@@ -39,15 +39,15 @@ namespace Avalonia.Build.Tasks
 
         public static CompileResult Compile(IBuildEngine engine, string input, string[] references,
             string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey,
             bool skipXamlCompilation)
         {
-            return Compile(engine, input, references, projectDirectory, output, verifyIl, logImportance, strongNameKey, patchCom, skipXamlCompilation, debuggerLaunch:false);
+            return Compile(engine, input, references, projectDirectory, output, verifyIl, logImportance, strongNameKey, skipXamlCompilation, debuggerLaunch:false);
         }
 
         internal static CompileResult Compile(IBuildEngine engine, string input, string[] references,
             string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom, bool skipXamlCompilation, bool debuggerLaunch)
+            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
         {
             var typeSystem = new CecilTypeSystem(
                 references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")),
@@ -58,14 +58,11 @@ namespace Avalonia.Build.Tasks
             if (!skipXamlCompilation)
             {
                 var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance, debuggerLaunch);
-                if (compileRes == null && !patchCom)
+                if (compileRes == null)
                     return new CompileResult(true);
                 if (compileRes == false)
                     return new CompileResult(false);
             }
-
-            if (patchCom)
-                ComInteropHelper.PatchAssembly(asm, typeSystem);
 
             var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
             if (!string.IsNullOrWhiteSpace(strongNameKey))
@@ -112,9 +109,8 @@ namespace Avalonia.Build.Tasks
                 }
             }
             var asm = typeSystem.TargetAssemblyDefinition;
-            var emres = new EmbeddedResources(asm);
             var avares = new AvaloniaResources(asm, projectDirectory);
-            if (avares.Resources.Count(CheckXamlName) == 0 && emres.Resources.Count(CheckXamlName) == 0)
+            if (avares.Resources.Count(CheckXamlName) == 0)
                 // Nothing to do
                 return null;
 
@@ -436,9 +432,6 @@ namespace Avalonia.Build.Tasks
                 return true;
             }
             
-            if (emres.Resources.Count(CheckXamlName) != 0)
-                if (!CompileGroup(emres))
-                    return false;
             if (avares.Resources.Count(CheckXamlName) != 0)
             {
                 if (!CompileGroup(avares))
