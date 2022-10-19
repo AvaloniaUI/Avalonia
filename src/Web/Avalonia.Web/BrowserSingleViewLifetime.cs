@@ -1,41 +1,54 @@
-﻿using System.Runtime.InteropServices.JavaScript;
-using System;
+﻿using System;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Media;
 using Avalonia.Web.Skia;
+using System.Runtime.Versioning;
 
-namespace Avalonia.Web
+namespace Avalonia.Web;
+
+[SupportedOSPlatform("browser")]
+public class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
 {
-    [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
-    public class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
-    {
-        public AvaloniaView? View;
+    public AvaloniaView? View;
 
-        public Control? MainView
-        {
-            get => View!.Content;
-            set => View!.Content = value;
-        }
+    public Control? MainView
+    {
+        get => View!.Content;
+        set => View!.Content = value;
     }
+}
 
-    public static partial class WebAppBuilder
-    {
-        public static T SetupBrowserApp<T>(
+public class BrowserPlatformOptions
+{
+    public Func<string, string> FrameworkAssetPathResolver { get; set; } = new(fileName => $"./{fileName}");
+}
+
+
+[SupportedOSPlatform("browser")]
+public static class WebAppBuilder
+{
+    public static T SetupBrowserApp<T>(
         this T builder, string mainDivId)
         where T : AppBuilderBase<T>, new()
-        {
-            var lifetime = new BrowserSingleViewLifetime();
+    {
+        var lifetime = new BrowserSingleViewLifetime();
 
-            return builder
-                .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
-                .UseSkia()
-                .With(new SkiaOptions { CustomGpuFactory = () => new BrowserSkiaGpu() })
-                .AfterSetup(b =>
-                {
-                    lifetime.View = new AvaloniaView(mainDivId);
-                })
-                .SetupWithLifetime(lifetime);
-        }
+        return builder
+            .UseBrowser()
+            .AfterSetup(b =>
+            {
+                lifetime.View = new AvaloniaView(mainDivId);
+            })
+            .SetupWithLifetime(lifetime);
+    }
+
+    public static T UseBrowser<T>(
+        this T builder)
+        where T : AppBuilderBase<T>, new()
+    {
+        return builder
+            .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
+            .UseSkia()
+            .With(new SkiaOptions { CustomGpuFactory = () => new BrowserSkiaGpu() });
     }
 }

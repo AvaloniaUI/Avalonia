@@ -24,38 +24,6 @@ namespace Avalonia.Build.Tasks
             string Name { get; }
             IEnumerable<IResource> Resources { get; }
         }
-        
-        class EmbeddedResources : IResourceGroup
-        {
-            private readonly AssemblyDefinition _asm;
-            public string Name => "EmbeddedResource";
-
-            public IEnumerable<IResource> Resources => _asm.MainModule.Resources.OfType<EmbeddedResource>()
-                .Select(r => new WrappedResource(_asm, r)).ToList();
-
-            public EmbeddedResources(AssemblyDefinition asm)
-            {
-                _asm = asm;
-            }
-            class WrappedResource : IResource
-            {
-                private readonly AssemblyDefinition _asm;
-                private readonly EmbeddedResource _res;
-
-                public WrappedResource(AssemblyDefinition asm, EmbeddedResource res)
-                {
-                    _asm = asm;
-                    _res = res;
-                }
-
-                public string Uri => $"resm:{Name}?assembly={_asm.Name.Name}";
-                public string Name => _res.Name;
-                public string FilePath => Name;
-                public byte[] FileContents => _res.GetResourceData();
-
-                public void Remove() => _asm.MainModule.Resources.Remove(_res);
-            }
-        }
 
         class AvaloniaResources : IResourceGroup
         {

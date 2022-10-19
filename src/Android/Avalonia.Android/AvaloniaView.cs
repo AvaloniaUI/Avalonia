@@ -21,10 +21,7 @@ namespace Avalonia.Android
         {
             _view = new ViewImpl(this);
             AddView(_view.View);
-        }
 
-        internal void Prepare ()
-        {
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
         }
