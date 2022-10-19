@@ -27,13 +27,18 @@ namespace Avalonia.Direct2D1.Media
 
                 buffer.GuessSegmentProperties();
 
-                buffer.Direction = Direction.LeftToRight; //Always shape LeftToRight
+                buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
-                var font = ((GlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((GlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
+
+                if(buffer.Direction == Direction.RightToLeft)
+                {
+                    buffer.Reverse();
+                }
 
                 font.GetScale(out var scaleX, out _);
 

@@ -92,6 +92,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
         {
+            base.OnPropertyChanged(e);
             if (e.Property == IsCheckedProperty)
             {
                 OnIsCheckedChanged();

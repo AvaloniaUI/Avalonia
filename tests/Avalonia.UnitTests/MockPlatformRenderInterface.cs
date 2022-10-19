@@ -152,6 +152,21 @@ namespace Avalonia.UnitTests
             return Mock.Of<IGeometryImpl>();
         }
 
+        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return Mock.Of<IGlyphRunBuffer>();
+        }
+
+        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return Mock.Of<IHorizontalGlyphRunBuffer>();
+        }
+
+        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return Mock.Of<IPositionedGlyphRunBuffer>();
+        }
+
         public bool SupportsIndividualRoundRects { get; set; }
 
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;

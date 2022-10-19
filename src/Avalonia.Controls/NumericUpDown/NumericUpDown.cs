@@ -138,7 +138,6 @@ namespace Avalonia.Controls
         private bool _clipValueToMinMax;
         private bool _isSyncingTextAndValueProperties;
         private bool _isTextChangedFromUI;
-        private CultureInfo? _cultureInfo;
         private NumberStyles _parsingNumberStyle = NumberStyles.Any;
         private NumberFormatInfo? _numberFormat;
 
@@ -1152,8 +1151,8 @@ namespace Avalonia.Controls
             if (PIndex >= 0)
             {
                 //stringToTest contains a "P" between 2 "'", it's considered as text, not percent
-                var isText = stringToTest.Substring(0, PIndex).Contains("'")
-                             && stringToTest.Substring(PIndex, FormatString.Length - PIndex).Contains("'");
+                var isText = stringToTest.Substring(0, PIndex).Contains('\'')
+                             && stringToTest.Substring(PIndex, FormatString.Length - PIndex).Contains('\'');
 
                 return !isText;
             }

@@ -1,55 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>net7.0</TargetFramework>
     <PackageId>Avalonia.Web.Blazor</PackageId>
-    <LangVersion>preview</LangVersion>
-    <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
-    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
+    <ResolveStaticWebAssetsInputsDependsOn>_IncludeGeneratedAvaloniaStaticFiles;$(ResolveStaticWebAssetsInputsDependsOn)</ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
-  <Import Project="..\..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\..\build\SkiaSharp.props" />
-  <Import Project="..\..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
 
   <ItemGroup>
-    <Content Include="*.props">
-      <Pack>true</Pack>
-      <PackagePath>build\</PackagePath>
-    </Content>
-    <Content Include="*.targets">
-      <Pack>true</Pack>
-      <PackagePath>build\;buildTransitive\</PackagePath>
-    </Content>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0-*" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.8" />
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.7.4" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.0" />
+    <ProjectReference Include="..\Avalonia.Web\Avalonia.Web.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
-    <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
-  <Target Name="NpmInstall" Inputs="webapp/package.json" Outputs="webapp/node_modules/.install-stamp">
-    <Exec Command="npm install" WorkingDirectory="webapp" />
-    <!-- Write the stamp file, so incremental builds work -->
-    <Touch Files="webapp/node_modules/.install-stamp" AlwaysCreate="true" />
-  </Target>
-  <Target Name="NpmRunBuild" DependsOnTargets="NpmInstall" BeforeTargets="BeforeBuild">
-    <Exec Command="npm run build" WorkingDirectory="webapp" />
+  <Target Name="_IncludeGeneratedAvaloniaStaticFiles">
+    <ItemGroup>
+      <_AvaloniaWebAssets Include="$(MSBuildThisFileDirectory)../Avalonia.Web/wwwroot/**/*.*" />
+    </ItemGroup>
+    <DefineStaticWebAssets SourceId="$(PackageId)"
+                           SourceType="Computed"
+                           AssetKind="All"
+                           AssetRole="Primary"
+                           CopyToOutputDirectory="PreserveNewest"
+                           CopyToPublishDirectory="PreserveNewest"
+                           ContentRoot="$(MSBuildThisFileDirectory)../Avalonia.Web/wwwroot/"
+                           BasePath="_content\$(PackageId)"
+                           CandidateAssets="@(_AvaloniaWebAssets)"
+                           RelativePathFilter="**.js">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    </DefineStaticWebAssets>
   </Target>
 </Project>

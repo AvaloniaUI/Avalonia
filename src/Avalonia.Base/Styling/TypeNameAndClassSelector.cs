@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Avalonia.Controls;
 using Avalonia.Styling.Activators;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -145,7 +145,7 @@ namespace Avalonia.Styling
 
         private string BuildSelectorString(Style? owner)
         {
-            var builder = new StringBuilder();
+            var builder = StringBuilderCache.Acquire();
 
             if (_previous != null)
             {
@@ -185,7 +185,7 @@ namespace Avalonia.Styling
                 }
             }
 
-            return builder.ToString();
+            return StringBuilderCache.GetStringAndRelease(builder);
         }
     }
 }

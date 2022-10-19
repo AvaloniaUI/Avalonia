@@ -1,6 +1,6 @@
 ﻿// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using System;
@@ -2109,8 +2109,8 @@ namespace Avalonia.Controls
             RemovedItems = new Collection<DateTime>();
         }
 
-        private const string PART_ElementRoot = "Root";
-        private const string PART_ElementMonth = "CalendarItem";
+        private const string PART_ElementRoot = "PART_Root";
+        private const string PART_ElementMonth = "PART_CalendarItem";
 
         /// <summary>
         /// Builds the visual tree for the

@@ -1,4 +1,7 @@
 #if !NETCOREAPP3_1_OR_GREATER
+using System.Globalization;
+using System.Runtime.CompilerServices;
+
 namespace System
 {
     // This is a hack to enable our span code to work inside MSBuild task without referencing System.Memory
@@ -8,6 +11,8 @@ namespace System
         private int _start;
         private int _length;
         public int Length => _length;
+
+        public static implicit operator ReadOnlySpan<T>(string s) => new ReadOnlySpan<T>(s);
 
         public ReadOnlySpan(string s) : this(s, 0, s.Length)
         {
@@ -63,7 +68,74 @@ namespace System
             return Slice(start);
         }
 
+        public ReadOnlySpan<char> TrimEnd()
+        {
+            int end = Length - 1;
+            for (; end >= 0; end--)
+            {
+                if (!char.IsWhiteSpace(this[end]))
+                {
+                    break;
+                }
+            }
+            return Slice(0, end + 1);
+        }
+
+        public ReadOnlySpan<char> Trim()
+        {
+            return TrimStart().TrimEnd();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryParseUInt(NumberStyles style, IFormatProvider provider, out uint value)
+        {
+            return uint.TryParse(ToString(), style, provider, out value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryParseInt(out int value)
+        {
+            return int.TryParse(ToString(), out value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryParseDouble(NumberStyles style, IFormatProvider provider, out double value)
+        {
+            return double.TryParse(ToString(), style, provider, out value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryParseByte(NumberStyles style, IFormatProvider provider, out byte value)
+        {
+            return byte.TryParse(ToString(), style, provider, out value);
+        }
+
         public override string ToString() => _length == 0 ? string.Empty : _s.Substring(_start, _length);
+
+        internal int IndexOf(ReadOnlySpan<char> v, StringComparison ordinal, int start = 0)
+        {
+            if(Length == 0 || v.IsEmpty)
+            {
+                return -1;
+            }
+
+            for (var c = start; c < _length; c++)
+            {
+                if (this[c] == v[0])
+                {
+                    for(var i = 0; i < v.Length; i++)
+                    {
+                        if (this[c + i] != v[i])
+                        {
+                            break;
+                        }
+                    } 
+                    return c;
+                }
+            }
+
+            return -1;
+        }
 
         public static implicit operator ReadOnlySpan<T>(char[] arr) => new ReadOnlySpan<T>(new string(arr));
     }

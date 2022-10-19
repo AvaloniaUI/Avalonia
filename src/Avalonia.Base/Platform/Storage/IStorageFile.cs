@@ -18,6 +18,7 @@ public interface IStorageFile : IStorageItem
     /// <summary>
     /// Opens a stream for read access.
     /// </summary>
+    /// <exception cref="System.UnauthorizedAccessException" />
     Task<Stream> OpenReadAsync();
 
     /// <summary>
@@ -28,5 +29,6 @@ public interface IStorageFile : IStorageItem
     /// <summary>
     /// Opens stream for writing to the file.
     /// </summary>
+    /// <exception cref="System.UnauthorizedAccessException" />
     Task<Stream> OpenWriteAsync();
 }

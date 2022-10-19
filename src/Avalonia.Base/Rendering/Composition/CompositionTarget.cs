@@ -129,7 +129,7 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         internal void ImmediateUIThreadRender()
         {
-            Compositor.RequestCommitAsync();
+            Compositor.Commit();
             Compositor.Server.Render();
         }
     }

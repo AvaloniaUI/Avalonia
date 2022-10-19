@@ -2,10 +2,10 @@ using System;
 using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
-using Avalonia.Platform;
 using Avalonia.Themes.Fluent;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
@@ -20,7 +20,7 @@ namespace ControlCatalog
 
             var sideBar = this.Get<TabControl>("Sidebar");
 
-            if (AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo().IsDesktop == true)
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime)
             {
                 var tabItems = (sideBar.Items as IList);
                 tabItems?.Add(new TabItem()
@@ -28,7 +28,6 @@ namespace ControlCatalog
                     Header = "Screens",
                     Content = new ScreenPage()
                 });
-
             }
 
             var themes = this.Get<ComboBox>("Themes");

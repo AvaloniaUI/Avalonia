@@ -42,9 +42,9 @@ namespace Avalonia.LinuxFramebuffer
             Threading = new InternalPlatformThreadingInterface();
             if (_fb is IGlOutputBackend gl)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(gl.PlatformOpenGlInterface);
-            
+
             var opts = AvaloniaLocator.Current.GetService<LinuxFramebufferPlatformOptions>() ?? new LinuxFramebufferPlatformOptions();
-            
+
             AvaloniaLocator.CurrentMutable
                 .Bind<IPlatformThreadingInterface>().ToConstant(Threading)
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(opts.Fps))
@@ -59,12 +59,12 @@ namespace Avalonia.LinuxFramebuffer
                 AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>());
         }
 
-       
-        internal static LinuxFramebufferLifetime Initialize<T>(T builder, IOutputBackend outputBackend) where T : AppBuilderBase<T>, new()
+
+        internal static LinuxFramebufferLifetime Initialize<T>(T builder, IOutputBackend outputBackend, IInputBackend inputBackend) where T : AppBuilderBase<T>, new()
         {
             var platform = new LinuxFramebufferPlatform(outputBackend);
             builder.UseSkia().UseWindowingSubsystem(platform.Initialize, "fbdev");
-            return new LinuxFramebufferLifetime(platform._fb);
+            return new LinuxFramebufferLifetime(platform._fb, inputBackend);
         }
     }
 
@@ -80,13 +80,13 @@ namespace Avalonia.LinuxFramebuffer
         {
             _fb = fb;
         }
-        
+
         public LinuxFramebufferLifetime(IOutputBackend fb, IInputBackend input)
         {
             _fb = fb;
             _inputBackend = input;
         }
-        
+
         public Control MainView
         {
             get => (Control)_topLevel?.Content;
@@ -126,7 +126,7 @@ namespace Avalonia.LinuxFramebuffer
         {
             Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
         }
-        
+
         public void Shutdown(int exitCode)
         {
             ExitCode = exitCode;
@@ -140,22 +140,22 @@ namespace Avalonia.LinuxFramebuffer
 
 public static class LinuxFramebufferPlatformExtensions
 {
-    public static int StartLinuxFbDev<T>(this T builder, string[] args, string fbdev = null, double scaling = 1)
+    public static int StartLinuxFbDev<T>(this T builder, string[] args, string fbdev = null, double scaling = 1, IInputBackend inputBackend = default)
         where T : AppBuilderBase<T>, new() =>
-        StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: null) { Scaling = scaling });
-    public static int StartLinuxFbDev<T>(this T builder, string[] args, string fbdev, PixelFormat? format, double scaling)
+        StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: null) { Scaling = scaling }, inputBackend);
+    public static int StartLinuxFbDev<T>(this T builder, string[] args, string fbdev, PixelFormat? format, double scaling, IInputBackend inputBackend = default)
         where T : AppBuilderBase<T>, new() =>
-        StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: format) { Scaling = scaling });
+        StartLinuxDirect(builder, args, new FbdevOutput(fileName: fbdev, format: format) { Scaling = scaling }, inputBackend);
 
-    public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, double scaling = 1)
-        where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card) {Scaling = scaling});
-    public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
-        where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card, connectorsForceProbe, options));
-    
-    public static int StartLinuxDirect<T>(this T builder, string[] args, IOutputBackend backend)
+    public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, double scaling = 1, IInputBackend inputBackend = default)
+        where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card) { Scaling = scaling }, inputBackend);
+    public static int StartLinuxDrm<T>(this T builder, string[] args, string card = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null, IInputBackend inputBackend = default)
+        where T : AppBuilderBase<T>, new() => StartLinuxDirect(builder, args, new DrmOutput(card, connectorsForceProbe, options), inputBackend);
+
+    public static int StartLinuxDirect<T>(this T builder, string[] args, IOutputBackend outputBackend, IInputBackend inputBackend = default)
         where T : AppBuilderBase<T>, new()
     {
-        var lifetime = LinuxFramebufferPlatform.Initialize(builder, backend);
+        var lifetime = LinuxFramebufferPlatform.Initialize(builder, outputBackend, inputBackend);
         builder.SetupWithLifetime(lifetime);
         lifetime.Start(args);
         builder.Instance.Run(lifetime.Token);

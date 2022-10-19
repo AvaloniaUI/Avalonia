@@ -6020,7 +6020,7 @@ namespace Avalonia.Controls
         /// <returns>The formatted string.</returns>
         private string FormatClipboardContent(DataGridRowClipboardEventArgs e)
         {
-            var text = new StringBuilder();
+            var text = StringBuilderCache.Acquire();
             var clipboardRowContent = e.ClipboardRowContent;
             var numberOfItem = clipboardRowContent.Count;
             for (int cellIndex = 0; cellIndex < numberOfItem; cellIndex++)
@@ -6037,7 +6037,7 @@ namespace Avalonia.Controls
                     text.Append('\n');
                 }
             }
-            return text.ToString();
+            return StringBuilderCache.GetStringAndRelease(text);
         }
 
         /// <summary>
@@ -6052,7 +6052,7 @@ namespace Avalonia.Controls
 
             if (ctrl && !shift && !alt && ClipboardCopyMode != DataGridClipboardCopyMode.None && SelectedItems.Count > 0)
             {
-                StringBuilder textBuilder = new StringBuilder();
+                var textBuilder = StringBuilderCache.Acquire();
 
                 if (ClipboardCopyMode == DataGridClipboardCopyMode.IncludeHeader)
                 {
@@ -6078,7 +6078,7 @@ namespace Avalonia.Controls
                     textBuilder.Append(FormatClipboardContent(itemArgs));
                 }
 
-                string text = textBuilder.ToString();
+                string text = StringBuilderCache.GetStringAndRelease(textBuilder);
 
                 if (!string.IsNullOrEmpty(text))
                 {

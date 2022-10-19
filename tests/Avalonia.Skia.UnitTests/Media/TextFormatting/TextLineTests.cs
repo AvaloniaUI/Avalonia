@@ -12,7 +12,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
     public class TextLineTests
     {
-        private static readonly string s_multiLineText = "012345678\r\r0123456789";
+        private const string s_multiLineText = "012345678\r\r0123456789";
 
         [Fact]
         public void Should_Get_First_CharacterHit()
@@ -597,21 +597,82 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 textBounds = textLine.GetTextBounds(0, 20);
 
-                Assert.Equal(1, textBounds.Count);
+                Assert.Equal(2, textBounds.Count);
 
-                Assert.Equal(144.0234375, textBounds[0].Rectangle.Width);
+                Assert.Equal(144.0234375, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 30);
 
-                Assert.Equal(1, textBounds.Count);
+                Assert.Equal(3, textBounds.Count);
 
-                Assert.Equal(216.03515625, textBounds[0].Rectangle.Width);
+                Assert.Equal(216.03515625, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 40);
 
-                Assert.Equal(1, textBounds.Count);
+                Assert.Equal(4, textBounds.Count);
 
-                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds[0].Rectangle.Width);
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width));
+            }
+        }
+
+        [Fact]
+        public void Should_GetTextRange()
+        {
+            var text = "שדגככעיחדגכAישדגשדגחייטYDASYWIWחיחלדשSAטויליHUHIUHUIDWKLאא'ק'קחליק/'וקןגגגלךשף'/קפוכדגכשדגשיח'/קטאגשד";
+
+            using (Start())
+            {
+                var defaultProperties = new GenericTextRunProperties(Typeface.Default);
+
+                var textSource = new SingleBufferTextSource(text, defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine =
+                    formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                        new GenericTextParagraphProperties(defaultProperties));
+
+                var textRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+
+                var lineWidth = textLine.WidthIncludingTrailingWhitespace;
+
+                var textBounds = textLine.GetTextBounds(0, text.Length);
+
+                TextBounds lastBounds = null;
+
+                var runBounds = textBounds.SelectMany(x => x.TextRunBounds).ToList();
+
+                Assert.Equal(textRuns.Count, runBounds.Count);
+
+                for (var i = 0; i < textRuns.Count; i++)
+                {
+                    var run = textRuns[i];
+                    var bounds = runBounds[i];
+
+                    Assert.Equal(run.Text.Start, bounds.TextSourceCharacterIndex);
+                    Assert.Equal(run, bounds.TextRun);
+                    Assert.Equal(run.Size.Width, bounds.Rectangle.Width);
+                }
+
+                for (var i = 0; i < textBounds.Count; i++)
+                {
+                    var currentBounds = textBounds[i];
+
+                    if (lastBounds != null)
+                    {
+                        Assert.Equal(lastBounds.Rectangle.Right, currentBounds.Rectangle.Left);
+                    }
+
+                    var sumOfRunWidth = currentBounds.TextRunBounds.Sum(x => x.Rectangle.Width);
+
+                    Assert.Equal(sumOfRunWidth, currentBounds.Rectangle.Width);
+
+                    lastBounds = currentBounds;
+                }
+
+                var sumOfBoundsWidth = textBounds.Sum(x => x.Rectangle.Width);
+
+                Assert.Equal(lineWidth, sumOfBoundsWidth);
             }
         }
 
@@ -779,7 +840,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(0, text.Length * 3 + 3);
 
-                Assert.Equal(1, textBounds.Count);
+                Assert.Equal(6, textBounds.Count);
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 1);
@@ -789,8 +850,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 textBounds = textLine.GetTextBounds(0, firstRun.Text.Length + 1);
 
-                Assert.Equal(1, textBounds.Count);
-                Assert.Equal(firstRun.Size.Width + 14, textBounds[0].Rectangle.Width);
+                Assert.Equal(2, textBounds.Count);
+                Assert.Equal(firstRun.Size.Width + 14, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(1, firstRun.Text.Length);
 
@@ -799,8 +860,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 textBounds = textLine.GetTextBounds(1, firstRun.Text.Length + 1);
 
-                Assert.Equal(1, textBounds.Count);
-                Assert.Equal(firstRun.Size.Width + 14, textBounds[0].Rectangle.Width);
+                Assert.Equal(2, textBounds.Count);
+                Assert.Equal(firstRun.Size.Width + 14, textBounds.Sum(x => x.Rectangle.Width));
             }
         }
 

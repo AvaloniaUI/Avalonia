@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.ColorPicker"
              xmlns:primitives="clr-namespace:Avalonia.Controls.Primitives;assembly=Avalonia.Controls"
              xmlns:pc="clr-namespace:Avalonia.Controls.Primitives.Converters;assembly=Avalonia.Controls.ColorPicker"
              mc:Ignorable="d"
@@ -10,16 +11,22 @@
              x:Class="ControlCatalog.Pages.ColorPickerPage">
 
   <UserControl.Resources>
-    <pc:ThirdComponentConverter x:Key="ThirdComponent" />
   </UserControl.Resources>
 
-  <Grid ColumnDefinitions="Auto,10,Auto,10,Auto"
+  <Grid x:Name="LayoutRoot"
+        ColumnDefinitions="Auto,10,Auto"
         RowDefinitions="Auto,Auto">
-    <ColorPicker Grid.Column="0"
-                 Grid.Row="1" />
     <ColorView Grid.Column="0"
                Grid.Row="0"
                ColorSpectrumShape="Ring" />
+    <ColorPicker Grid.Column="0"
+                 Grid.Row="1"
+                 HsvColor="hsv(120, 1, 1)"
+                 Margin="0,50,0,0">
+      <ColorPicker.Palette>
+        <controls:FlatColorPalette />
+      </ColorPicker.Palette>
+    </ColorPicker>
     <Grid Grid.Column="2"
           Grid.Row="0"
           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
@@ -47,11 +54,8 @@
                    ColorModel="Hsva"
                    HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
       <ColorPreviewer Grid.Row="5"
-                      IsAccentColorsVisible="True"
+                      IsAccentColorsVisible="False"
                       HsvColor="{Binding HsvColor, ElementName=ColorSpectrum1}" />
-    </Grid>
-    <Grid Grid.Column="4"
-          Grid.Row="0">
     </Grid>
   </Grid>
 </UserControl>

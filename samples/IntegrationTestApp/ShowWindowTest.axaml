@@ -3,7 +3,7 @@
         x:Class="IntegrationTestApp.ShowWindowTest"
         Name="SecondaryWindow"
         Title="Show Window Test">
-  <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+  <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
     <Label Grid.Column="0" Grid.Row="1">Client Size</Label>
     <TextBox Name="ClientSize" Grid.Column="1" Grid.Row="1" IsReadOnly="True"
              Text="{Binding ClientSize, Mode=OneWay}"/>
@@ -31,6 +31,10 @@
       <ComboBoxItem>Maximized</ComboBoxItem>
       <ComboBoxItem>Fullscreen</ComboBoxItem>
     </ComboBox>
-    <Button Name="HideButton" Grid.Row="8" Command="{Binding $parent[Window].Hide}">Hide</Button>
+
+    <Label Grid.Column="0" Grid.Row="8">Order (mac)</Label>
+    <TextBox Name="Order" Grid.Column="1" Grid.Row="8" IsReadOnly="True"/>
+
+    <Button Name="HideButton" Grid.Row="9" Command="{Binding $parent[Window].Hide}">Hide</Button>
   </Grid>
 </Window>
