@@ -76,7 +76,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 if (script == Script.Common && previousTypeface is not null)
                 {
-                    if (TryGetShapeableLength(text, previousTypeface.Value, defaultTypeface, out var fallbackCount, out _))
+                    if (TryGetShapeableLength(text, previousTypeface.Value, null, out var fallbackCount, out _))
                     {
                         return new ShapeableTextCharacters(text.Take(fallbackCount),
                             defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);

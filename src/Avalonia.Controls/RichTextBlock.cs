@@ -61,6 +61,7 @@ namespace Avalonia.Controls
         private int _selectionStart;
         private int _selectionEnd;
         private int _wordSelectionStart = -1;
+        private IReadOnlyList<TextRun>? _textRuns;
 
         static RichTextBlock()
         {
@@ -277,8 +278,8 @@ namespace Avalonia.Controls
         protected override void SetText(string? text)
         {
             var oldValue = GetText();
-      
-            AddText(text);        
+
+            AddText(text);
 
             RaisePropertyChanged(TextProperty, oldValue, text);
         }
@@ -301,18 +302,9 @@ namespace Avalonia.Controls
 
             ITextSource textSource;
 
-            if (HasComplexContent)
+            if (_textRuns != null)
             {
-                var inlines = Inlines!;
-
-                var textRuns = new List<TextRun>();
-
-                foreach (var inline in inlines)
-                {
-                    inline.BuildTextRun(textRuns);
-                }
-
-                textSource = new InlinesTextSource(textRuns);
+                textSource = new InlinesTextSource(_textRuns);
             }
             else
             {
@@ -546,27 +538,73 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            foreach (var child in VisualChildren)
+            if(_textRuns != null)
             {
-                if (child is Control control)
-                {
-                    control.Measure(Size.Infinity);
-                }
+                LogicalChildren.Clear();
+
+                VisualChildren.Clear();
+
+                _textRuns = null;
             }
-            
+
+            if (Inlines != null && Inlines.Count > 0)
+            {
+                var inlines = Inlines;
+
+                var textRuns = new List<TextRun>();
+
+                foreach (var inline in inlines)
+                {
+                    inline.BuildTextRun(textRuns);
+                }
+
+                foreach (var textRun in textRuns)
+                {
+                    if (textRun is EmbeddedControlRun controlRun &&
+                        controlRun.Control is Control control)
+                    {
+                        LogicalChildren.Add(control);
+
+                        VisualChildren.Add(control);
+
+                        control.Measure(Size.Infinity);
+                    }
+                }
+
+                _textRuns = textRuns;
+            }
+
             return base.MeasureOverride(availableSize);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            foreach (var child in VisualChildren)
+            if (HasComplexContent)
             {
-                if (child is Control control)
+                var currentY = 0.0;
+
+                foreach (var textLine in TextLayout.TextLines)
                 {
-                    control.Arrange(new Rect(control.DesiredSize));
+                    var currentX = textLine.Start;
+
+                    foreach (var run in textLine.TextRuns)
+                    {
+                        if (run is DrawableTextRun drawable)
+                        {
+                            if (drawable is EmbeddedControlRun controlRun
+                                && controlRun.Control is Control control)
+                            {
+                                control.Arrange(new Rect(new Point(currentX, currentY), control.DesiredSize));
+                            }
+
+                            currentX += drawable.Size.Width;
+                        }
+                    }
+
+                    currentY += textLine.Height;
                 }
             }
-            
+           
             return base.ArrangeOverride(finalSize);
         }
 
@@ -615,14 +653,6 @@ namespace Avalonia.Controls
                 newValue.Parent = this;
                 newValue.InlineHost = this;
                 newValue.Invalidated += (s, e) => InvalidateTextLayout();
-            }
-        }
-
-        void IInlineHost.AddVisualChild(IControl child)
-        {
-            if (child.VisualParent == null)
-            {
-                VisualChildren.Add(child);
             }
         }
 

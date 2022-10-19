@@ -1767,6 +1767,46 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
+        [Flags]
+        public enum GCS : uint
+        {
+            /// <summary>Retrieve or update the attribute of the composition string.</summary>
+            GCS_COMPATTR = 0x0010,
+
+            /// <summary>Retrieve or update clause information of the composition string.</summary>
+            GCS_COMPCLAUSE = 0x0020,
+
+            /// <summary>Retrieve or update the attributes of the reading string of the current composition.</summary>
+            GCS_COMPREADATTR = 0x0002,
+
+            /// <summary>Retrieve or update the clause information of the reading string of the composition string.</summary>
+            GCS_COMPREADCLAUSE = 0x0004,
+
+            /// <summary>Retrieve or update the reading string of the current composition.</summary>
+            GCS_COMPREADSTR = 0x0001,
+
+            /// <summary>Retrieve or update the current composition string.</summary>
+            GCS_COMPSTR = 0x0008,
+
+            /// <summary>Retrieve or update the cursor position in composition string.</summary>
+            GCS_CURSORPOS = 0x0080,
+
+            /// <summary>Retrieve or update the starting position of any changes in composition string.</summary>
+            GCS_DELTASTART = 0x0100,
+
+            /// <summary>Retrieve or update clause information of the result string.</summary>
+            GCS_RESULTCLAUSE = 0x1000,
+
+            /// <summary>Retrieve or update clause information of the reading string.</summary>
+            GCS_RESULTREADCLAUSE = 0x0400,
+
+            /// <summary>Retrieve or update the reading string.</summary>
+            GCS_RESULTREADSTR = 0x0200,
+
+            /// <summary>Retrieve or update the string of the composition result.</summary>
+            GCS_RESULTSTR = 0x0800,
+        }
+
         [DllImport("imm32.dll", SetLastError = true)]
         public static extern IntPtr ImmGetContext(IntPtr hWnd);
         [DllImport("imm32.dll", SetLastError = true)]
@@ -1789,6 +1829,29 @@ namespace Avalonia.Win32.Interop
         public static extern bool ImmSetCompositionWindow(IntPtr hIMC, ref COMPOSITIONFORM lpComp);
         [DllImport("imm32.dll")]
         public static extern bool ImmSetCompositionFont(IntPtr hIMC, ref LOGFONT lf);
+
+        [DllImport("imm32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern int ImmGetCompositionString(IntPtr hIMC, GCS dwIndex, [Out, Optional] IntPtr lpBuf, uint dwBufLen);
+
+        public static string ImmGetCompositionString(IntPtr hIMC, GCS dwIndex)
+        {
+            int bufferLength = ImmGetCompositionString(hIMC, dwIndex, IntPtr.Zero, 0);
+
+            if (bufferLength > 0)
+            {
+                var buffer = new byte[bufferLength];
+
+                fixed(byte* bufferPtr = buffer)
+                {
+                    var error = ImmGetCompositionString(hIMC, dwIndex, (IntPtr)bufferPtr, (uint)bufferLength);
+
+                    return Marshal.PtrToStringUni((IntPtr)bufferPtr);
+                }           
+            }
+
+            return null;
+        }
+
         [DllImport("imm32.dll")]
         public static extern bool ImmNotifyIME(IntPtr hIMC, int dwAction, int dwIndex, int dwValue);
         [DllImport("user32.dll")]
@@ -1828,7 +1891,13 @@ namespace Avalonia.Win32.Interop
         public const int CFS_EXCLUDE = 0x0080;
         public const int CFS_POINT = 0x0002;
         public const int CFS_RECT = 0x0001;
-        public const uint ISC_SHOWUICOMPOSITIONWINDOW = 0x80000000;
+
+        // lParam for WM_IME_SETCONTEXT
+        public const long ISC_SHOWUICANDIDATEWINDOW = 0x00000001;
+        public const long ISC_SHOWUICOMPOSITIONWINDOW = 0x80000000;
+        public const long ISC_SHOWUIGUIDELINE = 0x40000000;
+        public const long ISC_SHOWUIALLCANDIDATEWINDOW = 0x0000000F;
+        public const long ISC_SHOWUIALL = 0xC000000F;
 
         public const int NI_COMPOSITIONSTR = 21;
         public const int CPS_COMPLETE = 1;

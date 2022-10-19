@@ -175,7 +175,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="value">The value.</param>
         private static bool ValidateDouble(double value)
         {
-            return !double.IsInfinity(value) || !double.IsNaN(value);
+            return !double.IsInfinity(value) && !double.IsNaN(value);
         }
 
         /// <summary>
