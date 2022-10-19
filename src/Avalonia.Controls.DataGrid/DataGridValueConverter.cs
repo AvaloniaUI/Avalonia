@@ -28,8 +28,8 @@ namespace Avalonia.Controls
         {
             if (targetType != null && targetType.IsNullableType())
             {
-                String strValue = value as String;
-                if (strValue == String.Empty)
+                var strValue = value as string;
+                if (string.IsNullOrEmpty(strValue))
                 {
                     return null;
                 }

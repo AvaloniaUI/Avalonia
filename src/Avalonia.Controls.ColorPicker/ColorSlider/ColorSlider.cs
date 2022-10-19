@@ -2,6 +2,7 @@
 using Avalonia.Controls.Metadata;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
@@ -31,11 +32,25 @@ namespace Avalonia.Controls.Primitives
 
         protected bool ignorePropertyChanged = false;
 
+        private WriteableBitmap? _backgroundBitmap;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ColorSlider"/> class.
         /// </summary>
         public ColorSlider() : base()
         {
+        }
+
+        /// <inheritdoc/>
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
         }
 
         /// <summary>
@@ -98,7 +113,7 @@ namespace Avalonia.Controls.Primitives
 
             if (pixelWidth != 0 && pixelHeight != 0)
             {
-                var bitmap = await ColorPickerHelpers.CreateComponentBitmapAsync(
+                ArrayList<byte> bgraPixelData = await ColorPickerHelpers.CreateComponentBitmapAsync(
                     pixelWidth,
                     pixelHeight,
                     Orientation,
@@ -108,9 +123,27 @@ namespace Avalonia.Controls.Primitives
                     IsAlphaMaxForced,
                     IsSaturationValueMaxForced);
 
-                if (bitmap != null)
+                if (bgraPixelData != null)
                 {
-                    Background = new ImageBrush(ColorPickerHelpers.CreateBitmapFromPixelData(bitmap, pixelWidth, pixelHeight));
+                    if (_backgroundBitmap != null)
+                    {
+                        // TODO: CURRENTLY DISABLED DUE TO INTERMITTENT CRASHES IN SKIA/RENDERER
+                        //
+                        // Re-use the existing WriteableBitmap
+                        // This assumes the height, width and byte counts are the same and must be set to null
+                        // elsewhere if that assumption is ever not true.
+                        // ColorPickerHelpers.UpdateBitmapFromPixelData(_backgroundBitmap, bgraPixelData);
+
+                        // TODO: ALSO DISABLED DISPOSE DUE TO INTERMITTENT CRASHES
+                        //_backgroundBitmap?.Dispose();
+                        _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
+                    }
+                    else
+                    {
+                        _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
+                    }
+
+                    Background = new ImageBrush(_backgroundBitmap);
                 }
             }
         }
@@ -350,11 +383,11 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            // Always keep the two color properties in sync
             if (change.Property == ColorProperty)
             {
                 ignorePropertyChanged = true;
 
+                // Always keep the two color properties in sync
                 HsvColor = Color.ToHsv();
 
                 SetColorToSliderValues();
@@ -367,7 +400,10 @@ namespace Avalonia.Controls.Primitives
 
                 ignorePropertyChanged = false;
             }
-            else if (change.Property == ColorModelProperty)
+            else if (change.Property == ColorComponentProperty ||
+                     change.Property == ColorModelProperty ||
+                     change.Property == IsAlphaMaxForcedProperty ||
+                     change.Property == IsSaturationValueMaxForcedProperty)
             {
                 ignorePropertyChanged = true;
 
@@ -381,6 +417,7 @@ namespace Avalonia.Controls.Primitives
             {
                 ignorePropertyChanged = true;
 
+                // Always keep the two color properties in sync
                 Color = HsvColor.ToRgb();
 
                 SetColorToSliderValues();
@@ -399,7 +436,13 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == BoundsProperty)
             {
+                // If the control's overall dimensions have changed the background bitmap size also needs to change.
+                // This means the existing bitmap must be released to be recreated correctly in UpdateBackground().
+                _backgroundBitmap?.Dispose();
+                _backgroundBitmap = null;
+
                 UpdateBackground();
+                UpdatePseudoClasses();
             }
             else if (change.Property == ValueProperty ||
                      change.Property == MinimumProperty ||
