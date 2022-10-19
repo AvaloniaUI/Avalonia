@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.Converters
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
         {
             var valueStr = (string)value;
-            if (!valueStr.Contains(":"))
+            if (!valueStr.Contains(':'))
             {
                 // shorthand seconds format (ie. "0.25")
                 var secs = double.Parse(valueStr, CultureInfo.InvariantCulture);

@@ -366,7 +366,7 @@ namespace Avalonia.Controls
 
             string id = (string)value;
 
-            if (id != string.Empty)
+            if (!string.IsNullOrEmpty(id))
             {
                 int i = -1;
                 while (++i < id.Length)

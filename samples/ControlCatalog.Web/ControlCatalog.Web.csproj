@@ -1,57 +1,45 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <!--Temporal hack that fixes compilation in VS-->
-    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
-    <EmccTotalMemory>16777216</EmccTotalMemory>
-    <BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
-    <BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
+    <TargetFramework>net7.0</TargetFramework>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <WasmMainJSPath>main.js</WasmMainJSPath>
+    <OutputType>Exe</OutputType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <WasmBuildNative>true</WasmBuildNative>
+    <EmccFlags>-sVERBOSE -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
   </PropertyGroup>
 
-  <!-- In debug, make builds faster by reducing optimizations -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <WasmNativeStrip>false</WasmNativeStrip>
-    <EmccCompileOptimizationFlag>-O1</EmccCompileOptimizationFlag>
-    <RunAOTCompilation>false</RunAOTCompilation>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <Optimize>true</Optimize>
-    <WasmNativeStrip>true</WasmNativeStrip>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <RunAOTCompilation>true</RunAOTCompilation>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+    <WasmBuildNative>true</WasmBuildNative>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <WasmEnableSIMD>true</WasmEnableSIMD>
     <EmccCompileOptimizationFlag>-O3</EmccCompileOptimizationFlag>
     <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
-    <RunAOTCompilation>false</RunAOTCompilation>
-    <DebuggerSupport>false</DebuggerSupport>
-    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
-    <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
-    <EventSourceSupport>false</EventSourceSupport>
-    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
-    <InvariantGlobalization>true</InvariantGlobalization>
-    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
-    <UseNativeHttpHandler>true</UseNativeHttpHandler>
-    <UseSystemResourceKeys>true</UseSystemResourceKeys>
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>link</TrimMode>
-    <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
+    <TrimmerRootDescriptor Include="Roots.xml" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
-    <ProjectReference Include="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.csproj" />
+    <ProjectReference Include="..\..\src\Web\Avalonia.Web\Avalonia.Web.csproj" />
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\build\ReferenceCoreLibraries.props" />
-  <Import Project="..\..\build\BuildTargets.targets" />
+  <ItemGroup>
+    <WasmExtraFilesToDeploy Include="index.html" />
+    <WasmExtraFilesToDeploy Include="main.js" />
+    <WasmExtraFilesToDeploy Include="embed.js" />
+    <WasmExtraFilesToDeploy Include="favicon.ico" />
+    <WasmExtraFilesToDeploy Include="Logo.svg" />
+    <WasmExtraFilesToDeploy Include="app.css" />
+  </ItemGroup>
 
-  <Import Project="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.targets" />
-  <Import Project="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.CompilationTuning.props" />
-
+  <Import Project="..\..\src\Web\Avalonia.Web\Avalonia.Web.props" />
+  <Import Project="..\..\src\Web\Avalonia.Web\Avalonia.Web.targets" />
 </Project>
-
