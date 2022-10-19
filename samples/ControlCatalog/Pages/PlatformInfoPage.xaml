@@ -7,6 +7,7 @@
              d:DesignWidth="400"
              mc:Ignorable="d">
   <StackPanel>
+    <TextBlock Text="{OnPlatform Unknown, Mobile=Mobile, Desktop=Desktop}" /> 
     <TextBlock Text="{Binding PlatformInfo}" />
   </StackPanel>
 </UserControl>
