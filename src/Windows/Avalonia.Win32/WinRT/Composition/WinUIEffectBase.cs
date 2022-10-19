@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.MicroCom;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition
 {
