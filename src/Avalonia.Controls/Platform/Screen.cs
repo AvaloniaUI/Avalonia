@@ -14,11 +14,11 @@ namespace Avalonia.Platform
         /// Multiply this value by 100 to get a percentage.
         /// Both X and Y scaling factors are assumed uniform.
         /// </remarks>
-        public double Scale { get; }
+        public double Scaling { get; }
 
-        /// <inheritdoc cref="Scale"/>
-        [Obsolete("Use the Scale property instead.")]
-        public double PixelDensity => Scale;
+        /// <inheritdoc cref="Scaling"/>
+        [Obsolete("Use the Scaling property instead.")]
+        public double PixelDensity => Scaling;
 
         /// <summary>
         /// Gets the overall pixel-size of the screen.
@@ -46,9 +46,16 @@ namespace Avalonia.Platform
         [Obsolete("Use the IsPrimary property instead.")]
         public bool Primary => IsPrimary;
 
-        public Screen(double scale, PixelRect bounds, PixelRect workingArea, bool isPrimary)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Screen"/> class.
+        /// </summary>
+        /// <param name="scaling">The scaling factor applied to the screen by the operating system.</param>
+        /// <param name="bounds">The overall pixel-size of the screen.</param>
+        /// <param name="workingArea">The actual working-area pixel-size of the screen.</param>
+        /// <param name="isPrimary">Whether the screen is the primary one.</param>
+        public Screen(double scaling, PixelRect bounds, PixelRect workingArea, bool isPrimary)
         {
-            this.Scale = scale;
+            this.Scaling = scaling;
             this.Bounds = bounds;
             this.WorkingArea = workingArea;
             this.IsPrimary = isPrimary;

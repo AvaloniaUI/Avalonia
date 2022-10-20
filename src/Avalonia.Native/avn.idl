@@ -256,8 +256,8 @@ struct AvnScreen
 {
     AvnRect Bounds;
     AvnRect WorkingArea;
-    float PixelDensity;
-    bool Primary;
+    float Scaling;
+    bool IsPrimary;
 }
 
 enum AvnPixelFormat

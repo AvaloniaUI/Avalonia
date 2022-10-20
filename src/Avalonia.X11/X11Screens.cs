@@ -218,7 +218,7 @@ namespace Avalonia.X11
         public int ScreenCount => _impl.Screens.Length;
 
         public IReadOnlyList<Screen> AllScreens =>
-            _impl.Screens.Select(s => new Screen(s.PixelDensity, s.Bounds, s.WorkingArea, s.IsPrimary)).ToArray();
+            _impl.Screens.Select(s => new Screen(s.Scaling, s.Bounds, s.WorkingArea, s.IsPrimary)).ToArray();
     }
 
     interface IX11Screens
@@ -285,26 +285,30 @@ namespace Avalonia.X11
         public string Name { get; set; }
         public PixelRect Bounds { get; set; }
         public Size? PhysicalSize { get; set; }
-        public double PixelDensity { get; set; }
+        public double Scaling { get; set; }
         public PixelRect WorkingArea { get; set; }
 
-        public X11Screen(PixelRect bounds, bool primary,
-            string name, Size? physicalSize, double? pixelDensity)
+        public X11Screen(
+            PixelRect bounds,
+            bool isPrimary,
+            string name,
+            Size? physicalSize,
+            double? scaling)
         {
-            IsPrimary = primary;
+            IsPrimary = isPrimary;
             Name = name;
             Bounds = bounds;
-            if (physicalSize == null && pixelDensity == null)
+            if (physicalSize == null && scaling == null)
             {
-                PixelDensity = 1;
+                Scaling = 1;
             }
-            else if (pixelDensity == null)
+            else if (scaling == null)
             {
-                PixelDensity = GuessPixelDensity(bounds, physicalSize.Value);
+                Scaling = GuessPixelDensity(bounds, physicalSize.Value);
             }
             else
             {
-                PixelDensity = pixelDensity.Value;
+                Scaling = scaling.Value;
                 PhysicalSize = physicalSize;
             }
         }
