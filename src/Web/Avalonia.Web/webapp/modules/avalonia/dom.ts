@@ -11,6 +11,7 @@ export class AvaloniaDOM {
         host.tabIndex = 0;
         host.oncontextmenu = function () { return false; };
         host.style.overflow = "hidden";
+        host.style.touchAction = "none";
 
         // Rendering target canvas
         const canvas = document.createElement("canvas");
