@@ -54,7 +54,7 @@ namespace Avalonia.Input
             try
             {
                 if (_lastTarget != null)
-                    _lastTarget.RaiseEvent(new RoutedEventArgs(DragDrop.DragLeaveEvent));
+                    RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DragLeaveEvent, effects, data, modifiers);
                 return RaiseDragEvent(target, inputRoot, point, DragDrop.DragEnterEvent, effects, data, modifiers);
             }
             finally
@@ -63,13 +63,13 @@ namespace Avalonia.Input
             }            
         }
 
-        private void DragLeave(IInputElement inputRoot)
+        private void DragLeave(IInputRoot inputRoot, Point point, IDataObject data, DragDropEffects effects, KeyModifiers modifiers)
         {
             if (_lastTarget == null)
                 return;
             try
             {
-                _lastTarget.RaiseEvent(new RoutedEventArgs(DragDrop.DragLeaveEvent));
+                RaiseDragEvent(_lastTarget, inputRoot, point, DragDrop.DragLeaveEvent, effects, data, modifiers);
             }
             finally 
             {
@@ -106,7 +106,7 @@ namespace Avalonia.Input
                     e.Effects = DragOver(e.Root, e.Location, e.Data, e.Effects, e.KeyModifiers);
                     break;
                 case RawDragEventType.DragLeave:
-                    DragLeave(e.Root);
+                    DragLeave(e.Root, e.Location, e.Data, e.Effects, e.KeyModifiers);
                     break;
                 case RawDragEventType.Drop:
                     e.Effects = Drop(e.Root, e.Location, e.Data, e.Effects, e.KeyModifiers);
