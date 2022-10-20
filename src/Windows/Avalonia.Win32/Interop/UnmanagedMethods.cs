@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 using Avalonia.MicroCom;
+using MicroCom.Runtime;
 using Avalonia.Win32.Win32Com;
 
 // ReSharper disable InconsistentNaming
