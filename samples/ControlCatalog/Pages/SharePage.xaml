@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=netstandard"
+             x:Class="ControlCatalog.Pages.SharePage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h2">Sharing</TextBlock>
+    <StackPanel Orientation="Horizontal" Spacing="5">
+      <Button Name="ShareText">Share Text</Button>
+      <Button Name="OpenFile">Select Files</Button>
+      <Button Name="ShareFile">Share Selected Files</Button>
+    </StackPanel>
+   <TextBox HorizontalAlignment="Stretch" Name="ShareBox"/>
+    <CheckBox Name="SelectMultiple">Select Multiple</CheckBox>
+    <Label>Selected Files</Label>
+    <Border CornerRadius="5" BorderThickness="1" Padding="5">
+      <TextBlock Name="FileText" Height="500" HorizontalAlignment="Stretch">
+        
+      </TextBlock>
+    </Border>
+  </StackPanel>
+</UserControl>

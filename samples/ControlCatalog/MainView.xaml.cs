@@ -3,6 +3,7 @@ using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -115,6 +116,17 @@ namespace ControlCatalog
             var decorations = this.Get<ComboBox>("Decorations");
             if (VisualRoot is Window window)
                 decorations.SelectedIndex = (int)window.SystemDecorations;
+
+            if ((VisualRoot as TopLevel).PlatformImpl is ITopLevelImplWithShare)
+            {
+                var sideBar = this.Get<TabControl>("Sidebar");
+                var tabItems = (sideBar.Items as IList);
+                tabItems?.Add(new TabItem()
+                {
+                    Header = "Sharing",
+                    Content = new SharePage()
+                });
+            }
         }
     }
 }
