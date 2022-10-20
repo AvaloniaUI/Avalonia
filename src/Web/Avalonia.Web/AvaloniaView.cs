@@ -136,6 +136,8 @@ namespace Avalonia.Web
             DomHelper.ObserveSize(host, null, OnSizeChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
+            
+            InputHelper.FocusElement(_containerElement);
         }
 
         private static RawPointerPoint ExtractRawPointerFromJSArgs(JSObject args)
