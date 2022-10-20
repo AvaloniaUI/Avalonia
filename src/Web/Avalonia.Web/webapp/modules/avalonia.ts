@@ -4,6 +4,7 @@ import { InputHelper } from "./avalonia/input";
 import { AvaloniaDOM } from "./avalonia/dom";
 import { Caniuse } from "./avalonia/caniuse";
 import { StreamHelper } from "./avalonia/stream";
+import { ShareHelper } from "./avalonia/share";
 import { NativeControlHost } from "./avalonia/nativeControlHost";
 
 async function registerAvaloniaModule(api: RuntimeAPI): Promise<void> {
@@ -15,6 +16,7 @@ async function registerAvaloniaModule(api: RuntimeAPI): Promise<void> {
         DpiWatcher,
         AvaloniaDOM,
         StreamHelper,
+        ShareHelper,
         NativeControlHost
     });
 }
@@ -26,6 +28,7 @@ export {
     DpiWatcher,
     AvaloniaDOM,
     StreamHelper,
+    ShareHelper,
     NativeControlHost,
 
     registerAvaloniaModule

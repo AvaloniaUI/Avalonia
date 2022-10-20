@@ -30,22 +30,12 @@ namespace Avalonia.Web
 
         public void Share(IStorageFile file)
         {
-            if(file is JSStorageItem jsItem)
-            {
-                using var jsObject = DomHelper.Create(default);
-                jsObject?.SetProperty("title", $"Sending {jsItem.Name}");
-                jsObject?.SetProperty("files", jsItem.FileHandle); // need this as an array
-
-                if (ShareHelper.CanShare(jsObject))
-                {
-                    ShareHelper.Share(jsObject);
-                }
-            }
+            Share(new[] { file });
         }
 
         public void Share(IList<IStorageFile> files)
         {
-            throw new NotImplementedException();
+            ShareHelper.shareFileList($"Sending {files.Count} file{( files.Count > 0 ? "s" : "")}", files.Select(f => (f as JSStorageItem).FileHandle).ToArray());
         }
     }
 }
