@@ -256,7 +256,7 @@ namespace Avalonia.Web
         {
             var handled = _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
 
-            if (!handled)
+            if (!handled && key.Length == 1)
             {
                 handled = _topLevelImpl.RawTextEvent(key);
             }
