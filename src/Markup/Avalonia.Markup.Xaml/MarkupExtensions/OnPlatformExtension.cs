@@ -1,11 +1,29 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;
+
+public static class OnPlatformExtensionHelper
+{
+    // TEMPORARY, to replace with XAML compiler namespace helpers
+    public static bool IsOSPlatform(string platform)
+    {
+        var runtimeInfo = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().GetRuntimeInfo();
+        return platform switch
+        {
+            "WINDOWS" => runtimeInfo.OperatingSystem == OperatingSystemType.WinNT,
+            "MACOS" => runtimeInfo.OperatingSystem == OperatingSystemType.OSX,
+            _ => runtimeInfo.OperatingSystem.ToString().Equals(platform, StringComparison.OrdinalIgnoreCase)
+        };
+        //return RuntimeInformation.IsOSPlatform(OSPlatform.Create(platform));
+    }
+}
 
 public class On
 {
@@ -13,6 +31,18 @@ public class On
 
     [Content]
     public object? Content { get; set; }
+}
+
+public class OnPlatformExtension : OnPlatformExtension<object>
+{
+    public OnPlatformExtension()
+    {
+
+    }
+
+    public OnPlatformExtension(object defaultValue) : base(defaultValue)
+    {
+    }
 }
 
 public class OnPlatformExtension<TReturn> : IAddChild<On>
@@ -26,7 +56,7 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
 
     public OnPlatformExtension()
     {
-        
+
     }
 
     public TReturn? Default { get => _values.TryGetValue(nameof(Default), out var value) ? value : default; set { _values[nameof(Default)] = value; } }
@@ -38,6 +68,7 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
     public TReturn? Browser { get => _values.TryGetValue(nameof(Browser), out var value) ? value : default; set { _values[nameof(Browser)] = value; } }
     public object? ProvideValue()
     {
+        throw new NotSupportedException();
         if (!_values.Any())
         {
             throw new InvalidOperationException("OnPlatformExtension requires a value to be specified for at least one platform or Default.");
@@ -52,7 +83,7 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
         var runtimeInfo = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().GetRuntimeInfo();
 
         TReturn val;
-        
+
         switch (runtimeInfo.OperatingSystem)
         {
             case OperatingSystemType.WinNT:
@@ -75,21 +106,21 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
                     return (val, true);
                 }
                 break;
-            
+
             case OperatingSystemType.Android:
                 if (_values.TryGetValue(nameof(Android), out val))
                 {
                     return (val, true);
                 }
                 break;
-            
+
             case OperatingSystemType.iOS:
                 if (_values.TryGetValue(nameof(iOS), out val))
                 {
                     return (val, true);
                 }
                 break;
-            
+
             case OperatingSystemType.Browser:
                 if (_values.TryGetValue(nameof(Browser), out val))
                 {
@@ -97,7 +128,7 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
                 }
                 break;
         }
-        
+
         if (_values.TryGetValue(nameof(Default), out val))
         {
             return (val, true);

@@ -42,7 +42,8 @@ public class OnPlatformExtensionTests : XamlTestBase
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <TextBlock Text='{OnPlatform ""Hello World"", Android=""Im Android""}'/>
+    <TextBlock Text='{OnPlatform ""Hello World"", Android=""Im Android""}'
+                Margin='10' />
 </UserControl>";
 
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
@@ -125,7 +126,7 @@ public class OnPlatformExtensionTests : XamlTestBase
         }
     }
 
-    [Fact(Skip = "Fix me")]
+    [Fact]
     public void Should_Respect_Custom_TypeArgument()
     {
         using (AvaloniaLocator.EnterScope())
@@ -167,6 +168,27 @@ public class OnPlatformExtensionTests : XamlTestBase
             var border = (Border)userControl.Content!;
 
             Assert.Equal(Color.Parse("#ff506070"), ((ISolidColorBrush)border.Background!).Color);
+        }
+    }
+
+    [Fact]
+    public void Should_Allow_Nester_On_Platform_Markup_Extensions()
+    {
+        using (AvaloniaLocator.EnterScope())
+        {
+            AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
+                .ToConstant(new TestRuntimePlatform(OperatingSystemType.WinNT));
+
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Border Margin='{OnPlatform Windows={OnPlatform Linux=5, Windows=""10,10,10,10"", x:TypeArguments=Thickness}}'/>
+</UserControl>";
+
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var border = (Border)userControl.Content!;
+
+            Assert.Equal(new Thickness(10), border.Margin);
         }
     }
 
@@ -224,13 +246,15 @@ public class OnPlatformExtensionTests : XamlTestBase
         }
     }
 
-    [Fact]
-    public void Should_Support_Special_On_Syntax()
+    [Theory]
+    [InlineData(OperatingSystemType.OSX, "#ff506070")]
+    [InlineData(OperatingSystemType.Linux, "#000")]
+    public void Should_Support_Special_On_Syntax(OperatingSystemType os, string color)
     {
         using (AvaloniaLocator.EnterScope())
         {
             AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
-                .ToConstant(new TestRuntimePlatform(OperatingSystemType.OSX));
+                .ToConstant(new TestRuntimePlatform(os));
 
             var xaml = @"
 <UserControl xmlns='https://github.com/avaloniaui'
@@ -252,7 +276,7 @@ public class OnPlatformExtensionTests : XamlTestBase
             var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
             var border = (Border)userControl.Content!;
 
-            Assert.Equal(Color.Parse("#ff506070"), ((ISolidColorBrush)border.Background!).Color);
+            Assert.Equal(Color.Parse(color), ((ISolidColorBrush)border.Background!).Color);
         }
     }
 
@@ -281,6 +305,31 @@ public class OnPlatformExtensionTests : XamlTestBase
         }
     }
 
+    [Fact]
+    public void Should_Support_Complex_Property_Setters()
+    {
+        using (AvaloniaLocator.EnterScope())
+        {
+            AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
+                .ToConstant(new TestRuntimePlatform(OperatingSystemType.WinNT));
+
+            var xaml = @"
+<ResourceDictionary xmlns='https://github.com/avaloniaui'
+                    xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <OnPlatform x:Key='MyKey'>
+        <OnPlatform.Windows>
+            <Button Content='Hello World' />
+        </OnPlatform.Windows>
+    </OnPlatform>
+</ResourceDictionary>";
+
+            var resourceDictionary = (ResourceDictionary)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var button = Assert.IsType<Button>(resourceDictionary["MyKey"]);
+
+            Assert.Equal("Hello World", button.Content);
+        }
+    }
+
     private class TestRuntimePlatform : StandardRuntimePlatform
     {
         private readonly OperatingSystemType _operatingSystemType;
@@ -294,22 +343,5 @@ public class OnPlatformExtensionTests : XamlTestBase
         {
             return new RuntimePlatformInfo() { OperatingSystem = _operatingSystemType };
         }
-    }
-}
-
-public class TestOnPlatformConverter : IValueConverter
-{
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        Assert.Equal("My Parameter", parameter);
-        Assert.Equal("My Value", value);
-        Assert.Equal(typeof(Thickness), targetType);
-
-        return new Thickness(4);
-    }
-
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-    {
-        throw new NotImplementedException();
     }
 }

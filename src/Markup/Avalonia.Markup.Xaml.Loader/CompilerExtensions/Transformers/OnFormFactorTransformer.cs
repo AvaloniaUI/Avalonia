@@ -11,50 +11,50 @@ internal class OnFormFactorTransformer : IXamlAstTransformer
 {
     public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
     {
-        if (node is XamlAstObjectNode xmlobj
-            && xmlobj.Type is XamlAstXmlTypeReference xmlref
-            && xmlref.Name.StartsWith("OnFormFactor")
-            && !xmlref.GenericArguments.Any())
-        {
-            IXamlType propertyType = null;
-
-            if (context.ParentNodes().FirstOrDefault() is XamlAstXamlPropertyValueNode parentPropertyValueNode)
-            {
-                var property = (XamlAstNamePropertyReference)parentPropertyValueNode.Property;
-                var declaringType = TypeReferenceResolver.ResolveType(context, (XamlAstXmlTypeReference)property.DeclaringType, context.StrictMode);
-                propertyType = declaringType.Type.GetAllProperties().First(p => p.Name == property.Name).PropertyType;
-            }
-            else if (context.ParentNodes().FirstOrDefault() is XamlAstObjectNode parentNode)
-            {
-                var parentType = parentNode.Type is XamlAstClrTypeReference clrType
-                    ? clrType.Type
-                    : TypeReferenceResolver.ResolveType(context, (XamlAstXmlTypeReference)parentNode.Type, context.StrictMode).Type;
-                var contentProperty = context.Configuration.FindContentProperty(parentType);
-                propertyType = contentProperty.PropertyType;
-            }
-
-            if (propertyType is null)
-            {
-                throw new InvalidOperationException("Unable to find OnFormFactor property type");
-            }
-
-            xmlobj.Type = TypeReferenceResolver.ResolveType(context, xmlref.XmlNamespace, xmlref.Name,
-                xmlref.IsMarkupExtension, new[] { new XamlAstClrTypeReference(xmlref, propertyType, false) },
-                xmlref, context.StrictMode);
-        }
-
-        if (node is XamlAstNamePropertyReference xmlprop
-            && xmlprop.DeclaringType is XamlAstXmlTypeReference propxmlref
-            && propxmlref.Name.StartsWith("OnFormFactor")
-            && !propxmlref.GenericArguments.Any())
-        {
-            var expectedType = context.ParentNodes().OfType<XamlAstObjectNode>()
-                .First(n => n.Type is XamlAstClrTypeReference clrRef && clrRef.Type.Name.StartsWith("OnFormFactor")
-                            || n.Type is XamlAstXmlTypeReference xmlRef && xmlRef.Name.StartsWith("OnFormFactor"))
-                .Type;
-            xmlprop.DeclaringType = expectedType;
-            xmlprop.TargetType = expectedType;
-        }
+        // if (node is XamlAstObjectNode xmlobj
+        //     && xmlobj.Type is XamlAstXmlTypeReference xmlref
+        //     && xmlref.Name.StartsWith("OnFormFactor")
+        //     && !xmlref.GenericArguments.Any())
+        // {
+        //     IXamlType propertyType = null;
+        //
+        //     if (context.ParentNodes().FirstOrDefault() is XamlAstXamlPropertyValueNode parentPropertyValueNode)
+        //     {
+        //         var property = (XamlAstNamePropertyReference)parentPropertyValueNode.Property;
+        //         var declaringType = TypeReferenceResolver.ResolveType(context, (XamlAstXmlTypeReference)property.DeclaringType, context.StrictMode);
+        //         propertyType = declaringType.Type.GetAllProperties().First(p => p.Name == property.Name).PropertyType;
+        //     }
+        //     else if (context.ParentNodes().FirstOrDefault() is XamlAstObjectNode parentNode)
+        //     {
+        //         var parentType = parentNode.Type is XamlAstClrTypeReference clrType
+        //             ? clrType.Type
+        //             : TypeReferenceResolver.ResolveType(context, (XamlAstXmlTypeReference)parentNode.Type, context.StrictMode).Type;
+        //         var contentProperty = context.Configuration.FindContentProperty(parentType);
+        //         propertyType = contentProperty.PropertyType;
+        //     }
+        //
+        //     if (propertyType is null)
+        //     {
+        //         throw new InvalidOperationException("Unable to find OnFormFactor property type");
+        //     }
+        //
+        //     xmlobj.Type = TypeReferenceResolver.ResolveType(context, xmlref.XmlNamespace, xmlref.Name,
+        //         xmlref.IsMarkupExtension, new[] { new XamlAstClrTypeReference(xmlref, propertyType, false) },
+        //         xmlref, context.StrictMode);
+        // }
+        //
+        // if (node is XamlAstNamePropertyReference xmlprop
+        //     && xmlprop.DeclaringType is XamlAstXmlTypeReference propxmlref
+        //     && propxmlref.Name.StartsWith("OnFormFactor")
+        //     && !propxmlref.GenericArguments.Any())
+        // {
+        //     var expectedType = context.ParentNodes().OfType<XamlAstObjectNode>()
+        //         .First(n => n.Type is XamlAstClrTypeReference clrRef && clrRef.Type.Name.StartsWith("OnFormFactor")
+        //                     || n.Type is XamlAstXmlTypeReference xmlRef && xmlRef.Name.StartsWith("OnFormFactor"))
+        //         .Type;
+        //     xmlprop.DeclaringType = expectedType;
+        //     xmlprop.TargetType = expectedType;
+        // }
 
         // if (node is XamlAstObjectNode onobj
         //     && onobj.Type is XamlAstXmlTypeReference onref

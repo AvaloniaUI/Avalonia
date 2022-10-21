@@ -7,19 +7,19 @@
              d:DesignWidth="400"
              mc:Ignorable="d">
   <StackPanel Spacing="20">
-    <TextBlock Text="{OnFormFactor Unknown, Mobile=Mobile, Desktop=Desktop}" /> 
-    
+    <!-- <TextBlock Text="{OnFormFactor Unknown, Mobile=Mobile, Desktop=Desktop}" />  -->
+
     <TextBlock Text="{Binding PlatformInfo}" />
-    
+
     <StackPanel TextElement.Foreground="White">
-      <StackPanel Orientation="Horizontal">
-        <Border Height="100" Width="100" Background="{OnFormFactor Gray, Desktop=Green}">
-          <TextBlock Text="Desktop" />
-        </Border>
-        <Border Height="100" Width="100" Background="{OnFormFactor Gray, Mobile=Green}">
-          <TextBlock Text="Mobile" />
-        </Border>
-      </StackPanel>
+      <!-- <StackPanel Orientation="Horizontal"> -->
+      <!--   <Border Height="100" Width="100" Background="{OnFormFactor Gray, Desktop=Green}"> -->
+      <!--     <TextBlock Text="Desktop" /> -->
+      <!--   </Border> -->
+      <!--   <Border Height="100" Width="100" Background="{OnFormFactor Gray, Mobile=Green}"> -->
+      <!--     <TextBlock Text="Mobile" /> -->
+      <!--   </Border> -->
+      <!-- </StackPanel> -->
       <StackPanel Orientation="Horizontal">
         <Border Height="100" Width="100" Background="{OnPlatform Gray, Windows=Green}">
           <TextBlock Text="Windows" />

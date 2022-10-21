@@ -56,11 +56,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
             );
+            InsertAfter<ResolveContentPropertyTransformer>(
+                new AvaloniaXamlIlOnPlatformTransformer());
 
             InsertBefore<TypeReferenceResolver>(
                 new OnFormFactorTransformer());
-            InsertBefore<TypeReferenceResolver>(
-                new OnPlatformTransformer());
             InsertAfter<TypeReferenceResolver>(
                 new XDataTypeTransformer());
 
