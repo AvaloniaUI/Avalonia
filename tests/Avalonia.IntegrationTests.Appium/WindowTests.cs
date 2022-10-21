@@ -210,8 +210,16 @@ namespace Avalonia.IntegrationTests.Appium
                     foreach (var state in Enum.GetValues<WindowState>())
                     {
                         // Not sure how to handle testing minimized windows currently.
-                        if (state != Controls.WindowState.Minimized)
-                            data.Add(size, mode, state);
+                        if (state == Controls.WindowState.Minimized)
+                            continue;
+                        
+                        // Child/Modal windows cannot be fullscreen on macOS.
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) &&
+                            state == Controls.WindowState.FullScreen &&
+                            mode != ShowWindowMode.NonOwned)
+                            continue;
+                        
+                        data.Add(size, mode, state);
                     }
                 }
             }
