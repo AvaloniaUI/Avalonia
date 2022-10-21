@@ -70,6 +70,11 @@ namespace Avalonia.Controls.Documents
         {
             get
             {
+                if (Count == 0)
+                {
+                    return null;
+                }
+
                 var builder = StringBuilderCache.Acquire();
 
                 foreach (var inline in this)
@@ -111,7 +116,7 @@ namespace Avalonia.Controls.Documents
 
         private void AddText(string text)
         {
-            if (Parent is RichTextBlock textBlock && !textBlock.HasComplexContent)
+            if (Parent is TextBlock textBlock && !textBlock.HasComplexContent)
             {
                 textBlock._text += text;
             }
@@ -123,7 +128,7 @@ namespace Avalonia.Controls.Documents
 
         private void OnAdd()
         {
-            if (Parent is RichTextBlock textBlock)
+            if (Parent is TextBlock textBlock)
             {
                 if (!textBlock.HasComplexContent && !string.IsNullOrEmpty(textBlock._text))
                 {
