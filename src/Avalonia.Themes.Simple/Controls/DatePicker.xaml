@@ -30,7 +30,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,4</Thickness>
   <x:Double x:Key="DatePickerFlyoutPresenterHighlightHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterItemHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
@@ -91,19 +90,9 @@
       <ControlTemplate>
         <DataValidationErrors>
           <Grid Name="LayoutRoot"
-                Margin="{TemplateBinding Padding}"
-                RowDefinitions="Auto,*">
-            <ContentPresenter Name="HeaderContentPresenter"
-                              Grid.Row="0"
-                              MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
-                              Margin="{DynamicResource DatePickerTopHeaderMargin}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Top"
-                              Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding HeaderTemplate}" />
+                Margin="{TemplateBinding Padding}">
 
             <Button Name="PART_FlyoutButton"
-                    Grid.Row="1"
                     MinWidth="{DynamicResource DatePickerThemeMinWidth}"
                     MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
                     HorizontalAlignment="Stretch"

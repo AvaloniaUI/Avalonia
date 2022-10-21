@@ -102,7 +102,7 @@ namespace Avalonia.Skia
             return false;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             SKTypeface skTypeface = null;
 

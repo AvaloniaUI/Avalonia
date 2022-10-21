@@ -56,7 +56,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 // We need to implement compile-time merging of resource dictionaries and this
                 // hack can be removed.
                 if (previousWasControlTheme &&
-                    parent is ResourceDictionary hack &&
+                    parent is IResourceProvider hack &&
                     hack.Owner?.GetType().FullName == "Avalonia.Diagnostics.Views.MainWindow" &&
                     hack.Owner.TryGetResource(ResourceKey, out value))
                 {
