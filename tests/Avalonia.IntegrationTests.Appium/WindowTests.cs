@@ -85,16 +85,22 @@ namespace Avalonia.IntegrationTests.Appium
             }
             finally
             {
-                try
+                if (state == Controls.WindowState.FullScreen)
                 {
-                    _session.FindElementByAccessibilityId("WindowState").SendClick();
-                    _session.FindElementByName("Normal").SendClick();
+                    try
+                    {
+                        _session.FindElementByAccessibilityId("WindowState").SendClick();
+                        _session.FindElementByName("Normal").SendClick();
 
-                    // Wait for animations to run.
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                        Thread.Sleep(1000);
-
-                } catch { /* Ignore errors in cleanup */ }
+                        // Wait for animations to run.
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                            Thread.Sleep(1000);
+                    }
+                    catch
+                    {
+                        /* Ignore errors in cleanup */
+                    }
+                }
             }
         }
 
