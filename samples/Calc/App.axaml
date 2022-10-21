@@ -1,0 +1,18 @@
+<Application
+    x:Class="Calc.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:local="using:Calc"
+    xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <themes:MaterialTheme
+            BaseTheme="Dark"
+            PrimaryColor="DeepPurple"
+            SecondaryColor="Lime" />
+        <StyleInclude Source="avares://Material.Icons.Avalonia/App.xaml" />
+    </Application.Styles>
+</Application>

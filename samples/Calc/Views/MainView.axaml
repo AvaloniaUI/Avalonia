@@ -1,0 +1,377 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
+             xmlns:viewModels="clr-namespace:Calc.ViewModels"
+             MaxWidth="800" MaxHeight="500" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+             xmlns:m="using:Calc.Models"
+             mc:Ignorable="d" 
+             x:Class="Calc.Views.MainView"
+             x:DataType="viewModels:MainWindowViewModel"
+             x:CompileBindings="False">
+    <UserControl.Styles>
+        <Style Selector="Button">
+            <Setter Property="Margin" Value="5" />
+        </Style>
+        <Style Selector="Button TextBlock">
+            <Setter Property="FontSize" Value="20" />
+        </Style>
+        <Style Selector="TextBlock.screen">
+            <Setter Property="Background" Value="#2f2a2c" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="FontSize" Value="30" />
+            <Setter Property="MinHeight" Value="35" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="Foreground" Value="#ddffffff" />
+        </Style>
+    </UserControl.Styles>
+    <UserControl.KeyBindings>
+        <!--  0  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D0">
+            <KeyBinding.CommandParameter>
+                <system:Int32>0</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad0">
+            <KeyBinding.CommandParameter>
+                <system:Int32>0</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  1  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D1">
+            <KeyBinding.CommandParameter>
+                <system:Int32>1</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad1">
+            <KeyBinding.CommandParameter>
+                <system:Int32>1</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  2  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D2">
+            <KeyBinding.CommandParameter>
+                <system:Int32>2</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad2">
+            <KeyBinding.CommandParameter>
+                <system:Int32>2</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  3  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D3">
+            <KeyBinding.CommandParameter>
+                <system:Int32>3</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad3">
+            <KeyBinding.CommandParameter>
+                <system:Int32>3</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  4  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D4">
+            <KeyBinding.CommandParameter>
+                <system:Int32>4</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad4">
+            <KeyBinding.CommandParameter>
+                <system:Int32>4</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  5  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D5">
+            <KeyBinding.CommandParameter>
+                <system:Int32>5</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad5">
+            <KeyBinding.CommandParameter>
+                <system:Int32>5</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  6  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D6">
+            <KeyBinding.CommandParameter>
+                <system:Int32>6</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad6">
+            <KeyBinding.CommandParameter>
+                <system:Int32>6</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  7  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D7">
+            <KeyBinding.CommandParameter>
+                <system:Int32>7</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad7">
+            <KeyBinding.CommandParameter>
+                <system:Int32>7</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  8  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D8">
+            <KeyBinding.CommandParameter>
+                <system:Int32>8</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad8">
+            <KeyBinding.CommandParameter>
+                <system:Int32>8</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  9  -->
+        <KeyBinding Command="{Binding AddNumber}" Gesture="D9">
+            <KeyBinding.CommandParameter>
+                <system:Int32>9</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddNumber}" Gesture="NumPad9">
+            <KeyBinding.CommandParameter>
+                <system:Int32>9</system:Int32>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  +  -->
+        <KeyBinding Command="{Binding AddOperatorCommand}" Gesture="Add">
+            <KeyBinding.CommandParameter>
+                <m:Operator>Add</m:Operator>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddOperatorCommand}" Gesture="OemPlus">
+            <KeyBinding.CommandParameter>
+                <m:Operator>Add</m:Operator>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  -  -->
+        <KeyBinding Command="{Binding AddOperatorCommand}" Gesture="Subtract">
+            <KeyBinding.CommandParameter>
+                <m:Operator>Subtract</m:Operator>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddOperatorCommand}" Gesture="OemMinus">
+            <KeyBinding.CommandParameter>
+                <m:Operator>Subtract</m:Operator>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  .  -->
+        <KeyBinding Command="{Binding AddDecimalSeparatorCommand}" Gesture="OemPeriod" />
+        <!--  +-  -->
+        <KeyBinding Command="{Binding AlternateNegativePositiveCommand}" Gesture="Alt+Subtract" />
+        <KeyBinding Command="{Binding AlternateNegativePositiveCommand}" Gesture="Alt+OemMinus" />
+        <!--  Backspace  -->
+        <KeyBinding Command="{Binding DeleteLastCommand}" Gesture="Back" />
+        <!--  Delete  -->
+        <KeyBinding Command="{Binding ClearScreenCommand}" Gesture="Escape" />
+        <KeyBinding Command="{Binding ClearScreenCommand}" Gesture="Delete" />
+        <!--  *  -->
+        <KeyBinding Command="{Binding AddOperatorCommand}" Gesture="Multiply">
+            <KeyBinding.CommandParameter>
+                <m:Operator>Multiply</m:Operator>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  /  -->
+        <KeyBinding Command="{Binding AddOperatorCommand}" Gesture="Divide">
+            <KeyBinding.CommandParameter>
+                <m:Operator>Divide</m:Operator>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <KeyBinding Command="{Binding AddOperatorCommand}" Gesture="Oem2">
+            <KeyBinding.CommandParameter>
+                <m:Operator>Divide</m:Operator>
+            </KeyBinding.CommandParameter>
+        </KeyBinding>
+        <!--  ()  -->
+        <KeyBinding Command="{Binding AddParenthesisCommand}" Gesture="OemOpenBrackets" />
+        <KeyBinding Command="{Binding AddParenthesisCommand}" Gesture="OemCloseBrackets" />
+        <!--  =  -->
+        <KeyBinding Command="{Binding PickResultCommand}" Gesture="Enter" />
+    </UserControl.KeyBindings>
+    <Grid Margin="5" RowDefinitions="Auto, Auto, *">
+        <!--  Screens  -->
+        <TextBlock
+            Classes="screen"
+            Grid.Row="0"
+            Text="{Binding ShownString}" />
+        <TextBlock
+            Classes="screen"
+            Grid.Row="1"
+            Text="{Binding ShownResult}" />
+        <!--  Keys  -->
+        <Grid
+            ColumnDefinitions="*,*,*,*,*"
+            Grid.Row="2"
+            RowDefinitions="*,*,*,*">
+            <!--  Numeric keys  -->
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="0"
+                Grid.Row="3">
+                <Button.CommandParameter>
+                    <system:Int32>0</system:Int32>
+                </Button.CommandParameter>
+                0
+            </Button>
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="0"
+                Grid.Row="2">
+                <Button.CommandParameter>
+                    <system:Int32>1</system:Int32>
+                </Button.CommandParameter>
+                1
+            </Button>
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="1"
+                Grid.Row="2">
+                <Button.CommandParameter>
+                    <system:Int32>2</system:Int32>
+                </Button.CommandParameter>
+                2
+            </Button>
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="2"
+                Grid.Row="2">
+                <Button.CommandParameter>
+                    <system:Int32>3</system:Int32>
+                </Button.CommandParameter>
+                3
+            </Button>
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="0"
+                Grid.Row="1">
+                <Button.CommandParameter>
+                    <system:Int32>4</system:Int32>
+                </Button.CommandParameter>
+                4
+            </Button>
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="1"
+                Grid.Row="1">
+                <Button.CommandParameter>
+                    <system:Int32>5</system:Int32>
+                </Button.CommandParameter>
+                5
+            </Button>
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="2"
+                Grid.Row="1">
+                <Button.CommandParameter>
+                    <system:Int32>6</system:Int32>
+                </Button.CommandParameter>
+                6
+            </Button>
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="0"
+                Grid.Row="0">
+                <Button.CommandParameter>
+                    <system:Int32>7</system:Int32>
+                </Button.CommandParameter>
+                7
+            </Button>
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="1"
+                Grid.Row="0">
+                <Button.CommandParameter>
+                    <system:Int32>8</system:Int32>
+                </Button.CommandParameter>
+                8
+            </Button>
+            <Button
+                Command="{Binding AddNumber}"
+                Grid.Column="2"
+                Grid.Row="0">
+                <Button.CommandParameter>
+                    <system:Int32>9</system:Int32>
+                </Button.CommandParameter>
+                9
+            </Button>
+            <!--  Non-numeric keys  -->
+            <Button
+                Command="{Binding AddDecimalSeparator}"
+                Grid.Column="1"
+                Grid.Row="3">
+                .
+            </Button>
+            <Button
+                Command="{Binding AlternateNegativePositive}"
+                Grid.Column="2"
+                Grid.Row="3">
+                +/-
+            </Button>
+            <Button
+                Command="{Binding DeleteLast}"
+                Grid.Column="3"
+                Grid.Row="0">
+                <material:MaterialIcon Kind="Backspace" />
+            </Button>
+            <Button
+                Command="{Binding ClearScreen}"
+                Grid.Column="4"
+                Grid.Row="0">
+                <material:MaterialIcon Kind="DeleteForever" />
+            </Button>
+            <Button
+                Command="{Binding AddOperator}"
+                Grid.Column="3"
+                Grid.Row="1">
+                <Button.CommandParameter>
+                    <m:Operator>Multiply</m:Operator>
+                </Button.CommandParameter>
+                <material:MaterialIcon Kind="Multiply" />
+            </Button>
+            <Button
+                Command="{Binding AddOperator}"
+                Grid.Column="4"
+                Grid.Row="1">
+                <Button.CommandParameter>
+                    <m:Operator>Divide</m:Operator>
+                </Button.CommandParameter>
+                <material:MaterialIcon Kind="Division" />
+            </Button>
+            <Button
+                Command="{Binding AddOperator}"
+                Grid.Column="3"
+                Grid.Row="2">
+                <Button.CommandParameter>
+                    <m:Operator>Add</m:Operator>
+                </Button.CommandParameter>
+                <material:MaterialIcon Kind="Add" />
+            </Button>
+            <Button
+                Command="{Binding AddOperator}"
+                Grid.Column="4"
+                Grid.Row="2">
+                <Button.CommandParameter>
+                    <m:Operator>Subtract</m:Operator>
+                </Button.CommandParameter>
+                <material:MaterialIcon Kind="Minus" />
+            </Button>
+            <Button
+                Command="{Binding AddParenthesis}"
+                Grid.Column="3"
+                Grid.Row="3">
+                <material:MaterialIcon Kind="CodeParentheses" />
+            </Button>
+            <Button
+                Command="{Binding PickResult}"
+                Grid.Column="4"
+                Grid.Row="3">
+                <material:MaterialIcon Kind="Equal" />
+            </Button>
+        </Grid>
+    </Grid>
+</UserControl>

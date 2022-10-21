@@ -16,7 +16,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
     <ProjectReference Include="..\..\src\Web\Avalonia.Web.Blazor\Avalonia.Web.Blazor.csproj" />
-    <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
+    <ProjectReference Include="..\Calc\Calc.csproj" />
+    <PackageReference Include="Material.Avalonia" Version="3.0.0-avalonia11-preview2" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="1.2.0" />
   </ItemGroup>
 
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />

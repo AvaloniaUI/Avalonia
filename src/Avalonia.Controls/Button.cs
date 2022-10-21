@@ -347,6 +347,8 @@ namespace Avalonia.Controls
 
                 if (!e.Handled && Command?.CanExecute(CommandParameter) == true)
                 {
+                    Console.WriteLine("Executing");
+                    Console.WriteLine(Command.GetType().ToString());
                     Command.Execute(CommandParameter);
                     e.Handled = true;
                 }

@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+        <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
+        <PackageReference Include="Material.Avalonia" Version="3.0.0-avalonia11-preview2" />
+        <PackageReference Include="Material.Icons.Avalonia" Version="1.2.0" />
+        <PackageReference Include="XamlNameReferenceGenerator" Version="1.3.4" />
+        <ProjectReference Include="..\..\src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj" />
+    </ItemGroup>
+
+  <Import Project="..\..\build\BuildTargets.targets" />
+</Project>
