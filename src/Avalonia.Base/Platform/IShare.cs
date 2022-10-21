@@ -18,13 +18,13 @@ namespace Avalonia.Platform
         /// <summary>
         /// Shares a file using platform's sharing feature
         /// </summary>
-        /// <param name="file">The storage file <see cref="IStorageFile"/> to be shared</param>
+        /// <param name="file">The <see cref="IStorageFile"/> to be shared</param>
         void Share(IStorageFile file);
 
         /// <summary>
         /// Shares a list of files using platform's sharing feature
         /// </summary>
-        /// <param name="files">The list of storage files <see cref="IStorageFile"/> to be shared</param>
+        /// <param name="files">The list of <see cref="IStorageFile"/> to be shared</param>
         void Share(IList<IStorageFile> files);
     }
 }

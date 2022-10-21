@@ -326,9 +326,10 @@ namespace Avalonia.Controls
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
             ?? (PlatformImpl as ITopLevelImplWithStorageProvider)?.StorageProvider
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
+
         public IShare Share => _share
             ??= (PlatformImpl as ITopLevelImplWithShare)?.Share
-            ?? throw new InvalidOperationException("Share platform implementation is not available.");
+            ?? null;
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 

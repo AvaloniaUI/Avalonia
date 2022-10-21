@@ -1,6 +1,5 @@
 ﻿using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Platform.Storage;
 
 namespace Avalonia.Controls.Platform;
 

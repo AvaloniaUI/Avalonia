@@ -9,12 +9,13 @@
       <Button Name="OpenFile">Select Files</Button>
       <Button Name="ShareFile">Share Selected Files</Button>
     </StackPanel>
-   <TextBox HorizontalAlignment="Stretch" Name="ShareBox"/>
+    <Label>Enter Text to Share</Label>
+    <TextBox HorizontalAlignment="Stretch" Name="ShareBox"/>
     <CheckBox Name="SelectMultiple">Select Multiple</CheckBox>
     <Label>Selected Files</Label>
     <Border CornerRadius="5" BorderThickness="1" Padding="5">
       <TextBlock Name="FileText" Height="500" HorizontalAlignment="Stretch">
-        
+
       </TextBlock>
     </Border>
   </StackPanel>
