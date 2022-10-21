@@ -327,7 +327,7 @@ namespace Avalonia.Controls
             ?? (PlatformImpl as ITopLevelImplWithStorageProvider)?.StorageProvider
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
 
-        public IShare Share => _share
+        public IShare? Share => _share
             ??= (PlatformImpl as ITopLevelImplWithShare)?.Share
             ?? null;
 

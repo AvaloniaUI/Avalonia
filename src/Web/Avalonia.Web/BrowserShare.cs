@@ -22,7 +22,7 @@ namespace Avalonia.Web
             jsObject?.SetProperty("title", $"Sending {text}");
             jsObject?.SetProperty("text", text);
 
-            if (ShareHelper.CanShare(jsObject))
+            if (jsObject != null && ShareHelper.CanShare(jsObject))
             {
                 ShareHelper.Share(jsObject);
             }
@@ -35,7 +35,7 @@ namespace Avalonia.Web
 
         public void Share(IList<IStorageFile> files)
         {
-            ShareHelper.shareFileList($"Sending {files.Count} file{( files.Count > 0 ? "s" : "")}", files.Select(f => (f as JSStorageItem).FileHandle).ToArray());
+            ShareHelper.shareFileList($"Sending {files.Count} file{( files.Count > 0 ? "s" : "")}", files.Select(f => ((JSStorageItem)f).FileHandle).ToArray());
         }
     }
 }
