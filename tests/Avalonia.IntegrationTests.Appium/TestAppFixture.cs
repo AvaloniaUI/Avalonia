@@ -39,13 +39,13 @@ namespace Avalonia.IntegrationTests.Appium
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
+                opts.AutomationName = "Mac2";
+                opts.PlatformName = MobilePlatform.MacOS;
                 opts.AddAdditionalAppiumOption("appium:bundleId", TestAppBundleId);
-                opts.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
-                opts.AddAdditionalAppiumOption(MobileCapabilityType.AutomationName, "mac2");
                 opts.AddAdditionalAppiumOption("appium:showServerLogs", true);
 
                 Session = new MacDriver(
-                    new Uri("http://127.0.0.1:4723/wd/hub"),
+                    new Uri("http://127.0.0.1:4723"),
                     opts);
             }
             else
