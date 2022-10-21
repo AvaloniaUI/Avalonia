@@ -4,6 +4,7 @@
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="MicroCom.Runtime" Version="0.10.5" />
     <ProjectReference Include="..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <ExcludeAssets>all</ExcludeAssets>
