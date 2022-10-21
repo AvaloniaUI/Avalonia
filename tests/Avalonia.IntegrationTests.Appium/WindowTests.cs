@@ -89,6 +89,11 @@ namespace Avalonia.IntegrationTests.Appium
                 {
                     _session.FindElementByAccessibilityId("WindowState").SendClick();
                     _session.FindElementByName("Normal").SendClick();
+
+                    // Wait for animations to run.
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                        Thread.Sleep(1000);
+
                 } catch { /* Ignore errors in cleanup */ }
             }
         }
