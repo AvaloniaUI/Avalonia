@@ -12,32 +12,32 @@ namespace Avalonia.IntegrationTests.Appium
 {
     internal static class ElementExtensions
     {
-        public static IReadOnlyList<AppiumWebElement> GetChildren(this AppiumWebElement element) =>
-            element.FindElementsByXPath("*/*");
+        public static IReadOnlyList<IWebElement> GetChildren(this IWebElement element) =>
+            element.FindElements(By.XPath("*/*"));
 
-        public static (AppiumWebElement close, AppiumWebElement minimize, AppiumWebElement maximize) GetChromeButtons(this AppiumWebElement window)
+        public static (IWebElement close, IWebElement minimize, IWebElement maximize) GetChromeButtons(this IWebElement window)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                var closeButton = window.FindElementByXPath("//XCUIElementTypeButton[1]");
-                var fullscreenButton = window.FindElementByXPath("//XCUIElementTypeButton[2]");
-                var minimizeButton = window.FindElementByXPath("//XCUIElementTypeButton[3]");
+                var closeButton = window.FindElement(By.XPath("//XCUIElementTypeButton[1]"));
+                var fullscreenButton = window.FindElement(By.XPath("//XCUIElementTypeButton[2]"));
+                var minimizeButton = window.FindElement(By.XPath("//XCUIElementTypeButton[3]"));
                 return (closeButton, minimizeButton, fullscreenButton);
             }
 
             throw new NotSupportedException("GetChromeButtons not supported on this platform.");
         }
 
-        public static string GetComboBoxValue(this AppiumWebElement element)
+        public static string GetComboBoxValue(this IWebElement element)
         {
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
                 element.Text :
                 element.GetAttribute("value");
         }
         
-        public static string GetName(this AppiumWebElement element) => GetAttribute(element, "Name", "title");
+        public static string GetName(this IWebElement element) => GetAttribute(element, "Name", "title");
 
-        public static bool? GetIsChecked(this AppiumWebElement element) =>
+        public static bool? GetIsChecked(this IWebElement element) =>
             GetAttribute(element, "Toggle.ToggleState", "value") switch
             {
                 "0" => false,
@@ -46,11 +46,11 @@ namespace Avalonia.IntegrationTests.Appium
                 _ => throw new ArgumentOutOfRangeException($"Unexpected IsChecked value.")
             };
 
-        public static bool GetIsFocused(this AppiumWebElement element)
+        public static bool GetIsFocused(this AppiumElement element)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var active = element.WrappedDriver.SwitchTo().ActiveElement() as AppiumWebElement;
+                var active = element.WrappedDriver.SwitchTo().ActiveElement() as AppiumElement;
                 return element.Id == active?.Id;
             }
             else
@@ -67,7 +67,7 @@ namespace Avalonia.IntegrationTests.Appium
         /// <returns>
         /// An object which when disposed will cause the newly opened window to close.
         /// </returns>
-        public static IDisposable OpenWindowWithClick(this AppiumWebElement element)
+        public static IDisposable OpenWindowWithClick(this AppiumElement element)
         {
             var session = element.WrappedDriver;
 
@@ -116,7 +116,7 @@ namespace Avalonia.IntegrationTests.Appium
                 var newWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
                 var newWindowTitles = newWindows.ToDictionary(x => x.Text);
                 var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
-                var newWindow = (AppiumWebElement)newWindowTitles[newWindowTitle]; 
+                var newWindow = (IWebElement)newWindowTitles[newWindowTitle]; 
                 
                 return Disposable.Create(() =>
                 {
@@ -128,20 +128,29 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        public static void SendClick(this AppiumWebElement element)
+        public static void SendClick(this IWebElement element)
         {
-            // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls
-            // such as list items don't support this action, so instead simulate a physical click as VoiceOver
-            // does. On Windows, Click() seems to fail with the WindowState checkbox for some reason.
-            new Actions(element.WrappedDriver).MoveToElement(element).Click().Perform();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls
+                // such as list items don't support this action, so instead simulate a physical click as VoiceOver
+                // does.
+                var e = (AppiumElement)element;
+                new Actions(e.WrappedDriver).MoveToElement(element).Click().Perform();
+            }
+            else
+            {
+                element.Click();
+            }
         }
 
-        public static void MovePointerOver(this AppiumWebElement element)
+        public static void MovePointerOver(this IWebElement element)
         {
-            new Actions(element.WrappedDriver).MoveToElement(element).Perform();
+            var e = (AppiumElement)element;
+            new Actions(e.WrappedDriver).MoveToElement(element).Perform();
         }
 
-        public static string GetAttribute(AppiumWebElement element, string windows, string macOS)
+        public static string GetAttribute(IWebElement element, string windows, string macOS)
         {
             return element.GetAttribute(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? windows : macOS);
         }

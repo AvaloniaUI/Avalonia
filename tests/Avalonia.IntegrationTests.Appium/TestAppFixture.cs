@@ -2,10 +2,12 @@
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Mac;
 using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.DevTools.V85.DeviceOrientation;
 
 namespace Avalonia.IntegrationTests.Appium
 {
@@ -21,11 +23,12 @@ namespace Avalonia.IntegrationTests.Appium
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                opts.AddAdditionalCapability(MobileCapabilityType.App, path);
-                opts.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.Windows);
-                opts.AddAdditionalCapability(MobileCapabilityType.DeviceName, "WindowsPC");
+                opts.App = path;
+                opts.AutomationName = "Windows";
+                opts.PlatformName = MobilePlatform.Windows;
+                opts.DeviceName = "WindowsPC";
 
-                Session = new WindowsDriver<AppiumWebElement>(
+                Session = new WindowsDriver(
                     new Uri("http://127.0.0.1:4723"),
                     opts);
 
@@ -36,12 +39,12 @@ namespace Avalonia.IntegrationTests.Appium
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                opts.AddAdditionalCapability("appium:bundleId", TestAppBundleId);
-                opts.AddAdditionalCapability(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
-                opts.AddAdditionalCapability(MobileCapabilityType.AutomationName, "mac2");
-                opts.AddAdditionalCapability("appium:showServerLogs", true);
+                opts.AddAdditionalAppiumOption("appium:bundleId", TestAppBundleId);
+                opts.AddAdditionalAppiumOption(MobileCapabilityType.PlatformName, MobilePlatform.MacOS);
+                opts.AddAdditionalAppiumOption(MobileCapabilityType.AutomationName, "mac2");
+                opts.AddAdditionalAppiumOption("appium:showServerLogs", true);
 
-                Session = new MacDriver<AppiumWebElement>(
+                Session = new MacDriver(
                     new Uri("http://127.0.0.1:4723/wd/hub"),
                     opts);
             }
@@ -51,7 +54,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        public AppiumDriver<AppiumWebElement> Session { get; }
+        public AppiumDriver Session { get; }
 
         public void Dispose()
         {
