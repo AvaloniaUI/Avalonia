@@ -210,23 +210,23 @@ interface SizeWatcherInstance {
 export class SizeWatcher {
     static observer: ResizeObserver;
     static elements: Map<string, HTMLElement>;
+    private static lastMove: number;
 
     public static observe(element: HTMLElement, elementId: string | undefined, callback: (width: number, height: number) => void): void {
         if (!element || !callback) {
             return;
         }
 
-        SizeWatcher.init();
+        callback(element.clientWidth, element.clientHeight);
 
-        const watcherElement = element as SizeWatcherElement;
-        watcherElement.SizeWatcher = {
-            callback
+        const handleResize = (args: UIEvent) => {
+            if (Date.now() - this.lastMove > 33) {
+                callback(element.clientWidth, element.clientHeight);
+                SizeWatcher.lastMove = Date.now();
+            }
         };
 
-        SizeWatcher.elements.set(elementId ?? element.id, element);
-        SizeWatcher.observer.observe(element);
-
-        SizeWatcher.invoke(element);
+        window.addEventListener("resize", handleResize);
     }
 
     public static unobserve(elementId: string): void {
