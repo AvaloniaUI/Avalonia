@@ -106,12 +106,6 @@ export class Canvas {
 
         // add the draw to the next frame
         this.renderLoopRequest = window.requestAnimationFrame(() => {
-            if (this.glInfo) {
-                const GL = (globalThis as any).AvaloniaGL;
-                // make current
-                GL.makeContextCurrent(this.glInfo.context);
-            }
-
             if (this.htmlCanvas.width !== this.newWidth) {
                 this.htmlCanvas.width = this.newWidth ?? 0;
             }
@@ -131,6 +125,11 @@ export class Canvas {
     }
 
     public setCanvasSize(width: number, height: number): void {
+        if (this.renderLoopRequest !== 0) {
+            window.cancelAnimationFrame(this.renderLoopRequest);
+            this.renderLoopRequest = 0;
+        }
+
         this.newWidth = width;
         this.newHeight = height;
 
@@ -142,11 +141,7 @@ export class Canvas {
             this.htmlCanvas.height = this.newHeight;
         }
 
-        if (this.glInfo) {
-            const GL = (globalThis as any).AvaloniaGL;
-            // make current
-            GL.makeContextCurrent(this.glInfo.context);
-        }
+        this.requestAnimationFrame();
     }
 
     public static setCanvasSize(element: HTMLCanvasElement, width: number, height: number): void {
