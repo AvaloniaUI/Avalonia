@@ -159,7 +159,12 @@ export class InputHelper {
     }
 
     public static setCursor(inputElement: HTMLInputElement, kind: string) {
-        inputElement.style.cursor = kind;
+        if(kind == "pointer"){
+            inputElement.style.removeProperty("cursor");
+        }
+        else {
+            inputElement.style.cursor = kind;
+        }
     }
 
     public static setBounds(inputElement: HTMLInputElement, x: number, y: number, caretWidth: number, caretHeight: number, caret: number) {
