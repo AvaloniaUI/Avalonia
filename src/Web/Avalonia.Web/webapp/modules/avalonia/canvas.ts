@@ -217,7 +217,7 @@ export class SizeWatcher {
         callback(element.clientWidth, element.clientHeight);
 
         const handleResize = (args: UIEvent) => {
-            if (Date.now() - SizeWatcher.lastMove > 40) {
+            if (Date.now() - SizeWatcher.lastMove > 33) {
                 callback(element.clientWidth, element.clientHeight);
                 SizeWatcher.lastMove = Date.now();
             }
