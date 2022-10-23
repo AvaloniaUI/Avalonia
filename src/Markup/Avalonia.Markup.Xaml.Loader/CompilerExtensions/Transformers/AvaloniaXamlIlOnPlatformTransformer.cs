@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
 using XamlX.IL;
-using XamlX.IL.Emitters;
 using XamlX.Transform;
-using XamlX.Transform.Transformers;
 using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
@@ -36,14 +33,14 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
                     node);
             }
 
-            IXamlAstNode defaultValue = null;
-            var values = new Dictionary<XamlConstantNode, IXamlAstNode>();
+            OnPlatformDefaultNode defaultValue = null;
+            var values = new List<OnPlatformBranchNode>();
 
             var directives = objectNode.Children.OfType<XamlAstXmlDirective>().ToArray();
 
             foreach (var child in objectNode.Arguments.Take(1))
             {
-                defaultValue = new XamlAstXamlPropertyValueNode(child, targetPropertyNode.Property, child);
+                defaultValue = new OnPlatformDefaultNode(new XamlAstXamlPropertyValueNode(child, targetPropertyNode.Property, child));
             }
 
             foreach (var extProp in objectNode.Children.OfType<XamlAstXamlPropertyValueNode>())
@@ -75,7 +72,9 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
                         foreach (var platform in platformStr.Split(new[] { ',' },
                                      StringSplitOptions.RemoveEmptyEntries))
                         {
-                            values.Add(ConvertPlatformNode(platform.Trim().ToUpperInvariant(), onObj), transformed);
+                            values.Add( new OnPlatformBranchNode(
+                                ConvertPlatformNode(platform.Trim().ToUpperInvariant(), onObj),
+                                transformed));
                         }
                     }
                 }
@@ -86,19 +85,18 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
                         typeArgument, directives, extProp);
                     if (platformStr.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase))
                     {
-                        defaultValue = transformed;
+                        defaultValue = new OnPlatformDefaultNode(transformed);
                     }
                     else if (platformStr != "CONTENT")
                     {
-                        values.Add(ConvertPlatformNode(platformStr, extProp), transformed);
+                        values.Add(new OnPlatformBranchNode(
+                            ConvertPlatformNode(platformStr, extProp),
+                            transformed));
                     }
                 }
             }
 
-            return new XamlIlOnPlatformExtensionNode(
-                defaultValue, values,
-                new XamlAstClrTypeReference(node, targetType, false),
-                node);
+            return new AvaloniaXamlIlConditionalNode(defaultValue, values, node);
         }
 
         return node;
@@ -154,70 +152,61 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
         }
     }
 
-    private sealed class XamlIlOnPlatformExtensionNode : XamlAstNode, IXamlAstValueNode,
-        IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>, IXamlAstManipulationNode
+    private sealed class OnPlatformBranchNode : AvaloniaXamlIlConditionalBranchNode
     {
-        private IXamlAstNode _defaultValue;
-        private readonly IXamlAstNode[] _values;
-        private readonly XamlConstantNode[] _valuePlatforms;
+        private IXamlAstNode _platform;
+        private IXamlAstNode _value;
 
-        public XamlIlOnPlatformExtensionNode(
-            IXamlAstNode defaultValue,
-            IDictionary<XamlConstantNode, IXamlAstNode> values,
-            IXamlAstTypeReference targetType,
-            IXamlLineInfo info) : base(info)
+        public OnPlatformBranchNode(
+            IXamlAstNode platform,
+            IXamlAstNode value)
+            : base(value)
         {
-            _defaultValue = defaultValue;
-            _values = values.Values.ToArray();
-            _valuePlatforms = values.Keys.ToArray();
-            Type = targetType;
+            _platform = platform;
+            _value = value;
         }
 
         public override void VisitChildren(IXamlAstVisitor visitor)
         {
-            _defaultValue = _defaultValue?.Visit(visitor);
-            VisitList(_values, visitor);
-            VisitList(_valuePlatforms, visitor);
+            _platform = _platform.Visit(visitor);
+            _value = _value.Visit(visitor);
         }
 
-        public IXamlAstTypeReference Type { get; }
-
-        public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
-            IXamlILEmitter codeGen)
+        public override void EmitCondition(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
             var osTypeEnum = context.GetAvaloniaTypes().OperatingSystemType;
             var isOSPlatformMethod = context.GetAvaloniaTypes().IsOnPlatformMethod;
+            codeGen.Ldloc(context.ContextLocal);
+            context.Emit(_platform, codeGen, osTypeEnum);
+            codeGen.EmitCall(isOSPlatformMethod);
+        }
 
-            var ret = codeGen.DefineLabel();
+        public override void EmitBody(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            context.Emit(_value, codeGen, null);
+        }
+    }
 
-            for (var index = 0; index < _valuePlatforms.Length; index++)
-            {
-                var platform = _valuePlatforms[index];
-                var propertyNode = _values[index];
+    private sealed class OnPlatformDefaultNode : AvaloniaXamlIlConditionalDefaultNode
+    {
+        private IXamlAstNode _value;
 
-                var next = codeGen.DefineLabel();
-                codeGen.Ldloc(context.ContextLocal);
-                context.Emit(platform, codeGen, osTypeEnum);
-                codeGen.EmitCall(isOSPlatformMethod);
-                codeGen.Brfalse(next);
-                context.Emit(propertyNode, codeGen, null);
-                codeGen.Br(ret);
-                codeGen.MarkLabel(next);
-            }
+        public OnPlatformDefaultNode(
+            IXamlAstNode value)
+            : base(value)
+        {
+            _value = value;
+        }
 
-            if (_defaultValue is not null)
-            {
-                codeGen.Emit(OpCodes.Nop);
-                context.Emit(_defaultValue, codeGen, null);
-            }
-            else
-            {
-                codeGen.Pop();
-            }
+        public override void VisitChildren(IXamlAstVisitor visitor)
+        {
+            _value = _value.Visit(visitor);
+        }
 
-            codeGen.MarkLabel(ret);
-
-            return XamlILNodeEmitResult.Void(1);
+        public override void EmitBody(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            context.Emit(_value, codeGen, null);
         }
     }
 }
+
