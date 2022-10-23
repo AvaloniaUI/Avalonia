@@ -25,13 +25,6 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
             && type.GetFqn().StartsWith(OnPlatformFqn))
         {
             var typeArgument = type.GenericArguments?.FirstOrDefault();
-            var targetType = typeArgument ?? objectNode.Type.GetClrType();
-            if (targetType is null)
-            {
-                throw new XamlParseException(
-                    "Unable to find OnPlatform property type. Try to set x:TypeArguments on the markup extension.",
-                    node);
-            }
 
             OnPlatformDefaultNode defaultValue = null;
             var values = new List<OnPlatformBranchNode>();
@@ -80,17 +73,17 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
                 }
                 else
                 {
-                    var platformStr = extProp.Property.GetClrProperty().Name.Trim().ToUpperInvariant();
+                    var propName = extProp.Property.GetClrProperty().Name.Trim().ToUpperInvariant();
                     var transformed = TransformNode(targetPropertyNode.Property, extProp.Values,
                         typeArgument, directives, extProp);
-                    if (platformStr.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase))
+                    if (propName.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase))
                     {
                         defaultValue = new OnPlatformDefaultNode(transformed);
                     }
-                    else if (platformStr != "CONTENT")
+                    else if (propName != "CONTENT")
                     {
                         values.Add(new OnPlatformBranchNode(
-                            ConvertPlatformNode(platformStr, extProp),
+                            ConvertPlatformNode(propName, extProp),
                             transformed));
                     }
                 }

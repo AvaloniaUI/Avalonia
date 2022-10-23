@@ -31,14 +31,14 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
 {
     private readonly Dictionary<string, TReturn?> _values = new();
 
-    public OnPlatformExtension(TReturn defaultValue)
-    {
-        Default = defaultValue;
-    }
-
     public OnPlatformExtension()
     {
 
+    }
+
+    public OnPlatformExtension(TReturn defaultValue)
+    {
+        Default = defaultValue;
     }
 
     public TReturn? Default { get => _values.TryGetValue(nameof(Default), out var value) ? value : default; set { _values[nameof(Default)] = value; } }

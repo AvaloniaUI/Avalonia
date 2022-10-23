@@ -6,9 +6,26 @@ using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;
 
+public class OnFormFactorExtension : OnFormFactorExtension<object>
+{
+    public OnFormFactorExtension()
+    {
+
+    }
+
+    public OnFormFactorExtension(object defaultValue) : base(defaultValue)
+    {
+    }
+}
+
 public class OnFormFactorExtension<TReturn>
 {
     private readonly Dictionary<string, TReturn?> _values = new();
+
+    public OnFormFactorExtension()
+    {
+
+    }
 
     public OnFormFactorExtension(TReturn defaultValue)
     {
@@ -51,7 +68,7 @@ public class OnFormFactorExtension<TReturn>
         var runtimeInfo = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().GetRuntimeInfo();
 
         TReturn val;
-        
+
         if (runtimeInfo.IsDesktop)
         {
             if (_values.TryGetValue(nameof(Desktop), out val))
@@ -67,7 +84,7 @@ public class OnFormFactorExtension<TReturn>
                 return (val, true);
             }
         }
-        
+
         if (_values.TryGetValue(nameof(Default), out val))
         {
             return (val, true);

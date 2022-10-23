@@ -105,6 +105,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public IXamlType OperatingSystemType { get; }
         public IXamlMethod IsOnPlatformMethod { get; }
+        public IXamlType FormFactorType { get; set; }
+        public IXamlMethod IsOnFormFactorMethod { get; set; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -236,6 +238,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
             OperatingSystemType = cfg.TypeSystem.GetType("Avalonia.Platform.OperatingSystemType");
             IsOnPlatformMethod = RuntimeHelpers.FindMethod(m => m.IsStatic && m.Parameters.Count == 2 && m.Name == "IsOnPlatform");
+            FormFactorType = cfg.TypeSystem.GetType("Avalonia.Platform.FormFactorType");
+            IsOnFormFactorMethod = RuntimeHelpers.FindMethod(m => m.IsStatic && m.Parameters.Count == 2 && m.Name == "IsOnFormFactor");
         }
     }
 

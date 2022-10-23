@@ -57,10 +57,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
             );
             InsertAfter<ResolveContentPropertyTransformer>(
-                new AvaloniaXamlIlOnPlatformTransformer());
+                new AvaloniaXamlIlOnPlatformTransformer(),
+                new AvaloniaXamlIlOnFormFactorTransformer());
 
-            InsertBefore<TypeReferenceResolver>(
-                new OnFormFactorTransformer());
             InsertAfter<TypeReferenceResolver>(
                 new XDataTypeTransformer());
 
