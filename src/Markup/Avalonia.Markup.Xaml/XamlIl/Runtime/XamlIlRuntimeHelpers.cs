@@ -176,7 +176,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             public RootServiceProvider(INameScope nameScope)
             {
                 _nameScope = nameScope;
-                _runtimePlatform = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
+                _runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
 
             public object GetService(Type serviceType)
@@ -186,7 +186,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
                     return this;
                 if (serviceType == typeof(IRuntimePlatform))
-                    return _runtimePlatform;
+                    return _runtimePlatform ?? throw new KeyNotFoundException($"{nameof(IRuntimePlatform)} was not registered");
 
                 return null;
             }
