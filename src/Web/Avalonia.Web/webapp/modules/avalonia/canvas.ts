@@ -106,12 +106,6 @@ export class Canvas {
 
         // add the draw to the next frame
         this.renderLoopRequest = window.requestAnimationFrame(() => {
-            if (this.glInfo) {
-                const GL = (globalThis as any).AvaloniaGL;
-                // make current
-                GL.makeContextCurrent(this.glInfo.context);
-            }
-
             if (this.htmlCanvas.width !== this.newWidth) {
                 this.htmlCanvas.width = this.newWidth ?? 0;
             }
@@ -131,6 +125,11 @@ export class Canvas {
     }
 
     public setCanvasSize(width: number, height: number): void {
+        if (this.renderLoopRequest !== 0) {
+            window.cancelAnimationFrame(this.renderLoopRequest);
+            this.renderLoopRequest = 0;
+        }
+
         this.newWidth = width;
         this.newHeight = height;
 
@@ -142,11 +141,7 @@ export class Canvas {
             this.htmlCanvas.height = this.newHeight;
         }
 
-        if (this.glInfo) {
-            const GL = (globalThis as any).AvaloniaGL;
-            // make current
-            GL.makeContextCurrent(this.glInfo.context);
-        }
+        this.requestAnimationFrame();
     }
 
     public static setCanvasSize(element: HTMLCanvasElement, width: number, height: number): void {
@@ -210,23 +205,25 @@ interface SizeWatcherInstance {
 export class SizeWatcher {
     static observer: ResizeObserver;
     static elements: Map<string, HTMLElement>;
+    private static lastMove: number;
 
     public static observe(element: HTMLElement, elementId: string | undefined, callback: (width: number, height: number) => void): void {
         if (!element || !callback) {
             return;
         }
 
-        SizeWatcher.init();
+        SizeWatcher.lastMove = Date.now();
 
-        const watcherElement = element as SizeWatcherElement;
-        watcherElement.SizeWatcher = {
-            callback
+        callback(element.clientWidth, element.clientHeight);
+
+        const handleResize = (args: UIEvent) => {
+            if (Date.now() - SizeWatcher.lastMove > 33) {
+                callback(element.clientWidth, element.clientHeight);
+                SizeWatcher.lastMove = Date.now();
+            }
         };
 
-        SizeWatcher.elements.set(elementId ?? element.id, element);
-        SizeWatcher.observer.observe(element);
-
-        SizeWatcher.invoke(element);
+        window.addEventListener("resize", handleResize);
     }
 
     public static unobserve(elementId: string): void {
