@@ -37,7 +37,7 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
             }
 
             IXamlAstNode defaultValue = null;
-            var values = new Dictionary<string, IXamlAstNode>();
+            var values = new Dictionary<XamlConstantNode, IXamlAstNode>();
 
             var directives = objectNode.Children.OfType<XamlAstXmlDirective>().ToArray();
 
@@ -75,23 +75,22 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
                         foreach (var platform in platformStr.Split(new[] { ',' },
                                      StringSplitOptions.RemoveEmptyEntries))
                         {
-                            values.Add(platform.Trim().ToUpperInvariant(), transformed);
+                            values.Add(ConvertPlatformNode(platform.Trim().ToUpperInvariant(), onObj), transformed);
                         }
                     }
                 }
                 else
                 {
-
                     var platformStr = extProp.Property.GetClrProperty().Name.Trim().ToUpperInvariant();
                     var transformed = TransformNode(targetPropertyNode.Property, extProp.Values,
                         typeArgument, directives, extProp);
-                    if (platformStr.Equals("default", StringComparison.OrdinalIgnoreCase))
+                    if (platformStr.Equals("DEFAULT", StringComparison.OrdinalIgnoreCase))
                     {
                         defaultValue = transformed;
                     }
-                    else
+                    else if (platformStr != "CONTENT")
                     {
-                        values.Add(platformStr, transformed);
+                        values.Add(ConvertPlatformNode(platformStr, extProp), transformed);
                     }
                 }
             }
@@ -103,6 +102,26 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
         }
 
         return node;
+
+        XamlConstantNode ConvertPlatformNode(string platform, IXamlLineInfo li)
+        {
+            var osTypeEnum = context.GetAvaloniaTypes().OperatingSystemType;
+            if (platform.Equals("MACOS", StringComparison.OrdinalIgnoreCase))
+            {
+                platform = "OSX";
+            }
+            if (platform.Equals("WINDOWS", StringComparison.OrdinalIgnoreCase))
+            {
+                platform = "WINNT";
+            }
+
+            if (TypeSystemHelpers.TryGetEnumValueNode(osTypeEnum, platform, li, true, out var enumConstantNode))
+            {
+                return enumConstantNode;
+            }
+
+            throw new XamlParseException($"Unable to parse platform name: \"{platform}\"", li);
+        }
 
         XamlAstXamlPropertyValueNode TransformNode(
             IXamlAstPropertyReference property,
@@ -140,11 +159,11 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
     {
         private IXamlAstNode _defaultValue;
         private readonly IXamlAstNode[] _values;
-        private readonly string[] _valuePlatforms;
+        private readonly XamlConstantNode[] _valuePlatforms;
 
         public XamlIlOnPlatformExtensionNode(
             IXamlAstNode defaultValue,
-            IDictionary<string, IXamlAstNode> values,
+            IDictionary<XamlConstantNode, IXamlAstNode> values,
             IXamlAstTypeReference targetType,
             IXamlLineInfo info) : base(info)
         {
@@ -158,6 +177,7 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
         {
             _defaultValue = _defaultValue?.Visit(visitor);
             VisitList(_values, visitor);
+            VisitList(_valuePlatforms, visitor);
         }
 
         public IXamlAstTypeReference Type { get; }
@@ -165,11 +185,8 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
         public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context,
             IXamlILEmitter codeGen)
         {
-            var operatingSystemClass =
-                context.Configuration.TypeSystem.GetType(
-                    "Avalonia.Markup.Xaml.MarkupExtensions.OnPlatformExtensionHelper");
-            var isOSPlatformMethod = operatingSystemClass
-                .FindMethod(m => m.IsStatic && m.Parameters.Count == 1 && m.Name == "IsOSPlatform");
+            var osTypeEnum = context.GetAvaloniaTypes().OperatingSystemType;
+            var isOSPlatformMethod = context.GetAvaloniaTypes().IsOnPlatformMethod;
 
             var ret = codeGen.DefineLabel();
 
@@ -179,7 +196,8 @@ internal class AvaloniaXamlIlOnPlatformTransformer : IXamlAstTransformer
                 var propertyNode = _values[index];
 
                 var next = codeGen.DefineLabel();
-                codeGen.Ldstr(platform);
+                codeGen.Ldloc(context.ContextLocal);
+                context.Emit(platform, codeGen, osTypeEnum);
                 codeGen.EmitCall(isOSPlatformMethod);
                 codeGen.Brfalse(next);
                 context.Emit(propertyNode, codeGen, null);

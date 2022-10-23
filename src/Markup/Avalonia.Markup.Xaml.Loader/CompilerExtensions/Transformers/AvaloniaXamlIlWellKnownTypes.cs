@@ -9,6 +9,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     class AvaloniaXamlIlWellKnownTypes
     {
+        public IXamlType RuntimeHelpers { get; }
         public IXamlType AvaloniaObject { get; }
         public IXamlType IAvaloniaObject { get; }
         public IXamlType BindingPriority { get; }
@@ -102,8 +103,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ResourceDictionary { get; }
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
 
+        public IXamlType OperatingSystemType { get; }
+        public IXamlMethod IsOnPlatformMethod { get; }
+
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
+            RuntimeHelpers = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
+
             XamlIlTypes = cfg.WellKnownTypes;
             AvaloniaObject = cfg.TypeSystem.GetType("Avalonia.AvaloniaObject");
             IAvaloniaObject = cfg.TypeSystem.GetType("Avalonia.IAvaloniaObject");
@@ -227,6 +233,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
                     cfg.TypeSystem.GetType("System.IServiceProvider"),
                     XamlIlTypes.Object));
+
+            OperatingSystemType = cfg.TypeSystem.GetType("Avalonia.Platform.OperatingSystemType");
+            IsOnPlatformMethod = RuntimeHelpers.FindMethod(m => m.IsStatic && m.Parameters.Count == 2 && m.Name == "IsOnPlatform");
         }
     }
 
@@ -239,7 +248,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ctx.SetItem(rv = new AvaloniaXamlIlWellKnownTypes(ctx.Configuration));
             return rv;
         }
-        
+
         public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> ctx)
         {
             if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))

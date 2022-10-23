@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using Avalonia.Controls;
-using Avalonia.Data.Converters;
+﻿using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Xunit;
@@ -327,6 +324,31 @@ public class OnPlatformExtensionTests : XamlTestBase
             var button = Assert.IsType<Button>(resourceDictionary["MyKey"]);
 
             Assert.Equal("Hello World", button.Content);
+        }
+    }
+
+    [Fact]
+    public void BindingExtension_Works_Inside_Of_OnPlatform()
+    {
+        using (AvaloniaLocator.EnterScope())
+        {
+            AvaloniaLocator.CurrentMutable.Bind<IRuntimePlatform>()
+                .ToConstant(new TestRuntimePlatform(OperatingSystemType.WinNT));
+
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <UserControl.Resources>
+        <x:String x:Key='text'>foobar</x:String>
+    </UserControl.Resources>
+
+    <TextBlock Name='textBlock' Text='{OnPlatform Windows={CompiledBinding Source={StaticResource text}}}'/>
+</UserControl>";
+
+            var window = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+            var textBlock = window.FindControl<TextBlock>("textBlock");
+
+            Assert.Equal("foobar", textBlock.Text);
         }
     }
 

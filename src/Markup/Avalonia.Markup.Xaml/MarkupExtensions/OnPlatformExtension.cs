@@ -1,29 +1,11 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;
-
-public static class OnPlatformExtensionHelper
-{
-    // TEMPORARY, to replace with XAML compiler namespace helpers
-    public static bool IsOSPlatform(string platform)
-    {
-        var runtimeInfo = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().GetRuntimeInfo();
-        return platform switch
-        {
-            "WINDOWS" => runtimeInfo.OperatingSystem == OperatingSystemType.WinNT,
-            "MACOS" => runtimeInfo.OperatingSystem == OperatingSystemType.OSX,
-            _ => runtimeInfo.OperatingSystem.ToString().Equals(platform, StringComparison.OrdinalIgnoreCase)
-        };
-        //return RuntimeInformation.IsOSPlatform(OSPlatform.Create(platform));
-    }
-}
 
 public class On
 {
