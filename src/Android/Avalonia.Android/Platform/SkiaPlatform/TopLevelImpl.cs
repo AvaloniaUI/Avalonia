@@ -28,7 +28,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo,
         ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
-        ITopLevelImplWithShare
+        ITopLevelImplWithShareProvider
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
@@ -54,7 +54,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             StorageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
-            Share = new AndroidShare(avaloniaView.Context);
+            ShareProvider = new AndroidShare(avaloniaView.Context);
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -252,7 +252,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         
         public IStorageProvider StorageProvider { get; }
 
-        public IShare Share { get; }
+        public IShareProvider ShareProvider { get; }
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {

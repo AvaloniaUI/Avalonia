@@ -18,7 +18,7 @@ namespace Avalonia.Web
 {
     [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
     internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
-        ITopLevelImplWithShare
+        ITopLevelImplWithShareProvider
     {
         private Size _clientSize;
         private IInputRoot? _inputRoot;
@@ -37,7 +37,7 @@ namespace Avalonia.Web
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
             NativeControlHost = _avaloniaView.GetNativeControlHostImpl();
-            Share = new BrowserShare();
+            ShareProvider = new BrowserShare();
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -225,6 +225,6 @@ namespace Avalonia.Web
         public INativeControlHostImpl? NativeControlHost { get; }
         public IStorageProvider StorageProvider { get; } = new BrowserStorageProvider();
 
-        public IShare Share { get; }
+        public IShareProvider ShareProvider { get; }
     }
 }

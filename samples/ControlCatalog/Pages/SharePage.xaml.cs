@@ -24,7 +24,7 @@ namespace ControlCatalog.Pages
             {
                 var text = this.Get<TextBox>("ShareBox").Text ?? string.Empty;
 
-                var share = (VisualRoot as TopLevel).Share;
+                var share = (VisualRoot as TopLevel).ShareProvider;
 
                 share.Share(text);
             };
@@ -55,7 +55,7 @@ namespace ControlCatalog.Pages
             {
                 if(_files != null && _files.Count> 0)
                 {
-                    var share = (VisualRoot as TopLevel).Share;
+                    var share = (VisualRoot as TopLevel).ShareProvider;
 
                     share.Share(_files.ToList());
                 }

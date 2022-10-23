@@ -95,7 +95,7 @@ namespace Avalonia.Controls
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
-        private IShare? _share;
+        private IShareProvider? _shareProvider;
 
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -327,8 +327,8 @@ namespace Avalonia.Controls
             ?? (PlatformImpl as ITopLevelImplWithStorageProvider)?.StorageProvider
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
 
-        public IShare? Share => _share
-            ??= (PlatformImpl as ITopLevelImplWithShare)?.Share
+        public IShareProvider? ShareProvider => _shareProvider
+            ??= (PlatformImpl as ITopLevelImplWithShareProvider)?.ShareProvider
             ?? null;
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();

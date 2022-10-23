@@ -117,7 +117,7 @@ namespace ControlCatalog
             if (VisualRoot is Window window)
                 decorations.SelectedIndex = (int)window.SystemDecorations;
 
-            if ((VisualRoot as TopLevel).PlatformImpl is ITopLevelImplWithShare)
+            if ((VisualRoot as TopLevel).PlatformImpl is ITopLevelImplWithShareProvider)
             {
                 var sideBar = this.Get<TabControl>("Sidebar");
                 var tabItems = (sideBar.Items as IList);

@@ -14,9 +14,9 @@ using static System.Net.Mime.MediaTypeNames;
 namespace Avalonia.Web
 {
     [SupportedOSPlatform("browser")]
-    internal class BrowserShare : IShare
+    internal class BrowserShare : IShareProvider
     {
-        public void Share(string text)
+        public async Task Share(string text)
         {
             using var jsObject = DomHelper.Create(default);
             jsObject?.SetProperty("title", $"Sending {text}");
@@ -28,12 +28,12 @@ namespace Avalonia.Web
             }
         }
 
-        public void Share(IStorageFile file)
+        public async Task Share(IStorageFile file)
         {
-            Share(new[] { file });
+            await Share(new[] { file });
         }
 
-        public void Share(IList<IStorageFile> files)
+        public async Task Share(IList<IStorageFile> files)
         {
             ShareHelper.shareFileList($"Sending {files.Count} file{( files.Count > 0 ? "s" : "")}", files.Select(f => ((JSStorageItem)f).FileHandle).ToArray());
         }

@@ -9,7 +9,7 @@ using Android.OS;
 
 namespace Avalonia.Android.Platform
 {
-    internal class AndroidShare : IShare
+    internal class AndroidShare : IShareProvider
     {
         private readonly Context _context;
 
@@ -18,7 +18,7 @@ namespace Avalonia.Android.Platform
             _context = context;
         }
 
-        public void Share(string text)
+        public async Task Share(string text)
         {
             var intent = new Intent(Intent.ActionSend);
             intent.SetType("text/plain");
@@ -29,24 +29,12 @@ namespace Avalonia.Android.Platform
             _context.StartActivity(shareIntent);
         }
 
-        public void Share(IStorageFile file)
+        public async Task Share(IStorageFile file)
         {
-            if (file.TryGetUri(out var uri))
-            {
-                string mimeType = MimeTypeMap.Singleton.GetMimeTypeFromExtension(System.IO.Path.GetExtension(file.Name).Remove(0, 1));
-
-                var intent = new Intent(Intent.ActionSend);
-                intent.SetType(mimeType);
-                intent.SetAction(Intent.ActionSend);
-                intent.PutExtra(Intent.ExtraStream, Uri.Parse(uri.AbsoluteUri));
-                intent.SetFlags(ActivityFlags.GrantReadUriPermission);
-
-                var shareIntent = Intent.CreateChooser(intent, "Sharing File");
-                _context.StartActivity(shareIntent);
-            }
+            await Share(new[] { file });
         }
 
-        public void Share(IList<IStorageFile> files)
+        public async Task Share(IList<IStorageFile> files)
         {
             IList<IParcelable> uris = new List<IParcelable>();
 
