@@ -77,8 +77,7 @@ namespace Avalonia.Web
 
             _topLevelImpl.SetCssCursor = (cursor) =>
             {
-                InputHelper.SetCursor(_containerElement, cursor); // macOS
-                InputHelper.SetCursor(_canvas, cursor); // windows
+                InputHelper.SetCursor(_containerElement, cursor);
             };
 
             _topLevel.Prepare();
