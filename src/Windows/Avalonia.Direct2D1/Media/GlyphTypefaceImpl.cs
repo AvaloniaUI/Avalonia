@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Drawing.Drawing2D;
 using Avalonia.Media;
 using Avalonia.Metadata;
 using HarfBuzzSharp;
 using SharpDX.DirectWrite;
 using FontMetrics = Avalonia.Media.FontMetrics;
+using FontSimulations = Avalonia.Media.FontSimulations;
+using GlyphMetrics = Avalonia.Media.GlyphMetrics;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -82,6 +83,8 @@ namespace Avalonia.Direct2D1.Media
 
         public int GlyphCount { get; set; }
 
+        public FontSimulations FontSimulations => FontSimulations.None;
+
         /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort GetGlyph(uint codepoint)
         {
@@ -133,6 +136,26 @@ namespace Avalonia.Direct2D1.Media
             }
 
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
+        }
+
+        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+        {
+            metrics = default;
+
+            if (!Font.TryGetGlyphExtents(glyph, out var extents))
+            {
+                return false;
+            }
+
+            metrics = new GlyphMetrics
+            {
+                XBearing = extents.XBearing,
+                YBearing = extents.YBearing,
+                Width = extents.Width,
+                Height = extents.Height
+            };
+
+            return true;
         }
 
         private void Dispose(bool disposing)

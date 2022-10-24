@@ -102,6 +102,8 @@ namespace Avalonia.Headless
 
         public int GlyphCount => 1337;
 
+        public FontSimulations FontSimulations => throw new NotImplementedException();
+
         public void Dispose()
         {
         }
@@ -137,6 +139,17 @@ namespace Avalonia.Headless
         {
             table = null;
             return false;
+        }
+
+        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+        {
+            metrics = new GlyphMetrics
+            {
+                Height = 10,
+                Width = 10
+            };
+
+            return true;
         }
     }
 

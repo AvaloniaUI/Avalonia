@@ -20,6 +20,19 @@ namespace Avalonia.Media
         FontMetrics Metrics { get; }
 
         /// <summary>
+        ///     Gets the algorithmic style simulations applied to this glyph typeface.
+        /// </summary>
+        FontSimulations FontSimulations { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="glyph"></param>
+        /// <param name="metrics"></param>
+        /// <returns></returns>
+        bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics);
+        
+        /// <summary>
         ///     Returns an glyph index for the specified codepoint.
         /// </summary>
         /// <remarks>
