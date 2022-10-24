@@ -5,7 +5,6 @@
     <IsPackable>true</IsPackable>
     <PackageId>Avalonia.Markup.Xaml.Loader</PackageId>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
-    <LangVersion>11</LangVersion>
   </PropertyGroup>
   <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
   <PropertyGroup>
