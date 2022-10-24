@@ -224,7 +224,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.Primary)?.PixelDensity ?? 1;
+        private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.IsPrimary)?.Scaling ?? 1;
 
         public double RenderScaling => _scaling;
 
@@ -285,11 +285,12 @@ namespace Avalonia.Win32
 
             set
             {
-                if (IsWindowVisible(_hwnd))
+                if (IsWindowVisible(_hwnd) && _lastWindowState != value)
                 {
                     ShowWindow(value, value != WindowState.Minimized); // If the window is minimized, it shouldn't be activated
                 }
 
+                _lastWindowState = value;
                 _showWindowState = value;
             }
         }

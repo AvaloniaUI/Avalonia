@@ -37,17 +37,4 @@ namespace Avalonia.Animation.Animators
         }
     }
     
-    [Obsolete("Use ISolidColorBrushAnimator instead")]
-    public class SolidColorBrushAnimator : Animator<SolidColorBrush?>
-    {    
-        public override SolidColorBrush? Interpolate(double progress, SolidColorBrush? oldValue, SolidColorBrush? newValue)
-        {
-            if (oldValue is null || newValue is null)
-            {
-                return progress >= 0.5 ? newValue : oldValue;
-            }
-
-            return new SolidColorBrush(ColorAnimator.InterpolateCore(progress, oldValue.Color, newValue.Color));
-        }
-    }
 }

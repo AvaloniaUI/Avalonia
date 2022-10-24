@@ -109,17 +109,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             {
                 Getter = setterType.Methods.First(m => m.Name == "get_Value");
                 var method = setterType.Methods.First(m => m.Name == "set_Value");
-                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.IBinding));
-                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.UnsetValueType));
-                Setters.Add(new XamlIlDirectCallPropertySetter(method, targetType));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.IBinding, false));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, types.UnsetValueType, false));
+                Setters.Add(new XamlIlDirectCallPropertySetter(method, targetType, targetType.AcceptsNull()));
             }
             
-            class XamlIlDirectCallPropertySetter : IXamlPropertySetter, IXamlEmitablePropertySetter<IXamlILEmitter>
+            sealed class XamlIlDirectCallPropertySetter : IXamlPropertySetter, IXamlEmitablePropertySetter<IXamlILEmitter>
             {
                 private readonly IXamlMethod _method;
                 private readonly IXamlType _type;
                 public IXamlType TargetType { get; }
-                public PropertySetterBinderParameters BinderParameters { get; } = new PropertySetterBinderParameters();
+                public PropertySetterBinderParameters BinderParameters { get; }
                 public IReadOnlyList<IXamlType> Parameters { get; }
                 public void Emit(IXamlILEmitter codegen)
                 {
@@ -128,13 +128,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     codegen.EmitCall(_method, true);
                 }
 
-                public XamlIlDirectCallPropertySetter(IXamlMethod method, IXamlType type)
+                public XamlIlDirectCallPropertySetter(IXamlMethod method, IXamlType type, bool allowNull)
                 {
                     _method = method;
                     _type = type;
                     Parameters = new[] {type};
                     TargetType = method.ThisOrFirstParameter();
+                    BinderParameters = new PropertySetterBinderParameters
+                    {
+                        AllowXNull = allowNull,
+                        AllowRuntimeNull = allowNull
+                    };
                 }
+
+                private bool Equals(XamlIlDirectCallPropertySetter other) 
+                    => Equals(_method, other._method) && Equals(_type, other._type);
+
+                public override bool Equals(object obj) 
+                    => Equals(obj as XamlIlDirectCallPropertySetter);
+
+                public override int GetHashCode() 
+                    => (_method.GetHashCode() * 397) ^ _type.GetHashCode();
             }
         }
     }

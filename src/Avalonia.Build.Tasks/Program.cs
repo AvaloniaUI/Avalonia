@@ -44,8 +44,7 @@ namespace Avalonia.Build.Tasks
                 OutputPath = args[2],
                 BuildEngine = new ConsoleBuildEngine(),
                 ProjectDirectory = Directory.GetCurrentDirectory(),
-                VerifyIl = true,
-                EnableComInteropPatching = true
+                VerifyIl = true
             }.Execute() ?
                 0 :
                 2;

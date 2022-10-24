@@ -80,7 +80,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                             var remaining = remainingChars.Where(x => x != "" && x != "×").Select(x => Convert.ToInt32(x, 16)).ToArray();
 
                             codepoints.AddRange(remaining);
-                        }                     
+                        }
 
                         var data = new GraphemeBreakData
                         {

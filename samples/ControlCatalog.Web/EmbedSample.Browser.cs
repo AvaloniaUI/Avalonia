@@ -1,12 +1,9 @@
 using System;
-
-using Avalonia;
+using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Platform;
-using Avalonia.Web.Blazor;
+using Avalonia.Web;
 
 using ControlCatalog.Pages;
-
-using Microsoft.JSInterop;
 
 namespace ControlCatalog.Web;
 
@@ -14,21 +11,32 @@ public class EmbedSampleWeb : INativeDemoControl
 {
     public IPlatformHandle CreateControl(bool isSecond, IPlatformHandle parent, Func<IPlatformHandle> createDefault)
     {
-        var runtime = AvaloniaLocator.Current.GetRequiredService<IJSInProcessRuntime>();
-
         if (isSecond)
         {
-            var iframe = runtime.Invoke<IJSInProcessObjectReference>("document.createElement", "iframe");
-            iframe.InvokeVoid("setAttribute", "src", "https://www.youtube.com/embed/kZCIporjJ70");
+            var iframe = EmbedInterop.CreateElement("iframe");
+            iframe.SetProperty("src", "https://www.youtube.com/embed/kZCIporjJ70");
 
             return new JSObjectControlHandle(iframe);
         }
         else
         {
-            // window.createAppButton source is defined in "app.js" file.
-            var button = runtime.Invoke<IJSInProcessObjectReference>("window.createAppButton");
+            var defaultHandle = (JSObjectControlHandle)createDefault();
 
-            return new JSObjectControlHandle(button);
+            _ = JSHost.ImportAsync("embed.js", "./embed.js").ContinueWith(_ =>
+            {
+                EmbedInterop.AddAppButton(defaultHandle.Object);
+            });
+
+            return defaultHandle;
         }
     }
+}
+
+internal static partial class EmbedInterop
+{
+    [JSImport("globalThis.document.createElement")]
+    public static partial JSObject CreateElement(string tagName);
+
+    [JSImport("addAppButton", "embed.js")]
+    public static partial void AddAppButton(JSObject parentObject);
 }

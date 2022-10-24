@@ -228,6 +228,8 @@ namespace Avalonia.Media
                 throw new NotImplementedException();
             }
 
+            public object? GetFeature(Type t) => null;
+
             public void DrawBitmap(IRef<IBitmapImpl> source, double opacity, Rect sourceRect, Rect destRect, BitmapInterpolationMode bitmapInterpolationMode = BitmapInterpolationMode.Default)
             {
                 throw new NotImplementedException();

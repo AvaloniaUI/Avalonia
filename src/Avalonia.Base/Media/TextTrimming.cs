@@ -8,7 +8,7 @@ namespace Avalonia.Media
     /// </summary>
     public abstract class TextTrimming
     {
-        public static char s_defaultEllipsisChar = '\u2026';
+        internal const char DefaultEllipsisChar = '\u2026';
 
         /// <summary>
         /// Text is not trimmed.
@@ -18,22 +18,22 @@ namespace Avalonia.Media
         /// <summary>
         /// Text is trimmed at a character boundary. An ellipsis (...) is drawn in place of remaining text.
         /// </summary>
-        public static TextTrimming CharacterEllipsis { get; } = new TextTrailingTrimming(s_defaultEllipsisChar, false);
+        public static TextTrimming CharacterEllipsis { get; } = new TextTrailingTrimming(DefaultEllipsisChar, false);
 
         /// <summary>
         /// Text is trimmed at a word boundary. An ellipsis (...) is drawn in place of remaining text.
         /// </summary>
-        public static TextTrimming WordEllipsis { get; } = new TextTrailingTrimming(s_defaultEllipsisChar, true);
+        public static TextTrimming WordEllipsis { get; } = new TextTrailingTrimming(DefaultEllipsisChar, true);
 
         /// <summary>
         /// Text is trimmed after a given prefix length. An ellipsis (...) is drawn in between prefix and suffix and represents remaining text.
         /// </summary>
-        public static TextTrimming PrefixCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(s_defaultEllipsisChar, 8);
+        public static TextTrimming PrefixCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(DefaultEllipsisChar, 8);
 
         /// <summary>
         /// Text is trimmed at a character boundary starting from the beginning. An ellipsis (...) is drawn in place of remaining text.
         /// </summary>
-        public static TextTrimming LeadingCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(s_defaultEllipsisChar, 0);
+        public static TextTrimming LeadingCharacterEllipsis { get; } = new TextLeadingPrefixTrimming(DefaultEllipsisChar, 0);
 
         /// <summary>
         /// Creates properties that will be used for collapsing lines of text.

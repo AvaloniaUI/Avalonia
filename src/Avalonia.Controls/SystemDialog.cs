@@ -32,13 +32,6 @@ namespace Avalonia.Controls
     [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API")]
     public abstract class FileSystemDialog : SystemDialog
     {
-        [Obsolete("Use Directory")]
-        public string? InitialDirectory
-        {
-            get => Directory;
-            set => Directory = value;
-        }
-
         /// <summary>
         /// Gets or sets the initial directory that will be displayed when the file system dialog
         /// is opened.
@@ -87,7 +80,7 @@ namespace Avalonia.Controls
                 DefaultExtension = DefaultExtension,
                 FileTypeChoices = Filters?.Select(f => new FilePickerFileType(f.Name!) { Patterns = f.Extensions.Select(e => $"*.{e}").ToArray() }).ToArray(),
                 Title = Title,
-                SuggestedStartLocation = InitialDirectory is { } directory
+                SuggestedStartLocation = Directory is { } directory
                         ? new BclStorageFolder(new System.IO.DirectoryInfo(directory))
                         : null,
                 ShowOverwritePrompt = ShowOverwritePrompt
@@ -129,7 +122,7 @@ namespace Avalonia.Controls
                 AllowMultiple = AllowMultiple,
                 FileTypeFilter = Filters?.Select(f => new FilePickerFileType(f.Name!) { Patterns = f.Extensions.Select(e => $"*.{e}").ToArray() }).ToArray(),
                 Title = Title,
-                SuggestedStartLocation = InitialDirectory is { } directory
+                SuggestedStartLocation = Directory is { } directory
                     ? new BclStorageFolder(new System.IO.DirectoryInfo(directory))
                     : null
             };
@@ -142,13 +135,6 @@ namespace Avalonia.Controls
     [Obsolete("Use Window.StorageProvider API or TopLevel.StorageProvider API")]
     public class OpenFolderDialog : FileSystemDialog
     {
-        [Obsolete("Use Directory")]
-        public string? DefaultDirectory
-        {
-            get => Directory;
-            set => Directory = value;
-        }
-
         /// <summary>
         /// Shows the open folder dialog.
         /// </summary>
@@ -170,7 +156,7 @@ namespace Avalonia.Controls
             return new FolderPickerOpenOptions
             {
                 Title = Title,
-                SuggestedStartLocation = InitialDirectory is { } directory
+                SuggestedStartLocation = Directory is { } directory
                     ? new BclStorageFolder(new System.IO.DirectoryInfo(directory))
                     : null
             };

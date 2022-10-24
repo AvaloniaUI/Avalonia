@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using System;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
@@ -99,5 +100,7 @@ namespace Avalonia.Benchmarks
         public void Custom(ICustomDrawOperation custom)
         {
         }
+
+        public object GetFeature(Type t) => null;
     }
 }

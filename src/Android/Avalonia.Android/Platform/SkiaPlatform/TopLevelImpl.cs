@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Android.App;
 using Android.Content;
 using Android.Graphics;
+using Android.Runtime;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.OpenGL;
@@ -19,6 +21,8 @@ using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using Java.Lang;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -29,8 +33,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly IFramebufferPlatformSurface _framebuffer;
 
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
-        private readonly AndroidTouchEventsHelper<TopLevelImpl> _touchHelper;
-        private readonly ITextInputMethodImpl _textInputMethod;
+        private readonly AndroidMotionEventsHelper _pointerHelper;
+        private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
         private ViewImpl _view;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -38,8 +42,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _view = new ViewImpl(avaloniaView.Context, this, placeOnTop);
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
-            _touchHelper = new AndroidTouchEventsHelper<TopLevelImpl>(this, () => InputRoot,
-                GetAvaloniaPointFromEvent);
+            _pointerHelper = new AndroidMotionEventsHelper(this);
             _gl = GlPlatformSurface.TryCreate(this);
             _framebuffer = new FramebufferManager(this);
 
@@ -49,7 +52,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
 
             NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
-            StorageProvider = new AndroidStorageProvider((AvaloniaActivity)avaloniaView.Context);
+            StorageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -84,9 +87,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
-            AndroidPlatform.Options.UseDeferredRendering
-            ? new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
-            : new ImmediateRenderer(root);
+            AndroidPlatform.Options.UseCompositor
+                ? new CompositingRenderer(root, AndroidPlatform.Compositor)
+                : AndroidPlatform.Options.UseDeferredRendering
+                    ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
+                    : new ImmediateRenderer(root);
 
         public virtual void Hide()
         {
@@ -145,22 +150,34 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             private readonly TopLevelImpl _tl;
             private Size _oldSize;
-            public ViewImpl(Context context,  TopLevelImpl tl, bool placeOnTop) : base(context)
+
+            public ViewImpl(Context context, TopLevelImpl tl, bool placeOnTop) : base(context)
             {
                 _tl = tl;
                 if (placeOnTop)
                     SetZOrderOnTop(true);
             }
 
+            public TopLevelImpl TopLevelImpl => _tl;
+
             protected override void Draw()
             {
                 _tl.Draw();
             }
 
+            protected override bool DispatchGenericPointerEvent(MotionEvent e)
+            {
+                bool callBase;
+                bool? result = _tl._pointerHelper.DispatchMotionEvent(e, out callBase);
+                bool baseResult = callBase ? base.DispatchGenericPointerEvent(e) : false;
+
+                return result != null ? result.Value : baseResult;
+            }
+
             public override bool DispatchTouchEvent(MotionEvent e)
             {
                 bool callBase;
-                bool? result = _tl._touchHelper.DispatchTouchEvent(e, out callBase);
+                bool? result = _tl._pointerHelper.DispatchMotionEvent(e, out callBase);
                 bool baseResult = callBase ? base.DispatchTouchEvent(e) : false;
 
                 return result != null ? result.Value : baseResult;
@@ -174,7 +191,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
                 return res != null ? res.Value : baseResult;
             }
-
 
             void ISurfaceHolderCallback.SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height)
             {
@@ -194,9 +210,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 return true;
             }
 
-            private Action<EditorInfo> _initEditorInfo;
+            private Func<TopLevelImpl, EditorInfo, IInputConnection> _initEditorInfo;
 
-            public void InitEditorInfo(Action<EditorInfo> init)
+            public void InitEditorInfo(Func<TopLevelImpl, EditorInfo, IInputConnection> init)
             {
                 _initEditorInfo = init;
             }
@@ -204,9 +220,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             public sealed override IInputConnection OnCreateInputConnection(EditorInfo outAttrs)
             {
                 if (_initEditorInfo != null)
-                    _initEditorInfo(outAttrs);
-
-                return base.OnCreateInputConnection(outAttrs);
+                {
+                    return _initEditorInfo(_tl, outAttrs);
+                }
+                   
+                return null;
             }
 
         }
@@ -236,5 +254,142 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             throw new NotImplementedException();
         }
+
+       
+    }
+
+    internal class AvaloniaInputConnection : BaseInputConnection
+    {
+        private readonly TopLevelImpl _topLevel;
+        private readonly IAndroidInputMethod _inputMethod;
+
+        public AvaloniaInputConnection(TopLevelImpl topLevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
+        {
+            _topLevel = topLevel;
+            _inputMethod = inputMethod;
+        }
+
+        public TextInputMethodSurroundingText SurroundingText { get; set; }
+
+        public string ComposingText { get; private set; }
+
+        public ComposingRegion ComposingRegion { get; private set; }
+
+        public bool IsComposing { get; private set; }
+
+        public override bool SetComposingRegion(int start, int end)
+        {
+            //System.Diagnostics.Debug.WriteLine($"Composing Region: [{start}|{end}] {SurroundingText.Text?.Substring(start, end - start)}");
+
+            ComposingRegion = new ComposingRegion(start, end);
+
+            return base.SetComposingRegion(start, end);
+        }
+
+        public override bool SetComposingText(ICharSequence text, int newCursorPosition)
+        {
+            var composingText = text.ToString();
+
+            ComposingText = composingText;
+
+            IsComposing = true;
+
+            _inputMethod.Client?.SetPreeditText(ComposingText);
+
+            return base.SetComposingText(text, newCursorPosition);
+        }
+
+        public override bool FinishComposingText()
+        {
+            IsComposing = false;
+
+            ComposingRegion = new ComposingRegion(SurroundingText.CursorOffset, SurroundingText.CursorOffset);
+
+            return base.FinishComposingText();
+        }
+
+        public override ICharSequence GetTextBeforeCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
+        {
+            if (!string.IsNullOrEmpty(SurroundingText.Text))
+            {
+                var start = System.Math.Max(SurroundingText.CursorOffset - length, 0);
+
+                var end = System.Math.Min(start + length, SurroundingText.CursorOffset);
+
+                var text = SurroundingText.Text.Substring(start, end - start);
+
+                //System.Diagnostics.Debug.WriteLine($"Text Before: {text}");
+
+                return new Java.Lang.String(text);
+            }
+
+            return null;
+        }
+
+        public override ICharSequence GetTextAfterCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
+        {
+            if (!string.IsNullOrEmpty(SurroundingText.Text))
+            {
+                var start = SurroundingText.CursorOffset;
+
+                var end = System.Math.Min(start + length, SurroundingText.Text.Length);
+
+                var text = SurroundingText.Text.Substring(start, end - start);
+
+                //System.Diagnostics.Debug.WriteLine($"Text After: {text}");
+
+                return new Java.Lang.String(text);
+            }
+
+            return null;
+        }
+
+        public override bool CommitText(ICharSequence text, int newCursorPosition)
+        {
+            var committedText = text.ToString();
+
+            _inputMethod.Client.SetPreeditText(null);
+
+            _inputMethod.Client.SelectInSurroundingText(ComposingRegion.Start, ComposingRegion.End);
+
+            var time = DateTime.Now.TimeOfDay;
+
+            var rawTextEvent = new RawTextInputEventArgs(KeyboardDevice.Instance, (ulong)time.Ticks, _topLevel.InputRoot, committedText);
+
+            _topLevel.Input(rawTextEvent);
+
+            return base.CommitText(text, newCursorPosition);
+        }
+
+        public override bool DeleteSurroundingText(int beforeLength, int afterLength)
+        {
+            _inputMethod.Client.SelectInSurroundingText(beforeLength, afterLength);
+
+            _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
+
+            return base.DeleteSurroundingText(beforeLength, afterLength);
+        }
+
+        public override bool SetSelection(int start, int end)
+        {
+            _inputMethod.Client.SelectInSurroundingText(start, end);
+
+            return base.SetSelection(start, end);
+        }
+    }
+
+    public readonly struct ComposingRegion
+    {
+        private readonly int _start = -1;
+        private readonly int _end = -1;
+
+        public ComposingRegion(int start, int end)
+        {
+            _start = start;
+            _end = end;
+        }
+
+        public int Start => _start;
+        public int End => _end;
     }
 }

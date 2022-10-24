@@ -66,15 +66,6 @@ namespace Avalonia
         };
 
         /// <summary>
-        /// Enables multitouch support. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
-        /// </remarks>
-        [Obsolete("Multitouch is always enabled on supported Windows versions")]
-        public bool? EnableMultitouch { get; set; } = true;
-
-        /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
         /// </summary>
         public bool OverlayPopups { get; set; }
@@ -250,8 +241,8 @@ namespace Avalonia.Win32
             });
         }
 
-        private static readonly int SignalW = unchecked((int) 0xdeadbeaf);
-        private static readonly int SignalL = unchecked((int)0x12345678);
+        private const int SignalW = unchecked((int)0xdeadbeaf);
+        private const int SignalL = unchecked((int)0x12345678);
 
         public void Signal(DispatcherPriority prio)
         {

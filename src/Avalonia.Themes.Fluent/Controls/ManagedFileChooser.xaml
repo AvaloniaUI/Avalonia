@@ -134,11 +134,15 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
-          <ListBox x:Name="QuickLinks" DockPanel.Dock="Left" Items="{Binding QuickLinks}" SelectedIndex="{Binding QuickLinksSelectedIndex}" Focusable="False">
+          <ListBox x:Name="PART_QuickLinks" DockPanel.Dock="Left" Items="{Binding QuickLinks}" SelectedIndex="{Binding QuickLinksSelectedIndex}" Focusable="False">
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <StackPanel Spacing="4" Orientation="Horizontal" Background="Transparent">
-                  <DrawingPresenter Width="16" Height="16" Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                  <Image Width="16" Height="16">
+                    <Image.Source>
+                      <DrawingImage Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                    </Image.Source>
+                  </Image>
                   <TextBlock Text="{Binding DisplayName}"/>
                 </StackPanel>
               </DataTemplate>
@@ -209,7 +213,7 @@
               <GridSplitter Grid.Column="7" />
               <TextBlock Grid.Column="8" Text="Size" />
             </Grid>
-            <ListBox x:Name="Files"
+            <ListBox x:Name="PART_Files"
                 VirtualizationMode="Simple"
                 Items="{Binding Items}"
                 Margin="0 5"
@@ -231,7 +235,11 @@
                       <ColumnDefinition SharedSizeGroup="Splitter" />
                       <ColumnDefinition SharedSizeGroup="Size" />
                     </Grid.ColumnDefinitions>
-                    <DrawingPresenter Width="16" Height="16" Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                    <Image Width="16" Height="16">
+                      <Image.Source>
+                        <DrawingImage Drawing="{Binding IconKey, Converter={StaticResource Icons}}"/>
+                      </Image.Source>
+                    </Image>
                     <TextBlock Grid.Column="2" Text="{Binding DisplayName}"/>
                     <TextBlock Grid.Column="4" Text="{Binding Modified}" />
                     <TextBlock Grid.Column="6" Text="{Binding Type}" />

@@ -12,9 +12,6 @@ namespace Avalonia.Collections
     {
         public virtual string PropertyPath => null;
 
-        [Obsolete("Use Direction property to read or override sorting direction.")]
-        public virtual bool Descending => Direction == ListSortDirection.Descending;
-
         public virtual ListSortDirection Direction => ListSortDirection.Ascending;
         public bool HasPropertyPath => !String.IsNullOrEmpty(PropertyPath);
         public abstract IComparer<object> Comparer { get; }
@@ -252,13 +249,6 @@ namespace Avalonia.Collections
         public static DataGridSortDescription FromPath(string propertyPath, ListSortDirection direction = ListSortDirection.Ascending, CultureInfo culture = null)
         {
             return new DataGridPathSortDescription(propertyPath, direction, null, culture);
-        }
-
-
-        [Obsolete("Use overload taking a ListSortDirection.")]
-        public static DataGridSortDescription FromPath(string propertyPath, bool descending, CultureInfo culture = null)
-        {
-            return new DataGridPathSortDescription(propertyPath, descending ? ListSortDirection.Descending : ListSortDirection.Ascending, null, culture);
         }
 
         public static DataGridSortDescription FromPath(string propertyPath, ListSortDirection direction, IComparer comparer)

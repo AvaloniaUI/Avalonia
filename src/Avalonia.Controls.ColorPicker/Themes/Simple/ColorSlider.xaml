@@ -6,6 +6,7 @@
                 TargetType="Thumb">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="{DynamicResource ThemeForegroundBrush}" />
+    <!--TODO: <Setter Property="BorderBrush" Value="{DynamicResource ColorControlDefaultSelectorBrush}" />-->
     <Setter Property="BorderThickness" Value="3" />
     <Setter Property="CornerRadius" Value="10" />
     <Setter Property="Template">
@@ -179,10 +180,10 @@
     </Style>
 
     <Style Selector="^:dark-selector /template/ Thumb#ColorSliderThumb">
-      <Setter Property="BorderBrush" Value="Black" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ColorControlDarkSelectorBrush}" />
     </Style>
     <Style Selector="^:light-selector /template/ Thumb#ColorSliderThumb">
-      <Setter Property="BorderBrush" Value="White" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ColorControlLightSelectorBrush}" />
     </Style>
 
   </ControlTheme>

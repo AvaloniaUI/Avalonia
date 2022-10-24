@@ -120,7 +120,7 @@ namespace Avalonia.X11
 
             if (!_popup && Screen != null)
             {
-                var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+                var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
                    .FirstOrDefault(m => m.Bounds.Contains(Position));
 
                 if (monitor != null)
@@ -302,7 +302,7 @@ namespace Avalonia.X11
                 min_height = min.Height
             };
             hints.height_inc = hints.width_inc = 1;
-            var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc;
+            var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc | XSizeHintsFlags.PPosition | XSizeHintsFlags.PSize;
             // People might be passing double.MaxValue
             if (max.Width < 100000 && max.Height < 100000)
             {
@@ -570,9 +570,9 @@ namespace Avalonia.X11
                 newScaling = _scalingOverride.Value;
             else
             {
-                var monitor = _platform.X11Screens.Screens.OrderBy(x => x.PixelDensity)
+                var monitor = _platform.X11Screens.Screens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
-                newScaling = monitor?.PixelDensity ?? RenderScaling;
+                newScaling = monitor?.Scaling ?? RenderScaling;
             }
 
             if (RenderScaling != newScaling)
@@ -994,7 +994,7 @@ namespace Avalonia.X11
 
         public IScreenImpl Screen => _platform.Screens;
 
-        public Size MaxAutoSizeHint => _platform.X11Screens.Screens.Select(s => s.Bounds.Size.ToSize(s.PixelDensity))
+        public Size MaxAutoSizeHint => _platform.X11Screens.Screens.Select(s => s.Bounds.Size.ToSize(s.Scaling))
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
 

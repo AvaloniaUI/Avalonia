@@ -99,19 +99,22 @@
 
     <!-- Selector Color -->
     <Style Selector="^ /template/ Ellipse#FocusEllipse">
-      <Setter Property="Stroke" Value="White" />
+      <Setter Property="Stroke" Value="{DynamicResource ColorControlLightSelectorBrush}" />
     </Style>
     <Style Selector="^ /template/ Ellipse#SelectionEllipse">
-      <Setter Property="Stroke" Value="Black" />
+      <Setter Property="Stroke" Value="{DynamicResource ColorControlDarkSelectorBrush}" />
     </Style>
     <Style Selector="^:light-selector /template/ Ellipse#FocusEllipse">
-      <Setter Property="Stroke" Value="Black" />
+      <Setter Property="Stroke" Value="{DynamicResource ColorControlDarkSelectorBrush}" />
     </Style>
     <Style Selector="^:light-selector /template/ Ellipse#SelectionEllipse">
-      <Setter Property="Stroke" Value="White" />
+      <Setter Property="Stroke" Value="{DynamicResource ColorControlLightSelectorBrush}" />
     </Style>
 
     <Style Selector="^:pointerover /template/ Ellipse#SelectionEllipse">
+      <Setter Property="Opacity" Value="0.7" />
+    </Style>
+    <Style Selector="^:pointerover:light-selector /template/ Ellipse#SelectionEllipse">
       <Setter Property="Opacity" Value="0.8" />
     </Style>
 

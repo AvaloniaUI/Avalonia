@@ -55,13 +55,20 @@ namespace Avalonia.Data.Core.Plugins
 
             var methods = type.GetMethods(bindingFlags);
 
-            foreach (MethodInfo methodInfo in methods)
+            foreach (var methodInfo in methods)
             {
                 if (methodInfo.Name == methodName)
                 {
-                    found = methodInfo;
-
-                    break;
+                    var parameters = methodInfo.GetParameters();
+                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(object))
+                    {
+                        found = methodInfo;
+                        break;
+                    }
+                    else if (parameters.Length == 0)
+                    {
+                        found = methodInfo;
+                    }
                 }
             }
 

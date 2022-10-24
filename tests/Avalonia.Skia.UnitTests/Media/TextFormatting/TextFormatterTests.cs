@@ -237,7 +237,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var glyph = typeface.GlyphTypeface.GetGlyph('a');
 
                 var advance = typeface.GlyphTypeface.GetGlyphAdvance(glyph) *
-                              (12.0 / typeface.GlyphTypeface.DesignEmHeight);
+                              (12.0 / typeface.GlyphTypeface.Metrics.DesignEmHeight);
 
                 var paragraphWidth = advance * numberOfCharactersPerLine;
 
@@ -389,7 +389,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     if (textLine.Width > 300 || currentHeight + textLine.Height > 240)
                     {
-                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(new ReadOnlySlice<char>(new[] { TextTrimming.s_defaultEllipsisChar }), 300, defaultProperties));
+                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(new ReadOnlySlice<char>(new[] { TextTrimming.DefaultEllipsisChar }), 300, defaultProperties));
                     }
 
                     currentHeight += textLine.Height;

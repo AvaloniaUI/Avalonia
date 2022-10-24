@@ -1,8 +1,6 @@
 using System;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
 namespace ControlCatalog.Pages;
@@ -31,43 +29,48 @@ public class PointersPage : UserControl
         border2.PointerExited += Border_PointerUpdated;
     }
 
-    private void Border_PointerUpdated(object sender, PointerEventArgs e)
+    private void Border_PointerUpdated(object? sender, PointerEventArgs e)
     {
-        var textBlock = (TextBlock)((Border)sender).Child;
-        var position = e.GetPosition((Border)sender);
-        textBlock.Text = @$"Type: {e.Pointer.Type}
+        if (sender is Border border && border.Child is TextBlock textBlock)
+        {
+            var position = e.GetPosition(border);
+            textBlock.Text = @$"Type: {e.Pointer.Type}
 Captured: {e.Pointer.Captured == sender}
 PointerId: {e.Pointer.Id}
 Position: {(int)position.X} {(int)position.Y}";
-        e.Handled = true;
+            e.Handled = true;
+        }
     }
 
-    private void Border_PointerCaptureLost(object sender, PointerCaptureLostEventArgs e)
+    private void Border_PointerCaptureLost(object? sender, PointerCaptureLostEventArgs e)
     {
-        var textBlock = (TextBlock)((Border)sender).Child;
-        textBlock.Text = @$"Type: {e.Pointer.Type}
+        if (sender is Border border && border.Child is TextBlock textBlock)
+        {
+            textBlock.Text = @$"Type: {e.Pointer.Type}
 Captured: {e.Pointer.Captured == sender}
 PointerId: {e.Pointer.Id}
 Position: ??? ???";
-        e.Handled = true;
+            e.Handled = true;
+
+        }
     }
 
-    private void Border_PointerReleased(object sender, PointerReleasedEventArgs e)
+    private void Border_PointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (e.Pointer.Captured == sender)
         {
             e.Pointer.Capture(null);
             e.Handled = true;
         }
-        else
+        else if (e.Pointer.Captured is not null)
         {
             throw new InvalidOperationException("How?");
         }
     }
 
-    private void Border_PointerPressed(object sender, PointerPressedEventArgs e)
+    private void Border_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        e.Pointer.Capture((Border)sender);
+        e.Pointer.Capture(sender as Border);
         e.Handled = true;
     }
 

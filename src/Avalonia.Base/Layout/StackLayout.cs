@@ -322,6 +322,7 @@ namespace Avalonia.Layout
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
+            base.OnPropertyChanged(change);
             if (change.Property == OrientationProperty)
             {
                 var orientation = change.GetNewValue<Orientation>();

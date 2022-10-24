@@ -5,13 +5,14 @@ using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
 using Avalonia.Platform;
+using Avalonia.SourceGenerator;
 using Avalonia.Utilities;
 
 #nullable enable
 
 namespace Avalonia.X11
 {
-    class X11CursorFactory : ICursorFactory
+    partial class X11CursorFactory : ICursorFactory
     {
         private static readonly byte[] NullCursorData = new byte[] { 0 };
 
@@ -48,11 +49,14 @@ namespace Avalonia.X11
                 {StandardCursorType.TopRightCorner, CursorFontShape.XC_top_right_corner},
             };
 
+        [GenerateEnumValueList]
+        private static partial CursorFontShape[] GetAllCursorShapes();
+        
         public X11CursorFactory(IntPtr display)
         {
             _display = display;
             _nullCursor = GetNullCursor(display);
-            _cursors = Enum.GetValues(typeof(CursorFontShape)).Cast<CursorFontShape>()
+            _cursors = GetAllCursorShapes()
                 .ToDictionary(id => id, id => XLib.XCreateFontCursor(_display, id));
         }
 
