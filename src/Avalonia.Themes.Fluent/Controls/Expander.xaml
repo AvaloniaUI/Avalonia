@@ -52,14 +52,18 @@
   <HorizontalAlignment x:Key="ExpanderHeaderHorizontalContentAlignment">Stretch</HorizontalAlignment>
   <VerticalAlignment x:Key="ExpanderHeaderVerticalContentAlignment">Center</VerticalAlignment>
   <Thickness x:Key="ExpanderHeaderPadding">16,0,0,0</Thickness>
+  <Thickness x:Key="ExpanderHeaderBorderThickness">1</Thickness>
+  <Thickness x:Key="ExpanderChevronBorderThickness">0</Thickness>
   <Thickness x:Key="ExpanderChevronMargin">20,0,8,0</Thickness>
   <x:Double x:Key="ExpanderChevronButtonSize">32</x:Double>
   <x:Double x:Key="ExpanderChevronGlyphSize">12</x:Double>
 
   <!-- Content -->
   <Thickness x:Key="ExpanderContentPadding">16</Thickness>
-  <Thickness x:Key="ExpanderContentDownBorderThickness">1,0,1,1</Thickness>
+  <Thickness x:Key="ExpanderContentLeftBorderThickness">1,1,0,1</Thickness>
   <Thickness x:Key="ExpanderContentUpBorderThickness">1,1,1,0</Thickness>
+  <Thickness x:Key="ExpanderContentRightBorderThickness">0,1,1,1</Thickness>
+  <Thickness x:Key="ExpanderContentDownBorderThickness">1,0,1,1</Thickness>
 
   <ControlTheme x:Key="FluentExpanderToggleButtonTheme" TargetType="ToggleButton">
     <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}"/>
@@ -274,16 +278,16 @@
     </Style>
 
     <Style Selector="^:left /template/ Border#ExpanderContent">
-      <Setter Property="BorderThickness" Value="{DynamicResource ExpanderDropdownLeftBorderThickness}" />
+      <Setter Property="BorderThickness" Value="{DynamicResource ExpanderContentLeftBorderThickness}" />
     </Style>
     <Style Selector="^:up /template/ Border#ExpanderContent">
-      <Setter Property="BorderThickness" Value="{DynamicResource ExpanderDropdownUpBorderThickness}" />
+      <Setter Property="BorderThickness" Value="{DynamicResource ExpanderContentUpBorderThickness}" />
     </Style>
     <Style Selector="^:right /template/ Border#ExpanderContent">
-      <Setter Property="BorderThickness" Value="{DynamicResource ExpanderDropdownRightBorderThickness}" />
+      <Setter Property="BorderThickness" Value="{DynamicResource ExpanderContentRightBorderThickness}" />
     </Style>
     <Style Selector="^:down /template/ Border#ExpanderContent">
-      <Setter Property="BorderThickness" Value="{DynamicResource ExpanderDropdownDownBorderThickness}" />
+      <Setter Property="BorderThickness" Value="{DynamicResource ExpanderContentDownBorderThickness}" />
     </Style>
   </ControlTheme>
 </ResourceDictionary>

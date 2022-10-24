@@ -304,31 +304,29 @@
 
     <!-- Resources for Expander.xaml -->
     <!-- Expander:Header -->
-    <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="CardBackgroundFillColorDefaultBrush" />
-    <StaticResource x:Key="ExpanderHeaderForeground" ResourceKey="TextFillColorPrimaryBrush" />
-    <StaticResource x:Key="ExpanderHeaderForegroundPointerOver" ResourceKey="TextFillColorPrimaryBrush" />
-    <StaticResource x:Key="ExpanderHeaderForegroundPressed" ResourceKey="TextFillColorPrimaryBrush" />
-    <StaticResource x:Key="ExpanderHeaderBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-    <StaticResource x:Key="ExpanderHeaderBorderPointerOverBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-    <StaticResource x:Key="ExpanderHeaderBorderPressedBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-    <StaticResource x:Key="ExpanderHeaderDisabledForeground" ResourceKey="TextFillColorDisabledBrush" />
-    <StaticResource x:Key="ExpanderHeaderDisabledBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
-    <Thickness x:Key="ExpanderHeaderBorderThickness">1</Thickness>
+    <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="SystemAltMediumHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForeground" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForegroundPointerOver" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForegroundPressed" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderHeaderBorderBrush" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ExpanderHeaderBorderPointerOverBrush" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ExpanderHeaderBorderPressedBrush" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ExpanderHeaderDisabledForeground" ResourceKey="SystemControlDisabledChromeDisabledLowBrush" />
+    <StaticResource x:Key="ExpanderHeaderDisabledBorderBrush" ResourceKey="SystemControlDisabledBaseLowBrush" />
 
-    <StaticResource x:Key="ExpanderChevronBackground" ResourceKey="SubtleFillColorTransparentBrush" />
-    <StaticResource x:Key="ExpanderChevronPointerOverBackground" ResourceKey="SubtleFillColorSecondaryBrush" />
-    <StaticResource x:Key="ExpanderChevronPressedBackground" ResourceKey="SubtleFillColorTertiaryBrush" />
-    <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="TextFillColorPrimaryBrush" />
-    <StaticResource x:Key="ExpanderChevronPointerOverForeground" ResourceKey="TextFillColorPrimaryBrush" />
-    <StaticResource x:Key="ExpanderChevronPressedForeground" ResourceKey="TextFillColorPrimaryBrush" />
-    <StaticResource x:Key="ExpanderChevronBorderBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-    <StaticResource x:Key="ExpanderChevronBorderPointerOverBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-    <StaticResource x:Key="ExpanderChevronBorderPressedBrush" ResourceKey="SubtleFillColorTransparentBrush" />
-    <Thickness x:Key="ExpanderChevronBorderThickness">0</Thickness>
+    <SolidColorBrush x:Key="ExpanderChevronBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronPointerOverBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronPressedBackground" Color="Transparent" />
+    <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderChevronPointerOverForeground" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderChevronPressedForeground" ResourceKey="SystemBaseHighColor" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderPointerOverBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderPressedBrush" Color="Transparent" />
 
     <!-- Expander:Content -->
-    <StaticResource x:Key="ExpanderContentBackground" ResourceKey="CardBackgroundFillColorSecondaryBrush" />
-    <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
+    <StaticResource x:Key="ExpanderContentBackground" ResourceKey="SystemChromeMediumLowColor" />
+    <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="SystemBaseLowColor" />
 
     <!--Resources for NotificationCard.xaml -->
     <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="White" />
