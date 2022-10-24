@@ -27,7 +27,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (styleParent != null)
             {
                 targetType = styleParent.TargetType.GetClrType()
-                             ?? throw new XamlParseException("Can not resolve parent Style Selector type. If setter is not part of the style, you can set x:SetterTargetType directive on its parent.", node);
+                             ?? throw new XamlParseException("Can not find parent Style Selector or ControlTemplate TargetType. If setter is not part of the style, you can set x:SetterTargetType directive on its parent.", node);
                 lineInfo = on;
             }
 
