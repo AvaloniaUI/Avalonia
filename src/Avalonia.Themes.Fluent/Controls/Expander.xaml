@@ -56,7 +56,6 @@
   <Thickness x:Key="ExpanderChevronBorderThickness">0</Thickness>
   <Thickness x:Key="ExpanderChevronMargin">20,0,8,0</Thickness>
   <x:Double x:Key="ExpanderChevronButtonSize">32</x:Double>
-  <x:Double x:Key="ExpanderChevronGlyphSize">12</x:Double>
 
   <!-- Content -->
   <Thickness x:Key="ExpanderContentPadding">16</Thickness>
@@ -66,31 +65,26 @@
   <Thickness x:Key="ExpanderContentDownBorderThickness">1,0,1,1</Thickness>
 
   <ControlTheme x:Key="FluentExpanderToggleButtonTheme" TargetType="ToggleButton">
-    <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}"/>
-    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    <Setter Property="Padding" Value="{StaticResource ExpanderHeaderPadding}" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="{StaticResource ExpanderHeaderHorizontalContentAlignment}" />
+    <Setter Property="VerticalContentAlignment" Value="{StaticResource ExpanderHeaderVerticalContentAlignment}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Border x:Name="ToggleButtonBackground"
                 CornerRadius="{TemplateBinding CornerRadius}"
-                Background="{TemplateBinding Background}"
-                MinHeight="{TemplateBinding MinHeight}"
-                MinWidth="{TemplateBinding MinWidth}"
-                MaxWidth="{TemplateBinding MaxWidth}"
-                Width="{TemplateBinding Width}"
-                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                Background="{DynamicResource ExpanderHeaderBackground}"
                 BorderBrush="{DynamicResource ExpanderHeaderBorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}"
-                Padding="{TemplateBinding Padding}">
+                BorderThickness="{DynamicResource ExpanderHeaderBorderThickness}">
           <Grid x:Name="ToggleButtonGrid"
                 ColumnDefinitions="*,Auto">
-
             <ContentPresenter x:Name="ContentPresenter"
                               Content="{TemplateBinding Content}"
                               ContentTemplate="{TemplateBinding ContentTemplate}"
                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                              Foreground="{TemplateBinding Foreground}" />
-
+                              Foreground="{TemplateBinding Foreground}"
+                              Margin="{TemplateBinding Padding}"/>
             <Border x:Name="ExpandCollapseChevronBorder"
                     Grid.Column="1"
                     Width="{DynamicResource ExpanderChevronButtonSize}"
@@ -100,14 +94,11 @@
                     BorderBrush="{DynamicResource ExpanderChevronBorderBrush}"
                     BorderThickness="{DynamicResource ExpanderChevronBorderThickness}"
                     Background="{DynamicResource ExpanderChevronBackground}">
-
               <Path x:Name="ExpandCollapseChevron"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     RenderTransformOrigin="50%,50%"
                     Stretch="None"
-                    Width="{StaticResource ExpanderChevronGlyphSize}"
-                    Height="{StaticResource ExpanderChevronGlyphSize}"
                     Stroke="{DynamicResource ExpanderChevronForeground}"
                     StrokeThickness="1" />
               <Border.RenderTransform>
@@ -183,16 +174,9 @@
         <DockPanel MinWidth="{TemplateBinding MinWidth}"
                    MaxWidth="{TemplateBinding MaxWidth}">
           <ToggleButton x:Name="ExpanderHeader"
-                        Background="{DynamicResource ExpanderHeaderBackground}"
-                        BorderBrush="{DynamicResource ExpanderHeaderBorderBrush}"
-                        BorderThickness="{DynamicResource ExpanderHeaderBorderThickness}"
                         MinHeight="{TemplateBinding MinHeight}"
                         CornerRadius="{TemplateBinding CornerRadius}"
                         IsEnabled="{TemplateBinding IsEnabled}"
-                        Padding="{StaticResource ExpanderHeaderPadding}"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="{StaticResource ExpanderHeaderHorizontalContentAlignment}"
-                        VerticalContentAlignment="{StaticResource ExpanderHeaderVerticalContentAlignment}"
                         Content="{TemplateBinding Header}"
                         ContentTemplate="{TemplateBinding HeaderTemplate}"
                         IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
@@ -200,7 +184,7 @@
                   IsVisible="{TemplateBinding IsExpanded, Mode=TwoWay}"
                   Background="{TemplateBinding Background}"
                   BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{StaticResource ExpanderContentDownBorderThickness}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
                   MinHeight="{TemplateBinding MinHeight}"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
