@@ -9,7 +9,6 @@ using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    using XamlParseException = XamlX.XamlParseException;
     class AvaloniaXamlIlSetterTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
@@ -28,28 +27,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             if (styleParent != null)
             {
                 targetType = styleParent.TargetType.GetClrType()
-                             ?? throw new XamlParseException("Can not resolve parent Style Selector type", node);
+                             ?? throw new XamlParseException("Can not resolve parent Style Selector type. If setter is not part of the style, you can set x:SetterTargetType directive on its parent.", node);
                 lineInfo = on;
-            }
-            else
-            {
-                foreach (var p in context.ParentNodes().OfType<XamlAstObjectNode>())
-                {
-                    for (var index = 0; index < p.Children.Count; index++)
-                    {
-                        if (p.Children[index] is XamlAstXmlDirective d &&
-                            d.Namespace == XamlNamespaces.Xaml2006 &&
-                            d.Name == "SetterTargetType")
-                        {
-                            targetType = context.Configuration.TypeSystem.GetType(((XamlAstTextNode)d.Values[0]).Text);
-                            lineInfo = d;
-
-                            break;
-                        }
-                    }
-
-                    if (targetType != null) break;
-                }
             }
 
             if (targetType == null)
