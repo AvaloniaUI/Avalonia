@@ -11,6 +11,9 @@
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\xml\filepaths.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <AndroidResource Include="..\..\build\Assets\Icon.png">
       <Link>Resources\drawable\Icon.png</Link>
     </AndroidResource>

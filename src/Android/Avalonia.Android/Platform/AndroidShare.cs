@@ -1,11 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Android.Content;
+using Android.Net;
+using Android.OS;
 using Android.Webkit;
+using AndroidX.Core.Content;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
-using Android.Net;
-using System.Collections.Generic;
-using Android.OS;
+using AndroidFile = Java.IO.File;
 
 namespace Avalonia.Android.Platform
 {
@@ -47,7 +51,7 @@ namespace Avalonia.Android.Platform
                     uris.Add(Uri.Parse(uri.AbsoluteUri));
                 }
 
-                var fileMimeType = MimeTypeMap.Singleton.GetMimeTypeFromExtension(System.IO.Path.GetExtension(file.Name).Remove(0, 1));
+                var fileMimeType = MimeTypeMap.Singleton.GetMimeTypeFromExtension(Path.GetExtension(file.Name).Remove(0, 1));
                 if (mimeType == null)
                 {
                     mimeType = fileMimeType;
@@ -57,6 +61,7 @@ namespace Avalonia.Android.Platform
                     mimeType = "application/octet-stream";
                 }
             }
+            var urmi = (uris.FirstOrDefault() as Uri);
 
             var intent = new Intent(Intent.ActionSend);
             intent.SetType(mimeType);
@@ -66,6 +71,49 @@ namespace Avalonia.Android.Platform
 
             var shareIntent = Intent.CreateChooser(intent, "Sharing File");
             _context.StartActivity(shareIntent);
+        }
+
+        public async Task Share(Stream stream, string tempName = "")
+        {
+            if ((stream.CanSeek && stream.Length == 0) || !stream.CanRead)
+            {
+                return;
+            }
+
+            var cachePath = _context.GetExternalCacheDirs().FirstOrDefault()?.ToString();
+
+            if(cachePath != null)
+            {
+                cachePath = Path.Combine(cachePath, "temp");
+                Directory.CreateDirectory(cachePath);
+
+                if (string.IsNullOrEmpty(tempName))
+                {
+                    var randomBuffer = new byte[8];
+                    System.Random.Shared.NextBytes(randomBuffer);
+
+                    tempName = System.BitConverter.ToString(randomBuffer).ToLower().Replace("-", "");
+                }
+                var tempFile = Path.Combine(cachePath, tempName);
+
+                using var fileStream = File.Open(tempFile, FileMode.Create, FileAccess.Write);
+                await stream.CopyToAsync(fileStream);
+
+                fileStream.Close();
+
+                using var file = new AndroidFile(tempFile);
+
+                var uri = FileProvider.GetUriForFile(_context, $"{_context.PackageName}.fileprovider", file);
+
+                var intent = new Intent(Intent.ActionSend);
+                intent.SetType("application/octet-stream");
+                intent.SetAction(Intent.ActionSend);
+                intent.SetData(uri);
+                intent.SetFlags(ActivityFlags.GrantReadUriPermission);
+
+                var shareIntent = Intent.CreateChooser(intent, "Sharing File");
+                _context.StartActivity(shareIntent);
+            }
         }
     }
 }

@@ -20,13 +20,13 @@ namespace ControlCatalog.Pages
         {
             AvaloniaXamlLoader.Load(this);
 
-            this.Get<Button>("ShareText").Click += (o, e) =>
+            this.Get<Button>("ShareText").Click += async (o, e) =>
             {
                 var text = this.Get<TextBox>("ShareBox").Text ?? string.Empty;
 
                 var share = (VisualRoot as TopLevel).ShareProvider;
 
-                share.Share(text);
+                await share?.Share(text);
             };
 
             this.Get<Button>("OpenFile").Click += async delegate
@@ -51,13 +51,27 @@ namespace ControlCatalog.Pages
                 this.Get<TextBlock>("FileText").Text = list;
             };
 
-            this.Get<Button>("ShareFile").Click += (o, e) =>
+            this.Get<Button>("ShareFile").Click += async (o, e) =>
             {
                 if(_files != null && _files.Count> 0)
                 {
                     var share = (VisualRoot as TopLevel).ShareProvider;
 
-                    share.Share(_files.ToList());
+                   await share?.Share(_files.ToList());
+                }
+            };
+
+            this.Get<Button>("ShareStream").Click += async (o, e) =>
+            {
+                if (_files != null && _files.Count > 0)
+                {
+                    var share = (VisualRoot as TopLevel).ShareProvider;
+
+                    var file = _files.FirstOrDefault();
+
+                    using var stream = await file.OpenReadAsync();
+
+                    await share?.Share(stream, "test");
                 }
             };
         }

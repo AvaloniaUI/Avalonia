@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 
@@ -23,5 +24,12 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="files">The list of <see cref="IStorageFile"/> to be shared</param>
         Task Share(IList<IStorageFile> files);
+
+        /// <summary>
+        /// Shares a stream using platform's sharing feature
+        /// </summary>
+        /// <param name="stream">The <see cref="Stream"/> to be shared</param>
+        /// <param name="tempName">The name to save the stream as. if empty, a random name will be used</param>
+        Task Share(Stream stream, string tempName = "");
     }
 }

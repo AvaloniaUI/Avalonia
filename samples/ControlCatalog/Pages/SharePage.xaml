@@ -4,11 +4,12 @@
              x:Class="ControlCatalog.Pages.SharePage">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Sharing</TextBlock>
-    <StackPanel Orientation="Horizontal" Spacing="5">
-      <Button Name="ShareText">Share Text</Button>
-      <Button Name="OpenFile">Select Files</Button>
-      <Button Name="ShareFile">Share Selected Files</Button>
-    </StackPanel>
+    <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto">
+      <Button Name="ShareText" Grid.Row="0" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch">Share Text</Button>
+      <Button Name="OpenFile"  Grid.Row="1" Grid.Column="0" Margin="2" HorizontalAlignment="Stretch">Select Files</Button>
+      <Button Name="ShareFile" Grid.Row="0" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch">Share Selected Files</Button>
+      <Button Name="ShareStream" Grid.Row="1" Grid.Column="1" Margin="2" HorizontalAlignment="Stretch">Share File as Stream</Button>
+    </Grid>
     <Label>Enter Text to Share</Label>
     <TextBox HorizontalAlignment="Stretch" Name="ShareBox"/>
     <CheckBox Name="SelectMultiple">Select Multiple</CheckBox>

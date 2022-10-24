@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
@@ -36,6 +37,12 @@ namespace Avalonia.Web
         public async Task Share(IList<IStorageFile> files)
         {
             ShareHelper.shareFileList($"Sending {files.Count} file{( files.Count > 0 ? "s" : "")}", files.Select(f => ((JSStorageItem)f).FileHandle).ToArray());
+        }
+
+        public async Task Share(Stream stream, string tempName = "")
+        {
+            // Currently, there's no way to save a file without user input, and sharing a file in memory is not permitted.
+            return;
         }
     }
 }
