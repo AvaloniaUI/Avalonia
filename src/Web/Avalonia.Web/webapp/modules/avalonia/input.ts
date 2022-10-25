@@ -98,27 +98,23 @@ export class InputHelper {
         wheelCallback: (args: WheelEvent) => boolean
     ) {
         const pointerMoveHandler = (args: PointerEvent) => {
-            if (pointerMoveCallback(args)) {
-                args.preventDefault();
-            }
+            pointerMoveCallback(args);
+            args.preventDefault();
         };
 
         const pointerDownHandler = (args: PointerEvent) => {
-            if (pointerDownCallback(args)) {
-                args.preventDefault();
-            }
+            pointerDownCallback(args);
+            args.preventDefault();
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
-            if (pointerUpCallback(args)) {
-                args.preventDefault();
-            }
+            pointerUpCallback(args);
+            args.preventDefault();
         };
 
         const wheelHandler = (args: WheelEvent) => {
-            if (wheelCallback(args)) {
-                args.preventDefault();
-            }
+            wheelCallback(args);
+            args.preventDefault();
         };
 
         element.addEventListener("pointermove", pointerMoveHandler);
