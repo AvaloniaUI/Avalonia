@@ -130,6 +130,66 @@ export class InputHelper {
         };
     }
 
+    public static subscribeTouchEvents(
+        element: HTMLInputElement,
+        touchStartCallback: (args: TouchEvent, touch: Touch) => void,
+        touchEndCallback: (args: TouchEvent, touch: Touch) => void,
+        touchCancelCallback: (args: TouchEvent, touch: Touch) => void,
+        touchMoveCallback: (args: TouchEvent, touch: Touch) => void
+    ) {
+        const touchStartHandler = (args: TouchEvent) => {
+            for (let i = 0; i < args.changedTouches.length; i++) {
+                const touch = args.changedTouches.item(i);
+                if (touch) {
+                    touchStartCallback(args, touch);
+                }
+            }
+            args.preventDefault();
+        };
+
+        const touchEndHandler = (args: TouchEvent) => {
+            for (let i = 0; i < args.changedTouches.length; i++) {
+                const touch = args.changedTouches.item(i);
+                if (touch) {
+                    touchEndCallback(args, touch);
+                }
+            }
+            args.preventDefault();
+        };
+
+        const touchCancelHandler = (args: TouchEvent) => {
+            for (let i = 0; i < args.changedTouches.length; i++) {
+                const touch = args.changedTouches.item(i);
+                if (touch) {
+                    touchCancelCallback(args, touch);
+                }
+            }
+            args.preventDefault();
+        };
+
+        const touchMoveHandler = (args: TouchEvent) => {
+            for (let i = 0; i < args.changedTouches.length; i++) {
+                const touch = args.changedTouches.item(i);
+                if (touch) {
+                    touchMoveCallback(args, touch);
+                }
+            }
+            args.preventDefault();
+        };
+
+        element.addEventListener("touchstart", touchStartHandler);
+        element.addEventListener("touchend", touchEndHandler);
+        element.addEventListener("touchcancel", touchCancelHandler);
+        element.addEventListener("touchmove", touchMoveHandler);
+
+        return () => {
+            element.removeEventListener("touchstart", touchStartHandler);
+            element.removeEventListener("touchend", touchEndHandler);
+            element.removeEventListener("touchcancel", touchCancelHandler);
+            element.removeEventListener("touchmove", touchMoveHandler);
+        };
+    }
+
     public static subscribeInputEvents(
         element: HTMLInputElement,
         inputCallback: (value: string) => boolean

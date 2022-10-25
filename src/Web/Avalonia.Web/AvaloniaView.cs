@@ -97,6 +97,8 @@ namespace Avalonia.Web
                 OnCompositionEnd);
 
             InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp, OnWheel);
+            
+            InputHelper.SubscribeTouchEvents(_containerElement, OnTouchStart, OnTouchEnd, OnTouchCancel, OnTouchMove);
 
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
@@ -139,6 +141,62 @@ namespace Avalonia.Web
             InputHelper.FocusElement(_containerElement);
         }
 
+        private void OnTouchStart(JSObject arg, JSObject touch)
+        {
+            var x = touch.GetPropertyAsDouble("clientX");
+            var y = touch.GetPropertyAsDouble("clientY");
+            long identifier = touch.GetPropertyAsInt32("identifier");
+            
+            _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(x, y),
+                GetTouchModifiers(arg), identifier);
+        }
+        
+        private void OnTouchEnd(JSObject arg, JSObject touch)
+        {
+            var x = touch.GetPropertyAsDouble("clientX");
+            var y = touch.GetPropertyAsDouble("clientY");
+            long identifier = touch.GetPropertyAsInt32("identifier");
+            
+            _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(x, y),
+                GetTouchModifiers(arg), identifier);
+        }
+        
+        private void OnTouchCancel(JSObject arg, JSObject touch)
+        {
+            var x = touch.GetPropertyAsDouble("clientX");
+            var y = touch.GetPropertyAsDouble("clientY");
+            long identifier = touch.GetPropertyAsInt32("identifier");
+            
+            _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(x, y),
+                GetTouchModifiers(arg), identifier);
+        }
+
+        private void OnTouchMove(JSObject arg, JSObject touch)
+        {
+            var x = touch.GetPropertyAsDouble("clientX");
+            var y = touch.GetPropertyAsDouble("clientY");
+            long identifier = touch.GetPropertyAsInt32("identifier");
+            
+            _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(x, y),
+                GetTouchModifiers(arg), identifier);
+        }
+        
+        private static RawInputModifiers GetTouchModifiers(JSObject e)
+        {
+            var modifiers = RawInputModifiers.None;
+
+            if (e.GetPropertyAsBoolean("ctrlKey"))
+                modifiers |= RawInputModifiers.Control;
+            if (e.GetPropertyAsBoolean("altKey"))
+                modifiers |= RawInputModifiers.Alt;
+            if(e.GetPropertyAsBoolean("shiftKey"))
+                modifiers |= RawInputModifiers.Shift;
+            if(e.GetPropertyAsBoolean("metaKey"))
+                modifiers |= RawInputModifiers.Meta;
+
+            return modifiers;
+        }
+
         private static RawPointerPoint ExtractRawPointerFromJSArgs(JSObject args)
         {
             var point = new RawPointerPoint
@@ -155,30 +213,32 @@ namespace Avalonia.Web
 
         private bool OnPointerMove(JSObject args)
         {
-            var type = args.GetPropertyAsString("pointertype");
+            var pointerType = args.GetPropertyAsString("pointerType");
+            
+            if (pointerType == "touch")
+                return false;
 
             var point = ExtractRawPointerFromJSArgs(args);
-
-            return _topLevelImpl.RawPointerEvent(RawPointerEventType.Move, type!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+            
+            return _topLevelImpl.RawPointerEvent(RawPointerEventType.Move, pointerType!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
         }
 
         private bool OnPointerDown(JSObject args)
         {
             var pointerType = args.GetPropertyAsString("pointerType");
 
-            var type = pointerType switch
+            if (pointerType == "touch")
+                return false;
+
+            var type = args.GetPropertyAsInt32("button") switch
             {
-                "touch" => RawPointerEventType.TouchBegin,
-                _ => args.GetPropertyAsInt32("button") switch
-                {
-                    0 => RawPointerEventType.LeftButtonDown,
-                    1 => RawPointerEventType.MiddleButtonDown,
-                    2 => RawPointerEventType.RightButtonDown,
-                    3 => RawPointerEventType.XButton1Down,
-                    4 => RawPointerEventType.XButton2Down,
-                    // 5 => Pen eraser button,
-                    _ => RawPointerEventType.Move
-                }
+                0 => RawPointerEventType.LeftButtonDown,
+                1 => RawPointerEventType.MiddleButtonDown,
+                2 => RawPointerEventType.RightButtonDown,
+                3 => RawPointerEventType.XButton1Down,
+                4 => RawPointerEventType.XButton2Down,
+                // 5 => Pen eraser button,
+                _ => RawPointerEventType.Move
             };
 
             var point = ExtractRawPointerFromJSArgs(args);
@@ -190,19 +250,18 @@ namespace Avalonia.Web
         {
             var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
 
-            var type = pointerType switch
+            if (pointerType == "touch")
+                return false;
+
+            var type = args.GetPropertyAsInt32("button") switch
             {
-                "touch" => RawPointerEventType.TouchEnd,
-                _ => args.GetPropertyAsInt32("button") switch
-                {
-                    0 => RawPointerEventType.LeftButtonUp,
-                    1 => RawPointerEventType.MiddleButtonUp,
-                    2 => RawPointerEventType.RightButtonUp,
-                    3 => RawPointerEventType.XButton1Up,
-                    4 => RawPointerEventType.XButton2Up,
-                    // 5 => Pen eraser button,
-                    _ => RawPointerEventType.Move
-                }
+                0 => RawPointerEventType.LeftButtonUp,
+                1 => RawPointerEventType.MiddleButtonUp,
+                2 => RawPointerEventType.RightButtonUp,
+                3 => RawPointerEventType.XButton1Up,
+                4 => RawPointerEventType.XButton2Up,
+                // 5 => Pen eraser button,
+                _ => RawPointerEventType.Move
             };
 
             var point = ExtractRawPointerFromJSArgs(args);

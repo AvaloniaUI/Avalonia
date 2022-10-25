@@ -64,6 +64,14 @@ namespace Avalonia.Web
                 Resized?.Invoke(newSize, PlatformResizeReason.User);
             }
         }
+        
+        public void RawTouchEvent(RawPointerEventType type, Point p, RawInputModifiers modifiers, long touchPointId)
+        {
+            if (_inputRoot is { } && Input is { } input)
+            {
+                input.Invoke(new RawTouchEventArgs(_touchDevice, Timestamp, _inputRoot, type, p, modifiers, touchPointId));
+            }
+        }
 
         public bool RawPointerEvent(
             RawPointerEventType eventType, string pointerType,
