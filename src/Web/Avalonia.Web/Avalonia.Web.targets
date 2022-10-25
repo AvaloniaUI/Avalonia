@@ -8,6 +8,7 @@
   <PropertyGroup>
     <UseAvaloniaWasmDefaultOptimizations Condition="'$(UseAvaloniaWasmDefaultOptimizations)'==''">True</UseAvaloniaWasmDefaultOptimizations>
     <EmccExtraLDFlags>$(EmccExtraLDFlags) --js-library="$(MSBuildThisFileDirectory)\interop.js"</EmccExtraLDFlags>
+    <EmccFlags>$(EmccExtraLDFlags) -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
     <WasmBuildNative>true</WasmBuildNative>
   </PropertyGroup>
 
