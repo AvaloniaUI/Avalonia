@@ -1,4 +1,5 @@
 using Avalonia.Controls.Shapes;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.UnitTests;
@@ -207,6 +208,26 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Size(200, 200), target.DesiredSize);
         }
 
+        [Fact]
+        public void Child_DataContext_Binding_Works()
+        {
+            var data = new
+            {
+                Foo = "foo",
+            };
+
+            var target = new Viewbox()
+            {
+                DataContext = data,
+                Child = new Canvas
+                {
+                    [!Canvas.DataContextProperty] = new Binding("Foo"),
+                },
+            };
+
+            Assert.Equal("foo", target.Child.DataContext);
+        }
+      
         private static bool TryGetScale(Viewbox viewbox, out Vector scale)
         {
             if (viewbox.InternalTransform is null)
