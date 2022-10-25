@@ -2,6 +2,7 @@
   <PropertyGroup>
     <EmccExtraLDFlags>$(EmccExtraLDFlags) --js-library="$(MSBuildThisFileDirectory)\interop.js"</EmccExtraLDFlags>
     <WasmBuildNative>true</WasmBuildNative>
+    <EmccInitialHeapSize>16384000</EmccInitialHeapSize> <!-- must be a multiple of 64KiB, 1024000 * num MB, number grows -->
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
