@@ -345,6 +345,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             "ContentPresenter",
                             "ContentPresenter",
                             "Border",
+                            "AdornerLayer",
+                            "WindowNotificationManager",
+                            "ReversibleStackPanel"
                         },
                         types);
                 }
@@ -352,6 +355,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var templatedParents = children
                     .OfType<IControl>()
                     .Select(x => x.TemplatedParent).ToList();
+
+                var notificationManager = (popup.Host as TopLevel)?.NotificationManager;
 
                 if (UsePopupHost)
                 {
@@ -378,6 +383,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             popupRoot,
                             target,
                             null,
+                            null,
+                            null,
+                            notificationManager,
                         },
                         templatedParents);
                 }
@@ -438,6 +446,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             "ItemsPresenter",
                             "StackPanel",
                             "Border",
+                            "AdornerLayer",
+                            "WindowNotificationManager",
+                            "ReversibleStackPanel"
                         },
                         types);
                 }
@@ -445,6 +456,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 var templatedParents = children
                     .OfType<IControl>()
                     .Select(x => x.TemplatedParent).ToList();
+
+                var notificationManager = (popup.Host as TopLevel)?.NotificationManager;
 
                 if (UsePopupHost)
                 {
@@ -473,6 +486,9 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             target,
                             target,
                             null,
+                            null,
+                            null,
+                            notificationManager,
                         },
                         templatedParents);
                 }
