@@ -95,6 +95,7 @@ export class InputHelper {
         pointerMoveCallback: (args: PointerEvent) => boolean,
         pointerDownCallback: (args: PointerEvent) => boolean,
         pointerUpCallback: (args: PointerEvent) => boolean,
+        pointerCancelCallback: (args: PointerEvent) => boolean,
         wheelCallback: (args: WheelEvent) => boolean
     ) {
         const pointerMoveHandler = (args: PointerEvent) => {
@@ -112,6 +113,11 @@ export class InputHelper {
             args.preventDefault();
         };
 
+        const pointerCancelHandler = (args: PointerEvent) => {
+            pointerCancelCallback(args);
+            args.preventDefault();
+        };
+
         const wheelHandler = (args: WheelEvent) => {
             wheelCallback(args);
             args.preventDefault();
@@ -121,11 +127,13 @@ export class InputHelper {
         element.addEventListener("pointerdown", pointerDownHandler);
         element.addEventListener("pointerup", pointerUpHandler);
         element.addEventListener("wheel", wheelHandler);
+        element.addEventListener("pointercancel", pointerCancelHandler);
 
         return () => {
             element.removeEventListener("pointerover", pointerMoveHandler);
             element.removeEventListener("pointerdown", pointerDownHandler);
             element.removeEventListener("pointerup", pointerUpHandler);
+            element.removeEventListener("pointercancel", pointerCancelHandler);
             element.removeEventListener("wheel", wheelHandler);
         };
     }
@@ -144,6 +152,10 @@ export class InputHelper {
         return () => {
             element.removeEventListener("input", inputHandler);
         };
+    }
+
+    public static getCoalescedEvents(pointerEvent: PointerEvent): PointerEvent[] {
+        return pointerEvent.getCoalescedEvents();
     }
 
     public static clearInput(inputElement: HTMLInputElement) {
