@@ -144,22 +144,6 @@ namespace Avalonia.Web
 
             InputHelper.FocusElement(_containerElement);
         }
-        
-        private static RawInputModifiers GetTouchModifiers(JSObject e)
-        {
-            var modifiers = RawInputModifiers.None;
-
-            if (e.GetPropertyAsBoolean("ctrlKey"))
-                modifiers |= RawInputModifiers.Control;
-            if (e.GetPropertyAsBoolean("altKey"))
-                modifiers |= RawInputModifiers.Alt;
-            if(e.GetPropertyAsBoolean("shiftKey"))
-                modifiers |= RawInputModifiers.Shift;
-            if(e.GetPropertyAsBoolean("metaKey"))
-                modifiers |= RawInputModifiers.Meta;
-
-            return modifiers;
-        }
 
         private static RawPointerPoint ExtractRawPointerFromJSArgs(JSObject args)
         {
@@ -186,7 +170,7 @@ namespace Avalonia.Web
                 long identifier = args.GetPropertyAsInt32("identifier");
 
                 return _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(x, y),
-                    GetTouchModifiers(args), identifier);
+                    GetModifiers(args), identifier);
             }
 
             var point = ExtractRawPointerFromJSArgs(args);
@@ -205,7 +189,7 @@ namespace Avalonia.Web
                 long identifier = args.GetPropertyAsInt32("identifier");
             
                 return _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(x, y),
-                    GetTouchModifiers(args), identifier);
+                    GetModifiers(args), identifier);
             }
 
             var type = args.GetPropertyAsInt32("button") switch
@@ -235,7 +219,7 @@ namespace Avalonia.Web
                 long identifier = args.GetPropertyAsInt32("identifier");
             
                 return _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(x, y),
-                    GetTouchModifiers(args), identifier);
+                    GetModifiers(args), identifier);
             }
 
             var type = args.GetPropertyAsInt32("button") switch
@@ -265,7 +249,7 @@ namespace Avalonia.Web
                 long identifier = args.GetPropertyAsInt32("identifier");
 
                 return _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(x, y),
-                    GetTouchModifiers(args), identifier);
+                    GetModifiers(args), identifier);
             }
 
             return false;
