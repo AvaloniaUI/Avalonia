@@ -25,11 +25,13 @@ namespace Avalonia.Media
         FontSimulations FontSimulations { get; }
 
         /// <summary>
-        /// 
+        ///     Tries to get a glyph's metrics in em units.
         /// </summary>
-        /// <param name="glyph"></param>
-        /// <param name="metrics"></param>
-        /// <returns></returns>
+        /// <param name="glyph">The glyph id.</param>
+        /// <param name="metrics">The glyph metrics.</param>
+        /// <returns>
+        ///   <c>true</c> if an glyph's metrics was found, <c>false</c> otherwise.
+        /// </returns>
         bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics);
         
         /// <summary>
