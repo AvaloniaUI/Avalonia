@@ -77,8 +77,7 @@ namespace Avalonia.Web
 
             _topLevelImpl.SetCssCursor = (cursor) =>
             {
-                InputHelper.SetCursor(_containerElement, cursor); // macOS
-                InputHelper.SetCursor(_canvas, cursor); // windows
+                InputHelper.SetCursor(_containerElement, cursor);
             };
 
             _topLevel.Prepare();
@@ -136,6 +135,8 @@ namespace Avalonia.Web
             DomHelper.ObserveSize(host, null, OnSizeChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
+            
+            InputHelper.FocusElement(_containerElement);
         }
 
         private static RawPointerPoint ExtractRawPointerFromJSArgs(JSObject args)
@@ -252,7 +253,14 @@ namespace Avalonia.Web
 
         private bool OnKeyDown (string code, string key, int modifier)
         {
-            return _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
+            var handled = _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
+
+            if (!handled && key.Length == 1)
+            {
+                handled = _topLevelImpl.RawTextEvent(key);
+            }
+
+            return handled;
         }
 
         private bool OnKeyUp(string code, string key, int modifier)

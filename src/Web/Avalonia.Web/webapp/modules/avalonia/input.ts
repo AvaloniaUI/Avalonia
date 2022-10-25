@@ -98,27 +98,23 @@ export class InputHelper {
         wheelCallback: (args: WheelEvent) => boolean
     ) {
         const pointerMoveHandler = (args: PointerEvent) => {
-            if (pointerMoveCallback(args)) {
-                args.preventDefault();
-            }
+            pointerMoveCallback(args);
+            args.preventDefault();
         };
 
         const pointerDownHandler = (args: PointerEvent) => {
-            if (pointerDownCallback(args)) {
-                args.preventDefault();
-            }
+            pointerDownCallback(args);
+            args.preventDefault();
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
-            if (pointerUpCallback(args)) {
-                args.preventDefault();
-            }
+            pointerUpCallback(args);
+            args.preventDefault();
         };
 
         const wheelHandler = (args: WheelEvent) => {
-            if (wheelCallback(args)) {
-                args.preventDefault();
-            }
+            wheelCallback(args);
+            args.preventDefault();
         };
 
         element.addEventListener("pointermove", pointerMoveHandler);
@@ -159,7 +155,11 @@ export class InputHelper {
     }
 
     public static setCursor(inputElement: HTMLInputElement, kind: string) {
-        inputElement.style.cursor = kind;
+        if (kind === "pointer") {
+            inputElement.style.removeProperty("cursor");
+        } else {
+            inputElement.style.cursor = kind;
+        }
     }
 
     public static setBounds(inputElement: HTMLInputElement, x: number, y: number, caretWidth: number, caretHeight: number, caret: number) {

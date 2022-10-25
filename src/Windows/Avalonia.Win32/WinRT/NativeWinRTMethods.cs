@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.MicroCom;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT
 {

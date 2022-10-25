@@ -10,6 +10,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using JetBrains.Annotations;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {

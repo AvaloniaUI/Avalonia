@@ -5,7 +5,7 @@ require("esbuild").build({
     ],
     outdir: "../wwwroot",
     bundle: true,
-    minify: false,
+    minify: true,
     format: "esm",
     target: "es2016",
     platform: "browser",
