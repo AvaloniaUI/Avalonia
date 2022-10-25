@@ -36,19 +36,9 @@ internal static partial class InputHelper
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
         Func<JSObject, bool> pointerUp,
         [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
+        Func<JSObject, bool> pointerCancel,
+        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Boolean>>]
         Func<JSObject, bool> wheel);
-    
-    [JSImport("InputHelper.subscribeTouchEvents", AvaloniaModule.MainModuleName)]
-    public static partial void SubscribeTouchEvents(
-        JSObject htmlElement,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Object>>]
-        Action<JSObject, JSObject> touchStart,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Object>>]
-        Action<JSObject, JSObject> touchEnd,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Object>>]
-        Action<JSObject, JSObject> touchCancel,
-        [JSMarshalAs<JSType.Function<JSType.Object, JSType.Object>>]
-        Action<JSObject, JSObject> touchMove);
 
 
     [JSImport("InputHelper.subscribeInputEvents", AvaloniaModule.MainModuleName)]

@@ -65,12 +65,19 @@ namespace Avalonia.Web
             }
         }
         
-        public void RawTouchEvent(RawPointerEventType type, Point p, RawInputModifiers modifiers, long touchPointId)
+        public bool RawTouchEvent(RawPointerEventType type, Point p, RawInputModifiers modifiers, long touchPointId)
         {
             if (_inputRoot is { } && Input is { } input)
             {
-                input.Invoke(new RawTouchEventArgs(_touchDevice, Timestamp, _inputRoot, type, p, modifiers, touchPointId));
+                var args = new RawTouchEventArgs(_touchDevice, Timestamp, _inputRoot, type, p, modifiers,
+                    touchPointId);
+                
+                input.Invoke(args);
+
+                return args.Handled;
             }
+
+            return false;
         }
 
         public bool RawPointerEvent(

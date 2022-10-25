@@ -52,13 +52,13 @@ namespace Avalonia.Web
             }
 
             _containerElement = hostContent.GetPropertyAsJSObject("host")
-                ?? throw new InvalidOperationException("Host cannot be null");
+                                ?? throw new InvalidOperationException("Host cannot be null");
             _canvas = hostContent.GetPropertyAsJSObject("canvas")
-                ?? throw new InvalidOperationException("Canvas cannot be null");
+                      ?? throw new InvalidOperationException("Canvas cannot be null");
             _nativeControlsContainer = hostContent.GetPropertyAsJSObject("nativeHost")
-                ?? throw new InvalidOperationException("NativeHost cannot be null");
+                                       ?? throw new InvalidOperationException("NativeHost cannot be null");
             _inputElement = hostContent.GetPropertyAsJSObject("inputElement")
-                ?? throw new InvalidOperationException("InputElement cannot be null");
+                            ?? throw new InvalidOperationException("InputElement cannot be null");
 
             _splash = DomHelper.GetElementById("avalonia-splash");
 
@@ -96,9 +96,8 @@ namespace Avalonia.Web
                 OnCompositionUpdate,
                 OnCompositionEnd);
 
-            InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp, OnWheel);
-            
-            InputHelper.SubscribeTouchEvents(_containerElement, OnTouchStart, OnTouchEnd, OnTouchCancel, OnTouchMove);
+            InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp,
+                OnPointerCancel, OnWheel);
 
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
@@ -119,7 +118,12 @@ namespace Avalonia.Web
                     _context.SetResourceCacheLimit(skiaOptions?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
                 }
 
-                _topLevelImpl.Surfaces = new[] { new BrowserSkiaSurface(_context, _jsGlInfo, ColorType, new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, GRSurfaceOrigin.BottomLeft) };
+                _topLevelImpl.Surfaces = new[]
+                {
+                    new BrowserSkiaSurface(_context, _jsGlInfo, ColorType,
+                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi,
+                        GRSurfaceOrigin.BottomLeft)
+                };
             }
             else
             {
@@ -137,48 +141,8 @@ namespace Avalonia.Web
             DomHelper.ObserveSize(host, null, OnSizeChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
-            
+
             InputHelper.FocusElement(_containerElement);
-        }
-
-        private void OnTouchStart(JSObject arg, JSObject touch)
-        {
-            var x = touch.GetPropertyAsDouble("clientX");
-            var y = touch.GetPropertyAsDouble("clientY");
-            long identifier = touch.GetPropertyAsInt32("identifier");
-            
-            _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(x, y),
-                GetTouchModifiers(arg), identifier);
-        }
-        
-        private void OnTouchEnd(JSObject arg, JSObject touch)
-        {
-            var x = touch.GetPropertyAsDouble("clientX");
-            var y = touch.GetPropertyAsDouble("clientY");
-            long identifier = touch.GetPropertyAsInt32("identifier");
-            
-            _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(x, y),
-                GetTouchModifiers(arg), identifier);
-        }
-        
-        private void OnTouchCancel(JSObject arg, JSObject touch)
-        {
-            var x = touch.GetPropertyAsDouble("clientX");
-            var y = touch.GetPropertyAsDouble("clientY");
-            long identifier = touch.GetPropertyAsInt32("identifier");
-            
-            _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(x, y),
-                GetTouchModifiers(arg), identifier);
-        }
-
-        private void OnTouchMove(JSObject arg, JSObject touch)
-        {
-            var x = touch.GetPropertyAsDouble("clientX");
-            var y = touch.GetPropertyAsDouble("clientY");
-            long identifier = touch.GetPropertyAsInt32("identifier");
-            
-            _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(x, y),
-                GetTouchModifiers(arg), identifier);
         }
         
         private static RawInputModifiers GetTouchModifiers(JSObject e)
@@ -214,9 +178,16 @@ namespace Avalonia.Web
         private bool OnPointerMove(JSObject args)
         {
             var pointerType = args.GetPropertyAsString("pointerType");
-            
+
             if (pointerType == "touch")
-                return false;
+            {
+                var x = args.GetPropertyAsDouble("clientX");
+                var y = args.GetPropertyAsDouble("clientY");
+                long identifier = args.GetPropertyAsInt32("identifier");
+
+                return _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchUpdate, new Point(x, y),
+                    GetTouchModifiers(args), identifier);
+            }
 
             var point = ExtractRawPointerFromJSArgs(args);
             
@@ -228,7 +199,14 @@ namespace Avalonia.Web
             var pointerType = args.GetPropertyAsString("pointerType");
 
             if (pointerType == "touch")
-                return false;
+            {
+                var x = args.GetPropertyAsDouble("clientX");
+                var y = args.GetPropertyAsDouble("clientY");
+                long identifier = args.GetPropertyAsInt32("identifier");
+            
+                return _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchBegin, new Point(x, y),
+                    GetTouchModifiers(args), identifier);
+            }
 
             var type = args.GetPropertyAsInt32("button") switch
             {
@@ -251,7 +229,14 @@ namespace Avalonia.Web
             var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
 
             if (pointerType == "touch")
-                return false;
+            {
+                var x = args.GetPropertyAsDouble("clientX");
+                var y = args.GetPropertyAsDouble("clientY");
+                long identifier = args.GetPropertyAsInt32("identifier");
+            
+                return _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchEnd, new Point(x, y),
+                    GetTouchModifiers(args), identifier);
+            }
 
             var type = args.GetPropertyAsInt32("button") switch
             {
@@ -267,6 +252,23 @@ namespace Avalonia.Web
             var point = ExtractRawPointerFromJSArgs(args);
 
             return _topLevelImpl.RawPointerEvent(type, pointerType, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+        }
+        
+        private bool OnPointerCancel(JSObject args)
+        {
+            var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
+
+            if (pointerType == "touch")
+            {
+                var x = args.GetPropertyAsDouble("clientX");
+                var y = args.GetPropertyAsDouble("clientY");
+                long identifier = args.GetPropertyAsInt32("identifier");
+
+                return _topLevelImpl.RawTouchEvent(RawPointerEventType.TouchCancel, new Point(x, y),
+                    GetTouchModifiers(args), identifier);
+            }
+
+            return false;
         }
 
         private bool OnWheel(JSObject args)

@@ -95,6 +95,7 @@ export class InputHelper {
         pointerMoveCallback: (args: PointerEvent) => boolean,
         pointerDownCallback: (args: PointerEvent) => boolean,
         pointerUpCallback: (args: PointerEvent) => boolean,
+        pointerCancelCallback: (args: PointerEvent) => boolean,
         wheelCallback: (args: WheelEvent) => boolean
     ) {
         const pointerMoveHandler = (args: PointerEvent) => {
@@ -112,6 +113,11 @@ export class InputHelper {
             args.preventDefault();
         };
 
+        const pointerCancelHandler = (args: PointerEvent) => {
+            pointerCancelCallback(args);
+            args.preventDefault();
+        };
+
         const wheelHandler = (args: WheelEvent) => {
             wheelCallback(args);
             args.preventDefault();
@@ -121,72 +127,14 @@ export class InputHelper {
         element.addEventListener("pointerdown", pointerDownHandler);
         element.addEventListener("pointerup", pointerUpHandler);
         element.addEventListener("wheel", wheelHandler);
+        element.addEventListener("pointercancel", pointerCancelHandler);
 
         return () => {
             element.removeEventListener("pointerover", pointerMoveHandler);
             element.removeEventListener("pointerdown", pointerDownHandler);
             element.removeEventListener("pointerup", pointerUpHandler);
+            element.removeEventListener("pointercancel", pointerCancelHandler);
             element.removeEventListener("wheel", wheelHandler);
-        };
-    }
-
-    public static subscribeTouchEvents(
-        element: HTMLInputElement,
-        touchStartCallback: (args: TouchEvent, touch: Touch) => void,
-        touchEndCallback: (args: TouchEvent, touch: Touch) => void,
-        touchCancelCallback: (args: TouchEvent, touch: Touch) => void,
-        touchMoveCallback: (args: TouchEvent, touch: Touch) => void
-    ) {
-        const touchStartHandler = (args: TouchEvent) => {
-            for (let i = 0; i < args.changedTouches.length; i++) {
-                const touch = args.changedTouches.item(i);
-                if (touch) {
-                    touchStartCallback(args, touch);
-                }
-            }
-            args.preventDefault();
-        };
-
-        const touchEndHandler = (args: TouchEvent) => {
-            for (let i = 0; i < args.changedTouches.length; i++) {
-                const touch = args.changedTouches.item(i);
-                if (touch) {
-                    touchEndCallback(args, touch);
-                }
-            }
-            args.preventDefault();
-        };
-
-        const touchCancelHandler = (args: TouchEvent) => {
-            for (let i = 0; i < args.changedTouches.length; i++) {
-                const touch = args.changedTouches.item(i);
-                if (touch) {
-                    touchCancelCallback(args, touch);
-                }
-            }
-            args.preventDefault();
-        };
-
-        const touchMoveHandler = (args: TouchEvent) => {
-            for (let i = 0; i < args.changedTouches.length; i++) {
-                const touch = args.changedTouches.item(i);
-                if (touch) {
-                    touchMoveCallback(args, touch);
-                }
-            }
-            args.preventDefault();
-        };
-
-        element.addEventListener("touchstart", touchStartHandler);
-        element.addEventListener("touchend", touchEndHandler);
-        element.addEventListener("touchcancel", touchCancelHandler);
-        element.addEventListener("touchmove", touchMoveHandler);
-
-        return () => {
-            element.removeEventListener("touchstart", touchStartHandler);
-            element.removeEventListener("touchend", touchEndHandler);
-            element.removeEventListener("touchcancel", touchCancelHandler);
-            element.removeEventListener("touchmove", touchMoveHandler);
         };
     }
 
