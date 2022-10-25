@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading.Tasks;
 
@@ -47,6 +48,9 @@ internal static partial class InputHelper
         [JSMarshalAs<JSType.Function<JSType.String, JSType.Boolean>>]
         Func<string, bool> input);
 
+    [JSImport("InputHelper.getCoalescedEvents", AvaloniaModule.MainModuleName)]
+    [return: JSMarshalAs<JSType.Array<JSType.Object>>]
+    public static partial JSObject[] GetCoalescedEvents(JSObject pointerEvent);
 
     [JSImport("InputHelper.clearInput", AvaloniaModule.MainModuleName)]
     public static partial void ClearInputElement(JSObject htmlElement);

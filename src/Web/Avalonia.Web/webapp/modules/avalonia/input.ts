@@ -154,6 +154,10 @@ export class InputHelper {
         };
     }
 
+    public static getCoalescedEvents(pointerEvent: PointerEvent): PointerEvent[] {
+        return pointerEvent.getCoalescedEvents();
+    }
+
     public static clearInput(inputElement: HTMLInputElement) {
         inputElement.value = "";
     }
