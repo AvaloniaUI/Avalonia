@@ -102,7 +102,7 @@ namespace Avalonia.Headless
 
         public int GlyphCount => 1337;
 
-        public FontSimulations FontSimulations => throw new NotImplementedException();
+        public FontSimulations FontSimulations { get; }
 
         public void Dispose()
         {
