@@ -7,6 +7,8 @@
 
   <PropertyGroup>
     <UseAvaloniaWasmDefaultOptimizations Condition="'$(UseAvaloniaWasmDefaultOptimizations)'==''">True</UseAvaloniaWasmDefaultOptimizations>
+    <EmccExtraLDFlags>$(EmccExtraLDFlags) --js-library="$(MSBuildThisFileDirectory)\interop.js"</EmccExtraLDFlags>
+    <WasmBuildNative>true</WasmBuildNative>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseAvaloniaWasmDefaultOptimizations)'=='True'">
