@@ -9,12 +9,12 @@ namespace Avalonia.PropertyStore
 {
     internal abstract class ValueFrame
     {
-        private readonly List<IValueEntry> _entries = new();
+        private List<IValueEntry>? _entries;
         private AvaloniaPropertyDictionary<IValueEntry> _index;
         private ValueStore? _owner;
         private bool _isShared;
 
-        public int EntryCount => _entries.Count;
+        public int EntryCount => _index.Count;
         public bool IsActive => GetIsActive(out _);
         public ValueStore? Owner => !_isShared ? _owner : 
             throw new AvaloniaInternalException("Cannot get owner for shared ValueFrame");
@@ -22,7 +22,7 @@ namespace Avalonia.PropertyStore
 
         public bool Contains(AvaloniaProperty property) => _index.ContainsKey(property);
 
-        public IValueEntry GetEntry(int index) => _entries[index];
+        public IValueEntry GetEntry(int index) => _entries?[index] ?? _index[0];
 
         public void SetOwner(ValueStore? owner)
         {
@@ -51,8 +51,8 @@ namespace Avalonia.PropertyStore
 
         public virtual void Dispose()
         {
-            for (var i = 0; i < _entries.Count; ++i)
-                _entries[i].Unsubscribe();
+            for (var i = 0; i < _index.Count; ++i)
+                _index[i].Unsubscribe();
         }
 
         protected abstract bool GetIsActive(out bool hasChanged);
@@ -66,22 +66,32 @@ namespace Avalonia.PropertyStore
         protected void Add(IValueEntry value)
         {
             Debug.Assert(!value.Property.IsDirect);
-            _entries.Add(value);
+
+            if (_entries is null && _index.Count == 1)
+            {
+                _entries = new();
+                _entries.Add(_index[0]);
+            }
+
             _index.Add(value.Property, value);
+            _entries?.Add(value);
         }
 
         protected void Remove(AvaloniaProperty property)
         {
             Debug.Assert(!property.IsDirect);
 
-            var count = _entries.Count;
-
-            for (var i = 0; i < count; ++i)
+            if (_entries is not null)
             {
-                if (_entries[i].Property == property)
+                var count = _entries.Count;
+
+                for (var i = 0; i < count; ++i)
                 {
-                    _entries.RemoveAt(i);
-                    break;
+                    if (_entries[i].Property == property)
+                    {
+                        _entries.RemoveAt(i);
+                        break;
+                    }
                 }
             }
 
