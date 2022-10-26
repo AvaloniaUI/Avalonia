@@ -26,6 +26,7 @@ namespace Avalonia.PropertyStore
         {
             Value = value;
             Priority = priority;
+            BasePriority = BindingPriority.Unset;
 
             if (property.HasCoercion &&
                 property.GetMetadata(owner.GetType()) is { } metadata &&
@@ -39,17 +40,6 @@ namespace Avalonia.PropertyStore
                 };
 
                 value = coerce(owner, value);
-            }
-
-            if (priority >= BindingPriority.LocalValue && priority < BindingPriority.Inherited)
-            {
-                _baseValue = value;
-                BasePriority = priority;
-            }
-            else
-            {
-                _baseValue = default;
-                BasePriority = BindingPriority.Unset;
             }
         }
 
@@ -66,17 +56,6 @@ namespace Avalonia.PropertyStore
             Debug.Assert(priority != BindingPriority.LocalValue);
             UpdateValueEntry(value, priority);
             SetAndRaiseCore(owner, (StyledPropertyBase<T>)value.Property, (T)value.GetValue()!, priority);
-        }
-
-        public override void SetAndRaise(
-            ValueStore owner,
-            IValueEntry value,
-            BindingPriority priority,
-            IValueEntry baseValue,
-            BindingPriority basePriority)
-        {
-            Debug.Assert(priority != BindingPriority.LocalValue);
-            SetAndRaiseCore(owner, (StyledPropertyBase<T>)value.Property, (T)value.GetValue()!, priority, (T)baseValue!, basePriority);
         }
 
         public void SetLocalValueAndRaise(
@@ -165,11 +144,6 @@ namespace Avalonia.PropertyStore
 
         protected override object? GetBoxedValue() => Value;
         
-        protected override object? GetBoxedBaseValue()
-        {
-            return BasePriority != BindingPriority.Unset ? _baseValue : AvaloniaProperty.UnsetValue;
-        }
-
         private void SetAndRaiseCore(
             ValueStore owner,
             StyledPropertyBase<T> property,

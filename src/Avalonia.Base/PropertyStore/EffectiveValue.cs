@@ -20,12 +20,6 @@ namespace Avalonia.PropertyStore
         public object? Value => GetBoxedValue();
 
         /// <summary>
-        /// Gets the current effective base value as a boxed value, or 
-        /// <see cref="AvaloniaProperty.UnsetValue"/> if not set.
-        /// </summary>
-        public object? BaseValue => GetBoxedBaseValue();
-
-        /// <summary>
         /// Gets the priority of the current effective value.
         /// </summary>
         public BindingPriority Priority { get; protected set; }
@@ -87,22 +81,6 @@ namespace Avalonia.PropertyStore
             BindingPriority priority);
 
         /// <summary>
-        /// Sets the value and base value for a non-LocalValue priority, raising 
-        /// <see cref="AvaloniaObject.PropertyChanged"/> where necessary.
-        /// </summary>
-        /// <param name="owner">The associated value store.</param>
-        /// <param name="value">The new value of the property.</param>
-        /// <param name="priority">The priority of the new value.</param>
-        /// <param name="baseValue">The new base value of the property.</param>
-        /// <param name="basePriority">The priority of the new base value.</param>
-        public abstract void SetAndRaise(
-            ValueStore owner,
-            IValueEntry value,
-            BindingPriority priority,
-            IValueEntry baseValue,
-            BindingPriority basePriority);
-
-        /// <summary>
         /// Raises <see cref="AvaloniaObject.PropertyChanged"/> in response to an inherited value
         /// change.
         /// </summary>
@@ -140,7 +118,6 @@ namespace Avalonia.PropertyStore
         public abstract void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property);
 
         protected abstract object? GetBoxedValue();
-        protected abstract object? GetBoxedBaseValue();
 
         protected void UpdateValueEntry(IValueEntry? entry, BindingPriority priority)
         {
