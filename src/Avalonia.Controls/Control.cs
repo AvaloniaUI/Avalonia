@@ -92,6 +92,22 @@ namespace Avalonia.Controls
                 nameof(FlowDirection),
                 inherits: true);
 
+        /// <summary>
+        /// Defines the <see cref="StatusBarColor"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<Color> StatusBarColorProperty =
+            AvaloniaProperty.RegisterAttached<TopLevel, Control, Color>(
+                nameof(StatusBarColor),
+                inherits: true);
+
+        /// <summary>
+        /// Defines the <see cref="IsStatusBarVisible"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool?> IsStatusBarVisibleProperty =
+            AvaloniaProperty.RegisterAttached<TopLevel, Control, bool?>(
+                nameof(IsStatusBarVisible),
+                inherits: true);
+
         // Note the following:
         // _loadedQueue :
         //   Is the queue where any control will be added to indicate that its loaded
@@ -233,6 +249,46 @@ namespace Avalonia.Controls
             control.SetValue(FlowDirectionProperty, value);
         }
 
+        /// <summary>
+        /// Helper for setting the color of the platform's status bar
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel</param>
+        /// <param name="color">The color to set</param>
+        public static void SetStatusBarColor(Control control, Color color)
+        {
+            control.SetValue(StatusBarColorProperty, color);
+        }
+
+        /// <summary>
+        /// Helper for getting the color of the platform's status bar
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel</param>
+        /// <returns>The current color of the platform's status bar</returns>
+        public static Color GetStatusBarColor(Control control)
+        {
+            return control.GetValue(StatusBarColorProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the visibility of the platform's status bar
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel</param>
+        /// <param name="visible">The status bar visible state to set</param>
+        public static void SetIsStatusBarVisible(Control control, bool? visible)
+        {
+            control.SetValue(IsStatusBarVisibleProperty, visible);
+        }
+
+        /// <summary>
+        /// Helper for getting the visibility of the platform's status bar
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel</param>
+        /// <returns>The current visibility of the platform's status bar</returns>
+        public static bool? GetIsStatusBarVisible(Control control)
+        {
+            return control.GetValue(IsStatusBarVisibleProperty);
+        }
+
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
@@ -283,6 +339,24 @@ namespace Avalonia.Controls
                     Arrange(new Rect(DesiredSize));
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the color of the platform's status bar.
+        /// </summary>
+        public Color StatusBarColor
+        {
+            get => GetStatusBarColor(this);
+            set => SetStatusBarColor(this, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the visibility of the platform's status bar.
+        /// </summary>
+        public bool? IsStatusBarVisible
+        {
+            get => GetIsStatusBarVisible(this);
+            set => SetIsStatusBarVisible(this, value);
         }
 
         /// <summary>

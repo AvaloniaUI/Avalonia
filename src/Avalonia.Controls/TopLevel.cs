@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Specialized;
 using System.Reactive.Linq;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Platform;
@@ -103,6 +104,22 @@ namespace Avalonia.Controls
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
             AffectsMeasure<TopLevel>(ClientSizeProperty);
+
+            StatusBarColorProperty.Changed.AddClassHandler<Control>((view, e) =>
+            {
+                if (view.Parent is TopLevel tl && tl.PlatformImpl is ITopLevelWithPlatformStatusBar topLevelStatusBar)
+                {
+                    topLevelStatusBar.StatusBarColor = (Color)e.NewValue!;
+                }
+            });
+
+            IsStatusBarVisibleProperty.Changed.AddClassHandler<Control>((view, e) =>
+            {
+                if (view.Parent is TopLevel tl && tl.PlatformImpl is ITopLevelWithPlatformStatusBar topLevelStatusBar)
+                {
+                    topLevelStatusBar.IsStatusBarVisible = (bool)e.NewValue!;
+                }
+            });
 
             TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
                 (tl, e) => 
@@ -481,6 +498,8 @@ namespace Avalonia.Controls
             _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
 
             HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
+
+            var child = Content;
         }
 
         /// <summary>
@@ -550,6 +569,22 @@ namespace Avalonia.Controls
 
             if (focused == this)
                 KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+        }
+
+        protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.LogicalChildrenCollectionChanged(sender, e);
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ContentProperty && Content is Control control)
+            {
+                StatusBarColor = control.StatusBarColor;
+                IsStatusBarVisible = control.IsStatusBarVisible;
+            }
         }
 
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>

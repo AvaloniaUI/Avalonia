@@ -6,6 +6,8 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Views;
 using Android.Views.InputMethods;
+using AndroidX.AppCompat.App;
+using AndroidX.Core.View;
 using Avalonia.Android.OpenGL;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
@@ -27,7 +29,8 @@ using Java.Lang;
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+        ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
+        ITopLevelWithPlatformStatusBar
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
@@ -249,6 +252,55 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public INativeControlHostImpl NativeControlHost { get; }
         
         public IStorageProvider StorageProvider { get; }
+        public Media.Color StatusBarColor
+        {
+            get
+            {
+                var activity = _view.Context as Activity;
+
+                var color = new Color(activity.Window.StatusBarColor);
+
+                return new Media.Color(color.A, color.R, color.G, color.B);
+            }
+            set
+            {
+                var activity = _view.Context as Activity;
+
+                activity.Window.SetStatusBarColor(Color.Argb(value.A, value.R, value.G, value.B));
+            }
+        }
+
+        public bool? IsStatusBarVisible
+        {
+            get
+            {
+                var activity = _view.Context as AppCompatActivity;
+
+                var compat  = ViewCompat.GetRootWindowInsets(_view);
+
+                return compat?.IsVisible(WindowInsetsCompat.Type.StatusBars());
+            }
+            set
+            {
+                var activity = _view.Context as AppCompatActivity;
+
+                var compat = new WindowInsetsControllerCompat(activity.Window, _view);
+
+                if ((bool)value)
+                {
+                    compat?.Show(WindowInsetsCompat.Type.StatusBars());
+                }
+                else
+                {
+                    compat?.Hide(WindowInsetsCompat.Type.StatusBars());
+
+                    if (compat != null)
+                    {
+                        compat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+                    }
+                }
+            }
+        }
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
