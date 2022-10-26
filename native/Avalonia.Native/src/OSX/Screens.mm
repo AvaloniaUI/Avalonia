@@ -41,9 +41,9 @@ public:
             ret->WorkingArea.X = [screen visibleFrame].origin.x;
             ret->WorkingArea.Y = ConvertPointY(ToAvnPoint([screen visibleFrame].origin)).Y - ret->WorkingArea.Height;
             
-            ret->PixelDensity = [screen backingScaleFactor];
+            ret->Scaling = [screen backingScaleFactor];
             
-            ret->Primary = index == 0;
+            ret->IsPrimary = index == 0;
             
             return S_OK;
         }

@@ -33,7 +33,7 @@ internal static partial class CanvasHelper
     public static partial void RequestAnimationFrame(JSObject canvas, bool renderLoop);
 
     [JSImport("Canvas.setCanvasSize", AvaloniaModule.MainModuleName)]
-    public static partial void SetCanvasSize(JSObject canvas, int height, int width);
+    public static partial void SetCanvasSize(JSObject canvas, int width, int height);
 
     [JSImport("Canvas.initGL", AvaloniaModule.MainModuleName)]
     private static partial JSObject InitGL(
