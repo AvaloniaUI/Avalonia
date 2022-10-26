@@ -17,17 +17,7 @@ namespace Avalonia.Styling
         public bool HasValue => true;
         public AvaloniaProperty Property { get; }
 
-        public object? GetValue()
-        {
-            TryGetValue(out var value);
-            return value;
-        }
-
-        public bool TryGetValue(out object? value)
-        {
-            value = _value ??= _template.Build();
-            return value != AvaloniaProperty.UnsetValue;
-        }
+        public object? GetValue() => _value ??= _template.Build();
 
         void IValueEntry.Unsubscribe() { }
     }

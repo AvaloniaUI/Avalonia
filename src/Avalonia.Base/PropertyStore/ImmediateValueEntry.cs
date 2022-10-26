@@ -21,12 +21,6 @@ namespace Avalonia.PropertyStore
         public bool HasValue => true;
         AvaloniaProperty IValueEntry.Property => Property;
 
-        public bool TryGetValue(out object? value)
-        {
-            value = _value;
-            return true;
-        }
-
         public void Unsubscribe() { }
 
         public void Dispose() => _owner.OnEntryDisposed(this);

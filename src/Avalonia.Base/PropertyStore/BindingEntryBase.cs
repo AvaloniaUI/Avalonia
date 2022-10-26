@@ -79,13 +79,6 @@ namespace Avalonia.PropertyStore
             return _value!;
         }
 
-        bool IValueEntry.TryGetValue(out object? value)
-        {
-            Start(produceValue: false);
-            value = _value;
-            return _hasValue;
-        }
-
         protected abstract BindingValue<TValue> ConvertAndValidate(TSource value);
         protected abstract BindingValue<TValue> ConvertAndValidate(BindingValue<TSource> value);
 

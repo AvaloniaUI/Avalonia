@@ -88,12 +88,6 @@ namespace Avalonia.Styling
 
         object? IValueEntry.GetValue() => Value;
 
-        bool IValueEntry.TryGetValue(out object? value)
-        {
-            value = Value;
-            return true;
-        }
-
         private AvaloniaProperty EnsureProperty()
         {
             return Property ?? throw new InvalidOperationException("Setter.Property must be set.");
