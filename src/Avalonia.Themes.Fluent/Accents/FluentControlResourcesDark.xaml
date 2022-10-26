@@ -281,7 +281,6 @@
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-    
 
     <!-- Resources for Calendar.xaml, CalendarButton.xaml, CalendarDayButton.xaml, CalendarItem.xaml -->
     <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
@@ -305,7 +304,39 @@
     <StaticResource x:Key="CalendarViewCalendarItemRevealBorderBrush" ResourceKey="SystemControlTransparentRevealBorderBrush" />
     <StaticResource x:Key="CalendarViewNavigationButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-   
+
+    <!-- Resources for Expander.xaml -->
+    <!-- Expander:Header -->
+    <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="SystemAltMediumHighColor" />
+    <StaticResource x:Key="ExpanderHeaderBackgroundPointerOver" ResourceKey="SystemAltMediumHighColor" />
+    <StaticResource x:Key="ExpanderHeaderBackgroundPressed" ResourceKey="SystemAltMediumHighColor" />
+    <StaticResource x:Key="ExpanderHeaderBackgroundDisabled" ResourceKey="SystemAltMediumHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForeground" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForegroundPointerOver" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForegroundPressed" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="ExpanderHeaderBorderBrush" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ExpanderHeaderBorderBrushPointerOver" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ExpanderHeaderBorderBrushPressed" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ExpanderHeaderBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
+
+    <SolidColorBrush x:Key="ExpanderChevronBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBackgroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
+    <SolidColorBrush x:Key="ExpanderChevronBackgroundPressed" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBackgroundDisabled" Color="Transparent" />
+    <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderChevronForegroundPointerOver" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderChevronForegroundPressed" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderBrushPointerOver" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderBrushPressed" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderBrushDisabled" Color="Transparent" />
+
+    <!-- Expander:Content -->
+    <StaticResource x:Key="ExpanderContentBackground" ResourceKey="SystemChromeMediumLowColor" />
+    <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="SystemBaseLowColor" />
+
     <!--Resources for NotificationCard.xaml -->
     <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#444444" />
     <StaticResource x:Key="NotificationCardForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />

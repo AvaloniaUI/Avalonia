@@ -4,4 +4,34 @@
     <NativeFileReference Include="$(HarfBuzzSharpStaticLibraryPath)\3.1.7\libHarfBuzzSharp.a" />
     <NativeFileReference Include="$(SkiaSharpStaticLibraryPath)\3.1.7\libSkiaSharp.a" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <UseAvaloniaWasmDefaultOptimizations Condition="'$(UseAvaloniaWasmDefaultOptimizations)'==''">True</UseAvaloniaWasmDefaultOptimizations>
+    <EmccExtraLDFlags>$(EmccExtraLDFlags) --js-library="$(MSBuildThisFileDirectory)\interop.js"</EmccExtraLDFlags>
+    <EmccFlags>$(EmccExtraLDFlags) -sERROR_ON_UNDEFINED_SYMBOLS=0</EmccFlags>
+    <WasmBuildNative>true</WasmBuildNative>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(UseAvaloniaWasmDefaultOptimizations)'=='True'">
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <EmccCompileOptimizationFlag>-Oz</EmccCompileOptimizationFlag>
+    <EmccLinkOptimizationFlag>-Oz</EmccLinkOptimizationFlag>
+    <WasmEmitSymbolMap>false</WasmEmitSymbolMap>
+    <WasmNativeDebugSymbols>false</WasmNativeDebugSymbols>
+    <WasmDebugLevel>0</WasmDebugLevel>
+    <WasmEnableExceptionHandling>false</WasmEnableExceptionHandling>
+    <TrimmerRemoveSymbols>true</TrimmerRemoveSymbols>
+    <DebuggerSupport>false</DebuggerSupport>
+    <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
+    <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+    <EventSourceSupport>false</EventSourceSupport>
+    <HttpActivityPropagationSupport>false</HttpActivityPropagationSupport>
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+    <UseNativeHttpHandler>true</UseNativeHttpHandler>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <IncludeSatelliteDllsProjectOutputGroup>false</IncludeSatelliteDllsProjectOutputGroup>
+  </PropertyGroup>
 </Project>
