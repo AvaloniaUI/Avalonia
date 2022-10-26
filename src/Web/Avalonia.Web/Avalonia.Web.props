@@ -1,5 +1,5 @@
-﻿<Project>  
+<Project>
   <PropertyGroup>
-    <EmccExtraLDFlags>$(EmccExtraLDFlags) --js-library="$(MSBuildThisFileDirectory)\interop.js"</EmccExtraLDFlags>
+    <EmccInitialHeapSize>16384000</EmccInitialHeapSize> <!-- must be a multiple of 64KiB, 1024000 * num MB, number grows -->
   </PropertyGroup>
 </Project>
