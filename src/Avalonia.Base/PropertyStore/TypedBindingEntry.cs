@@ -7,7 +7,7 @@ namespace Avalonia.PropertyStore
     /// An <see cref="IValueEntry"/> that holds a binding whose source observable and target
     /// property are both typed.
     /// </summary>
-    internal sealed class TypedBindingEntry<T> : BindingEntryBase<T, T>, IValueEntry<T>
+    internal sealed class TypedBindingEntry<T> : BindingEntryBase<T, T>
     {
         public TypedBindingEntry(
             ValueFrame frame, 

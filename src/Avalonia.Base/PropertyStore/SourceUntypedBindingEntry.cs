@@ -7,8 +7,7 @@ namespace Avalonia.PropertyStore
     /// An <see cref="IValueEntry"/> that holds a binding whose source observable is untyped and
     /// target property is typed.
     /// </summary>
-    internal sealed class SourceUntypedBindingEntry<TTarget> : BindingEntryBase<TTarget, object?>,
-        IValueEntry<TTarget>
+    internal sealed class SourceUntypedBindingEntry<TTarget> : BindingEntryBase<TTarget, object?>
     {
         private readonly Func<TTarget, bool>? _validate;
 

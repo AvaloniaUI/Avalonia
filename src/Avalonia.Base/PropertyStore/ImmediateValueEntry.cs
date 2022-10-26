@@ -2,7 +2,7 @@
 
 namespace Avalonia.PropertyStore
 {
-    internal class ImmediateValueEntry<T> : IValueEntry<T>, IDisposable
+    internal class ImmediateValueEntry<T> : IValueEntry, IDisposable
     {
         private readonly ImmediateValueFrame _owner;
         private readonly T _value;
@@ -20,14 +20,6 @@ namespace Avalonia.PropertyStore
         public StyledPropertyBase<T> Property { get; }
         public bool HasValue => true;
         AvaloniaProperty IValueEntry.Property => Property;
-
-        public T GetValue() => _value;
-
-        public bool TryGetValue(out T? value)
-        {
-            value = _value;
-            return true;
-        }
 
         public bool TryGetValue(out object? value)
         {

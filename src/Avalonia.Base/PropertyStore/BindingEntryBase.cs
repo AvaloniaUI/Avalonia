@@ -58,22 +58,7 @@ namespace Avalonia.PropertyStore
             BindingCompleted();
         }
 
-        public TValue GetValue()
-        {
-            Start(produceValue: false);
-            if (!_hasValue)
-                throw new AvaloniaInternalException("The binding entry has no value.");
-            return _value!;
-        }
-
         public void Start() => Start(true);
-
-        public bool TryGetValue([MaybeNullWhen(false)] out TValue value)
-        {
-            Start(produceValue: false);
-            value = _value;
-            return _hasValue;
-        }
 
         public void OnCompleted() => BindingCompleted();
         public void OnError(Exception error) => BindingCompleted();
