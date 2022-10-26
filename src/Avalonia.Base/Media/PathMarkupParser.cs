@@ -188,7 +188,7 @@ namespace Avalonia.Media
             _isOpen = true;
         }
 
-        private void SetFillRule(ref ReadOnlySpan<char> span)
+        private void SetFillRule(scoped ref ReadOnlySpan<char> span)
         {
             ThrowIfDisposed();
 
@@ -452,7 +452,7 @@ namespace Avalonia.Media
             return !span.IsEmpty && (span[0] == ',' || span[0] == '-' || span[0] == '.' || char.IsDigit(span[0]));
         }
 
-        private static bool ReadArgument(ref ReadOnlySpan<char> remaining, out ReadOnlySpan<char> argument)
+        private static bool ReadArgument(scoped ref ReadOnlySpan<char> remaining, out ReadOnlySpan<char> argument)
         {
             remaining = SkipWhitespace(remaining);
             if (remaining.IsEmpty)
