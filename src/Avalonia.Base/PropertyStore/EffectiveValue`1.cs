@@ -243,7 +243,8 @@ namespace Avalonia.PropertyStore
                 if (property.Inherits)
                     owner.OnInheritedEffectiveValueChanged(property, oldValue, this);
             }
-            else if (baseValueChanged)
+            
+            if (baseValueChanged)
             {
                 owner.Owner.RaisePropertyChanged(property, default, _baseValue!, BasePriority, false);
             }
