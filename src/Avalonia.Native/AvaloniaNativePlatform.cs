@@ -103,6 +103,7 @@ namespace Avalonia.Native
 
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
                 _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
+                _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable

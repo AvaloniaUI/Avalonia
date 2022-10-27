@@ -85,5 +85,11 @@ namespace Avalonia
         public bool DisableNativeMenus { get; set; }
         
         public bool DisableSetProcessName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether Avalonia can install its own AppDelegate.
+        /// Disabling this can be useful in some scenarios like when running as a plugin inside an existing macOS application.
+        /// </summary>
+        public bool DisableAvaloniaAppDelegate { get; set; }
     }
 }

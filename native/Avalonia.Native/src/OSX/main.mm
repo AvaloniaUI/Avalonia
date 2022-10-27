@@ -4,6 +4,7 @@
 
 static NSString* s_appTitle = @"Avalonia";
 static int disableSetProcessName = 0;
+static bool disableAppDelegate = false;
 
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -151,6 +152,16 @@ public:
         }
     }
     
+    virtual HRESULT SetDisableAppDelegate(int disable) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool {
+            disableAppDelegate = disable;
+            return S_OK;
+        }
+    }
+    
 };
 
 /// See "Using POSIX Threads in a Cocoa Application" section here:
@@ -193,7 +204,7 @@ public:
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
-        InitializeAvnApp(events);
+        InitializeAvnApp(events, disableAppDelegate);
         return S_OK;
     };
     
