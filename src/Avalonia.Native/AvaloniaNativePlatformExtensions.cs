@@ -78,7 +78,5 @@ namespace Avalonia
         /// Gets or sets a value indicating whether the native macOS menu bar will be enabled for the application.
         /// </summary>
         public bool DisableNativeMenus { get; set; }
-        
-        public bool DisableSetProcessName { get; set; }
     }
 }

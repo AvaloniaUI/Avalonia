@@ -3,7 +3,6 @@
 #include "common.h"
 
 static NSString* s_appTitle = @"Avalonia";
-static int disableSetProcessName = 0;
 
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -112,17 +111,11 @@ public:
         @autoreleasepool
         {
             auto appTitle = [NSString stringWithUTF8String: utf8String];
-            if (disableSetProcessName == 0)
-            {
-                [[NSProcessInfo processInfo] setProcessName:appTitle];
-                
-                SetProcessName(appTitle);
-            }
-            if (disableSetProcessName == 1)
-            {
-                auto rootMenu = [NSApp mainMenu];
-                [rootMenu setTitle:appTitle];
-            }
+            
+            [[NSProcessInfo processInfo] setProcessName:appTitle];
+            
+            
+            SetProcessName(appTitle);
             
             return S_OK;
         }
@@ -136,17 +129,6 @@ public:
         {
             AvnDesiredActivationPolicy = show
                 ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
-            return S_OK;
-        }
-    }
-    
-    virtual HRESULT SetDisableSetProcessName(int disable)  override
-    {
-        START_COM_CALL;
-        
-        @autoreleasepool
-        {
-            disableSetProcessName = disable;
             return S_OK;
         }
     }
