@@ -46,7 +46,6 @@ namespace Avalonia.iOS
             );
             _topLevelImpl.Surfaces = new[] { new EaglLayerSurface(l) };
             MultipleTouchEnabled = true;
-            AddSubviews(new UIView[] { new UIKit.UIButton(UIButtonType.InfoDark) });
         }
 
         public override bool CanBecomeFirstResponder => true;
