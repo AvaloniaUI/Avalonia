@@ -1171,7 +1171,7 @@ namespace Avalonia.Base.UnitTests.Input
 
             do
             {
-                result.Add(((IControl)current).Name);
+                result.Add(((Control)current).Name);
                 current = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Next);
             } while (current is object && current != start);
 
@@ -1217,7 +1217,7 @@ namespace Avalonia.Base.UnitTests.Input
 
             do
             {
-                result.Add(((IControl)current).Name);
+                result.Add(((Control)current).Name);
                 current = KeyboardNavigationHandler.GetNext(current, NavigationDirection.Previous);
             } while (current is object && current != start);
 

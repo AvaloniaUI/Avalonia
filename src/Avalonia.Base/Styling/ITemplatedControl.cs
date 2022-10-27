@@ -3,7 +3,7 @@ using Avalonia.Metadata;
 namespace Avalonia.Styling
 {
     [NotClientImplementable]
-    public interface ITemplatedControl : IAvaloniaObject
+    public interface ITemplatedControl
     {
     }
 }

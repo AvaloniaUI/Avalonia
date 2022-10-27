@@ -35,8 +35,8 @@ namespace Avalonia.Input.GestureRecognizers
             if (_inputElement is ILogical logicalParent && recognizer is ISetLogicalParent logical)
             {
                 logical.SetParent(logicalParent);
-                if (recognizer is IStyleable styleableRecognizer
-                    && _inputElement is IStyleable styleableParent)
+                if (recognizer is StyledElement styleableRecognizer
+                    && _inputElement is StyledElement styleableParent)
                     styleableRecognizer.Bind(StyledElement.TemplatedParentProperty,
                         styleableParent.GetObservable(StyledElement.TemplatedParentProperty));
             }

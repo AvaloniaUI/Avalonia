@@ -144,7 +144,7 @@ namespace Avalonia.Layout
         }
 
         public Size MeasureElement(
-            ILayoutable element,
+            Layoutable element,
             int index,
             Size availableSize,
             VirtualizingLayoutContext context)
@@ -512,9 +512,9 @@ namespace Avalonia.Layout
 
         private Rect EstimateExtent(Size availableSize, string? layoutId)
         {
-            ILayoutable? firstRealizedElement = null;
+            Layoutable? firstRealizedElement = null;
             Rect firstBounds = new Rect();
-            ILayoutable? lastRealizedElement = null;
+            Layoutable? lastRealizedElement = null;
             Rect lastBounds = new Rect();
             int firstDataIndex = -1;
             int lastDataIndex = -1;
@@ -727,7 +727,7 @@ namespace Avalonia.Layout
             }
         }
 
-        public ILayoutable? GetElementIfRealized(int dataIndex)
+        public Layoutable? GetElementIfRealized(int dataIndex)
         {
             if (_elementManager.IsDataIndexRealized(dataIndex))
             {
@@ -737,7 +737,7 @@ namespace Avalonia.Layout
             return null;
         }
 
-        public bool TryAddElement0(ILayoutable element)
+        public bool TryAddElement0(Layoutable element)
         {
             if (_elementManager.GetRealizedElementCount() == 0)
             {

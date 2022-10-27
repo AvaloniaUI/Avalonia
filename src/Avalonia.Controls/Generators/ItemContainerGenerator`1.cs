@@ -1,5 +1,4 @@
 using System;
-using Avalonia.Controls.Templates;
 using Avalonia.Data;
 
 namespace Avalonia.Controls.Generators
@@ -8,7 +7,7 @@ namespace Avalonia.Controls.Generators
     /// Creates containers for items and maintains a list of created containers.
     /// </summary>
     /// <typeparam name="T">The type of the container.</typeparam>
-    public class ItemContainerGenerator<T> : ItemContainerGenerator where T : class, IControl, new()
+    public class ItemContainerGenerator<T> : ItemContainerGenerator where T : Control, new()
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemContainerGenerator{T}"/> class.
@@ -17,7 +16,7 @@ namespace Avalonia.Controls.Generators
         /// <param name="contentProperty">The container's Content property.</param>
         /// <param name="contentTemplateProperty">The container's ContentTemplate property.</param>
         public ItemContainerGenerator(
-            IControl owner, 
+            Control owner,
             AvaloniaProperty contentProperty,
             AvaloniaProperty? contentTemplateProperty)
             : base(owner)
@@ -40,7 +39,7 @@ namespace Avalonia.Controls.Generators
         protected AvaloniaProperty? ContentTemplateProperty { get; }
 
         /// <inheritdoc/>
-        protected override IControl? CreateContainer(object item)
+        protected override Control? CreateContainer(object item)
         {
             var container = item as T;
 
@@ -63,7 +62,7 @@ namespace Avalonia.Controls.Generators
                     container.SetValue(ContentProperty, item, BindingPriority.Style);
                 }
                 
-                if (!(item is IControl))
+                if (!(item is Control))
                 {
                     container.DataContext = item;
                 }
@@ -89,7 +88,7 @@ namespace Avalonia.Controls.Generators
 
             container.SetValue(ContentProperty, item);
 
-            if (!(item is IControl))
+            if (!(item is Control))
             {
                 container.DataContext = item;
             }

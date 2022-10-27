@@ -367,7 +367,7 @@ namespace Avalonia.Base.UnitTests.Interactivity
 
             EventHandler<RoutedEventArgs> removeHandler = (s, e) =>
             {
-                parent.Children = Array.Empty<IVisual>();
+                parent.Children = Array.Empty<Visual>();
             };
             
             target.AddHandler(ev, removeHandler);
@@ -425,11 +425,11 @@ namespace Avalonia.Base.UnitTests.Interactivity
             public bool ClassHandlerInvoked { get; private set; }
             public new string Name { get; set; }
 
-            public IEnumerable<IVisual> Children
+            public IEnumerable<Visual> Children
             {
                 get
                 {
-                    return ((IVisual)this).VisualChildren.AsEnumerable();
+                    return ((Visual)this).VisualChildren.AsEnumerable();
                 }
 
                 set

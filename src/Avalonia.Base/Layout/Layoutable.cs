@@ -62,7 +62,7 @@ namespace Avalonia.Layout
     /// <summary>
     /// Implements layout-related functionality for a control.
     /// </summary>
-    public class Layoutable : Visual, ILayoutable
+    public class Layoutable : Visual
     {
         /// <summary>
         /// Defines the <see cref="DesiredSize"/> property.
@@ -323,15 +323,12 @@ namespace Avalonia.Layout
             set { SetValue(UseLayoutRoundingProperty, value); }
         }
 
-        /// <summary>
-        /// Gets the available size passed in the previous layout pass, if any.
-        /// </summary>
-        Size? ILayoutable.PreviousMeasure => _previousMeasure;
+        internal Size? PreviousMeasure => _previousMeasure;
 
         /// <summary>
         /// Gets the layout rect passed in the previous layout pass, if any.
         /// </summary>
-        Rect? ILayoutable.PreviousArrange => _previousArrange;
+        internal Rect? PreviousArrange => _previousArrange;
 
         /// <summary>
         /// Creates the visual children of the control, if necessary
@@ -380,7 +377,7 @@ namespace Avalonia.Layout
 
                 if (DesiredSize != previousDesiredSize)
                 {
-                    this.GetVisualParent<ILayoutable>()?.ChildDesiredSizeChanged(this);
+                    this.GetVisualParent<Layoutable>()?.ChildDesiredSizeChanged(this);
                 }
             }
         }
@@ -423,7 +420,7 @@ namespace Avalonia.Layout
                 IsMeasureValid = false;
                 IsArrangeValid = false;
 
-                if (((ILayoutable)this).IsAttachedToVisualTree)
+                if (IsAttachedToVisualTree)
                 {
                     (VisualRoot as ILayoutRoot)?.LayoutManager.InvalidateMeasure(this);
                     InvalidateVisual();
@@ -448,7 +445,7 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        void ILayoutable.ChildDesiredSizeChanged(ILayoutable control)
+        internal void ChildDesiredSizeChanged(Layoutable control)
         {
             if (!_measuring)
             {
@@ -456,11 +453,11 @@ namespace Avalonia.Layout
             }
         }
 
-        void ILayoutable.EffectiveViewportChanged(EffectiveViewportChangedEventArgs e)
+        internal void RaiseEffectiveViewportChanged(EffectiveViewportChangedEventArgs e)
         {
             _effectiveViewportChanged?.Invoke(this, e);
         }
-
+        
         /// <summary>
         /// Marks a property as affecting the control's measurement.
         /// </summary>
@@ -471,7 +468,7 @@ namespace Avalonia.Layout
         /// property will cause <see cref="InvalidateMeasure"/> to be called on the element.
         /// </remarks>
         protected static void AffectsMeasure<T>(params AvaloniaProperty[] properties)
-            where T : class, ILayoutable
+            where T : Layoutable
         {
             void Invalidate(AvaloniaPropertyChangedEventArgs e)
             {
@@ -494,7 +491,7 @@ namespace Avalonia.Layout
         /// property will cause <see cref="InvalidateArrange"/> to be called on the element.
         /// </remarks>
         protected static void AffectsArrange<T>(params AvaloniaProperty[] properties)
-            where T : class, ILayoutable
+            where T : Layoutable
         {
             void Invalidate(AvaloniaPropertyChangedEventArgs e)
             {
@@ -596,9 +593,9 @@ namespace Avalonia.Layout
 
             for (var i = 0; i < visualCount; i++)
             {
-                IVisual visual = visualChildren[i];
+                Visual visual = visualChildren[i];
 
-                if (visual is ILayoutable layoutable)
+                if (visual is Layoutable layoutable)
                 {
                     layoutable.Measure(availableSize);
                     width = Math.Max(width, layoutable.DesiredSize.Width);
@@ -709,9 +706,9 @@ namespace Avalonia.Layout
 
             for (var i = 0; i < visualCount; i++)
             {
-                IVisual visual = visualChildren[i];
+                Visual visual = visualChildren[i];
 
-                if (visual is ILayoutable layoutable)
+                if (visual is Layoutable layoutable)
                 {
                     layoutable.Arrange(arrangeRect);
                 }
@@ -778,7 +775,7 @@ namespace Avalonia.Layout
                 DesiredSize = default;
 
                 // All changes to visibility cause the parent element to be notified.
-                this.GetVisualParent<ILayoutable>()?.ChildDesiredSizeChanged(this);
+                this.GetVisualParent<Layoutable>()?.ChildDesiredSizeChanged(this);
 
                 // We only invalidate outselves when visibility is changed to true.
                 if (change.GetNewValue<bool>())
@@ -789,7 +786,7 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        protected sealed override void OnVisualParentChanged(IVisual? oldParent, IVisual? newParent)
+        protected sealed override void OnVisualParentChanged(Visual? oldParent, Visual? newParent)
         {
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
 

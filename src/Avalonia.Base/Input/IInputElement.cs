@@ -12,7 +12,7 @@ namespace Avalonia.Input
     /// Defines input-related functionality for a control.
     /// </summary>
     [NotClientImplementable]
-    public interface IInputElement : IInteractive, IVisual
+    public interface IInputElement : IInteractive
     {
         /// <summary>
         /// Occurs when the control receives focus.
@@ -93,7 +93,12 @@ namespace Avalonia.Input
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
         bool IsEffectivelyEnabled { get; }
-        
+
+        /// <summary>
+        /// Gets a value indicating whether this control and all its parents are visible.
+        /// </summary>
+        bool IsEffectivelyVisible { get; }
+
         /// <summary>
         /// Gets a value indicating whether keyboard focus is anywhere within the element or its visual tree child elements.
         /// </summary>

@@ -24,7 +24,7 @@ namespace Avalonia
             string name,
             Type ownerType,
             AvaloniaPropertyMetadata metadata,
-            Action<IAvaloniaObject, bool>? notifying = null)
+            Action<AvaloniaObject, bool>? notifying = null)
             : base(name, typeof(TValue), ownerType, metadata, notifying)
         {
             _changed = new Subject<AvaloniaPropertyChangedEventArgs<TValue>>();

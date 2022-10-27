@@ -92,13 +92,13 @@ namespace Avalonia.Input
             if (ev.Route == RoutingStrategies.Bubble)
             {
                 var e = (PointerPressedEventArgs)ev;
-                var visual = (IVisual)ev.Source;
+                var visual = (Visual)ev.Source;
 
                 if (e.ClickCount % 2 == 1)
                 {
                     s_isDoubleTapped = false;
                     s_lastPress.SetTarget(ev.Source);
-                    s_lastPressPoint = e.GetPosition((IVisual)ev.Source);
+                    s_lastPressPoint = e.GetPosition((Visual)ev.Source);
                 }
                 else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
@@ -121,7 +121,7 @@ namespace Avalonia.Input
                     target == e.Source &&
                     e.InitialPressMouseButton is MouseButton.Left or MouseButton.Right)
                 {
-                    var point = e.GetCurrentPoint((IVisual)target);
+                    var point = e.GetCurrentPoint((Visual)target);
                     var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
                     var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
                     var tapRect = new Rect(s_lastPressPoint, new Size())

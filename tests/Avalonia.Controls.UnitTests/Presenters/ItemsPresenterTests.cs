@@ -284,7 +284,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var panel = new Panel();
             var target = new ItemsPresenter
             {
-                ItemsPanel = new FuncTemplate<IPanel>(() => panel),
+                ItemsPanel = new FuncTemplate<Panel>(() => panel),
             };
 
             target.ApplyTemplate();

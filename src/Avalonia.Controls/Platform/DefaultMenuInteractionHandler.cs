@@ -123,7 +123,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void GotFocus(object? sender, GotFocusEventArgs e)
         {
-            var item = GetMenuItem(e.Source as IControl);
+            var item = GetMenuItem(e.Source as Control);
 
             if (item?.Parent != null)
             {
@@ -133,7 +133,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void LostFocus(object? sender, RoutedEventArgs e)
         {
-            var item = GetMenuItem(e.Source as IControl);
+            var item = GetMenuItem(e.Source as Control);
 
             if (item != null)
             {
@@ -143,7 +143,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void KeyDown(object? sender, KeyEventArgs e)
         {
-            KeyDown(GetMenuItem(e.Source as IControl), e);
+            KeyDown(GetMenuItem(e.Source as Control), e);
         }
 
         protected internal virtual void KeyDown(IMenuItem? item, KeyEventArgs e)
@@ -282,7 +282,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void AccessKeyPressed(object? sender, RoutedEventArgs e)
         {
-            var item = GetMenuItem(e.Source as IControl);
+            var item = GetMenuItem(e.Source as Control);
 
             if (item == null)
             {
@@ -303,7 +303,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void PointerEntered(object? sender, PointerEventArgs e)
         {
-            var item = GetMenuItem(e.Source as IControl);
+            var item = GetMenuItem(e.Source as Control);
 
             if (item?.Parent == null)
             {
@@ -349,7 +349,7 @@ namespace Avalonia.Controls.Platform
         protected internal virtual void PointerMoved(object? sender, PointerEventArgs e)
         {
             // HACK: #8179 needs to be addressed to correctly implement it in the PointerPressed method.
-            var item = GetMenuItem(e.Source as IControl) as MenuItem;
+            var item = GetMenuItem(e.Source as Control) as MenuItem;
             if (item?.TransformedBounds == null)
             {
                 return;
@@ -364,7 +364,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void PointerExited(object? sender, PointerEventArgs e)
         {
-            var item = GetMenuItem(e.Source as IControl);
+            var item = GetMenuItem(e.Source as Control);
 
             if (item?.Parent == null)
             {
@@ -399,9 +399,9 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void PointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            var item = GetMenuItem(e.Source as IControl);
+            var item = GetMenuItem(e.Source as Control);
 
-            if (sender is IVisual visual &&
+            if (sender is Visual visual &&
                 e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed && item?.HasSubMenu == true)
             {
                 if (item.IsSubMenuOpen)
@@ -430,7 +430,7 @@ namespace Avalonia.Controls.Platform
 
         protected internal virtual void PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
-            var item = GetMenuItem(e.Source as IControl);
+            var item = GetMenuItem(e.Source as Control);
 
             if (e.InitialPressMouseButton == MouseButton.Left && item?.HasSubMenu == false)
             {
@@ -461,7 +461,7 @@ namespace Avalonia.Controls.Platform
         {
             if (Menu?.IsOpen == true)
             {
-                if (e.Source is ILogical control && !Menu.IsLogicalAncestorOf(control))
+                if (e.Source is ILogical control && Menu.IsLogicalAncestorOf(control))
                 {
                     Menu.Close();
                 }
@@ -547,7 +547,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected static IMenuItem? GetMenuItem(IControl? item)
+        protected static IMenuItem? GetMenuItem(Control? item)
         {
             while (true)
             {

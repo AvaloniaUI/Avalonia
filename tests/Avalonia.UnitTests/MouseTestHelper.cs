@@ -59,7 +59,7 @@ namespace Avalonia.UnitTests
             {
                 _pressedButton = mouseButton;
                 _pointer.Capture((IInputElement)target);
-                source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (IVisual)source, position, Timestamp(), props,
+                source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (Visual)source, position, Timestamp(), props,
                     modifiers, clickCount));
             }
         }
@@ -67,7 +67,7 @@ namespace Avalonia.UnitTests
         public void Move(IInteractive target, in Point position, KeyModifiers modifiers = default) => Move(target, target, position, modifiers);
         public void Move(IInteractive target, IInteractive source, in Point position, KeyModifiers modifiers = default)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (IVisual)target, position,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)target, position,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), modifiers));
         }
 
@@ -87,7 +87,7 @@ namespace Avalonia.UnitTests
             );
             if (ButtonCount(props) == 0)
             {
-                target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (IVisual)target, position,
+                target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (Visual)target, position,
                     Timestamp(), props, modifiers, _pressedButton));
                 _pointer.Capture(null);
             }
@@ -107,13 +107,13 @@ namespace Avalonia.UnitTests
         
         public void Enter(IInteractive target)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnteredEvent, target, _pointer, (IVisual)target, default,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnteredEvent, target, _pointer, (Visual)target, default,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 
         public void Leave(IInteractive target)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerExitedEvent, target, _pointer, (IVisual)target, default,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerExitedEvent, target, _pointer, (Visual)target, default,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 

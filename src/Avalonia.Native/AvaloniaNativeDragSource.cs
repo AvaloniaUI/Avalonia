@@ -22,12 +22,12 @@ namespace Avalonia.Native
         
         TopLevel FindRoot(IInteractive interactive)
         {
-            while (interactive != null && !(interactive is IVisual))
+            while (interactive != null && !(interactive is Visual))
                 interactive = interactive.InteractiveParent;
             if (interactive == null)
                 return null;
-            var visual = (IVisual)interactive;
-            return visual.VisualRoot as TopLevel;
+            var visual = (Visual)interactive;
+            return visual.GetVisualRoot() as TopLevel;
         }
 
         class DndCallback : NativeCallbackBase, IAvnDndResultCallback

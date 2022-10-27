@@ -57,7 +57,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 Assert.Equal(0.5, scene.Layers[border].Opacity);
 
                 Assert.Equal(2, scene.Layers.Count());
-                Assert.Empty(scene.Layers.Select(x => x.LayerRoot).Except(new IVisual[] { tree, border }));
+                Assert.Empty(scene.Layers.Select(x => x.LayerRoot).Except(new Visual[] { tree, border }));
 
                 animation.OnCompleted();
                 scene = scene.CloneScene();

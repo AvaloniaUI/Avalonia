@@ -111,7 +111,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             target.ApplyTemplate();
 
             var templatedParents = target.GetVisualDescendants()
-                .OfType<IControl>()
+                .OfType<Control>()
                 .Select(x => x.TemplatedParent)
                 .ToList();
 
@@ -570,7 +570,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Same(Brushes.Green, contentPresenter.Background);
         }
 
-        private static IControl ScrollingContentControlTemplate(ContentControl control, INameScope scope)
+        private static Control ScrollingContentControlTemplate(ContentControl control, INameScope scope)
         {
             return new Border
             {

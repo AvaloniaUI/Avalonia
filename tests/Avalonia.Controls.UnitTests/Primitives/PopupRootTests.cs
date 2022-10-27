@@ -35,7 +35,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 var target = CreateTarget(new Window());
 
-                Assert.True(target.Presenter.IsAttachedToLogicalTree);
+                Assert.True(((ILogical)target.Presenter).IsAttachedToLogicalTree);
             }
         }
 
@@ -93,8 +93,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.IsType<ContentPresenter>(contentPresenter);
                 
                 
-                Assert.Equal((PopupRoot)target.Host, ((IControl)templatedChild).TemplatedParent);
-                Assert.Equal((PopupRoot)target.Host, ((IControl)contentPresenter).TemplatedParent);
+                Assert.Equal((PopupRoot)target.Host, ((Control)templatedChild).TemplatedParent);
+                Assert.Equal((PopupRoot)target.Host, ((Control)contentPresenter).TemplatedParent);
             }
         }
         

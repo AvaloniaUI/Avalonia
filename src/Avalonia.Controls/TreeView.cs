@@ -282,7 +282,7 @@ namespace Avalonia.Controls
                     break;
                 case NotifyCollectionChangedAction.Reset:
 
-                    foreach (IControl container in ItemContainerGenerator.Index!.Containers)
+                    foreach (Control container in ItemContainerGenerator.Index!.Containers)
                     {
                         MarkContainerSelected(container, false);
                     }
@@ -375,7 +375,7 @@ namespace Avalonia.Controls
         {
             if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
             {
-                if (!this.IsVisualAncestorOf(element))
+                if (!this.IsVisualAncestorOf((Visual)element))
                 {
                     var result = _selectedItem != null ?
                         ItemContainerGenerator.Index!.ContainerFromItem(_selectedItem) :
@@ -520,7 +520,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.Source is IVisual source)
+            if (e.Source is Visual source)
             {
                 var point = e.GetCurrentPoint(source);
 
@@ -545,7 +545,7 @@ namespace Avalonia.Controls
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
         protected void UpdateSelectionFromContainer(
-            IControl container,
+            Control container,
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
@@ -558,7 +558,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            IControl? selectedContainer = null;
+            Control? selectedContainer = null;
 
             if (SelectedItem != null)
             {
@@ -776,7 +776,7 @@ namespace Avalonia.Controls
         /// <returns>The container or null if the event did not originate in a container.</returns>
         protected TreeViewItem? GetContainerFromEventSource(IInteractive eventSource)
         {
-            var item = ((IVisual)eventSource).GetSelfAndVisualAncestors()
+            var item = ((Visual)eventSource).GetSelfAndVisualAncestors()
                 .OfType<TreeViewItem>()
                 .FirstOrDefault();
 
@@ -826,7 +826,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="container">The container.</param>
         /// <param name="selected">Whether the control is selected</param>
-        private void MarkContainerSelected(IControl container, bool selected)
+        private void MarkContainerSelected(Control container, bool selected)
         {
             if (container == null)
             {

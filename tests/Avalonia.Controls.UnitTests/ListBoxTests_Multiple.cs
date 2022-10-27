@@ -92,7 +92,7 @@ namespace Avalonia.Controls.UnitTests
                 Content = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
+                    [~ItemsPresenter.ItemsProperty] = ((Control)parent).GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                 }.RegisterInNameScope(scope)
             };
         }
@@ -103,7 +103,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] =
-                    parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
+                    ((Control)parent).GetObservable(ContentControl.ContentProperty).ToBinding(),
             }.RegisterInNameScope(scope);
         }
 
@@ -120,7 +120,7 @@ namespace Avalonia.Controls.UnitTests
             ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
 
             // Now the ItemsPresenter should be reigstered, so apply its template.
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
         }
     }
 }

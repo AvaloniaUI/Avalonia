@@ -29,12 +29,12 @@ namespace Avalonia.Controls.Primitives
             _positioner = new ManagedPopupPositioner(this);
         }
 
-        public void SetChild(IControl? control)
+        public void SetChild(Control? control)
         {
             Content = control;
         }
 
-        public IVisual? HostedVisualTreeRoot => null;
+        public Visual? HostedVisualTreeRoot => null;
 
         public Transform? Transform
         {
@@ -66,7 +66,7 @@ namespace Avalonia.Controls.Primitives
             _shown = false;
         }
 
-        public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
+        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.Primitives
 
         double IManagedPopupPositionerPopup.Scaling => 1;
        
-        public static IPopupHost CreatePopupHost(IVisual target, IAvaloniaDependencyResolver? dependencyResolver)
+        public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver)
         {
             var platform = (target.GetVisualRoot() as TopLevel)?.PlatformImpl?.CreatePopup();
             if (platform != null)

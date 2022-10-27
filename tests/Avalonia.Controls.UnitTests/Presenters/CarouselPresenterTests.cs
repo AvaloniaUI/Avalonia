@@ -27,7 +27,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var target = new CarouselPresenter
             {
-                ItemsPanel = new FuncTemplate<IPanel>(() => new Panel()),
+                ItemsPanel = new FuncTemplate<Panel>(() => new Panel()),
             };
 
             target.ApplyTemplate();
@@ -383,7 +383,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 AssertSingle(target);
             }
 
-            private static IControl AssertSingle(CarouselPresenter target)
+            private static Control AssertSingle(CarouselPresenter target)
             {
                 var items = (IList)target.Items;
                 var index = target.SelectedIndex;

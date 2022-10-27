@@ -8,7 +8,7 @@ namespace Avalonia.Input
 {
     public class PointerEventArgs : RoutedEventArgs
     {
-        private readonly IVisual? _rootVisual;
+        private readonly Visual? _rootVisual;
         private readonly Point _rootVisualPosition;
         private readonly PointerPointProperties _properties;
         private readonly Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
@@ -16,7 +16,7 @@ namespace Avalonia.Input
         internal PointerEventArgs(RoutedEvent routedEvent,
             IInteractive? source,
             IPointer pointer,
-            IVisual? rootVisual, Point rootVisualPosition,
+            Visual? rootVisual, Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers)
@@ -34,7 +34,7 @@ namespace Avalonia.Input
         internal PointerEventArgs(RoutedEvent routedEvent,
             IInteractive? source,
             IPointer pointer,
-            IVisual? rootVisual, Point rootVisualPosition,
+            Visual? rootVisual, Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers,
@@ -59,7 +59,7 @@ namespace Avalonia.Input
         /// </summary>
         public KeyModifiers KeyModifiers { get; }
 
-        private Point GetPosition(Point pt, IVisual? relativeTo)
+        private Point GetPosition(Point pt, Visual? relativeTo)
         {
             if (_rootVisual == null)
                 return default;
@@ -74,14 +74,14 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="relativeTo">The control.</param>
         /// <returns>The pointer position in the control's coordinates.</returns>
-        public Point GetPosition(IVisual? relativeTo) => GetPosition(_rootVisualPosition, relativeTo);
+        public Point GetPosition(Visual? relativeTo) => GetPosition(_rootVisualPosition, relativeTo);
 
         /// <summary>
         /// Returns the PointerPoint associated with the current event
         /// </summary>
         /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns></returns>
-        public PointerPoint GetCurrentPoint(IVisual? relativeTo)
+        public PointerPoint GetCurrentPoint(Visual? relativeTo)
             => new PointerPoint(Pointer, GetPosition(relativeTo), _properties);
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Avalonia.Input
         /// </summary>
         /// <param name="relativeTo">The visual which coordinate system to use. Pass null for toplevel coordinate system</param>
         /// <returns></returns>
-        public IReadOnlyList<PointerPoint> GetIntermediatePoints(IVisual? relativeTo)
+        public IReadOnlyList<PointerPoint> GetIntermediatePoints(Visual? relativeTo)
         {
             var previousPoints = _previousPoints?.Value;            
             if (previousPoints == null || previousPoints.Count == 0)
@@ -127,7 +127,7 @@ namespace Avalonia.Input
         internal PointerPressedEventArgs(
             IInteractive source,
             IPointer pointer,
-            IVisual rootVisual, Point rootVisualPosition,
+            Visual rootVisual, Point rootVisualPosition,
             ulong timestamp,
             PointerPointProperties properties,
             KeyModifiers modifiers,
@@ -145,7 +145,7 @@ namespace Avalonia.Input
     {
         internal PointerReleasedEventArgs(
             IInteractive source, IPointer pointer,
-            IVisual rootVisual, Point rootVisualPosition, ulong timestamp,
+            Visual rootVisual, Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers,
             MouseButton initialPressMouseButton)
             : base(InputElement.PointerReleasedEvent, source, pointer, rootVisual, rootVisualPosition,

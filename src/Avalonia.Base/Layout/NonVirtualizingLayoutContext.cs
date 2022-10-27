@@ -17,13 +17,13 @@ namespace Avalonia.Layout
         /// <summary>
         /// Gets the collection of child controls from the container that provides the context.
         /// </summary>
-        public IReadOnlyList<ILayoutable> Children => ChildrenCore;
+        public IReadOnlyList<Layoutable> Children => ChildrenCore;
 
         /// <summary>
         /// Implements the behavior for getting the return value of <see cref="Children"/> in a
         /// derived or custom <see cref="NonVirtualizingLayoutContext"/>.
         /// </summary>
-        protected abstract IReadOnlyList<ILayoutable> ChildrenCore { get; }
+        protected abstract IReadOnlyList<Layoutable> ChildrenCore { get; }
 
         internal VirtualizingLayoutContext GetVirtualizingContextAdapter() =>
             _contextAdapter ??= new LayoutContextAdapter(this);

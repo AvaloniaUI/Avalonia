@@ -15,7 +15,7 @@ namespace Avalonia.Input
 
         public KeyModifiers KeyModifiers { get; private set; }
 
-        public Point GetPosition(IVisual relativeTo)
+        public Point GetPosition(Visual relativeTo)
         {
             var point = new Point(0, 0);
 

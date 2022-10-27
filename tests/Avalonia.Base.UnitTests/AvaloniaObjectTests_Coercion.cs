@@ -219,7 +219,7 @@ namespace Avalonia.Base.UnitTests
 
             public List<AvaloniaPropertyChangedEventArgs> CoreChanges { get; } = new();
 
-            public static int CoerceFoo(IAvaloniaObject instance, int value)
+            public static int CoerceFoo(AvaloniaObject instance, int value)
             {
                 return Math.Min(((Class1)instance).MaxFoo, value);
             }
@@ -261,7 +261,7 @@ namespace Avalonia.Base.UnitTests
                 set => SetValue(FooProperty, value);
             }
 
-            public static int CoerceFoo(IAvaloniaObject instance, int value)
+            public static int CoerceFoo(AvaloniaObject instance, int value)
             {
                 return -value;
             }

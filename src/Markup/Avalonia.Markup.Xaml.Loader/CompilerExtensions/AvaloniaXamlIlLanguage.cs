@@ -57,7 +57,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 XmlNamespaceInfoProvider =
                     typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider"),
                 DeferredContentPropertyAttributes = { typeSystem.GetType("Avalonia.Metadata.TemplateContentAttribute") },
-                DeferredContentExecutorCustomizationDefaultTypeParameter = typeSystem.GetType("Avalonia.Controls.IControl"),
+                DeferredContentExecutorCustomizationDefaultTypeParameter = typeSystem.GetType("Avalonia.Controls.Control"),
                 DeferredContentExecutorCustomizationTypeParameterDeferredContentAttributePropertyNames = new List<string>
                 {
                     "TemplateResultType"

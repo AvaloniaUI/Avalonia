@@ -8,8 +8,8 @@ namespace Avalonia.Controls.Primitives
 {
     public class TabStrip : SelectingItemsControl
     {
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new WrapPanel { Orientation = Orientation.Horizontal });
+        private static readonly FuncTemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new WrapPanel { Orientation = Orientation.Horizontal });
 
         static TabStrip()
         {
@@ -42,7 +42,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnPointerPressed(e);
 
-            if (e.Source is IVisual source)
+            if (e.Source is Visual source)
             {
                 var point = e.GetCurrentPoint(source);
 
