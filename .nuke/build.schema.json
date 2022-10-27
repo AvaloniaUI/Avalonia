@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Build Schema",
+  "$ref": "#/definitions/build",
+  "definitions": {
+    "build": {
+      "type": "object",
+      "properties": {
+        "Configuration": {
+          "type": "string",
+          "description": "configuration"
+        },
+        "Continue": {
+          "type": "boolean",
+          "description": "Indicates to continue a previously failed build attempt"
+        },
+        "ForceNugetVersion": {
+          "type": "string",
+          "description": "force-nuget-version"
+        },
+        "Help": {
+          "type": "boolean",
+          "description": "Shows the help text for this build assembly"
+        },
+        "Host": {
+          "type": "string",
+          "description": "Host for execution. Default is 'automatic'",
+          "enum": [
+            "AppVeyor",
+            "AzurePipelines",
+            "Bamboo",
+            "Bitbucket",
+            "Bitrise",
+            "GitHubActions",
+            "GitLab",
+            "Jenkins",
+            "Rider",
+            "SpaceAutomation",
+            "TeamCity",
+            "Terminal",
+            "TravisCI",
+            "VisualStudio",
+            "VSCode"
+          ]
+        },
+        "NoLogo": {
+          "type": "boolean",
+          "description": "Disables displaying the NUKE logo"
+        },
+        "Partition": {
+          "type": "string",
+          "description": "Partition to use on CI"
+        },
+        "Plan": {
+          "type": "boolean",
+          "description": "Shows the execution plan (HTML)"
+        },
+        "Profile": {
+          "type": "array",
+          "description": "Defines the profiles to load",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Root": {
+          "type": "string",
+          "description": "Root directory during build execution"
+        },
+        "Skip": {
+          "type": "array",
+          "description": "List of targets to be skipped. Empty list skips all dependencies",
+          "items": {
+            "type": "string",
+            "enum": [
+              "CiAzureLinux",
+              "CiAzureOSX",
+              "CiAzureWindows",
+              "Clean",
+              "Compile",
+              "CompileHtmlPreviewer",
+              "CompileNative",
+              "CreateIntermediateNugetPackages",
+              "CreateNugetPackages",
+              "GenerateCppHeaders",
+              "Package",
+              "RunCoreLibsTests",
+              "RunDesignerTests",
+              "RunHtmlPreviewerTests",
+              "RunLeakTests",
+              "RunRenderTests",
+              "RunTests",
+              "ZipFiles"
+            ]
+          }
+        },
+        "SkipPreviewer": {
+          "type": "boolean",
+          "description": "skip-previewer"
+        },
+        "SkipTests": {
+          "type": "boolean",
+          "description": "skip-tests"
+        },
+        "Solution": {
+          "type": "string",
+          "description": "Path to a solution file that is automatically loaded. Default is Avalonia.sln"
+        },
+        "Target": {
+          "type": "array",
+          "description": "List of targets to be invoked. Default is '{default_target}'",
+          "items": {
+            "type": "string",
+            "enum": [
+              "CiAzureLinux",
+              "CiAzureOSX",
+              "CiAzureWindows",
+              "Clean",
+              "Compile",
+              "CompileHtmlPreviewer",
+              "CompileNative",
+              "CreateIntermediateNugetPackages",
+              "CreateNugetPackages",
+              "GenerateCppHeaders",
+              "Package",
+              "RunCoreLibsTests",
+              "RunDesignerTests",
+              "RunHtmlPreviewerTests",
+              "RunLeakTests",
+              "RunRenderTests",
+              "RunTests",
+              "ZipFiles"
+            ]
+          }
+        },
+        "Verbosity": {
+          "type": "string",
+          "description": "Logging verbosity during build execution. Default is 'Normal'",
+          "enum": [
+            "Minimal",
+            "Normal",
+            "Quiet",
+            "Verbose"
+          ]
+        }
+      }
+    }
+  }
+}

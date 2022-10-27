@@ -8,7 +8,7 @@ namespace Avalonia.Media.TextFormatting
     public readonly struct TextShaperOptions
     {
         public TextShaperOptions(
-            GlyphTypeface typeface, 
+            IGlyphTypeface typeface, 
             double fontRenderingEmSize = 12, 
             sbyte bidiLevel = 0, 
             CultureInfo? culture = null, 
@@ -24,7 +24,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Get the typeface.
         /// </summary>
-        public GlyphTypeface Typeface { get; }
+        public IGlyphTypeface Typeface { get; }
         /// <summary>
         /// Get the font rendering em size.
         /// </summary>

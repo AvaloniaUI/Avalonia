@@ -64,7 +64,7 @@ namespace Avalonia.Skia.UnitTests.Media
             return true;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             SKTypeface skTypeface;
 
@@ -103,7 +103,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     }
             }
 
-            return new GlyphTypefaceImpl(skTypeface);
+            return new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
         }
     }
 }

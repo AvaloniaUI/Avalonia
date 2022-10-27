@@ -1,31 +1,39 @@
-﻿using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Media;
+﻿using System.Runtime.Versioning;
 
-namespace Avalonia.Web.Blazor
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+
+namespace Avalonia.Web.Blazor;
+
+[SupportedOSPlatform("browser")]
+public static class WebAppBuilder
 {
-    public class BlazorSingleViewLifetime : ISingleViewApplicationLifetime
+    public static T SetupWithSingleViewLifetime<T>(
+        this T builder)
+        where T : AppBuilderBase<T>, new()
     {
-        public Control? MainView { get; set; }
+        return builder.SetupWithLifetime(new BlazorSingleViewLifetime());
     }
 
-    public static class WebAppBuilder
+    public static T UseBlazor<T>(this T builder) where T : AppBuilderBase<T>, new()
     {
-        public static T SetupWithSingleViewLifetime<T>(
-            this T builder)
-            where T : AppBuilderBase<T>, new()
-        {
-            return builder.SetupWithLifetime(new BlazorSingleViewLifetime());
-        }
+        return builder
+            .UseBrowser()
+            .With(new BrowserPlatformOptions
+            {
+                FrameworkAssetPathResolver = new(filePath => $"/_content/Avalonia.Web.Blazor/{filePath}")
+            });
+    }
 
-        public static AvaloniaBlazorAppBuilder Configure<TApp>()
-            where TApp : Application, new()
-        {
-            var builder = AvaloniaBlazorAppBuilder.Configure<TApp>()
-                .UseSkia()
-                .With(new SkiaOptions { CustomGpuFactory = () => new BlazorSkiaGpu() });
+    public static AppBuilder Configure<TApp>()
+        where TApp : Application, new()
+    {
+        return AppBuilder.Configure<TApp>()
+            .UseBlazor();
+    }
 
-            return builder;
-        }
+    internal class BlazorSingleViewLifetime : ISingleViewApplicationLifetime
+    {
+        public Control? MainView { get; set; }
     }
 }

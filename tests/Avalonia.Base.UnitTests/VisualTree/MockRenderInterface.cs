@@ -126,6 +126,21 @@ namespace Avalonia.Base.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
+        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            throw new NotImplementedException();
+        }
+
         class MockStreamGeometry : IStreamGeometryImpl
         {
             private MockStreamGeometryContext _impl = new MockStreamGeometryContext();
@@ -235,7 +250,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
 
                 public bool FillContains(Point point)
                 {
-                    // Use the algorithm from http://www.blackpawn.com/texts/pointinpoly/default.html
+                    // Use the algorithm from https://www.blackpawn.com/texts/pointinpoly/default.html
                     // to determine if the point is in the geometry (since it will always be convex in this situation)
                     for (int i = 0; i < points.Count; i++)
                     {

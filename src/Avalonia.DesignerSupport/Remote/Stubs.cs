@@ -191,7 +191,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task ClearAsync() => Task.CompletedTask;
         public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
-        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
         public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }

@@ -1,4 +1,6 @@
-﻿namespace Avalonia.MicroCom
+﻿using MicroCom.Runtime;
+
+namespace Avalonia.MicroCom
 {
     public abstract class CallbackBase : IUnknown, IMicroComShadowContainer
     {

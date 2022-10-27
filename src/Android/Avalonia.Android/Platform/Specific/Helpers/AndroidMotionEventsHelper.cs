@@ -15,7 +15,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
     internal class AndroidMotionEventsHelper : IDisposable
     {
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
-        private static readonly float s_radiansToDegree = (float)(180f * Math.PI);
+        private const float RadiansToDegree = (float)(180f * Math.PI);
         private readonly TouchDevice _touchDevice;
         private readonly MouseDevice _mouseDevice;
         private readonly PenDevice _penDevice;
@@ -223,7 +223,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             {
                 Position = new Point(e.GetX(index), e.GetY(index)) / _view.RenderScaling,
                 Pressure = Math.Min(e.GetPressure(index), 1), // android pressure can depend on the device, can be mixed up with "GetSize", may be larger than 1.0f on some devices
-                Twist = e.GetOrientation(index) * s_radiansToDegree
+                Twist = e.GetOrientation(index) * RadiansToDegree
             };
         }
 
@@ -233,7 +233,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             {
                 Position = new Point(e.GetHistoricalX(index, pos), e.GetHistoricalY(index, pos)) / _view.RenderScaling,
                 Pressure = Math.Min(e.GetHistoricalPressure(index, pos), 1),
-                Twist = e.GetHistoricalOrientation(index, pos) * s_radiansToDegree
+                Twist = e.GetHistoricalOrientation(index, pos) * RadiansToDegree
             };
         }
 
