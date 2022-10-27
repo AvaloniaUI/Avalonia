@@ -18,6 +18,8 @@ namespace ControlCatalog.ViewModels
         private int _counter;
         private IObservable<SelectionMode> _selectionMode;
 
+        public string Title => "ListBox Page";
+
         public ListBoxPageViewModel()
         {
             Items = new ObservableCollection<string>(Enumerable.Range(1, 10000).Select(i => GenerateItem()));

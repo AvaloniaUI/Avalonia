@@ -109,6 +109,9 @@
       <TabItem Header="Menu">
         <pages:MenuPage />
       </TabItem>
+      <TabItem Header="NavigationControl">
+        <pages:NavigationControlPage />
+      </TabItem>
       <TabItem Header="Notifications">
         <pages:NotificationsPage />
       </TabItem>

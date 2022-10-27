@@ -1,0 +1,55 @@
+﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:control="using:Avalonia.Controls"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Design.PreviewWith>
+    <Border Padding="20" Width="800" Height="500">
+      <NavigationControl/>
+    </Border>
+  </Design.PreviewWith>
+  <ControlTheme x:Key="{x:Type NavigationControl}" TargetType="NavigationControl">
+    <ControlTheme.Resources>
+      <ResourceDictionary>
+      </ResourceDictionary>
+    </ControlTheme.Resources>
+    <Setter Property="Template">
+      <ControlTemplate>
+        <DockPanel>
+          <Border IsVisible="{TemplateBinding IsNavBarVisible}" Height="{DynamicResource NavigationControlNavBarHeight}" Background="{DynamicResource NavigationControlNavBarBackground}" DockPanel.Dock="Top" Padding="5" CornerRadius="{DynamicResource ControlCornerRadius}">
+            <DockPanel HorizontalAlignment="Stretch">
+              <Button x:Name="PART_BackButton" Background="Transparent" DockPanel.Dock="Left" IsEnabled="{TemplateBinding CanGoBack}" IsVisible="{TemplateBinding IsBackButtonVisible}">
+                <Button.Styles>
+                  <Styles>
+                    <Style Selector=":disabled /template/ ContentPresenter#PART_ContentPresenter">
+                      <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                  </Styles>
+                </Button.Styles>
+                <PathIcon
+                  Data="M12.7347,4.20949 C13.0332,3.92233 13.508,3.93153 13.7952,4.23005 C14.0823,4.52857 14.0731,5.00335 13.7746,5.29051 L5.50039,13.25 L24.2532,13.25 C24.6674,13.25 25.0032,13.5858 25.0032,13.9999982 C25.0032,14.4142 24.6674,14.75 24.2532,14.75 L5.50137,14.75 L13.7746,22.7085 C14.0731,22.9957 14.0823,23.4705 13.7952,23.769 C13.508,24.0675 13.0332,24.0767 12.7347,23.7896 L3.30673,14.7202 C2.89776,14.3268 2.89776,13.6723 3.30673,13.2788 L12.7347,4.20949 Z"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"/>
+              </Button>
+              <ContentPresenter Name="PART_Header"
+                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                  Content="{TemplateBinding CurrentView}"
+                />
+            </DockPanel>
+
+          </Border>
+          <TransitioningContentControl Name="PART_ContentPresenter"
+                          PageTransition="{TemplateBinding PageTransition}"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          CornerRadius="{TemplateBinding CornerRadius}"
+                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                          Content="{TemplateBinding CurrentView}"
+                          Padding="{TemplateBinding Padding}"
+                          Margin="{DynamicResource NavigationControlPageMargin}"
+                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+        </DockPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

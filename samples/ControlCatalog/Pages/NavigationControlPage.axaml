@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:pages="using:ControlCatalog.Pages"
+             xmlns:vm="using:ControlCatalog.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.NavigationControlPage" x:DataType="vm:NavigationPageViewModel">
+  <Grid Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowDefinitions="Auto,*" ColumnDefinitions="*,*">
+    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Vertical" Spacing="10">
+      <Button Content="Navigate to ListBox Page" x:Name="ListButton"
+              Command="{Binding NavigateTo}">
+        <Button.CommandParameter>
+          <vm:ListBoxPageViewModel/>
+        </Button.CommandParameter>
+      </Button>
+      <Button Content="Navigate to Menu Page" x:Name="MenuButton" 
+              Command="{Binding NavigateTo}">
+        <Button.CommandParameter>
+          <vm:MenuPageViewModel/>
+        </Button.CommandParameter>
+      </Button>
+    </StackPanel>
+    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical">
+      <CheckBox x:Name="ToggleBackButton" IsChecked="{Binding ShowBackButton}">Show Back Button</CheckBox>
+      <CheckBox x:Name="ToggleNavBar" IsChecked="{Binding ShowNavBar}">Show Nav Bar</CheckBox>
+    </StackPanel>
+    <NavigationControl
+      x:Name="Nav" 
+      VerticalAlignment="Stretch"
+      IsBackButtonVisible="{Binding ShowBackButton}"
+      IsNavBarVisible="{Binding ShowNavBar}"
+      NavigationRouter="{Binding NavigationRouter}"
+      Margin="5" 
+      Grid.Row="1" 
+      Grid.ColumnSpan="2">
+      <NavigationControl.HeaderTemplate>
+        <DataTemplate>
+          <Label Content="{Binding Title}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+        </DataTemplate>
+      </NavigationControl.HeaderTemplate>
+      <NavigationControl.DataTemplates>
+        <DataTemplate x:DataType="vm:ListBoxPageViewModel">
+          <pages:ListBoxPage DataContext="{Binding}"/>
+        </DataTemplate>
+        <DataTemplate x:DataType="vm:MenuPageViewModel">
+          <pages:MenuPage DataContext="{Binding}"/>
+        </DataTemplate>
+      </NavigationControl.DataTemplates>
+    </NavigationControl>
+  </Grid>
+</UserControl>

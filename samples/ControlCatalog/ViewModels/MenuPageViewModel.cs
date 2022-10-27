@@ -11,6 +11,7 @@ namespace ControlCatalog.ViewModels
     public class MenuPageViewModel
     {
         public Control? View { get; set; }
+        public string Title => "Menu Page";
         public MenuPageViewModel()
         {
             OpenCommand = MiniCommand.CreateFromTask(Open);
