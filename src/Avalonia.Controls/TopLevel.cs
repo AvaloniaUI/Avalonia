@@ -76,6 +76,22 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
             AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
 
+        /// <summary>
+        /// Defines the StatusBarColor attached property.
+        /// </summary>
+        public static readonly AttachedProperty<Color?> StatusBarColorProperty =
+            AvaloniaProperty.RegisterAttached<TopLevel, UserControl, Color?>(
+                "StatusBarColor",
+                inherits: true);
+
+        /// <summary>
+        /// Defines the IsStatusBarVisible attached property.
+        /// </summary>
+        public static readonly AttachedProperty<bool?> IsStatusBarVisibleProperty =
+            AvaloniaProperty.RegisterAttached<TopLevel, UserControl, bool?>(
+                "IsStatusBarVisible",
+                inherits: true);
+
         private static readonly WeakEvent<IResourceHost, ResourcesChangedEventArgs>
             ResourcesChangedWeakEvent = WeakEvent.Register<IResourceHost, ResourcesChangedEventArgs>(
                 (s, h) => s.ResourcesChanged += h,
@@ -105,7 +121,7 @@ namespace Avalonia.Controls
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
             AffectsMeasure<TopLevel>(ClientSizeProperty);
 
-            StatusBarColorProperty.Changed.AddClassHandler<Control>((view, e) =>
+            StatusBarColorProperty.Changed.AddClassHandler<UserControl>((view, e) =>
             {
                 if (view.Parent is TopLevel tl && tl.PlatformImpl is ITopLevelWithPlatformStatusBar topLevelStatusBar)
                 {
@@ -113,7 +129,7 @@ namespace Avalonia.Controls
                 }
             });
 
-            IsStatusBarVisibleProperty.Changed.AddClassHandler<Control>((view, e) =>
+            IsStatusBarVisibleProperty.Changed.AddClassHandler<UserControl>((view, e) =>
             {
                 if (view.Parent is TopLevel tl && tl.PlatformImpl is ITopLevelWithPlatformStatusBar topLevelStatusBar)
                 {
@@ -345,6 +361,47 @@ namespace Avalonia.Controls
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
+
+        /// <summary>
+        /// Helper for setting the color of the platform's status bar
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel</param>
+        /// <param name="color">The color to set</param>
+        public static void SetStatusBarColor(UserControl control, Color? color)
+        {
+            control.SetValue(StatusBarColorProperty, color);
+        }
+
+        /// <summary>
+        /// Helper for getting the color of the platform's status bar
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel</param>
+        /// <returns>The current color of the platform's status bar</returns>
+        public static Color? GetStatusBarColor(UserControl control)
+        {
+            return control.GetValue(StatusBarColorProperty);
+        }
+
+        /// <summary>
+        /// Helper for setting the visibility of the platform's status bar
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel</param>
+        /// <param name="visible">The status bar visible state to set</param>
+        public static void SetIsStatusBarVisible(UserControl control, bool? visible)
+        {
+            control.SetValue(IsStatusBarVisibleProperty, visible);
+        }
+
+        /// <summary>
+        /// Helper for getting the visibility of the platform's status bar
+        /// </summary>
+        /// <param name="control">The main view attached to the toplevel</param>
+        /// <returns>The current visibility of the platform's status bar</returns>
+        public static bool? GetIsStatusBarVisible(UserControl control)
+        {
+            return control.GetValue(IsStatusBarVisibleProperty);
+        }
+
         /// <inheritdoc/>
         protected virtual IRenderTarget CreateRenderTarget()
         {
@@ -574,16 +631,25 @@ namespace Avalonia.Controls
         protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
-        }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == ContentProperty && Content is Control control)
+            if(e.NewItems.Count > 0)
             {
-                StatusBarColor = control.StatusBarColor;
-                IsStatusBarVisible = control.IsStatusBarVisible;
+                var child = e.NewItems[0] as UserControl;
+
+                if (child != null)
+                {
+                    var color = GetStatusBarColor(child);
+                    var showStatusBar = GetIsStatusBarVisible(child);
+                    if (PlatformImpl is ITopLevelWithPlatformStatusBar topLevelStatusBar)
+                    {
+                        topLevelStatusBar.StatusBarColor = color;
+
+                        if (showStatusBar != null)
+                        {
+                            topLevelStatusBar.IsStatusBarVisible = showStatusBar;
+                        }
+                    };
+                }
             }
         }
 

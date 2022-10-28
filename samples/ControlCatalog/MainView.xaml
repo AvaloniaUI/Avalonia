@@ -3,6 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
              xmlns:models="clr-namespace:ControlCatalog.Models"
+             TopLevel.StatusBarColor="Red"
+             TopLevel.IsStatusBarVisible="False"
              xmlns:pages="clr-namespace:ControlCatalog.Pages">
   <Grid>
     <Grid.Styles>

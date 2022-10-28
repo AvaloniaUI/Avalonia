@@ -26,6 +26,8 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
 
+using AndroidColor = Android.Graphics.Color;
+
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo,
@@ -56,6 +58,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             StorageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
+
+            _defaultStatusBarColor = (_view.Context as Activity).Window.StatusBarColor;
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -252,7 +256,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public INativeControlHostImpl NativeControlHost { get; }
         
         public IStorageProvider StorageProvider { get; }
-        public Media.Color StatusBarColor
+
+        private readonly int _defaultStatusBarColor;
+
+        public Media.Color? StatusBarColor
         {
             get
             {
@@ -266,7 +273,14 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 var activity = _view.Context as Activity;
 
-                activity.Window.SetStatusBarColor(Color.Argb(value.A, value.R, value.G, value.B));
+                if (value != null)
+                {
+                    activity.Window.SetStatusBarColor(Color.Argb((int)(value?.A), (int)(value?.R), (int)(value?.G), (int)(value?.B)));
+                }
+                else
+                {
+                    activity.Window.SetStatusBarColor(new AndroidColor(_defaultStatusBarColor));
+                }
             }
         }
 
@@ -274,8 +288,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             get
             {
-                var activity = _view.Context as AppCompatActivity;
-
                 var compat  = ViewCompat.GetRootWindowInsets(_view);
 
                 return compat?.IsVisible(WindowInsetsCompat.Type.StatusBars());
