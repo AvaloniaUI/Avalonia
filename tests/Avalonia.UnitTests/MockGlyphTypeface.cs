@@ -15,6 +15,8 @@ namespace Avalonia.UnitTests
 
         public int GlyphCount => 1337;
 
+        public FontSimulations FontSimulations => throw new NotImplementedException();
+
         public ushort GetGlyph(uint codepoint)
         {
             return (ushort)codepoint;
@@ -55,6 +57,17 @@ namespace Avalonia.UnitTests
         {
             table = null;
             return false;
+        }
+
+        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+        {
+            metrics = new GlyphMetrics
+            {
+                Width = 10,
+                Height = 10
+            };
+
+            return true;
         }
     }
 }
