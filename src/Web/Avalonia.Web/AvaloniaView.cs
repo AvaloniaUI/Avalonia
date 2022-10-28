@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.InteropServices.JavaScript;
+
+using Avalonia.Collections.Pooled;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
 using Avalonia.Controls.Platform;
@@ -18,6 +22,7 @@ namespace Avalonia.Web
     [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
     public partial class AvaloniaView : ITextInputMethodImpl
     {
+        private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
         private readonly BrowserTopLevelImpl _topLevelImpl;
         private EmbeddableControlRoot _topLevel;
 
@@ -37,16 +42,14 @@ namespace Avalonia.Web
 
         private bool _useGL;        
         private ITextInputMethodClient? _client;
-        private static int _canvasCount;
 
         public AvaloniaView(string divId)
+            : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id {divId} was not found in the html document."))
         {
-            var host = DomHelper.GetElementById(divId);
-            if (host == null)
-            {
-                throw new Exception($"Element with id {divId} was not found in the html document.");
-            }
+        }
 
+        public AvaloniaView(JSObject host)
+        {
             var hostContent = DomHelper.CreateAvaloniaHost(host);
             if (hostContent == null)
             {
@@ -54,17 +57,15 @@ namespace Avalonia.Web
             }
 
             _containerElement = hostContent.GetPropertyAsJSObject("host")
-                ?? throw new InvalidOperationException("Host cannot be null");
+                                ?? throw new InvalidOperationException("Host cannot be null");
             _canvas = hostContent.GetPropertyAsJSObject("canvas")
-                ?? throw new InvalidOperationException("Canvas cannot be null");
+                      ?? throw new InvalidOperationException("Canvas cannot be null");
             _nativeControlsContainer = hostContent.GetPropertyAsJSObject("nativeHost")
-                ?? throw new InvalidOperationException("NativeHost cannot be null");
+                                       ?? throw new InvalidOperationException("NativeHost cannot be null");
             _inputElement = hostContent.GetPropertyAsJSObject("inputElement")
-                ?? throw new InvalidOperationException("InputElement cannot be null");
+                            ?? throw new InvalidOperationException("InputElement cannot be null");
 
             _splash = DomHelper.GetElementById("avalonia-splash");
-
-            _canvas.SetProperty("id", $"avaloniaCanvas{_canvasCount++}");
 
             _topLevelImpl = new BrowserTopLevelImpl(this);
 
@@ -81,8 +82,7 @@ namespace Avalonia.Web
 
             _topLevelImpl.SetCssCursor = (cursor) =>
             {
-                InputHelper.SetCursor(_containerElement, cursor); // macOS
-                InputHelper.SetCursor(_canvas, cursor); // windows
+                InputHelper.SetCursor(_containerElement, cursor);
             };
 
             _topLevel.Prepare();
@@ -101,7 +101,8 @@ namespace Avalonia.Web
                 OnCompositionUpdate,
                 OnCompositionEnd);
 
-            InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp, OnWheel);
+            InputHelper.SubscribePointerEvents(_containerElement, OnPointerMove, OnPointerDown, OnPointerUp,
+                OnPointerCancel, OnWheel);
 
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>();
 
@@ -122,7 +123,12 @@ namespace Avalonia.Web
                     _context.SetResourceCacheLimit(skiaOptions?.MaxGpuResourceSizeBytes ?? 32 * 1024 * 1024);
                 }
 
-                _topLevelImpl.Surfaces = new[] { new BrowserSkiaSurface(_context, _jsGlInfo, ColorType, new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi, GRSurfaceOrigin.BottomLeft) };
+                _topLevelImpl.Surfaces = new[]
+                {
+                    new BrowserSkiaSurface(_context, _jsGlInfo, ColorType,
+                        new PixelSize((int)_canvasSize.Width, (int)_canvasSize.Height), _dpi,
+                        GRSurfaceOrigin.BottomLeft)
+                };
             }
             else
             {
@@ -137,9 +143,11 @@ namespace Avalonia.Web
 
             _topLevelImpl.SetClientSize(_canvasSize, _dpi);
 
-            DomHelper.ObserveSize(host, divId, OnSizeChanged);
+            DomHelper.ObserveSize(host, null, OnSizeChanged);
 
             CanvasHelper.RequestAnimationFrame(_canvas, true);
+
+            InputHelper.FocusElement(_containerElement);
         }
 
         private static RawPointerPoint ExtractRawPointerFromJSArgs(JSObject args)
@@ -158,17 +166,36 @@ namespace Avalonia.Web
 
         private bool OnPointerMove(JSObject args)
         {
-            var type = args.GetPropertyAsString("pointertype");
-
+            var pointerType = args.GetPropertyAsString("pointerType");
             var point = ExtractRawPointerFromJSArgs(args);
+            var type = pointerType switch
+            {
+                "touch" => RawPointerEventType.TouchUpdate,
+                _ => RawPointerEventType.Move
+            };
 
-            return _topLevelImpl.RawPointerEvent(RawPointerEventType.Move, type!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+            var coalescedEvents = new Lazy<IReadOnlyList<RawPointerPoint>?>(() =>
+            {
+                var points = InputHelper.GetCoalescedEvents(args);
+                s_intermediatePointsPooledList.Clear();
+                s_intermediatePointsPooledList.Capacity = points.Length - 1;
+
+                // Skip the last one, as it is already processed point.
+                for (var i = 0; i < points.Length - 1; i++)
+                {
+                    var point = points[i];
+                    s_intermediatePointsPooledList.Add(ExtractRawPointerFromJSArgs(point));
+                }
+
+                return s_intermediatePointsPooledList;
+            });
+
+            return _topLevelImpl.RawPointerEvent(type, pointerType!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"), coalescedEvents);
         }
 
         private bool OnPointerDown(JSObject args)
         {
-            var pointerType = args.GetPropertyAsString("pointerType");
-
+            var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
             var type = pointerType switch
             {
                 "touch" => RawPointerEventType.TouchBegin,
@@ -179,20 +206,18 @@ namespace Avalonia.Web
                     2 => RawPointerEventType.RightButtonDown,
                     3 => RawPointerEventType.XButton1Down,
                     4 => RawPointerEventType.XButton2Down,
-                    // 5 => Pen eraser button,
+                    5 => RawPointerEventType.XButton1Down, // should be pen eraser button,
                     _ => RawPointerEventType.Move
                 }
             };
 
             var point = ExtractRawPointerFromJSArgs(args);
-
-            return _topLevelImpl.RawPointerEvent(type, pointerType!, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+            return _topLevelImpl.RawPointerEvent(type, pointerType, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
         }
 
         private bool OnPointerUp(JSObject args)
         {
             var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
-
             var type = pointerType switch
             {
                 "touch" => RawPointerEventType.TouchEnd,
@@ -203,14 +228,26 @@ namespace Avalonia.Web
                     2 => RawPointerEventType.RightButtonUp,
                     3 => RawPointerEventType.XButton1Up,
                     4 => RawPointerEventType.XButton2Up,
-                    // 5 => Pen eraser button,
+                    5 => RawPointerEventType.XButton1Up, // should be pen eraser button,
                     _ => RawPointerEventType.Move
                 }
             };
 
             var point = ExtractRawPointerFromJSArgs(args);
-
             return _topLevelImpl.RawPointerEvent(type, pointerType, point, GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+        }
+        
+        private bool OnPointerCancel(JSObject args)
+        {
+            var pointerType = args.GetPropertyAsString("pointerType") ?? "mouse";
+            if (pointerType == "touch")
+            {
+                var point = ExtractRawPointerFromJSArgs(args);
+                _topLevelImpl.RawPointerEvent(RawPointerEventType.TouchCancel, pointerType, point,
+                    GetModifiers(args), args.GetPropertyAsInt32("pointerId"));
+            }
+
+            return false;
         }
 
         private bool OnWheel(JSObject args)
@@ -256,7 +293,14 @@ namespace Avalonia.Web
 
         private bool OnKeyDown (string code, string key, int modifier)
         {
-            return _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
+            var handled = _topLevelImpl.RawKeyboardEvent(RawKeyEventType.KeyDown, code, key, (RawInputModifiers)modifier);
+
+            if (!handled && key.Length == 1)
+            {
+                handled = _topLevelImpl.RawTextEvent(key);
+            }
+
+            return handled;
         }
 
         private bool OnKeyUp(string code, string key, int modifier)
@@ -387,7 +431,7 @@ namespace Avalonia.Web
             InputHelper.FocusElement(_containerElement);
         }
 
-        public void SetClient(ITextInputMethodClient? client)
+        void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
         {
             Console.WriteLine("Set Client");
             if (_client != null)
@@ -431,18 +475,18 @@ namespace Avalonia.Web
             }
         }
 
-        public void SetCursorRect(Rect rect)
+        void ITextInputMethodImpl.SetCursorRect(Rect rect)
         {
             InputHelper.FocusElement(_inputElement);
             InputHelper.SetBounds(_inputElement, (int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height, _client?.SurroundingText.CursorOffset ?? 0);
             InputHelper.FocusElement(_inputElement);
         }
 
-        public void SetOptions(TextInputOptions options)
+        void ITextInputMethodImpl.SetOptions(TextInputOptions options)
         {
         }
 
-        public void Reset()
+        void ITextInputMethodImpl.Reset()
         {
             InputHelper.ClearInputElement(_inputElement);
             InputHelper.SetSurroundingText(_inputElement, "", 0, 0);

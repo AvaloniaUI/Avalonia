@@ -4,7 +4,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Web
 {
-    public class ManualTriggerRenderTimer : IRenderTimer
+    internal class ManualTriggerRenderTimer : IRenderTimer
     {
         private static readonly Stopwatch s_sw = Stopwatch.StartNew();
 

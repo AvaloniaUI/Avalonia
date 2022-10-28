@@ -12,6 +12,16 @@ jobs:
     name: 'AvaloniaMacPool'
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 6.0.401'
+    inputs:
+      version: 6.0.401
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 7.0.100-rc.2.22477.23'
+    inputs:
+      version: 7.0.100-rc.2.22477.23
+      
   - script: system_profiler SPDisplaysDataType |grep Resolution
   
   - script: |
@@ -44,6 +54,11 @@ jobs:
     displayName: 'Use .NET Core SDK 6.0.401'
     inputs:
       version: 6.0.401
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core SDK 7.0.100-rc.2.22477.23'
+    inputs:
+      version: 7.0.100-rc.2.22477.23
 
   - task: Windows Application Driver@0
     inputs:

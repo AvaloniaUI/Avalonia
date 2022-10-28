@@ -62,10 +62,10 @@ namespace ControlCatalog.Pages
                         CreateFormattedText($"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 20));
 
-                    formattedText = CreateFormattedText($"Scaling: {screen.PixelDensity * 100}%");
+                    formattedText = CreateFormattedText($"Scaling: {screen.Scaling * 100}%");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 40));
 
-                    formattedText = CreateFormattedText($"Primary: {screen.Primary}");
+                    formattedText = CreateFormattedText($"IsPrimary: {screen.IsPrimary}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 60));
 
                     formattedText =
