@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Animation;
-using Avalonia.Collections;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
@@ -212,14 +207,9 @@ namespace Avalonia.Controls
             BackButton = e.NameScope.Get<Button>("PART_BackButton");
         }
 
-        private void UpdateStackInfo()
-        {
-            RaisePropertyChanged(CanGoBackProperty, false, CanGoBack);
-        }
-
         private async void BackButton_Clicked(object? sender, RoutedEventArgs eventArgs)
         {
-            NavigationRouter?.GoBack();
+            await NavigationRouter?.GoBack();
         }
     }
 }

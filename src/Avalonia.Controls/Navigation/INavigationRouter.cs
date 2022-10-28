@@ -12,9 +12,7 @@ namespace Avalonia.Controls
         bool? CanGoBack { get; set; }
         IEnumerable<object?> NavigationStack { get; }
         object? CurrentView { get; }
-        object? Header { get; }
-
-        void NavigateTo(object? viewModel);
-        void GoBack();
+        Task NavigateTo(object? viewModel);
+        Task GoBack();
     }
 }

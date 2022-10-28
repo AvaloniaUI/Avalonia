@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Avalonia.Collections;
 
 namespace Avalonia.Controls
 {
     public class NavigationRouter : INavigationRouter
     {
+        private readonly Stack<object?> _navigationStack;
         private bool? _canGoBack;
-        private Stack<object?> _navigationStack;
         private object? _currentView;
-        private object? _header;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -37,22 +37,12 @@ namespace Avalonia.Controls
             }
         }
 
-        public object? Header
-        {
-            get => _header; set
-            {
-                _header = value;
-
-                OnPropertyChanged();
-            }
-        }
-
         public NavigationRouter()
         {
             _navigationStack = new Stack<object?>();
         }
 
-        public void GoBack()
+        public async Task GoBack()
         {
             if (CanGoBack != null && (bool)CanGoBack)
             {
@@ -62,7 +52,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public void NavigateTo(object? viewModel)
+        public async Task NavigateTo(object? viewModel)
         {
             _navigationStack.Push(viewModel);
             CurrentView = viewModel;
