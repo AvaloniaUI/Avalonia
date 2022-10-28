@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// The root window of a <see cref="Popup"/>.
     /// </summary>
-    public sealed class PopupRoot : WindowBase, IInteractive, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
+    public sealed class PopupRoot : WindowBase, IHostedVisualTreeRoot, IDisposable, IStyleHost, IPopupHost
     {
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
@@ -72,7 +72,7 @@ namespace Avalonia.Controls.Primitives
         /// <remarks>
         /// Popup events are passed to their parent window. This facilitates this.
         /// </remarks>
-        IInteractive? IInteractive.InteractiveParent => Parent;
+        protected internal override Interactive? InteractiveParent => Parent;
 
         /// <summary>
         /// Gets the control that is hosting the popup root.

@@ -7,7 +7,7 @@ namespace Avalonia.Input
     {
         public Vector Delta { get; set; }
 
-        internal PointerDeltaEventArgs(RoutedEvent routedEvent, IInteractive? source, 
+        internal PointerDeltaEventArgs(RoutedEvent routedEvent, object? source, 
             IPointer pointer, Visual rootVisual, Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers, Vector delta) 
             : base(routedEvent, source, pointer, rootVisual, rootVisualPosition,

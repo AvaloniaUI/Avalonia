@@ -9,7 +9,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayPopupHost : ContentControl, IPopupHost, IInteractive, IManagedPopupPositionerPopup
+    public class OverlayPopupHost : ContentControl, IPopupHost, IManagedPopupPositionerPopup
     {
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
@@ -42,14 +42,13 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(TransformProperty, value);
         }
 
-        /// <inheritdoc/>
-        IInteractive? IInteractive.InteractiveParent => Parent;
-
         bool IPopupHost.Topmost
         {
             get => false;
             set { /* Not currently supported in overlay popups */ }
         }
+
+        protected internal override Interactive? InteractiveParent => Parent;
 
         public void Dispose() => Hide();
 

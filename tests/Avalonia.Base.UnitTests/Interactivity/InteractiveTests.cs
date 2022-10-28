@@ -363,7 +363,7 @@ namespace Avalonia.Base.UnitTests.Interactivity
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
             var parent = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
-            var target = (IInteractive)parent.GetVisualChildren().Single();
+            var target = (Interactive)parent.GetVisualChildren().Single();
 
             EventHandler<RoutedEventArgs> removeHandler = (s, e) =>
             {
