@@ -9,6 +9,7 @@
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
+        <Compile Include="..\..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\ColorToBrushConverter.cs" />
@@ -69,5 +70,9 @@
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Compatibility\" />
   </ItemGroup>
 </Project>
