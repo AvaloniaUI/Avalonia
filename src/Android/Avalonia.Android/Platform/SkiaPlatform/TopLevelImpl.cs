@@ -41,6 +41,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
         private ViewImpl _view;
+        private bool? _systemUiVisibility;
+        private Media.Color? _statusBarColor;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -273,6 +275,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 var activity = _view.Context as Activity;
 
+                _statusBarColor = value;
+
                 if (value != null)
                 {
                     activity.Window.SetStatusBarColor(Color.Argb((int)(value?.A), (int)(value?.R), (int)(value?.G), (int)(value?.B)));
@@ -294,11 +298,18 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
             set
             {
+                _systemUiVisibility = value;
+
+                if(!View.IsShown)
+                {
+                    return;
+                }
+
                 var activity = _view.Context as AppCompatActivity;
 
                 var compat = new WindowInsetsControllerCompat(activity.Window, _view);
 
-                if ((bool)value)
+                if (value == null || value.Value)
                 {
                     compat?.Show(WindowInsetsCompat.Type.StatusBars());
                 }
@@ -312,6 +323,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                     }
                 }
             }
+        }
+
+        internal void ApplyStatusBarState()
+        {
+            IsStatusBarVisible = _systemUiVisibility;
+            StatusBarColor = _statusBarColor;
         }
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)

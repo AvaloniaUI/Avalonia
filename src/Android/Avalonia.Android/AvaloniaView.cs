@@ -61,6 +61,8 @@ namespace Avalonia.Android
                 }
 
                 _root.Renderer.Start();
+
+                _view.ApplyStatusBarState();
             }
             else
             {
