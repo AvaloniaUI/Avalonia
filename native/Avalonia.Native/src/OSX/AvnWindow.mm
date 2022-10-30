@@ -384,7 +384,7 @@
     return true;
 }
 
--(void)resignKeyWindow
+-(void)windowDidResignKey:(NSNotification *)notification
 {
     if(_parent)
         _parent->BaseEvents->Deactivated();
@@ -392,8 +392,6 @@
     [self showAppMenuOnly];
     
     [self invalidateShadow];
-
-    [super resignKeyWindow];
 }
 
 - (void)windowDidMove:(NSNotification *_Nonnull)notification
