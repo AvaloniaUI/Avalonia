@@ -89,7 +89,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<SizeChangedEventArgs> SizeChangedEvent =
             RoutedEvent.Register<Control, SizeChangedEventArgs>(
-                nameof(SizeChanged), RoutingStrategies.Bubble);
+                nameof(SizeChanged), RoutingStrategies.Direct);
 
         /// <summary>
         /// Defines the <see cref="FlowDirection"/> property.
