@@ -556,13 +556,20 @@ namespace Avalonia.Controls
                 var oldValue = change.GetOldValue<Rect>();
                 var newValue = change.GetNewValue<Rect>();
 
-                var sizeChangedEventArgs = new SizeChangedEventArgs(
-                    SizeChangedEvent,
-                    source: this,
-                    previousSize: new Size(oldValue.Width, oldValue.Height),
-                    newSize: new Size(newValue.Width, newValue.Height));
+                // Bounds is a Rect with an X/Y Position as well as Height/Width.
+                // This means it is possible for the Rect to change position but not size.
+                // Therefore, we want to explicity check only the size and raise an event
+                // only when that size has changed.
+                if (newValue.Size != oldValue.Size)
+                {
+                    var sizeChangedEventArgs = new SizeChangedEventArgs(
+                        SizeChangedEvent,
+                        source: this,
+                        previousSize: new Size(oldValue.Width, oldValue.Height),
+                        newSize: new Size(newValue.Width, newValue.Height));
 
-                RaiseEvent(sizeChangedEventArgs);
+                    RaiseEvent(sizeChangedEventArgs);
+                }
             }
             else if (change.Property == FlowDirectionProperty)
             {
