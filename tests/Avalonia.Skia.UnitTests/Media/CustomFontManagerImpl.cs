@@ -103,7 +103,7 @@ namespace Avalonia.Skia.UnitTests.Media
                     }
             }
 
-            return new GlyphTypefaceImpl(skTypeface);
+            return new GlyphTypefaceImpl(skTypeface, FontSimulations.None);
         }
     }
 }

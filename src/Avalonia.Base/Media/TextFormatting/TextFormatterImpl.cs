@@ -477,25 +477,28 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextCharacters shapedTextCharacters:
                         {
-                            var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphClusters[0];
-                            var lastCluster = firstCluster;
-
-                            for (var i = 0; i < shapedTextCharacters.ShapedBuffer.Length; i++)
+                            if(shapedTextCharacters.ShapedBuffer.Length > 0)
                             {
-                                var glyphInfo = shapedTextCharacters.ShapedBuffer[i];
+                                var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphClusters[0];
+                                var lastCluster = firstCluster;
 
-                                if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
+                                for (var i = 0; i < shapedTextCharacters.ShapedBuffer.Length; i++)
                                 {
-                                    measuredLength += Math.Max(0, lastCluster - firstCluster);
+                                    var glyphInfo = shapedTextCharacters.ShapedBuffer[i];
 
-                                    goto found;
+                                    if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
+                                    {
+                                        measuredLength += Math.Max(0, lastCluster - firstCluster);
+
+                                        goto found;
+                                    }
+
+                                    lastCluster = glyphInfo.GlyphCluster;
+                                    currentWidth += glyphInfo.GlyphAdvance;
                                 }
 
-                                lastCluster = glyphInfo.GlyphCluster;
-                                currentWidth += glyphInfo.GlyphAdvance;
-                            }
-
-                            measuredLength += currentRun.TextSourceLength;
+                                measuredLength += currentRun.TextSourceLength;
+                            }                         
 
                             break;
                         }

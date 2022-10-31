@@ -13,7 +13,7 @@ namespace Avalonia.Input
         /// <summary>
         /// Event which is raised, when a drag-and-drop operation leaves the element.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> DragLeaveEvent = RoutedEvent.Register<RoutedEventArgs>("DragLeave", RoutingStrategies.Bubble, typeof(DragDrop));
+        public static readonly RoutedEvent<DragEventArgs> DragLeaveEvent = RoutedEvent.Register<DragEventArgs>("DragLeave", RoutingStrategies.Bubble, typeof(DragDrop));
         /// <summary>
         /// Event which is raised, when a drag-and-drop operation is updated while over the element.
         /// </summary>
