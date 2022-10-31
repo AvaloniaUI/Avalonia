@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Interactivity;
+﻿using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
@@ -12,25 +7,41 @@ namespace Avalonia.Controls
     /// </summary>
     public class SizeChangedEventArgs : RoutedEventArgs
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SizeChangedEventArgs"/> class.
+        /// </summary>
+        /// <param name="routedEvent">The routed event associated with these event args.</param>
         public SizeChangedEventArgs(RoutedEvent? routedEvent)
             : base (routedEvent)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SizeChangedEventArgs"/> class.
+        /// </summary>
+        /// <param name="routedEvent">The routed event associated with these event args.</param>
+        /// <param name="source">The source object that raised the routed event.</param>
         public SizeChangedEventArgs(RoutedEvent? routedEvent, IInteractive? source)
             : base(routedEvent, source)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SizeChangedEventArgs"/> class.
+        /// </summary>
+        /// <param name="routedEvent">The routed event associated with these event args.</param>
+        /// <param name="source">The source object that raised the routed event.</param>
+        /// <param name="previousSize">The previous size (or bounds) of the object.</param>
+        /// <param name="newSize">The new size (or bounds) of the object.</param>
         public SizeChangedEventArgs(
             RoutedEvent? routedEvent,
             IInteractive? source,
-            Size newSize,
-            Size previousSize)
+            Size previousSize,
+            Size newSize)
             : base(routedEvent, source)
         {
-            NewSize = newSize;
             PreviousSize = previousSize;
+            NewSize = newSize;
             HeightChanged = newSize.Height != previousSize.Height;
             WidthChanged = newSize.Width != previousSize.Width;
         }

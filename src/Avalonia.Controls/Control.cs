@@ -559,8 +559,8 @@ namespace Avalonia.Controls
                 var sizeChangedEventArgs = new SizeChangedEventArgs(
                     SizeChangedEvent,
                     source: this,
-                    newSize: new Size(newValue.Width, newValue.Height),
-                    previousSize: new Size(oldValue.Width, oldValue.Height));
+                    previousSize: new Size(oldValue.Width, oldValue.Height),
+                    newSize: new Size(newValue.Width, newValue.Height));
 
                 RaiseEvent(sizeChangedEventArgs);
             }
