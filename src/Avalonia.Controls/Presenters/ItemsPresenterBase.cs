@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Base class for controls that present items inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public abstract class ItemsPresenterBase : Control, IItemsPresenter, ITemplatedControl, IChildIndexProvider
+    public abstract class ItemsPresenterBase : Control, IItemsPresenter, IChildIndexProvider
     {
         /// <summary>
         /// Defines the <see cref="Items"/> property.

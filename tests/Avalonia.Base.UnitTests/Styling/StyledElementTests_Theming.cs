@@ -381,14 +381,14 @@ public class StyledElementTests_Theming
                     Setters =
                     {
                         new Setter(
-                            TemplatedControl.TemplateProperty,
+                            Controls.Primitives.TemplatedControl.TemplateProperty,
                             new FuncControlTemplate<ThemedControl2>((o, n) => new ThemedControl())),
                     },
                     Children =
                     {
                         new Style(x => x.Nesting().Template().OfType<ThemedControl>())
                         {
-                            Setters = { new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(7)), }
+                            Setters = { new Setter(Controls.Primitives.TemplatedControl.CornerRadiusProperty, new CornerRadius(7)), }
                         },
                     }
                 },
@@ -585,12 +585,12 @@ public class StyledElementTests_Theming
         };
     }
 
-    private class ThemedControl : TemplatedControl
+    private class ThemedControl : Controls.Primitives.TemplatedControl
     {
         public Visual? VisualChild => VisualChildren?.SingleOrDefault();
     }
 
-    private class ThemedControl2 : TemplatedControl
+    private class ThemedControl2 : Controls.Primitives.TemplatedControl
     {
         public Visual? VisualChild => VisualChildren?.SingleOrDefault();
     }

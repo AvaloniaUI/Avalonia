@@ -27,7 +27,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 return new Control();
             });
 
-            var target = new TemplatedControl
+            var target = new Avalonia.Controls.Primitives.TemplatedControl
             {
                 Template = template,
             };
@@ -46,7 +46,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 return new Control();
             });
 
-            var target = new TemplatedControl
+            var target = new Avalonia.Controls.Primitives.TemplatedControl
             {
                 Template = template,
             };
@@ -59,7 +59,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void ApplyTemplate_Should_Create_Visual_Children()
         {
-            var target = new TemplatedControl
+            var target = new Avalonia.Controls.Primitives.TemplatedControl
             {
                 Template = new FuncControlTemplate((_, __) => new Decorator
                 {
@@ -93,7 +93,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Templated_Children_Should_Have_TemplatedParent_Set()
         {
-            var target = new TemplatedControl
+            var target = new Avalonia.Controls.Primitives.TemplatedControl
             {
                 Template = new FuncControlTemplate((_, __) => new Decorator
                 {
@@ -122,7 +122,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Templated_Child_Should_Have_Parent_Set()
         {
-            var target = new TemplatedControl
+            var target = new Avalonia.Controls.Primitives.TemplatedControl
             {
                 Template = new FuncControlTemplate((_, __) => new Decorator())
             };
@@ -138,7 +138,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Changing_Template_Should_Clear_Old_Templated_Childs_Parent()
         {
-            var target = new TemplatedControl
+            var target = new Avalonia.Controls.Primitives.TemplatedControl
             {
                 Template = new FuncControlTemplate((_, __) => new Decorator())
             };
@@ -156,7 +156,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Nested_Templated_Control_Should_Not_Have_Template_Applied()
         {
-            var target = new TemplatedControl
+            var target = new Avalonia.Controls.Primitives.TemplatedControl
             {
                 Template = new FuncControlTemplate((_, __) => new ScrollViewer())
             };
@@ -263,7 +263,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.TemplateApplied += (s, e) =>
             {
-                Assert.Equal(TemplatedControl.TemplateAppliedEvent, e.RoutedEvent);
+                Assert.Equal(Avalonia.Controls.Primitives.TemplatedControl.TemplateAppliedEvent, e.RoutedEvent);
                 Assert.Same(target, e.Source);
                 Assert.NotNull(e.NameScope);
                 raised = true;
