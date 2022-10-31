@@ -40,6 +40,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
+        private readonly int _defaultStatusBarColor;
         private ViewImpl _view;
         private bool? _systemUiVisibility;
         private Media.Color? _statusBarColor;
@@ -258,8 +259,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public INativeControlHostImpl NativeControlHost { get; }
         
         public IStorageProvider StorageProvider { get; }
-
-        private readonly int _defaultStatusBarColor;
 
         public Media.Color? StatusBarColor
         {
