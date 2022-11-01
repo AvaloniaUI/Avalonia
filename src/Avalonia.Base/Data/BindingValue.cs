@@ -304,34 +304,6 @@ namespace Avalonia.Data
             return new BindingValue<T>(type, v, error);
         }
 
-        public static bool operator !=(BindingValue<T> x, Optional<T> y)
-        {
-            if (x.HasValue != y.HasValue)
-                return true;
-            return !EqualityComparer<T>.Default.Equals(x.Value, y.Value);
-        }
-
-        public static bool operator ==(BindingValue<T> x, Optional<T> y)
-        {
-            if (x.HasValue != y.HasValue)
-                return false;
-            return EqualityComparer<T>.Default.Equals(x.Value, y.Value);
-        }
-
-        public static bool operator !=(Optional<T> x, BindingValue<T> y)
-        {
-            if (x.HasValue != y.HasValue)
-                return true;
-            return !EqualityComparer<T>.Default.Equals(x.Value, y.Value);
-        }
-
-        public static bool operator ==(Optional<T> x, BindingValue<T> y)
-        {
-            if (x.HasValue != y.HasValue)
-                return false;
-            return EqualityComparer<T>.Default.Equals(x.Value, y.Value);
-        }
-
         /// <summary>
         /// Creates a binding value from an instance of the underlying value type.
         /// </summary>
