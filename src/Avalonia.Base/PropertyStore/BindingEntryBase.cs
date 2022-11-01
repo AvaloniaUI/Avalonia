@@ -11,8 +11,8 @@ namespace Avalonia.PropertyStore
         IObserver<BindingValue<TSource>>,
         IDisposable
     {
-        private static IDisposable s_creating = Disposable.Empty;
-        private static IDisposable s_creatingQuiet = Disposable.Create(() => { });
+        private static readonly IDisposable s_creating = Disposable.Empty;
+        private static readonly IDisposable s_creatingQuiet = Disposable.Create(() => { });
         private IDisposable? _subscription;
         private bool _hasValue;
         private TValue? _value;

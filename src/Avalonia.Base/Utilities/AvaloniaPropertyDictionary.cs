@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.Utilities
 {
