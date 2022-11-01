@@ -44,11 +44,6 @@ namespace Avalonia.Controls
         {
             PreviousSize = previousSize;
             NewSize = newSize;
-
-            // Only consider changed when the size difference is greater than LayoutEpsilon
-            // This compensates for any rounding or precision difference between layout cycles
-            HeightChanged = !MathUtilities.AreClose(newSize.Height, previousSize.Height, LayoutHelper.LayoutEpsilon);
-            WidthChanged = !MathUtilities.AreClose(newSize.Width, previousSize.Width, LayoutHelper.LayoutEpsilon);
         }
 
         /// <summary>
@@ -61,7 +56,7 @@ namespace Avalonia.Controls
         /// be small variations in the calculations between layout cycles due to
         /// rounding and precision even when the size has not otherwise changed.
         /// </remarks>
-        public bool HeightChanged { get; init; }
+        public bool HeightChanged => !MathUtilities.AreClose(NewSize.Height, PreviousSize.Height, LayoutHelper.LayoutEpsilon);
 
         /// <summary>
         /// Gets the new size (or bounds) of the object.
@@ -83,6 +78,6 @@ namespace Avalonia.Controls
         /// be small variations in the calculations between layout cycles due to
         /// rounding and precision even when the size has not otherwise changed.
         /// </remarks>
-        public bool WidthChanged { get; init; }
+        public bool WidthChanged => !MathUtilities.AreClose(NewSize.Width, PreviousSize.Width, LayoutHelper.LayoutEpsilon);
     }
 }
