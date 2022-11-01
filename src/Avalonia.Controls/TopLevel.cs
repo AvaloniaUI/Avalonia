@@ -557,7 +557,7 @@ namespace Avalonia.Controls
         {
             base.LogicalChildrenCollectionChanged(sender, e);
 
-            if(e.NewItems.Count > 0)
+            if(e!=null && e.NewItems?.Count > 0)
             {
                 var child = e.NewItems[0] as UserControl;
 
