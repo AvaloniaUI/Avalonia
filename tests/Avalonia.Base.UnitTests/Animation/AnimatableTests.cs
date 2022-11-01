@@ -442,6 +442,59 @@ namespace Avalonia.Base.UnitTests.Animation
             control.GetValueStore().EndStyling();
         }
 
+        [Fact]
+        public void Transitions_Can_Be_Removed_While_Transition_In_Progress()
+        {
+            using var app = Start();
+
+            var opacityTransition = new DoubleTransition
+            {
+                Property = Control.OpacityProperty,
+                Duration = TimeSpan.FromSeconds(1),
+            };
+
+            var transitions = new Transitions { opacityTransition };
+            var borderTheme = new ControlTheme(typeof(Border))
+            {
+                Setters =
+                {
+                    new Setter(Control.TransitionsProperty, transitions),
+                }
+            };
+
+            var clock = new TestClock();
+            var root = new TestRoot
+            {
+                Clock = clock,
+                Resources =
+                {
+                    { typeof(Border), borderTheme },
+                }
+            };
+
+            var border = new Border();
+            root.Child = border;
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Same(transitions, border.Transitions);
+
+            // First set property with a transition to a new value, and step the clock until
+            // transition is complete.
+            border.Opacity = 0;
+            clock.Step(TimeSpan.FromSeconds(0));
+            clock.Step(TimeSpan.FromSeconds(1));
+            Assert.Equal(0, border.Opacity);
+
+            // Now clear the property; a transition is now in progress but no local value is
+            // set.
+            border.ClearValue(Border.OpacityProperty);
+
+            // Remove the transition by removing the control from the logical tree. This was
+            // causing an exception.
+            root.Child = null;
+        }
+
         private static IDisposable Start()
         {
             var clock = new MockGlobalClock();
