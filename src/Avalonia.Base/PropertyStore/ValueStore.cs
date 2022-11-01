@@ -899,6 +899,9 @@ namespace Avalonia.PropertyStore
                     {
                         RemoveEffectiveValue(key, i);
                         e.DisposeAndRaiseUnset(this, key);
+
+                        if (i > _effectiveValues.Count)
+                            break;
                     }
                 }
             }
