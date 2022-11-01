@@ -156,7 +156,7 @@ namespace Avalonia.Controls
         {
             Inlines = new InlineCollection
             {
-                Parent = this,
+                Parent = LogicalChildren,
                 InlineHost = this
             };
         }
@@ -635,9 +635,16 @@ namespace Avalonia.Controls
             {
                 if (_textRuns != null)
                 {
-                    LogicalChildren.Clear();
+                    foreach (var textRun in _textRuns)
+                    {
+                        if (textRun is EmbeddedControlRun controlRun &&
+                            controlRun.Control is Control control)
+                        {
+                            VisualChildren.Remove(control);
 
-                    VisualChildren.Clear();
+                            LogicalChildren.Remove(control);
+                        }
+                    }
                 }
 
                 var textRuns = new List<TextRun>();
@@ -772,7 +779,7 @@ namespace Avalonia.Controls
 
             if (newValue is not null)
             {
-                newValue.Parent = this;
+                newValue.Parent = LogicalChildren;
                 newValue.InlineHost = this;
                 newValue.Invalidated += (s, e) => InvalidateTextLayout();
             }
@@ -841,7 +848,7 @@ namespace Avalonia.Controls
                         continue;
                     }
 
-                    if (textRun is TextCharacters textCharacters)
+                    if (textRun is TextCharacters)
                     {
                         return new TextCharacters(textRun.Text.Skip(Math.Max(0, textSourceIndex - currentPosition)), textRun.Properties!);
                     }

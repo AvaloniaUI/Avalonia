@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Documents
     [WhitespaceSignificantCollection]
     public class InlineCollection : AvaloniaList<Inline>
     {
-        private ILogical? _parent;
+        private IAvaloniaList<ILogical>? _parent;
         private IInlineHost? _inlineHost;
 
         /// <summary>
@@ -24,28 +24,28 @@ namespace Avalonia.Controls.Documents
 
             this.ForEachItem(
                 x =>
-                {
-                    ((ISetLogicalParent)x).SetParent(Parent);
+                {                   
                     x.InlineHost = InlineHost;
+                    Parent?.Add(x);
                     Invalidate();
                 },
                 x =>
                 {
-                    ((ISetLogicalParent)x).SetParent(null);
+                    Parent?.Remove(x);
                     x.InlineHost = InlineHost;
                     Invalidate();
                 },
                 () => throw new NotSupportedException());
         }
 
-        internal ILogical? Parent
+        internal IAvaloniaList<ILogical>? Parent
         {
             get => _parent;
             set
             {
                 _parent = value;
 
-                OnParentChanged(value);
+                OnParentChanged(_parent, value);
             }
         }
 
@@ -157,20 +157,21 @@ namespace Avalonia.Controls.Documents
             Invalidated?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnParentChanged(ILogical? parent)
+        private void OnParentChanged(IAvaloniaList<ILogical>? oldParent, IAvaloniaList<ILogical>? newParent)
         {
             foreach (var child in this)
             {
-                var oldParent = child.Parent;
-
-                if (oldParent != parent)
+                if (oldParent != newParent)
                 {
                     if (oldParent != null)
                     {
-                        ((ISetLogicalParent)child).SetParent(null);
+                        oldParent.Remove(child);
                     }
 
-                    ((ISetLogicalParent)child).SetParent(parent);
+                    if(newParent != null)
+                    {
+                        newParent.Add(child);
+                    }
                 }
             }
         }
