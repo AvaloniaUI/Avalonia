@@ -3,7 +3,7 @@ using System;
 namespace Avalonia.Interactivity
 {
     /// <summary>
-    /// Provices state information and data specific to a routed event.
+    /// Provides state information and data specific to a routed event.
     /// </summary>
     public class RoutedEventArgs : EventArgs
     {

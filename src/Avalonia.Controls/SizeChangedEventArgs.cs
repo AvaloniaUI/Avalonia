@@ -1,4 +1,6 @@
 ﻿using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls
 {
@@ -42,14 +44,23 @@ namespace Avalonia.Controls
         {
             PreviousSize = previousSize;
             NewSize = newSize;
-            HeightChanged = newSize.Height != previousSize.Height;
-            WidthChanged = newSize.Width != previousSize.Width;
+
+            // Only consider changed when the size difference is greater than LayoutEpsilon
+            // This compensates for any rounding or precision difference between layout cycles
+            HeightChanged = !MathUtilities.AreClose(newSize.Height, previousSize.Height, LayoutHelper.LayoutEpsilon);
+            WidthChanged = !MathUtilities.AreClose(newSize.Width, previousSize.Width, LayoutHelper.LayoutEpsilon);
         }
 
         /// <summary>
-        /// Gets a value indicating whether the height of the new size is different
-        /// than the previous size height.
+        /// Gets a value indicating whether the height of the new size is considered
+        /// different than the previous size height.
         /// </summary>
+        /// <remarks>
+        /// This will take into account layout epsilon and will not be true if both
+        /// heights are considered equivalent for layout purposes. Remember there can
+        /// be small variations in the calculations between layout cycles due to
+        /// rounding and precision even when the size has not otherwise changed.
+        /// </remarks>
         public bool HeightChanged { get; init; }
 
         /// <summary>
@@ -63,9 +74,15 @@ namespace Avalonia.Controls
         public Size PreviousSize { get; init; }
 
         /// <summary>
-        /// Gets a value indicating whether the width of the new size is different
-        /// than the previous size width.
+        /// Gets a value indicating whether the width of the new size is considered
+        /// different than the previous size width.
         /// </summary>
+        /// <remarks>
+        /// This will take into account layout epsilon and will not be true if both
+        /// heights are considered equivalent for layout purposes. Remember there can
+        /// be small variations in the calculations between layout cycles due to
+        /// rounding and precision even when the size has not otherwise changed.
+        /// </remarks>
         public bool WidthChanged { get; init; }
     }
 }
