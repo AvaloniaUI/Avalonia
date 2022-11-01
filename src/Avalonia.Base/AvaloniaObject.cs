@@ -17,11 +17,11 @@ namespace Avalonia
     /// </remarks>
     public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged
     {
+        private readonly ValueStore _values;
         private AvaloniaObject? _inheritanceParent;
         private PropertyChangedEventHandler? _inpcChanged;
         private EventHandler<AvaloniaPropertyChangedEventArgs>? _propertyChanged;
         private List<AvaloniaObject>? _inheritanceChildren;
-        private ValueStore _values;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaObject"/> class.
