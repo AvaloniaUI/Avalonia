@@ -15,6 +15,7 @@ namespace Avalonia.PropertyStore
         private Dictionary<int, IDisposable>? _localValueBindings;
         private AvaloniaPropertyDictionary<EffectiveValue> _effectiveValues;
         private int _inheritedValueCount;
+        private int _isEvaluating;
         private int _frameGeneration;
         private int _styling;
 
@@ -22,7 +23,7 @@ namespace Avalonia.PropertyStore
 
         public AvaloniaObject Owner { get; }
         public ValueStore? InheritanceAncestor { get; private set; }
-        public bool IsEvaluating { get; private set; }
+        public bool IsEvaluating => _isEvaluating > 0;
         public IReadOnlyList<ValueFrame> Frames => _frames;
 
         public void BeginStyling() => ++_styling;
@@ -745,7 +746,7 @@ namespace Avalonia.PropertyStore
             EffectiveValue? current,
             bool ignoreLocalValue = false)
         {
-            IsEvaluating = true;
+            ++_isEvaluating;
 
             try
             {
@@ -824,13 +825,13 @@ namespace Avalonia.PropertyStore
             }
             finally
             {
-                IsEvaluating = false;
+                --_isEvaluating;
             }
         }
 
         private void ReevaluateEffectiveValues()
         {
-            IsEvaluating = true;
+            ++_isEvaluating;
 
             try
             {
@@ -903,7 +904,7 @@ namespace Avalonia.PropertyStore
             }
             finally
             {
-                IsEvaluating = false;
+                --_isEvaluating;
             }
         }
 
