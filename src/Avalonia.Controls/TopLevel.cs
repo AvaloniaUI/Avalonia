@@ -482,8 +482,6 @@ namespace Avalonia.Controls
             _transparencyFallbackBorder = e.NameScope.Find<Border>("PART_TransparencyFallback");
 
             HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
-
-            var child = Content;
         }
 
         /// <summary>
