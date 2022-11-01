@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Documents
         {
             Inlines = new InlineCollection
             {
-                Parent = LogicalChildren
+                LogicalChildren = LogicalChildren
             };
         }
 
@@ -78,14 +78,14 @@ namespace Avalonia.Controls.Documents
         {
             if (oldValue is not null)
             {
-                oldValue.Parent = null;
+                oldValue.LogicalChildren = null;
                 oldValue.InlineHost = null;
                 oldValue.Invalidated -= (s, e) => InlineHost?.Invalidate();
             }
 
             if (newValue is not null)
             {
-                newValue.Parent = LogicalChildren;
+                newValue.LogicalChildren = LogicalChildren;
                 newValue.InlineHost = InlineHost;
                 newValue.Invalidated += (s, e) => InlineHost?.Invalidate();
             }

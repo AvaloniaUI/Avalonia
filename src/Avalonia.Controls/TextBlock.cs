@@ -156,7 +156,7 @@ namespace Avalonia.Controls
         {
             Inlines = new InlineCollection
             {
-                Parent = LogicalChildren,
+                LogicalChildren = LogicalChildren,
                 InlineHost = this
             };
         }
@@ -772,14 +772,14 @@ namespace Avalonia.Controls
         {
             if (oldValue is not null)
             {
-                oldValue.Parent = null;
+                oldValue.LogicalChildren = null;
                 oldValue.InlineHost = null;
                 oldValue.Invalidated -= (s, e) => InvalidateTextLayout();
             }
 
             if (newValue is not null)
             {
-                newValue.Parent = LogicalChildren;
+                newValue.LogicalChildren = LogicalChildren;
                 newValue.InlineHost = this;
                 newValue.Invalidated += (s, e) => InvalidateTextLayout();
             }

@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Documents
     [WhitespaceSignificantCollection]
     public class InlineCollection : AvaloniaList<Inline>
     {
-        private IAvaloniaList<ILogical>? _parent;
+        private IAvaloniaList<ILogical>? _logicalChildren;
         private IInlineHost? _inlineHost;
 
         /// <summary>
@@ -26,26 +26,28 @@ namespace Avalonia.Controls.Documents
                 x =>
                 {                   
                     x.InlineHost = InlineHost;
-                    Parent?.Add(x);
+                    LogicalChildren?.Add(x);
                     Invalidate();
                 },
                 x =>
                 {
-                    Parent?.Remove(x);
+                    LogicalChildren?.Remove(x);
                     x.InlineHost = InlineHost;
                     Invalidate();
                 },
                 () => throw new NotSupportedException());
         }
 
-        internal IAvaloniaList<ILogical>? Parent
+        internal IAvaloniaList<ILogical>? LogicalChildren
         {
-            get => _parent;
+            get => _logicalChildren;
             set
             {
-                _parent = value;
+                var oldValue = _logicalChildren;
 
-                OnParentChanged(_parent, value);
+                _logicalChildren = value;
+
+                OnParentChanged(oldValue, value);
             }
         }
 
@@ -116,7 +118,7 @@ namespace Avalonia.Controls.Documents
 
         private void AddText(string text)
         {
-            if (Parent is TextBlock textBlock && !textBlock.HasComplexContent)
+            if (LogicalChildren is TextBlock textBlock && !textBlock.HasComplexContent)
             {
                 textBlock._text += text;
             }
@@ -128,7 +130,7 @@ namespace Avalonia.Controls.Documents
 
         private void OnAdd()
         {
-            if (Parent is TextBlock textBlock)
+            if (LogicalChildren is TextBlock textBlock)
             {
                 if (!textBlock.HasComplexContent && !string.IsNullOrEmpty(textBlock._text))
                 {
