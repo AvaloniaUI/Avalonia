@@ -6,11 +6,11 @@ namespace Avalonia.Controls
     public class MobileStatusBar
     {
         /// <summary>
-        /// Defines the StatusBarColor attached property.
+        /// Defines the StatusBarTheme attached property.
         /// </summary>
-        public static readonly AttachedProperty<Color?> StatusBarColorProperty =
-            AvaloniaProperty.RegisterAttached<MobileStatusBar, UserControl, Color?>(
-                "StatusBarColor",
+        public static readonly AttachedProperty<StatusBarTheme?> StatusBarThemeProperty =
+            AvaloniaProperty.RegisterAttached<MobileStatusBar, UserControl, StatusBarTheme?>(
+                "StatusBarTheme",
                 inherits: true);
 
         /// <summary>
@@ -23,11 +23,11 @@ namespace Avalonia.Controls
 
         static MobileStatusBar()
         {
-            StatusBarColorProperty.Changed.AddClassHandler<UserControl>((view, e) =>
+            StatusBarThemeProperty.Changed.AddClassHandler<UserControl>((view, e) =>
             {
                 if (view.Parent is TopLevel tl && tl.PlatformImpl is ITopLevelWithPlatformStatusBar topLevelStatusBar)
                 {
-                    topLevelStatusBar.StatusBarColor = (Color)e.NewValue!;
+                    topLevelStatusBar.StatusBarTheme = (StatusBarTheme)e.NewValue!;
                 }
             });
 
@@ -45,9 +45,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The main view attached to the toplevel</param>
         /// <param name="color">The color to set</param>
-        public static void SetStatusBarColor(UserControl control, Color? color)
+        public static void SetStatusBarTheme(UserControl control, StatusBarTheme? color)
         {
-            control.SetValue(StatusBarColorProperty, color);
+            control.SetValue(StatusBarThemeProperty, color);
         }
 
         /// <summary>
@@ -55,9 +55,9 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The main view attached to the toplevel</param>
         /// <returns>The current color of the platform's status bar</returns>
-        public static Color? GetStatusBarColor(UserControl control)
+        public static StatusBarTheme? GetStatusBarTheme(UserControl control)
         {
-            return control.GetValue(StatusBarColorProperty);
+            return control.GetValue(StatusBarThemeProperty);
         }
 
         /// <summary>

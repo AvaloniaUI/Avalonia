@@ -40,10 +40,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
-        private readonly int _defaultStatusBarColor;
         private ViewImpl _view;
         private bool? _systemUiVisibility;
-        private Media.Color? _statusBarColor;
+        private StatusBarTheme? _statusBarTheme;
+        private bool? _isDefaultStatusBarLightTheme;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
         {
@@ -61,8 +61,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             StorageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
-
-            _defaultStatusBarColor = (_view.Context as Activity).Window.StatusBarColor;
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -260,30 +258,46 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         
         public IStorageProvider StorageProvider { get; }
 
-        public Media.Color? StatusBarColor
+        public StatusBarTheme? StatusBarTheme
         {
             get
             {
                 var activity = _view.Context as Activity;
 
-                var color = new Color(activity.Window.StatusBarColor);
+                try
+                {
+                    var compat = new WindowInsetsControllerCompat(activity.Window, _view);
 
-                return new Media.Color(color.A, color.R, color.G, color.B);
+                    return compat.AppearanceLightStatusBars ? Controls.Platform.StatusBarTheme.Light : Controls.Platform.StatusBarTheme.Dark;
+                }
+                catch (System.Exception _)
+                {
+                    return Controls.Platform.StatusBarTheme.Light;
+                }
             }
             set
             {
+                _statusBarTheme = value;
+
+                if (!View.IsShown)
+                {
+                    return;
+                }
+
                 var activity = _view.Context as Activity;
+                var compat = new WindowInsetsControllerCompat(activity.Window, _view);
 
-                _statusBarColor = value;
+                if (_isDefaultStatusBarLightTheme == null)
+                {
+                    _isDefaultStatusBarLightTheme = compat.AppearanceLightStatusBars;
+                }
 
-                if (value != null)
+                if (value == null && _isDefaultStatusBarLightTheme != null)
                 {
-                    activity.Window.SetStatusBarColor(Color.Argb((int)(value?.A), (int)(value?.R), (int)(value?.G), (int)(value?.B)));
+                    value = (bool)_isDefaultStatusBarLightTheme ? Controls.Platform.StatusBarTheme.Light : Controls.Platform.StatusBarTheme.Dark;
                 }
-                else
-                {
-                    activity.Window.SetStatusBarColor(new AndroidColor(_defaultStatusBarColor));
-                }
+
+                compat.AppearanceLightStatusBars = value == Controls.Platform.StatusBarTheme.Light;
             }
         }
 
@@ -327,7 +341,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         internal void ApplyStatusBarState()
         {
             IsStatusBarVisible = _systemUiVisibility;
-            StatusBarColor = _statusBarColor;
+            StatusBarTheme = _statusBarTheme;
         }
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)

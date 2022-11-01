@@ -4,8 +4,14 @@ namespace Avalonia.Controls.Platform
 {
     public interface ITopLevelWithPlatformStatusBar
     {
-        Color? StatusBarColor { get; set; }
+        StatusBarTheme? StatusBarTheme { get; set; }
 
         bool? IsStatusBarVisible { get; set; }
+    }
+
+    public enum StatusBarTheme
+    {
+        Light,
+        Dark
     }
 }

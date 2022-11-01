@@ -563,11 +563,11 @@ namespace Avalonia.Controls
 
                 if (child != null)
                 {
-                    var color = MobileStatusBar.GetStatusBarColor(child);
+                    var theme = MobileStatusBar.GetStatusBarTheme(child);
                     var showStatusBar = MobileStatusBar.GetIsStatusBarVisible(child);
                     if (PlatformImpl is ITopLevelWithPlatformStatusBar topLevelStatusBar)
                     {
-                        topLevelStatusBar.StatusBarColor = color;
+                        topLevelStatusBar.StatusBarTheme = theme;
 
                         if (showStatusBar != null)
                         {
