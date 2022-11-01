@@ -245,6 +245,7 @@ namespace Avalonia
         public Optional<T> GetBaseValue<T>(StyledPropertyBase<T> property)
         {
             _ = property ?? throw new ArgumentNullException(nameof(property));
+            VerifyAccess();
             return _values.GetBaseValue(property);
         }
 
