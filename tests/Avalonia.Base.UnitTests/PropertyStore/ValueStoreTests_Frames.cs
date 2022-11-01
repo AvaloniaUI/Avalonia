@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Reactive;
 using System.Reactive.Subjects;
+using Avalonia.Data;
 using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Microsoft.Reactive.Testing;
@@ -80,7 +80,6 @@ namespace Avalonia.Base.UnitTests.PropertyStore
             var target = new Class1();
             var scheduler = new TestScheduler();
             var obs = scheduler.CreateColdObservable(OnNext(0, "bar"));
-            var result = new List<PropertyChange>();
             var style = new Style
             {
                 Setters =
@@ -97,6 +96,23 @@ namespace Avalonia.Base.UnitTests.PropertyStore
             Assert.Single(obs.Subscriptions);
             Assert.Equal(0, obs.Subscriptions[0].Subscribe);
             Assert.NotEqual(Subscription.Infinite, obs.Subscriptions[0].Unsubscribe);
+        }
+
+        [Fact]
+        public void Completing_Binding_Removes_ImmediateValueFrame()
+        {
+            var target = new Class1();
+            var source = new BehaviorSubject<BindingValue<string>>("foo");
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.Animation);
+
+            var valueStore = target.GetValueStore();
+            Assert.Equal(1, valueStore.Frames.Count);
+            Assert.IsType<ImmediateValueFrame>(valueStore.Frames[0]);
+
+            source.OnCompleted();
+
+            Assert.Equal(0, valueStore.Frames.Count);
         }
 
         private static StyleInstance InstanceStyle(Style style, StyledElement target)

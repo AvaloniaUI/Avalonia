@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Utilities;
+using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.PropertyStore
 {
@@ -45,8 +46,9 @@ namespace Avalonia.PropertyStore
 
         public void OnBindingCompleted(IValueEntry binding)
         {
-            Remove(binding.Property);
-            Owner?.OnBindingCompleted(binding.Property, this);
+            var property = binding.Property;
+            Remove(property);
+            Owner?.OnValueEntryRemoved(this, property);
         }
 
         public virtual void Dispose()

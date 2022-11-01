@@ -398,23 +398,6 @@ namespace Avalonia.PropertyStore
         }
 
         /// <summary>
-        /// Called by a <see cref="BindingEntryBase{TValue, TSource}"/> to re-evaluate the
-        /// effective value when the binding completes or terminates on error.
-        /// </summary>
-        /// <param name="property">The previously bound property.</param>
-        /// <param name="frame">The frame which contained the binding.</param>
-        public void OnBindingCompleted(AvaloniaProperty property, ValueFrame frame)
-        {
-            var priority = frame.Priority;
-
-            if (TryGetEffectiveValue(property, out var existing))
-            {
-                if (priority <= existing.Priority)
-                    ReevaluateEffectiveValue(property, existing);
-            }
-        }
-
-        /// <summary>
         /// Called by a <see cref="ValueFrame"/> when its <see cref="ValueFrame.IsActive"/>
         /// state changes.
         /// </summary>
@@ -577,21 +560,13 @@ namespace Avalonia.PropertyStore
         /// <param name="property">The property whose value was removed.</param>
         public void OnValueEntryRemoved(ValueFrame frame, AvaloniaProperty property)
         {
-            Debug.Assert(frame.IsActive);
+            if (frame.EntryCount == 0)
+                _frames.Remove(frame);
 
             if (TryGetEffectiveValue(property, out var existing))
             {
                 if (frame.Priority <= existing.Priority)
                     ReevaluateEffectiveValue(property, existing);
-            }
-            else
-            {
-                Logger.TryGet(LogEventLevel.Error, LogArea.Property)?.Log(
-                    Owner,
-                    "Internal error: ValueStore.OnEntryRemoved called for {Property} " +
-                    "but no effective value was found.",
-                    property);
-                Debug.Assert(false);
             }
         }
 
