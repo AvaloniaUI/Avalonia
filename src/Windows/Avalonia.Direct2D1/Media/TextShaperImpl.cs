@@ -64,7 +64,7 @@ namespace Avalonia.Direct2D1.Media
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if (glyphIndex == 0 && text.Buffer.Span[glyphCluster] == '\t')
+                    if (text.Buffer.Span[glyphCluster] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 

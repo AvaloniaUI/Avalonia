@@ -505,7 +505,7 @@ namespace Avalonia.Media.TextFormatting
 
                     case { } drawableTextRun:
                         {
-                            if (currentWidth + drawableTextRun.Size.Width > paragraphWidth)
+                            if (currentWidth + drawableTextRun.Size.Width >= paragraphWidth)
                             {
                                 goto found;
                             }
@@ -668,7 +668,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (!breakFound)
                 {
-                    currentLength += currentRun.Text.Length;
+                    currentLength += currentRun.TextSourceLength;
 
                     continue;
                 }
