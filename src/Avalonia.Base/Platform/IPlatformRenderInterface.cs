@@ -171,40 +171,15 @@ namespace Avalonia.Platform
         IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride);
 
         /// <summary>
-        /// Allocates a platform glyph run buffer.
+        /// Creates a platform implementation of a glyph run.
         /// </summary>
         /// <param name="glyphTypeface">The glyph typeface.</param>
         /// <param name="fontRenderingEmSize">The font rendering em size.</param>
-        /// <param name="length">The length.</param>
-        /// <returns>An <see cref="IGlyphRunBuffer"/>.</returns>
-        /// <remarks>
-        /// This buffer only holds glyph indices.
-        /// </remarks>
-        IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
-
-        /// <summary>
-        /// Allocates a horizontal platform glyph run buffer.
-        /// </summary>
-        /// <param name="glyphTypeface">The glyph typeface.</param>
-        /// <param name="fontRenderingEmSize">The font rendering em size.</param>
-        /// <param name="length">The length.</param>
-        /// <returns>An <see cref="IGlyphRunBuffer"/>.</returns>
-        /// <remarks>
-        /// This buffer holds glyph indices and glyph advances.
-        /// </remarks>
-        IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
-
-        /// <summary>
-        /// Allocates a positioned platform glyph run buffer.
-        /// </summary>
-        /// <param name="glyphTypeface">The glyph typeface.</param>
-        /// <param name="fontRenderingEmSize">The font rendering em size.</param>
-        /// <param name="length">The length.</param>
-        /// <returns>An <see cref="IGlyphRunBuffer"/>.</returns>
-        /// <remarks>
-        /// This buffer holds glyph indices, glyph advances and glyph positions.
-        /// </remarks>
-        IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length);
+        /// <param name="glyphIndices">The glyph indices.</param>
+        /// <param name="glyphAdvances">The glyph advances.</param>
+        /// <param name="glyphOffsets">The glyph offsets.</param>
+        /// <returns></returns>
+        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double>? glyphAdvances, IReadOnlyList<Vector>? glyphOffsets);
 
         /// <summary>
         /// Gets a value indicating whether the platform directly supports rectangles with rounded corners.

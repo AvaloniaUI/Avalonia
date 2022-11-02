@@ -249,7 +249,8 @@ namespace Avalonia.Media.TextFormatting
 
                             var shaperOptions = new TextShaperOptions(currentRun.Properties!.Typeface.GlyphTypeface,
                                         currentRun.Properties.FontRenderingEmSize,
-                                         shapeableRun.BidiLevel, currentRun.Properties.CultureInfo, paragraphProperties.DefaultIncrementalTab);
+                                         shapeableRun.BidiLevel, currentRun.Properties.CultureInfo, 
+                                         paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
                             drawableTextRuns.AddRange(ShapeTogether(groupedRuns, text, shaperOptions));
 

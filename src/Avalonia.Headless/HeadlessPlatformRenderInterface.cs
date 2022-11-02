@@ -115,19 +115,16 @@ namespace Avalonia.Headless
             return new HeadlessGeometryStub(new Rect(glyphRun.Size));
         }
 
-        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
         {
-            return new HeadlessGlyphRunBufferStub();
+            return new HeadlessGlyphRunStub();
         }
 
-        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        class HeadlessGlyphRunStub : IGlyphRunImpl
         {
-            return new HeadlessHorizontalGlyphRunBufferStub();
-        }
-
-        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-        {
-            return new HeadlessPositionedGlyphRunBufferStub();
+            public void Dispose()
+            {
+            }
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -211,33 +208,6 @@ namespace Avalonia.Headless
 
             public IGeometryImpl SourceGeometry { get; }
             public Matrix Transform { get; }
-        }
-
-        class HeadlessGlyphRunBufferStub : IGlyphRunBuffer
-        {
-            public Span<ushort> GlyphIndices => Span<ushort>.Empty;
-
-            public IGlyphRunImpl Build()
-            {
-                return new HeadlessGlyphRunStub();
-            }
-        }
-
-        class HeadlessHorizontalGlyphRunBufferStub : HeadlessGlyphRunBufferStub, IHorizontalGlyphRunBuffer
-        {
-            public Span<float> GlyphPositions => Span<float>.Empty;
-        }
-
-        class HeadlessPositionedGlyphRunBufferStub : HeadlessGlyphRunBufferStub, IPositionedGlyphRunBuffer
-        {
-            public Span<System.Drawing.PointF> GlyphPositions => Span<System.Drawing.PointF>.Empty;
-        }
-
-        class HeadlessGlyphRunStub : IGlyphRunImpl
-        {
-            public void Dispose()
-            {
-            }
         }
 
         class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
