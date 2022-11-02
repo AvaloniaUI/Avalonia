@@ -448,6 +448,12 @@ interface ICompositionGraphicsDevice : IInspectable
     HRESULT RemoveRenderingDeviceReplaced([in] int token);
 }
 
+[uuid(0FB8BDF6-C0F0-4BCC-9FB8-084982490D7D)]
+interface ICompositionGraphicsDevice2 : IInspectable
+{
+    HRESULT CreateDrawingSurface2([in] SIZE sizePixels, [in] DirectXPixelFormat pixelFormat, [in] DirectXAlphaMode alphaMode, [out] [retval] ICompositionDrawingSurface** result);
+}
+
 [uuid(1527540D-42C7-47A6-A408-668F79A90DFB)]
 interface ICompositionSurface : IInspectable
 {
