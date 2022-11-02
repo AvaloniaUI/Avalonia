@@ -83,6 +83,15 @@ namespace Avalonia.Controls
                 inherits: true);
 
         /// <summary>
+        /// Defines the <see cref="LetterSpacing"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<double> LetterSpacingProperty =
+            AvaloniaProperty.RegisterAttached<TextBlock, Control, double>(
+                nameof(LetterSpacing),
+                0,
+                inherits: true);
+
+        /// <summary>
         /// Defines the <see cref="MaxLines"/> property.
         /// </summary>
         public static readonly AttachedProperty<int> MaxLinesProperty =
@@ -260,6 +269,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(LineHeightProperty);
             set => SetValue(LineHeightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the letter spacing.
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
         }
 
         /// <summary>
@@ -479,6 +497,35 @@ namespace Avalonia.Controls
         /// Reads the attached property from the given element
         /// </summary>
         /// <param name="control">The element to which to read the attached property.</param>
+        public static double GetLetterSpacing(Control control)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            return control.GetValue(LetterSpacingProperty);
+        }
+
+        /// <summary>
+        /// Writes the attached property LetterSpacing to the given element.
+        /// </summary>
+        /// <param name="control">The element to which to write the attached property.</param>
+        /// <param name="letterSpacing">The property value to set</param>
+        public static void SetLetterSpacing(Control control, double letterSpacing)
+        {
+            if (control == null)
+            {
+                throw new ArgumentNullException(nameof(control));
+            }
+
+            control.SetValue(LetterSpacingProperty, letterSpacing);
+        }
+
+        /// <summary>
+        /// Reads the attached property from the given element
+        /// </summary>
+        /// <param name="control">The element to which to read the attached property.</param>
         public static int GetMaxLines(Control control)
         {
             if (control == null)
@@ -584,7 +631,7 @@ namespace Avalonia.Controls
                 Foreground);
 
             var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0);
+                defaultProperties, TextWrapping, LineHeight, 0, LetterSpacing);
 
             ITextSource textSource;
 
@@ -744,9 +791,10 @@ namespace Avalonia.Controls
 
                 case nameof(FlowDirection):
 
-                case nameof(Padding):
-                case nameof(LineHeight):
-                case nameof(MaxLines):
+                case nameof (Padding):
+                case nameof (LineHeight):
+                case nameof (LetterSpacing):
+                case nameof (MaxLines):
 
                 case nameof(Text):
                 case nameof(TextDecorations):
