@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
@@ -314,6 +315,7 @@ namespace Avalonia
         {
             _ = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
+            ValidatePriority(priority);
 
             LogPropertySet(property, value, BindingPriority.LocalValue);
 
@@ -378,6 +380,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             source = source ?? throw new ArgumentNullException(nameof(source));
             VerifyAccess();
+            ValidatePriority(priority);
 
             return _values.AddBinding(property, source, priority);
         }
@@ -400,6 +403,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             source = source ?? throw new ArgumentNullException(nameof(source));
             VerifyAccess();
+            ValidatePriority(priority);
 
             return _values.AddBinding(property, source, priority);
         }
@@ -422,6 +426,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             source = source ?? throw new ArgumentNullException(nameof(source));
             VerifyAccess();
+            ValidatePriority(priority);
 
             return _values.AddBinding(property, source, priority);
         }
@@ -762,6 +767,18 @@ namespace Avalonia
                 property,
                 value,
                 priority);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ValidatePriority(BindingPriority priority)
+        {
+            if (priority < BindingPriority.Animation || priority >= BindingPriority.Inherited)
+                ThrowInvalidPriority(priority);
+        }
+
+        private static void ThrowInvalidPriority(BindingPriority priority)
+        {
+            throw new ArgumentException($"Invalid priority ${priority}", nameof(priority));
         }
     }
 }
