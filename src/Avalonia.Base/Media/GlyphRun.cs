@@ -170,7 +170,7 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the scale of the current <see cref="Media.GlyphTypeface"/>
+        /// Gets the scale of the current <see cref="IGlyphTypeface"/>
         /// </summary>
         internal double Scale => FontRenderingEmSize / GlyphTypeface.Metrics.DesignEmHeight;
 
@@ -860,82 +860,9 @@ namespace Avalonia.Media
 
         private IGlyphRunImpl CreateGlyphRunImpl()
         {
-            IGlyphRunImpl glyphRunImpl;
-
             var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-            var count = GlyphIndices.Count;
-            var scale = (float)(FontRenderingEmSize / GlyphTypeface.Metrics.DesignEmHeight);
 
-            if (GlyphOffsets == null)
-            {
-                if (GlyphTypeface.Metrics.IsFixedPitch)
-                {
-                    var buffer = platformRenderInterface.AllocateGlyphRun(GlyphTypeface, (float)FontRenderingEmSize, count);
-
-                    var glyphs = buffer.GlyphIndices;
-
-                    for (int i = 0; i < glyphs.Length; i++)
-                    {
-                        glyphs[i] = GlyphIndices[i];
-                    }
-
-                    glyphRunImpl = buffer.Build();
-                }
-                else
-                {
-                    var buffer = platformRenderInterface.AllocateHorizontalGlyphRun(GlyphTypeface, (float)FontRenderingEmSize, count);
-                    var glyphs = buffer.GlyphIndices;
-                    var positions = buffer.GlyphPositions;
-                    var width = 0d;
-
-                    for (var i = 0; i < count; i++)
-                    {
-                        positions[i] = (float)width;
-
-                        if (GlyphAdvances == null)
-                        {
-                            width += GlyphTypeface.GetGlyphAdvance(GlyphIndices[i]) * scale;
-                        }
-                        else
-                        {
-                            width += GlyphAdvances[i];
-                        }
-
-                        glyphs[i] = GlyphIndices[i];
-                    }
-
-                    glyphRunImpl = buffer.Build();
-                }
-            }
-            else
-            {
-                var buffer = platformRenderInterface.AllocatePositionedGlyphRun(GlyphTypeface, (float)FontRenderingEmSize, count);
-                var glyphs = buffer.GlyphIndices;
-                var glyphPositions = buffer.GlyphPositions;
-                var currentX = 0.0;
-
-                for (var i = 0; i < count; i++)
-                {
-                    var glyphOffset = GlyphOffsets[i];
-
-                    glyphPositions[i] = new PointF((float)(currentX + glyphOffset.X), (float)glyphOffset.Y);
-
-                    if (GlyphAdvances == null)
-                    {
-                        currentX += GlyphTypeface.GetGlyphAdvance(GlyphIndices[i]) * scale;
-                    }
-                    else
-                    {
-                        currentX += GlyphAdvances[i];
-                    }
-
-                    glyphs[i] = GlyphIndices[i];
-                }
-
-                glyphRunImpl = buffer.Build();
-            }
-
-            return glyphRunImpl;
+            return platformRenderInterface.CreateGlyphRun(GlyphTypeface, FontRenderingEmSize, GlyphIndices, GlyphAdvances, GlyphOffsets);
         }
 
         void IDisposable.Dispose()
