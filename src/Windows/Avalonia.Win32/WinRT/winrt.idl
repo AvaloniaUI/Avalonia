@@ -472,7 +472,7 @@ interface ICompositionDrawingSurface : IInspectable
 {
     [propget] HRESULT GetAlphaMode([out] [retval] DirectXAlphaMode* value);
     [propget] HRESULT GetPixelFormat([out] [retval] DirectXPixelFormat* value);
-    [propget] HRESULT GetSize([out] [retval] POINT* value);
+    [propget] HRESULT GetSize([out] [retval] SIZE_F* value);
 }
 
 enum CompositionBitmapInterpolationMode
