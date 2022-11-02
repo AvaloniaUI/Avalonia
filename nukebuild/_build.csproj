@@ -13,7 +13,7 @@
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="6.2.1" />
     <PackageReference Include="vswhere" Version="2.6.7" Condition=" '$(OS)' == 'Windows_NT' " />
-    <PackageReference Include="MicroCom.CodeGenerator" Version="0.10.4" />
+    <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
    <PackageReference Include="SourceLink" Version="1.1.0" GeneratePathProperty="true" />
