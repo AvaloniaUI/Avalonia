@@ -81,7 +81,7 @@ namespace Avalonia.Collections
 
                 if (replace)
                 {
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"{CommonPropertyNames.IndexerName}[{key}]"));
 
                     if (CollectionChanged != null)
                     {
@@ -148,7 +148,7 @@ namespace Avalonia.Collections
             {
                 _inner.Remove(key);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"{CommonPropertyNames.IndexerName}[{key}]"));
 
                 if (CollectionChanged != null)
                 {
@@ -208,7 +208,7 @@ namespace Avalonia.Collections
         private void NotifyAdd(TKey key, TValue value)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"Item[{key}]"));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs($"{CommonPropertyNames.IndexerName}[{key}]"));
             
 
             if (CollectionChanged != null)
