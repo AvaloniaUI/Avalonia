@@ -605,7 +605,7 @@ namespace Avalonia.Controls
 
                     if (sizeChangedEventArgs.HeightChanged)
                     {
-                        RaisePropertyChanged(ActualHeightProperty, oldValue.Width, newValue.Width);
+                        RaisePropertyChanged(ActualHeightProperty, oldValue.Height, newValue.Height);
                     }
 
                     RaiseEvent(sizeChangedEventArgs);
