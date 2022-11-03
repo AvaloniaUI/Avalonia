@@ -95,11 +95,14 @@ ComPtr<IAvnApplicationEvents> _events;
 }
 @end
 
-extern void InitializeAvnApp(IAvnApplicationEvents* events)
+extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDelegate)
 {
-    NSApplication* app = [AvnApplication sharedApplication];
-    id delegate = [[AvnAppDelegate alloc] initWithEvents:events];
-    [app setDelegate:delegate];
+    if(!disableAppDelegate)
+    {
+        NSApplication* app = [AvnApplication sharedApplication];
+        id delegate = [[AvnAppDelegate alloc] initWithEvents:events];
+        [app setDelegate:delegate];
+    }
 }
 
 HRESULT AvnApplicationCommands::HideApp()

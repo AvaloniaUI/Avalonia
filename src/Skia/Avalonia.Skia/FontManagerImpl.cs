@@ -102,7 +102,7 @@ namespace Avalonia.Skia
             return false;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             SKTypeface skTypeface = null;
 
@@ -148,11 +148,19 @@ namespace Avalonia.Skia
                     $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
             }
 
-            var isFakeBold = (int)typeface.Weight >= 600 && !skTypeface.IsBold;
+            var fontSimulations = FontSimulations.None;
 
-            var isFakeItalic = typeface.Style == FontStyle.Italic && !skTypeface.IsItalic;
-            
-            return new GlyphTypefaceImpl(skTypeface, isFakeBold, isFakeItalic);
+            if((int)typeface.Weight >= 600 && !skTypeface.IsBold)
+            {
+                fontSimulations |= FontSimulations.Bold;
+            }
+
+            if(typeface.Style == FontStyle.Italic && !skTypeface.IsItalic)
+            {
+                fontSimulations |= FontSimulations.Oblique;
+            }
+
+            return new GlyphTypefaceImpl(skTypeface, fontSimulations);
         }
     }
 }

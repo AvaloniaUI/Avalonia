@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -15,7 +16,7 @@ namespace Avalonia.Media
         private static readonly IComparer<int> s_descendingComparer = new ReverseComparer<int>();
 
         private IGlyphRunImpl? _glyphRunImpl;
-        private GlyphTypeface _glyphTypeface;
+        private IGlyphTypeface _glyphTypeface;
         private double _fontRenderingEmSize;
         private int _biDiLevel;
         private Point? _baselineOrigin;
@@ -42,7 +43,7 @@ namespace Avalonia.Media
         /// <param name="glyphClusters">The glyph clusters.</param>
         /// <param name="biDiLevel">The bidi level.</param>
         public GlyphRun(
-            GlyphTypeface glyphTypeface,
+            IGlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             ReadOnlySlice<char> characters,
             IReadOnlyList<ushort> glyphIndices,
@@ -69,9 +70,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        ///     Gets the <see cref="Media.GlyphTypeface"/> for the <see cref="GlyphRun"/>.
+        ///     Gets the <see cref="IGlyphTypeface"/> for the <see cref="GlyphRun"/>.
         /// </summary>
-        public GlyphTypeface GlyphTypeface => _glyphTypeface;
+        public IGlyphTypeface GlyphTypeface => _glyphTypeface;
 
         /// <summary>
         ///     Gets or sets the em size used for rendering the <see cref="GlyphRun"/>.
@@ -169,9 +170,9 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the scale of the current <see cref="Media.GlyphTypeface"/>
+        /// Gets the scale of the current <see cref="IGlyphTypeface"/>
         /// </summary>
-        internal double Scale => FontRenderingEmSize / GlyphTypeface.DesignEmHeight;
+        internal double Scale => FontRenderingEmSize / GlyphTypeface.Metrics.DesignEmHeight;
 
         /// <summary>
         /// Returns <c>true</c> if the text direction is left-to-right. Otherwise, returns <c>false</c>.
@@ -612,7 +613,7 @@ namespace Avalonia.Media
         /// <returns>The baseline origin.</returns>
         private Point CalculateBaselineOrigin()
         {
-            return new Point(0, -GlyphTypeface.Ascent * Scale);
+            return new Point(0, -GlyphTypeface.Metrics.Ascent * Scale);
         }
 
         private GlyphRunMetrics CreateGlyphRunMetrics()
@@ -636,7 +637,7 @@ namespace Avalonia.Media
             }
 
             var isReversed = firstCluster > lastCluster;
-            var height = (GlyphTypeface.Descent - GlyphTypeface.Ascent + GlyphTypeface.LineGap) * Scale;
+            var height = GlyphTypeface.Metrics.LineSpacing * Scale;
             var widthIncludingTrailingWhitespace = 0d;
 
             var trailingWhitespaceLength = GetTrailingWhitespaceLength(isReversed, out var newLineLength, out var glyphCount);
@@ -854,9 +855,14 @@ namespace Avalonia.Media
                 throw new InvalidOperationException();
             }
 
+            _glyphRunImpl = CreateGlyphRunImpl();
+        }
+
+        private IGlyphRunImpl CreateGlyphRunImpl()
+        {
             var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
-            _glyphRunImpl = platformRenderInterface.CreateGlyphRun(this);
+            return platformRenderInterface.CreateGlyphRun(GlyphTypeface, FontRenderingEmSize, GlyphIndices, GlyphAdvances, GlyphOffsets);
         }
 
         void IDisposable.Dispose()

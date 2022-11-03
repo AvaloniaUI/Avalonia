@@ -35,7 +35,7 @@ DEALINGS IN THE SOFTWARE.
 
 The above is the version of the MIT "Expat" License used by X.org:
 
-    http://cgit.freedesktop.org/xorg/xserver/tree/COPYING
+    https://cgit.freedesktop.org/xorg/xserver/tree/COPYING
     
     
 Adjustments for Avalonia needs:

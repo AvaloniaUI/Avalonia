@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 using Avalonia.MicroCom;
+using MicroCom.Runtime;
 using Avalonia.Win32.Win32Com;
 
 // ReSharper disable InconsistentNaming
@@ -1877,7 +1878,10 @@ namespace Avalonia.Win32.Interop
 
         public static uint LGID(IntPtr HKL)
         {
-            return (uint)(HKL.ToInt32() & 0xffff);
+            unchecked
+            {
+                return (uint)((ulong)HKL & 0xffff);
+            }
         }
 
         public const int SORT_DEFAULT = 0;
@@ -2098,6 +2102,12 @@ namespace Avalonia.Win32.Interop
         {
             public int X;
             public int Y;
+        }
+
+        public struct SIZE_F
+        {
+            public float X;
+            public float Y;
         }
 
         public struct RECT

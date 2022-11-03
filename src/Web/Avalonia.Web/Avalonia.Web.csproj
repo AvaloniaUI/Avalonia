@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <SupportedPlatform Remove="@(SupportedPlatform)" />
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
@@ -39,10 +40,6 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
   <Target Name="NpmInstall" Inputs="webapp/package.json" Outputs="webapp/node_modules/.install-stamp">
     <Exec Command="npm install" WorkingDirectory="webapp" />
     <!-- Write the stamp file, so incremental builds work -->
@@ -52,4 +49,8 @@
     <Exec Command="npm run build" WorkingDirectory="webapp" />
   </Target>
 
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Web.Blazor, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+  
 </Project>

@@ -18,6 +18,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Automation.Peers;
 using System.Diagnostics;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -113,6 +114,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> LineHeightProperty =
             TextBlock.LineHeightProperty.AddOwner<TextBox>();
 
+        /// <summary>
+        /// Defines see <see cref="TextBlock.LetterSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextBlock.LetterSpacingProperty.AddOwner<TextBox>();
+
         public static readonly StyledProperty<string?> WatermarkProperty =
             AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
 
@@ -159,17 +166,40 @@ namespace Avalonia.Controls
                 (o, v) => o.UndoLimit = v,
                 unsetValue: -1);
 
+        /// <summary>
+        /// Defines the <see cref="CopyingToClipboard"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="CuttingToClipboard"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> CuttingToClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(CuttingToClipboard), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Defines the <see cref="PastingFromClipboard"/> event.
+        /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> PastingFromClipboardEvent =
             RoutedEvent.Register<TextBox, RoutedEventArgs>(
                 nameof(PastingFromClipboard), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="TextChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextChangedEventArgs> TextChangedEvent =
+            RoutedEvent.Register<TextBox, TextChangedEventArgs>(
+                nameof(TextChanged), RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="TextChanging"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<TextChangingEventArgs> TextChangingEvent =
+            RoutedEvent.Register<TextBox, TextChangingEventArgs>(
+                nameof(TextChanging), RoutingStrategies.Bubble);
 
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
@@ -354,13 +384,19 @@ namespace Avalonia.Controls
             set => SetValue(MaxLinesProperty, value);
         }
 
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
+        }
+
         /// <summary>
         /// Gets or sets the line height.
         /// </summary>
         public double LineHeight
         {
-            get { return GetValue(LineHeightProperty); }
-            set { SetValue(LineHeightProperty, value); }
+            get => GetValue(LineHeightProperty);
+            set => SetValue(LineHeightProperty, value);
         }
 
         [Content]
@@ -376,10 +412,18 @@ namespace Avalonia.Controls
                 CaretIndex = CoerceCaretIndex(caretIndex, value);
                 SelectionStart = CoerceCaretIndex(selectionStart, value);
                 SelectionEnd = CoerceCaretIndex(selectionEnd, value);
-                if (SetAndRaise(TextProperty, ref _text, value) && IsUndoEnabled && !_isUndoingRedoing)
+
+                var textChanged = SetAndRaise(TextProperty, ref _text, value);
+
+                if (textChanged && IsUndoEnabled && !_isUndoingRedoing)
                 {
                     _undoRedoHelper.Clear();
                     SnapshotUndoRedo(); // so we always have an initial state
+                }
+
+                if (textChanged)
+                {
+                    RaiseTextChangeEvents();
                 }
             }
         }
@@ -562,6 +606,27 @@ namespace Avalonia.Controls
         {
             add => AddHandler(PastingFromClipboardEvent, value);
             remove => RemoveHandler(PastingFromClipboardEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs asynchronously after text changes and the new text is rendered.
+        /// </summary>
+        public event EventHandler<TextChangedEventArgs>? TextChanged
+        {
+            add => AddHandler(TextChangedEvent, value);
+            remove => RemoveHandler(TextChangedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs synchronously when text starts to change but before it is rendered.
+        /// </summary>
+        /// <remarks>
+        /// This event occurs just after the <see cref="Text"/> property value has been updated.
+        /// </remarks>
+        public event EventHandler<TextChangingEventArgs>? TextChanging
+        {
+            add => AddHandler(TextChangingEvent, value);
+            remove => RemoveHandler(TextChangingEvent, value);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -1252,7 +1317,7 @@ namespace Avalonia.Controls
 
                 if (text != null && _wordSelectionStart >= 0)
                 {
-                    var distance = caretIndex - _wordSelectionStart;                 
+                    var distance = caretIndex - _wordSelectionStart;
 
                     if (distance <= 0)
                     {
@@ -1539,11 +1604,39 @@ namespace Avalonia.Controls
             return text.Substring(start, end - start);
         }
 
+        /// <summary>
+        /// Raises both the <see cref="TextChanging"/> and <see cref="TextChanged"/> events.
+        /// </summary>
+        /// <remarks>
+        /// This must be called after the <see cref="Text"/> property is set.
+        /// </remarks>
+        private void RaiseTextChangeEvents()
+        {
+            // Note the following sequence of these events (following WinUI)
+            // 1. TextChanging occurs synchronously when text starts to change but before it is rendered.
+            //    This occurs after the Text property is set.
+            // 2. TextChanged occurs asynchronously after text changes and the new text is rendered.
+
+            var textChangingEventArgs = new TextChangingEventArgs(TextChangingEvent);
+            RaiseEvent(textChangingEventArgs);
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                var textChangedEventArgs = new TextChangedEventArgs(TextChangedEvent);
+                RaiseEvent(textChangedEventArgs);
+            }, DispatcherPriority.Normal);
+        }
+
         private void SetTextInternal(string value, bool raiseTextChanged = true)
         {
             if (raiseTextChanged)
             {
-                SetAndRaise(TextProperty, ref _text, value);
+                bool textChanged = SetAndRaise(TextProperty, ref _text, value);
+
+                if (textChanged)
+                {
+                    RaiseTextChangeEvents();
+                }
             }
             else
             {

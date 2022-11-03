@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
@@ -18,7 +17,7 @@ namespace Avalonia.Media.TextFormatting
             Text = shapedBuffer.Text;
             Properties = properties;
             TextSourceLength = Text.Length;
-            FontMetrics = new FontMetrics(properties.Typeface, properties.FontRenderingEmSize);
+            TextMetrics = new TextMetrics(properties.Typeface, properties.FontRenderingEmSize);
         }
 
         public bool IsReversed { get; private set; }
@@ -36,9 +35,9 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override int TextSourceLength { get; }
 
-        public FontMetrics FontMetrics { get; }
+        public TextMetrics TextMetrics { get; }
 
-        public override double Baseline => -FontMetrics.Ascent;
+        public override double Baseline => -TextMetrics.Ascent;
 
         public override Size Size => GlyphRun.Size;
 
@@ -89,7 +88,7 @@ namespace Avalonia.Media.TextFormatting
 
                 foreach (var textDecoration in Properties.TextDecorations)
                 {
-                    textDecoration.Draw(drawingContext, GlyphRun, FontMetrics, Properties.ForegroundBrush);
+                    textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, Properties.ForegroundBrush);
                 }
             }
         }

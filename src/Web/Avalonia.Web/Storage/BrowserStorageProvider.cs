@@ -20,7 +20,7 @@ internal class BrowserStorageProvider : IStorageProvider
     internal const string PickerCancelMessage = "The user aborted a request";
     internal const string NoPermissionsMessage = "Permissions denied";
 
-    private readonly Lazy<Task<JSObject>> _lazyModule = new(() => JSHost.ImportAsync("storage.ts", "./storage.js"));
+    private readonly Lazy<Task> _lazyModule = new(() => AvaloniaModule.ImportStorage());
 
     public bool CanOpen => StorageHelper.CanShowOpenFilePicker();
     public bool CanSave => StorageHelper.CanShowSaveFilePicker();
@@ -28,7 +28,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
-        _ = await _lazyModule.Value;
+        await _lazyModule.Value;
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
         var (types, exludeAll) = ConvertFileTypes(options.FileTypeFilter);
@@ -62,7 +62,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
-        _ = await _lazyModule.Value;
+        await _lazyModule.Value;
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
         var (types, exludeAll) = ConvertFileTypes(options.FileTypeChoices);
@@ -90,7 +90,7 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
     {
-        _ = await _lazyModule.Value;
+        await _lazyModule.Value;
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
         try
@@ -106,14 +106,14 @@ internal class BrowserStorageProvider : IStorageProvider
 
     public async Task<IStorageBookmarkFile?> OpenFileBookmarkAsync(string bookmark)
     {
-        _ = await _lazyModule.Value;
+        await _lazyModule.Value;
         var item = await StorageHelper.OpenBookmark(bookmark);
         return item is not null ? new JSStorageFile(item) : null;
     }
 
     public async Task<IStorageBookmarkFolder?> OpenFolderBookmarkAsync(string bookmark)
     {
-        _ = await _lazyModule.Value;
+        await _lazyModule.Value;
         var item = await StorageHelper.OpenBookmark(bookmark);
         return item is not null ? new JSStorageFolder(item) : null;
     }

@@ -173,9 +173,13 @@ namespace Avalonia.Platform
         /// <summary>
         /// Creates a platform implementation of a glyph run.
         /// </summary>
-        /// <param name="glyphRun">The glyph run.</param>
+        /// <param name="glyphTypeface">The glyph typeface.</param>
+        /// <param name="fontRenderingEmSize">The font rendering em size.</param>
+        /// <param name="glyphIndices">The glyph indices.</param>
+        /// <param name="glyphAdvances">The glyph advances.</param>
+        /// <param name="glyphOffsets">The glyph offsets.</param>
         /// <returns></returns>
-        IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun);
+        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double>? glyphAdvances, IReadOnlyList<Vector>? glyphOffsets);
 
         /// <summary>
         /// Gets a value indicating whether the platform directly supports rectangles with rounded corners.

@@ -1,22 +1,16 @@
 using System;
 using System.Collections.Generic;
-
+using Android.App;
 using Android.Content;
 using Android.Graphics;
-using Android.Media.TV;
-using Android.OS;
 using Android.Runtime;
-using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
-using Android.Widget;
 using Avalonia.Android.OpenGL;
-using Avalonia.Android.Platform.Input;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Input;
@@ -29,7 +23,6 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -59,7 +52,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
 
             NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
-            StorageProvider = new AndroidStorageProvider((AvaloniaActivity)avaloniaView.Context);
+            StorageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -301,7 +294,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             IsComposing = true;
 
-            _inputMethod.Client.SetPreeditText(ComposingText);
+            _inputMethod.Client?.SetPreeditText(ComposingText);
 
             return base.SetComposingText(text, newCursorPosition);
         }
