@@ -111,7 +111,14 @@ namespace Avalonia.Controls.Documents
         /// <param name="text">The to be added text.</param>
         public void Add(string text)
         {
-            AddText(text);
+            if (InlineHost is TextBlock textBlock && !textBlock.HasComplexContent)
+            {
+                textBlock._text += text;
+            }
+            else
+            {
+                Add(new Run(text));
+            }
         }
 
         /// <summary>
@@ -121,18 +128,6 @@ namespace Avalonia.Controls.Documents
         public void Add(IControl control)
         {
             Add(new InlineUIContainer(control));
-        }
-
-        internal void AddText(string text)
-        {
-            if (InlineHost is TextBlock textBlock && !textBlock.HasComplexContent)
-            {
-                textBlock._text += text;
-            }
-            else
-            {
-                Add(new Run(text));
-            }
         }
 
         /// <summary>

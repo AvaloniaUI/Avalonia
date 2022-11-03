@@ -166,9 +166,9 @@ namespace Avalonia.Controls.UnitTests
                         }.RegisterInNameScope(scope)
                 );
 
-                target.Inlines!.AddText("123456");
+                target.Inlines!.Add("123456");
                 target.Inlines.Add(new InlineUIContainer(button));
-                target.Inlines.AddText("123456");
+                target.Inlines.Add("123456");
 
                 target.Measure(Size.Infinity);
 
