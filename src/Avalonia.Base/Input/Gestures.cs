@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -125,7 +126,8 @@ namespace Avalonia.Input
                     e.InitialPressMouseButton is MouseButton.Left or MouseButton.Right)
                 {
                     var point = e.GetCurrentPoint((IVisual)target);
-                    var tapSize = new Size(4, 4);
+                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                    var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
                     var tapRect = new Rect(s_lastPressPoint, new Size())
                         .Inflate(new Thickness(tapSize.Width, tapSize.Height));
 

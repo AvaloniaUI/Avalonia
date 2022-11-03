@@ -45,13 +45,6 @@ namespace Avalonia.Web
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
         }
 
-        public Size DoubleClickSize { get; } = new Size(2, 2);
-
-        public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
-
-        public Size TouchDoubleClickSize => new Size(16, 16);
-
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public void RunLoop(CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
@@ -101,5 +94,25 @@ namespace Avalonia.Web
         {
             return AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
         }
+
+        Size IPlatformSettings.GetTapSize(PointerType type)
+        {
+            return type switch
+            {
+                PointerType.Touch => new(10, 10),
+                _ => new(4, 4),
+            };
+        }
+
+        Size IPlatformSettings.GetDoubleTapSize(PointerType type)
+        {
+            return type switch
+            {
+                PointerType.Touch => new(16, 16),
+                _ => new(4, 4),
+            };
+        }
+
+        TimeSpan IPlatformSettings.GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(500);
     }
 }
