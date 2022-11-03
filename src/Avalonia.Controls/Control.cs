@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Security.Cryptography;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
@@ -39,7 +40,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<object?> TagProperty =
             AvaloniaProperty.Register<Control, object?>(nameof(Tag));
-        
+
         /// <summary>
         /// Defines the <see cref="ContextMenu"/> property.
         /// </summary>
@@ -67,7 +68,7 @@ namespace Avalonia.Controls
             RoutedEvent.Register<Control, ContextRequestedEventArgs>(
                 nameof(ContextRequested),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
-        
+
         /// <summary>
         /// Defines the <see cref="Loaded"/> event.
         /// </summary>
@@ -98,6 +99,18 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<Control, Control, FlowDirection>(
                 nameof(FlowDirection),
                 inherits: true);
+
+        /// <summary>
+        /// Defines the <see cref="ActualWidth"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Visual, double> ActualWidthProperty =
+            AvaloniaProperty.RegisterDirect<Visual, double>(nameof(ActualWidth), o => o.Bounds.Width);
+
+        /// <summary>
+        /// Defines the <see cref="ActualHeight"/> property.
+        /// </summary>
+        public static readonly DirectProperty<Visual, double> ActualHeightProperty =
+            AvaloniaProperty.RegisterDirect<Visual, double>(nameof(ActualHeight), o => o.Bounds.Height);
 
         // Note the following:
         // _loadedQueue :
@@ -170,7 +183,7 @@ namespace Avalonia.Controls
             get => GetValue(TagProperty);
             set => SetValue(TagProperty, value);
         }
-        
+
         /// <summary>
         /// Gets or sets the text flow direction.
         /// </summary>
@@ -178,6 +191,22 @@ namespace Avalonia.Controls
         {
             get => GetValue(FlowDirectionProperty);
             set => SetValue(FlowDirectionProperty, value);
+        }
+
+        /// <summary>
+        /// Gets the actual calculated width of the control relative to its parent.
+        /// </summary>
+        public double ActualWidth
+        {
+            get { return Bounds.Width; }
+        }
+
+        /// <summary>
+        /// Gets the actual calculated height of the control relative to its parent.
+        /// </summary>
+        public double ActualHeight
+        {
+            get { return Bounds.Height; }
         }
 
         /// <summary>
@@ -567,6 +596,18 @@ namespace Avalonia.Controls
                         source: this,
                         previousSize: new Size(oldValue.Width, oldValue.Height),
                         newSize: new Size(newValue.Width, newValue.Height));
+
+                    // Raise ActualWidthProperty and ActualHeightProperty changed 
+                    // when WidthChanged or HeightChanged.
+                    if (sizeChangedEventArgs.WidthChanged)
+                    {
+                        RaisePropertyChanged(ActualWidthProperty, oldValue.Width, newValue.Width);
+                    }
+
+                    if (sizeChangedEventArgs.HeightChanged)
+                    {
+                        RaisePropertyChanged(ActualHeightProperty, oldValue.Width, newValue.Width);
+                    }
 
                     RaiseEvent(sizeChangedEventArgs);
                 }
