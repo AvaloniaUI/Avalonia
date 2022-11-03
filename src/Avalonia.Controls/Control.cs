@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Security.Cryptography;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Primitives;
