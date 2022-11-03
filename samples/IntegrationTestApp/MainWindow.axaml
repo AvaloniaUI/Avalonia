@@ -69,6 +69,18 @@
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="Gestures">
+        <DockPanel>
+          <DockPanel DockPanel.Dock="Top">
+            <Button Name="ClearLastGesture" DockPanel.Dock="Right">Clear</Button>
+            <TextBlock Name="LastGesture" />
+          </DockPanel>
+          <Border Name="GestureBorder" Background="Blue" 
+                  AutomationProperties.AccessibilityView="Content"
+                  AutomationProperties.ControlTypeOverride="Image"/>
+        </DockPanel>
+      </TabItem>
+
       <TabItem Header="ListBox">
         <DockPanel>
           <StackPanel DockPanel.Dock="Bottom">

@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
@@ -20,6 +21,15 @@ namespace IntegrationTestApp
             this.AttachDevTools();
             AddHandler(Button.ClickEvent, OnButtonClick);
             ListBoxItems = Enumerable.Range(0, 100).Select(x => "Item " + x).ToList();
+            
+            var gestureBorder = this.GetControl<Border>("GestureBorder");
+            var lastGesture = this.GetControl<TextBlock>("LastGesture");
+            var clearLastGesture = this.GetControl<Button>("ClearLastGesture");
+            gestureBorder.Tapped += (s, e) => lastGesture.Text = "Tapped";
+            gestureBorder.DoubleTapped += (s, e) => lastGesture.Text = "DoubleTapped";
+            Gestures.AddRightTappedHandler(gestureBorder, (s, e) => lastGesture.Text = "RightTapped");
+            clearLastGesture.Click += (s, e) => lastGesture.Text = string.Empty;
+            
             DataContext = this;
         }
 
