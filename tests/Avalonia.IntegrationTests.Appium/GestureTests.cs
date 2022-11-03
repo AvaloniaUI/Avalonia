@@ -84,9 +84,17 @@ namespace Avalonia.IntegrationTests.Appium
 
             Thread.Sleep(100);
 
-            new Actions(_session).ClickAndHold(border).Release().Perform();
+            // DoubleTapped is raised on second pointer press, not release.
+            new Actions(_session).ClickAndHold(border).Perform();
 
-            Assert.Equal("DoubleTapped", lastGesture.Text);
+            try
+            {
+                Assert.Equal("DoubleTapped", lastGesture.Text);
+            }
+            finally
+            {
+                new Actions(_session).Release(border).Perform();
+            }
         }
 
         [Fact]
