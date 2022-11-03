@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Focusing_Item_With_Ctrl_And_Arrow_Key_Should_Add_To_Selection()
+        public void Focusing_Item_With_Ctrl_And_Arrow_Key_Should_Not_Add_To_Selection()
         {
             var target = new ListBox
             {
@@ -56,11 +56,11 @@ namespace Avalonia.Controls.UnitTests
                 KeyModifiers = KeyModifiers.Control
             });
 
-            Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "Foo" }, target.SelectedItems);
         }
 
         [Fact]
-        public void Focusing_Selected_Item_With_Ctrl_And_Arrow_Key_Should_Remove_From_Selection()
+        public void Focusing_Selected_Item_With_Ctrl_And_Arrow_Key_Should_Not_Remove_From_Selection()
         {
             var target = new ListBox
             {
@@ -81,7 +81,7 @@ namespace Avalonia.Controls.UnitTests
                 KeyModifiers = KeyModifiers.Control
             });
 
-            Assert.Equal(new[] { "Bar" }, target.SelectedItems);
+            Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
         }
 
         private Control CreateListBoxTemplate(ITemplatedControl parent, INameScope scope)

@@ -95,41 +95,45 @@ export class InputHelper {
         pointerMoveCallback: (args: PointerEvent) => boolean,
         pointerDownCallback: (args: PointerEvent) => boolean,
         pointerUpCallback: (args: PointerEvent) => boolean,
+        pointerCancelCallback: (args: PointerEvent) => boolean,
         wheelCallback: (args: WheelEvent) => boolean
     ) {
         const pointerMoveHandler = (args: PointerEvent) => {
-            if (pointerMoveCallback(args)) {
-                args.preventDefault();
-            }
+            pointerMoveCallback(args);
+            args.preventDefault();
         };
 
         const pointerDownHandler = (args: PointerEvent) => {
-            if (pointerDownCallback(args)) {
-                args.preventDefault();
-            }
+            pointerDownCallback(args);
+            args.preventDefault();
         };
 
         const pointerUpHandler = (args: PointerEvent) => {
-            if (pointerUpCallback(args)) {
-                args.preventDefault();
-            }
+            pointerUpCallback(args);
+            args.preventDefault();
+        };
+
+        const pointerCancelHandler = (args: PointerEvent) => {
+            pointerCancelCallback(args);
+            args.preventDefault();
         };
 
         const wheelHandler = (args: WheelEvent) => {
-            if (wheelCallback(args)) {
-                args.preventDefault();
-            }
+            wheelCallback(args);
+            args.preventDefault();
         };
 
         element.addEventListener("pointermove", pointerMoveHandler);
         element.addEventListener("pointerdown", pointerDownHandler);
         element.addEventListener("pointerup", pointerUpHandler);
         element.addEventListener("wheel", wheelHandler);
+        element.addEventListener("pointercancel", pointerCancelHandler);
 
         return () => {
             element.removeEventListener("pointerover", pointerMoveHandler);
             element.removeEventListener("pointerdown", pointerDownHandler);
             element.removeEventListener("pointerup", pointerUpHandler);
+            element.removeEventListener("pointercancel", pointerCancelHandler);
             element.removeEventListener("wheel", wheelHandler);
         };
     }
@@ -148,6 +152,10 @@ export class InputHelper {
         return () => {
             element.removeEventListener("input", inputHandler);
         };
+    }
+
+    public static getCoalescedEvents(pointerEvent: PointerEvent): PointerEvent[] {
+        return pointerEvent.getCoalescedEvents();
     }
 
     public static clearInput(inputElement: HTMLInputElement) {

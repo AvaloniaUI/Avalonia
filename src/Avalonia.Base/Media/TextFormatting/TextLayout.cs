@@ -31,6 +31,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <param name="lineHeight">The height of each line of text.</param>
+        /// <param name="letterSpacing">The letter spacing that is applied to rendered glyphs.</param>
         /// <param name="maxLines">The maximum number of text lines.</param>
         /// <param name="textStyleOverrides">The text style overrides.</param>
         public TextLayout(
@@ -46,12 +47,13 @@ namespace Avalonia.Media.TextFormatting
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
             double lineHeight = double.NaN,
+            double letterSpacing = 0,
             int maxLines = 0,
             IReadOnlyList<ValueSpan<TextRunProperties>>? textStyleOverrides = null)
         {
             _paragraphProperties =
                 CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
-                    textDecorations, flowDirection, lineHeight);
+                    textDecorations, flowDirection, lineHeight, letterSpacing);
 
             _textSource = new FormattedTextSource(text.AsMemory(), _paragraphProperties.DefaultTextRunProperties, textStyleOverrides);
 
@@ -62,6 +64,8 @@ namespace Avalonia.Media.TextFormatting
             MaxWidth = maxWidth;
 
             MaxHeight = maxHeight;
+
+            LetterSpacing = letterSpacing;
 
             MaxLines = maxLines;
 
@@ -77,6 +81,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <param name="lineHeight">The height of each line of text.</param>
+        /// <param name="letterSpacing">The letter spacing that is applied to rendered glyphs.</param>
         /// <param name="maxLines">The maximum number of text lines.</param>
         public TextLayout(
             ITextSource textSource,
@@ -85,6 +90,7 @@ namespace Avalonia.Media.TextFormatting
             double maxWidth = double.PositiveInfinity,
             double maxHeight = double.PositiveInfinity,
             double lineHeight = double.NaN,
+            double letterSpacing = 0,
             int maxLines = 0)
         {
             _textSource = textSource;
@@ -98,6 +104,8 @@ namespace Avalonia.Media.TextFormatting
             MaxWidth = maxWidth;
 
             MaxHeight = maxHeight;
+
+            LetterSpacing = letterSpacing;
 
             MaxLines = maxLines;
 
@@ -127,6 +135,11 @@ namespace Avalonia.Media.TextFormatting
         /// Gets the maximum number of text lines.
         /// </summary>
         public int MaxLines { get; }
+
+        /// <summary>
+        /// Gets the text spacing.
+        /// </summary>
+        public double LetterSpacing { get; }
 
         /// <summary>
         /// Gets the text lines.
@@ -374,15 +387,17 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textDecorations">The text decorations.</param>
         /// <param name="flowDirection">The text flow direction.</param>
         /// <param name="lineHeight">The height of each line of text.</param>
+        /// <param name="letterSpacing">The letter spacing that is applied to rendered glyphs.</param>
         /// <returns></returns>
         private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
             IBrush? foreground, TextAlignment textAlignment, TextWrapping textWrapping,
-            TextDecorationCollection? textDecorations, FlowDirection flowDirection, double lineHeight)
+            TextDecorationCollection? textDecorations, FlowDirection flowDirection, double lineHeight, 
+            double letterSpacing)
         {
             var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
 
             return new GenericTextParagraphProperties(flowDirection, textAlignment, true, false,
-                textRunStyle, textWrapping, lineHeight, 0);
+                textRunStyle, textWrapping, lineHeight, 0, letterSpacing);
         }
 
         /// <summary>
