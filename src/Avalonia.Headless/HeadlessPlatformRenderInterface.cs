@@ -323,12 +323,12 @@ namespace Avalonia.Headless
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
             public int Version { get; set; }
-            public void Save(string fileName)
+            public void Save(string fileName, int? quality = null)
             {
 
             }
 
-            public void Save(Stream stream)
+            public void Save(Stream stream, int? quality = null)
             {
 
             }

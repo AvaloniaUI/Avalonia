@@ -121,18 +121,28 @@ namespace Avalonia.Media.Imaging
         /// Saves the bitmap to a file.
         /// </summary>
         /// <param name="fileName">The filename.</param>
-        public void Save(string fileName)
+        /// <param name="quality">
+        /// The optional quality for compression. 
+        /// The quality value is interpreted from 0 - 100. If quality is null the default quality 
+        /// setting is applied.
+        /// </param>
+        public void Save(string fileName, int? quality = null)
         {
-            PlatformImpl.Item.Save(fileName);
+            PlatformImpl.Item.Save(fileName, quality);
         }
 
         /// <summary>
         /// Saves the bitmap to a stream.
         /// </summary>
         /// <param name="stream">The stream.</param>
-        public void Save(Stream stream)
+        /// <param name="quality">
+        /// The optional quality for compression. 
+        /// The quality value is interpreted from 0 - 100. If quality is null the default quality 
+        /// setting is applied.
+        /// </param>
+        public void Save(Stream stream, int? quality = null)
         {
-            PlatformImpl.Item.Save(stream);
+            PlatformImpl.Item.Save(stream, quality);
         }
 
         /// <inheritdoc/>
