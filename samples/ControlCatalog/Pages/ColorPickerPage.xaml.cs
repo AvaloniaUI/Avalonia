@@ -20,6 +20,7 @@ namespace ControlCatalog.Pages
                 Color = Colors.Blue,
                 Margin = new Thickness(0, 50, 0, 0),
                 HorizontalAlignment = HorizontalAlignment.Center,
+                Palette = new MaterialHalfColorPalette(),
             };
             Grid.SetColumn(colorPicker, 2);
             Grid.SetRow(colorPicker, 1);

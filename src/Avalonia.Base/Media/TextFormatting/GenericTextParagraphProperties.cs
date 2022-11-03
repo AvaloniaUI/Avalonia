@@ -17,15 +17,18 @@
         /// <param name="textAlignment">logical horizontal alignment</param>
         /// <param name="textWrap">text wrap option</param>
         /// <param name="lineHeight">Paragraph line height</param>
+        /// <param name="letterSpacing">letter spacing</param>
         public GenericTextParagraphProperties(TextRunProperties defaultTextRunProperties,
             TextAlignment textAlignment = TextAlignment.Left,
             TextWrapping textWrap = TextWrapping.NoWrap,
-            double lineHeight = 0)
+            double lineHeight = 0,
+            double letterSpacing = 0)
         {
             DefaultTextRunProperties = defaultTextRunProperties;
             _textAlignment = textAlignment;
             _textWrap = textWrap;
             _lineHeight = lineHeight;
+            LetterSpacing = letterSpacing;
         }
 
         /// <summary>
@@ -39,6 +42,7 @@
         /// <param name="textWrap">text wrap option</param>
         /// <param name="lineHeight">Paragraph line height</param>
         /// <param name="indent">line indentation</param>
+        /// <param name="letterSpacing">letter spacing</param>
         public GenericTextParagraphProperties(
             FlowDirection flowDirection,
             TextAlignment textAlignment,
@@ -47,8 +51,8 @@
             TextRunProperties defaultTextRunProperties,
             TextWrapping textWrap,
             double lineHeight,
-            double indent
-            )
+            double indent,
+            double letterSpacing)
         {
             _flowDirection = flowDirection;
             _textAlignment = textAlignment;
@@ -57,6 +61,7 @@
             DefaultTextRunProperties = defaultTextRunProperties;
             _textWrap = textWrap;
             _lineHeight = lineHeight;
+            LetterSpacing = letterSpacing;
             Indent = indent;
         }
 
@@ -72,7 +77,8 @@
                 textParagraphProperties.DefaultTextRunProperties, 
                 textParagraphProperties.TextWrapping,
                 textParagraphProperties.LineHeight,
-                textParagraphProperties.Indent)
+                textParagraphProperties.Indent,
+                textParagraphProperties.LetterSpacing)
         {
         }
 
@@ -130,6 +136,11 @@
         /// Line indentation
         /// </summary>
         public override double Indent { get; }
+
+        /// <summary>
+        /// The letter spacing
+        /// </summary>
+        public override double LetterSpacing { get; }
 
         /// <summary>
         /// Set text flow direction

@@ -24,7 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-    <PackageReference Include="MicroCom.CodeGenerator.MSBuild" Version="0.10.4" PrivateAssets="all" />
+    <PackageReference Include="MicroCom.CodeGenerator.MSBuild" Version="0.11.0" PrivateAssets="all" />
     <MicroComIdl Include="avn.idl" CSharpInteropPath="Interop.Generated.cs" />
   </ItemGroup>
 
