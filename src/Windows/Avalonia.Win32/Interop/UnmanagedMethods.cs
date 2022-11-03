@@ -2104,6 +2104,12 @@ namespace Avalonia.Win32.Interop
             public int Y;
         }
 
+        public struct SIZE_F
+        {
+            public float X;
+            public float Y;
+        }
+
         public struct RECT
         {
             public int left;
