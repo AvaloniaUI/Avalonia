@@ -89,55 +89,49 @@ namespace Avalonia.Controls.Documents
 
         }
 
+        public override void Add(Inline inline)
+        {
+            if (InlineHost is TextBlock textBlock && !string.IsNullOrEmpty(textBlock._text))
+            {          
+                base.Add(new Run(textBlock._text));
+
+                textBlock._text = null;                
+            }
+
+            base.Add(inline);
+        }
+
         /// <summary>
-        /// Add a text segment to the collection.
+        /// Adds a text segment to the collection.
         /// <remarks>
         /// For non complex content this appends the text to the end of currently held text.
         /// For complex content this adds a <see cref="Run"/> to the collection.
         /// </remarks>
         /// </summary>
-        /// <param name="text"></param>
+        /// <param name="text">The to be added text.</param>
         public void Add(string text)
         {
             AddText(text);
         }
 
-        public override void Add(Inline inline)
+        /// <summary>
+        /// Adds a control wrapped inside a <see cref="InlineUIContainer"/> to the collection.
+        /// </summary>
+        /// <param name="control">The to be added control.</param>
+        public void Add(IControl control)
         {
-            OnAdd();
-
-            base.Add(inline);
+            Add(new InlineUIContainer(control));
         }
 
-        public void Add(IControl child)
+        internal void AddText(string text)
         {
-            OnAdd();
-
-            base.Add(new InlineUIContainer(child));
-        }
-
-        private void AddText(string text)
-        {
-            if (LogicalChildren is TextBlock textBlock && !textBlock.HasComplexContent)
+            if (InlineHost is TextBlock textBlock && !textBlock.HasComplexContent)
             {
                 textBlock._text += text;
             }
             else
             {
-                base.Add(new Run(text));
-            }
-        }
-
-        private void OnAdd()
-        {
-            if (LogicalChildren is TextBlock textBlock)
-            {
-                if (!textBlock.HasComplexContent && !string.IsNullOrEmpty(textBlock._text))
-                {
-                    base.Add(new Run(textBlock._text));
-
-                    textBlock._text = null;
-                }
+                Add(new Run(text));
             }
         }
 
