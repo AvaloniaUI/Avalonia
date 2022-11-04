@@ -18,7 +18,7 @@ namespace Avalonia.IntegrationTests.Appium
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
             var tab = tabs.FindElementByName("Gestures");
             tab.Click();
-            var clear = _session.FindElementByAccessibilityId("ClearLastGesture");
+            var clear = _session.FindElementByAccessibilityId("ResetGestures");
             clear.Click();
         }
 
@@ -110,6 +110,22 @@ namespace Avalonia.IntegrationTests.Appium
             new Actions(_session).ClickAndHold(border).Release().Perform();
 
             Assert.Equal("Tapped", lastGesture.Text);
+        }
+
+        [Fact]
+        public void DoubleTapped_Is_Raised_After_Control_Changes()
+        {
+            // #8733
+            var border = _session.FindElementByAccessibilityId("GestureBorder");
+            var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
+
+            new Actions(_session)
+                .MoveToElement(border)
+                .DoubleClick()
+                .DoubleClick()
+                .Perform();
+
+            Assert.Equal("DoubleTapped2", lastGesture.Text);
         }
 
         [Fact]
