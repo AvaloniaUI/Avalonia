@@ -94,7 +94,7 @@ namespace Avalonia.Input
                 var e = (PointerPressedEventArgs)ev;
                 var visual = (IVisual)ev.Source;
 
-                if (e.ClickCount <= 1)
+                if (e.ClickCount % 2 == 1)
                 {
                     s_isDoubleTapped = false;
                     s_lastPress.SetTarget(ev.Source);
@@ -107,10 +107,6 @@ namespace Avalonia.Input
                         s_isDoubleTapped = true;
                         e.Source.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
                     }
-                }
-                else
-                {
-                    s_isDoubleTapped = false;
                 }
             }
         }
