@@ -14,24 +14,44 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DockPanel>
-          <Border IsVisible="{TemplateBinding IsNavBarVisible}" Height="{DynamicResource NavigationControlNavBarHeight}" Background="{DynamicResource NavigationControlNavBarBackground}" DockPanel.Dock="Top" Padding="5" CornerRadius="{DynamicResource ControlCornerRadius}">
+          <Border  Name="PART_NavigationBar" 
+                   IsVisible="{TemplateBinding IsNavBarVisible}" 
+                   Height="{DynamicResource NavigationControlNavBarHeight}" 
+                   Background="{DynamicResource NavigationControlNavBarBackground}" 
+                   DockPanel.Dock="Top" 
+                   Padding="5" 
+                   CornerRadius="{DynamicResource ControlCornerRadius}">
             <DockPanel HorizontalAlignment="Stretch">
-              <Button x:Name="PART_BackButton" Background="Transparent" DockPanel.Dock="Left" IsEnabled="{TemplateBinding CanGoBack}" IsVisible="{TemplateBinding IsBackButtonVisible}">
-                <Button.Styles>
-                  <Styles>
-                    <Style Selector=":disabled /template/ ContentPresenter#PART_ContentPresenter">
-                      <Setter Property="Background" Value="Transparent" />
-                    </Style>
-                  </Styles>
-                </Button.Styles>
+              <DockPanel.Styles>
+                <Styles>
+                  <Style Selector="Button:disabled /template/ ContentPresenter#PART_ContentPresenter">
+                    <Setter Property="Background" Value="Transparent" />
+                  </Style>
+                </Styles>
+              </DockPanel.Styles>
+              <Button x:Name="PART_BackButton" 
+                      Background="Transparent" 
+                      DockPanel.Dock="Left" 
+                      IsEnabled="{TemplateBinding CanGoBack}" 
+                      IsVisible="{TemplateBinding IsBackButtonVisible}">
                 <PathIcon
                   Data="M12.7347,4.20949 C13.0332,3.92233 13.508,3.93153 13.7952,4.23005 C14.0823,4.52857 14.0731,5.00335 13.7746,5.29051 L5.50039,13.25 L24.2532,13.25 C24.6674,13.25 25.0032,13.5858 25.0032,13.9999982 C25.0032,14.4142 24.6674,14.75 24.2532,14.75 L5.50137,14.75 L13.7746,22.7085 C14.0731,22.9957 14.0823,23.4705 13.7952,23.769 C13.508,24.0675 13.0332,24.0767 12.7347,23.7896 L3.30673,14.7202 C2.89776,14.3268 2.89776,13.6723 3.30673,13.2788 L12.7347,4.20949 Z"
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center"/>
               </Button>
+              <Button x:Name="PART_ForwardButton"
+                      Background="Transparent"
+                      DockPanel.Dock="Left"
+                      IsEnabled="{TemplateBinding CanGoForward}"
+                      IsVisible="{TemplateBinding IsForwardButtonVisible}">
+                <PathIcon
+                  Data="M15.2685,4.20949 C14.97,3.92233 14.4952,3.93153 14.208,4.23005 C13.9209,4.52857 13.9301,5.00335 14.2286,5.29051 L22.5028,13.25 L3.75,13.25 C3.33579,13.25 3,13.5858 3,13.9999982 C3,14.4142 3.33579,14.75 3.75,14.75 L22.5018,14.75 L14.2286,22.7085 C13.9301,22.9957 13.9209,23.4705 14.208,23.769 C14.4952,24.0675 14.97,24.0767 15.2685,23.7896 L24.6965,14.7202 C25.1054,14.3268 25.1054,13.6723 24.6965,13.2788 L15.2685,4.20949 Z"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"/>
+              </Button>
               <ContentPresenter Name="PART_Header"
                   ContentTemplate="{TemplateBinding HeaderTemplate}"
-                  Content="{TemplateBinding CurrentView}"
+                  Content="{TemplateBinding CurrentPage}"
                 />
             </DockPanel>
 
@@ -43,7 +63,7 @@
                           BorderThickness="{TemplateBinding BorderThickness}"
                           CornerRadius="{TemplateBinding CornerRadius}"
                           ContentTemplate="{TemplateBinding ContentTemplate}"
-                          Content="{TemplateBinding CurrentView}"
+                          Content="{TemplateBinding CurrentPage}"
                           Padding="{TemplateBinding Padding}"
                           Margin="{DynamicResource NavigationControlPageMargin}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"

@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Animation;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
@@ -9,33 +10,36 @@ namespace Avalonia.Controls
     /// <summary>
     /// A navigation controlt that supports simple stack-based navigation
     /// </summary>
+    [TemplatePart("PART_NavigationBar", typeof(Border))]
+    [TemplatePart("PART_BackButton", typeof(Button))]
+    [TemplatePart("PART_ForwardButton", typeof(Button))]
+    [TemplatePart("PART_ContentPresenter", typeof(TransitioningContentControl))]
     public class NavigationControl : ContentControl
     {
         private Button? _backButton;
+        private Button? _forwardButton;
         private INavigationRouter? _navigationRouter;
-
-        /// <summary>
-        /// Raised when the back is requested.
-        /// </summary>
-        public event EventHandler BackRequested
-        {
-            add => AddHandler(BackRequestedEvent, value);
-            remove => RemoveHandler(BackRequestedEvent, value);
-        }
 
         /// <summary>
         /// Defines the <see cref="CanGoBack"/> property.
         /// </summary>
         public static readonly DirectProperty<NavigationControl, bool?> CanGoBackProperty =
             AvaloniaProperty.RegisterDirect<NavigationControl, bool?>(nameof(CanGoBack),
-                o => o.CanGoBack, (o, v) => o.CanGoBack = v);
+                o => o.CanGoBack);
 
         /// <summary>
-        /// Defines the <see cref="CurrentView"/> property.
+        /// Defines the <see cref="CanGoForward"/> property.
         /// </summary>
-        public static readonly DirectProperty<NavigationControl, object?> CurrentViewProperty =
-            AvaloniaProperty.RegisterDirect<NavigationControl, object?>(nameof(CurrentView),
-                o => o.CurrentView, (o, v) => o.CurrentView = v);
+        public static readonly DirectProperty<NavigationControl, bool?> CanGoForwardProperty =
+            AvaloniaProperty.RegisterDirect<NavigationControl, bool?>(nameof(CanGoForward),
+                o => o.CanGoForward);
+
+        /// <summary>
+        /// Defines the <see cref="CurrentPage"/> property.
+        /// </summary>
+        public static readonly DirectProperty<NavigationControl, object?> CurrentPageProperty =
+            AvaloniaProperty.RegisterDirect<NavigationControl, object?>(nameof(CurrentPage),
+                o => o.CurrentPage, (o, v) => o.CurrentPage = v);
 
         /// <summary>
         /// Defines the <see cref="IsBackButtonVisible"/> property.
@@ -44,16 +48,16 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<NavigationControl, bool?>(nameof(IsBackButtonVisible), true);
 
         /// <summary>
+        /// Defines the <see cref="IsForwardButtonVisible"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool?> IsForwardButtonVisibleProperty =
+            AvaloniaProperty.Register<NavigationControl, bool?>(nameof(IsForwardButtonVisible), false);
+
+        /// <summary>
         /// Defines the <see cref="IsNavBarVisible"/> property.
         /// </summary>
         public static readonly StyledProperty<bool?> IsNavBarVisibleProperty =
             AvaloniaProperty.Register<NavigationControl, bool?>(nameof(IsNavBarVisible), true);
-
-        /// <summary>
-        /// Defines the <see cref="BackRequested"/> event.
-        /// </summary>
-        public static readonly RoutedEvent BackRequestedEvent =
-            RoutedEvent.Register<NavigationControl, RoutedEventArgs>(nameof(BackRequested), RoutingStrategies.Direct);
 
         /// <summary>
         /// Defines the <see cref="PageTransition"/> property.
@@ -81,13 +85,14 @@ namespace Avalonia.Controls
         public bool? CanGoBack
         {
             get => NavigationRouter?.CanGoBack;
-            set
-            {
-                if (NavigationRouter != null)
-                {
-                    NavigationRouter.CanGoBack = value;
-                }
-            }
+        }
+
+        /// <summary>
+        /// Gets whether it's possible to go forward in the stack
+        /// </summary>
+        public bool? CanGoForward
+        {
+            get => NavigationRouter is IBiDirectionalNavigationRouter biNav ? biNav?.CanGoForward : false;
         }
 
         /// <summary>
@@ -97,6 +102,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsBackButtonVisibleProperty);
             set => SetValue(IsBackButtonVisibleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the visibility of the navigation bar
+        /// </summary>
+        public bool? IsForwardButtonVisible
+        {
+            get => GetValue(IsForwardButtonVisibleProperty);
+            set => SetValue(IsForwardButtonVisibleProperty, value);
         }
 
         /// <summary>
@@ -153,14 +167,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the animation played when content appears and disappears.
         /// </summary>
-        public object? CurrentView
+        public object? CurrentPage
         {
-            get => NavigationRouter?.CurrentView;
+            get => NavigationRouter?.CurrentPage;
             set
             {
-                var oldView = CurrentView;
+                var oldView = CurrentPage;
                 NavigationRouter?.NavigateTo(value);
-                RaisePropertyChanged(CurrentViewProperty, oldView, CurrentView);
+                RaisePropertyChanged(CurrentPageProperty, oldView, CurrentPage);
             }
         }
 
@@ -184,6 +198,26 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the ForwardButton template part.
+        /// </summary>
+        private Button? ForwardButton
+        {
+            get { return _forwardButton; }
+            set
+            {
+                if (_forwardButton != null)
+                {
+                    _forwardButton.Click -= ForwardButton_Clicked;
+                }
+                _forwardButton = value;
+                if (_forwardButton != null)
+                {
+                    _forwardButton.Click += ForwardButton_Clicked;
+                }
+            }
+        }
+
         public NavigationControl()
         {
             NavigationRouter = new NavigationRouter();
@@ -193,8 +227,8 @@ namespace Avalonia.Controls
         {
             switch(e.PropertyName)
             {
-                case nameof(NavigationRouter.CurrentView):
-                    RaisePropertyChanged(CurrentViewProperty, null, CurrentView);
+                case nameof(NavigationRouter.CurrentPage):
+                    RaisePropertyChanged(CurrentPageProperty, null, CurrentPage);
                     RaisePropertyChanged(CanGoBackProperty, null, CanGoBack);
                     break;
             }
@@ -205,11 +239,24 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
 
             BackButton = e.NameScope.Get<Button>("PART_BackButton");
+
+            ForwardButton = e.NameScope.Get<Button>("PART_ForwardButton");
         }
 
         private async void BackButton_Clicked(object? sender, RoutedEventArgs eventArgs)
         {
-            await NavigationRouter?.GoBack();
+            if (NavigationRouter != null)
+            {
+                await NavigationRouter.Back();
+            }
+        }
+
+        private async void ForwardButton_Clicked(object? sender, RoutedEventArgs eventArgs)
+        {
+            if (NavigationRouter is IBiDirectionalNavigationRouter biNav)
+            {
+                await biNav.Forward();
+            }
         }
     }
 }

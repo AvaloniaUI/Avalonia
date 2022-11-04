@@ -4,63 +4,85 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Avalonia.Collections;
 
 namespace Avalonia.Controls
 {
     public class NavigationRouter : INavigationRouter
     {
-        private readonly Stack<object?> _navigationStack;
-        private bool? _canGoBack;
-        private object? _currentView;
+        private readonly Stack<object?> _backStack;
+        private object? _currentPage;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public bool? CanGoBack
+        public bool CanGoBack => _backStack?.Count() > 0;
+
+        public object? CurrentPage
         {
-            get => (_canGoBack == null || (bool)_canGoBack) && (NavigationStack?.Count() > 1); set
+            get => _currentPage; private set
             {
-                _canGoBack = value;
+                _currentPage = value;
 
                 OnPropertyChanged();
+
+                OnPropertyChanged(nameof(CanGoBack));
             }
         }
-        public IEnumerable<object?> NavigationStack => _navigationStack;
 
-        public object? CurrentView
-        {
-            get => _currentView; private set
-            {
-                _currentView = value;
-
-                OnPropertyChanged();
-            }
-        }
+        public bool AllowEmpty { get; set; }
 
         public NavigationRouter()
         {
-            _navigationStack = new Stack<object?>();
+            _backStack = new Stack<object?>();
         }
 
-        public async Task GoBack()
+        public async Task Back()
         {
-            if (CanGoBack != null && (bool)CanGoBack)
+            if (CanGoBack || AllowEmpty)
             {
-                _navigationStack?.Pop();
-
-                CurrentView = _navigationStack?.Peek();
+                CurrentPage = _backStack?.Pop();
             }
         }
 
-        public async Task NavigateTo(object? viewModel)
+        public async Task NavigateTo(object? viewModel, NavigationMode navigationMode)
         {
-            _navigationStack.Push(viewModel);
-            CurrentView = viewModel;
+            if(viewModel == null)
+            {
+                return;
+            }
+
+            if (CurrentPage != null)
+            {
+                switch (navigationMode)
+                {
+                    case NavigationMode.Normal:
+                        _backStack.Push(CurrentPage);
+                        break;
+                    case NavigationMode.Clear:
+                        _backStack.Clear();
+                        break;
+                }
+            }
+
+            CurrentPage = viewModel;
         }
 
         public void OnPropertyChanged([CallerMemberName] string memberName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(memberName));
+        }
+
+        public async Task Clear()
+        {
+            _backStack?.Clear();
+
+            if(AllowEmpty)
+            {
+                CurrentPage = null;
+            }
+            else
+            {
+                OnPropertyChanged(nameof(CanGoBack));
+            }
         }
     }
 }

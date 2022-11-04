@@ -45,7 +45,10 @@ namespace ControlCatalog.ViewModels
 
         public async void NavigateTo(object page)
         {
-            NavigationRouter?.NavigateTo(page);
+            if (NavigationRouter != null)
+            {
+                await NavigationRouter.NavigateTo(page);
+            }
         }
     }
 }
