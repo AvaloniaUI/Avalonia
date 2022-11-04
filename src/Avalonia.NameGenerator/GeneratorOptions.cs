@@ -9,6 +9,7 @@ public enum BuildProperties
     AvaloniaNameGeneratorDefaultFieldModifier = 1,
     AvaloniaNameGeneratorFilterByPath = 2,
     AvaloniaNameGeneratorFilterByNamespace = 3,
+    AvaloniaNameGeneratorViewFileNamingStrategy = 4,
 }
 
 public enum DefaultFieldModifier
@@ -25,69 +26,49 @@ public enum Behavior
     InitializeComponent = 1,
 }
 
+public enum ViewFileNamingStrategy
+{
+    ClassName = 0,
+    NamespaceAndClassName = 1,
+}
+
 public class GeneratorOptions
 {
     private readonly GeneratorExecutionContext _context;
 
     public GeneratorOptions(GeneratorExecutionContext context) => _context = context;
 
-    public Behavior AvaloniaNameGeneratorBehavior
-    {
-        get
-        {
-            const Behavior defaultBehavior = Behavior.InitializeComponent;
-            var propertyValue = _context
-                .GetMsBuildProperty(
-                    nameof(BuildProperties.AvaloniaNameGeneratorBehavior),
-                    defaultBehavior.ToString());
+    public Behavior AvaloniaNameGeneratorBehavior => GetEnumProperty(
+        BuildProperties.AvaloniaNameGeneratorBehavior,
+        Behavior.InitializeComponent);
 
-            if (!Enum.TryParse(propertyValue, true, out Behavior behavior))
-                return defaultBehavior;
-            return behavior;
-        }
+    public DefaultFieldModifier AvaloniaNameGeneratorDefaultFieldModifier => GetEnumProperty(
+        BuildProperties.AvaloniaNameGeneratorDefaultFieldModifier,
+        DefaultFieldModifier.Internal);
+
+    public ViewFileNamingStrategy AvaloniaNameGeneratorViewFileNamingStrategy => GetEnumProperty(
+        BuildProperties.AvaloniaNameGeneratorViewFileNamingStrategy,
+        ViewFileNamingStrategy.NamespaceAndClassName);
+
+    public string[] AvaloniaNameGeneratorFilterByPath => GetStringArrayProperty(
+        BuildProperties.AvaloniaNameGeneratorFilterByPath,
+        "*");
+
+    public string[] AvaloniaNameGeneratorFilterByNamespace => GetStringArrayProperty(
+        BuildProperties.AvaloniaNameGeneratorFilterByNamespace,
+        "*");
+
+    private string[] GetStringArrayProperty(BuildProperties name, string defaultValue)
+    {
+        var key = name.ToString();
+        var value = _context.GetMsBuildProperty(key, defaultValue);
+        return value.Contains(";") ? value.Split(';') : new[] {value};
     }
 
-    public DefaultFieldModifier AvaloniaNameGeneratorDefaultFieldModifier
+    private TEnum GetEnumProperty<TEnum>(BuildProperties name, TEnum defaultValue) where TEnum : struct
     {
-        get
-        {
-            const DefaultFieldModifier defaultFieldModifier = DefaultFieldModifier.Internal;
-            var propertyValue = _context
-                .GetMsBuildProperty(
-                    nameof(BuildProperties.AvaloniaNameGeneratorDefaultFieldModifier),
-                    defaultFieldModifier.ToString());
-
-            if (!Enum.TryParse(propertyValue, true, out DefaultFieldModifier modifier))
-                return defaultFieldModifier;
-            return modifier;
-        }
-    }
-
-    public string[] AvaloniaNameGeneratorFilterByPath
-    {
-        get
-        {
-            var propertyValue = _context.GetMsBuildProperty(
-                nameof(BuildProperties.AvaloniaNameGeneratorFilterByPath),
-                "*");
-
-            if (propertyValue.Contains(";"))
-                return propertyValue.Split(';');
-            return new[] {propertyValue};
-        }
-    }
-
-    public string[] AvaloniaNameGeneratorFilterByNamespace
-    {
-        get
-        {
-            var propertyValue = _context.GetMsBuildProperty(
-                nameof(BuildProperties.AvaloniaNameGeneratorFilterByNamespace),
-                "*");
-
-            if (propertyValue.Contains(";"))
-                return propertyValue.Split(';');
-            return new[] {propertyValue};
-        }
+        var key = name.ToString();
+        var value = _context.GetMsBuildProperty(key, defaultValue.ToString());
+        return Enum.TryParse(value, true, out TEnum behavior) ? behavior : defaultValue;
     }
 }

@@ -110,6 +110,11 @@ The `x:Name` generator can be configured via MsBuild properties that you can put
     The generator will process only XAML files with base classes' namespaces matching the specified glob pattern(s).  
     Example: `MyApp.Presentation.*`, `MyApp.Presentation.Views;MyApp.Presentation.Controls`
 
+- `AvaloniaNameGeneratorViewFileNamingStrategy`  
+    Possible values: `ClassName`, `NamespaceAndClassName`  
+    Default value: `NamespaceAndClassName`  
+    Determines how the automatically generated view files should be [named](https://github.com/AvaloniaUI/Avalonia.NameGenerator/issues/92).
+
 The default values are given by:
 
 ```xml
@@ -119,6 +124,7 @@ The default values are given by:
         <AvaloniaNameGeneratorDefaultFieldModifier>internal</AvaloniaNameGeneratorDefaultFieldModifier>
         <AvaloniaNameGeneratorFilterByPath>*</AvaloniaNameGeneratorFilterByPath>
         <AvaloniaNameGeneratorFilterByNamespace>*</AvaloniaNameGeneratorFilterByNamespace>
+        <AvaloniaNameGeneratorViewFileNamingStrategy>NamespaceAndClassName</AvaloniaNameGeneratorViewFileNamingStrategy>
     </PropertyGroup>
     <!-- ... -->
 </Project>

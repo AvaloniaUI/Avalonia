@@ -1,6 +1,5 @@
 ﻿using Avalonia.Markup.Xaml;
 using Avalonia.NameGenerator.Sandbox.ViewModels;
-using Avalonia.NameGenerator.Sandbox.Views;
 
 namespace Avalonia.NameGenerator.Sandbox;
 
@@ -10,7 +9,7 @@ public class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        var view = new SignUpView
+        var view = new Views.SignUpView
         {
             ViewModel = new SignUpViewModel()
         };

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.NameGenerator.Domain;
@@ -7,6 +8,7 @@ namespace Avalonia.NameGenerator.Generator;
 
 internal class AvaloniaNameGenerator : INameGenerator
 {
+    private readonly ViewFileNamingStrategy _naming;
     private readonly IGlobPattern _pathPattern;
     private readonly IGlobPattern _namespacePattern;
     private readonly IViewResolver _classes;
@@ -14,12 +16,14 @@ internal class AvaloniaNameGenerator : INameGenerator
     private readonly ICodeGenerator _code;
 
     public AvaloniaNameGenerator(
+        ViewFileNamingStrategy naming,
         IGlobPattern pathPattern,
         IGlobPattern namespacePattern,
         IViewResolver classes,
         INameResolver names,
         ICodeGenerator code)
     {
+        _naming = naming;
         _pathPattern = pathPattern;
         _namespacePattern = namespacePattern;
         _classes = classes;
@@ -44,9 +48,16 @@ internal class AvaloniaNameGenerator : INameGenerator
             from view in resolveViews
             let names = _names.ResolveNames(view.Xaml)
             let code = _code.GenerateCode(view.ClassName, view.Namespace, view.XamlType, names)
-            let fileName = $"{view.ClassName}.g.cs"
+            let fileName = ResolveViewFileName(view, _naming)
             select new GeneratedPartialClass(fileName, code);
 
         return query.ToList();
     }
+
+    private static string ResolveViewFileName(ResolvedView view, ViewFileNamingStrategy strategy) => strategy switch
+    {
+        ViewFileNamingStrategy.ClassName => $"{view.ClassName}.g.cs",
+        ViewFileNamingStrategy.NamespaceAndClassName => $"{view.Namespace}.{view.ClassName}.g.cs",
+        _ => throw new ArgumentOutOfRangeException(nameof(strategy), strategy, "Unknown naming strategy!")
+    };
 }

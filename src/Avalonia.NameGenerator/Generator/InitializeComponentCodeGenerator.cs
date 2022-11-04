@@ -32,8 +32,7 @@ internal class InitializeComponentCodeGenerator: ICodeGenerator
         var initializations = new List<string>();
         foreach (var resolvedName in names)
         {
-            var (_, name, fieldModifier) = resolvedName;
-            string typeName = resolvedName.PrintableTypeName;
+            var (typeName, name, fieldModifier) = resolvedName;
             properties.Add($"        {fieldModifier} {typeName} {name};");
             initializations.Add($"            {name} = this.FindControl<{typeName}>(\"{name}\");");
         }

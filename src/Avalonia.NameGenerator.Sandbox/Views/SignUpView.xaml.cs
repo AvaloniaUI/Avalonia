@@ -1,10 +1,7 @@
-﻿using System;
-using System.Reactive.Disposables;
+﻿using System.Reactive.Disposables;
 using Avalonia.NameGenerator.Sandbox.ViewModels;
 using Avalonia.ReactiveUI;
 using ReactiveUI;
-using ReactiveUI.Validation.Extensions;
-using ReactiveUI.Validation.Formatters;
 
 namespace Avalonia.NameGenerator.Sandbox.Views;
 
@@ -23,31 +20,9 @@ public partial class SignUpView : ReactiveWindow<SignUpViewModel>
         InitializeComponent();
         this.WhenActivated(disposables =>
         {
-            this.Bind(ViewModel, x => x.UserName, x => x.UserNameTextBox.Text)
+            this.WhenAnyValue(view => view.ViewModel)
+                .BindTo(this, view => view.SignUpControl.ViewModel)
                 .DisposeWith(disposables);
-            this.Bind(ViewModel, x => x.Password, x => x.PasswordTextBox.Text)
-                .DisposeWith(disposables);
-            this.Bind(ViewModel, x => x.ConfirmPassword, x => x.ConfirmPasswordTextBox.Text)
-                .DisposeWith(disposables);
-            this.BindCommand(ViewModel, x => x.SignUp, x => x.SignUpButton)
-                .DisposeWith(disposables);
-
-            this.BindValidation(ViewModel, x => x.UserName, x => x.UserNameValidation.Text)
-                .DisposeWith(disposables);
-            this.BindValidation(ViewModel, x => x.Password, x => x.PasswordValidation.Text)
-                .DisposeWith(disposables);
-            this.BindValidation(ViewModel, x => x.ConfirmPassword, x => x.ConfirmPasswordValidation.Text)
-                .DisposeWith(disposables);
-
-            var newLineFormatter = new SingleLineFormatter(Environment.NewLine);
-            this.BindValidation(ViewModel, x => x.CompoundValidation.Text, newLineFormatter)
-                .DisposeWith(disposables);
-
-            // The references to text boxes below are also auto generated.
-            // Use Ctrl+Click in order to view the generated sources. 
-            UserNameTextBox.Text = "Joseph!";
-            PasswordTextBox.Text = "1234";
-            ConfirmPasswordTextBox.Text = "1234";
         });
     }
 }

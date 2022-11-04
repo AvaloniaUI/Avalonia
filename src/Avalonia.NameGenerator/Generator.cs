@@ -21,7 +21,7 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
         {
             var generator = CreateNameGenerator(context);
             var partials = generator.GenerateNameReferences(context.AdditionalFiles);
-            foreach (var partial in partials) context.AddSource(partial.FileName, partial.Content);
+            foreach (var (fileName, content) in partials) context.AddSource(fileName, content);
         }
         catch (Exception exception)
         {
@@ -33,7 +33,6 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
     {
         var options = new GeneratorOptions(context);
         var types = new RoslynTypeSystem((CSharpCompilation)context.Compilation);
-        var defaultFieldModifier = options.AvaloniaNameGeneratorDefaultFieldModifier.ToString().ToLowerInvariant();
         ICodeGenerator generator = options.AvaloniaNameGeneratorBehavior switch {
             Behavior.OnlyProperties => new OnlyPropertiesCodeGenerator(),
             Behavior.InitializeComponent => new InitializeComponentCodeGenerator(types),
@@ -42,10 +41,11 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
 
         var compiler = MiniCompiler.CreateDefault(types, MiniCompiler.AvaloniaXmlnsDefinitionAttribute);
         return new AvaloniaNameGenerator(
+            options.AvaloniaNameGeneratorViewFileNamingStrategy,
             new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByPath),
             new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByNamespace),
             new XamlXViewResolver(types, compiler, true, type => ReportInvalidType(context, type)),
-            new XamlXNameResolver(defaultFieldModifier),
+            new XamlXNameResolver(options.AvaloniaNameGeneratorDefaultFieldModifier),
             generator);
     }
 

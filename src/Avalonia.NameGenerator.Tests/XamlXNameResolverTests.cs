@@ -24,7 +24,7 @@ public class XamlXNameResolverTests
         Assert.NotEmpty(controls);
         Assert.Equal(1, controls.Count);
         Assert.Equal("UserNameTextBox", controls[0].Name);
-        Assert.Equal(typeof(TextBox).FullName, controls[0].TypeName);
+        Assert.Contains(typeof(TextBox).FullName!, controls[0].TypeName);
     }
 
     [Theory]
@@ -40,9 +40,9 @@ public class XamlXNameResolverTests
         Assert.Equal("UserNameTextBox", controls[0].Name);
         Assert.Equal("PasswordTextBox", controls[1].Name);
         Assert.Equal("SignUpButton", controls[2].Name);
-        Assert.Equal(typeof(TextBox).FullName, controls[0].TypeName);
-        Assert.Equal(typeof(TextBox).FullName, controls[1].TypeName);
-        Assert.Equal(typeof(Button).FullName, controls[2].TypeName);
+        Assert.Contains(typeof(TextBox).FullName!, controls[0].TypeName);
+        Assert.Contains(typeof(TextBox).FullName!, controls[1].TypeName);
+        Assert.Contains(typeof(Button).FullName!, controls[2].TypeName);
     }
 
     [Fact]
@@ -56,9 +56,9 @@ public class XamlXNameResolverTests
         Assert.Equal("ClrNamespaceRoutedViewHost", controls[0].Name);
         Assert.Equal("UriRoutedViewHost", controls[1].Name);
         Assert.Equal("UserNameTextBox", controls[2].Name);
-        Assert.Equal(typeof(RoutedViewHost).FullName, controls[0].TypeName);
-        Assert.Equal(typeof(RoutedViewHost).FullName, controls[1].TypeName);
-        Assert.Equal("Controls.CustomTextBox", controls[2].TypeName);
+        Assert.Contains(typeof(RoutedViewHost).FullName!, controls[0].TypeName);
+        Assert.Contains(typeof(RoutedViewHost).FullName!, controls[1].TypeName);
+        Assert.Contains("Controls.CustomTextBox", controls[2].TypeName);
     }
 
     [Fact]
@@ -70,17 +70,12 @@ public class XamlXNameResolverTests
         
         var currentControl = controls[0];
         Assert.Equal("Root", currentControl.Name);
-        Assert.Equal("Sample.App.BaseView", currentControl.TypeName);
-        Assert.Equal(1, currentControl.GenericTypeArguments.Count);
-        Assert.Equal(typeof(string).FullName, currentControl.GenericTypeArguments[0]);
-        Assert.Equal("global::Sample.App.BaseView<global::System.String>", currentControl.PrintableTypeName);
+        Assert.Equal("global::Sample.App.BaseView<global::System.String>", currentControl.TypeName);
 
         currentControl = controls[1];
         Assert.Equal("NotAsRootNode", currentControl.Name);
-        Assert.Equal("Sample.App.BaseView", currentControl.TypeName);
-        Assert.Equal(1, currentControl.GenericTypeArguments.Count);
-        Assert.Equal(typeof(int).FullName, currentControl.GenericTypeArguments[0]);
-        Assert.Equal("global::Sample.App.BaseView<global::System.Int32>", currentControl.PrintableTypeName);
+        Assert.Contains("Sample.App.BaseView", currentControl.TypeName);
+        Assert.Equal("global::Sample.App.BaseView<global::System.Int32>", currentControl.TypeName);
     }
 
     [Fact]
@@ -102,8 +97,8 @@ public class XamlXNameResolverTests
         Assert.Equal(2, controls.Count);
         Assert.Equal("UserNameTextBox", controls[0].Name);
         Assert.Equal("NamedListBox", controls[1].Name);
-        Assert.Equal(typeof(TextBox).FullName, controls[0].TypeName);
-        Assert.Equal(typeof(ListBox).FullName, controls[1].TypeName);
+        Assert.Contains(typeof(TextBox).FullName!, controls[0].TypeName);
+        Assert.Contains(typeof(ListBox).FullName!, controls[1].TypeName);
     }
 
     [Fact]

@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-
 using Avalonia.NameGenerator.Domain;
-
 using XamlX;
 using XamlX.Ast;
 
@@ -14,9 +12,9 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
     private readonly List<ResolvedName> _items = new();
     private readonly string _defaultFieldModifier;
 
-    public XamlXNameResolver(string defaultFieldModifier = "internal")
+    public XamlXNameResolver(DefaultFieldModifier defaultFieldModifier = DefaultFieldModifier.Internal)
     {
-        _defaultFieldModifier = defaultFieldModifier;
+        _defaultFieldModifier = defaultFieldModifier.ToString().ToLowerInvariant();
     }
 
     public IReadOnlyList<ResolvedName> ResolveNames(XamlDocument xaml)
@@ -50,10 +48,13 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
                 propertyValueNode.Values[0] is XamlAstTextNode text)
             {
                 var fieldModifier = TryGetFieldModifier(objectNode);
-                string typeName = $@"{clrType.Namespace}.{clrType.Name}";
-                IReadOnlyList<string> typeAgs = clrType.GenericArguments.Select(arg => arg.FullName).ToImmutableList();
+                var typeName = $@"{clrType.Namespace}.{clrType.Name}";
+                var typeAgs = clrType.GenericArguments.Select(arg => arg.FullName).ToImmutableList();
+                var genericTypeName = typeAgs.Count == 0
+                    ? $"global::{typeName}"
+                    : $@"global::{typeName}<{string.Join(", ", typeAgs.Select(arg => $"global::{arg}"))}>";
 
-                var resolvedName = new ResolvedName(typeName, text.Text, fieldModifier, typeAgs);
+                var resolvedName = new ResolvedName(genericTypeName, text.Text, fieldModifier);
                 if (_items.Contains(resolvedName))
                     continue;
                 _items.Add(resolvedName);
