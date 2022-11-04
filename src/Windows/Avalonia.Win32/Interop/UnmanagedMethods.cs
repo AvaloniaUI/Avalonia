@@ -1083,6 +1083,20 @@ namespace Avalonia.Win32.Interop
 
         public const int SizeOf_BITMAPINFOHEADER = 40;
 
+        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
+        unsafe internal static extern int GetMouseMovePointsEx(
+            uint cbSize, MOUSEMOVEPOINT* pointsIn,
+            MOUSEMOVEPOINT* pointsBufferOut, int nBufPoints, uint resolution);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)] // For GetMouseMovePointsEx
+        public struct MOUSEMOVEPOINT
+        {
+            public int x;                       //Specifies the x-coordinate of the mouse
+            public int y;                       //Specifies the x-coordinate of the mouse
+            public int time;                    //Specifies the time stamp of the mouse coordinate
+            public IntPtr dwExtraInfo;              //Specifies extra information associated with this coordinate.
+        }
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool IsMouseInPointerEnabled();
 
@@ -2102,6 +2116,12 @@ namespace Avalonia.Win32.Interop
         {
             public int X;
             public int Y;
+        }
+
+        public struct SIZE_F
+        {
+            public float X;
+            public float Y;
         }
 
         public struct RECT

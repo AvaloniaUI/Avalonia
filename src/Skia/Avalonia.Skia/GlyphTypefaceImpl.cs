@@ -69,10 +69,6 @@ namespace Avalonia.Skia
 
         public int GlyphCount { get; }
 
-        public bool IsFakeBold { get; }
-
-        public bool IsFakeItalic { get; }
-
         public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
         {
             metrics = default;
