@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
@@ -11,6 +12,7 @@ namespace Avalonia
     /// Describes the thickness of a frame around a rectangle.
     /// </summary>
 #if !BUILDTASK
+    [TypeConverter(typeof(ThicknessConverter))]
     public
 #endif
     readonly struct Thickness : IEquatable<Thickness>
@@ -292,7 +294,7 @@ namespace Avalonia
             left = this._left;
             top = this._top;
             right = this._right;
-            bottom = this._bottom;        
+            bottom = this._bottom;
         }
 
         /// <summary>

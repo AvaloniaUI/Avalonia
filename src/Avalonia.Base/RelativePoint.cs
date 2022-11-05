@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
@@ -8,10 +9,11 @@ using Avalonia.Utilities;
 namespace Avalonia
 {
     /// <summary>
-    /// Defines the reference point units of an <see cref="RelativePoint"/> or 
+    /// Defines the reference point units of an <see cref="RelativePoint"/> or
     /// <see cref="RelativeRect"/>.
     /// </summary>
 #if !BUILDTASK
+    [TypeConverter(typeof(RelativePointConverter))]
     public
 #endif
     enum RelativeUnit

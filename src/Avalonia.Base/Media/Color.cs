@@ -6,6 +6,7 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
@@ -18,6 +19,7 @@ namespace Avalonia.Media
     /// An ARGB color.
     /// </summary>
 #if !BUILDTASK
+    [TypeConverter(typeof(ColorConverter))]
     public
 #endif
     readonly struct Color : IEquatable<Color>
@@ -314,7 +316,7 @@ namespace Avalonia.Media
             if (input.Length == 3 || input.Length == 4)
             {
                 var extendedLength = 2 * input.Length;
-                
+
 #if !BUILDTASK
                 Span<char> extended = stackalloc char[extendedLength];
 #else

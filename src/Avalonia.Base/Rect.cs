@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Animation.Animators;
 using Avalonia.Utilities;
@@ -8,6 +9,7 @@ namespace Avalonia
     /// <summary>
     /// Defines a rectangle.
     /// </summary>
+    [TypeConverter(typeof(RectConverter))]
     public readonly struct Rect : IEquatable<Rect>
     {
         static Rect()

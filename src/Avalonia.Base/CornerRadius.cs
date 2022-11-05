@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
@@ -11,6 +12,7 @@ namespace Avalonia
     /// Represents the radii of a rectangle's corners.
     /// </summary>
 #if !BUILDTASK
+    [TypeConverter(typeof(CornerRadiusConverter))]
     public
 #endif
     readonly struct CornerRadius : IEquatable<CornerRadius>
@@ -79,7 +81,7 @@ namespace Avalonia
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator
             return TopLeft == other.TopLeft &&
-                   
+
                    TopRight == other.TopRight &&
                    BottomRight == other.BottomRight &&
                    BottomLeft == other.BottomLeft;

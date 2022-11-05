@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
@@ -11,6 +12,7 @@ namespace Avalonia
     /// Defines a size.
     /// </summary>
 #if !BUILDTASK
+    [TypeConverter(typeof(SizeConverter))]
     public
 #endif
     readonly struct Size : IEquatable<Size>

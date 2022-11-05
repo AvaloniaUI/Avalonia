@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Utilities;
 
@@ -33,6 +34,7 @@ namespace Avalonia.Controls
     /// Holds the width or height of a <see cref="Grid"/>'s column and row definitions.
     /// </summary>
 #if !BUILDTASK
+    [TypeConverter(typeof(GridLengthConverter))]
     public
 #endif
     struct GridLength : IEquatable<GridLength>

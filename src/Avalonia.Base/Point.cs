@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Numerics;
 #if !BUILDTASK
@@ -12,6 +13,7 @@ namespace Avalonia
     /// Defines a point.
     /// </summary>
 #if !BUILDTASK
+    [TypeConverter(typeof(PointConverter))]
     public
 #endif
     readonly struct Point : IEquatable<Point>

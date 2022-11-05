@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
@@ -14,10 +15,11 @@ namespace Avalonia
     /// 1st row | scaleX  | skewY  | perspX  |
     /// 2nd row | skewX  | scaleY  | perspY  |
     /// 3rd row | transX  | transY  | perspZ  |
-    /// 
+    ///
     /// Note: Skia.SkMatrix uses a transposed layout (where for example skewX/skewY and persp0/transX are swapped).
     /// </remarks>
 #if !BUILDTASK
+    [TypeConverter(typeof(MatrixConverter))]
     public
 #endif
     readonly struct Matrix : IEquatable<Matrix>
