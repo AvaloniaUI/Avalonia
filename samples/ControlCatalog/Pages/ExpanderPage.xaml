@@ -32,6 +32,23 @@
           <TextBlock>Expanded content</TextBlock>
         </StackPanel>
       </Expander>
+      <Expander ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <Expander.Header>
+          <Button Content="Control in Header" />
+        </Expander.Header>
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
+      <Expander Header="Disabled"
+                IsEnabled="False"
+                ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
       <CheckBox IsChecked="{Binding Rounded}">Rounded</CheckBox>
     </StackPanel>
   </StackPanel>

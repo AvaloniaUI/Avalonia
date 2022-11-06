@@ -23,6 +23,7 @@
   <Import Project="..\..\build\SourceGenerators.props" />
   <ItemGroup>
     <Compile Include="..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
+    <Compile Include="..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">
@@ -48,6 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Compatibility\" />
     <Folder Include="Rendering\Composition\Utils" />
   </ItemGroup>
 </Project>

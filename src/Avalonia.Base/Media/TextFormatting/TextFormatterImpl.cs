@@ -249,7 +249,8 @@ namespace Avalonia.Media.TextFormatting
 
                             var shaperOptions = new TextShaperOptions(currentRun.Properties!.Typeface.GlyphTypeface,
                                         currentRun.Properties.FontRenderingEmSize,
-                                         shapeableRun.BidiLevel, currentRun.Properties.CultureInfo, paragraphProperties.DefaultIncrementalTab);
+                                         shapeableRun.BidiLevel, currentRun.Properties.CultureInfo, 
+                                         paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
                             drawableTextRuns.AddRange(ShapeTogether(groupedRuns, text, shaperOptions));
 
@@ -477,32 +478,35 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextCharacters shapedTextCharacters:
                         {
-                            var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphClusters[0];
-                            var lastCluster = firstCluster;
-
-                            for (var i = 0; i < shapedTextCharacters.ShapedBuffer.Length; i++)
+                            if(shapedTextCharacters.ShapedBuffer.Length > 0)
                             {
-                                var glyphInfo = shapedTextCharacters.ShapedBuffer[i];
+                                var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphClusters[0];
+                                var lastCluster = firstCluster;
 
-                                if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
+                                for (var i = 0; i < shapedTextCharacters.ShapedBuffer.Length; i++)
                                 {
-                                    measuredLength += Math.Max(0, lastCluster - firstCluster);
+                                    var glyphInfo = shapedTextCharacters.ShapedBuffer[i];
 
-                                    goto found;
+                                    if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
+                                    {
+                                        measuredLength += Math.Max(0, lastCluster - firstCluster);
+
+                                        goto found;
+                                    }
+
+                                    lastCluster = glyphInfo.GlyphCluster;
+                                    currentWidth += glyphInfo.GlyphAdvance;
                                 }
 
-                                lastCluster = glyphInfo.GlyphCluster;
-                                currentWidth += glyphInfo.GlyphAdvance;
-                            }
-
-                            measuredLength += currentRun.TextSourceLength;
+                                measuredLength += currentRun.TextSourceLength;
+                            }                         
 
                             break;
                         }
 
                     case { } drawableTextRun:
                         {
-                            if (currentWidth + drawableTextRun.Size.Width > paragraphWidth)
+                            if (currentWidth + drawableTextRun.Size.Width >= paragraphWidth)
                             {
                                 goto found;
                             }
@@ -665,7 +669,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (!breakFound)
                 {
-                    currentLength += currentRun.Text.Length;
+                    currentLength += currentRun.TextSourceLength;
 
                     continue;
                 }
