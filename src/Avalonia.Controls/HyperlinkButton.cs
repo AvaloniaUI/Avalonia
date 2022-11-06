@@ -43,11 +43,9 @@ namespace Avalonia.Controls
             set => SetAndRaise(SetVisitedOnClickProperty, ref _setVisitedOnClick, value);
         }
 
-        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        static HyperlinkButton()
         {
-            base.OnApplyTemplate(e);
-            IsVisitedProperty.Changed.AddClassHandler<HyperlinkButton>(OnIsVisitedChanged);
-            
+            IsVisitedProperty.Changed.AddClassHandler<HyperlinkButton>((x,e)=>x.OnIsVisitedChanged(e));
         }
 
         protected override void OnClick()
@@ -70,7 +68,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnIsVisitedChanged(HyperlinkButton source, AvaloniaPropertyChangedEventArgs args)
+        private void OnIsVisitedChanged(AvaloniaPropertyChangedEventArgs args)
         {
             bool newValue = args.GetNewValue<bool>();
             PseudoClasses.Set(pcVisited, newValue);

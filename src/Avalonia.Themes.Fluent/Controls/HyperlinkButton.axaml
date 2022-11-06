@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type HyperlinkButton}" TargetType="HyperlinkButton">
+    <Setter Property="Foreground" Value="Blue"></Setter>
+    <Setter Property="Background" Value="Transparent"></Setter>
+    <Setter Property="Template">
+      <ControlTemplate TargetType="HyperlinkButton">
+        <ContentPresenter
+          Foreground="{TemplateBinding Foreground}"
+          Background="{TemplateBinding Background}"
+          Content="{TemplateBinding Content}"
+          >
+          <ContentPresenter.Styles>
+            <Style Selector="TextBlock">
+              <Setter Property="TextDecorations" Value="Underline" />
+            </Style>
+          </ContentPresenter.Styles>
+        </ContentPresenter>
+      </ControlTemplate>
+    </Setter>
+    
+    <Style Selector="^:visited">
+      <Setter Property="Foreground" Value="Pink"></Setter>
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
+
