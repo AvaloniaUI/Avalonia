@@ -25,7 +25,7 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
         }
         catch (Exception exception)
         {
-            ReportUnhandledError(context, exception);
+            context.ReportUnhandledError(exception);
         }
     }
 
@@ -44,42 +44,10 @@ public class AvaloniaNameSourceGenerator : ISourceGenerator
             options.AvaloniaNameGeneratorViewFileNamingStrategy,
             new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByPath),
             new GlobPatternGroup(options.AvaloniaNameGeneratorFilterByNamespace),
-            new XamlXViewResolver(types, compiler, true, type => ReportInvalidType(context, type)),
+            new XamlXViewResolver(types, compiler, true,
+                type => context.ReportInvalidType(type),
+                error => context.ReportUnhandledError(error)),
             new XamlXNameResolver(options.AvaloniaNameGeneratorDefaultFieldModifier),
             generator);
-    }
-
-    private static void ReportUnhandledError(GeneratorExecutionContext context, Exception error)
-    {
-        const string message =
-            "Unhandled exception occured while generating typed Name references. " +
-            "Please file an issue: https://github.com/avaloniaui/avalonia.namegenerator";
-        context.ReportDiagnostic(
-            Diagnostic.Create(
-                new DiagnosticDescriptor(
-                    "AXN0002",
-                    message,
-                    error.ToString(),
-                    "Usage",
-                    DiagnosticSeverity.Error,
-                    true),
-                Location.None));
-    }
-
-    private static void ReportInvalidType(GeneratorExecutionContext context, string typeName)
-    {
-        var message =
-            $"Avalonia x:Name generator was unable to generate names for type '{typeName}'. " +
-            $"The type '{typeName}' does not exist in the assembly.";
-        context.ReportDiagnostic(
-            Diagnostic.Create(
-                new DiagnosticDescriptor(
-                    "AXN0001",
-                    message,
-                    message,
-                    "Usage",
-                    DiagnosticSeverity.Error,
-                    true),
-                Location.None));
     }
 }

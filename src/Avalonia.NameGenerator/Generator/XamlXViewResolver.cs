@@ -15,6 +15,7 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
     private readonly MiniCompiler _compiler;
     private readonly bool _checkTypeValidity;
     private readonly Action<string> _onTypeInvalid;
+    private readonly Action<Exception> _onUnhandledError;
 
     private ResolvedView _resolvedClass;
     private XamlDocument _xaml;
@@ -23,26 +24,36 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
         RoslynTypeSystem typeSystem,
         MiniCompiler compiler,
         bool checkTypeValidity = false,
-        Action<string> onTypeInvalid = null)
+        Action<string> onTypeInvalid = null,
+        Action<Exception> onUnhandledError = null)
     {
         _checkTypeValidity = checkTypeValidity;
         _onTypeInvalid = onTypeInvalid;
+        _onUnhandledError = onUnhandledError;
         _typeSystem = typeSystem;
         _compiler = compiler;
     }
 
     public ResolvedView ResolveView(string xaml)
     {
-        _resolvedClass = null;
-        _xaml = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
+        try
         {
-            {XamlNamespaces.Blend2008, XamlNamespaces.Blend2008}
-        });
+            _resolvedClass = null;
+            _xaml = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
+            {
+                {XamlNamespaces.Blend2008, XamlNamespaces.Blend2008}
+            });
 
-        _compiler.Transform(_xaml);
-        _xaml.Root.Visit(this);
-        _xaml.Root.VisitChildren(this);
-        return _resolvedClass;
+            _compiler.Transform(_xaml);
+            _xaml.Root.Visit(this);
+            _xaml.Root.VisitChildren(this);
+            return _resolvedClass;
+        }
+        catch (Exception exception)
+        {
+            _onUnhandledError?.Invoke(exception);
+            return null;
+        }
     }
 
     IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
