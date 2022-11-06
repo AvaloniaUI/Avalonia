@@ -8,7 +8,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
-using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -16,67 +15,53 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that displays a block of formatted text.
     /// </summary>
-    public class RichTextBlock : TextBlock, IInlineHost
+    public class SelectableTextBlock : TextBlock, IInlineHost
     {
-        public static readonly StyledProperty<bool> IsTextSelectionEnabledProperty =
-            AvaloniaProperty.Register<RichTextBlock, bool>(nameof(IsTextSelectionEnabled), false);
-
-        public static readonly DirectProperty<RichTextBlock, int> SelectionStartProperty =
-            AvaloniaProperty.RegisterDirect<RichTextBlock, int>(
+        public static readonly DirectProperty<SelectableTextBlock, int> SelectionStartProperty =
+            AvaloniaProperty.RegisterDirect<SelectableTextBlock, int>(
                 nameof(SelectionStart),
                 o => o.SelectionStart,
                 (o, v) => o.SelectionStart = v);
 
-        public static readonly DirectProperty<RichTextBlock, int> SelectionEndProperty =
-            AvaloniaProperty.RegisterDirect<RichTextBlock, int>(
+        public static readonly DirectProperty<SelectableTextBlock, int> SelectionEndProperty =
+            AvaloniaProperty.RegisterDirect<SelectableTextBlock, int>(
                 nameof(SelectionEnd),
                 o => o.SelectionEnd,
                 (o, v) => o.SelectionEnd = v);
 
-        public static readonly DirectProperty<RichTextBlock, string> SelectedTextProperty =
-            AvaloniaProperty.RegisterDirect<RichTextBlock, string>(
+        public static readonly DirectProperty<SelectableTextBlock, string> SelectedTextProperty =
+            AvaloniaProperty.RegisterDirect<SelectableTextBlock, string>(
                 nameof(SelectedText),
                 o => o.SelectedText);
 
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
-            AvaloniaProperty.Register<RichTextBlock, IBrush?>(nameof(SelectionBrush), Brushes.Blue);
+            AvaloniaProperty.Register<SelectableTextBlock, IBrush?>(nameof(SelectionBrush), Brushes.Blue);
 
-        /// <summary>
-        /// Defines the <see cref="Inlines"/> property.
-        /// </summary>
-        public static readonly StyledProperty<InlineCollection?> InlinesProperty =
-            AvaloniaProperty.Register<RichTextBlock, InlineCollection?>(
-                nameof(Inlines));
 
-        public static readonly DirectProperty<TextBox, bool> CanCopyProperty =
-            AvaloniaProperty.RegisterDirect<TextBox, bool>(
+        public static readonly DirectProperty<SelectableTextBlock, bool> CanCopyProperty =
+            AvaloniaProperty.RegisterDirect<SelectableTextBlock, bool>(
                 nameof(CanCopy),
                 o => o.CanCopy);
 
         public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
-            RoutedEvent.Register<RichTextBlock, RoutedEventArgs>(
+            RoutedEvent.Register<SelectableTextBlock, RoutedEventArgs>(
                 nameof(CopyingToClipboard), RoutingStrategies.Bubble);
 
         private bool _canCopy;
         private int _selectionStart;
         private int _selectionEnd;
         private int _wordSelectionStart = -1;
-        private IReadOnlyList<TextRun>? _textRuns;
 
-        static RichTextBlock()
+        static SelectableTextBlock()
         {
-            FocusableProperty.OverrideDefaultValue(typeof(RichTextBlock), true);
-
-            AffectsRender<RichTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty, IsTextSelectionEnabledProperty);
+            FocusableProperty.OverrideDefaultValue(typeof(SelectableTextBlock), true);
+            AffectsRender<SelectableTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty);
         }
 
-        public RichTextBlock()
+        public event EventHandler<RoutedEventArgs>? CopyingToClipboard
         {
-            Inlines = new InlineCollection
-            {
-                Parent = this,
-                InlineHost = this
-            };
+            add => AddHandler(CopyingToClipboardEvent, value);
+            remove => RemoveHandler(CopyingToClipboardEvent, value);
         }
 
         /// <summary>
@@ -99,6 +84,8 @@ namespace Avalonia.Controls
                 if (SetAndRaise(SelectionStartProperty, ref _selectionStart, value))
                 {
                     RaisePropertyChanged(SelectedTextProperty, "", "");
+
+                    UpdateCommandStates();
                 }
             }
         }
@@ -114,6 +101,8 @@ namespace Avalonia.Controls
                 if (SetAndRaise(SelectionEndProperty, ref _selectionEnd, value))
                 {
                     RaisePropertyChanged(SelectedTextProperty, "", "");
+
+                    UpdateCommandStates();
                 }
             }
         }
@@ -127,25 +116,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value that indicates whether text selection is enabled, either through user action or calling selection-related API.
-        /// </summary>
-        public bool IsTextSelectionEnabled
-        {
-            get => GetValue(IsTextSelectionEnabledProperty);
-            set => SetValue(IsTextSelectionEnabledProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the inlines.
-        /// </summary>
-        [Content]
-        public InlineCollection? Inlines
-        {
-            get => GetValue(InlinesProperty);
-            set => SetValue(InlinesProperty, value);
-        }
-
-        /// <summary>
         /// Property for determining if the Copy command can be executed.
         /// </summary>
         public bool CanCopy
@@ -154,20 +124,12 @@ namespace Avalonia.Controls
             private set => SetAndRaise(CanCopyProperty, ref _canCopy, value);
         }
 
-        public event EventHandler<RoutedEventArgs>? CopyingToClipboard
-        {
-            add => AddHandler(CopyingToClipboardEvent, value);
-            remove => RemoveHandler(CopyingToClipboardEvent, value);
-        }
-
-        internal bool HasComplexContent => Inlines != null && Inlines.Count > 0;
-
         /// <summary>
         /// Copies the current selection to the Clipboard.
         /// </summary>
         public async void Copy()
         {
-            if (_canCopy || !IsTextSelectionEnabled)
+            if (!_canCopy)
             {
                 return;
             }
@@ -188,6 +150,45 @@ namespace Avalonia.Controls
                 await ((IClipboard)AvaloniaLocator.Current.GetRequiredService(typeof(IClipboard)))
                     .SetTextAsync(text);
             }
+        }        
+
+        /// <summary>
+        /// Select all text in the TextBox
+        /// </summary>
+        public void SelectAll()
+        {
+            var text = Text;
+
+            SelectionStart = 0;
+            SelectionEnd = text?.Length ?? 0;
+        }
+
+        /// <summary>
+        /// Clears the current selection/>
+        /// </summary>
+        public void ClearSelection()
+        {
+            SelectionEnd = SelectionStart;
+        }
+
+        protected override void OnGotFocus(GotFocusEventArgs e)
+        {
+            base.OnGotFocus(e);
+
+            UpdateCommandStates();
+        }
+
+        protected override void OnLostFocus(RoutedEventArgs e)
+        {
+            base.OnLostFocus(e);
+
+            if ((ContextFlyout == null || !ContextFlyout.IsOpen) &&
+               (ContextMenu == null || !ContextMenu.IsOpen))
+            {
+                ClearSelection();
+            }
+
+            UpdateCommandStates();
         }
 
         protected override void RenderTextLayout(DrawingContext context, Point origin)
@@ -196,9 +197,7 @@ namespace Avalonia.Controls
             var selectionEnd = SelectionEnd;
             var selectionBrush = SelectionBrush;
 
-            var selectionEnabled = IsTextSelectionEnabled;
-
-            if (selectionEnabled && selectionStart != selectionEnd && selectionBrush != null)
+            if (selectionStart != selectionEnd && selectionBrush != null)
             {
                 var start = Math.Min(selectionStart, selectionEnd);
                 var length = Math.Max(selectionStart, selectionEnd) - start;
@@ -215,117 +214,6 @@ namespace Avalonia.Controls
             }
 
             base.RenderTextLayout(context, origin);
-        }
-
-        /// <summary>
-        /// Select all text in the TextBox
-        /// </summary>
-        public void SelectAll()
-        {
-            if (!IsTextSelectionEnabled)
-            {
-                return;
-            }
-
-            var text = Text;
-
-            SelectionStart = 0;
-            SelectionEnd = text?.Length ?? 0;
-        }
-
-        /// <summary>
-        /// Clears the current selection/>
-        /// </summary>
-        public void ClearSelection()
-        {
-            if (!IsTextSelectionEnabled)
-            {
-                return;
-            }
-
-            SelectionEnd = SelectionStart;
-        }
-
-        protected void AddText(string? text)
-        {
-            if (string.IsNullOrEmpty(text))
-            {
-                return;
-            }
-
-            if (!HasComplexContent && string.IsNullOrEmpty(_text))
-            {
-                _text = text;
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(_text))
-                {
-                    Inlines?.Add(_text);
-
-                    _text = null;
-                }
-
-                Inlines?.Add(text);
-            }
-        }
-
-        protected override string? GetText()
-        {
-            return _text ?? Inlines?.Text;
-        }
-
-        protected override void SetText(string? text)
-        {
-            var oldValue = GetText();
-
-            AddText(text);
-
-            RaisePropertyChanged(TextProperty, oldValue, text);
-        }
-
-        /// <summary>
-        /// Creates the <see cref="TextLayout"/> used to render the text.
-        /// </summary>
-        /// <returns>A <see cref="TextLayout"/> object.</returns>
-        protected override TextLayout CreateTextLayout(string? text)
-        {
-            var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-            var defaultProperties = new GenericTextRunProperties(
-                typeface,
-                FontSize,
-                TextDecorations,
-                Foreground);
-
-            var paragraphProperties = new GenericTextParagraphProperties(FlowDirection, TextAlignment, true, false,
-                defaultProperties, TextWrapping, LineHeight, 0);
-
-            ITextSource textSource;
-
-            if (_textRuns != null)
-            {
-                textSource = new InlinesTextSource(_textRuns);
-            }
-            else
-            {
-                textSource = new SimpleTextSource((text ?? "").AsMemory(), defaultProperties);
-            }
-
-            return new TextLayout(
-                textSource,
-                paragraphProperties,
-                TextTrimming,
-                _constraint.Width,
-                _constraint.Height,
-                maxLines: MaxLines,
-                lineHeight: LineHeight);
-        }
-
-        protected override void OnLostFocus(RoutedEventArgs e)
-        {
-            base.OnLostFocus(e);
-
-            ClearSelection();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -351,11 +239,6 @@ namespace Avalonia.Controls
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-
-            if (!IsTextSelectionEnabled)
-            {
-                return;
-            }
 
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
@@ -435,11 +318,6 @@ namespace Avalonia.Controls
         {
             base.OnPointerMoved(e);
 
-            if (!IsTextSelectionEnabled)
-            {
-                return;
-            }
-
             // selection should not change during pointer move if the user right clicks
             if (e.Pointer.Captured == this && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -486,11 +364,6 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
-            if (!IsTextSelectionEnabled)
-            {
-                return;
-            }
-
             if (e.Pointer.Captured != this)
             {
                 return;
@@ -521,100 +394,15 @@ namespace Avalonia.Controls
             e.Pointer.Capture(null);
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        private void UpdateCommandStates()
         {
-            base.OnPropertyChanged(change);
+            var text = GetSelection();
 
-            switch (change.Property.Name)
-            {
-                case nameof(Inlines):
-                    {
-                        OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
-                        InvalidateTextLayout();
-                        break;
-                    }
-            }
-        }
-
-        protected override Size MeasureOverride(Size availableSize)
-        {
-            if(_textRuns != null)
-            {
-                LogicalChildren.Clear();
-
-                VisualChildren.Clear();
-
-                _textRuns = null;
-            }
-
-            if (Inlines != null && Inlines.Count > 0)
-            {
-                var inlines = Inlines;
-
-                var textRuns = new List<TextRun>();
-
-                foreach (var inline in inlines)
-                {
-                    inline.BuildTextRun(textRuns);
-                }
-
-                foreach (var textRun in textRuns)
-                {
-                    if (textRun is EmbeddedControlRun controlRun &&
-                        controlRun.Control is Control control)
-                    {
-                        LogicalChildren.Add(control);
-
-                        VisualChildren.Add(control);
-
-                        control.Measure(Size.Infinity);
-                    }
-                }
-
-                _textRuns = textRuns;
-            }
-
-            return base.MeasureOverride(availableSize);
-        }
-
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            if (HasComplexContent)
-            {
-                var currentY = 0.0;
-
-                foreach (var textLine in TextLayout.TextLines)
-                {
-                    var currentX = textLine.Start;
-
-                    foreach (var run in textLine.TextRuns)
-                    {
-                        if (run is DrawableTextRun drawable)
-                        {
-                            if (drawable is EmbeddedControlRun controlRun
-                                && controlRun.Control is Control control)
-                            {
-                                control.Arrange(new Rect(new Point(currentX, currentY), control.DesiredSize));
-                            }
-
-                            currentX += drawable.Size.Width;
-                        }
-                    }
-
-                    currentY += textLine.Height;
-                }
-            }
-           
-            return base.ArrangeOverride(finalSize);
+            CanCopy = !string.IsNullOrEmpty(text);
         }
 
         private string GetSelection()
         {
-            if (!IsTextSelectionEnabled)
-            {
-                return "";
-            }
-
             var text = GetText();
 
             if (string.IsNullOrEmpty(text))
@@ -637,60 +425,6 @@ namespace Avalonia.Controls
             var selectedText = text.Substring(start, length);
 
             return selectedText;
-        }
-
-        private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
-        {
-            if (oldValue is not null)
-            {
-                oldValue.Parent = null;
-                oldValue.InlineHost = null;
-                oldValue.Invalidated -= (s, e) => InvalidateTextLayout();
-            }
-
-            if (newValue is not null)
-            {
-                newValue.Parent = this;
-                newValue.InlineHost = this;
-                newValue.Invalidated += (s, e) => InvalidateTextLayout();
-            }
-        }
-
-        void IInlineHost.Invalidate()
-        {
-            InvalidateTextLayout();
-        }
-
-        private readonly struct InlinesTextSource : ITextSource
-        {
-            private readonly IReadOnlyList<TextRun> _textRuns;
-
-            public InlinesTextSource(IReadOnlyList<TextRun> textRuns)
-            {
-                _textRuns = textRuns;
-            }
-
-            public TextRun? GetTextRun(int textSourceIndex)
-            {
-                var currentPosition = 0;
-
-                foreach (var textRun in _textRuns)
-                {
-                    if (textRun.TextSourceLength == 0)
-                    {
-                        continue;
-                    }
-
-                    if (currentPosition >= textSourceIndex)
-                    {
-                        return textRun;
-                    }
-
-                    currentPosition += textRun.TextSourceLength;
-                }
-
-                return null;
-            }
         }
     }
 }

@@ -25,9 +25,9 @@ namespace Avalonia.Skia
         public Vector Dpi { get; }
         public PixelSize PixelSize { get; }
         public int Version { get; private set; }
-        public void Save(string fileName) => throw new NotSupportedException();
+        public void Save(string fileName, int? quality = null) => throw new NotSupportedException();
 
-        public void Save(Stream stream) => throw new NotSupportedException();
+        public void Save(Stream stream, int? quality = null) => throw new NotSupportedException();
 
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {

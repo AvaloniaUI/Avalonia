@@ -186,7 +186,7 @@ namespace Avalonia.Direct2D1.Media
             return new OptionalDispose<D2DBitmap>(D2DBitmap.FromWicBitmap(renderTarget, converter), true);
         }
 
-        public override void Save(Stream stream)
+        public override void Save(Stream stream, int? quality = null)
         {
             using (var encoder = new PngBitmapEncoder(Direct2D1Platform.ImagingFactory, stream))
             using (var frame = new BitmapFrameEncode(encoder))
