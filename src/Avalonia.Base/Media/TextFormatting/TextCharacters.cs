@@ -74,6 +74,15 @@ namespace Avalonia.Media.TextFormatting
 
             if (TryGetShapeableLength(text, currentTypeface, null, out var count, out var script))
             {
+                if (script == Script.Common && previousTypeface is not null)
+                {
+                    if (TryGetShapeableLength(text, previousTypeface.Value, null, out var fallbackCount, out _))
+                    {
+                        return new ShapeableTextCharacters(text.Take(fallbackCount),
+                            defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
+                    }
+                }
+
                 return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
                     biDiLevel);
             }
@@ -173,7 +182,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var currentScript = currentGrapheme.FirstCodepoint.Script;
 
-                if (defaultFont != null && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                if (!currentGrapheme.FirstCodepoint.IsWhiteSpace && defaultFont != null && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
                 {
                     break;
                 }

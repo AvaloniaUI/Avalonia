@@ -332,8 +332,6 @@ namespace Avalonia.Controls.Presenters
 
         protected override bool BypassFlowDirectionPolicies => true;
 
-        public ComposingRegion? ComposingRegion { get; internal set; }
-
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -553,7 +551,7 @@ namespace Avalonia.Controls.Presenters
 
             if (!string.IsNullOrEmpty(_preeditText))
             {
-                var preeditHighlight = new ValueSpan<TextRunProperties>(ComposingRegion.HasValue ? ComposingRegion.Value.Start : _caretIndex, _preeditText.Length,
+                var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
                         new GenericTextRunProperties(typeface, FontSize,
                         foregroundBrush: foreground,
                         textDecorations: TextDecorations.Underline));
@@ -880,7 +878,7 @@ namespace Avalonia.Controls.Presenters
             }
             else
             {
-                var textPosition = (ComposingRegion.HasValue? ComposingRegion.Value.Start : _caretIndex) + newValue?.Length ?? 0;
+                var textPosition = _caretIndex + newValue?.Length ?? 0;
 
                 var characterHit = GetCharacterHitFromTextPosition(textPosition);
 

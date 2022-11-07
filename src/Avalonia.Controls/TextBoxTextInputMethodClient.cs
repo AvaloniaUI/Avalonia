@@ -108,11 +108,6 @@ namespace Avalonia.Controls
             }
 
             _presenter.PreeditText = text;
-
-            if(text == null)
-            {
-                _presenter.ComposingRegion = null;
-            }
         }
 
         public void SelectInSurroundingText(int start, int end)
