@@ -166,9 +166,11 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
                 var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
 
-                var scale = glyphTypeface.Metrics.DesignEmHeight / 100.0;
+                var scale = 100.0 / glyphTypeface.Metrics.DesignEmHeight;
 
-                var advances = new[] { glyphTypeface.GetGlyphAdvance(glyphIndices[0]) * scale, glyphTypeface.GetGlyphAdvance(glyphIndices[1]) * scale, glyphTypeface.GetGlyphAdvance(glyphIndices[2]) * scale };
+                var advance = glyphTypeface.GetGlyphAdvance(glyphIndices[0]) * scale;
+
+                var advances = new[] { advance, advance, advance};
 
                 var characters = new[] { 'A', 'B', 'C' };
 

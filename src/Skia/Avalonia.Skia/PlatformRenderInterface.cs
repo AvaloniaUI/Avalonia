@@ -242,7 +242,7 @@ namespace Avalonia.Skia
                 "Current GPU acceleration backend does not support OpenGL integration");
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, 
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices,
             IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
         {
             if (glyphTypeface == null)
@@ -273,7 +273,7 @@ namespace Avalonia.Skia
 
             var count = glyphIndices.Count;
 
-            if(glyphOffsets != null && glyphAdvances != null)
+            if (glyphOffsets != null && glyphAdvances != null)
             {
                 var runBuffer = builder.AllocatePositionedRun(font, count);
 
@@ -295,7 +295,7 @@ namespace Avalonia.Skia
             }
             else
             {
-                if(glyphAdvances != null)
+                if (glyphAdvances != null)
                 {
                     var runBuffer = builder.AllocateHorizontalRun(font, count, 0);
 
@@ -304,7 +304,7 @@ namespace Avalonia.Skia
 
                     var currentX = 0.0;
 
-                    for (int i = 0; i < glyphOffsets.Count; i++)
+                    for (int i = 0; i < glyphAdvances.Count; i++)
                     {
                         glyphSpan[i] = glyphIndices[i];
 
@@ -319,7 +319,7 @@ namespace Avalonia.Skia
 
                     var glyphSpan = runBuffer.GetGlyphSpan();
 
-                    for (int i = 0; i < glyphOffsets.Count; i++)
+                    for (int i = 0; i < glyphIndices.Count; i++)
                     {
                         glyphSpan[i] = glyphIndices[i];
                     }
