@@ -50,6 +50,66 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
+        [Fact]
+        public async Task Should_Render_GlyphRun_UnPositioned()
+        {
+            var control = new UnPositionedGlyphRunControl
+            {
+                [TextElement.ForegroundProperty] = new LinearGradientBrush
+                {
+                    StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
+                    EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
+                    GradientStops =
+                        {
+                            new GradientStop { Color = Colors.Red, Offset = 0 },
+                            new GradientStop { Color = Colors.Blue, Offset = 1 }
+                        }
+                }
+            };
+
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 190,
+                Height = 120,
+                Child = control
+            };
+
+            await RenderToFile(target);
+
+            CompareImages();
+        }
+
+        [Fact]
+        public async Task Should_Render_GlyphRun_Positioned()
+        {
+            var control = new PositionedGlyphRunControl
+            {
+                [TextElement.ForegroundProperty] = new LinearGradientBrush
+                {
+                    StartPoint = new RelativePoint(0, 0.5, RelativeUnit.Relative),
+                    EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
+                    GradientStops =
+                        {
+                            new GradientStop { Color = Colors.Red, Offset = 0 },
+                            new GradientStop { Color = Colors.Blue, Offset = 1 }
+                        }
+                }
+            };
+
+            Decorator target = new Decorator
+            {
+                Padding = new Thickness(8),
+                Width = 190,
+                Height = 120,
+                Child = control
+            };
+
+            await RenderToFile(target);
+
+            CompareImages();
+        }
+
         public class GlyphRunGeometryControl : Control
         {
             public GlyphRunGeometryControl()
@@ -74,5 +134,56 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 context.DrawGeometry(foreground, null, Geometry);
             }
         }
+
+        public class UnPositionedGlyphRunControl : Control
+        {
+            public UnPositionedGlyphRunControl()
+            {
+                var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
+
+                var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
+
+                var characters = new[] { 'A', 'B', 'C' };
+
+                GlyphRun = new GlyphRun(glyphTypeface, 100, characters, glyphIndices);
+            }
+
+            public GlyphRun GlyphRun { get; }
+
+            public override void Render(DrawingContext context)
+            {
+                var foreground = TextElement.GetForeground(this);
+
+                context.DrawGlyphRun(foreground, GlyphRun);
+            }
+        }
+
+        public class PositionedGlyphRunControl : Control
+        {
+            public PositionedGlyphRunControl()
+            {
+                var glyphTypeface = new Typeface(TestFontFamily).GlyphTypeface;
+
+                var glyphIndices = new[] { glyphTypeface.GetGlyph('A'), glyphTypeface.GetGlyph('B'), glyphTypeface.GetGlyph('C') };
+
+                var scale = glyphTypeface.Metrics.DesignEmHeight / 100.0;
+
+                var advances = new[] { glyphTypeface.GetGlyphAdvance(glyphIndices[0]) * scale, glyphTypeface.GetGlyphAdvance(glyphIndices[1]) * scale, glyphTypeface.GetGlyphAdvance(glyphIndices[2]) * scale };
+
+                var characters = new[] { 'A', 'B', 'C' };
+
+                GlyphRun = new GlyphRun(glyphTypeface, 100, characters, glyphIndices, advances);
+            }
+
+            public GlyphRun GlyphRun { get; }
+
+            public override void Render(DrawingContext context)
+            {
+                var foreground = TextElement.GetForeground(this);
+
+                context.DrawGlyphRun(foreground, GlyphRun);
+            }
+        }
+
     }
 }
