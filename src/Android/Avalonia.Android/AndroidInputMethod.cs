@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Runtime;
+using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
@@ -62,22 +63,21 @@ namespace Avalonia.Android
 
         public void Reset()
         {
-            _imm.RestartInput(_host);
+
         }
 
         public void SetClient(ITextInputMethodClient client)
         {
-            if(client is null)
-            {
-                _inputConnection?.SetComposingText("", 0);
-            }
-
             if (_client != null)
             {
                 _client.SurroundingTextChanged -= SurroundingTextChanged;
             }
 
-            Reset();
+            if(_inputConnection != null)
+            {
+                _inputConnection.ComposingText = null;
+                _inputConnection.ComposingRegion = default;
+            }
 
             _client = client;
 
@@ -87,23 +87,31 @@ namespace Avalonia.Android
 
                 _host.RequestFocus();
 
+                _imm.RestartInput(View);              
+
                 _imm.ShowSoftInput(_host, ShowFlags.Implicit);
-            }
-            else
-            {
-                _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.None);
+
+                var surroundingText = Client.SurroundingText;
+
+                _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
         }
 
         private void SurroundingTextChanged(object sender, EventArgs e)
         {
-            if (IsActive)
+            if (IsActive && _inputConnection != null)
             {
                 var surroundingText = Client.SurroundingText;
 
                 _inputConnection.SurroundingText = surroundingText;
 
                 _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
+
+                if (_inputConnection.ComposingText != null && !_inputConnection.IsCommiting && surroundingText.AnchorOffset == surroundingText.CursorOffset)
+                {
+                    _inputConnection.CommitText(_inputConnection.ComposingText, 0);
+                    _inputConnection.SetSelection(surroundingText.AnchorOffset, surroundingText.CursorOffset);
+                }
             }
         }
 
@@ -152,11 +160,6 @@ namespace Avalonia.Android
 
                 return _inputConnection;
             });
-        }
-
-        private void RestoreSoftKeyboard(object sender, PointerReleasedEventArgs e)
-        {
-            _imm.ShowSoftInput(_host, ShowFlags.Implicit);
         }
     }
 }

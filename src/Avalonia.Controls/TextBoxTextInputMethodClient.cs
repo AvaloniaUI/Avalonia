@@ -108,6 +108,11 @@ namespace Avalonia.Controls
             }
 
             _presenter.PreeditText = text;
+
+            if(text == null)
+            {
+                _presenter.ComposingRegion = null;
+            }
         }
 
         public void SelectInSurroundingText(int start, int end)
@@ -181,6 +186,16 @@ namespace Avalonia.Controls
                 CursorRectangleChanged?.Invoke(this, e);
 
             }, DispatcherPriority.Input);
+        }
+
+        public void SetComposingRegion(ComposingRegion? region)
+        {
+            if(_presenter == null)
+            {
+                return;
+            }
+
+            _presenter.ComposingRegion = region;
         }
     }
 }

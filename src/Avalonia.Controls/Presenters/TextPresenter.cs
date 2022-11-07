@@ -9,6 +9,7 @@ using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Controls.Documents;
+using Avalonia.Input.TextInput;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -331,6 +332,8 @@ namespace Avalonia.Controls.Presenters
 
         protected override bool BypassFlowDirectionPolicies => true;
 
+        public ComposingRegion? ComposingRegion { get; internal set; }
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -514,7 +517,12 @@ namespace Avalonia.Controls.Presenters
         {
             if (!string.IsNullOrEmpty(_preeditText))
             {
-                var text = _text?.Substring(0, _caretIndex) + _preeditText + _text?.Substring(_caretIndex);
+                if (string.IsNullOrEmpty(_text) || _caretIndex > _text.Length)
+                {
+                    return _preeditText;
+                }
+
+                var text = _text.Substring(0, _caretIndex) + _preeditText + _text.Substring(_caretIndex);
 
                 return text;
             }
@@ -545,7 +553,7 @@ namespace Avalonia.Controls.Presenters
 
             if (!string.IsNullOrEmpty(_preeditText))
             {
-                var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
+                var preeditHighlight = new ValueSpan<TextRunProperties>(ComposingRegion.HasValue ? ComposingRegion.Value.Start : _caretIndex, _preeditText.Length,
                         new GenericTextRunProperties(typeface, FontSize,
                         foregroundBrush: foreground,
                         textDecorations: TextDecorations.Underline));
@@ -868,28 +876,11 @@ namespace Avalonia.Controls.Presenters
 
             if (string.IsNullOrEmpty(newValue))
             {
-                if (!string.IsNullOrEmpty(oldValue))
-                {
-                    var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + newValue?.Length ?? 0;
-
-                    var characterHit = GetCharacterHitFromTextPosition(textPosition);
-
-                    UpdateCaret(characterHit, true);
-                }
-
-                _compositionStartHit = new CharacterHit(-1);
+                UpdateCaret(_lastCharacterHit);
             }
             else
             {
-                if (_compositionStartHit.FirstCharacterIndex == -1)
-                {
-                    _compositionStartHit = _lastCharacterHit;
-                }
-            }
-
-            if (_compositionStartHit.FirstCharacterIndex != -1)
-            {
-                var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + newValue?.Length ?? 0;
+                var textPosition = (ComposingRegion.HasValue? ComposingRegion.Value.Start : _caretIndex) + newValue?.Length ?? 0;
 
                 var characterHit = GetCharacterHitFromTextPosition(textPosition);
 

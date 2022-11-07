@@ -29,6 +29,8 @@ namespace Avalonia.Input.TextInput
         /// Sets the non-committed input string
         /// </summary>
         void SetPreeditText(string? text);
+
+        void SetComposingRegion(ComposingRegion? region);
         /// <summary>
         /// Indicates if text input client is capable of providing the text around the cursor
         /// </summary>
@@ -50,5 +52,27 @@ namespace Avalonia.Input.TextInput
         public string Text { get; set; }
         public int CursorOffset { get; set; }
         public int AnchorOffset { get; set; }
+    }
+
+    public readonly struct ComposingRegion
+    {
+        private readonly int _start = -1;
+        private readonly int _end = -1;
+
+        public ComposingRegion(int start, int end)
+        {
+            _start = start;
+            _end = end;
+        }
+
+        public int Start => _start;
+        public int End => _end;
+
+        public bool Intersects(ComposingRegion region)
+        {
+            return _start <= region.Start && _end >= region.Start ||
+                _end >= region.End && _start <= region.End ||
+                _start >= region.Start && _end <= region.End;
+        }
     }
 }
