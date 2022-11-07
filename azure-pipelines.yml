@@ -35,7 +35,7 @@ jobs:
       version: 6.0.401
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.100-rc.2.22477.23'
+    displayName: 'Use .NET Core SDK 7.0'
     inputs:
       version: 7.0.100
 
@@ -72,7 +72,7 @@ jobs:
       version: 6.0.401
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.100-rc.2.22477.23'
+    displayName: 'Use .NET Core SDK 7.0.100'
     inputs:
       version: 7.0.100
 
@@ -143,7 +143,7 @@ jobs:
       version: 6.0.401
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.100-rc.2.22477.23'
+    displayName: 'Use .NET Core SDK 7.0.100'
     inputs:
       version: 7.0.100
 
