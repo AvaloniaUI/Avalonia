@@ -287,8 +287,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             ComposingRegion = new ComposingRegion(start, end);
 
-            _inputMethod.Client?.SetComposingRegion(ComposingRegion);
-
             return base.SetComposingRegion(start, end);
         }
 

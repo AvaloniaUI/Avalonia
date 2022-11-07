@@ -187,15 +187,5 @@ namespace Avalonia.Controls
 
             }, DispatcherPriority.Input);
         }
-
-        public void SetComposingRegion(ComposingRegion? region)
-        {
-            if(_presenter == null)
-            {
-                return;
-            }
-
-            _presenter.ComposingRegion = region;
-        }
     }
 }

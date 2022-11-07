@@ -162,4 +162,19 @@ namespace Avalonia.Android
             });
         }
     }
+
+    public readonly struct ComposingRegion
+    {
+        private readonly int _start = -1;
+        private readonly int _end = -1;
+
+        public ComposingRegion(int start, int end)
+        {
+            _start = start;
+            _end = end;
+        }
+
+        public int Start => _start;
+        public int End => _end;
+    }
 }
