@@ -230,6 +230,7 @@ namespace Avalonia.Controls
                 case nameof(NavigationRouter.CurrentPage):
                     RaisePropertyChanged(CurrentPageProperty, null, CurrentPage);
                     RaisePropertyChanged(CanGoBackProperty, null, CanGoBack);
+                    RaisePropertyChanged(CanGoForwardProperty, null, CanGoForward);
                     break;
             }
         }
