@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX;
 using XamlX.Ast;
@@ -51,6 +52,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),                 
                 new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlPropertyPathTransformer(),
+                new AvaloniaXamlIlSetterTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),

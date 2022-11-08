@@ -10,7 +10,7 @@ namespace Avalonia.UnitTests
         private bool _isDisposed;
         private Blob _blob;
 
-        public HarfBuzzGlyphTypefaceImpl(Stream data, bool isFakeBold = false, bool isFakeItalic = false)
+        public HarfBuzzGlyphTypefaceImpl(Stream data)
         {
             _blob = Blob.FromStream(data);
             
@@ -45,10 +45,6 @@ namespace Avalonia.UnitTests
             };           
 
             GlyphCount = Face.GlyphCount;
-
-            IsFakeBold = isFakeBold;
-
-            IsFakeItalic = isFakeItalic;
         }
 
         public FontMetrics Metrics { get; }
@@ -58,10 +54,8 @@ namespace Avalonia.UnitTests
         public Font Font { get; }
 
         public int GlyphCount { get; set; }
-        
-        public bool IsFakeBold { get; }
-        
-        public bool IsFakeItalic { get; }
+
+        public FontSimulations FontSimulations { get; }
 
         /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort GetGlyph(uint codepoint)
@@ -161,6 +155,26 @@ namespace Avalonia.UnitTests
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+        {
+            metrics = default;
+
+            if (!Font.TryGetGlyphExtents(glyph, out var extents))
+            {
+                return false;
+            }
+
+            metrics = new GlyphMetrics
+            {
+                XBearing = extents.XBearing,
+                YBearing = extents.YBearing,
+                Width = extents.Width,
+                Height = extents.Height
+            };
+
+            return true;
         }
     }
 }

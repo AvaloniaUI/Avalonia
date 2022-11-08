@@ -586,6 +586,14 @@ namespace Avalonia.Controls.Primitives
                     Selection.SelectAll();
                     e.Handled = true;
                 }
+                else if (e.Key == Key.Space || e.Key == Key.Enter)
+                {
+                    e.Handled = UpdateSelectionFromEventSource(
+                          e.Source,
+                          true,
+                          e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+                          e.KeyModifiers.HasFlag(KeyModifiers.Control));
+                }
             }
         }
 
@@ -662,12 +670,14 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
+        /// <param name="fromFocus">Wheter the event is a focus event</param>
         protected void UpdateSelection(
             int index,
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
-            bool rightButton = false)
+            bool rightButton = false,
+            bool fromFocus = false)
         {
             if (index < 0 || index >= ItemCount)
             {
@@ -696,22 +706,25 @@ namespace Avalonia.Controls.Primitives
                 Selection.Clear();
                 Selection.SelectRange(Selection.AnchorIndex, index);
             }
-            else if (multi && toggle)
+            else if (!fromFocus && toggle)
             {
-                if (Selection.IsSelected(index) == true)
+                if (multi)
                 {
-                    Selection.Deselect(index);
+                    if (Selection.IsSelected(index) == true)
+                    {
+                        Selection.Deselect(index);
+                    }
+                    else
+                    {
+                        Selection.Select(index);
+                    }
                 }
                 else
                 {
-                    Selection.Select(index);
+                    SelectedIndex = (SelectedIndex == index) ? -1 : index;
                 }
             }
-            else if (toggle)
-            {
-                SelectedIndex = (SelectedIndex == index) ? -1 : index;
-            }
-            else
+            else if (!toggle)
             {
                 using var operation = Selection.BatchUpdate();
                 Selection.Clear();
@@ -735,18 +748,20 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
+        /// <param name="fromFocus">Wheter the event is a focus event</param>
         protected void UpdateSelection(
             IControl container,
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
-            bool rightButton = false)
+            bool rightButton = false,
+            bool fromFocus = false)
         {
             var index = ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
 
             if (index != -1)
             {
-                UpdateSelection(index, select, rangeModifier, toggleModifier, rightButton);
+                UpdateSelection(index, select, rangeModifier, toggleModifier, rightButton, fromFocus);
             }
         }
 
@@ -759,6 +774,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
+        /// <param name="fromFocus">Wheter the event is a focus event</param>
         /// <returns>
         /// True if the event originated from a container that belongs to the control; otherwise
         /// false.
@@ -768,13 +784,14 @@ namespace Avalonia.Controls.Primitives
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
-            bool rightButton = false)
+            bool rightButton = false,
+            bool fromFocus = false)
         {
             var container = GetContainerFromEventSource(eventSource);
 
             if (container != null)
             {
-                UpdateSelection(container, select, rangeModifier, toggleModifier, rightButton);
+                UpdateSelection(container, select, rangeModifier, toggleModifier, rightButton, fromFocus);
                 return true;
             }
 

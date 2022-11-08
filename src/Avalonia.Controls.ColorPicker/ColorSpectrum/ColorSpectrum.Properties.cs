@@ -240,7 +240,7 @@ namespace Avalonia.Controls.Primitives
         public ColorComponent ThirdComponent
         {
             get => GetValue(ThirdComponentProperty);
-            private set => SetValue(ThirdComponentProperty, value);
+            protected set => SetValue(ThirdComponentProperty, value);
         }
     }
 }
