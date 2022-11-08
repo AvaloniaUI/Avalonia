@@ -637,6 +637,13 @@
     <StaticResource x:Key="FlyoutBorderThemeBrush" ResourceKey="SystemControlTransientBorderBrush" />
 
     <!-- BaseResources for ScrollViewer.xaml -->
-    <SolidColorBrush x:Key="ScrollViewerScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />    
+    <SolidColorBrush x:Key="ScrollViewerScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+    
+    <!-- Resources for HyperlinkButton -->
+    <StaticResource x:Key="HyperlinkButtonForeground" ResourceKey="SystemControlForegroundAccentBrush"/>
+    <StaticResource x:Key="HyperlinkButtonForegroundPointerOver" ResourceKey="SystemAccentColorLight1"/>
+    <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="SystemAccentColorDark1"/>
+    <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+    <SolidColorBrush x:Key="HyperlinkButtonForegroundVisited" Color="#c58af9"/>
   </Style.Resources>
 </Style>

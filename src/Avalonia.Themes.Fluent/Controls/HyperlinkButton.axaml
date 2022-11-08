@@ -1,14 +1,21 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <ControlTheme x:Key="{x:Type HyperlinkButton}" TargetType="HyperlinkButton">
-    <Setter Property="Foreground" Value="Blue"></Setter>
+    <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForeground}"></Setter>
     <Setter Property="Background" Value="Transparent"></Setter>
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate TargetType="HyperlinkButton">
         <ContentPresenter
-          Foreground="{TemplateBinding Foreground}"
+          Name="ContentPresenter"
           Background="{TemplateBinding Background}"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          CornerRadius="{TemplateBinding CornerRadius}"
           Content="{TemplateBinding Content}"
+          ContentTemplate="{TemplateBinding ContentTemplate}"
+          Padding="{TemplateBinding Padding}"
           >
           <ContentPresenter.Styles>
             <Style Selector="TextBlock">
@@ -18,9 +25,17 @@
         </ContentPresenter>
       </ControlTemplate>
     </Setter>
-    
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundDisabled}"></Setter>
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundPointerOver}"></Setter>
+    </Style>
+    <Style Selector="^:pressed">
+      <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundPressed}"></Setter>
+    </Style>
     <Style Selector="^:visited">
-      <Setter Property="Foreground" Value="Pink"></Setter>
+      <Setter Property="Foreground" Value="{DynamicResource HyperlinkButtonForegroundVisited}"></Setter>
     </Style>
   </ControlTheme>
 </ResourceDictionary>

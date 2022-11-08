@@ -34,8 +34,8 @@ namespace Avalonia.Controls
             set => SetValue(IsVisitedProperty, value);
         }
 
-        public static readonly DirectProperty<HyperlinkButton, bool> SetVisitedOnClickProperty =
-            AvaloniaProperty.RegisterDirect<HyperlinkButton, bool>(nameof(SetVisitedOnClick), x => x.SetVisitedOnClick, (x, v) => x.SetVisitedOnClick = v);
+        public static readonly StyledProperty<bool> SetVisitedOnClickProperty =
+            AvaloniaProperty.Register<HyperlinkButton, bool>(nameof(SetVisitedOnClick), true);
         private bool _setVisitedOnClick;
         public bool SetVisitedOnClick
         {
