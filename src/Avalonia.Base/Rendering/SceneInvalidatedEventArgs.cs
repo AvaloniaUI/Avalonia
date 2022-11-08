@@ -12,7 +12,7 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="root">The render root that has been updated.</param>
         /// <param name="dirtyRect">The updated area.</param>
-        public SceneInvalidatedEventArgs(
+        internal SceneInvalidatedEventArgs(
             IRenderRoot root,
             Rect dirtyRect)
         {

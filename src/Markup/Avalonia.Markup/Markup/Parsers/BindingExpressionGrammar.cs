@@ -168,7 +168,11 @@ namespace Avalonia.Markup.Parsers
             }
         }
 
-        private static State ParseAttachedProperty(scoped ref CharacterReader r, List<INode> nodes)
+        private static State ParseAttachedProperty(
+#if NET7SDK
+            scoped
+#endif
+            ref CharacterReader r, List<INode> nodes)
         {
             var (ns, owner) = ParseTypeName(ref r);
 
@@ -318,7 +322,11 @@ namespace Avalonia.Markup.Parsers
             return State.AfterMember;
         }
 
-        private static TypeName ParseTypeName(scoped ref CharacterReader r)
+        private static TypeName ParseTypeName(
+#if NET7SDK
+            scoped
+#endif
+            ref CharacterReader r)
         {
             ReadOnlySpan<char> ns, typeName;
             ns = ReadOnlySpan<char>.Empty;

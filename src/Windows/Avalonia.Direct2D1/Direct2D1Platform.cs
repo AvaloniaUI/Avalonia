@@ -10,10 +10,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
-using TextAlignment = Avalonia.Media.TextAlignment;
 using SharpDX.Mathematics.Interop;
-using System.Runtime.InteropServices;
-using System.Drawing;
 
 namespace Avalonia
 {
@@ -160,6 +157,72 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => new GeometryGroupImpl(fillRule, children);
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => new CombinedGeometryImpl(combineMode, g1, g2);
 
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, 
+            IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        {
+            var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
+
+            var glyphCount = glyphIndices.Count;
+
+            var run = new SharpDX.DirectWrite.GlyphRun
+            {
+                FontFace = glyphTypefaceImpl.FontFace,
+                FontSize = (float)fontRenderingEmSize
+            };
+
+            var indices = new short[glyphCount];
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                indices[i] = (short)glyphIndices[i];
+            }
+
+            run.Indices = indices;
+
+            run.Advances = new float[glyphCount];
+
+            var scale = (float)(fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight);
+
+            if (glyphAdvances == null)
+            {
+                for (var i = 0; i < glyphCount; i++)
+                {
+                    var advance = glyphTypeface.GetGlyphAdvance(glyphIndices[i]) * scale;
+
+                    run.Advances[i] = advance;
+                }
+            }
+            else
+            {
+                for (var i = 0; i < glyphCount; i++)
+                {
+                    var advance = (float)glyphAdvances[i];
+
+                    run.Advances[i] = advance;
+                }
+            }
+
+            if (glyphOffsets == null)
+            {
+                return new GlyphRunImpl(run);
+            }
+
+            run.Offsets = new GlyphOffset[glyphCount];
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                var (x, y) = glyphOffsets[i];
+
+                run.Offsets[i] = new GlyphOffset
+                {
+                    AdvanceOffset = (float)x,
+                    AscenderOffset = (float)y
+                };
+            }
+
+            return new GlyphRunImpl(run);
+        }
+
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
             if (glyphRun.GlyphTypeface is not GlyphTypefaceImpl glyphTypeface)
@@ -258,68 +321,6 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new WicBitmapImpl(format, alphaFormat, data, size, dpi, stride);
-        }
-
-        private class DWGlyphRunBuffer : IGlyphRunBuffer
-        {
-            protected readonly SharpDX.DirectWrite.GlyphRun _dwRun;
-
-            public DWGlyphRunBuffer(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-            {
-                var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
-
-                _dwRun = new SharpDX.DirectWrite.GlyphRun
-                {
-                    FontFace = glyphTypefaceImpl.FontFace,
-                    FontSize = fontRenderingEmSize,
-                    Indices = new short[length]
-                };
-            }
-
-            public Span<ushort> GlyphIndices => MemoryMarshal.Cast<short, ushort>(_dwRun.Indices.AsSpan());
-
-            public IGlyphRunImpl Build()
-            {
-                return new GlyphRunImpl(_dwRun);
-            }
-        }
-
-        private class DWHorizontalGlyphRunBuffer : DWGlyphRunBuffer, IHorizontalGlyphRunBuffer
-        {
-            public DWHorizontalGlyphRunBuffer(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length) 
-                : base(glyphTypeface, fontRenderingEmSize, length)
-            {
-                _dwRun.Advances = new float[length];
-            }
-
-            public Span<float> GlyphPositions => _dwRun.Advances.AsSpan();
-        }
-
-        private class DWPositionedGlyphRunBuffer : DWGlyphRunBuffer, IPositionedGlyphRunBuffer
-        {
-            public DWPositionedGlyphRunBuffer(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-                : base(glyphTypeface, fontRenderingEmSize, length)
-            {
-                _dwRun.Advances = new float[length];
-                _dwRun.Offsets = new GlyphOffset[length];
-            }
-
-            public Span<PointF> GlyphPositions => MemoryMarshal.Cast<GlyphOffset, PointF>(_dwRun.Offsets.AsSpan());
-        }
-
-        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-        {
-            return new DWGlyphRunBuffer(glyphTypeface, fontRenderingEmSize, length);
-        }
-
-        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-        {
-            return new DWHorizontalGlyphRunBuffer(glyphTypeface, fontRenderingEmSize, length);
-        }
-
-        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-        {
-            return new DWPositionedGlyphRunBuffer(glyphTypeface, fontRenderingEmSize, length);
         }
 
         public bool SupportsIndividualRoundRects => false;

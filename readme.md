@@ -104,7 +104,7 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 
 ## Commercial Support 
 
-We have a range of [support plans available](https://avaloniaui.net/support.html) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.
+We have a range of [support plans available](https://avaloniaui.net/support) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.
 
 *Please note that donations are not considered payment for commercial support agreements. Please contact us to discuss your needs first. [team@avaloniaui.net](mailto://team@avaloniaui.net)*
 ## .NET Foundation

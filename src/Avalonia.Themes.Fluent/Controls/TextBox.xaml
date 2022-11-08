@@ -161,6 +161,7 @@
                                     TextAlignment="{TemplateBinding TextAlignment}"
                                     TextWrapping="{TemplateBinding TextWrapping}"
                                     LineHeight="{TemplateBinding LineHeight}"
+                                    LetterSpacing="{TemplateBinding LetterSpacing}"
                                     PasswordChar="{TemplateBinding PasswordChar}"
                                     RevealPassword="{TemplateBinding RevealPassword}"
                                     SelectionBrush="{TemplateBinding SelectionBrush}"

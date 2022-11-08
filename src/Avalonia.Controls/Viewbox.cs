@@ -42,6 +42,7 @@ namespace Avalonia.Controls
             // can be applied independently of the Viewbox and Child transforms.
             _containerVisual = new ViewboxContainer();
             _containerVisual.RenderTransformOrigin = RelativePoint.TopLeft;
+            ((ISetLogicalParent)_containerVisual).SetParent(this);
             VisualChildren.Add(_containerVisual);
         }
 
