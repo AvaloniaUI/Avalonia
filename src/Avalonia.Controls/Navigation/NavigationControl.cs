@@ -92,7 +92,7 @@ namespace Avalonia.Controls
         /// </summary>
         public bool? CanGoForward
         {
-            get => NavigationRouter is IBiDirectionalNavigationRouter biNav ? biNav?.CanGoForward : false;
+            get => NavigationRouter?.CanGoForward;
         }
 
         /// <summary>
@@ -254,9 +254,9 @@ namespace Avalonia.Controls
 
         private async void ForwardButton_Clicked(object? sender, RoutedEventArgs eventArgs)
         {
-            if (NavigationRouter is IBiDirectionalNavigationRouter biNav)
+            if (NavigationRouter != null)
             {
-                await biNav.ForwardAsync();
+                await NavigationRouter.ForwardAsync();
             }
         }
     }

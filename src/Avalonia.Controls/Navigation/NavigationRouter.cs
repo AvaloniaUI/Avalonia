@@ -30,6 +30,8 @@ namespace Avalonia.Controls
 
         public bool AllowEmpty { get; set; }
 
+        public bool CanGoForward => false;
+
         public NavigationRouter()
         {
             _backStack = new Stack<object?>();
@@ -84,5 +86,7 @@ namespace Avalonia.Controls
                 OnPropertyChanged(nameof(CanGoBack));
             }
         }
+
+        public async Task ForwardAsync() { }
     }
 }

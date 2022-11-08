@@ -27,6 +27,17 @@ namespace Avalonia.Controls
         object? CurrentPage { get; }
 
         /// <summary>
+        /// Navigates to the next page in the stack if there is one.
+        /// </summary>
+        /// <returns>Task to await the navigation process.</returns>
+        Task ForwardAsync();
+
+        /// <summary>
+        /// True if its possible to navigate forward.
+        /// </summary>
+        bool CanGoForward { get; }
+
+        /// <summary>
         /// Navigates to a new page.
         /// </summary>
         /// <param name="destination">The destination page / url / viewmodel depending on the implementation.</param>
