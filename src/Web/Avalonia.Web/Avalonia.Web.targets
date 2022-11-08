@@ -12,7 +12,7 @@
     <WasmBuildNative>true</WasmBuildNative>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(UseAvaloniaWasmDefaultOptimizations)'=='True'">
+  <PropertyGroup Condition="'$(UseAvaloniaWasmDefaultOptimizations)'=='True' && '$(Configuration)' == 'Release'">
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>full</TrimMode>
     <InvariantGlobalization>true</InvariantGlobalization>
