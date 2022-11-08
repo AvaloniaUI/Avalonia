@@ -644,6 +644,6 @@
     <StaticResource x:Key="HyperlinkButtonForegroundPointerOver" ResourceKey="SystemAccentColorLight1"/>
     <StaticResource x:Key="HyperlinkButtonForegroundPressed" ResourceKey="SystemAccentColorDark1"/>
     <StaticResource x:Key="HyperlinkButtonForegroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
-    <SolidColorBrush x:Key="HyperlinkButtonForegroundVisited" Color="#c58af9"/>
+    <SolidColorBrush x:Key="HyperlinkButtonForegroundVisited" Color="#C58AF9"/>
   </Style.Resources>
 </Style>
