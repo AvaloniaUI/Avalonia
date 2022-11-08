@@ -3,6 +3,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
 using Avalonia.UnitTests;
 using Moq;
@@ -179,6 +180,27 @@ namespace Avalonia.Controls.UnitTests
                 Assert.True(button.IsArrangeValid);
 
                 Assert.Equal(60, button.Bounds.Left);
+            }
+        }
+
+        [Fact]
+        public void Setting_Text_Should_Reset_Inlines()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var target = new TextBlock();
+
+                target.Inlines.Add(new Run("Hello World"));
+
+                Assert.Equal("Hello World", target.Text);
+
+                Assert.Equal(1, target.Inlines.Count);
+
+                target.Text = "1234";
+
+                Assert.Equal("1234", target.Text);
+
+                Assert.Equal(0, target.Inlines.Count);
             }
         }
     }
