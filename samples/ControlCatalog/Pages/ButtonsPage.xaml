@@ -263,8 +263,9 @@
     <Border Classes="thin" Padding="15">
       <StackPanel Orientation="Vertical" Spacing="8">
         <HyperlinkButton NavigateUri="https://www.avaloniaui.net">www.avaloniaui.net</HyperlinkButton>
-        <HyperlinkButton NavigateUri="https://www.avaloniaui.net" SetVisitedOnClick="True">www.avaloniaui.net</HyperlinkButton>
-        <HyperlinkButton NavigateUri="https://www.avaloniaui.net" IsVisited="True">www.avaloniaui.net</HyperlinkButton>
+        <HyperlinkButton NavigateUri="https://www.avaloniaui.net" IsVisitedSetOnClick="True">www.avaloniaui.net (IsVisited auto set on click)</HyperlinkButton>
+        <HyperlinkButton NavigateUri="https://www.avaloniaui.net" IsVisited="True">www.avaloniaui.net (IsVisited set in xaml)</HyperlinkButton>
+        <HyperlinkButton NavigateUri="https://www.avaloniaui.net" IsEnabled="False">www.avaloniaui.net (disabled)</HyperlinkButton>
         <HyperlinkButton NavigateUri="mailto:support@test.com" IsVisited="True">support@test.com</HyperlinkButton>
       </StackPanel>
     </Border>

@@ -34,13 +34,13 @@ namespace Avalonia.Controls
             set => SetValue(IsVisitedProperty, value);
         }
 
-        public static readonly StyledProperty<bool> SetVisitedOnClickProperty =
-            AvaloniaProperty.Register<HyperlinkButton, bool>(nameof(SetVisitedOnClick), true);
-        private bool _setVisitedOnClick;
-        public bool SetVisitedOnClick
+        public static readonly StyledProperty<bool> IsVisitedSetOnClickProperty =
+            AvaloniaProperty.Register<HyperlinkButton, bool>(nameof(IsVisitedSetOnClick), true);
+        private bool _isVisitedSetOnClick;
+        public bool IsVisitedSetOnClick
         {
-            get => _setVisitedOnClick;
-            set => SetAndRaise(SetVisitedOnClickProperty, ref _setVisitedOnClick, value);
+            get => _isVisitedSetOnClick;
+            set => SetAndRaise(IsVisitedSetOnClickProperty, ref _isVisitedSetOnClick, value);
         }
 
         static HyperlinkButton()
@@ -56,7 +56,7 @@ namespace Avalonia.Controls
                 try
                 {
                     Process.Start(new ProcessStartInfo(NavigateUri.ToString()) { UseShellExecute = true });
-                    if (SetVisitedOnClick)
+                    if (IsVisitedSetOnClick)
                     {
                         IsVisited = true;
                     }
