@@ -81,6 +81,12 @@ namespace Avalonia.Controls.Presenters
             TextBlock.LineHeightProperty.AddOwner<TextPresenter>();
 
         /// <summary>
+        /// Defines the <see cref="LetterSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextBlock.LetterSpacingProperty.AddOwner<TextPresenter>();
+
+        /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> BackgroundProperty =
@@ -213,6 +219,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the letter spacing.
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the text alignment.
         /// </summary>
         public TextAlignment TextAlignment
@@ -333,7 +348,7 @@ namespace Avalonia.Controls.Presenters
 
             var textLayout = new TextLayout(text, typeface, FontSize, foreground, TextAlignment,
                 TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides,
-                flowDirection: FlowDirection, lineHeight: LineHeight);
+                flowDirection: FlowDirection, lineHeight: LineHeight, letterSpacing: LetterSpacing);
 
             return textLayout;
         }
@@ -915,6 +930,9 @@ namespace Avalonia.Controls.Presenters
                 case nameof(Text):
                 case nameof(TextAlignment):
                 case nameof(TextWrapping):
+
+                case nameof(LineHeight):
+                case nameof(LetterSpacing):
 
                 case nameof(SelectionStart):
                 case nameof(SelectionEnd):

@@ -23,5 +23,11 @@ namespace Avalonia.LinuxFramebuffer
         /// Default: R0 G0 B0 A0
         /// </summary>
         public Color InitialBufferSwappingColor { get; set; } = new Color(0, 0, 0, 0);
+
+        /// <summary>
+        /// specific the video mode with which the DrmOutput should be created, if it is not found it will fallback to the preferred mode.
+        /// If NULL preferred mode will be used.
+        /// </summary>
+        public PixelSize? VideoMode { get; set; }
     }
 }
