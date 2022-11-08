@@ -10,7 +10,7 @@ namespace Avalonia.Controls
     public interface INavigationRouter : INotifyPropertyChanged
     {
         /// <summary>
-        /// If true, then <see cref="Back"/> or <see cref="Clear"/> will leave the <see cref="CurrentPage"/> null.
+        /// If true, then <see cref="BackAsync"/> or <see cref="ClearAsync"/> will leave the <see cref="CurrentPage"/> null.
         /// Otherwise there will always be a page left on the <see cref="CurrentPage"/>.
         /// </summary>
         bool AllowEmpty { get; set; }
@@ -32,18 +32,18 @@ namespace Avalonia.Controls
         /// <param name="destination">The destination page / url / viewmodel depending on the implementation.</param>
         /// <param name="mode">How the navigation stack will behave when navigating.</param>
         /// <returns>Task to await the navigation process.</returns>
-        Task NavigateTo(object? destination, NavigationMode mode = NavigationMode.Normal);
+        Task NavigateToAsync(object? destination, NavigationMode mode = NavigationMode.Normal);
 
         /// <summary>
         /// Navigates to the previous page in the stack if there is one.
         /// </summary>
         /// <returns>Task to await the navigation process.</returns>
-        Task Back();
+        Task BackAsync();
 
         /// <summary>
         /// Clears the navigation stack and navigates to the last page or null according to <see cref="AllowEmpty"/>
         /// </summary>
         /// <returns>Task to await the navigation process.</returns>
-        Task Clear();
+        Task ClearAsync();
     }
 }

@@ -173,7 +173,7 @@ namespace Avalonia.Controls
             set
             {
                 var oldView = CurrentPage;
-                NavigationRouter?.NavigateTo(value);
+                NavigationRouter?.NavigateToAsync(value);
                 RaisePropertyChanged(CurrentPageProperty, oldView, CurrentPage);
             }
         }
@@ -248,7 +248,7 @@ namespace Avalonia.Controls
         {
             if (NavigationRouter != null)
             {
-                await NavigationRouter.Back();
+                await NavigationRouter.BackAsync();
             }
         }
 
@@ -256,7 +256,7 @@ namespace Avalonia.Controls
         {
             if (NavigationRouter is IBiDirectionalNavigationRouter biNav)
             {
-                await biNav.Forward();
+                await biNav.ForwardAsync();
             }
         }
     }

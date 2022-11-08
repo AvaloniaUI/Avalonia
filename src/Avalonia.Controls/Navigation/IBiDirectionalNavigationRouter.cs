@@ -12,7 +12,7 @@ namespace Avalonia.Controls
         /// Navigates to the next page in the stack if there is one.
         /// </summary>
         /// <returns>Task to await the navigation process.</returns>
-        Task Forward();
+        Task ForwardAsync();
 
         /// <summary>
         /// True if its possible to navigate forward.

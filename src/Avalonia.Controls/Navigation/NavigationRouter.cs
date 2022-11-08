@@ -35,7 +35,7 @@ namespace Avalonia.Controls
             _backStack = new Stack<object?>();
         }
 
-        public async Task Back()
+        public async Task BackAsync()
         {
             if (CanGoBack || AllowEmpty)
             {
@@ -43,7 +43,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public async Task NavigateTo(object? viewModel, NavigationMode navigationMode)
+        public async Task NavigateToAsync(object? viewModel, NavigationMode navigationMode)
         {
             if(viewModel == null)
             {
@@ -71,7 +71,7 @@ namespace Avalonia.Controls
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(memberName));
         }
 
-        public async Task Clear()
+        public async Task ClearAsync()
         {
             _backStack?.Clear();
 

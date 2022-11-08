@@ -47,7 +47,7 @@ namespace ControlCatalog.ViewModels
         {
             if (NavigationRouter != null)
             {
-                await NavigationRouter.NavigateTo(page);
+                await NavigationRouter.NavigateToAsync(page);
             }
         }
     }
