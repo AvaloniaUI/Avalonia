@@ -268,8 +268,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             _topLevel = topLevel;
             _inputMethod = inputMethod;
-
-            _inputMethod.Client?.SetComposingRegion(null);
         }
 
         public TextInputMethodSurroundingText SurroundingText { get; set; }
