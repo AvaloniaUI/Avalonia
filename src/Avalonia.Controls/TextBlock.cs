@@ -597,23 +597,12 @@ namespace Avalonia.Controls
 
         protected virtual void SetText(string? text)
         {
-            if (Inlines != null && Inlines.Count > 0)
+            if (HasComplexContent)
             {
-                var oldValue = Inlines.Text;
-
-                if (!string.IsNullOrEmpty(text))
-                {
-                    Inlines.Add(text);
-                }
-
-                text = Inlines.Text;
-
-                RaisePropertyChanged(TextProperty, oldValue, text);
+                Inlines?.Clear();
             }
-            else
-            {
-                SetAndRaise(TextProperty, ref _text, text);
-            }
+           
+            SetAndRaise(TextProperty, ref _text, text);           
         }
 
         /// <summary>
