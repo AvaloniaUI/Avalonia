@@ -8,7 +8,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Web
 {
-    internal class BrowserWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
+    internal class BrowserWindowingPlatform : IWindowingPlatform, IPlatformThreadingInterface
     {
         private bool _signaled;
         private static KeyboardDevice? s_keyboard;
@@ -36,7 +36,7 @@ namespace Avalonia.Web
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
-                .Bind<IPlatformSettings>().ToConstant(instance)
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(ManualTriggerRenderTimer.Instance)
@@ -94,25 +94,5 @@ namespace Avalonia.Web
         {
             return AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
         }
-
-        Size IPlatformSettings.GetTapSize(PointerType type)
-        {
-            return type switch
-            {
-                PointerType.Touch => new(10, 10),
-                _ => new(4, 4),
-            };
-        }
-
-        Size IPlatformSettings.GetDoubleTapSize(PointerType type)
-        {
-            return type switch
-            {
-                PointerType.Touch => new(16, 16),
-                _ => new(4, 4),
-            };
-        }
-
-        TimeSpan IPlatformSettings.GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(500);
     }
 }
