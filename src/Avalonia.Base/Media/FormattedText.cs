@@ -93,7 +93,8 @@ namespace Avalonia.Media
                 runProps,
                 TextWrapping.WrapWithOverflow,
                 0, // line height not specified
-                0 // indentation not specified
+                0, // indentation not specified
+                0
             );
 
             InvalidateMetrics();

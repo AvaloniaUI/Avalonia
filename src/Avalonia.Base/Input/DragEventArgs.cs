@@ -32,7 +32,7 @@ namespace Avalonia.Input
             return point;
         }
 
-        public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, KeyModifiers keyModifiers)
+        internal DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, KeyModifiers keyModifiers)
             : base(routedEvent)
         {
             Data = data;

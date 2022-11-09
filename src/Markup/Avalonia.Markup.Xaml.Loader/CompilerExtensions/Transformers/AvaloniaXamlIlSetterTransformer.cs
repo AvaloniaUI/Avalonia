@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using XamlX;
 using XamlX.Ast;
 using XamlX.Emit;
 using XamlX.IL;
@@ -8,7 +9,6 @@ using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
-    using XamlParseException = XamlX.XamlParseException;
     class AvaloniaXamlIlSetterTransformer : IXamlAstTransformer
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
@@ -17,10 +17,24 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                   && on.Type.GetClrType().FullName == "Avalonia.Styling.Setter"))
                 return node;
 
-            var targetTypeNode = context.ParentNodes()
+            IXamlType targetType = null;
+            IXamlLineInfo lineInfo = null;
+
+            var styleParent = context.ParentNodes()
                 .OfType<AvaloniaXamlIlTargetTypeMetadataNode>()
-                .FirstOrDefault(x => x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style) ??
-                throw new XamlParseException("Can not find parent Style Selector or ControlTemplate TargetType", node);
+                .FirstOrDefault(x => x.ScopeType == AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
+
+            if (styleParent != null)
+            {
+                targetType = styleParent.TargetType.GetClrType()
+                             ?? throw new XamlParseException("Can not find parent Style Selector or ControlTemplate TargetType. If setter is not part of the style, you can set x:SetterTargetType directive on its parent.", node);
+                lineInfo = on;
+            }
+
+            if (targetType == null)
+            {
+                throw new XamlParseException("Could not determine target type of Setter", node);
+            }
 
             IXamlType propType = null;
             var property = @on.Children.OfType<XamlAstXamlPropertyValueNode>()
@@ -31,9 +45,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 if (propertyName == null)
                     throw new XamlParseException("Setter.Property must be a string", node);
 
-
                 var avaloniaPropertyNode = XamlIlAvaloniaPropertyHelper.CreateNode(context, propertyName,
-                    new XamlAstClrTypeReference(targetTypeNode, targetTypeNode.TargetType.GetClrType(), false), property.Values[0]);
+                    new XamlAstClrTypeReference(lineInfo, targetType, false), property.Values[0]);
                 property.Values = new List<IXamlAstValueNode> {avaloniaPropertyNode};
                 propType = avaloniaPropertyNode.AvaloniaPropertyType;
             }

@@ -72,7 +72,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 while (true)
                 {
                     line = await ReadLineAsync();
-                    if (line == "")
+                    if (string.IsNullOrEmpty(line))
                         break;
                     sp = line.Split(new[] {':'}, 2);
                     headers[sp[0]] = sp[1].TrimStart();

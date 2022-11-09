@@ -72,7 +72,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
         {
             throw new NotImplementedException();
         }
@@ -122,21 +122,6 @@ namespace Avalonia.Base.UnitTests.VisualTree
         }
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
         {
             throw new NotImplementedException();
         }
