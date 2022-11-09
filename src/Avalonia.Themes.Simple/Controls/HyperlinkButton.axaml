@@ -18,8 +18,7 @@
           CornerRadius="{TemplateBinding CornerRadius}"
           Content="{TemplateBinding Content}"
           ContentTemplate="{TemplateBinding ContentTemplate}"
-          Padding="{TemplateBinding Padding}"
-        >
+          Padding="{TemplateBinding Padding}">
           <ContentPresenter.Styles>
             <Style Selector="TextBlock">
               <Setter Property="TextDecorations" Value="Underline" />

@@ -1,20 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Metadata;
 using Avalonia.Logging;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
-    public class HyperlinkButton: Button, IStyleable
+    [PseudoClasses(pcVisited)]
+    public class HyperlinkButton: Button
     {
         public const string pcVisited = ":visited";
-
-        Type IStyleable.StyleKey => typeof(HyperlinkButton);
+        
         /// <summary>
         /// Defines the <see cref="NavigateUri"/> property.
         /// </summary>
@@ -22,6 +17,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<HyperlinkButton, Uri?>(nameof(NavigateUri), x => x.NavigateUri, (x, v) => x.NavigateUri = v);
 
         private Uri? _navigateUri;
+        
         /// <summary>
         /// Gets or sets the Uri to navigate to when the button is clicked.
         /// </summary>
@@ -36,6 +32,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> IsVisitedProperty =
             AvaloniaProperty.Register<HyperlinkButton, bool>(nameof(IsVisited));
+        
         /// <summary>
         /// Gets or sets if the <see cref="NavigateUri"/> is visited for this button.
         /// </summary>
@@ -50,6 +47,7 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<bool> IsVisitedSetOnClickProperty =
             AvaloniaProperty.Register<HyperlinkButton, bool>(nameof(IsVisitedSetOnClick), true);
+        
         /// <summary>
         /// <para>Gets or Sets whether <see cref="IsVisited"/> property should be determined when button is clicked. </para>
         /// <para>If this property is set to true, then <see cref="IsVisited"/> is automatically set to true when button is clicked. </para>
@@ -59,11 +57,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsVisitedSetOnClickProperty);
             set => SetValue(IsVisitedSetOnClickProperty, value);
-        }
-
-        static HyperlinkButton()
-        {
-            IsVisitedProperty.Changed.AddClassHandler<HyperlinkButton>((x,e)=>x.OnIsVisitedChanged(e));
         }
 
         protected override void OnClick()
@@ -86,10 +79,14 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnIsVisitedChanged(AvaloniaPropertyChangedEventArgs args)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            bool newValue = args.GetNewValue<bool>();
-            PseudoClasses.Set(pcVisited, newValue);
+            base.OnPropertyChanged(change);
+            if (change.Property == HyperlinkButton.IsVisitedProperty)
+            {
+                bool newValue = change.GetNewValue<bool>();
+                PseudoClasses.Set(pcVisited, newValue);
+            }
         }
     }
 }
