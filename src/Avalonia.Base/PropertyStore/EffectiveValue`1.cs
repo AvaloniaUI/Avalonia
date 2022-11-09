@@ -55,7 +55,8 @@ namespace Avalonia.PropertyStore
         {
             Debug.Assert(priority != BindingPriority.LocalValue);
             UpdateValueEntry(value, priority);
-            SetAndRaiseCore(owner, (StyledPropertyBase<T>)value.Property, (T)value.GetValue()!, priority);
+
+            SetAndRaiseCore(owner,  (StyledPropertyBase<T>)value.Property, GetValue(value), priority);
         }
 
         public void SetLocalValueAndRaise(
@@ -144,6 +145,14 @@ namespace Avalonia.PropertyStore
 
         protected override object? GetBoxedValue() => Value;
         
+        private static T GetValue(IValueEntry entry)
+        {
+            if (entry is IValueEntry<T> typed)
+                return typed.GetValue();
+            else
+                return (T)entry.GetValue()!;
+        }
+
         private void SetAndRaiseCore(
             ValueStore owner,
             StyledPropertyBase<T> property,

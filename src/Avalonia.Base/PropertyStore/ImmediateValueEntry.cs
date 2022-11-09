@@ -2,7 +2,7 @@
 
 namespace Avalonia.PropertyStore
 {
-    internal class ImmediateValueEntry<T> : IValueEntry, IDisposable
+    internal class ImmediateValueEntry<T> : IValueEntry<T>, IDisposable
     {
         private readonly ImmediateValueFrame _owner;
         private readonly T _value;
@@ -26,5 +26,6 @@ namespace Avalonia.PropertyStore
         public void Dispose() => _owner.OnEntryDisposed(this);
 
         object? IValueEntry.GetValue() => _value;
+        T IValueEntry<T>.GetValue() => _value;
     }
 }

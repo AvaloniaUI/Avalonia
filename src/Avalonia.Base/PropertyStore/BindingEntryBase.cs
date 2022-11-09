@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Disposables;
 using Avalonia.Data;
 
 namespace Avalonia.PropertyStore
 {
-    internal abstract class BindingEntryBase<TValue, TSource> : IValueEntry,
+    internal abstract class BindingEntryBase<TValue, TSource> : IValueEntry<TValue>,
         IObserver<TSource>,
         IObserver<BindingValue<TSource>>,
         IDisposable
@@ -56,6 +55,14 @@ namespace Avalonia.PropertyStore
         {
             Unsubscribe();
             BindingCompleted();
+        }
+
+        public TValue GetValue()
+        {
+            Start(produceValue: false);
+            if (!_hasValue)
+                throw new AvaloniaInternalException("The binding entry has no value.");
+            return _value!;
         }
 
         public void Start() => Start(true);
