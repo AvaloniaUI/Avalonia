@@ -127,9 +127,9 @@ namespace Avalonia.Input
                 _pointer.Capture(source);
                 if (source != null)
                 {
-                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-                    var doubleClickTime = settings?.GetDoubleTapTime(PointerType.Mouse).TotalMilliseconds ?? 500;
-                    var doubleClickSize = settings?.GetDoubleTapSize(PointerType.Mouse) ?? new Size(4, 4);
+                    var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+                    var doubleClickTime = settings.GetDoubleTapTime(PointerType.Mouse).TotalMilliseconds;
+                    var doubleClickSize = settings.GetDoubleTapSize(PointerType.Mouse);
 
                     if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
                     {
