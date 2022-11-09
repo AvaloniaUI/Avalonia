@@ -165,6 +165,28 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 _tl.Draw();
             }
 
+            protected override void DispatchDraw(global::Android.Graphics.Canvas canvas)
+            {
+                // Workaround issue #9230 on where screen remains gray after splash screen.
+                // base.DispatchDraw should punch a hole into the canvas so the surface
+                // can be seen below, but it does not.
+                if (OperatingSystem.IsAndroidVersionAtLeast(29))
+                {
+                    // Android 10+ does this (BlendMode was new)
+                    var paint = new Paint();
+                    paint.SetColor(0);
+                    paint.BlendMode = BlendMode.Clear;
+                    canvas.DrawRect(0, 0, Width, Height, paint);
+                }
+                else
+                {
+                    // Android 9 did this
+                    canvas.DrawColor(Color.Transparent, PorterDuff.Mode.Clear);
+                }
+
+                base.DispatchDraw(canvas);
+            }
+
             protected override bool DispatchGenericPointerEvent(MotionEvent e)
             {
                 bool callBase;
