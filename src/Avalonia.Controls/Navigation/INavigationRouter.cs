@@ -4,11 +4,17 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.Interactivity;
 
 namespace Avalonia.Controls
 {
-    public interface INavigationRouter : INotifyPropertyChanged
+    public interface INavigationRouter
     {
+        /// <summary>
+        /// Event triggered when navigation is complete.
+        /// </summary>
+        event EventHandler<NavigatedEventArgs>? Navigated;
+
         /// <summary>
         /// If true, then <see cref="BackAsync"/> or <see cref="ClearAsync"/> will leave the <see cref="CurrentPage"/> null.
         /// Otherwise there will always be a page left on the <see cref="CurrentPage"/>.
@@ -56,5 +62,17 @@ namespace Avalonia.Controls
         /// </summary>
         /// <returns>Task to await the navigation process.</returns>
         Task ClearAsync();
+    }
+
+    public class NavigatedEventArgs
+    {
+        public NavigatedEventArgs(object? from, object? to)
+        {
+            From = from;
+            To = to;
+        }
+
+        public object? From { get; }
+        public object? To { get; }
     }
 }

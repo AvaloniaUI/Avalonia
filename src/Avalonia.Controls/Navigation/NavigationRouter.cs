@@ -12,7 +12,7 @@ namespace Avalonia.Controls
         private readonly Stack<object?> _backStack;
         private object? _currentPage;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public event EventHandler<NavigatedEventArgs>? Navigated;
 
         public bool CanGoBack => _backStack?.Count() > 0;
 
@@ -20,11 +20,11 @@ namespace Avalonia.Controls
         {
             get => _currentPage; private set
             {
+                var oldContent = _currentPage;
+
                 _currentPage = value;
 
-                OnPropertyChanged();
-
-                OnPropertyChanged(nameof(CanGoBack));
+                Navigated?.Invoke(this, new NavigatedEventArgs(oldContent, value));
             }
         }
 
@@ -68,11 +68,6 @@ namespace Avalonia.Controls
             CurrentPage = viewModel;
         }
 
-        public void OnPropertyChanged([CallerMemberName] string memberName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(memberName));
-        }
-
         public async Task ClearAsync()
         {
             _backStack?.Clear();
@@ -83,7 +78,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                OnPropertyChanged(nameof(CanGoBack));
+                Navigated?.Invoke(this, new NavigatedEventArgs(CurrentPage, CurrentPage));
             }
         }
 

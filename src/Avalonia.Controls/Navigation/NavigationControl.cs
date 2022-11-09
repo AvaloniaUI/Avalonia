@@ -152,16 +152,23 @@ namespace Avalonia.Controls
 
                 if(oldRouter != null)
                 {
-                    oldRouter.PropertyChanged -= NavigationRouter_PropertyChanged;
+                    oldRouter.Navigated -= NavigationRouter_Navigated;
                 }
 
                 SetAndRaise(NavigationRouterProperty, ref _navigationRouter, value);
 
                 if(value != null)
                 {
-                    value.PropertyChanged += NavigationRouter_PropertyChanged;
+                    value.Navigated += NavigationRouter_Navigated;
                 }
             }
+        }
+
+        private void NavigationRouter_Navigated(object? sender, NavigatedEventArgs e)
+        {
+            RaisePropertyChanged(CurrentPageProperty, null, CurrentPage);
+            RaisePropertyChanged(CanGoBackProperty, null, CanGoBack);
+            RaisePropertyChanged(CanGoForwardProperty, null, CanGoForward);
         }
 
         /// <summary>
@@ -221,18 +228,6 @@ namespace Avalonia.Controls
         public NavigationControl()
         {
             NavigationRouter = new NavigationRouter();
-        }
-
-        private void NavigationRouter_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            switch(e.PropertyName)
-            {
-                case nameof(NavigationRouter.CurrentPage):
-                    RaisePropertyChanged(CurrentPageProperty, null, CurrentPage);
-                    RaisePropertyChanged(CanGoBackProperty, null, CanGoBack);
-                    RaisePropertyChanged(CanGoForwardProperty, null, CanGoForward);
-                    break;
-            }
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
