@@ -210,6 +210,8 @@ namespace Avalonia.Input.UnitTests
                 new TestServices(inputManager: new InputManager()));
             var iSettingsMock = new Mock<IPlatformSettings>();
             iSettingsMock.Setup(x => x.GetDoubleTapTime(It.IsAny<PointerType>())).Returns(doubleClickTime);
+            iSettingsMock.Setup(x => x.GetDoubleTapSize(It.IsAny<PointerType>())).Returns(new Size(16, 16));
+            iSettingsMock.Setup(x => x.GetTapSize(It.IsAny<PointerType>())).Returns(new Size(16, 16));
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
             return unitTestApp;
