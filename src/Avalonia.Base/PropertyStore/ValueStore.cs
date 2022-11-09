@@ -182,8 +182,7 @@ namespace Avalonia.PropertyStore
                 }
                 else
                 {
-                    var defaultValue = property.GetDefaultValue(Owner.GetType());
-                    var effectiveValue = new EffectiveValue<T>(Owner, property, defaultValue, BindingPriority.Unset);
+                    var effectiveValue = new EffectiveValue<T>(Owner, property);
                     AddEffectiveValue(property, effectiveValue);
                     effectiveValue.SetAndRaise(this, result, priority);
                 }
@@ -199,8 +198,7 @@ namespace Avalonia.PropertyStore
                 }
                 else
                 {
-                    var defaultValue = property.GetDefaultValue(Owner.GetType());
-                    var effectiveValue = new EffectiveValue<T>(Owner, property, defaultValue, BindingPriority.Unset);
+                    var effectiveValue = new EffectiveValue<T>(Owner, property);
                     AddEffectiveValue(property, effectiveValue);
                     effectiveValue.SetLocalValueAndRaise(this, property, value);
                 }

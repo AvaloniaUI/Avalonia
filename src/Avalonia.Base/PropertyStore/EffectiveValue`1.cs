@@ -15,22 +15,19 @@ namespace Avalonia.PropertyStore
     /// </remarks>
     internal sealed class EffectiveValue<T> : EffectiveValue
     {
+        private readonly StyledPropertyMetadata<T> _metadata;
         private T? _baseValue;
         private UncommonFields? _uncommon;
 
-        public EffectiveValue(
-            AvaloniaObject owner,
-            StyledPropertyBase<T> property,
-            T value, 
-            BindingPriority priority)
+        public EffectiveValue(AvaloniaObject owner, StyledPropertyBase<T> property)
         {
-            Value = value;
-            Priority = priority;
+            Priority = BindingPriority.Unset;
             BasePriority = BindingPriority.Unset;
+            _metadata = property.GetMetadata(owner.GetType());
 
-            if (property.HasCoercion &&
-                property.GetMetadata(owner.GetType()) is { } metadata &&
-                metadata.CoerceValue is { } coerce)
+            var value = _metadata.DefaultValue;
+
+            if (property.HasCoercion && _metadata.CoerceValue is { } coerce)
             {
                 _uncommon = new()
                 {
@@ -39,7 +36,11 @@ namespace Avalonia.PropertyStore
                     _uncoercedBaseValue = value,
                 };
 
-                value = coerce(owner, value);
+                Value = coerce(owner, value);
+            }
+            else
+            {
+                Value = value;
             }
         }
 
@@ -82,8 +83,8 @@ namespace Avalonia.PropertyStore
             Debug.Assert(oldValue is not null || newValue is not null);
 
             var p = (StyledPropertyBase<T>)property;
-            var o = oldValue is not null ? ((EffectiveValue<T>)oldValue).Value : p.GetDefaultValue(owner.GetType());
-            var n = newValue is not null ? ((EffectiveValue<T>)newValue).Value : p.GetDefaultValue(owner.GetType());
+            var o = oldValue is not null ? ((EffectiveValue<T>)oldValue).Value : _metadata.DefaultValue;
+            var n = newValue is not null ? ((EffectiveValue<T>)newValue).Value : _metadata.DefaultValue;
             var priority = newValue is not null ? BindingPriority.Inherited : BindingPriority.Unset;
 
             if (!EqualityComparer<T>.Default.Equals(o, n))
@@ -131,7 +132,7 @@ namespace Avalonia.PropertyStore
             }
             else
             {
-                oldValue = property.GetDefaultValue(owner.GetType());
+                oldValue = _metadata.DefaultValue;
                 priority = BindingPriority.Unset;
             }
 
