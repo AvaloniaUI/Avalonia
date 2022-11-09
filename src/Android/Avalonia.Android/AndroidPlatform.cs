@@ -31,16 +31,6 @@ namespace Avalonia.Android
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public static AndroidPlatformOptions Options { get; private set; }
 
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
-        public Size TouchDoubleClickSize => new Size(4, 4);
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
-        public TimeSpan TouchDoubleClickTime => TimeSpan.FromMilliseconds(200);
-
-        public Size DoubleClickSize => TouchDoubleClickSize;
-
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500);
-
         internal static Compositor Compositor { get; private set; }
 
         public static void Initialize()
@@ -52,7 +42,7 @@ namespace Avalonia.Android
                 .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
-                .Bind<IPlatformSettings>().ToConstant(Instance)
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
