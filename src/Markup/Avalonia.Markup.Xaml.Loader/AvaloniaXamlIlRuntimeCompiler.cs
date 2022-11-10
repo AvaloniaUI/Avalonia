@@ -198,6 +198,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             compiler.ParseAndCompile(xaml, uri?.ToString(), null, _sreTypeSystem.CreateTypeBuilder(tb), overrideType);
             var created = tb.CreateTypeInfo();
             clrPropertyBuilder.CreateTypeInfo();
+            indexerClosureType.CreateTypeInfo();
             trampolineBuilder.CreateTypeInfo();
 
             return LoadOrPopulate(created, rootInstance);

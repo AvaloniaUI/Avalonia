@@ -216,7 +216,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
             IXamlType contextParameter)
             : base(
             original.Value,
-            new OptionsMarkupExtensionMethod(new OptionsMarkupExtensionNodesContainer(branches, defaultNode), original.Type.GetClrType(), contextParameter),
+            new OptionsMarkupExtensionMethod(new OptionsMarkupExtensionNodesContainer(branches, defaultNode), original.Value.Type.GetClrType(), contextParameter),
             original.Value)
         {
             _contextParameter = contextParameter;
