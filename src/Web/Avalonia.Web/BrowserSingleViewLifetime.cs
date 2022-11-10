@@ -47,13 +47,6 @@ public static class WebAppBuilder
         where T : AppBuilderBase<T>, new()
     {
         return builder
-            .AfterSetup(_ =>
-            {
-                var standardPlatform = new BrowserRuntimePlatform();
-
-                AvaloniaLocator.CurrentMutable
-                    .Bind<IRuntimePlatform>().ToConstant(standardPlatform);                
-            })
             .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
             .UseSkia()
             .With(new SkiaOptions { CustomGpuFactory = () => new BrowserSkiaGpu() });
