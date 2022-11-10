@@ -24,7 +24,7 @@ namespace ControlCatalog.ViewModels
         private bool _preferSystemChromeEnabled;
         private double _titleBarHeight;
 
-        public MainWindowViewModel(IManagedNotificationManager notificationManager)
+        public MainWindowViewModel()
         {
             AboutCommand = MiniCommand.CreateFromTask(async () =>
             {

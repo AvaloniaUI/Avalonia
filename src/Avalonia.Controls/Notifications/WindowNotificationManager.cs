@@ -54,19 +54,11 @@ namespace Avalonia.Controls.Notifications
         /// Initializes a new instance of the <see cref="WindowNotificationManager"/> class.
         /// </summary>
         /// <param name="host">The window that will host the control.</param>
-        public WindowNotificationManager(TopLevel host)
+        public WindowNotificationManager(TopLevel? host)
         {
-            if (VisualChildren.Count != 0)
+            if (host != null)
             {
                 Install(host);
-            }
-            else
-            {
-                Observable.FromEventPattern<TemplateAppliedEventArgs>(host, nameof(host.TemplateApplied)).Take(1)
-                    .Subscribe(_ =>
-                    {
-                        Install(host);
-                    });
             }
 
             UpdatePseudoClasses(Position);

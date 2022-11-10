@@ -96,7 +96,6 @@ namespace Avalonia.Controls
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
-        private WindowNotificationManager? _notificationManager;
         
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -329,18 +328,6 @@ namespace Avalonia.Controls
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
-
-        public WindowNotificationManager NotificationManager
-        {
-            get
-            {
-                if(_notificationManager == null)
-                {
-                    _notificationManager = new WindowNotificationManager(this);
-                }
-                return _notificationManager;
-            }
-        }
 
         /// <inheritdoc/>
         protected virtual IRenderTarget CreateRenderTarget()
