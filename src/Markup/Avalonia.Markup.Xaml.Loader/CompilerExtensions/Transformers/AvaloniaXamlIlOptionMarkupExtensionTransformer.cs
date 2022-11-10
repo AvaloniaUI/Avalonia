@@ -55,7 +55,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
 
                 var shouldRemoveProp = false;
                 var onObjs = extProp.Values.OfType<XamlAstObjectNode>()
-                    .Where(o => o.Type.GetClrType().GetFqn() == AvaloniaXamlIlWellKnownTypes.OnFqn).ToArray();
+                    .Where(o => o.Type.GetClrType() == context.GetAvaloniaTypes().OnExtensionType).ToArray();
                 if (onObjs.Any())
                 {
                     shouldRemoveProp = true;
@@ -284,7 +284,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
             var types = Branches.Select(b => b.Value.Type);
             if (DefaultNode?.Type is { } type)
             {
-                types = types.Append(type);
+                types = types.Concat(new [] { type });
             }
             return types.Select(t => t.GetClrType()).ToArray().GetCommonBaseClass();
         }

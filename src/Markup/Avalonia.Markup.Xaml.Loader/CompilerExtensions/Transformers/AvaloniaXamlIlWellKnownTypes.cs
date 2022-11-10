@@ -9,8 +9,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     class AvaloniaXamlIlWellKnownTypes
     {
-        public const string OnFqn = "Avalonia.Markup.Xaml:Avalonia.Markup.Xaml.MarkupExtensions.On";
-        
         public IXamlType RuntimeHelpers { get; }
         public IXamlType AvaloniaObject { get; }
         public IXamlType IAvaloniaObject { get; }
@@ -34,6 +32,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType DataTypeAttribute { get; }
         public IXamlType MarkupExtensionOptionAttribute { get; }
         public IXamlType MarkupExtensionDefaultOptionAttribute { get; }
+        public IXamlType OnExtensionType { get; }
         public IXamlType UnsetValueType { get; }
         public IXamlType StyledElement { get; }
         public IXamlType IStyledElement { get; }
@@ -134,6 +133,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             DataTypeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DataTypeAttribute");
             MarkupExtensionOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionOptionAttribute");
             MarkupExtensionDefaultOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionDefaultOptionAttribute");
+            OnExtensionType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.On");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, IAvaloniaObject,
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
