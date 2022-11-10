@@ -13,8 +13,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 
 internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransformer
 {
-    private const string OnFqn = "Avalonia.Markup.Xaml:Avalonia.Markup.Xaml.MarkupExtensions.On";
-
     public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
     {
         if (node is XamlMarkupExtensionNode
@@ -57,7 +55,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
 
                 var shouldRemoveProp = false;
                 var onObjs = extProp.Values.OfType<XamlAstObjectNode>()
-                    .Where(o => o.Type.GetClrType().GetFqn() == OnFqn).ToArray();
+                    .Where(o => o.Type.GetClrType().GetFqn() == AvaloniaXamlIlWellKnownTypes.OnFqn).ToArray();
                 if (onObjs.Any())
                 {
                     shouldRemoveProp = true;

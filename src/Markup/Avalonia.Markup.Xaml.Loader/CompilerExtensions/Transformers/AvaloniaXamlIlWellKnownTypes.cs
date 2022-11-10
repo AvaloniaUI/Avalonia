@@ -9,6 +9,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     class AvaloniaXamlIlWellKnownTypes
     {
+        public const string OnFqn = "Avalonia.Markup.Xaml:Avalonia.Markup.Xaml.MarkupExtensions.On";
+        
         public IXamlType RuntimeHelpers { get; }
         public IXamlType AvaloniaObject { get; }
         public IXamlType IAvaloniaObject { get; }
