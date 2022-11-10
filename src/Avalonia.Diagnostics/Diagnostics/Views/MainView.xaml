@@ -53,10 +53,10 @@
                         IsEnabled="False" />
             </MenuItem.Icon>
           </MenuItem>
-          <MenuItem Header="Split Property Type" Command="{Binding ToggleShowDettailsPropertyType}">
+          <MenuItem Header="Split Property Type" Command="{Binding ToggleShowDetailsPropertyType}">
             <MenuItem.Icon>
               <CheckBox BorderThickness="0"
-                        IsChecked="{Binding ShowDettailsPropertyType}"
+                        IsChecked="{Binding ShowDetailsPropertyType}"
                         IsEnabled="False"/>
             </MenuItem.Icon>
 
