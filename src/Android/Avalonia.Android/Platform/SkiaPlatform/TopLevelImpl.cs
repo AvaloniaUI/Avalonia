@@ -26,11 +26,13 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
 using Math = System.Math;
+using SoundEffects = Android.Views.SoundEffects;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
     class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+        ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
+        ITopLevelImplWithSoundEffects
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
@@ -278,6 +280,21 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
             throw new NotImplementedException();
+        }
+
+        public void Play(Controls.Platform.SoundEffects soundEffects)
+        {
+            if(_view != null)
+            {
+                var activity = _view.Context as Activity;
+
+                switch (soundEffects)
+                {
+                    case Controls.Platform.SoundEffects.Click:
+                        activity?.Window?.DecorView?.PlaySoundEffect(SoundEffects.Click);
+                        break;
+                }
+            }
         }
     }
 

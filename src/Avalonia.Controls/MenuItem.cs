@@ -167,6 +167,8 @@ namespace Avalonia.Controls
                 });
 
             this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
+
+            IsClickable = true;
         }
 
         /// <summary>

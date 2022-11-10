@@ -37,6 +37,14 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="TabItem"/> class.
+        /// </summary>
+        public TabItem()
+        {
+            IsClickable = true;
+        }
+
+        /// <summary>
         /// Gets the tab strip placement.
         /// </summary>
         /// <value>

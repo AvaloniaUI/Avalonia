@@ -53,6 +53,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<Control, FlyoutBase?>(nameof(ContextFlyout));
 
         /// <summary>
+        /// Defines the <see cref="IsClickable"/> property
+        /// </summary>
+        public static readonly StyledProperty<bool?> IsClickableProperty =
+            AvaloniaProperty.Register<Control, bool?>(nameof(IsClickable));
+
+        /// <summary>
         /// Event raised when an element wishes to be scrolled into view.
         /// </summary>
         public static readonly RoutedEvent<RequestBringIntoViewEventArgs> RequestBringIntoViewEvent =
@@ -151,6 +157,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(ContextFlyoutProperty);
             set => SetValue(ContextFlyoutProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value representing whether the control is clickable.
+        /// </summary>
+        public bool? IsClickable
+        {
+            get => GetValue(IsClickableProperty);
+            set => SetValue(IsClickableProperty, value);
         }
 
         /// <summary>
@@ -499,6 +514,14 @@ namespace Avalonia.Controls
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             base.OnPointerReleased(e);
+            
+            if(!e.Handled)
+            {
+                if (IsClickable != null && IsClickable.Value)
+                {
+                    this.PlayClickSound();
+                }
+            }
 
             if (e.Source == this
                 && !e.Handled

@@ -112,6 +112,7 @@ namespace Avalonia.Controls
         /// </summary>
         public Button()
         {
+            IsClickable = true;
         }
 
         /// <summary>

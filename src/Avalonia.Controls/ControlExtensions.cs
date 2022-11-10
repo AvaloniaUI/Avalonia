@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia.Controls.Platform;
 using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
@@ -101,6 +102,17 @@ namespace Avalonia.Controls
             _ = classes ?? throw new ArgumentNullException(nameof(classes));
 
             return trigger.Subscribe(x => classes.Set(name, x));
+        }
+
+        internal static void PlayClickSound(this IControl control)
+        {
+            if(control != null)
+            {
+                if((control.VisualRoot as TopLevel)?.PlatformImpl is ITopLevelImplWithSoundEffects effects)
+                {
+                    effects?.Play(SoundEffects.Click);
+                }
+            }
         }
     }
 }
