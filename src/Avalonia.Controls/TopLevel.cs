@@ -145,7 +145,6 @@ namespace Avalonia.Controls
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
 
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
-            var styler = TryGetService<IStyler>(dependencyResolver);
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
@@ -183,7 +182,7 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
             }
 
-            styler?.ApplyStyles(this);
+            ApplyStyling();
 
             ClientSize = impl.ClientSize;
             FrameSize = impl.FrameSize;
