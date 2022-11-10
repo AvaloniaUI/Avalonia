@@ -96,7 +96,7 @@ namespace Avalonia.Controls
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
-        private WindowNotificationManager _notificationManager;
+        private WindowNotificationManager? _notificationManager;
         
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -153,7 +153,6 @@ namespace Avalonia.Controls
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
-            _notificationManager = new WindowNotificationManager(this);
 
             Renderer = impl.CreateRenderer(this);
 
@@ -331,7 +330,17 @@ namespace Avalonia.Controls
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
-        public WindowNotificationManager NotificationManager => _notificationManager;
+        public WindowNotificationManager NotificationManager
+        {
+            get
+            {
+                if(_notificationManager == null)
+                {
+                    _notificationManager = new WindowNotificationManager(this);
+                }
+                return _notificationManager;
+            }
+        }
 
         /// <inheritdoc/>
         protected virtual IRenderTarget CreateRenderTarget()
