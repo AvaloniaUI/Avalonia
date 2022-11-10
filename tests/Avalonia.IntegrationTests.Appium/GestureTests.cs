@@ -82,7 +82,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(_session).ClickAndHold(border).Release().Perform();
 
-            Thread.Sleep(100);
+            Thread.Sleep(50);
 
             // DoubleTapped is raised on second pointer press, not release.
             new Actions(_session).ClickAndHold(border).Perform();
@@ -93,7 +93,8 @@ namespace Avalonia.IntegrationTests.Appium
             }
             finally
             {
-                new Actions(_session).Release(border).Perform();
+                
+                new Actions(_session).MoveToElement(lastGesture).Release().Perform();
             }
         }
 
@@ -118,12 +119,15 @@ namespace Avalonia.IntegrationTests.Appium
             // #8733
             var border = _session.FindElementByAccessibilityId("GestureBorder");
             var lastGesture = _session.FindElementByAccessibilityId("LastGesture");
-
+            
             new Actions(_session)
                 .MoveToElement(border)
                 .DoubleClick()
-                .DoubleClick()
                 .Perform();
+            
+            Thread.Sleep(100);
+            
+            new Actions(_session).MoveToElement(lastGesture, 200, 200).DoubleClick().Perform();
 
             Assert.Equal("DoubleTapped2", lastGesture.Text);
         }
@@ -147,9 +151,9 @@ namespace Avalonia.IntegrationTests.Appium
             var device = new PointerInputDevice(PointerKind.Mouse);
             var b = new ActionBuilder();
 
-            b.AddAction(device.CreatePointerMove(border, 50, 50, TimeSpan.FromMilliseconds(100)));
+            b.AddAction(device.CreatePointerMove(border, 50, 50, TimeSpan.FromMilliseconds(50)));
             b.AddAction(device.CreatePointerDown(MouseButton.Right));
-            b.AddAction(device.CreatePointerMove(border, 2, 2, TimeSpan.FromMilliseconds(100)));
+            b.AddAction(device.CreatePointerMove(border, 52, 52, TimeSpan.FromMilliseconds(50)));
             b.AddAction(device.CreatePointerUp(MouseButton.Right));
             _session.PerformActions(b.ToActionSequenceList());
 
