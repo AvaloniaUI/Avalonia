@@ -82,7 +82,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             new Actions(_session).ClickAndHold(border).Release().Perform();
 
-            Thread.Sleep(100);
+            Thread.Sleep(50);
 
             // DoubleTapped is raised on second pointer press, not release.
             new Actions(_session).ClickAndHold(border).Perform();
@@ -93,7 +93,8 @@ namespace Avalonia.IntegrationTests.Appium
             }
             finally
             {
-                new Actions(_session).Release(border).Perform();
+                
+                new Actions(_session).MoveToElement(lastGesture).Release().Perform();
             }
         }
 
