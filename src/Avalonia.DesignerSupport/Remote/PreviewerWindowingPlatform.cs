@@ -9,7 +9,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.DesignerSupport.Remote
 {
-    class PreviewerWindowingPlatform : IWindowingPlatform, IPlatformSettings
+    class PreviewerWindowingPlatform : IWindowingPlatform
     {
         static readonly IKeyboardDevice Keyboard = new KeyboardDevice();
         private static IAvaloniaRemoteTransportConnection s_transport;
@@ -51,7 +51,7 @@ namespace Avalonia.DesignerSupport.Remote
                 .Bind<IClipboard>().ToSingleton<ClipboardStub>()
                 .Bind<ICursorFactory>().ToSingleton<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(Keyboard)
-                .Bind<IPlatformSettings>().ToConstant(instance)
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(threading)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
@@ -60,12 +60,5 @@ namespace Avalonia.DesignerSupport.Remote
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
 
         }
-
-        public Size DoubleClickSize { get; } = new Size(2, 2);
-        public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
-
-        public Size TouchDoubleClickSize => new Size(16, 16);
-
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
     }
 }
