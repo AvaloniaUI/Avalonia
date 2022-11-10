@@ -69,6 +69,23 @@
         </StackPanel>
       </TabItem>
 
+      <TabItem Header="Gestures">
+        <DockPanel>
+          <DockPanel DockPanel.Dock="Top">
+            <Button Name="ResetGestures" DockPanel.Dock="Right">Reset</Button>
+            <TextBlock Name="LastGesture" />
+          </DockPanel>
+          <Panel>
+            <Border Name="GestureBorder" Background="Blue"
+                    AutomationProperties.AccessibilityView="Content"
+                    AutomationProperties.ControlTypeOverride="Image"/>
+            <Border Name="GestureBorder2" Background="Green" IsVisible="False"
+                    AutomationProperties.AccessibilityView="Content"
+                    AutomationProperties.ControlTypeOverride="Image"/>
+          </Panel>
+        </DockPanel>
+      </TabItem>
+
       <TabItem Header="ListBox">
         <DockPanel>
           <StackPanel DockPanel.Dock="Bottom">
