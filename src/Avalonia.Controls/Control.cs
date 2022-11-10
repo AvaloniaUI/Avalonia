@@ -85,6 +85,13 @@ namespace Avalonia.Controls
                 RoutingStrategies.Direct);
 
         /// <summary>
+        /// Defines the <see cref="SizeChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<SizeChangedEventArgs> SizeChangedEvent =
+            RoutedEvent.Register<Control, SizeChangedEventArgs>(
+                nameof(SizeChanged), RoutingStrategies.Direct);
+
+        /// <summary>
         /// Defines the <see cref="FlowDirection"/> property.
         /// </summary>
         public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
@@ -209,6 +216,15 @@ namespace Avalonia.Controls
         {
             add => AddHandler(UnloadedEvent, value);
             remove => RemoveHandler(UnloadedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs when the bounds (actual size) of the control have changed.
+        /// </summary>
+        public event EventHandler<SizeChangedEventArgs>? SizeChanged
+        {
+            add => AddHandler(SizeChangedEvent, value);
+            remove => RemoveHandler(SizeChangedEvent, value);
         }
 
         public new IControl? Parent => (IControl?)base.Parent;
@@ -530,14 +546,35 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
-            if (change.Property == FlowDirectionProperty)
+            if (change.Property == BoundsProperty)
+            {
+                var oldValue = change.GetOldValue<Rect>();
+                var newValue = change.GetNewValue<Rect>();
+
+                // Bounds is a Rect with an X/Y Position as well as Height/Width.
+                // This means it is possible for the Rect to change position but not size.
+                // Therefore, we want to explicity check only the size and raise an event
+                // only when that size has changed.
+                if (newValue.Size != oldValue.Size)
+                {
+                    var sizeChangedEventArgs = new SizeChangedEventArgs(
+                        SizeChangedEvent,
+                        source: this,
+                        previousSize: new Size(oldValue.Width, oldValue.Height),
+                        newSize: new Size(newValue.Width, newValue.Height));
+
+                    RaiseEvent(sizeChangedEventArgs);
+                }
+            }
+            else if (change.Property == FlowDirectionProperty)
             {
                 InvalidateMirrorTransform();
-                
+
                 foreach (var visual in VisualChildren)
                 {
                     if (visual is Control child)

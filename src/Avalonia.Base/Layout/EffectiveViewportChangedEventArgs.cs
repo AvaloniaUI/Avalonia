@@ -7,7 +7,7 @@ namespace Avalonia.Layout
     /// </summary>
     public class EffectiveViewportChangedEventArgs : EventArgs
     {
-        public EffectiveViewportChangedEventArgs(Rect effectiveViewport)
+        internal EffectiveViewportChangedEventArgs(Rect effectiveViewport)
         {
             EffectiveViewport = effectiveViewport;
         }

@@ -12,13 +12,15 @@ namespace Avalonia.Media.TextFormatting
             double fontRenderingEmSize = 12, 
             sbyte bidiLevel = 0, 
             CultureInfo? culture = null, 
-            double incrementalTabWidth = 0)
+            double incrementalTabWidth = 0,
+            double letterSpacing = 0)
         {
             Typeface = typeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
             Culture = culture;
             IncrementalTabWidth = incrementalTabWidth;
+            LetterSpacing = letterSpacing;
         }
 
         /// <summary>
@@ -44,6 +46,11 @@ namespace Avalonia.Media.TextFormatting
         /// Get the incremental tab width.
         /// </summary>
         public double IncrementalTabWidth { get; }
+
+        /// <summary>
+        /// Get the letter spacing.
+        /// </summary>
+        public double LetterSpacing { get; }
 
     }
 }

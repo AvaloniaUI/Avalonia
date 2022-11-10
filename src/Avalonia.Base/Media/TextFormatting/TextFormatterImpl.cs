@@ -249,7 +249,8 @@ namespace Avalonia.Media.TextFormatting
 
                             var shaperOptions = new TextShaperOptions(currentRun.Properties!.Typeface.GlyphTypeface,
                                         currentRun.Properties.FontRenderingEmSize,
-                                         shapeableRun.BidiLevel, currentRun.Properties.CultureInfo, paragraphProperties.DefaultIncrementalTab);
+                                         shapeableRun.BidiLevel, currentRun.Properties.CultureInfo, 
+                                         paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
                             drawableTextRuns.AddRange(ShapeTogether(groupedRuns, text, shaperOptions));
 
@@ -505,7 +506,7 @@ namespace Avalonia.Media.TextFormatting
 
                     case { } drawableTextRun:
                         {
-                            if (currentWidth + drawableTextRun.Size.Width > paragraphWidth)
+                            if (currentWidth + drawableTextRun.Size.Width >= paragraphWidth)
                             {
                                 goto found;
                             }
@@ -668,7 +669,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (!breakFound)
                 {
-                    currentLength += currentRun.Text.Length;
+                    currentLength += currentRun.TextSourceLength;
 
                     continue;
                 }

@@ -149,14 +149,14 @@
                                    CaretBrush="{TemplateBinding CaretBrush}"
                                    CaretIndex="{TemplateBinding CaretIndex}"
                                    LineHeight="{TemplateBinding LineHeight}"
+                                   LetterSpacing="{TemplateBinding LetterSpacing}"
                                    PasswordChar="{TemplateBinding PasswordChar}"
                                    RevealPassword="{TemplateBinding RevealPassword}"
                                    SelectionBrush="{TemplateBinding SelectionBrush}"
                                    SelectionEnd="{TemplateBinding SelectionEnd}"
                                    SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
                                    SelectionStart="{TemplateBinding SelectionStart}"
-                                   Text="{TemplateBinding Text,
-                                                          Mode=TwoWay}"
+                                   Text="{TemplateBinding Text,Mode=TwoWay}"
                                    TextAlignment="{TemplateBinding TextAlignment}"
                                    TextWrapping="{TemplateBinding TextWrapping}" />
                   </Panel>
@@ -192,7 +192,8 @@
         <Template>
           <Button Command="{Binding $parent[TextBox].Clear}"
                   Focusable="False"
-                  Theme="{StaticResource SimpleTextBoxClearButtonTheme}" />
+                  Theme="{StaticResource SimpleTextBoxClearButtonTheme}" 
+                  ClipToBounds="True" />
         </Template>
       </Setter>
     </Style>
@@ -212,7 +213,8 @@
             <ToggleButton Background="Transparent"
                           Focusable="False"
                           IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}"
-                          Theme="{StaticResource SimplePasswordBoxRevealButtonTheme}" />
+                          Theme="{StaticResource SimplePasswordBoxRevealButtonTheme}"
+                          ClipToBounds="True" />
           </Panel>
         </Template>
       </Setter>

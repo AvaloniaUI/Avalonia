@@ -117,12 +117,12 @@ namespace Avalonia.Layout
             double extraMinorPixelsForEachItem = 0.0;
             if (!double.IsInfinity(availableSizeMinor))
             {
-                var numItemsPerColumn = Math.Min(
+                var numItemsPerColumn = (int)Math.Min(
                     maxItemsPerLine,
                     Math.Max(1.0, availableSizeMinor / (itemSizeMinor + minorItemSpacing)));
                 var usedSpace = (numItemsPerColumn * (itemSizeMinor + minorItemSpacing)) - minorItemSpacing;
-                var remainingSpace = ((int)(availableSizeMinor - usedSpace));
-                extraMinorPixelsForEachItem = remainingSpace / ((int)numItemsPerColumn);
+                var remainingSpace = availableSizeMinor - usedSpace;
+                extraMinorPixelsForEachItem = (int)(remainingSpace / numItemsPerColumn);
             }
 
             if (stretch == UniformGridLayoutItemsStretch.Fill)

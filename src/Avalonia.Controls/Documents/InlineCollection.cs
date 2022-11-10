@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Documents
     [WhitespaceSignificantCollection]
     public class InlineCollection : AvaloniaList<Inline>
     {
-        private ILogical? _parent;
+        private IAvaloniaList<ILogical>? _logicalChildren;
         private IInlineHost? _inlineHost;
 
         /// <summary>
@@ -24,28 +24,30 @@ namespace Avalonia.Controls.Documents
 
             this.ForEachItem(
                 x =>
-                {
-                    ((ISetLogicalParent)x).SetParent(Parent);
+                {                   
                     x.InlineHost = InlineHost;
+                    LogicalChildren?.Add(x);
                     Invalidate();
                 },
                 x =>
                 {
-                    ((ISetLogicalParent)x).SetParent(null);
+                    LogicalChildren?.Remove(x);
                     x.InlineHost = InlineHost;
                     Invalidate();
                 },
                 () => throw new NotSupportedException());
         }
 
-        internal ILogical? Parent
+        internal IAvaloniaList<ILogical>? LogicalChildren
         {
-            get => _parent;
+            get => _logicalChildren;
             set
             {
-                _parent = value;
+                var oldValue = _logicalChildren;
 
-                OnParentChanged(value);
+                _logicalChildren = value;
+
+                OnParentChanged(oldValue, value);
             }
         }
 
@@ -70,6 +72,11 @@ namespace Avalonia.Controls.Documents
         {
             get
             {
+                if (Count == 0)
+                {
+                    return null;
+                }
+
                 var builder = StringBuilderCache.Acquire();
 
                 foreach (var inline in this)
@@ -82,56 +89,45 @@ namespace Avalonia.Controls.Documents
 
         }
 
+        public override void Add(Inline inline)
+        {
+            if (InlineHost is TextBlock textBlock && !string.IsNullOrEmpty(textBlock._text))
+            {          
+                base.Add(new Run(textBlock._text));
+
+                textBlock._text = null;                
+            }
+
+            base.Add(inline);
+        }
+
         /// <summary>
-        /// Add a text segment to the collection.
+        /// Adds a text segment to the collection.
         /// <remarks>
         /// For non complex content this appends the text to the end of currently held text.
         /// For complex content this adds a <see cref="Run"/> to the collection.
         /// </remarks>
         /// </summary>
-        /// <param name="text"></param>
+        /// <param name="text">The to be added text.</param>
         public void Add(string text)
         {
-            AddText(text);
-        }
-
-        public override void Add(Inline inline)
-        {
-            OnAdd();
-
-            base.Add(inline);
-        }
-
-        public void Add(IControl child)
-        {
-            OnAdd();
-
-            base.Add(new InlineUIContainer(child));
-        }
-
-        private void AddText(string text)
-        {
-            if (Parent is RichTextBlock textBlock && !textBlock.HasComplexContent)
+            if (InlineHost is TextBlock textBlock && !textBlock.HasComplexContent)
             {
                 textBlock._text += text;
             }
             else
             {
-                base.Add(new Run(text));
+                Add(new Run(text));
             }
         }
 
-        private void OnAdd()
+        /// <summary>
+        /// Adds a control wrapped inside a <see cref="InlineUIContainer"/> to the collection.
+        /// </summary>
+        /// <param name="control">The to be added control.</param>
+        public void Add(IControl control)
         {
-            if (Parent is RichTextBlock textBlock)
-            {
-                if (!textBlock.HasComplexContent && !string.IsNullOrEmpty(textBlock._text))
-                {
-                    base.Add(new Run(textBlock._text));
-
-                    textBlock._text = null;
-                }
-            }
+            Add(new InlineUIContainer(control));
         }
 
         /// <summary>
@@ -152,20 +148,21 @@ namespace Avalonia.Controls.Documents
             Invalidated?.Invoke(this, EventArgs.Empty);
         }
 
-        private void OnParentChanged(ILogical? parent)
+        private void OnParentChanged(IAvaloniaList<ILogical>? oldParent, IAvaloniaList<ILogical>? newParent)
         {
             foreach (var child in this)
             {
-                var oldParent = child.Parent;
-
-                if (oldParent != parent)
+                if (oldParent != newParent)
                 {
                     if (oldParent != null)
                     {
-                        ((ISetLogicalParent)child).SetParent(null);
+                        oldParent.Remove(child);
                     }
 
-                    ((ISetLogicalParent)child).SetParent(parent);
+                    if(newParent != null)
+                    {
+                        newParent.Add(child);
+                    }
                 }
             }
         }
