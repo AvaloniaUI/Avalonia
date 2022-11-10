@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Input;
+﻿using Avalonia.Input;
 
 namespace Avalonia.Diagnostics
 {
