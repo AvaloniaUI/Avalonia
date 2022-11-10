@@ -50,7 +50,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact]
+        [Win32Fact("For consistent results")]
         public async Task Should_Render_GlyphRun_UnPositioned()
         {
             var control = new UnPositionedGlyphRunControl
@@ -80,7 +80,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             CompareImages();
         }
 
-        [Fact]
+        [Win32Fact("For consistent results")]
         public async Task Should_Render_GlyphRun_Positioned()
         {
             var control = new PositionedGlyphRunControl
