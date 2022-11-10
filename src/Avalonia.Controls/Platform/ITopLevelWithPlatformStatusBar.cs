@@ -2,6 +2,7 @@
 
 namespace Avalonia.Controls.Platform
 {
+    [Avalonia.Metadata.Unstable]
     public interface ITopLevelWithPlatformStatusBar
     {
         StatusBarTheme? StatusBarTheme { get; set; }
