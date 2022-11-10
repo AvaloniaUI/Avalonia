@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -42,9 +43,8 @@ namespace Avalonia.Input
             RoutedEvent.Register<PointerDeltaEventArgs>(
                 "PointerSwipeGesture", RoutingStrategies.Bubble, typeof(Gestures));
 
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        private static readonly WeakReference<IInteractive> s_lastPress = new WeakReference<IInteractive>(null);
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+        private static readonly WeakReference<IInteractive?> s_lastPress = new WeakReference<IInteractive?>(null);
+        private static Point s_lastPressPoint;
 
         static Gestures()
         {
@@ -94,10 +94,11 @@ namespace Avalonia.Input
                 var e = (PointerPressedEventArgs)ev;
                 var visual = (IVisual)ev.Source;
 
-                if (e.ClickCount <= 1)
+                if (e.ClickCount % 2 == 1)
                 {
                     s_isDoubleTapped = false;
                     s_lastPress.SetTarget(ev.Source);
+                    s_lastPressPoint = e.GetPosition((IVisual)ev.Source);
                 }
                 else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
@@ -106,10 +107,6 @@ namespace Avalonia.Input
                         s_isDoubleTapped = true;
                         e.Source.RaiseEvent(new TappedEventArgs(DoubleTappedEvent, e));
                     }
-                }
-                else
-                {
-                    s_isDoubleTapped = false;
                 }
             }
         }
@@ -120,9 +117,17 @@ namespace Avalonia.Input
             {
                 var e = (PointerReleasedEventArgs)ev;
 
-                if (s_lastPress.TryGetTarget(out var target) && target == e.Source)
+                if (s_lastPress.TryGetTarget(out var target) && 
+                    target == e.Source &&
+                    e.InitialPressMouseButton is MouseButton.Left or MouseButton.Right)
                 {
-                    if (e.InitialPressMouseButton == MouseButton.Left || e.InitialPressMouseButton == MouseButton.Right)
+                    var point = e.GetCurrentPoint((IVisual)target);
+                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                    var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
+                    var tapRect = new Rect(s_lastPressPoint, new Size())
+                        .Inflate(new Thickness(tapSize.Width, tapSize.Height));
+
+                    if (tapRect.ContainsExclusive(point.Position))
                     {
                         if (e.InitialPressMouseButton == MouseButton.Right)
                         {

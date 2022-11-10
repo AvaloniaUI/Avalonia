@@ -63,7 +63,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
             {
                 var rawTextEvent = new RawTextInputEventArgs(
                   AndroidKeyboardDevice.Instance,
-                  Convert.ToUInt32(e.EventTime),
+                  Convert.ToUInt64(e.EventTime),
                   _view.InputRoot,
                   unicodeTextInput ?? Convert.ToChar(e.UnicodeChar).ToString()
                   );

@@ -8,7 +8,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Web
 {
-    internal class BrowserWindowingPlatform : IWindowingPlatform, IPlatformSettings, IPlatformThreadingInterface
+    internal class BrowserWindowingPlatform : IWindowingPlatform, IPlatformThreadingInterface
     {
         private bool _signaled;
         private static KeyboardDevice? s_keyboard;
@@ -36,7 +36,7 @@ namespace Avalonia.Web
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
-                .Bind<IPlatformSettings>().ToConstant(instance)
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(ManualTriggerRenderTimer.Instance)
@@ -45,13 +45,6 @@ namespace Avalonia.Web
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
         }
 
-        public Size DoubleClickSize { get; } = new Size(2, 2);
-
-        public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
-
-        public Size TouchDoubleClickSize => new Size(16, 16);
-
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public void RunLoop(CancellationToken cancellationToken)
         {
             throw new NotSupportedException();
