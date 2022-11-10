@@ -10,6 +10,11 @@ namespace Avalonia.Automation
     public enum AccessibilityView
     {
         /// <summary>
+        /// The control's view is defined by its automation peer.
+        /// </summary>
+        Default,
+
+        /// <summary>
         /// The control is included in the Raw view of the automation tree.
         /// </summary>
         Raw,
@@ -44,8 +49,7 @@ namespace Avalonia.Automation
         public static readonly AttachedProperty<AccessibilityView> AccessibilityViewProperty =
             AvaloniaProperty.RegisterAttached<StyledElement, AccessibilityView>(
                 "AccessibilityView",
-                typeof(AutomationProperties),
-                defaultValue: AccessibilityView.Content);
+                typeof(AutomationProperties));
 
         /// <summary>
         /// Defines the AutomationProperties.AccessKey attached property
