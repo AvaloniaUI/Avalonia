@@ -51,7 +51,7 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<ICursorFactory>().ToTransient<CursorFactoryStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
-                .Bind<IPlatformSettings>().ToSingleton<PlatformSettings>()
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
             
             Compositor = new Compositor(
