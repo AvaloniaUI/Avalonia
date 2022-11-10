@@ -182,8 +182,6 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
             }
 
-            ApplyStyling();
-
             ClientSize = impl.ClientSize;
             FrameSize = impl.FrameSize;
             
