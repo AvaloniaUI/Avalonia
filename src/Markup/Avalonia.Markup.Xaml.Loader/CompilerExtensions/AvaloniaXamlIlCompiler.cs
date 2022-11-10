@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
 
             // Before everything else
-            
+
             Transformers.Insert(0, new XNameTransformer());
             Transformers.Insert(1, new IgnoredDirectivesTransformer());
             Transformers.Insert(2, _designTransformer = new AvaloniaXamlIlDesignPropertiesTransformer());
@@ -49,7 +49,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             InsertBefore<ContentConvertTransformer>(
                 new AvaloniaXamlIlControlThemeTransformer(),
                 new AvaloniaXamlIlSelectorTransformer(),
-                new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),                 
+                new AvaloniaXamlIlControlTemplateTargetTypeMetadataTransformer(),
                 new AvaloniaXamlIlBindingPathParser(),
                 new AvaloniaXamlIlPropertyPathTransformer(),
                 new AvaloniaXamlIlSetterTargetTypeMetadataTransformer(),

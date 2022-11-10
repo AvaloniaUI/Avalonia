@@ -270,6 +270,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            if (type.Equals(types.Uri))
+            {
+                var uriText = text.Trim();
+
+                var kind = ((!uriText?.StartsWith("/") == true) ? UriKind.Absolute : UriKind.Relative);
+
+                if (string.IsNullOrWhiteSpace(uriText) || !Uri.TryCreate(uriText, kind, out var _))
+                {
+                        throw new XamlX.XamlLoadException($"Unable to parse text {uriText} as a {kind} uri.", node);
+                }
+                result = new XamlAstNewClrObjectNode(node
+                    , new(node, types.Uri, false)
+                    , types.UriConstructor
+                    , new List<IXamlAstValueNode>()
+                    {
+                        new XamlConstantNode(node, types.String, uriText),
+                        new XamlConstantNode(node, types.UriKind, (int)kind),
+                    });
+                return true;
+            }
+
             result = null;
             return false;
         }

@@ -101,6 +101,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IResourceDictionary { get; }
         public IXamlType ResourceDictionary { get; }
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
+        public IXamlType String { get; }
+        public IXamlType UriKind { get; }
+        public IXamlConstructor UriConstructor { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -227,6 +230,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
                     cfg.TypeSystem.GetType("System.IServiceProvider"),
                     XamlIlTypes.Object));
+            String = cfg.TypeSystem.GetType("System.String");
+            UriKind = cfg.TypeSystem.GetType("System.UriKind");
+            UriConstructor = Uri.GetConstructor(new List<IXamlType>() { String, UriKind });
         }
     }
 
