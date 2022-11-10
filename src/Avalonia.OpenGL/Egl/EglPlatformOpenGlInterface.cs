@@ -50,6 +50,8 @@ namespace Avalonia.OpenGL.Egl
         {
             using (PrimaryContext.MakeCurrent())
             {
+                if(window == IntPtr.Zero)
+                    throw new OpenGlException($"Window {window} is invalid.");
                 var s = Display.EglInterface.CreateWindowSurface(Display.Handle, Display.Config, window,
                     new[] { EGL_NONE, EGL_NONE });
                 if (s == IntPtr.Zero)
