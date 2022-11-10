@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reactive.Disposables;
+using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
@@ -185,7 +186,7 @@ public class OptionsMarkupExtensionTests : XamlTestBase
         Assert.Equal(new Thickness(10, 8, 10, 8), border.Padding);
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Windows | TestPlatforms.Linux, "TypeArguments test is failing on macOS from SRE emit")]
     public void Respect_Custom_TypeArgument()
     {
         using var _ = SetupTestGlobals("option 1");
@@ -261,7 +262,7 @@ public class OptionsMarkupExtensionTests : XamlTestBase
         Assert.Equal(Color.Parse("#ff506070"), ((ISolidColorBrush)border.Background!).Color);
     }
 
-    [Fact]
+    [PlatformFact(TestPlatforms.Windows | TestPlatforms.Linux, "TypeArguments test is failing on macOS from SRE emit")]
     public void Support_Xml_Syntax_With_Custom_TypeArguments()
     {
         using var _ = SetupTestGlobals("option 1");
