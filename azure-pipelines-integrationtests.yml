@@ -18,9 +18,9 @@ jobs:
       version: 6.0.401
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.100-rc.2.22477.23'
+    displayName: 'Use .NET Core SDK 7.0.100'
     inputs:
-      version: 7.0.100-rc.2.22477.23
+      version: 7.0.100
       
   - script: system_profiler SPDisplaysDataType |grep Resolution
   
@@ -32,7 +32,7 @@ jobs:
       rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
       pkill IntegrationTestApp
       ./samples/IntegrationTestApp/bundle.sh
-      open -n ./samples/IntegrationTestApp/bin/Debug/net6.0/osx-arm64/publish/IntegrationTestApp.app
+      open -n ./samples/IntegrationTestApp/bin/Debug/net7.0/osx-arm64/publish/IntegrationTestApp.app
       pkill IntegrationTestApp
 
   - task: DotNetCoreCLI@2
@@ -56,9 +56,9 @@ jobs:
       version: 6.0.401
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 7.0.100-rc.2.22477.23'
+    displayName: 'Use .NET Core SDK 7.0.100'
     inputs:
-      version: 7.0.100-rc.2.22477.23
+      version: 7.0.100
 
   - task: Windows Application Driver@0
     inputs:
