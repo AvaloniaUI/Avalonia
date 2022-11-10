@@ -200,15 +200,5 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 }
             }
         }
-
-        public static bool IsOnPlatform(IServiceProvider serviceProvider, OperatingSystemType platform)
-        {
-            return serviceProvider.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem == platform;
-        }
-
-        public static bool IsOnFormFactor(IServiceProvider serviceProvider, FormFactorType formFactor)
-        {
-            return serviceProvider.GetService<IRuntimePlatform>().GetRuntimeInfo().FormFactor == formFactor;
-        }
     }
 }

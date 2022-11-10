@@ -105,11 +105,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType ResourceDictionary { get; }
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
 
-        public IXamlType OperatingSystemType { get; }
-        public IXamlMethod IsOnPlatformMethod { get; }
-        public IXamlType FormFactorType { get; set; }
-        public IXamlMethod IsOnFormFactorMethod { get; set; }
-
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
             RuntimeHelpers = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
