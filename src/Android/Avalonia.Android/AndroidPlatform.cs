@@ -26,7 +26,7 @@ namespace Avalonia
 
 namespace Avalonia.Android
 {
-    class AndroidPlatform : IPlatformSettings
+    class AndroidPlatform
     {
         public static readonly AndroidPlatform Instance = new AndroidPlatform();
         public static AndroidPlatformOptions Options { get; private set; }
