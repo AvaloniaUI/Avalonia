@@ -49,6 +49,7 @@ namespace ControlCatalog
 
         private void InitializeComponent()
         {
+            this.AttachDevTools(new Uri("http://0.0.0.0:15001"));
             AvaloniaXamlLoader.Load(this);
         }
     }

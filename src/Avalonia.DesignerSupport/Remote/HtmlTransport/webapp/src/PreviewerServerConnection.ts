@@ -52,6 +52,7 @@ export class PreviewerServerConnection {
 
     private onMessage = (msg: MessageEvent) => {
         if (typeof msg.data == 'string' || msg.data instanceof String) {
+            console.log("message: " + msg.data)
             const parts = msg.data.split(':');
             if (parts[0] == 'frame') {
                 this.nextFrame = {
@@ -64,6 +65,7 @@ export class PreviewerServerConnection {
                 }
             }
         } else if (msg.data instanceof ArrayBuffer) {
+            console.log("received frame");
             const arr = new Uint8ClampedArray(msg.data, 0);
             const imageData = new ImageData(arr, this.nextFrame.width, this.nextFrame.height);
             this.conn.send('frame-received:' + this.nextFrame.sequenceId);

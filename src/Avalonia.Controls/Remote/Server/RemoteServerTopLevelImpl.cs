@@ -315,6 +315,8 @@ namespace Avalonia.Controls.Remote.Server
         {
             lock (_lock)
             {
+                if (ClientSize.Width < 1 || ClientSize.Height < 1)
+                    return;
                 if (_lastReceivedFrame != _lastSentFrame || !_invalidated || _supportedFormats == null)
                     return;
 

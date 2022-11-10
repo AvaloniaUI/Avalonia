@@ -57,7 +57,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 // hack can be removed.
                 if (previousWasControlTheme &&
                     parent is IResourceProvider hack &&
-                    hack.Owner?.GetType().FullName == "Avalonia.Diagnostics.Views.MainWindow" &&
+                    (hack.Owner?.GetType().FullName == "Avalonia.Diagnostics.Views.MainWindow"
+                        || hack.Owner?.GetType().FullName == "Avalonia.Diagnostics.Views.DevToolsRemoteServer"
+                    ) &&
                     hack.Owner.TryGetResource(ResourceKey, out value))
                 {
                     return ColorToBrushConverter.Convert(value, targetType);

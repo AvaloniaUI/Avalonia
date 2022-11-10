@@ -47,10 +47,10 @@ namespace Avalonia.Diagnostics
         }
 
         public static IDisposable Open(TopLevel root) => 
-            Open(Application.Current,new DevToolsOptions(),root as Window);
+            Open(null, new DevToolsOptions(), root);
 
         public static IDisposable Open(TopLevel root, DevToolsOptions options) => 
-            Open(Application.Current, options, root as Window);
+            Open(null, options, root as Window);
 
         private static void DevToolsClosed(object? sender, EventArgs e)
         {
@@ -103,14 +103,14 @@ namespace Avalonia.Diagnostics
             return result;
         }
 
-        private static IDisposable Open(Application? application, DevToolsOptions options, Window? owner = default)
+        private static IDisposable Open(Application? application, DevToolsOptions options, TopLevel? owner = default)
         {
             var focussedControl = KeyboardDevice.Instance?.FocusedElement as IControl;
-            if (application is null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-            if (s_open.TryGetValue(application, out var window))
+            var target = (AvaloniaObject?)application ?? owner;
+            if (target == null)
+                throw new ArgumentNullException();
+            
+            if (s_open.TryGetValue(target, out var window))
             {
                 window.Activate();
                 window.SelectedControl(focussedControl);
@@ -119,17 +119,17 @@ namespace Avalonia.Diagnostics
             {
                 window = new MainWindow
                 {
-                    Root = new Controls.Application(application),
+                    Root = application != null ? new Controls.Application(application) : target,
                     Width = options.Size.Width,
                     Height = options.Size.Height,
                 };
                 window.SetOptions(options);
                 window.SelectedControl(focussedControl);
                 window.Closed += DevToolsClosed;
-                s_open.Add(application, window);
-                if (options.ShowAsChildWindow && owner is { })
+                s_open.Add(target, window);
+                if (options.ShowAsChildWindow && owner is Window ownerWindow)
                 {
-                    window.Show(owner);
+                    window.Show(ownerWindow);
                 }
                 else
                 {

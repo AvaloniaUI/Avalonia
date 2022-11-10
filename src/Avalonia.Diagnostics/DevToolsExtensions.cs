@@ -1,5 +1,7 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using Avalonia.Controls;
 using Avalonia.Diagnostics;
+using Avalonia.Diagnostics.Views;
 using Avalonia.Input;
 
 namespace Avalonia
@@ -80,6 +82,11 @@ namespace Avalonia
         public static void AttachDevTools(this Application application, DevToolsOptions options)
         {
             DevTools.Attach(application, options);
+        }
+
+        public static IDisposable AttachDevTools(this TopLevel root, Uri listenUri)
+        {
+            return DevToolsRemoteServer.Start(root, listenUri);
         }
     }
 }

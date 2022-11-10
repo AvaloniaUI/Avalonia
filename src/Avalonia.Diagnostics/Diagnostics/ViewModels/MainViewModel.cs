@@ -30,7 +30,7 @@ namespace Avalonia.Diagnostics.ViewModels
         private IInputRoot? _pointerOverRoot;
         private IScreenshotHandler? _screenshotHandler;
         private bool _showPropertyType;        
-        private bool _showImplementedInterfaces;
+        private bool _showImplementedInterfaces = true;
         
         public MainViewModel(AvaloniaObject root)
         {
