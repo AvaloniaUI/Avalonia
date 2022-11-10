@@ -96,7 +96,9 @@ namespace Avalonia.Diagnostics.ViewModels
                     changed = false;
                 }
                 if (changed)
-                RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
+                {
+                    RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
+                }
             }
         }
 
@@ -331,7 +333,7 @@ namespace Avalonia.Diagnostics.ViewModels
             private set => RaiseAndSetIfChanged(ref _showImplementedInterfaces , value); 
         }
 
-        public void ToggleShowImplementedInterfaces(object parametr)
+        public void ToggleShowImplementedInterfaces(object parameter)
         {
             ShowImplementedInterfaces = !ShowImplementedInterfaces;
             if (Content is TreePageViewModel viewModel)
@@ -340,15 +342,15 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public bool ShowDettailsPropertyType 
+        public bool ShowDetailsPropertyType
         { 
             get => _showPropertyType; 
             private set => RaiseAndSetIfChanged(ref  _showPropertyType , value); 
         }
 
-        public void ToggleShowDettailsPropertyType(object paramter)
+        public void ToggleShowDetailsPropertyType(object parameter)
         {
-            ShowDettailsPropertyType = !ShowDettailsPropertyType;
+            ShowDetailsPropertyType = !ShowDetailsPropertyType;
         }
     }
 }
