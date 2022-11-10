@@ -18,7 +18,7 @@
           <TextBlock Text="Mobile" />
         </Border>
       </StackPanel>
-      <StackPanel Orientation="Horizontal">
+      <WrapPanel>
         <Border Height="100" Width="100" Background="{OnPlatform Gray, Windows=Green}">
           <TextBlock Text="Windows" />
         </Border>
@@ -37,7 +37,15 @@
         <Border Height="100" Width="100" Background="{OnPlatform Gray, Android=Green}">
           <TextBlock Text="Android" />
         </Border>
-      </StackPanel>
+        <Border Height="100" Width="100">
+          <Border.Background>
+            <OnPlatform Default="Gray" >
+              <On Options="macOS, Linux, Windows" Content="Green" />
+            </OnPlatform>
+          </Border.Background>
+          <TextBlock Text="Win, Lin or Mac" />
+        </Border>
+      </WrapPanel>
     </StackPanel>
   </StackPanel>
 </UserControl>

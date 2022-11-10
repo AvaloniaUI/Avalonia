@@ -1,36 +1,30 @@
 ﻿#nullable enable
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;
 
-public class On
-{
-    public string Platform { get; set; } = "Unknown";
-
-    [Content]
-    public object? Content { get; set; }
-}
-
-public class OnPlatformExtension : OnPlatformExtension<object>
+public class OnPlatformExtension : OnPlatformExtensionBase<object, On>
 {
     public OnPlatformExtension()
     {
 
     }
 
-    public OnPlatformExtension(object defaultValue) : base(defaultValue)
+    public OnPlatformExtension(object defaultValue)
     {
+        Default = defaultValue;
+    }
+
+    public static bool ShouldProvideOption(IServiceProvider serviceProvider, OperatingSystemType option)
+    {
+        return serviceProvider.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem == option;
     }
 }
 
-public class OnPlatformExtension<TReturn> : IAddChild<On>
+public class OnPlatformExtension<TReturn> : OnPlatformExtensionBase<TReturn, On<TReturn>>
 {
-    private readonly Dictionary<string, TReturn?> _values = new();
-
     public OnPlatformExtension()
     {
 
@@ -41,89 +35,39 @@ public class OnPlatformExtension<TReturn> : IAddChild<On>
         Default = defaultValue;
     }
 
-    public TReturn? Default { get => _values.TryGetValue(nameof(Default), out var value) ? value : default; set { _values[nameof(Default)] = value; } }
-    public TReturn? Windows { get => _values.TryGetValue(nameof(Windows), out var value) ? value : default; set { _values[nameof(Windows)] = value; } }
-    public TReturn? macOS { get => _values.TryGetValue(nameof(macOS), out var value) ? value : default; set { _values[nameof(macOS)] = value; } }
-    public TReturn? Linux { get => _values.TryGetValue(nameof(Linux), out var value) ? value : default; set { _values[nameof(Linux)] = value; } }
-    public TReturn? Android { get => _values.TryGetValue(nameof(Android), out var value) ? value : default; set { _values[nameof(Android)] = value; } }
-    public TReturn? iOS { get => _values.TryGetValue(nameof(iOS), out var value) ? value : default; set { _values[nameof(iOS)] = value; } }
-    public TReturn? Browser { get => _values.TryGetValue(nameof(Browser), out var value) ? value : default; set { _values[nameof(Browser)] = value; } }
-    public object? ProvideValue()
+    public static bool ShouldProvideOption(IServiceProvider serviceProvider, OperatingSystemType option)
     {
-        throw new NotSupportedException();
-        if (!_values.Any())
-        {
-            throw new InvalidOperationException("OnPlatformExtension requires a value to be specified for at least one platform or Default.");
-        }
-
-        var (value, hasValue) = TryGetValueForPlatform();
-        return !hasValue ? AvaloniaProperty.UnsetValue : value;
+        return serviceProvider.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem == option;
     }
+}
 
-    private (TReturn? value, bool hasValue) TryGetValueForPlatform()
-    {
-        var runtimeInfo = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().GetRuntimeInfo();
+public abstract class OnPlatformExtensionBase<TReturn, TOn> : IAddChild<TOn>
+    where TOn : On<TReturn>
+{
+    [MarkupExtensionDefaultOption]
+    public TReturn? Default { get; set; }
 
-        TReturn val;
+    [MarkupExtensionOption(OperatingSystemType.WinNT)]
+    public TReturn? Windows { get; set; }
 
-        switch (runtimeInfo.OperatingSystem)
-        {
-            case OperatingSystemType.WinNT:
-                if (_values.TryGetValue(nameof(Windows), out val))
-                {
-                    return (val, true);
-                }
-                break;
+    [MarkupExtensionOption(OperatingSystemType.OSX)]
+    // ReSharper disable once InconsistentNaming
+    public TReturn? macOS { get; set; }
 
-            case OperatingSystemType.OSX:
-                if (_values.TryGetValue(nameof(macOS), out val))
-                {
-                    return (val, true);
-                }
-                break;
+    [MarkupExtensionOption(OperatingSystemType.Linux)]
+    public TReturn? Linux { get; set; }
 
-            case OperatingSystemType.Linux:
-                if (_values.TryGetValue(nameof(Linux), out val))
-                {
-                    return (val, true);
-                }
-                break;
+    [MarkupExtensionOption(OperatingSystemType.Android)]
+    public TReturn? Android { get; set; }
 
-            case OperatingSystemType.Android:
-                if (_values.TryGetValue(nameof(Android), out val))
-                {
-                    return (val, true);
-                }
-                break;
+    [MarkupExtensionOption(OperatingSystemType.iOS)]
+    // ReSharper disable once InconsistentNaming
+    public TReturn? iOS { get; set; }
 
-            case OperatingSystemType.iOS:
-                if (_values.TryGetValue(nameof(iOS), out val))
-                {
-                    return (val, true);
-                }
-                break;
+    [MarkupExtensionOption(OperatingSystemType.Browser)]
+    public TReturn? Browser { get; set; }
 
-            case OperatingSystemType.Browser:
-                if (_values.TryGetValue(nameof(Browser), out val))
-                {
-                    return (val, true);
-                }
-                break;
-        }
-
-        if (_values.TryGetValue(nameof(Default), out val))
-        {
-            return (val, true);
-        };
-
-        return default;
-    }
-
-    public void AddChild(On child)
-    {
-        foreach (var platform in child.Platform.Split(new [] { "," }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            _values[platform.Trim()] = (TReturn?)child.Content;
-        }
-    }
+    // Required for the compiler, will be replaced with actual method compile time.
+    public object ProvideValue() { return this; }
+    void IAddChild<TOn>.AddChild(TOn child) {}
 }

@@ -30,6 +30,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType AssignBindingAttribute { get; }
         public IXamlType DependsOnAttribute { get; }
         public IXamlType DataTypeAttribute { get; }
+        public IXamlType MarkupExtensionOptionAttribute { get; }
+        public IXamlType MarkupExtensionDefaultOptionAttribute { get; }
         public IXamlType UnsetValueType { get; }
         public IXamlType StyledElement { get; }
         public IXamlType IStyledElement { get; }
@@ -133,6 +135,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AssignBindingAttribute = cfg.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
             DependsOnAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DependsOnAttribute");
             DataTypeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DataTypeAttribute");
+            MarkupExtensionOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionOptionAttribute");
+            MarkupExtensionDefaultOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionDefaultOptionAttribute");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, IAvaloniaObject,
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
@@ -235,11 +239,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 cfg.TypeSystem.GetType("System.Func`2").MakeGenericType(
                     cfg.TypeSystem.GetType("System.IServiceProvider"),
                     XamlIlTypes.Object));
-
-            OperatingSystemType = cfg.TypeSystem.GetType("Avalonia.Platform.OperatingSystemType");
-            IsOnPlatformMethod = RuntimeHelpers.FindMethod(m => m.IsStatic && m.Parameters.Count == 2 && m.Name == "IsOnPlatform");
-            FormFactorType = cfg.TypeSystem.GetType("Avalonia.Platform.FormFactorType");
-            IsOnFormFactorMethod = RuntimeHelpers.FindMethod(m => m.IsStatic && m.Parameters.Count == 2 && m.Name == "IsOnFormFactor");
         }
     }
 

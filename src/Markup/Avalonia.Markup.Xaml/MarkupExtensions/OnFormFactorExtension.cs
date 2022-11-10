@@ -1,27 +1,31 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
-using System.Linq;
+
+using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;
 
-public class OnFormFactorExtension : OnFormFactorExtension<object>
+public class OnFormFactorExtension : OnFormFactorExtensionBase<object, On>
 {
     public OnFormFactorExtension()
     {
 
     }
 
-    public OnFormFactorExtension(object defaultValue) : base(defaultValue)
+    public OnFormFactorExtension(object defaultValue)
     {
+        Default = defaultValue;
+    }
+
+    public static bool ShouldProvideOption(IServiceProvider serviceProvider, FormFactorType option)
+    {
+        return serviceProvider.GetService<IRuntimePlatform>().GetRuntimeInfo().FormFactor == option;
     }
 }
 
-public class OnFormFactorExtension<TReturn>
+public class OnFormFactorExtension<TReturn> : OnFormFactorExtensionBase<TReturn, On<TReturn>>
 {
-    private readonly Dictionary<string, TReturn?> _values = new();
-
     public OnFormFactorExtension()
     {
 
@@ -32,64 +36,25 @@ public class OnFormFactorExtension<TReturn>
         Default = defaultValue;
     }
 
-    public TReturn? Default
+    public static bool ShouldProvideOption(IServiceProvider serviceProvider, FormFactorType option)
     {
-        get => _values.TryGetValue(nameof(Default), out var value) ? value : default;
-        set { _values[nameof(Default)] = value; }
+        return serviceProvider.GetService<IRuntimePlatform>().GetRuntimeInfo().FormFactor == option;
     }
+}
 
-    public TReturn? Desktop
-    {
-        get => _values.TryGetValue(nameof(Desktop), out var value) ? value : default;
-        set { _values[nameof(Desktop)] = value; }
-    }
+public abstract class OnFormFactorExtensionBase<TReturn, TOn> : IAddChild<TOn>
+    where TOn : On<TReturn>
+{
+    [MarkupExtensionDefaultOption]
+    public TReturn? Default { get; set; }
 
-    public TReturn? Mobile
-    {
-        get => _values.TryGetValue(nameof(Mobile), out var value) ? value : default;
-        set { _values[nameof(Mobile)] = value; }
-    }
+    [MarkupExtensionOption(FormFactorType.Desktop)]
+    public TReturn? Desktop { get; set; }
 
+    [MarkupExtensionOption(FormFactorType.Mobile)]
+    public TReturn? Mobile { get; set; }
 
-    public object? ProvideValue()
-    {
-        if (!_values.Any())
-        {
-            throw new InvalidOperationException(
-                "OnPlatformExtension requires a value to be specified for at least one platform or Default.");
-        }
-
-        var (value, hasValue) = TryGetValueForPlatform();
-        return !hasValue ? AvaloniaProperty.UnsetValue : value;
-    }
-
-    private (object? value, bool hasValue) TryGetValueForPlatform()
-    {
-        var runtimeInfo = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().GetRuntimeInfo();
-
-        TReturn val;
-
-        if (runtimeInfo.IsDesktop)
-        {
-            if (_values.TryGetValue(nameof(Desktop), out val))
-            {
-                return (val, true);
-            }
-        }
-
-        if (runtimeInfo.IsMobile)
-        {
-            if (_values.TryGetValue(nameof(Mobile), out val))
-            {
-                return (val, true);
-            }
-        }
-
-        if (_values.TryGetValue(nameof(Default), out val))
-        {
-            return (val, true);
-        }
-
-        return default;
-    }
+    // Required for the compiler, will be replaced with actual method compile time.
+    public object ProvideValue() { return this; }
+    void IAddChild<TOn>.AddChild(TOn child) {}
 }

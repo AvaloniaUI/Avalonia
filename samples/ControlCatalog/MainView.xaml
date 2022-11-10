@@ -13,9 +13,6 @@
       </Style>
     </Grid.Styles>
       <controls:HamburgerMenu Name="Sidebar">
-        <TabItem Header="Platform Information">
-          <pages:PlatformInfoPage />
-        </TabItem>
         <TabItem Header="Composition">
         <pages:CompositionPage/>
       </TabItem>
@@ -121,7 +118,10 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
-        <TabItem Header="Pointers">
+      <TabItem Header="Platform Information">
+        <pages:PlatformInfoPage />
+      </TabItem>
+      <TabItem Header="Pointers">
         <pages:PointersPage />
       </TabItem>
       <TabItem Header="ProgressBar">
