@@ -14,7 +14,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativePlatform : IPlatformSettings, IWindowingPlatform
+    class AvaloniaNativePlatform : IWindowingPlatform
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
@@ -25,16 +25,6 @@ namespace Avalonia.Native
 
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
         [CanBeNull] internal static Compositor Compositor { get; private set; }
-
-        public Size DoubleClickSize => new Size(4, 4);
-
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500); //TODO
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
-        public Size TouchDoubleClickSize => new Size(16, 16);
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
@@ -113,7 +103,7 @@ namespace Avalonia.Native
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IPlatformSettings>().ToConstant(this)
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
