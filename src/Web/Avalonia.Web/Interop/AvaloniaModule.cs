@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Web.Interop;
 
-internal static class AvaloniaModule
+internal static partial class AvaloniaModule
 {
     public const string MainModuleName = "avalonia";
     public const string StorageModuleName = "storage";
@@ -19,4 +19,7 @@ internal static class AvaloniaModule
         var options = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
         return JSHost.ImportAsync(StorageModuleName, options.FrameworkAssetPathResolver("storage.js"));
     }
+
+    [JSImport("Caniuse.isMobile", AvaloniaModule.MainModuleName)]
+    public static partial bool IsMobile();
 }

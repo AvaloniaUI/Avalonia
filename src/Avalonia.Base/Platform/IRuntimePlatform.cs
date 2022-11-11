@@ -17,13 +17,16 @@ namespace Avalonia.Platform
         IntPtr Address { get; }
         int Size { get; }
         bool IsDisposed { get; }
-        
+
     }
 
     [Unstable]
     public struct RuntimePlatformInfo
     {
         public OperatingSystemType OperatingSystem { get; set; }
+
+        public FormFactorType FormFactor => IsDesktop ? FormFactorType.Desktop :
+            IsMobile ? FormFactorType.Mobile : FormFactorType.Unknown;
         public bool IsDesktop { get; set; }
         public bool IsMobile { get; set; }
         public bool IsBrowser { get; set; }
@@ -43,5 +46,13 @@ namespace Avalonia.Platform
         Android,
         iOS,
         Browser
+    }
+
+    [Unstable]
+    public enum FormFactorType
+    {
+        Unknown,
+        Desktop,
+        Mobile
     }
 }
