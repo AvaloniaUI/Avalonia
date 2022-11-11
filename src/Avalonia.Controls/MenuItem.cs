@@ -367,6 +367,11 @@ namespace Avalonia.Controls
         {
             base.OnPointerReleased(e);
 
+            if (this.GetVisualsAt(e.GetPosition(this)).Any(c => this == c || this.IsVisualAncestorOf(c)))
+            {
+                this.PlaySoundEffect(SoundEffects.Click);
+            }
+
             if (!_isEmbeddedInMenu)
             {
                 //Normally the Menu's IMenuInteractionHandler is sending the click events for us

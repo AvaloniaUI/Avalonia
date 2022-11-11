@@ -415,6 +415,8 @@ namespace Avalonia.Controls
                 if (ClickMode == ClickMode.Release &&
                     this.GetVisualsAt(e.GetPosition(this)).Any(c => this == c || this.IsVisualAncestorOf(c)))
                 {
+                    this.PlaySoundEffect(SoundEffects.Click);
+
                     OnClick();
                 }
             }

@@ -1,8 +1,11 @@
+using System.Linq;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -84,6 +87,16 @@ namespace Avalonia.Controls
                     Header = obj.NewValue;
                 }
             }          
+        }
+
+        protected override void OnPointerReleased(PointerReleasedEventArgs e)
+        {
+            base.OnPointerReleased(e);
+
+            if (this.GetVisualsAt(e.GetPosition(this)).Any(c => this == c || this.IsVisualAncestorOf(c)))
+            {
+                this.PlaySoundEffect(SoundEffects.Click);
+            }
         }
     }
 }

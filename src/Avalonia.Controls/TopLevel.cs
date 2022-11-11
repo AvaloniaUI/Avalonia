@@ -329,6 +329,8 @@ namespace Avalonia.Controls
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
+        public IPlatformFeedback? PlatformFeedbackProvider => (PlatformImpl as ITopLevelWithPlatformFeedback)?.PlatformFeedback;
+
         /// <inheritdoc/>
         protected virtual IRenderTarget CreateRenderTarget()
         {
