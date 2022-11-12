@@ -31,5 +31,10 @@
     <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml" />
     <AvaloniaResource Include="Xaml\XamlIlClassWithCustomProperty.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
+      <Link>PlatformFactAttribute.cs</Link>
+    </Compile>
+  </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

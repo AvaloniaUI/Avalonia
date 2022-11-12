@@ -9,6 +9,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 {
     class AvaloniaXamlIlWellKnownTypes
     {
+        public IXamlType RuntimeHelpers { get; }
         public IXamlType AvaloniaObject { get; }
         public IXamlType IAvaloniaObject { get; }
         public IXamlType BindingPriority { get; }
@@ -29,6 +30,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType AssignBindingAttribute { get; }
         public IXamlType DependsOnAttribute { get; }
         public IXamlType DataTypeAttribute { get; }
+        public IXamlType MarkupExtensionOptionAttribute { get; }
+        public IXamlType MarkupExtensionDefaultOptionAttribute { get; }
+        public IXamlType OnExtensionType { get; }
         public IXamlType UnsetValueType { get; }
         public IXamlType StyledElement { get; }
         public IXamlType IStyledElement { get; }
@@ -107,6 +111,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
+            RuntimeHelpers = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
+
             XamlIlTypes = cfg.WellKnownTypes;
             AvaloniaObject = cfg.TypeSystem.GetType("Avalonia.AvaloniaObject");
             IAvaloniaObject = cfg.TypeSystem.GetType("Avalonia.IAvaloniaObject");
@@ -128,6 +134,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AssignBindingAttribute = cfg.TypeSystem.GetType("Avalonia.Data.AssignBindingAttribute");
             DependsOnAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DependsOnAttribute");
             DataTypeAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.DataTypeAttribute");
+            MarkupExtensionOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionOptionAttribute");
+            MarkupExtensionDefaultOptionAttribute = cfg.TypeSystem.GetType("Avalonia.Metadata.MarkupExtensionDefaultOptionAttribute");
+            OnExtensionType = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.On");
             AvaloniaObjectBindMethod = AvaloniaObjectExtensions.FindMethod("Bind", IDisposable, false, IAvaloniaObject,
                 AvaloniaProperty,
                 IBinding, cfg.WellKnownTypes.Object);
@@ -245,7 +254,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             ctx.SetItem(rv = new AvaloniaXamlIlWellKnownTypes(ctx.Configuration));
             return rv;
         }
-        
+
         public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> ctx)
         {
             if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))
