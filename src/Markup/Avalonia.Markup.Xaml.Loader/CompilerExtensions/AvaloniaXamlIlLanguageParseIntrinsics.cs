@@ -285,7 +285,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     , types.UriConstructor
                     , new List<IXamlAstValueNode>()
                     {
-                        new XamlConstantNode(node, types.String, uriText),
+                        new XamlConstantNode(node, context.Configuration.WellKnownTypes.String, uriText),
                         new XamlConstantNode(node, types.UriKind, (int)kind),
                     });
                 return true;
