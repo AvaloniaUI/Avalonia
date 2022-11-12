@@ -178,10 +178,11 @@ namespace Avalonia.Build.Tasks
 
             var stringEquals = asm.MainModule.ImportReference(asm.MainModule.TypeSystem.String.Resolve().Methods.First(
                 m =>
-                    m.IsStatic && m.Name == "Equals" && m.Parameters.Count == 2 &&
+                    m.IsStatic && m.Name == "Equals" && m.Parameters.Count == 3 &&
                     m.ReturnType.FullName == "System.Boolean"
                     && m.Parameters[0].ParameterType.FullName == "System.String"
-                    && m.Parameters[1].ParameterType.FullName == "System.String"));
+                    && m.Parameters[1].ParameterType.FullName == "System.String"
+                    && m.Parameters[2].ParameterType.FullName == "System.StringComparison"));
             
             bool CompileGroup(IResourceGroup group)
             {
@@ -384,6 +385,7 @@ namespace Avalonia.Build.Tasks
                                 var nop = Instruction.Create(OpCodes.Nop);
                                 i.Add(Instruction.Create(OpCodes.Ldarg_0));
                                 i.Add(Instruction.Create(OpCodes.Ldstr, res.Uri));
+                                i.Add(Instruction.Create(OpCodes.Ldc_I4, (int)StringComparison.OrdinalIgnoreCase));
                                 i.Add(Instruction.Create(OpCodes.Call, stringEquals));
                                 i.Add(Instruction.Create(OpCodes.Brfalse, nop));
                                 if (parameterlessConstructor != null)
