@@ -1,7 +1,10 @@
 <Project Sdk="Microsoft.Build.Traversal">
   <ItemGroup>
-    <!-- Build Avalonia.Build.Tasks first because everything depends on it -->
+    <!-- First priority items because everything depends on it -->
+    <ProjectReference Include="src/tools/DevAnalyzers/DevAnalyzers.csproj" />
+    <ProjectReference Include="src/tools/DevGenerators/DevGenerators.csproj" />
     <ProjectReference Include="src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
+
     <ProjectReference Include="src/**/*.*proj" />
     <ProjectReference Include="samples/**/*.*proj" />
     <ProjectReference Include="tests/**/*.*proj" />
