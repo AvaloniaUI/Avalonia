@@ -31,8 +31,10 @@ namespace Avalonia.Web
         public static void Register()
         {
             var instance = new BrowserWindowingPlatform();
+
             s_keyboard = new KeyboardDevice();
             AvaloniaLocator.CurrentMutable
+                .Bind<IRuntimePlatform>().ToSingleton<BrowserRuntimePlatform>()
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
@@ -64,11 +66,11 @@ namespace Avalonia.Web
         {
             if (_signaled)
                 return;
-            
+
             _signaled = true;
-            
+
             IDisposable? disp = null;
-            
+
             disp = GetRuntimePlatform()
                 .StartSystemTimer(TimeSpan.FromMilliseconds(1),
                     () =>

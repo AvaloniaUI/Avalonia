@@ -8,14 +8,6 @@
     }
   },
   "profiles": {
-    "ControlCatalog.Web - IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
     "ControlCatalog.Web": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
