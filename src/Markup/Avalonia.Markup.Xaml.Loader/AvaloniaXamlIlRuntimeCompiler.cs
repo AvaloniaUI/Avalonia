@@ -24,8 +24,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
 {
     static class AvaloniaXamlIlRuntimeCompiler
     {
-        private const string UseCompileBindingsByDefaultConfigSwitch = "Avalonia.UseCompiledBindingsByDefault";
-
 #if !RUNTIME_XAML_CECIL
         private static SreTypeSystem _sreTypeSystem;
         private static Type _ignoresAccessChecksFromAttribute;
@@ -152,12 +150,12 @@ namespace Avalonia.Markup.Xaml.XamlIl
         }
         
 
-        static object LoadSre(string xaml, Assembly localAssembly, object rootInstance, Uri uri, bool isDesignMode)
+        static object LoadSre(string xaml, Assembly localAssembly, object rootInstance, Uri uri, bool isDesignMode, bool useCompiledBindingsByDefault)
         {
             var success = false;
             try
             {
-                var rv = LoadSreCore(xaml, localAssembly, rootInstance, uri, isDesignMode);
+                var rv = LoadSreCore(xaml, localAssembly, rootInstance, uri, isDesignMode, useCompiledBindingsByDefault);
                 success = true;
                 return rv;
             }
@@ -169,7 +167,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         }
 
         
-        static object LoadSreCore(string xaml, Assembly localAssembly, object rootInstance, Uri uri, bool isDesignMode)
+        static object LoadSreCore(string xaml, Assembly localAssembly, object rootInstance, Uri uri, bool isDesignMode, bool useCompiledBindingsByDefault)
         {
 
             InitializeSre();
@@ -180,16 +178,14 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var clrPropertyBuilder = tb.DefineNestedType("ClrProperties_" + Guid.NewGuid().ToString("N"));
             var indexerClosureType = _sreBuilder.DefineType("IndexerClosure_" + Guid.NewGuid().ToString("N"));
             var trampolineBuilder = _sreBuilder.DefineType("Trampolines_" + Guid.NewGuid().ToString("N"));
-
-            bool compileBindingsByDefault = AppContext.TryGetSwitch(UseCompileBindingsByDefaultConfigSwitch, out var compileBindingsSwitchValue) && compileBindingsSwitchValue;
-
+            
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
                 _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
                 new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
                 new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType)),
                 new XamlIlTrampolineBuilder(_sreTypeSystem.CreateTypeBuilder(trampolineBuilder))), 
                 _sreEmitMappings,
-                _sreContextType) { EnableIlVerification = true, DefaultCompileBindings = compileBindingsByDefault };
+                _sreContextType) { EnableIlVerification = true, DefaultCompileBindings = useCompiledBindingsByDefault };
 
             IXamlType overrideType = null;
             if (rootInstance != null)
@@ -254,15 +250,15 @@ namespace Avalonia.Markup.Xaml.XamlIl
         }
         
         public static object Load(Stream stream, Assembly localAssembly, object rootInstance, Uri uri,
-            bool isDesignMode)
+            bool isDesignMode, bool useCompiledBindingsByDefault)
         {
             string xaml;
             using (var sr = new StreamReader(stream))
                 xaml = sr.ReadToEnd();
 #if RUNTIME_XAML_CECIL
-            return LoadCecil(xaml, localAssembly, rootInstance, uri);
+            return LoadCecil(xaml, localAssembly, rootInstance, uri, useCompiledBindingsByDefault);
 #else
-            return LoadSre(xaml, localAssembly, rootInstance, uri, isDesignMode);
+            return LoadSre(xaml, localAssembly, rootInstance, uri, isDesignMode, useCompiledBindingsByDefault);
 #endif
         }
 
@@ -296,7 +292,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         }
 
         private static Dictionary<string, Type> _cecilGeneratedCache = new Dictionary<string, Type>();
-        static object LoadCecil(string xaml, Assembly localAssembly, object rootInstance, Uri uri)
+        static object LoadCecil(string xaml, Assembly localAssembly, object rootInstance, Uri uri, bool useCompiledBindingsByDefault)
         {
             if (uri == null)
                 throw new InvalidOperationException("Please, go away");
@@ -330,8 +326,6 @@ namespace Avalonia.Markup.Xaml.XamlIl
             
             var tb = _cecilTypeSystem.CreateTypeBuilder(def);
             
-            bool compileBindingsByDefault = AppContext.TryGetSwitch(UseCompileBindingsByDefaultConfigSwitch, out var compileBindingsSwitchValue) && compileBindingsSwitchValue;
-
             var compiler = new AvaloniaXamlIlCompiler(new XamlIlTransformerConfiguration(_cecilTypeSystem,
                     localAssembly == null ? null : _cecilTypeSystem.FindAssembly(localAssembly.GetName().Name),
                     _cecilMappings, XamlIlXmlnsMappings.Resolve(_cecilTypeSystem, _cecilMappings),
@@ -339,7 +333,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 _cecilEmitMappings,
                 _cecilTypeSystem.CreateTypeBuilder(contextDef))
                 {
-                    DefaultCompileBindings = compileBindingsByDefault
+                    DefaultCompileBindings = useCompiledBindingsByDefault
                 };
             compiler.ParseAndCompile(xaml, uri.ToString(), tb, overrideType);
             var asmPath = Path.Combine(_cecilEmitDir, safeUri + ".dll");

@@ -20,10 +20,6 @@
     <None Remove="**\*.axaml" />
     <None Remove="**\*.paml" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(AvaloniaUseCompiledBindingsByDefault)' == 'true'">
-    <RuntimeHostConfigurationOption Include="Avalonia.UseCompiledBindingsByDefault" Value="true" />
-  </ItemGroup>
   
   <UsingTask TaskName="GenerateAvaloniaResourcesTask"
              AssemblyFile="$(AvaloniaBuildTasksLocation)"

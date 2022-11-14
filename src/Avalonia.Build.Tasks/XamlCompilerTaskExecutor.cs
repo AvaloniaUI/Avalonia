@@ -42,7 +42,7 @@ namespace Avalonia.Build.Tasks
             string output, bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey,
             bool skipXamlCompilation)
         {
-            return Compile(engine, input, references, projectDirectory, output, verifyIl, logImportance, strongNameKey, skipXamlCompilation, debuggerLaunch:false);
+            return Compile(engine, input, references, projectDirectory, output, verifyIl, defaultCompileBindings, logImportance, strongNameKey, skipXamlCompilation, debuggerLaunch:false);
         }
 
         internal static CompileResult Compile(IBuildEngine engine, string input, string[] references,
