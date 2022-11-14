@@ -4,8 +4,6 @@ using System.Reflection;
 using System.Text;
 using Avalonia.Markup.Xaml.XamlIl;
 
-#nullable enable
-
 namespace Avalonia.Markup.Xaml
 {
     public static class AvaloniaRuntimeXamlLoader

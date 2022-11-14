@@ -3,6 +3,8 @@ using System.Reflection;
 
 namespace Avalonia.Markup.Xaml;
 
+#nullable enable
+
 public class RuntimeXamlLoaderConfiguration
 {
     /// <summary>
@@ -13,7 +15,7 @@ public class RuntimeXamlLoaderConfiguration
     /// <summary>
     /// Default assembly for clr-namespace:.
     /// </summary>
-    public Assembly LocalAssembly { get; set; }
+    public Assembly? LocalAssembly { get; set; }
             
     /// <summary>
     /// The optional instance into which the XAML should be loaded.
