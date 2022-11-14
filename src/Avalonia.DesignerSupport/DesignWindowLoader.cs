@@ -43,7 +43,7 @@ namespace Avalonia.DesignerSupport
                     LocalAssembly = localAsm,
                     BaseUri = baseUri,
                     DesignMode = true,
-                    UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var tempBool) && tempBool
+                    UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue ) && parsedValue 
                 });
                 var style = loaded as IStyle;
                 var resources = loaded as ResourceDictionary;

@@ -122,10 +122,9 @@ namespace Avalonia.Build.Tasks
             if (avares.Resources.Count(CheckXamlName) == 0)
                 // Nothing to do
                 return null;
-
-            if (asm.MainModule.TryGetTypeReference("System.Reflection.AssemblyMetadataAttribute", out var asmMetadata))
+            if (typeSystem.FindType("System.Reflection.AssemblyMetadataAttribute") is {} asmMetadata)
             {
-                var ctor = asm.MainModule.ImportReference(asmMetadata.Resolve()
+                var ctor = asm.MainModule.ImportReference(typeSystem.GetTypeReference(asmMetadata).Resolve()
                     .GetConstructors().First(c => c.Parameters.Count == 2).Resolve());
                 var strType = asm.MainModule.ImportReference(typeof(string));
                 var arg1 = new CustomAttributeArgument(strType, "AvaloniaUseCompiledBindingsByDefault");
