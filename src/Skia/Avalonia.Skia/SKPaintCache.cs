@@ -39,10 +39,23 @@ namespace Avalonia.Skia
         /// <remarks>
         /// Do not use the paint further.
         /// Do not return the same paint multiple times as that will break the cache.
-        /// Uses SKPaint.Reset() for reuse later.
         /// </remarks>
         /// <param name="paint"></param>
         public static void Return(SKPaint paint)
+        {
+            s_cachedPaints.Add(paint);
+        }
+
+        /// <summary>
+        /// Returns a SKPaint and resets it for reuse later.
+        /// </summary>
+        /// <remarks>
+        /// Do not use the paint further.
+        /// Do not return the same paint multiple times as that will break the cache.
+        /// Uses SKPaint.Reset() for reuse later.
+        /// </remarks>
+        /// <param name="paint"></param>
+        public static void ReturnReset(SKPaint paint)
         {
             paint.Reset();
             s_cachedPaints.Add(paint);

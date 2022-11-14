@@ -86,7 +86,7 @@ namespace Avalonia.Skia
                 paint.StrokeWidth = strokeWidth;
                 paint.GetFillPath(EffectivePath, strokePath);
 
-                SKPaintCache.Return(paint);
+                SKPaintCache.ReturnReset(paint);
 
                 _pathCache.Cache(strokePath, strokeWidth, strokePath.TightBounds.ToAvaloniaRect());
             }
