@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 
@@ -77,8 +78,8 @@ namespace Avalonia.Input
             {
                 pointer.Capture(source);
                 var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-                var doubleClickTime = settings?.DoubleClickTime.TotalMilliseconds ?? 500;
-                var doubleClickSize = settings?.DoubleClickSize ?? new Size(4, 4);
+                var doubleClickTime = settings?.GetDoubleTapTime(PointerType.Pen).TotalMilliseconds ?? 500;
+                var doubleClickSize = settings?.GetDoubleTapSize(PointerType.Pen) ?? new Size(4, 4);
 
                 if (!_lastClickRect.Contains(p) || timestamp - _lastClickTime > doubleClickTime)
                 {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -40,7 +39,7 @@ namespace Avalonia.Diagnostics.Screenshots
         /// The default root folder is [Environment.SpecialFolder.MyPictures]/Screenshots.
         /// </summary>
         public string ScreenshotsRoot { get; }
-            = Convetions.DefaultScreenshotsRoot;
+            = Conventions.DefaultScreenshotsRoot;
 
         /// <summary>
         /// SaveFilePicker Title

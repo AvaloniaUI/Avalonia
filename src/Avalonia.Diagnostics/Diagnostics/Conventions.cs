@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Reflection;
-using Avalonia.Controls;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics
 {
-    static class Convetions
+    internal static class Conventions
     {
         public static string DefaultScreenshotsRoot =>
              System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures, Environment.SpecialFolderOption.Create),

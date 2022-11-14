@@ -1211,7 +1211,7 @@ namespace Avalonia.Controls
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
-            if (_presenter == null || !string.IsNullOrEmpty(_presenter.PreeditText))
+            if (_presenter == null )
             {
                 return;
             }

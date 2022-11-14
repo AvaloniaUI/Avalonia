@@ -140,7 +140,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            return length;
+            return Math.Min(length, text.Length);
         }
     }
 }

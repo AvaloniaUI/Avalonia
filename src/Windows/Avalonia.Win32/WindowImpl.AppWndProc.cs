@@ -672,7 +672,10 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_SETCONTEXT:
                     {
-                        DefWindowProc(Hwnd, msg, wParam, (IntPtr)(lParam.ToInt64() & ~ISC_SHOWUICOMPOSITIONWINDOW));
+                        unchecked
+                        {
+                            DefWindowProc(Hwnd, msg, wParam, lParam & ~(nint)ISC_SHOWUICOMPOSITIONWINDOW);
+                        }
 
                         UpdateInputMethod(GetKeyboardLayout(0));
 

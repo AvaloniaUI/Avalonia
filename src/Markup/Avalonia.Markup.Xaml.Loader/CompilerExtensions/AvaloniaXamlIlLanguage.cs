@@ -185,6 +185,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public static bool CustomValueConverter(AstTransformationContext context,
             IXamlAstValueNode node, IXamlType type, out IXamlAstValueNode result)
         {
+            if (node is AvaloniaXamlIlOptionMarkupExtensionTransformer.OptionsMarkupExtensionNode optionsNode)
+            {
+                if (optionsNode.ConvertToReturnType(context, type, out var newOptionsNode))
+                {
+                    result = newOptionsNode;
+                    return true;
+                }
+            }
+
             if (!(node is XamlAstTextNode textNode))
             {
                 result = null;
