@@ -21,6 +21,11 @@ namespace Avalonia.Controls
     /// <summary>
     /// Represents a <see cref="T:Avalonia.Controls.DataGrid" /> row.
     /// </summary>
+    [TemplatePart(DATAGRIDROW_elementBottomGridLine, typeof(Rectangle))]
+    [TemplatePart(DATAGRIDROW_elementCells,          typeof(DataGridCellsPresenter))]
+    [TemplatePart(DATAGRIDROW_elementDetails,        typeof(DataGridDetailsPresenter))]
+    [TemplatePart(DATAGRIDROW_elementRoot,           typeof(Panel))]
+    [TemplatePart(DATAGRIDROW_elementRowHeader,      typeof(DataGridRowHeader))]
     [PseudoClasses(":selected", ":editing", ":invalid")]
     public class DataGridRow : TemplatedControl
     {
@@ -543,7 +548,6 @@ namespace Avalonia.Controls
             RootElement = e.NameScope.Find<Panel>(DATAGRIDROW_elementRoot);
             if (RootElement != null)
             {
-                EnsureBackground();
                 UpdatePseudoClasses();
             }
 
@@ -603,15 +607,15 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
             IsMouseOver = true;
         }
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
             IsMouseOver = false;
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
         }
 
         internal void ApplyCellsState()
@@ -668,43 +672,9 @@ namespace Avalonia.Controls
             Slot = -1;
         }
 
-        // Make sure the row's background is set to its correct value.  It could be explicity set or inherit
-        // DataGrid.RowBackground or DataGrid.AlternatingRowBackground
-        internal void EnsureBackground()
+        internal void InvalidateCellsIndex()
         {
-            // Inherit the DataGrid's RowBackground properties only if this row doesn't explicity have a background set
-            if (RootElement != null && OwningGrid != null)
-            {
-                IBrush newBackground = null;
-                if (Background == null)
-                {
-                    if (Index % 2 == 0 || OwningGrid.AlternatingRowBackground == null)
-                    {
-                        // Use OwningGrid.RowBackground if the index is even or if the OwningGrid.AlternatingRowBackground is null
-                        if (OwningGrid.RowBackground != null)
-                        {
-                            newBackground = OwningGrid.RowBackground;
-                        }
-                    }
-                    else
-                    {
-                        // Alternate row
-                        if (OwningGrid.AlternatingRowBackground != null)
-                        {
-                            newBackground = OwningGrid.AlternatingRowBackground;
-                        }
-                    }
-                }
-                else
-                {
-                    newBackground = Background;
-                }
-
-                if (RootElement.Background != newBackground)
-                {
-                    RootElement.Background = newBackground;
-                }
-            }
+            _cellsElement?.InvalidateChildIndex();
         }
 
         internal void EnsureFillerVisibility()
@@ -1092,7 +1062,7 @@ namespace Avalonia.Controls
         }
         
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == DataContextProperty)
             {

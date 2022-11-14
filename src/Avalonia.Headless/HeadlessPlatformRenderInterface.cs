@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Headless
 {
@@ -109,9 +110,21 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(destinationSize, new Vector(96, 96));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
         {
             return new HeadlessGlyphRunStub();
+        }
+
+        class HeadlessGlyphRunStub : IGlyphRunImpl
+        {
+            public void Dispose()
+            {
+            }
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -195,13 +208,6 @@ namespace Avalonia.Headless
 
             public IGeometryImpl SourceGeometry { get; }
             public Matrix Transform { get; }
-        }
-
-        class HeadlessGlyphRunStub : IGlyphRunImpl
-        {
-            public void Dispose()
-            {
-            }
         }
 
         class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
@@ -317,12 +323,12 @@ namespace Avalonia.Headless
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
             public int Version { get; set; }
-            public void Save(string fileName)
+            public void Save(string fileName, int? quality = null)
             {
 
             }
 
-            public void Save(Stream stream)
+            public void Save(Stream stream, int? quality = null)
             {
 
             }
@@ -344,6 +350,7 @@ namespace Avalonia.Headless
             }
 
             public Matrix Transform { get; set; }
+
             public void Clear(Color color)
             {
 
@@ -409,9 +416,13 @@ namespace Avalonia.Headless
 
             }
 
+            public object GetFeature(Type t)
+            {
+                return null;
+            }
+
             public void DrawLine(IPen pen, Point p1, Point p2)
             {
-                throw new NotImplementedException();
             }
 
             public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)

@@ -6,6 +6,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition
 {

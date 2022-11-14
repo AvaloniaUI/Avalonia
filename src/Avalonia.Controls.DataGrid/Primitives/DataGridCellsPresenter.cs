@@ -3,12 +3,13 @@
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Utilities;
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
-using Avalonia.Controls;
-using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -16,9 +17,10 @@ namespace Avalonia.Controls.Primitives
     /// Used within the template of a <see cref="T:Avalonia.Controls.DataGrid" />
     /// to specify the location in the control's visual tree where the cells are to be added. 
     /// </summary>
-    public sealed class DataGridCellsPresenter : Panel
+    public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
     {
         private double _fillerLeftEdge;
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
 
         // The desired height needs to be cached due to column virtualization; otherwise, the cells
         // would grow and shrink as the DataGrid scrolls horizontally
@@ -40,6 +42,25 @@ namespace Avalonia.Controls.Primitives
         {
             get;
             set;
+        }
+
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return child is DataGridCell cell
+                ? OwningGrid.ColumnsInternal.GetColumnDisplayIndex(cell.ColumnIndex)
+                : throw new InvalidOperationException("Invalid cell type");
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            count = OwningGrid.ColumnsInternal.VisibleColumnCount;
+            return true;
         }
 
         /// <summary>
@@ -120,6 +141,13 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void ChildrenChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            base.ChildrenChanged(sender, e);
+
+            InvalidateChildIndex();
+        }
+
         private static void EnsureCellDisplay(DataGridCell cell, bool displayColumn)
         {
             if (cell.IsCurrent)
@@ -190,6 +218,8 @@ namespace Avalonia.Controls.Primitives
             {
                 // No explicit height values were set so we can autosize
                 autoSizeHeight = true;
+                // We need to invalidate desired height in order to grow or shrink as needed
+                InvalidateDesiredHeight();
                 measureHeight = double.PositiveInfinity;
             }
             else
@@ -302,6 +332,11 @@ namespace Avalonia.Controls.Primitives
         internal void InvalidateDesiredHeight()
         {
             DesiredHeight = 0;
+        }
+
+        internal void InvalidateChildIndex()
+        {
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
         }
 
         private bool ShouldDisplayCell(DataGridColumn column, double frozenLeftEdge, double scrollingLeftEdge)

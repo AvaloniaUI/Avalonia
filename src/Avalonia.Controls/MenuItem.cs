@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Input;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
@@ -19,8 +20,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// A menu item control.
     /// </summary>
+    [TemplatePart("PART_Popup", typeof(Popup))]
     [PseudoClasses(":separator", ":icon", ":open", ":pressed", ":selected")]
-    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource
+    public class MenuItem : HeaderedSelectingItemsControl, IMenuItem, ISelectable, ICommandSource, IClickableControl
     {
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -77,25 +79,33 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Click"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-            RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuItem, RoutedEventArgs>(
+                nameof(Click),
+                RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="PointerEnterItem"/> event.
+        /// Defines the <see cref="PointerEnteredItem"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerEnterItemEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerEnterItem), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<PointerEventArgs> PointerEnteredItemEvent =
+            RoutedEvent.Register<MenuItem, PointerEventArgs>(
+                nameof(PointerEnteredItem),
+                RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="PointerLeaveItem"/> event.
+        /// Defines the <see cref="PointerExitedItem"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerLeaveItemEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerLeaveItem), RoutingStrategies.Bubble);
+        public static readonly RoutedEvent<PointerEventArgs> PointerExitedItemEvent =
+            RoutedEvent.Register<MenuItem, PointerEventArgs>(
+                nameof(PointerExitedItem),
+                RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="SubmenuOpened"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> SubmenuOpenedEvent =
-            RoutedEvent.Register<MenuItem, RoutedEventArgs>(nameof(SubmenuOpened), RoutingStrategies.Bubble);
+            RoutedEvent.Register<MenuItem, RoutedEventArgs>(
+                nameof(SubmenuOpened),
+                RoutingStrategies.Bubble);
 
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
@@ -172,24 +182,24 @@ namespace Avalonia.Controls
         /// Occurs when the pointer enters a menu item.
         /// </summary>
         /// <remarks>
-        /// A bubbling version of the <see cref="InputElement.PointerEnter"/> event for menu items.
+        /// A bubbling version of the <see cref="InputElement.PointerEntered"/> event for menu items.
         /// </remarks>
-        public event EventHandler<PointerEventArgs>? PointerEnterItem
+        public event EventHandler<PointerEventArgs>? PointerEnteredItem
         {
-            add { AddHandler(PointerEnterItemEvent, value); }
-            remove { RemoveHandler(PointerEnterItemEvent, value); }
+            add { AddHandler(PointerEnteredItemEvent, value); }
+            remove { RemoveHandler(PointerEnteredItemEvent, value); }
         }
 
         /// <summary>
         /// Raised when the pointer leaves a menu item.
         /// </summary>
         /// <remarks>
-        /// A bubbling version of the <see cref="InputElement.PointerLeave"/> event for menu items.
+        /// A bubbling version of the <see cref="InputElement.PointerExited"/> event for menu items.
         /// </remarks>
-        public event EventHandler<PointerEventArgs>? PointerLeaveItem
+        public event EventHandler<PointerEventArgs>? PointerExitedItem
         {
-            add { AddHandler(PointerLeaveItemEvent, value); }
-            remove { RemoveHandler(PointerLeaveItemEvent, value); }
+            add { AddHandler(PointerExitedItemEvent, value); }
+            remove { RemoveHandler(PointerExitedItemEvent, value); }
         }
 
         /// <summary>
@@ -435,22 +445,22 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
 
             var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerEnterItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+            RaiseEvent(new PointerEventArgs(PointerEnteredItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
         /// <inheritdoc/>
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
 
             var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerLeaveItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+            RaiseEvent(new PointerEventArgs(PointerExitedItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
@@ -494,12 +504,20 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override AutomationPeer OnCreateAutomationPeer()
         {
-            base.UpdateDataValidation(property, value);
+            return new MenuItemAutomationPeer(this);
+        }
+
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
+        {
+            base.UpdateDataValidation(property, state, error);
             if (property == CommandProperty)
             {
-                _commandBindingError = value.Type == BindingValueType.BindingError;
+                _commandBindingError = state == BindingValueType.BindingError;
                 if (_commandBindingError && _commandCanExecute)
                 {
                     _commandCanExecute = false;
@@ -637,7 +655,9 @@ namespace Avalonia.Controls
         /// <param name="e">The property change event.</param>
         private void IsSelectedChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if ((bool)e.NewValue!)
+            var parentMenu = Parent as Menu;
+
+            if ((bool)e.NewValue! && (parentMenu is null || parentMenu.IsOpen))
             {
                 Focus();
             }
@@ -697,6 +717,14 @@ namespace Avalonia.Controls
         }
 
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
+
+        void IClickableControl.RaiseClick()
+        {
+            if (IsEffectivelyEnabled)
+            {
+                RaiseEvent(new RoutedEventArgs(ClickEvent));
+            }
+        }
 
         /// <summary>
         /// A dependency resolver which returns a <see cref="MenuItemAccessKeyHandler"/>.

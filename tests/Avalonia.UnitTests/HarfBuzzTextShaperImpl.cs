@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
@@ -12,9 +11,13 @@ namespace Avalonia.UnitTests
 {
     public class HarfBuzzTextShaperImpl : ITextShaperImpl
     {
- public ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize,
-            CultureInfo culture, sbyte bidiLevel)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
         {
+            var typeface = options.Typeface;
+            var fontRenderingEmSize = options.FontRenderingEmSize;
+            var bidiLevel = options.BidiLevel;
+            var culture = options.Culture;
+
             using (var buffer = new Buffer())
             {
                 buffer.AddUtf16(text.Buffer.Span, text.Start, text.Length);
@@ -27,7 +30,7 @@ namespace Avalonia.UnitTests
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
 
-                var font = ((HarfBuzzGlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((HarfBuzzGlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 
@@ -77,7 +80,7 @@ namespace Avalonia.UnitTests
             
             var second = glyphInfos[length - 1];
 
-            if (!new Codepoint((int)second.Codepoint).IsBreakChar)
+            if (!new Codepoint(second.Codepoint).IsBreakChar)
             {
                 return;
             }

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using Avalonia.Markup.Xaml.PortableXaml;
 using Avalonia.Utilities;
@@ -19,8 +18,6 @@ namespace Avalonia.Build.Tasks
         public string Root { get; set; }
         [Required]
         public string Output { get; set; }
-        [Required]
-        public ITaskItem[] EmbeddedResources { get; set; }
 
         public string ReportImportance { get; set; }
 
@@ -105,7 +102,7 @@ namespace Avalonia.Build.Tasks
         {
             var typeToXamlIndex = new Dictionary<string, string>(); 
             
-            foreach (var s in sources.ToList())
+            foreach (var s in sources.ToArray())
             {
                 if (s.Path.ToLowerInvariant().EndsWith(".xaml") || s.Path.ToLowerInvariant().EndsWith(".paml") || s.Path.ToLowerInvariant().EndsWith(".axaml"))
                 {
@@ -149,10 +146,6 @@ namespace Avalonia.Build.Tasks
             Enum.TryParse<MessageImportance>(ReportImportance, out _reportImportance);
 
             BuildEngine.LogMessage($"GenerateAvaloniaResourcesTask -> Root: {Root}, {Resources?.Count()} resources, Output:{Output}", _reportImportance < MessageImportance.Low ? MessageImportance.High : _reportImportance);
-
-            foreach (var r in EmbeddedResources.Where(r => r.ItemSpec.EndsWith(".xaml") || r.ItemSpec.EndsWith(".paml") || r.ItemSpec.EndsWith(".axaml")))
-                BuildEngine.LogWarning(BuildEngineErrorCode.LegacyResmScheme, r.ItemSpec,
-                    "XAML file is packed using legacy EmbeddedResource/resm scheme, relative URIs won't work");
             var resources = BuildResourceSources();
 
             if (!PreProcessXamlFiles(resources))

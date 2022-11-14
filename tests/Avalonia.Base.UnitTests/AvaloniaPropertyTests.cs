@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 using Xunit;
 
@@ -146,43 +147,43 @@ namespace Avalonia.Base.UnitTests
                 OverrideMetadata(typeof(T), metadata);
             }
 
-            public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
-            {
-                throw new NotImplementedException();
-            }
-
             internal override IDisposable RouteBind(
-                IAvaloniaObject o,
+                AvaloniaObject o,
                 IObservable<BindingValue<object>> source,
                 BindingPriority priority)
             {
                 throw new NotImplementedException();
             }
 
-            internal override void RouteClearValue(IAvaloniaObject o)
+            internal override void RouteClearValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();
             }
 
-            internal override object RouteGetValue(IAvaloniaObject o)
+            internal override object RouteGetValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();
             }
 
-            internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+            internal override object RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority)
             {
                 throw new NotImplementedException();
             }
 
-            internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)
+            internal override void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject oldParent)
             {
                 throw new NotImplementedException();
             }
 
             internal override IDisposable RouteSetValue(
-                IAvaloniaObject o,
+                AvaloniaObject o,
                 object value,
                 BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override ISetterInstance CreateSetterInstance(IStyleable target, object value)
             {
                 throw new NotImplementedException();
             }

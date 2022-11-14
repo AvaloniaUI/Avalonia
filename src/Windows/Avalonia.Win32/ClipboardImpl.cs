@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32
 {
@@ -78,12 +79,13 @@ namespace Avalonia.Win32
         public async Task SetDataObjectAsync(IDataObject data)
         {
             Dispatcher.UIThread.VerifyAccess();
-            var wrapper = new DataObject(data);
+            using var wrapper = new DataObject(data);
             var i = OleRetryCount;
 
             while (true)
             {
-                var hr = UnmanagedMethods.OleSetClipboard(wrapper);
+                var ptr = wrapper.GetNativeIntPtr<Win32Com.IDataObject>();
+                var hr = UnmanagedMethods.OleSetClipboard(ptr);
 
                 if (hr == 0)
                     break;
@@ -106,9 +108,9 @@ namespace Avalonia.Win32
 
                 if (hr == 0)
                 {
-                    var wrapper = new OleDataObject(dataObject);
+                    using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
+                    using var wrapper = new OleDataObject(proxy);
                     var formats = wrapper.GetDataFormats().ToArray();
-                    Marshal.ReleaseComObject(dataObject);
                     return formats;
                 }
 
@@ -130,9 +132,9 @@ namespace Avalonia.Win32
 
                 if (hr == 0)
                 {
-                    var wrapper = new OleDataObject(dataObject);
+                    using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
+                    using var wrapper = new OleDataObject(proxy);
                     var rv = wrapper.Get(format);
-                    Marshal.ReleaseComObject(dataObject);
                     return rv;
                 }
 

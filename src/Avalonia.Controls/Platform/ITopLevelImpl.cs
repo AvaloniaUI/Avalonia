@@ -4,8 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
-using JetBrains.Annotations;
 
 namespace Avalonia.Platform
 {
@@ -50,6 +50,7 @@ namespace Avalonia.Platform
     /// This interface is the common interface to <see cref="IWindowImpl"/> and
     /// <see cref="IPopupImpl"/>.
     /// </remarks>
+    [Unstable]
     public interface ITopLevelImpl : IDisposable
     {
         /// <summary>
@@ -149,13 +150,7 @@ namespace Avalonia.Platform
         /// Gets or sets a method called when the input focus is lost.
         /// </summary>
         Action? LostFocus { get; set; }
-
-        /// <summary>
-        /// Gets a mouse device associated with toplevel
-        /// </summary>
-        [CanBeNull]
-        IMouseDevice MouseDevice { get; }
-
+        
         IPopupImpl? CreatePopup();
 
         /// <summary>

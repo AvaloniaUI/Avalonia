@@ -1,3 +1,5 @@
+using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
@@ -31,6 +33,7 @@ namespace Avalonia.Controls
             PressedMixin.Attach<TabItem>();
             FocusableProperty.OverrideDefaultValue(typeof(TabItem), true);
             DataContextProperty.Changed.AddClassHandler<TabItem>((x, e) => x.UpdateHeader(e));
+            AutomationProperties.ControlTypeOverrideProperty.OverrideDefaultValue<TabItem>(AutomationControlType.TabItem);
         }
 
         /// <summary>
@@ -52,6 +55,8 @@ namespace Avalonia.Controls
             get { return GetValue(IsSelectedProperty); }
             set { SetValue(IsSelectedProperty, value); }
         }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new ListItemAutomationPeer(this);
 
         private void UpdateHeader(AvaloniaPropertyChangedEventArgs obj)
         {

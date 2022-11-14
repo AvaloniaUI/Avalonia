@@ -1,17 +1,23 @@
 using System.IO;
 using System.Runtime.CompilerServices;
-using ImageMagick;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Rendering;
-
+using SixLabors.ImageSharp;
 using Xunit;
 using Avalonia.Platform;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.Media;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
+using SixLabors.ImageSharp.PixelFormats;
+using Image = SixLabors.ImageSharp.Image;
 #if AVALONIA_SKIA
 using Avalonia.Skia;
 #else
@@ -24,8 +30,6 @@ namespace Avalonia.Skia.RenderTests
 namespace Avalonia.Direct2D1.RenderTests
 #endif
 {
-    using Avalonia.PlatformSupport;
-
     public class TestBase
     {
 #if AVALONIA_SKIA
@@ -39,7 +43,7 @@ namespace Avalonia.Direct2D1.RenderTests
             new TestThreadingInterface();
 
         private static readonly IAssetLoader assetLoader = new AssetLoader();
-
+        
         static TestBase()
         {
 #if AVALONIA_SKIA
@@ -85,6 +89,7 @@ namespace Avalonia.Direct2D1.RenderTests
 
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
             var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
+            var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
             var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
             var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
             var size = new Size(target.Width, target.Height);
@@ -97,7 +102,8 @@ namespace Avalonia.Direct2D1.RenderTests
                 bitmap.Render(target);
                 bitmap.Save(immediatePath);
             }
-
+            
+            
             using (var rtb = factory.CreateRenderTargetBitmap(pixelSize, dpiVector))
             using (var renderer = new DeferredRenderer(target, rtb))
             {
@@ -108,8 +114,29 @@ namespace Avalonia.Direct2D1.RenderTests
                 // Do the deferred render on a background thread to expose any threading errors in
                 // the deferred rendering path.
                 await Task.Run((Action)renderer.UnitTestRender);
+                threadingInterface.MainThread = Thread.CurrentThread;
 
                 rtb.Save(deferredPath);
+            }
+
+            var timer = new ManualRenderTimer();
+
+            var compositor = new Compositor(new RenderLoop(timer, Dispatcher.UIThread), null);
+            using (var rtb = factory.CreateRenderTargetBitmap(pixelSize, dpiVector))
+            {
+                var root = new TestRenderRoot(dpiVector.X / 96, rtb);
+                using (var renderer = new CompositingRenderer(root, compositor) { RenderOnlyOnRenderThread = false})
+                {
+                    root.Initialize(renderer, target);
+                    renderer.Start();
+                    Dispatcher.UIThread.RunJobs();
+                    timer.TriggerTick();
+                }
+
+                // Free pools
+                for (var c = 0; c < 11; c++)
+                    TestThreadingInterface.RunTimers();
+                rtb.Save(compositedPath);
             }
         }
 
@@ -118,13 +145,16 @@ namespace Avalonia.Direct2D1.RenderTests
             var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
             var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
+            var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
 
-            using (var expected = new MagickImage(expectedPath))
-            using (var immediate = new MagickImage(immediatePath))
-            using (var deferred = new MagickImage(deferredPath))
+            using (var expected = Image.Load<Rgba32>(expectedPath))
+            using (var immediate = Image.Load<Rgba32>(immediatePath))
+            using (var deferred = Image.Load<Rgba32>(deferredPath))
+            using (var composited = Image.Load<Rgba32>(compositedPath))
             {
-                double immediateError = expected.Compare(immediate, ErrorMetric.RootMeanSquared);
-                double deferredError = expected.Compare(deferred, ErrorMetric.RootMeanSquared);
+                var immediateError = CompareImages(immediate, expected);
+                var deferredError = CompareImages(deferred, expected);
+                var compositedError = CompareImages(composited, expected);
 
                 if (immediateError > 0.022)
                 {
@@ -135,6 +165,11 @@ namespace Avalonia.Direct2D1.RenderTests
                 {
                     Assert.True(false, deferredPath + ": Error = " + deferredError);
                 }
+                
+                if (compositedError > 0.022)
+                {
+                    Assert.True(false, compositedPath + ": Error = " + compositedError);
+                }
             }
         }
 
@@ -143,16 +178,63 @@ namespace Avalonia.Direct2D1.RenderTests
             var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
             var actualPath = Path.Combine(OutputPath, testName + ".out.png");
 
-            using (var expected = new MagickImage(expectedPath))
-            using (var actual = new MagickImage(actualPath))
+            using (var expected = Image.Load<Rgba32>(expectedPath))
+            using (var actual = Image.Load<Rgba32>(actualPath))
             {
-                double immediateError = expected.Compare(actual, ErrorMetric.RootMeanSquared);
+                double immediateError = CompareImages(actual, expected);
 
                 if (immediateError > 0.022)
                 {
                     Assert.True(false, actualPath + ": Error = " + immediateError);
                 }
             }
+        }
+        
+        /// <summary>
+        /// Calculates root mean square error for given two images.
+        /// Based roughly on ImageMagick implementation to ensure consistency.
+        /// </summary>
+        private static double CompareImages(Image<Rgba32> actual, Image<Rgba32> expected)
+        {
+            if (actual.Width != expected.Width || actual.Height != expected.Height)
+            {
+                throw new ArgumentException("Images have different resolutions");
+            }
+
+            var quantity = actual.Width * actual.Height;
+            double squaresError = 0;
+
+            const double scale = 1 / 255d;
+            
+            for (var x = 0; x < actual.Width; x++)
+            {
+                double localError = 0;
+                
+                for (var y = 0; y < actual.Height; y++)
+                {
+                    var expectedAlpha = expected[x, y].A * scale;
+                    var actualAlpha = actual[x, y].A * scale;
+                    
+                    var r = scale * (expectedAlpha * expected[x, y].R - actualAlpha * actual[x, y].R);
+                    var g = scale * (expectedAlpha * expected[x, y].G - actualAlpha * actual[x, y].G);
+                    var b = scale * (expectedAlpha * expected[x, y].B - actualAlpha * actual[x, y].B);
+                    var a = expectedAlpha - actualAlpha;
+
+                    var error = r * r + g * g + b * b + a * a;
+
+                    localError += error;
+                }
+
+                squaresError += localError;
+            }
+
+            var meanSquaresError = squaresError / quantity;
+
+            const int channelCount = 4;
+            
+            meanSquaresError = meanSquaresError / channelCount;
+            
+            return Math.Sqrt(meanSquaresError);
         }
 
         private string GetTestsDirectory()
@@ -187,9 +269,25 @@ namespace Avalonia.Direct2D1.RenderTests
                 // No-op
             }
 
+            private static List<Action> s_timers = new();
+            
+            public static void RunTimers()
+            {
+                lock (s_timers)
+                {
+                    foreach(var t in s_timers.ToList())
+                        t.Invoke();
+                }
+            }
+
             public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action tick)
             {
-                throw new NotImplementedException();
+                var act = () => tick();
+                lock (s_timers) s_timers.Add(act);
+                return Disposable.Create(() =>
+                {
+                    lock (s_timers) s_timers.Remove(act);
+                });
             }
         }
     }

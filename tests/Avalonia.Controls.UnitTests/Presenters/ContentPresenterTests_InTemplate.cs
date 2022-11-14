@@ -353,6 +353,29 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Null(target.Host);
         }
 
+        [Fact]
+        public void Content_Should_Become_DataContext_When_ControlTemplate_Is_Not_Null()
+        {
+            var (target, _) = CreateTarget();
+
+            var textBlock = new TextBlock
+            {
+                [!TextBlock.TextProperty] = new Binding("Name"),
+            };
+
+            var canvas = new Canvas()
+            {
+                Name = "Canvas"
+            };
+
+            target.ContentTemplate = new FuncDataTemplate<Canvas>((_, __) => textBlock);
+            target.Content = canvas;
+
+            Assert.NotNull(target.DataContext);
+            Assert.Equal(canvas, target.DataContext);
+            Assert.Equal("Canvas", textBlock.Text);
+        }
+
         (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()
         {
             var templatedParent = new ContentControl

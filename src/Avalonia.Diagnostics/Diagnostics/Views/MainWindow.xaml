@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:Avalonia.Diagnostics.Views"
         xmlns:diag="clr-namespace:Avalonia.Diagnostics"
-        xmlns:default="using:Avalonia.Themes.Default"
         Title="Avalonia DevTools"
         x:Class="Avalonia.Diagnostics.Views.MainWindow">
   <Window.DataTemplates>
@@ -10,11 +9,8 @@
   </Window.DataTemplates>
   
   <Window.Styles>
-    <default:SimpleTheme Mode="Light"/>
-    <StyleInclude Source="resm:Avalonia.Controls.DataGrid.Themes.Default.xaml?assembly=Avalonia.Controls.DataGrid"/>
-    <Style Selector="DataGrid ContextMenu">
-      <Setter Property="Foreground" Value="Black"/>
-    </Style>
+    <SimpleTheme Mode="Light"/>
+    <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/ThicknessEditor.axaml" />
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/FilterTextBox.axaml" />
   </Window.Styles>

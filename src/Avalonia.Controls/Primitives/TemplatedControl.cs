@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Logging;
@@ -41,31 +42,37 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
         public static readonly StyledProperty<FontFamily> FontFamilyProperty =
-            TextBlock.FontFamilyProperty.AddOwner<TemplatedControl>();
+            TextElement.FontFamilyProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
         public static readonly StyledProperty<double> FontSizeProperty =
-            TextBlock.FontSizeProperty.AddOwner<TemplatedControl>();
+            TextElement.FontSizeProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
         public static readonly StyledProperty<FontStyle> FontStyleProperty =
-            TextBlock.FontStyleProperty.AddOwner<TemplatedControl>();
+            TextElement.FontStyleProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="FontWeight"/> property.
         /// </summary>
         public static readonly StyledProperty<FontWeight> FontWeightProperty =
-            TextBlock.FontWeightProperty.AddOwner<TemplatedControl>();
+            TextElement.FontWeightProperty.AddOwner<TemplatedControl>();
+
+        /// <summary>
+        /// Defines the <see cref="FontWeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontStretch> FontStretchProperty =
+            TextElement.FontStretchProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
         public static readonly StyledProperty<IBrush?> ForegroundProperty =
-            TextBlock.ForegroundProperty.AddOwner<TemplatedControl>();
+            TextElement.ForegroundProperty.AddOwner<TemplatedControl>();
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
@@ -90,7 +97,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<TemplateAppliedEventArgs> TemplateAppliedEvent =
             RoutedEvent.Register<TemplatedControl, TemplateAppliedEventArgs>(
-                "TemplateApplied", 
+                nameof(TemplateApplied), 
                 RoutingStrategies.Direct);
 
         private IControlTemplate? _appliedTemplate;
@@ -186,6 +193,15 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <summary>
+        /// Gets or sets the font stretch used to draw the control's text.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get { return GetValue(FontStretchProperty); }
+            set { SetValue(FontStretchProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the brush used to draw the control's text and other foreground elements.
         /// </summary>
         public IBrush? Foreground
@@ -269,19 +285,18 @@ namespace Avalonia.Controls.Primitives
                     Logger.TryGet(LogEventLevel.Verbose, LogArea.Control)?.Log(this, "Creating control template");
 
                     var (child, nameScope) = template.Build(this);
-                    ApplyTemplatedParent(child);
+                    ApplyTemplatedParent(child, this);
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
                     
                     // Existing code kinda expect to see a NameScope even if it's empty
                     if (nameScope == null)
+                    {
                         nameScope = new NameScope();
+                    }
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
-#pragma warning disable CS0618 // Type or member is obsolete
-                    OnTemplateApplied(e);
-#pragma warning restore CS0618 // Type or member is obsolete
                     RaiseEvent(e);
                 }
 
@@ -340,17 +355,24 @@ namespace Avalonia.Controls.Primitives
             base.OnDetachedFromLogicalTree(e);
         }
 
+        /// <summary>
+        /// Called when the control's template is applied.
+        /// In simple terms, this means the method is called just before the control is displayed.
+        /// </summary>
+        /// <param name="e">The event args.</param>
         protected virtual void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
         }
 
-        /// <summary>
-        /// Called when the control's template is applied.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        [Obsolete("Use OnApplyTemplate")]
-        protected virtual void OnTemplateApplied(TemplateAppliedEventArgs e)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ThemeProperty)
+            {
+                foreach (var child in this.GetTemplateChildren())
+                    child.InvalidateStyles();
+            }
         }
 
         /// <summary>
@@ -366,18 +388,19 @@ namespace Avalonia.Controls.Primitives
         /// Sets the TemplatedParent property for the created template children.
         /// </summary>
         /// <param name="control">The control.</param>
-        private void ApplyTemplatedParent(IControl control)
+        /// <param name="templatedParent">The templated parent to apply.</param>
+        internal static void ApplyTemplatedParent(IStyledElement control, ITemplatedControl? templatedParent)
         {
-            control.SetValue(TemplatedParentProperty, this);
+            control.SetValue(TemplatedParentProperty, templatedParent);
 
             var children = control.LogicalChildren;
             var count = children.Count;
 
             for (var i = 0; i < count; i++)
             {
-                if (children[i] is IControl child)
+                if (children[i] is IStyledElement child && child.TemplatedParent is null)
                 {
-                    ApplyTemplatedParent(child);
+                    ApplyTemplatedParent(child, templatedParent);
                 }
             }
         }

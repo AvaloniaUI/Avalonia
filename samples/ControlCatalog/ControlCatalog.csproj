@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>    
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>    
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
@@ -14,6 +15,9 @@
     <AvaloniaResource Include="Assets\Fonts\*" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Pages\NativeEmbedPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
@@ -23,10 +27,24 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Update="Pages\NativeEmbedPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Pages\NativeEmbedPage.xaml.cs">
+      <DependentUpon>%(Filename)</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />

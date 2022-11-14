@@ -11,6 +11,12 @@ namespace Avalonia.Controls.Primitives
 {
     public class OverlayPopupHost : ContentControl, IPopupHost, IInteractive, IManagedPopupPositionerPopup
     {
+        /// <summary>
+        /// Defines the <see cref="Transform"/> property.
+        /// </summary>
+        public static readonly StyledProperty<Transform?> TransformProperty =
+            PopupRoot.TransformProperty.AddOwner<OverlayPopupHost>();
+
         private readonly OverlayLayer _overlayLayer;
         private PopupPositionerParameters _positionerParameters = new PopupPositionerParameters();
         private ManagedPopupPositioner _positioner;
@@ -29,9 +35,21 @@ namespace Avalonia.Controls.Primitives
         }
 
         public IVisual? HostedVisualTreeRoot => null;
-        
+
+        public Transform? Transform
+        {
+            get => GetValue(TransformProperty);
+            set => SetValue(TransformProperty, value);
+        }
+
         /// <inheritdoc/>
         IInteractive? IInteractive.InteractiveParent => Parent;
+
+        bool IPopupHost.Topmost
+        {
+            get => false;
+            set { /* Not currently supported in overlay popups */ }
+        }
 
         public void Dispose() => Hide();
 
@@ -48,35 +66,13 @@ namespace Avalonia.Controls.Primitives
             _shown = false;
         }
 
-        public IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty, StyledProperty<double> minWidthProperty,
-            StyledProperty<double> maxWidthProperty, StyledProperty<double> heightProperty, StyledProperty<double> minHeightProperty,
-            StyledProperty<double> maxHeightProperty, StyledProperty<bool> topmostProperty)
-        {
-            // Topmost property is not supported
-            var bindings = new List<IDisposable>();
-
-            void Bind(AvaloniaProperty what, AvaloniaProperty to) => bindings.Add(this.Bind(what, popup[~to]));
-            Bind(WidthProperty, widthProperty);
-            Bind(MinWidthProperty, minWidthProperty);
-            Bind(MaxWidthProperty, maxWidthProperty);
-            Bind(HeightProperty, heightProperty);
-            Bind(MinHeightProperty, minHeightProperty);
-            Bind(MaxHeightProperty, maxHeightProperty);
-            
-            return Disposable.Create(() =>
-            {
-                foreach (var x in bindings)
-                    x.Dispose();
-            });
-        }
-
         public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
         {
             _positionerParameters.ConfigurePosition((TopLevel)_overlayLayer.GetVisualRoot()!, target, placement, offset, anchor,
-                gravity, constraintAdjustment, rect);
+                gravity, constraintAdjustment, rect, FlowDirection);
             UpdatePosition();
         }
 

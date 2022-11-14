@@ -1,7 +1,9 @@
 using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Data.Core
 {
+    [NotClientImplementable]
     public interface IPropertyInfo
     {
         string Name { get; }

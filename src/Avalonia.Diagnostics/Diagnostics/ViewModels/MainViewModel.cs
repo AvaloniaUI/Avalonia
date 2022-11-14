@@ -1,14 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.Threading;
-using System.Reactive.Linq;
-using System.Linq;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -59,8 +56,8 @@ namespace Avalonia.Diagnostics.ViewModels
                     .Subscribe(e =>
                         {
                             PointerOverRoot = e.Root;
-                            PointerOverElement = e.Root.GetInputElementsAt(e.Position).FirstOrDefault();
-                        });                                     
+                            PointerOverElement = e.Root.InputHitTest(e.Position);
+                        });
 #nullable restore
             }
             Console = new ConsoleViewModel(UpdateConsoleContext);
@@ -97,7 +94,9 @@ namespace Avalonia.Diagnostics.ViewModels
                     changed = false;
                 }
                 if (changed)
-                RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
+                {
+                    RaiseAndSetIfChanged(ref _shouldVisualizeDirtyRects, value);
+                }
             }
         }
 
@@ -163,8 +162,7 @@ namespace Avalonia.Diagnostics.ViewModels
                             }
                             catch { }
                         },
-                        TimeSpan.FromMilliseconds(0),
-                        DispatcherPriority.ApplicationIdle);
+                        TimeSpan.FromMilliseconds(0));
                 }
 
                 RaiseAndSetIfChanged(ref _content, value);
@@ -333,7 +331,7 @@ namespace Avalonia.Diagnostics.ViewModels
             private set => RaiseAndSetIfChanged(ref _showImplementedInterfaces , value); 
         }
 
-        public void ToggleShowImplementedInterfaces(object parametr)
+        public void ToggleShowImplementedInterfaces(object parameter)
         {
             ShowImplementedInterfaces = !ShowImplementedInterfaces;
             if (Content is TreePageViewModel viewModel)
@@ -342,15 +340,15 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public bool ShowDettailsPropertyType 
+        public bool ShowDetailsPropertyType
         { 
             get => _showPropertyType; 
             private set => RaiseAndSetIfChanged(ref  _showPropertyType , value); 
         }
 
-        public void ToggleShowDettailsPropertyType(object paramter)
+        public void ToggleShowDetailsPropertyType(object parameter)
         {
-            ShowDettailsPropertyType = !ShowDettailsPropertyType;
+            ShowDetailsPropertyType = !ShowDetailsPropertyType;
         }
     }
 }

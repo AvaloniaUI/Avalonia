@@ -1,15 +1,14 @@
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.LogicalTree;
-using Avalonia.VisualTree;
-using Xunit;
-using System.Collections.ObjectModel;
-using Avalonia.UnitTests;
 using Avalonia.Input;
-using System.Collections.Generic;
+using Avalonia.LogicalTree;
+using Avalonia.Styling;
+using Avalonia.UnitTests;
+using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -60,6 +59,25 @@ namespace Avalonia.Controls.UnitTests
             var container = (ContentPresenter)target.Presenter.Panel.Children[0];
 
             Assert.Null(container.TemplatedParent);
+        }
+
+        [Fact]
+        public void Container_Should_Have_Theme_Set_To_ItemContainerTheme()
+        {
+            var theme = new ControlTheme();
+            var target = new ItemsControl
+            {
+                ItemContainerTheme = theme,
+            };
+
+            target.Template = GetTemplate();
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var container = (ContentPresenter)target.Presenter.Panel.Children[0];
+
+            Assert.Same(container.Theme, theme);
         }
 
         [Fact]

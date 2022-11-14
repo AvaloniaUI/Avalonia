@@ -12,6 +12,7 @@ using Moq;
 using Xunit;
 using Avalonia.Input.Raw;
 using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {
@@ -60,117 +61,8 @@ namespace Avalonia.Controls.UnitTests.Utils
             }
         }
 
-        [Fact]
-        public void HotKeyManager_Should_Release_Reference_When_Control_Detached()
-        {
-            using (AvaloniaLocator.EnterScope())
-            {
-                var styler = new Mock<Styler>();
-
-                AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
-
-                var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
-
-                WeakReference reference = null;
-
-                var tl = new Window();
-
-                new Action(() =>
-                {
-                    var button = new Button();
-                    reference = new WeakReference(button, true);
-                    tl.Content = button;
-                    tl.Template = CreateWindowTemplate();
-                    tl.ApplyTemplate();
-                    tl.Presenter.ApplyTemplate();
-                    HotKeyManager.SetHotKey(button, gesture1);
-
-                    // Detach the button from the logical tree, so there is no reference to it
-                    tl.Content = null;
-                    tl.ApplyTemplate();
-                })();
-
-
-                // The button should be collected since it's detached from the listbox
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-
-                Assert.Null(reference?.Target);
-            }
-        }
-
-        [Fact]
-        public void HotKeyManager_Should_Release_Reference_When_Control_In_Item_Template_Detached()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var styler = new Mock<Styler>();
-
-                AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
-
-                var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
-
-                var weakReferences = new List<WeakReference>();
-                var tl = new Window { SizeToContent = SizeToContent.WidthAndHeight, IsVisible = true };
-                var lm = tl.LayoutManager;
-
-                var keyGestures = new AvaloniaList<KeyGesture> { gesture1 };
-                var listBox = new ListBox
-                {
-                    Width = 100,
-                    Height = 100,
-                    VirtualizationMode = ItemVirtualizationMode.None,
-                    // Create a button with binding to the KeyGesture in the template and add it to references list
-                    ItemTemplate = new FuncDataTemplate(typeof(KeyGesture), (o, scope) =>
-                    {
-                        var keyGesture = o as KeyGesture;
-                        var button = new Button
-                        {
-                            DataContext = keyGesture, [!Button.HotKeyProperty] = new Binding("")
-                        };
-                        weakReferences.Add(new WeakReference(button, true));
-                        return button;
-                    })
-                };
-                // Add the listbox and render it
-                tl.Content = listBox;
-                lm.ExecuteInitialLayoutPass();
-                listBox.Items = keyGestures;
-                lm.ExecuteLayoutPass();
-
-                // Let the button detach when clearing the source items
-                keyGestures.Clear();
-                lm.ExecuteLayoutPass();
-                
-                // Add it again to double check,and render
-                keyGestures.Add(gesture1);
-                lm.ExecuteLayoutPass();
-                
-                keyGestures.Clear();
-                lm.ExecuteLayoutPass();
-                
-                // The button should be collected since it's detached from the listbox
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                
-                Assert.True(weakReferences.Count > 0);
-                foreach (var weakReference in weakReferences)
-                {
-                    Assert.Null(weakReference.Target);
-                }
-            }
-        }
-
         [Theory]
-        [MemberData(nameof(ElementsFactory))]
+        [MemberData(nameof(ElementsFactory), parameters: true)]
         public void HotKeyManager_Should_Use_CommandParameter(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -215,7 +107,7 @@ namespace Avalonia.Controls.UnitTests.Utils
 
 
         [Theory]
-        [MemberData(nameof(ElementsFactory))]
+        [MemberData(nameof(ElementsFactory), parameters: true)]
         public void HotKeyManager_Should_Do_Not_Executed_When_IsEnabled_False(string factoryName, Factory factory)
         {
             using (AvaloniaLocator.EnterScope())
@@ -256,11 +148,127 @@ namespace Avalonia.Controls.UnitTests.Utils
             }
         }
 
-        public static TheoryData<string, Factory> ElementsFactory =>
+        [Theory]
+        [MemberData(nameof(ElementsFactory), parameters:false)]
+        public void HotKeyManager_Should_Invoke_Event_Click_When_Command_Is_Null(string factoryName, Factory factory)
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                var styler = new Mock<Styler>();
+                var target = new KeyboardDevice();
+                var clickExecutedCount = 0;
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
+                    .Bind<IStyler>().ToConstant(styler.Object);
+
+                var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
+
+                void Clickable_Click(object sender, Interactivity.RoutedEventArgs e)
+                {
+                    clickExecutedCount++;
+                }
+
+                var root = new Window();
+                var element = factory(0, default, root) as InputElement;
+                if (element is IClickableControl clickable)
+                {
+                    clickable.Click += Clickable_Click;
+                }
+
+                root.Template = CreateWindowTemplate();
+                root.ApplyTemplate();
+                root.Presenter.ApplyTemplate();
+
+                HotKeyManager.SetHotKey(element, gesture);
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+                element.IsEnabled = false;
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+
+                Assert.True(clickExecutedCount == 1, $"{factoryName} Execution raised when IsEnabled is false.");
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ElementsFactory), parameters: true)]
+        public void HotKeyManager_Should_Not_Invoke_Event_Click_When_Command_Is_Not_Null(string factoryName, Factory factory)
+        {
+            using (AvaloniaLocator.EnterScope())
+            {
+                var styler = new Mock<Styler>();
+                var target = new KeyboardDevice();
+                var clickExecutedCount = 0;
+                var commandExecutedCount = 0;
+                AvaloniaLocator.CurrentMutable
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
+                    .Bind<IStyler>().ToConstant(styler.Object);
+
+                var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
+
+                void DoExecute(object parameter)
+                {
+                    commandExecutedCount++;
+                }
+
+                void Clickable_Click(object sender, Interactivity.RoutedEventArgs e)
+                {
+                    clickExecutedCount++;
+                }
+
+                var root = new Window();
+                var element = factory(0, DoExecute, root) as InputElement;
+                if (element is IClickableControl clickable)
+                {
+                    clickable.Click += Clickable_Click;
+                }
+
+                root.Template = CreateWindowTemplate();
+                root.ApplyTemplate();
+                root.Presenter.ApplyTemplate();
+
+                HotKeyManager.SetHotKey(element, gesture);
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+                element.IsEnabled = false;
+
+                target.ProcessRawEvent(new RawKeyEventArgs(target,
+                    0,
+                    root,
+                    RawKeyEventType.KeyDown,
+                    Key.A,
+                    RawInputModifiers.Control));
+
+                Assert.True(commandExecutedCount == 1, $"{factoryName} Execution raised when IsEnabled is false.");
+                Assert.True(clickExecutedCount == 0, $"{factoryName} Execution raised event Click.");
+            }
+        }
+
+
+        public static TheoryData<string, Factory> ElementsFactory(bool withCommand) =>
+
             new TheoryData<string, Factory>()
             {
-                {nameof(Button), MakeButton},
-                {nameof(MenuItem),MakeMenu},
+                {nameof(Button), withCommand ? MakeButton : MakeButtonWithoutCommand},
+                {nameof(MenuItem),withCommand ? MakeMenu : MakeMenuWithoutCommand},
             };
 
         private static AvaloniaObject MakeMenu(int expectedParameter, Action<object> action, Window root)
@@ -284,6 +292,29 @@ namespace Avalonia.Controls.UnitTests.Utils
             {
                 Command = new Command(action),
                 CommandParameter = expectedParameter,
+            };
+
+            root.Content = button;
+            return button;
+        }
+
+        private static AvaloniaObject MakeMenuWithoutCommand(int expectedParameter, Action<object> action, Window root)
+        {
+            var menuitem = new MenuItem()
+            {
+            };
+            var rootMenu = new Menu();
+
+            rootMenu.Items = new[] { menuitem };
+
+            root.Content = rootMenu;
+            return menuitem;
+        }
+
+        private static AvaloniaObject MakeButtonWithoutCommand(int expectedParameter, Action<object> action, Window root)
+        {
+            var button = new Button()
+            {
             };
 
             root.Content = button;

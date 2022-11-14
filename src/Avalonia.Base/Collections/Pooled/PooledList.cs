@@ -587,7 +587,7 @@ namespace Avalonia.Collections.Pooled
             if (size > 0 && _clearOnFree)
             {
                 // Clear the elements so that the gc can reclaim the references.
-                Array.Clear(_items, 0, _size);
+                Array.Clear(_items, 0, size);
             }
         }
 
@@ -1434,7 +1434,7 @@ namespace Avalonia.Collections.Pooled
         /// <summary>
         /// Returns the internal buffers to the ArrayPool.
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             ReturnArray();
             _size = 0;

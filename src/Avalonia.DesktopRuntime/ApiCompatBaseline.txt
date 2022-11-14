@@ -1,3 +1,0 @@
-Compat issues with assembly Avalonia.DesktopRuntime:
-TypesMustExist : Type 'Avalonia.Shared.PlatformSupport.AssetLoader' does not exist in the implementation but it does exist in the contract.
-Total Issues: 1

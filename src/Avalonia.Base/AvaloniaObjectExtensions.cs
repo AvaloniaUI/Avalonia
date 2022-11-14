@@ -25,7 +25,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets an observable for a <see cref="AvaloniaProperty"/>.
+        /// Gets an observable for an <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="o">The object.</param>
         /// <param name="property">The property.</param>
@@ -44,7 +44,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets an observable for a <see cref="AvaloniaProperty"/>.
+        /// Gets an observable for an <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="o">The object.</param>
         /// <typeparam name="T">The property type.</typeparam>
@@ -64,7 +64,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets an observable for a <see cref="AvaloniaProperty"/>.
+        /// Gets an observable for an <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="o">The object.</param>
         /// <param name="property">The property.</param>
@@ -85,7 +85,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets an observable for a <see cref="AvaloniaProperty"/>.
+        /// Gets an observable for an <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="o">The object.</param>
         /// <typeparam name="T">The property type.</typeparam>
@@ -128,7 +128,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a subject for a <see cref="AvaloniaProperty"/>.
+        /// Gets a subject for an <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <param name="o">The object.</param>
         /// <param name="property">The property.</param>
@@ -150,7 +150,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Gets a subject for a <see cref="AvaloniaProperty"/>.
+        /// Gets a subject for an <see cref="AvaloniaProperty"/>.
         /// </summary>
         /// <typeparam name="T">The property type.</typeparam>
         /// <param name="o">The object.</param>
@@ -230,30 +230,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <param name="target">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public static IDisposable Bind(
-            this IAvaloniaObject target,
-            AvaloniaProperty property,
-            IObservable<BindingValue<object?>> source,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
-
-            return property.RouteBind(target, source, priority);
-        }
-
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
+        /// Binds an <see cref="AvaloniaProperty"/> to an observable.
         /// </summary>
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="target">The object.</param>
@@ -273,42 +250,22 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             source = source ?? throw new ArgumentNullException(nameof(source));
 
-            return property switch
+            if (target is AvaloniaObject ao)
             {
-                StyledPropertyBase<T> styled => target.Bind(styled, source, priority),
-                DirectPropertyBase<T> direct => target.Bind(direct, source),
-                _ => throw new NotSupportedException("Unsupported AvaloniaProperty type."),
-            };
+                return property switch
+                {
+                    StyledPropertyBase<T> styled => ao.Bind(styled, source, priority),
+                    DirectPropertyBase<T> direct => ao.Bind(direct, source),
+                    _ => throw new NotSupportedException("Unsupported AvaloniaProperty type."),
+                };
+            }
+
+            throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
+
         }
 
         /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
-        /// </summary>
-        /// <param name="target">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <param name="source">The observable.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <returns>
-        /// A disposable which can be used to terminate the binding.
-        /// </returns>
-        public static IDisposable Bind(
-            this IAvaloniaObject target,
-            AvaloniaProperty property,
-            IObservable<object?> source,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-            source = source ?? throw new ArgumentNullException(nameof(source));
-
-            return target.Bind(
-                property,
-                source.ToBindingValue(),
-                priority);
-        }
-
-        /// <summary>
-        /// Binds a <see cref="AvaloniaProperty"/> to an observable.
+        /// Binds an <see cref="AvaloniaProperty"/> to an observable.
         /// </summary>
         /// <param name="target">The object.</param>
         /// <param name="property">The property.</param>
@@ -334,7 +291,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Binds a property on an <see cref="IAvaloniaObject"/> to an <see cref="IBinding"/>.
+        /// Binds a property on an <see cref="AvaloniaObject"/> to an <see cref="IBinding"/>.
         /// </summary>
         /// <param name="target">The object.</param>
         /// <param name="property">The property to bind.</param>
@@ -375,56 +332,6 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Clears a <see cref="AvaloniaProperty"/>'s local value.
-        /// </summary>
-        /// <param name="target">The object.</param>
-        /// <param name="property">The property.</param>
-        public static void ClearValue(this IAvaloniaObject target, AvaloniaProperty property)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            property.RouteClearValue(target);
-        }
-
-        /// <summary>
-        /// Clears a <see cref="AvaloniaProperty"/>'s local value.
-        /// </summary>
-        /// <param name="target">The object.</param>
-        /// <param name="property">The property.</param>
-        public static void ClearValue<T>(this IAvaloniaObject target, AvaloniaProperty<T> property)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            switch (property)
-            {
-                case StyledPropertyBase<T> styled:
-                    target.ClearValue(styled);
-                    break;
-                case DirectPropertyBase<T> direct:
-                    target.ClearValue(direct);
-                    break;
-                default:
-                    throw new NotSupportedException("Unsupported AvaloniaProperty type.");
-            }
-        }
-
-        /// <summary>
-        /// Gets a <see cref="AvaloniaProperty"/> value.
-        /// </summary>
-        /// <param name="target">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <returns>The value.</returns>
-        public static object? GetValue(this IAvaloniaObject target, AvaloniaProperty property)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            return property.RouteGetValue(target);
-        }
-
-        /// <summary>
         /// Gets a <see cref="AvaloniaProperty"/> value.
         /// </summary>
         /// <typeparam name="T">The type of the property.</typeparam>
@@ -436,12 +343,18 @@ namespace Avalonia
             target = target ?? throw new ArgumentNullException(nameof(target));
             property = property ?? throw new ArgumentNullException(nameof(property));
 
-            return property switch
+            if (target is AvaloniaObject ao)
             {
-                StyledPropertyBase<T> styled => target.GetValue(styled),
-                DirectPropertyBase<T> direct => target.GetValue(direct),
-                _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
-            };
+                return property switch
+                {
+                    StyledPropertyBase<T> styled => ao.GetValue(styled),
+                    DirectPropertyBase<T> direct => ao.GetValue(direct),
+                    _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
+                };
+
+            }
+
+            throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
         }
 
         /// <summary>
@@ -456,7 +369,7 @@ namespace Avalonia
         /// <see cref="AvaloniaProperty.UnsetValue"/>. Note that this method does not return
         /// property values that come from inherited or default values.
         /// 
-        /// For direct properties returns <see cref="GetValue(IAvaloniaObject, AvaloniaProperty)"/>.
+        /// For direct properties returns the current value of the property.
         /// </remarks>
         public static object? GetBaseValue(
             this IAvaloniaObject target,
@@ -466,7 +379,9 @@ namespace Avalonia
             target = target ?? throw new ArgumentNullException(nameof(target));
             property = property ?? throw new ArgumentNullException(nameof(property));
 
-            return property.RouteGetBaseValue(target, maxPriority);
+            if (target is AvaloniaObject ao)
+                return property.RouteGetBaseValue(ao, maxPriority);
+            throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
         }
 
         /// <summary>
@@ -481,8 +396,7 @@ namespace Avalonia
         /// <see cref="Optional{T}.Empty"/>. Note that this method does not return property values
         /// that come from inherited or default values.
         /// 
-        /// For direct properties returns
-        /// <see cref="IAvaloniaObject.GetValue{T}(DirectPropertyBase{T})"/>.
+        /// For direct properties returns the current value of the property.
         /// </remarks>
         public static Optional<T> GetBaseValue<T>(
             this IAvaloniaObject target,
@@ -492,69 +406,18 @@ namespace Avalonia
             target = target ?? throw new ArgumentNullException(nameof(target));
             property = property ?? throw new ArgumentNullException(nameof(property));
 
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            return property switch
+            if (target is AvaloniaObject ao)
             {
-                StyledPropertyBase<T> styled => target.GetBaseValue(styled, maxPriority),
-                DirectPropertyBase<T> direct => target.GetValue(direct),
-                _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
-            };
-        }
+                return property switch
+                {
+                    StyledPropertyBase<T> styled => ao.GetBaseValue(styled, maxPriority),
+                    DirectPropertyBase<T> direct => ao.GetValue(direct),
+                    _ => throw new NotSupportedException("Unsupported AvaloniaProperty type.")
+                };
 
-        /// <summary>
-        /// Sets a <see cref="AvaloniaProperty"/> value.
-        /// </summary>
-        /// <param name="target">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="priority">The priority of the value.</param>
-        /// <returns>
-        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
-        /// </returns>
-        public static IDisposable? SetValue(
-            this IAvaloniaObject target,
-            AvaloniaProperty property,
-            object? value,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            return property.RouteSetValue(target, value, priority);
-        }
-
-        /// <summary>
-        /// Sets a <see cref="AvaloniaProperty"/> value.
-        /// </summary>
-        /// <typeparam name="T">The type of the property.</typeparam>
-        /// <param name="target">The object.</param>
-        /// <param name="property">The property.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="priority">The priority of the value.</param>
-        /// <returns>
-        /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
-        /// </returns>
-        public static IDisposable? SetValue<T>(
-            this IAvaloniaObject target,
-            AvaloniaProperty<T> property,
-            T value,
-            BindingPriority priority = BindingPriority.LocalValue)
-        {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-            property = property ?? throw new ArgumentNullException(nameof(property));
-
-            switch (property)
-            {
-                case StyledPropertyBase<T> styled:
-                    return target.SetValue(styled, value, priority);
-                case DirectPropertyBase<T> direct:
-                    target.SetValue(direct, value);
-                    return null;
-                default:
-                    throw new NotSupportedException("Unsupported AvaloniaProperty type.");
             }
+
+            throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
         }
 
         /// <summary>
@@ -603,52 +466,6 @@ namespace Avalonia
                     action(target, e);
                 }
             });
-        }
-
-        /// <summary>
-        /// Subscribes to a property changed notifications for changes that originate from a
-        /// <typeparamref name="TTarget"/>.
-        /// </summary>
-        /// <typeparam name="TTarget">The type of the property change sender.</typeparam>
-        /// <param name="observable">The property changed observable.</param>
-        /// <param name="handler">Given a TTarget, returns the handler.</param>
-        /// <returns>A disposable that can be used to terminate the subscription.</returns>
-        [Obsolete("Use overload taking Action<TTarget, AvaloniaPropertyChangedEventArgs>.")]
-        public static IDisposable AddClassHandler<TTarget>(
-            this IObservable<AvaloniaPropertyChangedEventArgs> observable,
-            Func<TTarget, Action<AvaloniaPropertyChangedEventArgs>> handler)
-            where TTarget : class
-        {
-            return observable.Subscribe(e => SubscribeAdapter(e, handler));
-        }
-
-        /// <summary>
-        /// Gets a description of a property that van be used in observables.
-        /// </summary>
-        /// <param name="o">The object.</param>
-        /// <param name="property">The property</param>
-        /// <returns>The description.</returns>
-        private static string GetDescription(IAvaloniaObject o, AvaloniaProperty property)
-        {
-            return $"{o.GetType().Name}.{property.Name}";
-        }
-
-        /// <summary>
-        /// Observer method for <see cref="AddClassHandler{TTarget}(IObservable{AvaloniaPropertyChangedEventArgs},
-        /// Func{TTarget, Action{AvaloniaPropertyChangedEventArgs}})"/>.
-        /// </summary>
-        /// <typeparam name="TTarget">The sender type to accept.</typeparam>
-        /// <param name="e">The event args.</param>
-        /// <param name="handler">Given a TTarget, returns the handler.</param>
-        private static void SubscribeAdapter<TTarget>(
-            AvaloniaPropertyChangedEventArgs e,
-            Func<TTarget, Action<AvaloniaPropertyChangedEventArgs>> handler)
-            where TTarget : class
-        {
-            if (e.Sender is TTarget target)
-            {
-                handler(target)(e);
-            }
         }
 
         private class BindingAdaptor : IBinding

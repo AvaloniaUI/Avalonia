@@ -90,6 +90,7 @@
               </Style>
             </Button.Styles>
           </Button>
+          <Button Classes="accent">Accent</Button>
         </StackPanel>
 
         <StackPanel Orientation="Vertical"
@@ -147,6 +148,35 @@
       </StackPanel>
     </Border>
 
+    <!-- DropDownButton -->
+    <Border Classes="header-border">
+      <StackPanel Orientation="Vertical"
+                  Spacing="4">
+        <TextBlock Text="DropDownButton"
+                   Classes="header" />
+        <TextBlock TextWrapping="Wrap">A button with an added drop-down chevron to visually indicate it has a flyout with additional actions.</TextBlock>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="thin"
+            Padding="15">
+      <StackPanel Orientation="Vertical"
+                  Spacing="8">
+        <DropDownButton Flyout="{StaticResource SharedMenuFlyout}">
+          <TextBlock Text="Drop Down Button" />
+        </DropDownButton>
+        <DropDownButton Padding="0,0,8,0">
+          <Border Background="Teal"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Height="32"
+                  Width="32" />
+        </DropDownButton>
+        <DropDownButton IsEnabled="False">Disabled</DropDownButton>
+        <DropDownButton />
+      </StackPanel>
+    </Border>
+
     <!-- SplitButton -->
     <Border Classes="header-border">
       <StackPanel Orientation="Vertical"
@@ -169,7 +199,8 @@
           <TextBlock Text="Disabled" />
         </SplitButton>
         <SplitButton Flyout="{StaticResource SharedMenuFlyout}"
-                     Content="Re-themed">
+                     Content="Re-themed"
+                     Foreground="White">
           <SplitButton.Styles>
             <Style>
               <Style.Resources>

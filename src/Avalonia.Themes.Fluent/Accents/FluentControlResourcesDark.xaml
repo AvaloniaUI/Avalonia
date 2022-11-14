@@ -87,12 +87,12 @@
     <Thickness x:Key="ComboBoxBorderThemeThickness">1</Thickness>
     <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
     <Thickness x:Key="ComboBoxItemThemePadding">11,5,11,7</Thickness>
-    <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>    
+    <FontWeight x:Key="ComboBoxHeaderThemeFontWeight">Normal</FontWeight>
     <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-    <StaticResource x:Key="ComboBoxItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />    
+    <StaticResource x:Key="ComboBoxItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
     <StaticResource x:Key="ComboBoxItemForegroundSelectedDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
@@ -100,14 +100,14 @@
     <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="SystemControlHighlightListMediumBrush" />
     <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowBrush" />
     <StaticResource x:Key="ComboBoxItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />    
+    <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="SystemControlHighlightListAccentLowBrush" />
     <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightListAccentHighBrush" />
     <StaticResource x:Key="ComboBoxItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
-    <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />    
+    <StaticResource x:Key="ComboBoxItemBackgroundSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushPressed" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushPointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushDisabled" ResourceKey="SystemControlTransparentBrush" />
-    <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush" />    
+    <StaticResource x:Key="ComboBoxItemBorderBrushSelected" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPressed" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushSelectedPointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="ComboBoxItemBorderBrushSelectedDisabled" ResourceKey="SystemControlTransparentBrush" />
@@ -281,7 +281,6 @@
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePointerOver" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminatePressed" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
     <StaticResource x:Key="CheckBoxCheckGlyphForegroundIndeterminateDisabled" ResourceKey="SystemControlHighlightAltChromeWhiteBrush" />
-    
 
     <!-- Resources for Calendar.xaml, CalendarButton.xaml, CalendarDayButton.xaml, CalendarItem.xaml -->
     <StaticResource x:Key="CalendarViewSelectedHoverBorderBrush" ResourceKey="SystemControlHighlightListAccentMediumBrush" />
@@ -305,9 +304,42 @@
     <StaticResource x:Key="CalendarViewCalendarItemRevealBorderBrush" ResourceKey="SystemControlTransparentRevealBorderBrush" />
     <StaticResource x:Key="CalendarViewNavigationButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="CalendarViewNavigationButtonBorderBrush" ResourceKey="SystemControlTransparentBrush" />
-   
+
+    <!-- Resources for Expander.xaml -->
+    <!-- Expander:Header -->
+    <StaticResource x:Key="ExpanderHeaderBackground" ResourceKey="SystemAltMediumHighColor" />
+    <StaticResource x:Key="ExpanderHeaderBackgroundPointerOver" ResourceKey="SystemAltMediumHighColor" />
+    <StaticResource x:Key="ExpanderHeaderBackgroundPressed" ResourceKey="SystemAltMediumHighColor" />
+    <StaticResource x:Key="ExpanderHeaderBackgroundDisabled" ResourceKey="SystemAltMediumHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForeground" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForegroundPointerOver" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForegroundPressed" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="ExpanderHeaderBorderBrush" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ExpanderHeaderBorderBrushPointerOver" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ExpanderHeaderBorderBrushPressed" ResourceKey="SystemBaseLowColor" />
+    <StaticResource x:Key="ExpanderHeaderBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
+
+    <SolidColorBrush x:Key="ExpanderChevronBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBackgroundPointerOver" Color="{StaticResource SystemBaseHighColor}" Opacity="0.1" />
+    <SolidColorBrush x:Key="ExpanderChevronBackgroundPressed" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBackgroundDisabled" Color="Transparent" />
+    <StaticResource x:Key="ExpanderChevronForeground" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderChevronForegroundPointerOver" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderChevronForegroundPressed" ResourceKey="SystemBaseHighColor" />
+    <StaticResource x:Key="ExpanderChevronForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderBrushPointerOver" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderBrushPressed" Color="Transparent" />
+    <SolidColorBrush x:Key="ExpanderChevronBorderBrushDisabled" Color="Transparent" />
+
+    <!-- Expander:Content -->
+    <StaticResource x:Key="ExpanderContentBackground" ResourceKey="SystemChromeMediumLowColor" />
+    <StaticResource x:Key="ExpanderContentBorderBrush" ResourceKey="SystemBaseLowColor" />
+
     <!--Resources for NotificationCard.xaml -->
     <SolidColorBrush x:Key="NotificationCardBackgroundBrush" Color="#444444" />
+    <StaticResource x:Key="NotificationCardForegroundBrush" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <SolidColorBrush x:Key="NotificationCardProgressBackgroundBrush" Color="#9A9A9A" />
     <SolidColorBrush x:Key="NotificationCardInformationBackgroundBrush" Color="#007ACC" Opacity="0.75"/>
     <SolidColorBrush x:Key="NotificationCardSuccessBackgroundBrush" Color="#1F9E45" Opacity="0.75"/>
@@ -357,7 +389,6 @@
     <x:Double x:Key="SliderOutsideTickBarThemeHeight">4</x:Double>
     <x:Double x:Key="SliderTrackThemeHeight">2</x:Double>
     <Thickness x:Key="SliderBorderThemeThickness">0</Thickness>
-    <FontWeight x:Key="SliderHeaderThemeFontWeight">Normal</FontWeight>
     <StaticResource x:Key="SliderContainerBackground" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="SliderContainerBackgroundPointerOver" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="SliderContainerBackgroundPressed" ResourceKey="SystemControlTransparentBrush" />
@@ -374,8 +405,6 @@
     <StaticResource x:Key="SliderTrackValueFillPointerOver" ResourceKey="SystemControlHighlightAccentBrush" />
     <StaticResource x:Key="SliderTrackValueFillPressed" ResourceKey="SystemControlHighlightAccentBrush" />
     <StaticResource x:Key="SliderTrackValueFillDisabled" ResourceKey="SystemControlDisabledChromeDisabledHighBrush" />
-    <StaticResource x:Key="SliderHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <StaticResource x:Key="SliderHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="SliderTickBarFill" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
     <StaticResource x:Key="SliderTickBarFillDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="SliderInlineTickBarFill" ResourceKey="SystemControlBackgroundAltHighBrush" />
@@ -423,7 +452,6 @@
     <!-- Resources for DatePicker.xaml-->
     <StaticResource x:Key="DatePickerSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
     <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
-    <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
     <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
     <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
@@ -454,8 +482,6 @@
     <!-- Resources for TimePicker.xaml -->
     <StaticResource x:Key="TimePickerSpacerFill" ResourceKey="SystemControlForegroundBaseLowBrush" />
     <StaticResource x:Key="TimePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
-    <StaticResource x:Key="TimePickerHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
-    <StaticResource x:Key="TimePickerHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
     <StaticResource x:Key="TimePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
     <StaticResource x:Key="TimePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
     <StaticResource x:Key="TimePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
@@ -587,9 +613,23 @@
     <StaticResource x:Key="SplitViewLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
   
     <!-- Resources for CalendarDatePicker.xaml -->
-    <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
     <StaticResource x:Key="CalendarDatePickerForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="CalendarDatePickerForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="CalendarDatePickerCalendarGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
+    <StaticResource x:Key="CalendarDatePickerCalendarGlyphForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="CalendarDatePickerTextForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <StaticResource x:Key="CalendarDatePickerTextForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
+    <StaticResource x:Key="CalendarDatePickerTextForegroundSelected" ResourceKey="SystemControlForegroundBaseHighBrush" />
+    <StaticResource x:Key="CalendarDatePickerBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
+    <StaticResource x:Key="CalendarDatePickerBackgroundPointerOver" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
+    <StaticResource x:Key="CalendarDatePickerBackgroundPressed" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+    <StaticResource x:Key="CalendarDatePickerBackgroundDisabled" ResourceKey="SystemControlBackgroundBaseLowBrush" />
+    <StaticResource x:Key="CalendarDatePickerBackgroundFocused" ResourceKey="SystemControlHighlightListAccentLowBrush" />
     <StaticResource x:Key="CalendarDatePickerBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <StaticResource x:Key="CalendarDatePickerBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+    <StaticResource x:Key="CalendarDatePickerBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
+    <StaticResource x:Key="CalendarDatePickerBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
+    <StaticResource x:Key="CalendarDatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
     <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
 
     <!-- Resources for FlyoutPresenter.xaml -->

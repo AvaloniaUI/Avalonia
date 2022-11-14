@@ -1,8 +1,8 @@
 using System;
 using System.Reactive.Disposables;
 using Avalonia.OpenGL;
+using Avalonia.Platform;
 using OpenGLES;
-using OpenTK.Graphics.ES30;
 
 namespace Avalonia.iOS
 {
@@ -10,6 +10,7 @@ namespace Avalonia.iOS
     {
         public IGlContext PrimaryContext => Context;
         public IGlContext CreateSharedContext() => throw new NotSupportedException();
+        IPlatformGpuContext IPlatformGpu.PrimaryContext => PrimaryContext;
         public bool CanShareContexts => false;
         public bool CanCreateContexts => false;
         public IGlContext CreateContext() => throw new System.NotSupportedException();
@@ -75,7 +76,21 @@ namespace Avalonia.iOS
 
         public GlVersion Version { get; } = new GlVersion(GlProfileType.OpenGLES, 3, 0);
         public GlInterface GlInterface { get; }
-        public int SampleCount { get; } = 0;
-        public int StencilSize { get; } = 9;
+        public int SampleCount
+        {
+            get
+            {
+                GlInterface.GetIntegerv(GlConsts.GL_SAMPLES, out var samples);
+                return samples;
+            }
+        }
+        public int StencilSize
+        {
+            get
+            {
+                GlInterface.GetIntegerv(GlConsts.GL_STENCIL_BITS, out var stencil);
+                return stencil;
+            }
+        }
     }
 }

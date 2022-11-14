@@ -6,11 +6,19 @@
     <PackageId>Avalonia.Markup.Xaml.Loader</PackageId>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
   </PropertyGroup>
+  <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+  </PropertyGroup>
   <Import Project="IncludeXamlIlSre.props" />
+  <ItemGroup>
+    <Compile Include="..\..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
-  </ItemGroup>  
+  </ItemGroup>
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
 </Project>

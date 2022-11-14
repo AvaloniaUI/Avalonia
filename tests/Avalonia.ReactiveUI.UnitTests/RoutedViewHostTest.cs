@@ -15,6 +15,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Reactive;
 using Avalonia.ReactiveUI;
+using Avalonia.Threading;
 
 namespace Avalonia.ReactiveUI.UnitTests
 {
@@ -75,6 +76,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Child = host
             };
             
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.NotNull(host.Content);
             Assert.IsType<TextBlock>(host.Content);
             Assert.Equal(defaultContent, host.Content);
@@ -126,6 +128,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Child = host
             };
 
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.NotNull(host.Content);
             Assert.IsType<TextBlock>(host.Content);
             Assert.Equal(defaultContent, host.Content);
@@ -191,6 +194,7 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Child = host
             };
 
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.NotNull(host.Content);
             Assert.Equal(defaultContent, host.Content);
 

@@ -21,11 +21,11 @@ namespace Avalonia.UnitTests
             _popupImpl = popupImpl;
         }
 
-        public static Mock<IWindowImpl> CreateWindowMock()
+        public static Mock<IWindowImpl> CreateWindowMock(double initialWidth = 800, double initialHeight = 600)
         {
             var windowImpl = new Mock<IWindowImpl>();
             var position = new PixelPoint();
-            var clientSize = new Size(800, 600);
+            var clientSize = new Size(initialWidth,  initialHeight);
 
             windowImpl.SetupAllProperties();
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
@@ -34,7 +34,6 @@ namespace Avalonia.UnitTests
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(CreateScreenMock().Object);
             windowImpl.Setup(x => x.Position).Returns(() => position);
-            SetupToplevel(windowImpl);
 
             windowImpl.Setup(x => x.CreatePopup()).Returns(() =>
             {
@@ -55,12 +54,18 @@ namespace Avalonia.UnitTests
             windowImpl.Setup(x => x.Resize(It.IsAny<Size>(), It.IsAny<PlatformResizeReason>()))
                 .Callback<Size, PlatformResizeReason>((x, y) =>
             {
-                clientSize = x.Constrain(s_screenSize);
-                windowImpl.Object.Resized?.Invoke(clientSize, y);
+                var constrainedSize = x.Constrain(s_screenSize);
+                
+                if (constrainedSize != clientSize)
+                {
+                    clientSize = constrainedSize;
+                    windowImpl.Object.Resized?.Invoke(clientSize, y);
+                }
             });
 
             windowImpl.Setup(x => x.Show(true, It.IsAny<bool>())).Callback(() =>
             {
+                windowImpl.Object.Resized?.Invoke(windowImpl.Object.ClientSize, PlatformResizeReason.Unspecified);
                 windowImpl.Object.Activated?.Invoke();
             });
 
@@ -89,8 +94,11 @@ namespace Avalonia.UnitTests
             popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             popupImpl.Setup(x => x.RenderScaling).Returns(1);
             popupImpl.Setup(x => x.PopupPositioner).Returns(positioner);
-            
-            SetupToplevel(popupImpl);
+
+            popupImpl.Setup(x => x.Dispose()).Callback(() =>
+            {
+                popupImpl.Object.Closed?.Invoke();
+            });
             
             return popupImpl;
         }
@@ -132,11 +140,6 @@ namespace Avalonia.UnitTests
         public ITrayIconImpl CreateTrayIcon()
         {
             return null;
-        }
-
-        private static void SetupToplevel<T>(Mock<T> mock) where T : class, ITopLevelImpl
-        {
-            mock.SetupGet(x => x.MouseDevice).Returns(new MouseDevice());
         }
     }
 }

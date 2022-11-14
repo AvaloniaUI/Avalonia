@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
 using System.Xml.Linq;
 using System.Linq;
 
@@ -23,7 +21,7 @@ namespace Avalonia.Utilities
 
             var assetDoc = XDocument.Load(stream);
             XNamespace assetNs = assetDoc.Root!.Attribute("xmlns")!.Value;
-            List<AvaloniaResourcesIndexEntry> entries=         
+            List<AvaloniaResourcesIndexEntry> entries =         
                 (from entry in assetDoc.Root.Element(assetNs + "Entries")!.Elements(assetNs + "AvaloniaResourcesIndexEntry")
                     select new AvaloniaResourcesIndexEntry
                     {

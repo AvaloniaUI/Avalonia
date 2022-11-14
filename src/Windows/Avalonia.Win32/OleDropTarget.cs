@@ -1,12 +1,16 @@
-﻿using Avalonia.Input;
+﻿using System;
+
+using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.MicroCom;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
-using IDataObject = Avalonia.Input.IDataObject;
+using MicroCom.Runtime;
+using DropEffect = Avalonia.Win32.Win32Com.DropEffect;
 
 namespace Avalonia.Win32
 {
-    internal class OleDropTarget : IDropTarget
+    internal class OleDropTarget : CallbackBase, Win32Com.IDropTarget
     {
         private readonly IInputRoot _target;
         private readonly ITopLevelImpl _tl;
@@ -65,58 +69,51 @@ namespace Avalonia.Win32
             return modifiers;
         }
 
-        UnmanagedMethods.HRESULT IDropTarget.DragEnter(IOleDataObject pDataObj, int grfKeyState, long pt, ref DropEffect pdwEffect)
+        unsafe void Win32Com.IDropTarget.DragEnter(Win32Com.IDataObject pDataObj, int grfKeyState, UnmanagedMethods.POINT pt, DropEffect* pdwEffect)
         {
             var dispatch = _tl?.Input;
             if (dispatch == null)
             {
-                pdwEffect = DropEffect.None;
-                return UnmanagedMethods.HRESULT.S_OK;
+                *pdwEffect= (int)DropEffect.None;
             }
-            _currentDrag = pDataObj as IDataObject;
-            if (_currentDrag == null)
-                _currentDrag = new OleDataObject(pDataObj);
+
+            SetDataObject(pDataObj);
 
             var args = new RawDragEvent(
                 _dragDevice,
                 RawDragEventType.DragEnter, 
-                _target, 
-                GetDragLocation(pt), 
+                _target,
+                GetDragLocation(pt),
                 _currentDrag, 
-                ConvertDropEffect(pdwEffect),
+                ConvertDropEffect(*pdwEffect),
                 ConvertKeyState(grfKeyState)
             );
             dispatch(args);
-            pdwEffect = ConvertDropEffect(args.Effects);
-            
-            return UnmanagedMethods.HRESULT.S_OK;
+            *pdwEffect = ConvertDropEffect(args.Effects);
         }
 
-        UnmanagedMethods.HRESULT IDropTarget.DragOver(int grfKeyState, long pt, ref DropEffect pdwEffect)
+        unsafe void Win32Com.IDropTarget.DragOver(int grfKeyState, UnmanagedMethods.POINT pt, DropEffect* pdwEffect)
         {
             var dispatch = _tl?.Input;
             if (dispatch == null)
             {
-                pdwEffect = DropEffect.None;
-                return UnmanagedMethods.HRESULT.S_OK;
+                *pdwEffect = (int)DropEffect.None;
             }
             
             var args = new RawDragEvent(
                 _dragDevice,
                 RawDragEventType.DragOver, 
-                _target, 
-                GetDragLocation(pt), 
-                _currentDrag, 
-                ConvertDropEffect(pdwEffect),
+                _target,
+                GetDragLocation(pt),
+                _currentDrag,
+                ConvertDropEffect(*pdwEffect),
                 ConvertKeyState(grfKeyState)
             );
             dispatch(args);
-            pdwEffect = ConvertDropEffect(args.Effects);
-            
-            return UnmanagedMethods.HRESULT.S_OK;  
+            *pdwEffect = ConvertDropEffect(args.Effects);
         }
 
-        UnmanagedMethods.HRESULT IDropTarget.DragLeave()
+        void Win32Com.IDropTarget.DragLeave()
         {
             try
             {
@@ -129,56 +126,91 @@ namespace Avalonia.Win32
                     DragDropEffects.None,
                     RawInputModifiers.None
                 ));
-                return UnmanagedMethods.HRESULT.S_OK;
             }
             finally
             {
-                _currentDrag = null;
+                ReleaseDataObject();
             }
         }
 
-        UnmanagedMethods.HRESULT IDropTarget.Drop(IOleDataObject pDataObj, int grfKeyState, long pt, ref DropEffect pdwEffect)
+        unsafe void Win32Com.IDropTarget.Drop(Win32Com.IDataObject pDataObj, int grfKeyState, UnmanagedMethods.POINT pt, DropEffect* pdwEffect)
         {
             try
             {
                 var dispatch = _tl?.Input;
                 if (dispatch == null)
                 {
-                    pdwEffect = DropEffect.None;
-                    return UnmanagedMethods.HRESULT.S_OK;
+                    *pdwEffect = (int)DropEffect.None;
                 }
 
-                _currentDrag = pDataObj as IDataObject;
-                if (_currentDrag == null)
-                    _currentDrag= new OleDataObject(pDataObj);
-                
+                SetDataObject(pDataObj);
+
                 var args = new RawDragEvent(
                     _dragDevice, 
                     RawDragEventType.Drop, 
-                    _target, 
-                    GetDragLocation(pt), 
-                    _currentDrag, 
-                    ConvertDropEffect(pdwEffect),
+                    _target,
+                    GetDragLocation(pt),
+                    _currentDrag,
+                    ConvertDropEffect(*pdwEffect),
                     ConvertKeyState(grfKeyState)
                 );
                 dispatch(args);
-                pdwEffect = ConvertDropEffect(args.Effects);
-            
-                return UnmanagedMethods.HRESULT.S_OK;  
+                *pdwEffect = ConvertDropEffect(args.Effects);
             }
             finally
             {
+                ReleaseDataObject();
+            }
+        }
+
+        private void SetDataObject(Win32Com.IDataObject pDataObj)
+        {
+            var newDrag = GetAvaloniaObjectFromCOM(pDataObj);
+            if (_currentDrag != newDrag)
+            {
+                ReleaseDataObject();
+                _currentDrag = newDrag;
+            }
+        }
+
+        private void ReleaseDataObject()
+        {
+            // OleDataObject keeps COM reference, so it should be disposed.
+            if (_currentDrag is OleDataObject oleDragSource)
+            {
+                oleDragSource?.Dispose();
                 _currentDrag = null;
             }
         }
 
-        private Point GetDragLocation(long dragPoint)
+        private Point GetDragLocation(UnmanagedMethods.POINT dragPoint)
         {
-            int x = (int)dragPoint;
-            int y = (int)(dragPoint >> 32);
-
-            var screenPt = new PixelPoint(x, y);
+            var screenPt = new PixelPoint(dragPoint.X, dragPoint.Y);
             return _target.PointToClient(screenPt);
+        }
+
+        protected override void Destroyed()
+        {
+            ReleaseDataObject();
+        }
+
+        public static unsafe IDataObject GetAvaloniaObjectFromCOM(Win32Com.IDataObject pDataObj)
+        {
+            if (pDataObj is null)
+            {
+                throw new ArgumentNullException(nameof(pDataObj));
+            }
+            if (pDataObj is IDataObject disposableDataObject)
+            {
+                return disposableDataObject;
+            }
+
+            var dataObject = MicroComRuntime.TryUnwrapManagedObject(pDataObj) as DataObject;
+            if (dataObject is not null)
+            {
+                return dataObject;
+            }
+            return new OleDataObject(pDataObj);
         }
     }
 }

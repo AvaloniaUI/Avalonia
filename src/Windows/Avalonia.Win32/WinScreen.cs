@@ -7,10 +7,13 @@ namespace Avalonia.Win32
     {
         private readonly IntPtr _hMonitor;
 
-        public WinScreen(double pixelDensity, PixelRect bounds, PixelRect workingArea, bool primary, IntPtr hMonitor) : base(pixelDensity, bounds, workingArea, primary)
+        public WinScreen(double scaling, PixelRect bounds, PixelRect workingArea, bool isPrimary, IntPtr hMonitor)
+            : base(scaling, bounds, workingArea, isPrimary)
         {
-            this._hMonitor = hMonitor;
+            _hMonitor = hMonitor;
         }
+
+        public IntPtr Handle => _hMonitor;
 
         public override int GetHashCode()
         {
@@ -19,7 +22,7 @@ namespace Avalonia.Win32
 
         public override bool Equals(object obj)
         {
-            return (obj is WinScreen screen) ? this._hMonitor == screen._hMonitor : base.Equals(obj);
+            return (obj is WinScreen screen) ? _hMonitor == screen._hMonitor : base.Equals(obj);
         }
     }
 }

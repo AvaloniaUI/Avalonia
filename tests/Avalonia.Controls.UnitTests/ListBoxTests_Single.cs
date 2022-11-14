@@ -5,10 +5,12 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -58,7 +60,7 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Clicking_Item_Should_Select_It()
+        public void Focusing_Item_With_Arrow_Key_And_Ctrl_Pressed_Should_Not_Select_It()
         {
             var target = new ListBox
             {
@@ -67,97 +69,168 @@ namespace Avalonia.Controls.UnitTests
             };
 
             ApplyTemplate(target);
-            _mouse.Click(target.Presenter.Panel.Children[0]);
 
-            Assert.Equal(0, target.SelectedIndex);
-        }
-
-        [Fact]
-        public void Clicking_Selected_Item_Should_Not_Deselect_It()
-        {
-            var target = new ListBox
+            target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
-            };
-
-            ApplyTemplate(target);
-            target.SelectedIndex = 0;
-
-            _mouse.Click(target.Presenter.Panel.Children[0]);
-
-            Assert.Equal(0, target.SelectedIndex);
-        }
-
-        [Fact]
-        public void Clicking_Item_Should_Select_It_When_SelectionMode_Toggle()
-        {
-            var target = new ListBox
-            {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
-                SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
-            };
-
-            ApplyTemplate(target);
-
-            _mouse.Click(target.Presenter.Panel.Children[0]);
-
-            Assert.Equal(0, target.SelectedIndex);
-        }
-
-        [Fact]
-        public void Clicking_Selected_Item_Should_Deselect_It_When_SelectionMode_Toggle()
-        {
-            var target = new ListBox
-            {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
-                SelectionMode = SelectionMode.Toggle,
-            };
-
-            ApplyTemplate(target);
-            target.SelectedIndex = 0;
-
-            _mouse.Click(target.Presenter.Panel.Children[0]);
+                RoutedEvent = InputElement.GotFocusEvent,
+                NavigationMethod = NavigationMethod.Directional,
+                KeyModifiers = KeyModifiers.Control
+            });
 
             Assert.Equal(-1, target.SelectedIndex);
         }
 
         [Fact]
+        public void Pressing_Space_On_Focused_Item_With_Ctrl_Pressed_Should_Select_It()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    Items = new[] { "Foo", "Bar", "Baz " },
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                ApplyTemplate(target);
+
+                target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
+                {
+                    RoutedEvent = InputElement.GotFocusEvent,
+                    NavigationMethod = NavigationMethod.Directional,
+                    KeyModifiers = KeyModifiers.Control
+                });
+
+                target.Presenter.Panel.Children[0].RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Space,
+                    KeyModifiers = KeyModifiers.Control
+                });
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
+        public void Clicking_Item_Should_Select_It()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    Items = new[] { "Foo", "Bar", "Baz " },
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                ApplyTemplate(target);
+                _mouse.Click(target.Presenter.Panel.Children[0]);
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
+        public void Clicking_Selected_Item_Should_Not_Deselect_It()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    Items = new[] { "Foo", "Bar", "Baz " },
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                ApplyTemplate(target);
+                target.SelectedIndex = 0;
+
+                _mouse.Click(target.Presenter.Panel.Children[0]);
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
+        public void Clicking_Item_Should_Select_It_When_SelectionMode_Toggle()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    Items = new[] { "Foo", "Bar", "Baz " },
+                    SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                ApplyTemplate(target);
+
+                _mouse.Click(target.Presenter.Panel.Children[0]);
+
+                Assert.Equal(0, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
+        public void Clicking_Selected_Item_Should_Deselect_It_When_SelectionMode_Toggle()
+        {
+            using (UnitTestApplication.Start())
+            {
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    Items = new[] { "Foo", "Bar", "Baz " },
+                    SelectionMode = SelectionMode.Toggle,
+                };
+
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                ApplyTemplate(target);
+                target.SelectedIndex = 0;
+
+                _mouse.Click(target.Presenter.Panel.Children[0]);
+
+                Assert.Equal(-1, target.SelectedIndex);
+            }
+        }
+
+        [Fact]
         public void Clicking_Selected_Item_Should_Not_Deselect_It_When_SelectionMode_ToggleAlwaysSelected()
         {
-            var target = new ListBox
+            using (UnitTestApplication.Start())
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
-                SelectionMode = SelectionMode.Toggle | SelectionMode.AlwaysSelected,
-            };
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    Items = new[] { "Foo", "Bar", "Baz " },
+                    SelectionMode = SelectionMode.Toggle | SelectionMode.AlwaysSelected,
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                ApplyTemplate(target);
+                target.SelectedIndex = 0;
 
-            ApplyTemplate(target);
-            target.SelectedIndex = 0;
+                _mouse.Click(target.Presenter.Panel.Children[0]);
 
-            _mouse.Click(target.Presenter.Panel.Children[0]);
-
-            Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(0, target.SelectedIndex);
+            }
         }
 
         [Fact]
         public void Clicking_Another_Item_Should_Select_It_When_SelectionMode_Toggle()
         {
-            var target = new ListBox
+            using (UnitTestApplication.Start())
             {
-                Template = new FuncControlTemplate(CreateListBoxTemplate),
-                Items = new[] { "Foo", "Bar", "Baz " },
-                SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
-            };
+                var target = new ListBox
+                {
+                    Template = new FuncControlTemplate(CreateListBoxTemplate),
+                    Items = new[] { "Foo", "Bar", "Baz " },
+                    SelectionMode = SelectionMode.Single | SelectionMode.Toggle,
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                ApplyTemplate(target);
+                target.SelectedIndex = 1;
 
-            ApplyTemplate(target);
-            target.SelectedIndex = 1;
+                _mouse.Click(target.Presenter.Panel.Children[0]);
 
-            _mouse.Click(target.Presenter.Panel.Children[0]);
-
-            Assert.Equal(0, target.SelectedIndex);
+                Assert.Equal(0, target.SelectedIndex);
+            }
         }
 
         [Fact]

@@ -3,7 +3,7 @@ using Avalonia.Native.Interop;
 
 namespace Avalonia.Native
 {
-    public class MenuActionCallback : CallbackBase, IAvnActionCallback
+    public class MenuActionCallback : NativeCallbackBase, IAvnActionCallback
     {
         private Action _action;
 

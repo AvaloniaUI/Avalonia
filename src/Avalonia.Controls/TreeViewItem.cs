@@ -6,12 +6,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// An item in a <see cref="TreeView"/>.
     /// </summary>
+    [TemplatePart("PART_Header", typeof(IControl))]
     [PseudoClasses(":pressed", ":selected")]
     public class TreeViewItem : HeaderedItemsControl, ISelectable
     {
@@ -44,6 +46,8 @@ namespace Avalonia.Controls
         private IControl? _header;
         private bool _isExpanded;
         private int _level;
+        private bool _templateApplied;
+        private bool _deferredBringIntoViewFlag;
 
         /// <summary>
         /// Initializes static members of the <see cref="TreeViewItem"/> class.
@@ -95,7 +99,7 @@ namespace Avalonia.Controls
         protected override IItemContainerGenerator CreateItemContainerGenerator() => CreateTreeItemContainerGenerator<TreeViewItem>();
 
         /// <inheritdoc/>
-        protected virtual ITreeItemContainerGenerator CreateTreeItemContainerGenerator<TVItem>()
+        protected ITreeItemContainerGenerator CreateTreeItemContainerGenerator<TVItem>()
             where TVItem: TreeViewItem, new()
         {
             return new TreeItemContainerGenerator<TVItem>(
@@ -120,6 +124,11 @@ namespace Avalonia.Controls
             {
                 ItemTemplate = _treeView.ItemTemplate;
             }
+
+            if (ItemContainerTheme == null && _treeView?.ItemContainerTheme != null)
+            {
+                ItemContainerTheme = _treeView.ItemContainerTheme;
+            }
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -130,15 +139,24 @@ namespace Avalonia.Controls
 
         protected virtual void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
         {
-            if (e.TargetObject == this && _header != null)
+            if (e.TargetObject == this)
             {
-                var m = _header.TransformToVisual(this);
-
-                if (m.HasValue)
+                if (!_templateApplied)
                 {
-                    var bounds = new Rect(_header.Bounds.Size);
-                    var rect = bounds.TransformToAABB(m.Value);
-                    e.TargetRect = rect;
+                    _deferredBringIntoViewFlag = true;
+                    return;
+                }
+
+                if (_header != null)
+                {
+                    var m = _header.TransformToVisual(this);
+
+                    if (m.HasValue)
+                    {
+                        var bounds = new Rect(_header.Bounds.Size);
+                        var rect = bounds.TransformToAABB(m.Value);
+                        e.TargetRect = rect;
+                    }
                 }
             }
         }
@@ -151,17 +169,26 @@ namespace Avalonia.Controls
                 switch (e.Key)
                 {
                     case Key.Right:
-                        if (Items != null && Items.Cast<object>().Any())
+                        if (Items != null && Items.Cast<object>().Any() && !IsExpanded)
                         {
                             IsExpanded = true;
+                            e.Handled = true;
                         }
-
-                        e.Handled = true;
                         break;
 
                     case Key.Left:
-                        IsExpanded = false;
-                        e.Handled = true;
+                        if (Items is not null && Items.Cast<object>().Any() && IsExpanded)
+                        {
+                            if (IsFocused)
+                            {
+                                IsExpanded = false;
+                            }
+                            else
+                            {
+                                FocusManager.Instance?.Focus(this, NavigationMethod.Directional);
+                            }
+                            e.Handled = true;
+                        }
                         break;
                 }
             }
@@ -172,6 +199,12 @@ namespace Avalonia.Controls
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _header = e.NameScope.Find<IControl>("PART_Header");
+            _templateApplied = true;
+            if (_deferredBringIntoViewFlag)
+            {
+                _deferredBringIntoViewFlag = false;
+                Dispatcher.UIThread.Post(this.BringIntoView); // must use the Dispatcher, otherwise the TreeView doesn't scroll
+            }
         }
 
         private static int CalculateDistanceFromLogicalParent<T>(ILogical? logical, int @default = -1) where T : class

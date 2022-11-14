@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Platform;
+
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedParameter.Global
 
@@ -18,7 +19,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         {
             return DeferredTransformationFactoryV2<IControl>(builder, provider);
         }
-        
+
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV2<T>(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
@@ -31,7 +32,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 var scope = parentScope != null ? new ChildNameScope(parentScope) : (INameScope)new NameScope();
                 var obj = builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope));
                 scope.Complete();
-                
+
                 if(typeof(T) == typeof(IControl))
                     return new ControlTemplateResult((IControl)obj, scope);
 
@@ -42,7 +43,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         class DeferredParentServiceProvider :
             IAvaloniaXamlIlParentStackProvider,
             IServiceProvider,
-            IRootObjectProvider
+            IRootObjectProvider,
+            IAvaloniaXamlIlControlTemplateProvider
         {
             private readonly IServiceProvider _parentProvider;
             private readonly List<IResourceNode> _parentResourceNodes;
@@ -75,6 +77,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     return this;
                 if (serviceType == typeof(IRootObjectProvider))
                     return this;
+                if (serviceType == typeof(IAvaloniaXamlIlControlTemplateProvider))
+                    return this;
                 return _parentProvider?.GetService(serviceType);
             }
 
@@ -104,9 +108,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 throw new ArgumentException("Don't know what to do with " + value.GetType());
         }
 
-        public static IServiceProvider CreateInnerServiceProviderV1(IServiceProvider compiled) 
+        public static IServiceProvider CreateInnerServiceProviderV1(IServiceProvider compiled)
             => new InnerServiceProvider(compiled);
-       
+
         class InnerServiceProvider : IServiceProvider
         {
             private readonly IServiceProvider _compiledProvider;
@@ -133,7 +137,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             {
                 _nsInfo = nsInfo;
             }
-            
+
             public Type Resolve(string qualifiedTypeName)
             {
                 var sp = qualifiedTypeName.Split(new[] {':'}, 2);
@@ -155,9 +159,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                     string.Join(",", lst.Select(e => $"`{e.ClrAssemblyName}:{e.ClrNamespace}.{name}`")));
             }
         }
-        
-        [Obsolete("Don't use", true)]
-        public static readonly IServiceProvider RootServiceProviderV1 = new RootServiceProvider(null);
 
         // Don't emit debug symbols for this code so debugger will be forced to step into XAML instead
         #line hidden
@@ -166,22 +167,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
             return new RootServiceProvider(new NameScope());
         }
         #line default
-        
+
         class RootServiceProvider : IServiceProvider, IAvaloniaXamlIlParentStackProvider
         {
             private readonly INameScope _nameScope;
+            private readonly IRuntimePlatform _runtimePlatform;
 
             public RootServiceProvider(INameScope nameScope)
             {
                 _nameScope = nameScope;
+                _runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
             }
-            
+
             public object GetService(Type serviceType)
             {
                 if (serviceType == typeof(INameScope))
                     return _nameScope;
                 if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
                     return this;
+                if (serviceType == typeof(IRuntimePlatform))
+                    return _runtimePlatform ?? throw new KeyNotFoundException($"{nameof(IRuntimePlatform)} was not registered");
+
                 return null;
             }
 

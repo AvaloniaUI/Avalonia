@@ -1,0 +1,4 @@
+Compat issues with assembly Avalonia.Controls.DataGrid:
+MembersMustExist : Member 'protected void Avalonia.Controls.DataGridCheckBoxColumn.OnPropertyChanged<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
+MembersMustExist : Member 'protected void Avalonia.Controls.DataGridTextColumn.OnPropertyChanged<T>(Avalonia.AvaloniaPropertyChangedEventArgs<T>)' does not exist in the implementation but it does exist in the contract.
+Total Issues: 2

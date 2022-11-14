@@ -39,6 +39,9 @@
     <TabItem Header="Custom Animator">
       <pages:CustomAnimatorPage />
     </TabItem>
+    <TabItem Header="Spring Animation">
+      <pages:SpringAnimationsPage />
+    </TabItem>
     <TabItem Header="Clipping">
       <pages:ClippingPage />
     </TabItem>
@@ -60,11 +63,20 @@
     <TabItem Header="FormattedText">
       <pages:FormattedTextPage />
     </TabItem>
+    <TabItem Header="TextFormatter">
+      <pages:TextFormatterPage />
+    </TabItem>
     <TabItem Header="LineBounds">
       <pages:LineBoundsPage />
     </TabItem>
     <TabItem Header="Path Measurement">
       <pages:PathMeasurementPage />
+    </TabItem>
+    <TabItem Header="Brushes">
+      <pages:BrushesPage />
+    </TabItem>
+    <TabItem Header="3D Transformation">
+      <pages:Transform3DPage />
     </TabItem>
   </controls:HamburgerMenu>
 </Window>

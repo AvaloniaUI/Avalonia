@@ -46,7 +46,7 @@ namespace Avalonia.Threading
                     {
                         composite.Add(action(this, state));
                     }
-                }, DispatcherPriority.DataBind);
+                }, DispatcherPriority.Background);
 
                 composite.Add(cancellation);
 

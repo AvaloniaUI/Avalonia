@@ -7,6 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		18391068E48EF96E3DB5FDAB /* ResizeScope.mm in Sources */ = {isa = PBXBuildFile; fileRef = 18391E45702740FE9DD69695 /* ResizeScope.mm */; };
+		1839125F057B0A4EB1760058 /* WindowImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 183919BF108EB72A029F7671 /* WindowImpl.mm */; };
+		183914E50CF6D2EFC1667F7C /* WindowInterfaces.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391DB45C7D892E61BF388C /* WindowInterfaces.h */; };
+		1839151F32D1BB1AB51A7BB6 /* AvnPanelWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = 18391884C7476DA4E53A492D /* AvnPanelWindow.mm */; };
+		183916173528EC2737DBE5E1 /* WindowBaseImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 183915BFF0E234CD3604A7CD /* WindowBaseImpl.h */; };
+		1839171DCC651B0638603AC4 /* INSWindowHolder.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391BBB7782C296D424071F /* INSWindowHolder.h */; };
+		1839179A55FC1421BEE83330 /* WindowBaseImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 18391676ECF0E983F4964357 /* WindowBaseImpl.mm */; };
+		183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391CD090AA776E7E841AC9 /* WindowImpl.h */; };
+		18391AA7E0BBA74D184C5734 /* AutoFitContentView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1839166350F32661F3ABD70F /* AutoFitContentView.mm */; };
+		18391AC16726CBC45856233B /* AvnWindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1839155B28B20FFB672D29C6 /* AvnWindow.mm */; };
+		18391AC65ADD7DDD33FBE737 /* PopupImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 183910513F396141938832B5 /* PopupImpl.h */; };
+		18391C28BF1823B5464FDD36 /* ResizeScope.h in Headers */ = {isa = PBXBuildFile; fileRef = 1839171D898F9BFC1373631A /* ResizeScope.h */; };
+		18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */ = {isa = PBXBuildFile; fileRef = 183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */; };
+		18391D4EB311BC7EF8B8C0A6 /* AvnView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1839132D0E2454D911F1D1F9 /* AvnView.mm */; };
+		18391D8CD1756DC858DC1A09 /* PopupImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 18391BB698579F40F1783F31 /* PopupImpl.mm */; };
+		18391E1381E2D5BFD60265A9 /* AutoFitContentView.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391654EF0E7AB3D3AB4071 /* AutoFitContentView.h */; };
+		18391ED5F611FF62C45F196D /* AvnView.h in Headers */ = {isa = PBXBuildFile; fileRef = 18391D1669284AD2EC9E866A /* AvnView.h */; };
+		18391F1E2411C79405A9943A /* WindowProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 1839122E037567BDD1D09DEB /* WindowProtocol.h */; };
 		1A002B9E232135EE00021753 /* app.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A002B9D232135EE00021753 /* app.mm */; };
 		1A1852DC23E05814008F0DED /* deadlock.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A1852DB23E05814008F0DED /* deadlock.mm */; };
 		1A3E5EA823E9E83B00EDE661 /* rendertarget.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */; };
@@ -28,11 +46,31 @@
 		AB00E4F72147CA920032A60A /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB00E4F62147CA920032A60A /* main.mm */; };
 		AB1E522C217613570091CD71 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB1E522B217613570091CD71 /* OpenGL.framework */; };
 		AB661C1E2148230F00291242 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB661C1D2148230F00291242 /* AppKit.framework */; };
-		AB661C202148286E00291242 /* window.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB661C1F2148286E00291242 /* window.mm */; };
 		AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */; };
+		BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */ = {isa = PBXBuildFile; fileRef = BC11A5BC2608D58F0017BAD0 /* automation.h */; };
+		BC11A5BF2608D58F0017BAD0 /* automation.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC11A5BD2608D58F0017BAD0 /* automation.mm */; };
+		ED3791C42862E1F40080BD62 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		183910513F396141938832B5 /* PopupImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopupImpl.h; sourceTree = "<group>"; };
+		1839122E037567BDD1D09DEB /* WindowProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowProtocol.h; sourceTree = "<group>"; };
+		1839132D0E2454D911F1D1F9 /* AvnView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnView.mm; sourceTree = "<group>"; };
+		183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IWindowStateChanged.h; sourceTree = "<group>"; };
+		1839155B28B20FFB672D29C6 /* AvnWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnWindow.mm; sourceTree = "<group>"; };
+		183915BFF0E234CD3604A7CD /* WindowBaseImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowBaseImpl.h; sourceTree = "<group>"; };
+		18391654EF0E7AB3D3AB4071 /* AutoFitContentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AutoFitContentView.h; sourceTree = "<group>"; };
+		1839166350F32661F3ABD70F /* AutoFitContentView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AutoFitContentView.mm; sourceTree = "<group>"; };
+		18391676ECF0E983F4964357 /* WindowBaseImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WindowBaseImpl.mm; sourceTree = "<group>"; };
+		1839171D898F9BFC1373631A /* ResizeScope.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ResizeScope.h; sourceTree = "<group>"; };
+		18391884C7476DA4E53A492D /* AvnPanelWindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnPanelWindow.mm; sourceTree = "<group>"; };
+		183919BF108EB72A029F7671 /* WindowImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WindowImpl.mm; sourceTree = "<group>"; };
+		18391BB698579F40F1783F31 /* PopupImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = PopupImpl.mm; sourceTree = "<group>"; };
+		18391BBB7782C296D424071F /* INSWindowHolder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = INSWindowHolder.h; sourceTree = "<group>"; };
+		18391CD090AA776E7E841AC9 /* WindowImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowImpl.h; sourceTree = "<group>"; };
+		18391D1669284AD2EC9E866A /* AvnView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AvnView.h; sourceTree = "<group>"; };
+		18391DB45C7D892E61BF388C /* WindowInterfaces.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WindowInterfaces.h; sourceTree = "<group>"; };
+		18391E45702740FE9DD69695 /* ResizeScope.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ResizeScope.mm; sourceTree = "<group>"; };
 		1A002B9D232135EE00021753 /* app.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = app.mm; sourceTree = "<group>"; };
 		1A1852DB23E05814008F0DED /* deadlock.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = deadlock.mm; sourceTree = "<group>"; };
 		1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = rendertarget.mm; sourceTree = "<group>"; };
@@ -46,7 +84,6 @@
 		37A4E71A2178846A00EACBCD /* headers */ = {isa = PBXFileReference; lastKnownFileType = folder; name = headers; path = ../../inc; sourceTree = "<group>"; };
 		37A517B22159597E00FBA241 /* Screens.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = Screens.mm; sourceTree = "<group>"; };
 		37C09D8721580FE4006A6758 /* SystemDialogs.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SystemDialogs.mm; sourceTree = "<group>"; };
-		37C09D8A21581EF2006A6758 /* window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = window.h; sourceTree = "<group>"; };
 		37DDA9AF219330F8002E132B /* AvnString.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnString.mm; sourceTree = "<group>"; };
 		37DDA9B121933371002E132B /* AvnString.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnString.h; sourceTree = "<group>"; };
 		37E2330E21583241000CB7E2 /* KeyTransform.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = KeyTransform.mm; sourceTree = "<group>"; };
@@ -60,10 +97,12 @@
 		AB00E4F62147CA920032A60A /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		AB1E522B217613570091CD71 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		AB661C1D2148230F00291242 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
-		AB661C1F2148286E00291242 /* window.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = window.mm; sourceTree = "<group>"; };
 		AB661C212148288600291242 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
 		AB7A61EF2147C815003C5833 /* libAvalonia.Native.OSX.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libAvalonia.Native.OSX.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB8F7D6A21482D7F0057DBA5 /* platformthreading.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platformthreading.mm; sourceTree = "<group>"; };
+		BC11A5BC2608D58F0017BAD0 /* automation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = automation.h; sourceTree = "<group>"; };
+		BC11A5BD2608D58F0017BAD0 /* automation.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = automation.mm; sourceTree = "<group>"; };
+		ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ED3791C42862E1F40080BD62 /* UniformTypeIdentifiers.framework in Frameworks */,
 				1A3E5EB023E9FE8300EDE661 /* QuartzCore.framework in Frameworks */,
 				1A3E5EAA23E9F26C00EDE661 /* IOSurface.framework in Frameworks */,
 				AB1E522C217613570091CD71 /* OpenGL.framework in Frameworks */,
@@ -85,6 +125,7 @@
 		AB661C1C2148230E00291242 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */,
 				522D5958258159C1006F7F7A /* Carbon.framework */,
 				1A3E5EAF23E9FE8300EDE661 /* QuartzCore.framework */,
 				1A3E5EA923E9F26C00EDE661 /* IOSurface.framework */,
@@ -97,6 +138,8 @@
 		AB7A61E62147C814003C5833 = {
 			isa = PBXGroup;
 			children = (
+				BC11A5BC2608D58F0017BAD0 /* automation.h */,
+				BC11A5BD2608D58F0017BAD0 /* automation.mm */,
 				1A1852DB23E05814008F0DED /* deadlock.mm */,
 				1A002B9D232135EE00021753 /* app.mm */,
 				37DDA9B121933371002E132B /* AvnString.h */,
@@ -112,8 +155,6 @@
 				AB661C212148288600291242 /* common.h */,
 				379860FE214DA0C000CD0246 /* KeyTransform.h */,
 				37E2330E21583241000CB7E2 /* KeyTransform.mm */,
-				AB661C1F2148286E00291242 /* window.mm */,
-				37C09D8A21581EF2006A6758 /* window.h */,
 				AB00E4F62147CA920032A60A /* main.mm */,
 				37155CE3233C00EB0034DCE9 /* menu.h */,
 				520624B222973F4100C4DCEF /* menu.mm */,
@@ -124,6 +165,24 @@
 				37C09D8721580FE4006A6758 /* SystemDialogs.mm */,
 				AB7A61F02147C815003C5833 /* Products */,
 				AB661C1C2148230E00291242 /* Frameworks */,
+				18391676ECF0E983F4964357 /* WindowBaseImpl.mm */,
+				183915BFF0E234CD3604A7CD /* WindowBaseImpl.h */,
+				18391BBB7782C296D424071F /* INSWindowHolder.h */,
+				183919BF108EB72A029F7671 /* WindowImpl.mm */,
+				18391CD090AA776E7E841AC9 /* WindowImpl.h */,
+				183913C6BFD6856BD42D19FD /* IWindowStateChanged.h */,
+				18391E45702740FE9DD69695 /* ResizeScope.mm */,
+				1839171D898F9BFC1373631A /* ResizeScope.h */,
+				1839132D0E2454D911F1D1F9 /* AvnView.mm */,
+				18391D1669284AD2EC9E866A /* AvnView.h */,
+				1839166350F32661F3ABD70F /* AutoFitContentView.mm */,
+				18391654EF0E7AB3D3AB4071 /* AutoFitContentView.h */,
+				18391884C7476DA4E53A492D /* AvnPanelWindow.mm */,
+				1839122E037567BDD1D09DEB /* WindowProtocol.h */,
+				1839155B28B20FFB672D29C6 /* AvnWindow.mm */,
+				18391DB45C7D892E61BF388C /* WindowInterfaces.h */,
+				18391BB698579F40F1783F31 /* PopupImpl.mm */,
+				183910513F396141938832B5 /* PopupImpl.h */,
 			);
 			sourceTree = "<group>";
 		};
@@ -143,6 +202,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				37155CE4233C00EB0034DCE9 /* menu.h in Headers */,
+				BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */,
+				183916173528EC2737DBE5E1 /* WindowBaseImpl.h in Headers */,
+				1839171DCC651B0638603AC4 /* INSWindowHolder.h in Headers */,
+				183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */,
+				18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */,
+				18391C28BF1823B5464FDD36 /* ResizeScope.h in Headers */,
+				18391ED5F611FF62C45F196D /* AvnView.h in Headers */,
+				18391E1381E2D5BFD60265A9 /* AutoFitContentView.h in Headers */,
+				18391F1E2411C79405A9943A /* WindowProtocol.h in Headers */,
+				183914E50CF6D2EFC1667F7C /* WindowInterfaces.h in Headers */,
+				18391AC65ADD7DDD33FBE737 /* PopupImpl.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -213,6 +283,7 @@
 				AB8F7D6B21482D7F0057DBA5 /* platformthreading.mm in Sources */,
 				1A3E5EA823E9E83B00EDE661 /* rendertarget.mm in Sources */,
 				1A3E5EAE23E9FB1300EDE661 /* cgl.mm in Sources */,
+				BC11A5BF2608D58F0017BAD0 /* automation.mm in Sources */,
 				37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */,
 				520624B322973F4100C4DCEF /* menu.mm in Sources */,
 				37A517B32159597E00FBA241 /* Screens.mm in Sources */,
@@ -220,7 +291,14 @@
 				1A465D10246AB61600C5858B /* dnd.mm in Sources */,
 				AB00E4F72147CA920032A60A /* main.mm in Sources */,
 				37C09D8821580FE4006A6758 /* SystemDialogs.mm in Sources */,
-				AB661C202148286E00291242 /* window.mm in Sources */,
+				1839179A55FC1421BEE83330 /* WindowBaseImpl.mm in Sources */,
+				1839125F057B0A4EB1760058 /* WindowImpl.mm in Sources */,
+				18391068E48EF96E3DB5FDAB /* ResizeScope.mm in Sources */,
+				18391D4EB311BC7EF8B8C0A6 /* AvnView.mm in Sources */,
+				18391AA7E0BBA74D184C5734 /* AutoFitContentView.mm in Sources */,
+				1839151F32D1BB1AB51A7BB6 /* AvnPanelWindow.mm in Sources */,
+				18391AC16726CBC45856233B /* AvnWindow.mm in Sources */,
+				18391D8CD1756DC858DC1A09 /* PopupImpl.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

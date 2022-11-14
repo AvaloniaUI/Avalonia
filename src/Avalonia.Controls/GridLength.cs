@@ -180,7 +180,7 @@ namespace Avalonia.Controls
                 return "Auto";
             }
 
-            string s = _value.ToString();
+            string s = _value.ToString(CultureInfo.InvariantCulture);
             return IsStar ? s + "*" : s;
         }
 

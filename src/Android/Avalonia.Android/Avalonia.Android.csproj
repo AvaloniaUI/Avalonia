@@ -1,6 +1,6 @@
-﻿<Project Sdk="Xamarin.Legacy.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net6.0-android;monoandroid11.0</TargetFrameworks>
+    <TargetFramework>net6.0-android</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
@@ -15,4 +15,5 @@
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
 </Project>

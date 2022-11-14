@@ -7,7 +7,7 @@ namespace ControlCatalog.Pages
 {
     public class LabelsPage : UserControl
     {
-        private Person _person;
+        private Person? _person;
 
         public LabelsPage()
         {

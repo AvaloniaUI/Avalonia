@@ -4,6 +4,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 using FontFamily = Avalonia.Media.FontFamily;
+using FontStretch = Avalonia.Media.FontStretch;
 using FontStyle = Avalonia.Media.FontStyle;
 using FontWeight = Avalonia.Media.FontWeight;
 
@@ -32,7 +33,7 @@ namespace Avalonia.Direct2D1.Media
         }
 
         public bool TryMatchCharacter(int codepoint, FontStyle fontStyle,
-            FontWeight fontWeight,
+            FontWeight fontWeight, FontStretch fontStretch,
             FontFamily fontFamily, CultureInfo culture, out Typeface typeface)
         {
             var familyCount = Direct2D1FontCollectionCache.InstalledFontCollection.FontFamilyCount;
@@ -40,7 +41,8 @@ namespace Avalonia.Direct2D1.Media
             for (var i = 0; i < familyCount; i++)
             {
                 var font = Direct2D1FontCollectionCache.InstalledFontCollection.GetFontFamily(i)
-                    .GetMatchingFonts((SharpDX.DirectWrite.FontWeight)fontWeight, FontStretch.Normal,
+                    .GetMatchingFonts((SharpDX.DirectWrite.FontWeight)fontWeight,
+                        (SharpDX.DirectWrite.FontStretch)fontStretch,
                         (SharpDX.DirectWrite.FontStyle)fontStyle).GetFont(0);
 
                 if (!font.HasCharacter(codepoint))
@@ -50,7 +52,7 @@ namespace Avalonia.Direct2D1.Media
 
                 var fontFamilyName = font.FontFamily.FamilyNames.GetString(0);
 
-                typeface = new Typeface(fontFamilyName, fontStyle, fontWeight);
+                typeface = new Typeface(fontFamilyName, fontStyle, fontWeight, fontStretch);
 
                 return true;
             }
@@ -60,7 +62,7 @@ namespace Avalonia.Direct2D1.Media
             return false;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             return new GlyphTypefaceImpl(typeface);
         }

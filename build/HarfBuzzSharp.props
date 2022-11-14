@@ -1,7 +1,7 @@
 ﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Include="HarfBuzzSharp" Version="2.8.2-preview.178" />
-    <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2-preview.178" />
-    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="2.8.2-preview.178"/>
+    <PackageReference Include="HarfBuzzSharp" Version="2.8.2.1-preview.108" />
+    <PackageReference Condition="'$(IncludeLinuxSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.1-preview.108" />
+    <PackageReference Condition="'$(IncludeWasmSkia)' == 'true'" Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="2.8.2.1-preview.108" />
   </ItemGroup>
 </Project>

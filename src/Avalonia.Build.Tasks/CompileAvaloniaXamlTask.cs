@@ -37,8 +37,7 @@ namespace Avalonia.Build.Tasks
             var res = XamlCompilerTaskExecutor.Compile(BuildEngine, input,
                 File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
                 ProjectDirectory, OutputPath, VerifyIl, DefaultCompileBindings, outputImportance,
-                (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null,
-                EnableComInteropPatching, SkipXamlCompilation, DebuggerLaunch);
+                (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null, SkipXamlCompilation, DebuggerLaunch);
             if (!res.Success)
                 return false;
             if (!res.WrittenFile)
@@ -75,7 +74,6 @@ namespace Avalonia.Build.Tasks
 
         public bool DefaultCompileBindings { get; set; }
         
-        public bool EnableComInteropPatching { get; set; }
         public bool SkipXamlCompilation { get; set; }
         
         public string AssemblyOriginatorKeyFile { get; set; }

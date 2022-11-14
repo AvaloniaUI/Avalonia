@@ -444,12 +444,11 @@ namespace Avalonia.Controls
 
             // We need to explicitly collapse the cells of the invisible column because layout only goes through
             // visible ones
-            if (!updatedColumn.IsVisible)
+            ColumnHeaders?.InvalidateChildIndex();
+            foreach (var row in GetAllRows())
             {
-                foreach (DataGridRow row in GetAllRows())
-                {
-                    row.Cells[updatedColumn.Index].IsVisible = false;
-                }
+                row.Cells[updatedColumn.Index].IsVisible = updatedColumn.IsVisible;
+                row.InvalidateCellsIndex();
             }
         }
 

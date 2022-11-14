@@ -13,8 +13,8 @@ namespace ControlCatalog.Models
 {
     public class Person : INotifyDataErrorInfo, INotifyPropertyChanged
     {
-        string _firstName;
-        string _lastName;
+        string _firstName = string.Empty;
+        string _lastName = string.Empty;
         bool _isBanned;
         private int _age;
 
@@ -76,7 +76,7 @@ namespace ControlCatalog.Models
 
         Dictionary<string, List<string>> _errorLookup = new Dictionary<string, List<string>>();
 
-        void SetError(string propertyName, string error)
+        void SetError(string propertyName, string? error)
         {
             if (string.IsNullOrEmpty(error))
             {
@@ -85,14 +85,14 @@ namespace ControlCatalog.Models
             }
             else
             {
-                if (_errorLookup.TryGetValue(propertyName, out List<string> errorList))
+                if (_errorLookup.TryGetValue(propertyName, out var errorList))
                 {
                     errorList.Clear();
-                    errorList.Add(error);
+                    errorList.Add(error!);
                 }
                 else
                 {
-                    var errors = new List<string> { error };
+                    var errors = new List<string> { error! };
                     _errorLookup.Add(propertyName, errors);
                 }
 
@@ -102,8 +102,8 @@ namespace ControlCatalog.Models
 
         public bool HasErrors => _errorLookup.Count > 0;
 
-        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         void OnErrorsChanged(string propertyName)
         {
@@ -114,12 +114,12 @@ namespace ControlCatalog.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public IEnumerable GetErrors(string propertyName)
+        public IEnumerable GetErrors(string? propertyName)
         {
-            if (_errorLookup.TryGetValue(propertyName, out List<string> errorList))
+            if (propertyName is { } && _errorLookup.TryGetValue(propertyName, out var errorList))
                 return errorList;
             else
-                return null;
+                return Array.Empty<object>();
         }
     }
 }

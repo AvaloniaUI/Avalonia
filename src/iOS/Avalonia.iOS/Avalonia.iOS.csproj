@@ -1,17 +1,19 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>xamarin.ios10</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>latest</LangVersion>
+    <TargetFramework>net6.0-ios</TargetFramework>
+    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn></NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn></NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenTK-1.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
-    <ProjectReference Include="..\..\Avalonia.PlatformSupport\Avalonia.PlatformSupport.csproj">
-      <SetTargetFramework>TargetFramework=netstandard2.0</SetTargetFramework>
-    </ProjectReference>
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
+  
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
 </Project>

@@ -11,8 +11,7 @@ namespace Avalonia.PropertyStore
         Optional<object?> GetValue();
         void Start();
         void RaiseValueChanged(
-            IValueSink sink,
-            IAvaloniaObject owner,
+            AvaloniaObject owner,
             AvaloniaProperty property,
             Optional<object?> oldValue,
             Optional<object?> newValue);

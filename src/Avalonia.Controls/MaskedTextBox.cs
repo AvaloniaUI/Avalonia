@@ -32,7 +32,7 @@ namespace Avalonia.Controls
              AvaloniaProperty.Register<MaskedTextBox, string?>(nameof(Mask), string.Empty);
 
         public static new readonly StyledProperty<char> PasswordCharProperty =
-             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar), '\0');
+             AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PasswordChar), '\0');
 
         public static readonly StyledProperty<char> PromptCharProperty =
              AvaloniaProperty.Register<MaskedTextBox, char>(nameof(PromptChar), '_');
@@ -280,7 +280,7 @@ namespace Avalonia.Controls
             base.OnLostFocus(e);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             void UpdateMaskProvider()
             {

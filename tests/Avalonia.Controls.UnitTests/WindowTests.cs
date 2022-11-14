@@ -516,6 +516,8 @@ namespace Avalonia.Controls.UnitTests
 
             var screens = new Mock<IScreenImpl>();
             screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object, screen2.Object });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            
 
             var windowImpl = MockWindowingPlatform.CreateWindowMock();
             windowImpl.Setup(x => x.ClientSize).Returns(new Size(800, 480));
@@ -536,6 +538,33 @@ namespace Avalonia.Controls.UnitTests
                     (int)(screen1.Object.WorkingArea.Size.Height / 2 - window.ClientSize.Height / 2));
 
                 Assert.Equal(window.Position, expectedPosition);
+            }
+        }
+        
+        [Fact]
+        public void Window_Should_Be_Sized_To_MinSize_If_InitialSize_Less_Than_MinSize()
+        {
+            var screen1 = new Mock<Screen>(1.75, new PixelRect(new PixelSize(1920, 1080)), new PixelRect(new PixelSize(1920, 966)), true);
+            var screens = new Mock<IScreenImpl>();
+            screens.Setup(x => x.AllScreens).Returns(new Screen[] { screen1.Object });
+            screens.Setup(x => x.ScreenFromPoint(It.IsAny<PixelPoint>())).Returns(screen1.Object);
+            
+            var windowImpl = MockWindowingPlatform.CreateWindowMock(400, 300);
+            windowImpl.Setup(x => x.DesktopScaling).Returns(1.75);
+            windowImpl.Setup(x => x.RenderScaling).Returns(1.75);
+            windowImpl.Setup(x => x.Screen).Returns(screens.Object);
+            
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var window = new Window(windowImpl.Object);
+                window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+                window.MinWidth = 720;
+                window.MinHeight = 480;
+
+                window.Show();
+                
+                Assert.Equal(new PixelPoint(330, 63), window.Position);
+                Assert.Equal(new Size(720, 480), window.Bounds.Size);
             }
         }
 
@@ -694,6 +723,31 @@ namespace Avalonia.Controls.UnitTests
             }
 
             [Fact]
+            public void Width_Height_Should_Not_Be_NaN_After_Show_With_SizeToContent_Manual()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new Canvas
+                    {
+                        Width = 400,
+                        Height = 800,
+                    };
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.Manual,
+                        Content = child
+                    };
+
+                    Show(target);
+
+                    // Values come from MockWindowingPlatform defaults.
+                    Assert.Equal(800, target.Width);
+                    Assert.Equal(600, target.Height);
+                }
+            }
+
+            [Fact]
             public void Width_Height_Should_Not_Be_NaN_After_Show_With_SizeToContent_WidthAndHeight()
             {
                 using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -710,10 +764,33 @@ namespace Avalonia.Controls.UnitTests
                         Content = child
                     };
 
+                    target.GetObservable(Window.WidthProperty).Subscribe(x => { });
+
                     Show(target);
 
                     Assert.Equal(400, target.Width);
                     Assert.Equal(800, target.Height);
+                }
+            }
+
+            [Fact]
+            public void MaxWidth_And_MaxHeight_Should_Be_Respected_With_SizeToContent_WidthAndHeight()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var child = new ChildControl();
+
+                    var target = new Window()
+                    {
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        MaxWidth = 300,
+                        MaxHeight = 700,
+                        Content = child,
+                    };
+
+                    Show(target);
+
+                    Assert.Equal(new[] { new Size(300, 700) }, child.MeasureSizes);
                 }
             }
 
@@ -821,7 +898,7 @@ namespace Avalonia.Controls.UnitTests
                     target.Width = 410;
                     target.LayoutManager.ExecuteLayoutPass();
 
-                    var windowImpl = Mock.Get(ValidatingWindowImpl.Unwrap(target.PlatformImpl));
+                    var windowImpl = Mock.Get(target.PlatformImpl);
                     windowImpl.Verify(x => x.Resize(new Size(410, 800), PlatformResizeReason.Application));
                     Assert.Equal(410, target.Width);
                 }

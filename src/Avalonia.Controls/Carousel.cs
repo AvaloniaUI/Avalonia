@@ -20,8 +20,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PageTransition"/> property.
         /// </summary>
-        public static readonly StyledProperty<IPageTransition> PageTransitionProperty =
-            AvaloniaProperty.Register<Carousel, IPageTransition>(nameof(PageTransition));
+        public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
+            AvaloniaProperty.Register<Carousel, IPageTransition?>(nameof(PageTransition));
 
         /// <summary>
         /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for 
@@ -54,7 +54,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the transition to use when moving between pages.
         /// </summary>
-        public IPageTransition PageTransition
+        public IPageTransition? PageTransition
         {
             get { return GetValue(PageTransitionProperty); }
             set { SetValue(PageTransitionProperty, value); }

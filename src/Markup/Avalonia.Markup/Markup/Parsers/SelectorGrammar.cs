@@ -46,7 +46,7 @@ namespace Avalonia.Markup.Parsers
                 switch (state)
                 {
                     case State.Start:
-                        state = ParseStart(ref r);
+                        (state, syntax) = ParseStart(ref r);
                         break;
                     case State.Middle:
                         (state, syntax) = ParseMiddle(ref r, end);
@@ -93,27 +93,31 @@ namespace Avalonia.Markup.Parsers
             return selector;
         }
 
-        private static State ParseStart(ref CharacterReader r)
+        private static (State, ISyntax?) ParseStart(ref CharacterReader r)
         {
             r.SkipWhitespace();
             if (r.End)
             {
-                return State.End;
+                return (State.End, null);
             }
 
             if (r.TakeIf(':'))
             {
-                return State.Colon;
+                return (State.Colon, null);
             }
             else if (r.TakeIf('.'))
             {
-                return State.Class;
+                return (State.Class, null);
             }
             else if (r.TakeIf('#'))
             {
-                return State.Name;
+                return (State.Name, null);
             }
-            return State.TypeName;
+            else if (r.TakeIf('^'))
+            {
+                return (State.CanHaveType, new NestingSyntax());
+            }
+            return (State.TypeName, null);
         }
 
         private static (State, ISyntax?) ParseMiddle(ref CharacterReader r, char? end)
@@ -141,6 +145,10 @@ namespace Avalonia.Markup.Parsers
             else if (r.TakeIf(','))
             {
                 return (State.Start, new CommaSyntax());
+            }
+            else if (r.TakeIf('^'))
+            {
+                return (State.CanHaveType, new NestingSyntax());
             }
             else if (end.HasValue && !r.End && r.Peek == end.Value)
             {
@@ -368,28 +376,28 @@ namespace Avalonia.Markup.Parsers
 
             if (r.Peek == 'o')
             {
-                var constArg = r.TakeUntil(')').ToString().Trim();
-                if (constArg.Equals("odd", StringComparison.Ordinal))
+                var constArg = r.TakeUntil(')').Trim();
+                if (constArg.SequenceEqual("odd".AsSpan()))
                 {
                     step = 2;
                     offset = 1;
                 }
                 else
                 {
-                    throw new ExpressionParseException(r.Position, $"Expected nth-child(odd). Actual '{constArg}'.");
+                    throw new ExpressionParseException(r.Position, $"Expected nth-child(odd). Actual '{constArg.ToString()}'.");
                 }
             }
             else if (r.Peek == 'e')
             {
-                var constArg = r.TakeUntil(')').ToString().Trim();
-                if (constArg.Equals("even", StringComparison.Ordinal))
+                var constArg = r.TakeUntil(')').Trim();
+                if (constArg.SequenceEqual("even".AsSpan()))
                 {
                     step = 2;
                     offset = 0;
                 }
                 else
                 {
-                    throw new ExpressionParseException(r.Position, $"Expected nth-child(even). Actual '{constArg}'.");
+                    throw new ExpressionParseException(r.Position, $"Expected nth-child(even). Actual '{constArg.ToString()}'.");
                 }
             }
             else
@@ -397,7 +405,7 @@ namespace Avalonia.Markup.Parsers
                 r.SkipWhitespace();
 
                 var stepOrOffset = 0;
-                var stepOrOffsetStr = r.TakeWhile(c => char.IsDigit(c) || c == '-' || c == '+').ToString();
+                var stepOrOffsetStr = r.TakeWhile(c => char.IsDigit(c) || c == '-' || c == '+');
                 if (stepOrOffsetStr.Length == 0
                     || (stepOrOffsetStr.Length == 1
                     && stepOrOffsetStr[0] == '+'))
@@ -409,7 +417,7 @@ namespace Avalonia.Markup.Parsers
                 {
                     stepOrOffset = -1;
                 }
-                else if (!int.TryParse(stepOrOffsetStr.ToString(), out stepOrOffset))
+                else if (!stepOrOffsetStr.TryParseInt(out stepOrOffset))
                 {
                     throw new ExpressionParseException(r.Position, "Couldn't parse nth-child step or offset value. Integer was expected.");
                 }
@@ -454,7 +462,7 @@ namespace Avalonia.Markup.Parsers
                         r.SkipWhitespace();
 
                         if (sign != 0
-                            && !int.TryParse(r.TakeUntil(')').ToString(), out offset))
+                            && !r.TakeUntil(')').TryParseInt(out offset))
                         {
                             throw new ExpressionParseException(r.Position, "Couldn't parse nth-child offset value. Integer was expected.");
                         }
@@ -633,6 +641,14 @@ namespace Avalonia.Markup.Parsers
             public override bool Equals(object? obj)
             {
                 return obj is CommaSyntax or;
+            }
+        }
+
+        public class NestingSyntax : ISyntax
+        {
+            public override bool Equals(object? obj)
+            {
+                return obj is NestingSyntax;
             }
         }
     }

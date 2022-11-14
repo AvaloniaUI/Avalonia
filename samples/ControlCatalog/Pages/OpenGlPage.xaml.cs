@@ -68,7 +68,7 @@ namespace ControlCatalog.Pages
             set => SetAndRaise(DiscoProperty, ref _disco, value);
         }
 
-        private string _info;
+        private string _info = string.Empty;
 
         public static readonly DirectProperty<OpenGlPageControl, string> InfoProperty =
             AvaloniaProperty.RegisterDirect<OpenGlPageControl, string>("Info", o => o.Info, (o, v) => o.Info = v);
@@ -90,7 +90,6 @@ namespace ControlCatalog.Pages
         private int _vertexBufferObject;
         private int _indexBufferObject;
         private int _vertexArrayObject;
-        private GlExtrasInterface _glExt;
 
         private string GetShader(bool fragment, string shader)
         {
@@ -206,7 +205,7 @@ namespace ControlCatalog.Pages
         public OpenGlPageControl()
         {
             var name = typeof(OpenGlPage).Assembly.GetManifestResourceNames().First(x => x.Contains("teapot.bin"));
-            using (var sr = new BinaryReader(typeof(OpenGlPage).Assembly.GetManifestResourceStream(name)))
+            using (var sr = new BinaryReader(typeof(OpenGlPage).Assembly.GetManifestResourceStream(name)!))
             {
                 var buf = new byte[sr.ReadInt32()];
                 sr.Read(buf, 0, buf.Length);
@@ -258,7 +257,6 @@ namespace ControlCatalog.Pages
         protected unsafe override void OnOpenGlInit(GlInterface GL, int fb)
         {
             CheckError(GL);
-            _glExt = new GlExtrasInterface(GL);
 
             Info = $"Renderer: {GL.GetString(GL_RENDERER)} Version: {GL.GetString(GL_VERSION)}";
             
@@ -298,8 +296,8 @@ namespace ControlCatalog.Pages
                 GL.BufferData(GL_ELEMENT_ARRAY_BUFFER, new IntPtr(_indices.Length * sizeof(ushort)), new IntPtr(pdata),
                     GL_STATIC_DRAW);
             CheckError(GL);
-            _vertexArrayObject = _glExt.GenVertexArray();
-            _glExt.BindVertexArray(_vertexArrayObject);
+            _vertexArrayObject = GL.GenVertexArray();
+            GL.BindVertexArray(_vertexArrayObject);
             CheckError(GL);
             GL.VertexAttribPointer(positionLocation, 3, GL_FLOAT,
                 0, vertexSize, IntPtr.Zero);
@@ -316,12 +314,13 @@ namespace ControlCatalog.Pages
             // Unbind everything
             GL.BindBuffer(GL_ARRAY_BUFFER, 0);
             GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            _glExt.BindVertexArray(0);
+            GL.BindVertexArray(0);
             GL.UseProgram(0);
 
             // Delete all resources.
-            GL.DeleteBuffers(2, new[] { _vertexBufferObject, _indexBufferObject });
-            _glExt.DeleteVertexArrays(1, new[] { _vertexArrayObject });
+            GL.DeleteBuffer(_vertexBufferObject);
+            GL.DeleteBuffer(_indexBufferObject);
+            GL.DeleteVertexArray(_vertexArrayObject);
             GL.DeleteProgram(_shaderProgram);
             GL.DeleteShader(_fragmentShader);
             GL.DeleteShader(_vertexShader);
@@ -338,7 +337,7 @@ namespace ControlCatalog.Pages
 
             GL.BindBuffer(GL_ARRAY_BUFFER, _vertexBufferObject);
             GL.BindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBufferObject);
-            _glExt.BindVertexArray(_vertexArrayObject);
+            GL.BindVertexArray(_vertexArrayObject);
             GL.UseProgram(_shaderProgram);
             CheckError(GL);
             var projection =
@@ -346,7 +345,7 @@ namespace ControlCatalog.Pages
                     0.01f, 1000);
 
 
-            var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
+            var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, 1, 0));
             var model = Matrix4x4.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
             var modelLoc = GL.GetUniformLocationString(_shaderProgram, "uModel");
             var viewLoc = GL.GetUniformLocationString(_shaderProgram, "uView");
@@ -368,35 +367,6 @@ namespace ControlCatalog.Pages
             CheckError(GL);
             if (_disco > 0.01)
                 Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
-        }
-
-        class GlExtrasInterface : GlInterfaceBase<GlInterface.GlContextInfo>
-        {
-            public GlExtrasInterface(GlInterface gl) : base(gl.GetProcAddress, gl.ContextInfo)
-            {
-            }
-            
-            public delegate void GlDeleteVertexArrays(int count, int[] buffers);
-            [GlMinVersionEntryPoint("glDeleteVertexArrays", 3,0)]
-            [GlExtensionEntryPoint("glDeleteVertexArraysOES", "GL_OES_vertex_array_object")]
-            public GlDeleteVertexArrays DeleteVertexArrays { get; }
-            
-            public delegate void GlBindVertexArray(int array);
-            [GlMinVersionEntryPoint("glBindVertexArray", 3,0)]
-            [GlExtensionEntryPoint("glBindVertexArrayOES", "GL_OES_vertex_array_object")]
-            public GlBindVertexArray BindVertexArray { get; }
-            public delegate void GlGenVertexArrays(int n, int[] rv);
-        
-            [GlMinVersionEntryPoint("glGenVertexArrays",3,0)]
-            [GlExtensionEntryPoint("glGenVertexArraysOES", "GL_OES_vertex_array_object")]
-            public GlGenVertexArrays GenVertexArrays { get; }
-            
-            public int GenVertexArray()
-            {
-                var rv = new int[1];
-                GenVertexArrays(1, rv);
-                return rv[0];
-            }
         }
     }
 }

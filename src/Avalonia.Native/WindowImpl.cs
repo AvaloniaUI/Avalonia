@@ -13,7 +13,6 @@ namespace Avalonia.Native
 {
     internal class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
     {
-        private readonly IAvaloniaNativeFactory _factory;
         private readonly AvaloniaNativePlatformOptions _opts;
         private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
         IAvnWindow _native;
@@ -22,9 +21,8 @@ namespace Avalonia.Native
         
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            AvaloniaNativePlatformOpenGlInterface glFeature) : base(opts, glFeature)
+            AvaloniaNativePlatformOpenGlInterface glFeature) : base(factory, opts, glFeature)
         {
-            _factory = factory;
             _opts = opts;
             _glFeature = glFeature;
             _doubleClickHelper = new DoubleClickHelper();
@@ -87,7 +85,10 @@ namespace Avalonia.Native
             _native.SetTitleBarColor(new AvnColor { Alpha = color.A, Red = color.R, Green = color.G, Blue = color.B });
         }
 
-        public void SetTitle(string title) => _native.SetTitle(title);
+        public void SetTitle(string title)
+        {
+            _native.SetTitle(title ?? "");
+        }
 
         public WindowState WindowState
         {
@@ -105,6 +106,13 @@ namespace Avalonia.Native
 
         private bool _isExtended;
         public bool IsClientAreaExtendedToDecorations => _isExtended;
+
+        public override void Show(bool activate, bool isDialog)
+        {
+            base.Show(activate, isDialog);
+            
+            InvalidateExtendedMargins();
+        }
 
         protected override bool ChromeHitTest (RawPointerEventArgs e)
         {

@@ -9,7 +9,7 @@ namespace Avalonia.X11.Glx
     unsafe class GlxDisplay
     {
         private readonly X11Info _x11;
-        private readonly List<GlVersion> _probeProfiles;
+        private readonly GlVersion[] _probeProfiles;
         private readonly IntPtr _fbconfig;
         private readonly XVisualInfo* _visual;
         private string[] _displayExtensions;
@@ -21,7 +21,7 @@ namespace Avalonia.X11.Glx
         public GlxDisplay(X11Info x11, IList<GlVersion> probeProfiles) 
         {
             _x11 = x11;
-            _probeProfiles = probeProfiles.ToList();
+            _probeProfiles = probeProfiles.ToArray();
             _displayExtensions = Glx.GetExtensions(_x11.Display);
 
             var baseAttribs = new[]
@@ -76,10 +76,10 @@ namespace Avalonia.X11.Glx
             if (Glx.GetFBConfigAttrib(_x11.Display, _fbconfig, GLX_STENCIL_SIZE, out var stencil) == 0)
                 stencilSize = stencil;
 
-            var pbuffers = Enumerable.Range(0, 2).Select(_ => Glx.CreatePbuffer(_x11.Display, _fbconfig, new[]
-            {
-                GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0
-            })).ToList();
+            var attributes = new[] { GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0 };
+            
+            Glx.CreatePbuffer(_x11.Display, _fbconfig, attributes);
+            Glx.CreatePbuffer(_x11.Display, _fbconfig, attributes);
             
             XLib.XFlush(_x11.Display);
 
@@ -104,7 +104,6 @@ namespace Avalonia.X11.Glx
                                     $"Renderer '{glInterface.Renderer}' is blacklisted by '{item}'");
                 }
             }
-
         }
 
         IntPtr CreatePBuffer()

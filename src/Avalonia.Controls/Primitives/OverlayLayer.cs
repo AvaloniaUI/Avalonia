@@ -23,7 +23,14 @@ namespace Avalonia.Controls.Primitives
         }
 
         public bool HitTest(Point point) => Children.HitTestCustom(point);
-        
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            foreach (Control child in Children)
+                child.Measure(availableSize);
+            return availableSize;
+        }
+
         protected override Size ArrangeOverride(Size finalSize)
         {
             // We are saving it here since child controls might need to know the entire size of the overlay

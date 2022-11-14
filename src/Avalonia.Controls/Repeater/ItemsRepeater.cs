@@ -20,7 +20,7 @@ namespace Avalonia.Controls
     /// Represents a data-driven collection control that incorporates a flexible layout system,
     /// custom views, and virtualization.
     /// </summary>
-    public class ItemsRepeater : Panel, IChildIndexProvider, IWeakEventSubscriber<EventArgs>
+    public class ItemsRepeater : Panel, IChildIndexProvider
     {
         /// <summary>
         /// Defines the <see cref="HorizontalCacheLength"/> property.
@@ -60,6 +60,7 @@ namespace Avalonia.Controls
 
         private readonly ViewManager _viewManager;
         private readonly ViewportManager _viewportManager;
+        private readonly TargetWeakEventSubscriber<ItemsRepeater, EventArgs> _layoutWeakSubscriber;
         private IEnumerable? _items;
         private VirtualizingLayoutContext? _layoutContext;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
@@ -74,6 +75,15 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsRepeater()
         {
+            _layoutWeakSubscriber = new TargetWeakEventSubscriber<ItemsRepeater, EventArgs>(
+                this, static (target, _, ev, _) =>
+                {
+                    if (ev == AttachedLayout.ArrangeInvalidatedWeakEvent)
+                        target.InvalidateArrange();
+                    else if (ev == AttachedLayout.MeasureInvalidatedWeakEvent)
+                        target.InvalidateMeasure();
+                });
+
             _viewManager = new ViewManager(this);
             _viewportManager = new ViewportManager(this);
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Once);
@@ -257,10 +267,9 @@ namespace Avalonia.Controls
 
         internal void UnpinElement(IControl element) => _viewManager.UpdatePin(element, false);
 
-        internal static VirtualizationInfo TryGetVirtualizationInfo(IControl element)
+        internal static VirtualizationInfo? TryGetVirtualizationInfo(IControl element)
         {
-            var value = element.GetValue(VirtualizationInfoProperty);
-            return value;
+            return (element as AvaloniaObject)?.GetValue(VirtualizationInfoProperty);
         }
 
         internal static VirtualizationInfo CreateAndInitializeVirtualizationInfo(IControl element)
@@ -277,15 +286,20 @@ namespace Avalonia.Controls
 
         internal static VirtualizationInfo GetVirtualizationInfo(IControl element)
         {
-            var result = element.GetValue(VirtualizationInfoProperty);
-
-            if (result == null)
+            if (element is AvaloniaObject ao)
             {
-                result = new VirtualizationInfo();
-                element.SetValue(VirtualizationInfoProperty, result);
+                var result = ao.GetValue(VirtualizationInfoProperty);
+
+                if (result == null)
+                {
+                    result = new VirtualizationInfo();
+                    ao.SetValue(VirtualizationInfoProperty, result);
+                }
+
+                return result;
             }
 
-            return result;
+            throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
         }
 
         private protected override void InvalidateMeasureOnChildrenChanged()
@@ -391,11 +405,7 @@ namespace Avalonia.Controls
                         var newBounds = element.Bounds;
                         virtInfo.ArrangeBounds = newBounds;
 
-                        if (!virtInfo.IsRegisteredAsAnchorCandidate)
-                        {
-                            _viewportManager.RegisterScrollAnchorCandidate(element);
-                            virtInfo.IsRegisteredAsAnchorCandidate = true;
-                        }
+                        _viewportManager.RegisterScrollAnchorCandidate(element, virtInfo);
                     }
                 }
 
@@ -411,6 +421,7 @@ namespace Avalonia.Controls
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
+            base.OnAttachedToVisualTree(e);
             InvalidateMeasure();
             _viewportManager.ResetScrollers();
         }
@@ -420,12 +431,11 @@ namespace Avalonia.Controls
             _viewportManager.ResetScrollers();
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == ItemsProperty)
             {
-                var oldEnumerable = change.OldValue.GetValueOrDefault<IEnumerable>();
-                var newEnumerable = change.NewValue.GetValueOrDefault<IEnumerable>();
+                var (oldEnumerable, newEnumerable) = change.GetOldAndNewValue<IEnumerable?>();
 
                 if (oldEnumerable != newEnumerable)
                 {
@@ -440,23 +450,21 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ItemTemplateProperty)
             {
-                OnItemTemplateChanged(
-                    change.OldValue.GetValueOrDefault<IDataTemplate>(),
-                    change.NewValue.GetValueOrDefault<IDataTemplate>());
+                var (oldvalue, newValue) = change.GetOldAndNewValue<IDataTemplate?>();
+                OnItemTemplateChanged(oldvalue, newValue);
             }
             else if (change.Property == LayoutProperty)
             {
-                OnLayoutChanged(
-                    change.OldValue.GetValueOrDefault<AttachedLayout>(),
-                    change.NewValue.GetValueOrDefault<AttachedLayout>());
+                var (oldvalue, newValue) = change.GetOldAndNewValue<AttachedLayout>();
+                OnLayoutChanged(oldvalue, newValue);
             }
             else if (change.Property == HorizontalCacheLengthProperty)
             {
-                _viewportManager.HorizontalCacheLength = change.NewValue.GetValueOrDefault<double>();
+                _viewportManager.HorizontalCacheLength = change.GetNewValue<double>();
             }
             else if (change.Property == VerticalCacheLengthProperty)
             {
-                _viewportManager.VerticalCacheLength = change.NewValue.GetValueOrDefault<double>();
+                _viewportManager.VerticalCacheLength = change.GetNewValue<double>();
             }
 
             base.OnPropertyChanged(change);
@@ -480,7 +488,7 @@ namespace Avalonia.Controls
                     _processingItemsSourceChange.Action == NotifyCollectionChangedAction.Reset);
 
             _viewManager.ClearElement(element, isClearedDueToCollectionChange);
-            _viewportManager.OnElementCleared(element);
+            _viewportManager.OnElementCleared(element, GetVirtualizationInfo(element));
         }
 
         private int GetElementIndexImpl(IControl element)
@@ -491,7 +499,7 @@ namespace Avalonia.Controls
             if (parent == this)
             {
                 var virtInfo = TryGetVirtualizationInfo(element);
-                return _viewManager.GetElementIndex(virtInfo);
+                return _viewManager.GetElementIndex(virtInfo!);
             }
 
             return -1;
@@ -728,8 +736,8 @@ namespace Avalonia.Controls
             {
                 oldValue.UninitializeForContext(LayoutContext);
 
-                AttachedLayout.MeasureInvalidatedWeakEvent.Unsubscribe(oldValue, this);
-                AttachedLayout.ArrangeInvalidatedWeakEvent.Unsubscribe(oldValue, this);
+                AttachedLayout.MeasureInvalidatedWeakEvent.Unsubscribe(oldValue, _layoutWeakSubscriber);
+                AttachedLayout.ArrangeInvalidatedWeakEvent.Unsubscribe(oldValue, _layoutWeakSubscriber);
 
                 // Walk through all the elements and make sure they are cleared
                 foreach (var element in Children)
@@ -747,8 +755,8 @@ namespace Avalonia.Controls
             {
                 newValue.InitializeForContext(LayoutContext);
 
-                AttachedLayout.MeasureInvalidatedWeakEvent.Subscribe(newValue, this);
-                AttachedLayout.ArrangeInvalidatedWeakEvent.Subscribe(newValue, this);
+                AttachedLayout.MeasureInvalidatedWeakEvent.Subscribe(newValue, _layoutWeakSubscriber);
+                AttachedLayout.ArrangeInvalidatedWeakEvent.Subscribe(newValue, _layoutWeakSubscriber);
             }
 
             bool isVirtualizingLayout = newValue != null && newValue is VirtualizingLayout;
@@ -798,15 +806,7 @@ namespace Avalonia.Controls
         {
             _viewportManager.OnBringIntoViewRequested(e);
         }
-
-        void IWeakEventSubscriber<EventArgs>.OnEvent(object? sender, WeakEvent ev, EventArgs e)
-        {
-            if(ev == AttachedLayout.ArrangeInvalidatedWeakEvent)
-                InvalidateArrange();
-            else if (ev == AttachedLayout.MeasureInvalidatedWeakEvent)
-                InvalidateMeasure();
-        }
-
+        
         private VirtualizingLayoutContext GetLayoutContext()
         {
             if (_layoutContext == null)

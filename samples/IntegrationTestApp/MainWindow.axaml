@@ -1,0 +1,137 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="IntegrationTestApp.MainWindow"
+        Name="MainWindow"
+        Title="IntegrationTestApp">
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="File">
+        <NativeMenu>
+          <NativeMenuItem Header="Open..."/>
+        </NativeMenu>
+      </NativeMenuItem>
+      <NativeMenuItem Header="View">
+        <NativeMenu/>
+      </NativeMenuItem>  
+    </NativeMenu>
+  </NativeMenu.Menu>
+  <DockPanel>
+    <NativeMenuBar DockPanel.Dock="Top"/>
+    
+    <TabControl TabStripPlacement="Left" Name="MainTabs">
+      <TabItem Header="Automation">
+        <StackPanel>
+          <TextBlock Name="TextBlockWithName">TextBlockWithName</TextBlock>
+          <TextBlock Name="NotTheAutomationId" AutomationProperties.AutomationId="TextBlockWithNameAndAutomationId">
+            TextBlockWithNameAndAutomationId
+          </TextBlock>
+          <TextBlock Name="TextBlockAsLabel">Label for TextBox</TextBlock>
+          <TextBox Name="LabeledByTextBox" AutomationProperties.LabeledBy="{Binding #TextBlockAsLabel}">
+            Foo
+          </TextBox>
+        </StackPanel>
+      </TabItem>
+      
+      <TabItem Header="Button">
+        <StackPanel>
+          <Button Name="DisabledButton" IsEnabled="False">
+            Disabled Button
+          </Button>
+          <Button Name="BasicButton">
+            Basic Button
+          </Button>
+          <Button Name="ButtonWithTextBlock">
+            <TextBlock>Button with TextBlock</TextBlock>
+          </Button>
+          <Button Name="ButtonWithAcceleratorKey" HotKey="Ctrl+B">Button with Accelerator Key</Button>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="CheckBox">
+        <StackPanel>
+          <CheckBox Name="UncheckedCheckBox">Unchecked</CheckBox>
+          <CheckBox Name="CheckedCheckBox" IsChecked="True">Checked</CheckBox>
+          <CheckBox Name="ThreeStateCheckBox" IsThreeState="True" IsChecked="{x:Null}">ThreeState</CheckBox>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="ComboBox">
+        <StackPanel>
+          <ComboBox Name="BasicComboBox">
+            <ComboBoxItem>Item 0</ComboBoxItem>
+            <ComboBoxItem>Item 1</ComboBoxItem>
+          </ComboBox>
+          <Button Name="ComboBoxSelectionClear">Clear Selection</Button>
+          <Button Name="ComboBoxSelectFirst">Select First</Button>
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Gestures">
+        <DockPanel>
+          <DockPanel DockPanel.Dock="Top">
+            <Button Name="ResetGestures" DockPanel.Dock="Right">Reset</Button>
+            <TextBlock Name="LastGesture" />
+          </DockPanel>
+          <Panel>
+            <Border Name="GestureBorder" Background="Blue"
+                    AutomationProperties.AccessibilityView="Content"
+                    AutomationProperties.ControlTypeOverride="Image"/>
+            <Border Name="GestureBorder2" Background="Green" IsVisible="False"
+                    AutomationProperties.AccessibilityView="Content"
+                    AutomationProperties.ControlTypeOverride="Image"/>
+          </Panel>
+        </DockPanel>
+      </TabItem>
+
+      <TabItem Header="ListBox">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Bottom">
+            <Button Name="ListBoxSelectionClear">Clear Selection</Button>
+          </StackPanel>
+          <ListBox Name="BasicListBox" Items="{Binding ListBoxItems}" SelectionMode="Multiple"/>
+        </DockPanel>
+      </TabItem>
+      
+      <TabItem Header="Menu">
+        <DockPanel>
+          <Menu DockPanel.Dock="Top">
+            <MenuItem Name="RootMenuItem" Header="_Root">
+              <MenuItem Name="Child1MenuItem" Header="_Child 1" InputGesture="Ctrl+O" Click="MenuClicked"/>
+              <MenuItem Name="Child2MenuItem" Header="C_hild 2">
+                <MenuItem Name="GrandchildMenuItem" Header="_Grandchild" Click="MenuClicked"/>
+              </MenuItem>
+            </MenuItem>
+          </Menu>
+          <StackPanel>
+            <TextBlock Name="ClickedMenuItem">None</TextBlock>
+            <Button Name="MenuClickedMenuItemReset">Reset</Button>
+            <TextBox Name="MenuFocusTest"/>
+          </StackPanel>
+        </DockPanel>
+      </TabItem>
+      
+      <TabItem Header="Window">
+        <StackPanel>
+          <TextBox Name="ShowWindowSize" Watermark="Window Size"/>
+          <ComboBox Name="ShowWindowMode" SelectedIndex="0">
+            <ComboBoxItem>NonOwned</ComboBoxItem>
+            <ComboBoxItem>Owned</ComboBoxItem>
+            <ComboBoxItem>Modal</ComboBoxItem>
+          </ComboBox>
+          <ComboBox Name="ShowWindowLocation" SelectedIndex="0">
+            <ComboBoxItem>Manual</ComboBoxItem>
+            <ComboBoxItem>CenterScreen</ComboBoxItem>
+            <ComboBoxItem>CenterOwner</ComboBoxItem>
+          </ComboBox>
+          <Button Name="ShowWindow">Show Window</Button>
+          <Button Name="SendToBack">Send to Back</Button>
+          <Button Name="ExitFullscreen">Exit Fullscreen</Button>
+          <Button Name="RestoreAll">Restore All</Button>
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+</Window>

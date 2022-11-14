@@ -22,19 +22,9 @@ namespace Avalonia.Data.Core.Plugins
 
             var method = GetFirstMethodWithName(instance.GetType(), methodName);
 
-            if (method != null)
+            if (method is not null)
             {
-                var parameters = method.GetParameters();
-
-                if (parameters.Length + (method.ReturnType == typeof(void) ? 0 : 1) > 8)
-                {
-                    var exception = new ArgumentException(
-                        "Cannot create a binding accessor for a method with more than 8 parameters or more than 7 parameters if it has a non-void return type.",
-                        nameof(methodName));
-                    return new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
-                }
-
-                return new Accessor(reference, method, parameters);
+                return new Accessor(reference, method);
             }
             else
             {
@@ -65,13 +55,20 @@ namespace Avalonia.Data.Core.Plugins
 
             var methods = type.GetMethods(bindingFlags);
 
-            foreach (MethodInfo methodInfo in methods)
+            foreach (var methodInfo in methods)
             {
                 if (methodInfo.Name == methodName)
                 {
-                    found = methodInfo;
-
-                    break;
+                    var parameters = methodInfo.GetParameters();
+                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(object))
+                    {
+                        found = methodInfo;
+                        break;
+                    }
+                    else if (parameters.Length == 0)
+                    {
+                        found = methodInfo;
+                    }
                 }
             }
 
@@ -82,17 +79,19 @@ namespace Avalonia.Data.Core.Plugins
 
         private sealed class Accessor : PropertyAccessorBase
         {
-            public Accessor(WeakReference<object?> reference, MethodInfo method, ParameterInfo[] parameters)
+            public Accessor(WeakReference<object?> reference, MethodInfo method)
             {
                 _ = reference ?? throw new ArgumentNullException(nameof(reference));
                 _ = method ?? throw new ArgumentNullException(nameof(method));
 
                 var returnType = method.ReturnType;
-                bool hasReturn = returnType != typeof(void);
 
-                var signatureTypeCount = (hasReturn ? 1 : 0) + parameters.Length;
+                var parameters = method.GetParameters();
+
+                var signatureTypeCount = parameters.Length + 1;
 
                 var paramTypes = new Type[signatureTypeCount];
+
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
@@ -101,16 +100,9 @@ namespace Avalonia.Data.Core.Plugins
                     paramTypes[i] = parameter.ParameterType;
                 }
 
-                if (hasReturn)
-                {
-                    paramTypes[paramTypes.Length - 1] = returnType;
+                paramTypes[paramTypes.Length - 1] = returnType;
 
-                    PropertyType = Expression.GetFuncType(paramTypes);
-                }
-                else
-                {
-                    PropertyType = Expression.GetActionType(paramTypes);
-                }
+                PropertyType = Expression.GetDelegateType(paramTypes);
 
                 if (method.IsStatic)
                 {

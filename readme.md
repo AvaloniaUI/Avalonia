@@ -1,11 +1,11 @@
 [![Telegram](https://raw.githubusercontent.com/Patrolavia/telegram-badge/master/chat.svg)](https://t.me/Avalonia)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/AvaloniaUI/Avalonia?utm_campaign=pr-badge&utm_content=badge&utm_medium=badge&utm_source=badge) [![Discord](https://img.shields.io/badge/discord-join%20chat-46BC99)]( https://aka.ms/dotnet-discord) [![Build Status](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_apis/build/status/AvaloniaUI.Avalonia)](https://dev.azure.com/AvaloniaUI/AvaloniaUI/_build/latest?definitionId=4) [![Backers on Open Collective](https://opencollective.com/Avalonia/backers/badge.svg)](#backers) [![Sponsors on Open Collective](https://opencollective.com/Avalonia/sponsors/badge.svg)](#sponsors) ![License](https://img.shields.io/github/license/avaloniaui/avalonia.svg)
 <br />
-[![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia) [![MyGet](https://img.shields.io/myget/avalonia-ci/vpre/Avalonia.svg?label=myget)](https://www.myget.org/gallery/avalonia-ci) ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
+[![NuGet](https://img.shields.io/nuget/v/Avalonia.svg)](https://www.nuget.org/packages/Avalonia) [![downloads](https://img.shields.io/nuget/dt/avalonia)](https://www.nuget.org/packages/Avalonia)  ![Size](https://img.shields.io/github/repo-size/avaloniaui/avalonia.svg) 
 
 ## 📖 About 
 
-Avalonia is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of Operating Systems such as Windows, Linux, MacOs. Avalonia is mature and production ready. We also have in beta release support for iOS, Android and in early stages support for browser via WASM.
+Avalonia is a cross-platform UI framework for dotnet, providing a flexible styling system and supporting a wide range of Operating Systems such as Windows, Linux, macOS. Avalonia is mature and production ready. We also have in beta release support for iOS, Android and in early stages support for browser via WASM.
 
 ![image](https://user-images.githubusercontent.com/4672627/152126443-932966cf-57e7-4e77-9be6-62463a66b9f8.png)
 
@@ -70,11 +70,15 @@ For more information see the [.NET Foundation Code of Conduct](https://dotnetfou
 
 Avalonia is licenced under the [MIT licence](licence.md).
 
-## Support Avalonia
+## Donate
+
+Donating to the project is a fantastic way to thank our valued contributors for their hard work. Your donations are shared among our community and awarded for significant contributions.  
+
+If you need support see Commercial Support section below.
+
+Donate with BTC or use [Open Collective](https://opencollective.com/avalonia).
 
 **BTC**: bc1q05wx78qemgy9x6ytl5ljk2xrt00yqargyjm8gx
-
-This will be shared with the community and awarded for significant contributions.
 
 ### Backers
 
@@ -98,6 +102,11 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a>
 <a href="https://baseheadinc.com/" target="_blank"><img height="50" src="https://baseheadinc.com/wp-content/uploads/2020/09/BH-Logo-for-Site-Header-New.png"></a>
 
+## Commercial Support 
+
+We have a range of [support plans available](https://avaloniaui.net/support) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.
+
+*Please note that donations are not considered payment for commercial support agreements. Please contact us to discuss your needs first. [team@avaloniaui.net](mailto://team@avaloniaui.net)*
 ## .NET Foundation
 
 This project is supported by the [.NET Foundation](https://dotnetfoundation.org).

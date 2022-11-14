@@ -19,7 +19,7 @@
       <ColumnDefinition Width="Auto"/>
       <!--
       When selecting the Application node, we need this trick to hide Layout Visualizer 
-      because when using the GridSplitter it sets the Witdth property of ColumnDefinition
+      because when using the GridSplitter it sets the Width property of ColumnDefinition
       (see https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Controls/GridSplitter.cs#L528) 
       and if we hide the contents of the column, the space is not reclaimed 
       (see discussion https://github.com/AvaloniaUI/Avalonia/discussions/6773). 
@@ -30,7 +30,11 @@
     <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
 
       <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto">
-        <Button Grid.Column="0" Grid.RowSpan="2" Content="^" Command="{Binding ApplyParentProperty}" />
+        <Button Grid.Column="0" Grid.RowSpan="2" Content="^" 
+                IsEnabled="{Binding CanNavigateToParentProperty}"
+                Margin="0 0 4 0"
+                ToolTip.Tip="Navigate to parent property"
+                Command="{Binding NavigateToParentProperty}" />
         <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding SelectedEntityName}" FontWeight="Bold" />
         <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding SelectedEntityType}" FontStyle="Italic" />
       </Grid>
@@ -44,7 +48,9 @@
                               UseWholeWordFilter="{Binding UseWholeWordFilter}"
                               UseRegexFilter="{Binding UseRegexFilter}"/>
       
-      <DataGrid Items="{Binding PropertiesView}"
+      <DataGrid 
+                x:Name="DataGrid"
+                Items="{Binding PropertiesView}"
                 Grid.Row="2"
                 BorderThickness="0"
                 RowBackground="Transparent"
@@ -56,15 +62,15 @@
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
           <DataGridTextColumn Header="Type" Binding="{Binding Type}"
                               IsReadOnly="True"
-                              IsVisible="{Binding !$parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              IsVisible="{Binding !$parent[UserControl;2].DataContext.ShowDetailsPropertyType}"
                               />
-          <DataGridTextColumn Header="Assinged Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
+          <DataGridTextColumn Header="Assigned Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
                               IsReadOnly="True"
-                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDetailsPropertyType}"
                               />
           <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType, Converter={StaticResource GetTypeName}}"
                               IsReadOnly="True"
-                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDetailsPropertyType}"
                               />
           <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" />
         </DataGrid.Columns>
@@ -129,6 +135,26 @@
                     </Expander.Header>
 
                     <ItemsControl Margin="20,0,0,0" Grid.Row="1" Items="{Binding Setters}">
+                      
+                      <ItemsControl.Styles>
+                        <Style Selector="TextBlock.property-name">
+                          <Setter Property="FontWeight" Value="SemiBold" />
+                          <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                        
+                        <Style Selector="TextBlock.property-name:pointerover">
+                          <Setter Property="TextDecorations" Value="Underline" />
+                        </Style>
+                        
+                        <Style Selector="Rectangle.property-inactive">
+                          <Setter Property="IsHitTestVisible" Value="False" />
+                          <Setter Property="Height" Value="1" />
+                          <Setter Property="Fill" Value="#6C6C6C" />
+                          <Setter Property="VerticalAlignment" Value="Center" />
+                        </Style>
+                        
+                      </ItemsControl.Styles>
+                      
                       <ItemsControl.DataTemplates>
 
                         <DataTemplate DataType="IBrush">
@@ -148,6 +174,26 @@
                             <TextBlock Text="{Binding}" />
                           </StackPanel>
                         </DataTemplate>
+                        
+                        <DataTemplate DataType="vm:BindingSetterViewModel">
+                          <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
+                            <Panel.ContextMenu>
+                              <ContextMenu>
+                                <MenuItem Header="Copy property name" Command="{Binding CopyPropertyName} "/>
+                                <MenuItem Header="Copy value" Command="{Binding CopyValue} "/>
+                              </ContextMenu>
+                            </Panel.ContextMenu>
+                            <StackPanel Orientation="Horizontal" Spacing="2">
+                              <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
+                              <TextBlock Text=":" />
+                              <TextBlock>{</TextBlock>
+                              <Rectangle Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}" ToolTip.Tip="{Binding ValueTypeTooltip}"/>
+                              <TextBlock Text="{Binding Path}" />
+                              <TextBlock>}</TextBlock>
+                            </StackPanel>
+                            <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
+                          </Panel>
+                        </DataTemplate>
 
                         <DataTemplate DataType="vm:ResourceSetterViewModel">
                           <Panel Opacity="{Binding IsActive, Converter={StaticResource BoolToOpacity}}" IsVisible="{Binding IsVisible}" HorizontalAlignment="Left">
@@ -159,15 +205,15 @@
                               </ContextMenu>
                             </Panel.ContextMenu>
                             <StackPanel Orientation="Horizontal" Spacing="2" HorizontalAlignment="Left">
-                              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                              <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
                               <TextBlock Text=":" />
                               <ContentControl Content="{Binding Value}"/>
                               <TextBlock>(</TextBlock>
-                              <Ellipse Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}"/>
+                              <Ellipse Height="8" Width="8" VerticalAlignment="Center" Fill="{Binding Tint}" ToolTip.Tip="{Binding ValueTypeTooltip}"/>
                               <TextBlock FontStyle="Italic" Text="{Binding Key}" />
                               <TextBlock>)</TextBlock>
                             </StackPanel>
-                            <Rectangle Height="1" Fill="#6C6C6C" IsVisible="{Binding !IsActive}" />
+                            <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
                           </Panel>
                         </DataTemplate>
 
@@ -180,11 +226,11 @@
                               </ContextMenu>
                             </Panel.ContextMenu>
                             <StackPanel Orientation="Horizontal" Spacing="2">
-                              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                              <TextBlock Classes="property-name" PointerPressed="PropertyNamePressed" Text="{Binding Name}" />
                               <TextBlock Text=":" />
                               <ContentControl Content="{Binding Value}"/>
                             </StackPanel>
-                            <Rectangle Height="1" Fill="#6C6C6C" VerticalAlignment="Center" IsVisible="{Binding !IsActive}" />
+                            <Rectangle Classes="property-inactive" IsVisible="{Binding !IsActive}" />
                           </Panel>
                         </DataTemplate>
 

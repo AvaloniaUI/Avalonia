@@ -1364,13 +1364,13 @@ namespace Metsys.Bson
             var optionsString = ReadName();
 
             var options = RegexOptions.None;
-            if (optionsString.Contains("e")) options = options | RegexOptions.ECMAScript;
-            if (optionsString.Contains("i")) options = options | RegexOptions.IgnoreCase;
-            if (optionsString.Contains("l")) options = options | RegexOptions.CultureInvariant;
-            if (optionsString.Contains("m")) options = options | RegexOptions.Multiline;
-            if (optionsString.Contains("s")) options = options | RegexOptions.Singleline;
-            if (optionsString.Contains("w")) options = options | RegexOptions.IgnorePatternWhitespace;
-            if (optionsString.Contains("x")) options = options | RegexOptions.ExplicitCapture;
+            if (optionsString.Contains('e')) options = options | RegexOptions.ECMAScript;
+            if (optionsString.Contains('i')) options = options | RegexOptions.IgnoreCase;
+            if (optionsString.Contains('l')) options = options | RegexOptions.CultureInvariant;
+            if (optionsString.Contains('m')) options = options | RegexOptions.Multiline;
+            if (optionsString.Contains('s')) options = options | RegexOptions.Singleline;
+            if (optionsString.Contains('w')) options = options | RegexOptions.IgnorePatternWhitespace;
+            if (optionsString.Contains('x')) options = options | RegexOptions.ExplicitCapture;
 
             return new Regex(pattern, options);
         }

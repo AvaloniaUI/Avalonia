@@ -1,5 +1,8 @@
 using System;
 using System.Reactive.Disposables;
+
+using Avalonia.Controls;
+using Avalonia.Styling;
 using ReactiveUI;
 using Splat;
 
@@ -10,7 +13,7 @@ namespace Avalonia.ReactiveUI
     /// the ViewModel property and display it. This control is very useful
     /// inside a DataTemplate to display the View associated with a ViewModel.
     /// </summary>
-    public class ViewModelViewHost : TransitioningContentControl, IViewFor, IEnableLogger
+    public class ViewModelViewHost : TransitioningContentControl, IViewFor, IEnableLogger, IStyleable
     {
         /// <summary>
         /// <see cref="AvaloniaProperty"/> for the <see cref="ViewModel"/> property.
@@ -23,6 +26,12 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public static readonly StyledProperty<string?> ViewContractProperty =
             AvaloniaProperty.Register<ViewModelViewHost, string?>(nameof(ViewContract));
+
+        /// <summary>
+        /// <see cref="AvaloniaProperty"/> for the <see cref="DefaultContent"/> property.
+        /// </summary>
+        public static readonly StyledProperty<object?> DefaultContentProperty =
+            AvaloniaProperty.Register<ViewModelViewHost, object?>(nameof(DefaultContent));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ViewModelViewHost"/> class.
@@ -56,9 +65,20 @@ namespace Avalonia.ReactiveUI
         }
 
         /// <summary>
+        /// Gets or sets the content displayed whenever there is no page currently routed.
+        /// </summary>
+        public object? DefaultContent
+        {
+            get => GetValue(DefaultContentProperty);
+            set => SetValue(DefaultContentProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the view locator.
         /// </summary>
         public IViewLocator? ViewLocator { get; set; }
+
+        Type IStyleable.StyleKey => typeof(TransitioningContentControl);
 
         /// <summary>
         /// Invoked when ReactiveUI router navigates to a view model.

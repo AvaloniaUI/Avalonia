@@ -1,22 +1,12 @@
 <Project>
   <ItemGroup>
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Base/Avalonia.Base.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Animation/Avalonia.Animation.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Controls/Avalonia.Controls.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.DesignerSupport/Avalonia.DesignerSupport.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Input/Avalonia.Input.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Interactivity/Avalonia.Interactivity.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Layout/Avalonia.Layout.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Visuals/Avalonia.Visuals.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Styling/Avalonia.Styling.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Themes.Default/Avalonia.Themes.Default.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Themes.Fluent/Avalonia.Themes.Fluent.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.OpenGL/Avalonia.OpenGL.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.Dialogs/Avalonia.Dialogs.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Markup/Avalonia.Markup/Avalonia.Markup.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Markup/Avalonia.Markup.Xaml/Avalonia.Markup.Xaml.csproj" />
       <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.MicroCom/Avalonia.MicroCom.csproj" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.DesktopRuntime/Avalonia.DesktopRuntime.csproj" Condition="'$(TargetFramework)' != 'netstandard2.0'" />
-      <ProjectReference Include="$(MSBuildThisFileDirectory)/../src/Avalonia.PlatformSupport/Avalonia.PlatformSupport.csproj" />
   </ItemGroup>
 </Project>

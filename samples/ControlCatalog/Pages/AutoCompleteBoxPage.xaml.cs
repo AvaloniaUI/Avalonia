@@ -1,8 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
-using Avalonia.Markup;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -126,13 +124,13 @@ namespace ControlCatalog.Pages
             binding.Bindings.Add(new Binding("Name"));
             binding.Bindings.Add(new Binding("Abbreviation"));
 
-            var multibindingBox = this.FindControl<AutoCompleteBox>("MultiBindingBox");
+            var multibindingBox = this.Get<AutoCompleteBox>("MultiBindingBox");
             multibindingBox.ValueMemberBinding = binding;
 
-            var asyncBox = this.FindControl<AutoCompleteBox>("AsyncBox");
+            var asyncBox = this.Get<AutoCompleteBox>("AsyncBox");
             asyncBox.AsyncPopulator = PopulateAsync;
 
-            var customAutocompleteBox = this.FindControl<AutoCompleteBox>("CustomAutocompleteBox");
+            var customAutocompleteBox = this.Get<AutoCompleteBox>("CustomAutocompleteBox");
             customAutocompleteBox.Items = Sentences.SelectMany(x => x);
             customAutocompleteBox.TextFilter = LastWordContains;
             customAutocompleteBox.TextSelector = AppendWord;
@@ -144,11 +142,12 @@ namespace ControlCatalog.Pages
                     .OfType<AutoCompleteBox>();
         }
 
-        private bool StringContains(string str, string query)
+        private bool StringContains(string str, string? query)
         {
+            if (query == null) return false;
             return str.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
         }
-        private async Task<IEnumerable<object>> PopulateAsync(string searchText, CancellationToken cancellationToken)
+        private async Task<IEnumerable<object>> PopulateAsync(string? searchText, CancellationToken cancellationToken)
         {
             await Task.Delay(TimeSpan.FromSeconds(1.5), cancellationToken);
 
@@ -157,40 +156,44 @@ namespace ControlCatalog.Pages
                       .ToList();
         }
 
-        private bool LastWordContains(string searchText, string item)
+        private bool LastWordContains(string? searchText, string? item)
         {
-            var words = searchText.Split(' ');
-            var options = Sentences.Select(x => x.First).ToArray();
+            var words = searchText?.Split(' ') ?? Array.Empty<string>();
+            var options = Sentences.Select(x => x.First)
+                .ToArray<LinkedListNode<string>?>();
             for (var i = 0; i < words.Length; ++i)
             {
                 var word = words[i];
-                for (var j = 0; j < options.Length; ++j)
+                for (var j = 0; word is { } && j < options.Length; ++j)
                 {
-                    var option = options[j];
-                    if (option == null)
-                        continue;
-
-                    if (i == words.Length - 1)
+                    if (options[i] is { } option)
                     {
-                        options[j] = option.Value.ToLower().Contains(word.ToLower()) ? option : null;
-                    }
-                    else
-                    {
-                        options[j] = option.Value.Equals(word, StringComparison.InvariantCultureIgnoreCase) ? option.Next : null;
+                        if (i == words.Length - 1)
+                        {
+                            options[j] = option.Value.ToLower().Contains(word.ToLower()) ? option : null;
+                        }
+                        else
+                        {
+                            options[j] = option.Value.Equals(word, StringComparison.InvariantCultureIgnoreCase) ? option.Next : null;
+                        }
                     }
                 }
             }
 
             return options.Any(x => x != null && x.Value == item);
         }
-        private string AppendWord(string text, string item)
+        private string AppendWord(string? text, string? item)
         {
-            string[] parts = text.Split(' ');
-            if (parts.Length == 0)
-                return item;
+            if (item is { })
+            {
+                string[] parts = text?.Split(' ') ?? Array.Empty<string>();
+                if (parts.Length == 0)
+                    return item;
 
-            parts[parts.Length - 1] = item;
-            return string.Join(" ", parts);
+                parts[parts.Length - 1] = item;
+                return string.Join(" ", parts);
+            }
+            return string.Empty;
         }
 
         private void InitializeComponent()

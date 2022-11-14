@@ -1,8 +1,7 @@
 using System;
-using System.Diagnostics;
 using Avalonia.Data;
 using Avalonia.Reactive;
-using Avalonia.Utilities;
+using Avalonia.Styling;
 
 namespace Avalonia
 {
@@ -11,7 +10,7 @@ namespace Avalonia
     /// </summary>
     public abstract class StyledPropertyBase<TValue> : AvaloniaProperty<TValue>, IStyledPropertyAccessor
     {
-        private bool _inherits;
+        private readonly bool _inherits;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledPropertyBase{T}"/> class.
@@ -158,12 +157,6 @@ namespace Avalonia
             base.OverrideMetadata(type, metadata);
         }
 
-        /// <inheritdoc/>
-        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
-        {
-            vistor.Visit(this, ref data);
-        }
-
         /// <summary>
         /// Gets the string representation of the property.
         /// </summary>
@@ -177,19 +170,19 @@ namespace Avalonia
         object? IStyledPropertyAccessor.GetDefaultValue(Type type) => GetDefaultBoxedValue(type);
 
         /// <inheritdoc/>
-        internal override void RouteClearValue(IAvaloniaObject o)
+        internal override void RouteClearValue(AvaloniaObject o)
         {
             o.ClearValue<TValue>(this);
         }
 
         /// <inheritdoc/>
-        internal override object? RouteGetValue(IAvaloniaObject o)
+        internal override object? RouteGetValue(AvaloniaObject o)
         {
             return o.GetValue<TValue>(this);
         }
 
         /// <inheritdoc/>
-        internal override object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+        internal override object? RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority)
         {
             var value = o.GetBaseValue<TValue>(this, maxPriority);
             return value.HasValue ? value.Value : AvaloniaProperty.UnsetValue;
@@ -197,7 +190,7 @@ namespace Avalonia
 
         /// <inheritdoc/>
         internal override IDisposable? RouteSetValue(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             object? value,
             BindingPriority priority)
         {
@@ -221,7 +214,7 @@ namespace Avalonia
 
         /// <inheritdoc/>
         internal override IDisposable RouteBind(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             IObservable<BindingValue<object?>> source,
             BindingPriority priority)
         {
@@ -232,21 +225,40 @@ namespace Avalonia
         /// <inheritdoc/>
         internal override void RouteInheritanceParentChanged(
             AvaloniaObject o,
-            IAvaloniaObject? oldParent)
+            AvaloniaObject? oldParent)
         {
             o.InheritanceParentChanged(this, oldParent);
+        }
+
+        internal override ISetterInstance CreateSetterInstance(IStyleable target, object? value)
+        {
+            if (value is IBinding binding)
+            {
+                return new PropertySetterBindingInstance<TValue>(
+                    target,
+                    this,
+                    binding);
+            }
+            else if (value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(PropertyType))
+            {
+                return new PropertySetterTemplateInstance<TValue>(
+                    target,
+                    this,
+                    template);
+            }
+            else
+            {
+                return new PropertySetterInstance<TValue>(
+                    target,
+                    this,
+                    (TValue)value!);
+            }
         }
 
         private object? GetDefaultBoxedValue(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
             return GetMetadata(type).DefaultValue;
-        }
-
-        [DebuggerHidden]
-        private Func<IAvaloniaObject, TValue, TValue> Cast<THost>(Func<THost, TValue, TValue> validate)
-        {
-            return (o, v) => validate((THost)o, v);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using Avalonia.Input;
+﻿using Avalonia.Input;
 
 namespace Avalonia.Diagnostics
 {
@@ -36,10 +35,15 @@ namespace Avalonia.Diagnostics
         public bool ShowImplementedInterfaces { get; set; } = true;
         
         /// <summary>
-        /// Allow to customizze SreenshotHandler
+        /// Allow to customize SreenshotHandler
         /// </summary>
         /// <remarks>Default handler is <see cref="Screenshots.FilePickerHandler"/></remarks>
         public IScreenshotHandler ScreenshotHandler { get; set; }
-          = Convetions.DefaultScreenshotHandler;
+          = Conventions.DefaultScreenshotHandler;
+
+        /// <summary>
+        /// Gets or sets whether DevTools should use the dark mode theme
+        /// </summary>
+        public bool UseDarkMode { get; set; }
     }
 }

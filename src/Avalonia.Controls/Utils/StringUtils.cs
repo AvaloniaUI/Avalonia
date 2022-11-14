@@ -150,17 +150,23 @@ namespace Avalonia.Controls.Utils
                 return cursor;
             }
 
-            CharClass cc = GetCharClass(text[cursor]);
             i = cursor;
 
-            // skip over the word, punctuation, or run of whitespace
-            while (i < cr && GetCharClass(text[i]) == cc)
+            // skip any whitespace after the word/punct
+            while (i < cr && char.IsWhiteSpace(text[i]))
             {
                 i++;
             }
 
-            // skip any whitespace after the word/punct
-            while (i < cr && char.IsWhiteSpace(text[i]))
+            if (i >= cr)
+            {
+                return i;
+            }
+            
+            var cc = GetCharClass(text[i]);
+            
+            // skip over the word, punctuation, or run of whitespace
+            while (i < cr && GetCharClass(text[i]) == cc)
             {
                 i++;
             }

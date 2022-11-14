@@ -12,7 +12,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 {
     internal class FcitxX11TextInputMethod : DBusTextInputMethodBase
     {
-        private FcitxICWrapper _context;
+        private FcitxICWrapper? _context;
         private FcitxCapabilityFlags? _lastReportedFlags;
 
         public FcitxX11TextInputMethod(Connection connection) : base(connection,
@@ -49,7 +49,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             return true;
         }
 
-        protected override Task Disconnect() => _context.DestroyICAsync();
+        protected override Task Disconnect() => _context?.DestroyICAsync() ?? Task.CompletedTask;
 
         protected override void OnDisconnected() => _context = null;
 
@@ -60,18 +60,18 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
         }
 
         protected override Task SetCursorRectCore(PixelRect cursorRect) =>
-            _context.SetCursorRectAsync(cursorRect.X, cursorRect.Y, Math.Max(1, cursorRect.Width),
-                Math.Max(1, cursorRect.Height));
+            _context?.SetCursorRectAsync(cursorRect.X, cursorRect.Y, Math.Max(1, cursorRect.Width),
+                Math.Max(1, cursorRect.Height))
+            ?? Task.CompletedTask;
 
-        protected override Task SetActiveCore(bool active)
-        {
-            if (active)
-                return _context.FocusInAsync();
-            else
-                return _context.FocusOutAsync();
-        }
+        protected override Task SetActiveCore(bool active)=> (active 
+                ? _context?.FocusInAsync()
+                : _context?.FocusOutAsync())
+             ?? Task.CompletedTask;
+        
 
-        protected override Task ResetContextCore() => _context.ResetAsync();
+        protected override Task ResetContextCore() => _context?.ResetAsync() 
+            ?? Task.CompletedTask;
 
         protected override async Task<bool> HandleKeyCore(RawKeyEventArgs args, int keyVal, int keyCode)
         {
@@ -88,12 +88,18 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             var type = args.Type == RawKeyEventType.KeyDown ?
                 FcitxKeyEventType.FCITX_PRESS_KEY :
                 FcitxKeyEventType.FCITX_RELEASE_KEY;
-            
-            return await _context.ProcessKeyEventAsync((uint)keyVal, (uint)keyCode, (uint)state, (int)type,
-                (uint)args.Timestamp).ConfigureAwait(false);
+            if (_context is { })
+            {
+                return await _context.ProcessKeyEventAsync((uint)keyVal, (uint)keyCode, (uint)state, (int)type,
+                    (uint)args.Timestamp).ConfigureAwait(false);
+            }
+            else
+            {
+                return false;
+            }
         }
         
-        public override void SetOptions(TextInputOptionsQueryEventArgs options) =>
+        public override void SetOptions(TextInputOptions options) =>
             Enqueue(async () =>
             {
                 if(_context == null)
@@ -111,7 +117,7 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
                     flags |= FcitxCapabilityFlags.CAPACITY_NUMBER;
                 else if (options.ContentType == TextInputContentType.Password)
                     flags |= FcitxCapabilityFlags.CAPACITY_PASSWORD;
-                else if (options.ContentType == TextInputContentType.Phone)
+                else if (options.ContentType == TextInputContentType.Digits)
                     flags |= FcitxCapabilityFlags.CAPACITY_DIALABLE;
                 else if (options.ContentType == TextInputContentType.Url)
                     flags |= FcitxCapabilityFlags.CAPACITY_URL;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
@@ -11,29 +10,32 @@ using GlyphInfo = HarfBuzzSharp.GlyphInfo;
 
 namespace Avalonia.Direct2D1.Media
 {
-
-internal class TextShaperImpl : ITextShaperImpl
+    internal class TextShaperImpl : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, GlyphTypeface typeface, double fontRenderingEmSize,
-            CultureInfo culture, sbyte bidiLevel)
+        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
         {
+            var typeface = options.Typeface;
+            var fontRenderingEmSize = options.FontRenderingEmSize;
+            var bidiLevel = options.BidiLevel;
+            var culture = options.Culture;
+
             using (var buffer = new Buffer())
             {
-                buffer.AddUtf16(text.Buffer.Span, text.Start, text.Length);
+                buffer.AddUtf16(text.Buffer.Span, text.BufferOffset, text.Length);
 
                 MergeBreakPair(buffer);
-                
+
                 buffer.GuessSegmentProperties();
 
                 buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
 
-                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
+                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
-                var font = ((GlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((GlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 
-                if (buffer.Direction == Direction.RightToLeft)
+                if(buffer.Direction == Direction.RightToLeft)
                 {
                     buffer.Reverse();
                 }
@@ -56,15 +58,22 @@ internal class TextShaperImpl : ITextShaperImpl
 
                     var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                    var glyphCluster = (int)sourceInfo.Cluster;
+                    var glyphCluster = (int)(sourceInfo.Cluster);
 
                     var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale);
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    var targetInfo =
-                        new Avalonia.Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance,
-                            glyphOffset);
+                    if (text.Buffer.Span[glyphCluster] == '\t')
+                    {
+                        glyphIndex = typeface.GetGlyph(' ');
+
+                        glyphAdvance = options.IncrementalTabWidth > 0 ?
+                            options.IncrementalTabWidth :
+                            4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
+                    }
+
+                    var targetInfo = new Avalonia.Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
 
                     shapedBuffer[i] = targetInfo;
                 }
@@ -78,10 +87,10 @@ internal class TextShaperImpl : ITextShaperImpl
             var length = buffer.Length;
 
             var glyphInfos = buffer.GetGlyphInfoSpan();
-            
+
             var second = glyphInfos[length - 1];
 
-            if (!new Codepoint((int)second.Codepoint).IsBreakChar)
+            if (!new Codepoint(second.Codepoint).IsBreakChar)
             {
                 return;
             }
@@ -89,7 +98,7 @@ internal class TextShaperImpl : ITextShaperImpl
             if (length > 1 && glyphInfos[length - 2].Codepoint == '\r' && second.Codepoint == '\n')
             {
                 var first = glyphInfos[length - 2];
-                
+
                 first.Codepoint = '\u200C';
                 second.Codepoint = '\u200C';
                 second.Cluster = first.Cluster;
@@ -100,7 +109,7 @@ internal class TextShaperImpl : ITextShaperImpl
                     {
                         *p = first;
                     }
-                
+
                     fixed (GlyphInfo* p = &glyphInfos[length - 1])
                     {
                         *p = second;
@@ -135,7 +144,7 @@ internal class TextShaperImpl : ITextShaperImpl
         private static double GetGlyphAdvance(ReadOnlySpan<GlyphPosition> glyphPositions, int index, double textScale)
         {
             // Depends on direction of layout
-            // advanceBuffer[index] = buffer.GlyphPositions[index].YAdvance * textScale;
+            // glyphPositions[index].YAdvance * textScale;
             return glyphPositions[index].XAdvance * textScale;
         }
     }

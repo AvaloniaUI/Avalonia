@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="RenderDemo.Pages.BrushesPage">
+  <Canvas Background="White" Width="480" Height="360">
+    <Rectangle Canvas.Left="20" Canvas.Top="20" Width="440" Height="50">
+      <Rectangle.Fill>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="410,0">
+          <LinearGradientBrush.Transform>
+            <TransformGroup>
+              <ScaleTransform ScaleX="0.5" />
+              <SkewTransform />
+              <RotateTransform />
+              <TranslateTransform X="5" Y="15" />
+            </TransformGroup>
+          </LinearGradientBrush.Transform>
+          <LinearGradientBrush.GradientStops>
+            <GradientStop Color="Blue" Offset="0" />
+            <GradientStop Color="Green" Offset="0.5" />
+            <GradientStop Color="Lime" Offset="1" />
+          </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+      </Rectangle.Fill>
+    </Rectangle>
+    <TextBlock Canvas.Left="20" Canvas.Top="70" FontSize="30" Text="scale(0.5) on gradient" />
+    <Rectangle Canvas.Left="20" Canvas.Top="110" Width="440" Height="50">
+      <Rectangle.Fill>
+        <RadialGradientBrush Center="0.0,0.0" GradientOrigin="0.0,0.0" Radius="0.13636364">
+          <RadialGradientBrush.Transform>
+            <TransformGroup>
+              <ScaleTransform />
+              <SkewTransform AngleX="45" />
+              <RotateTransform />
+              <TranslateTransform X="240" Y="45" />
+            </TransformGroup>
+          </RadialGradientBrush.Transform>
+          <RadialGradientBrush.GradientStops>
+            <GradientStop Color="Black" Offset="0" />
+            <GradientStop Color="#FFFFA500" Offset="1" />
+          </RadialGradientBrush.GradientStops>
+        </RadialGradientBrush>
+      </Rectangle.Fill>
+    </Rectangle>
+    <TextBlock Canvas.Left="20" Canvas.Top="160" FontSize="30" Text="skewX(45) on gradient" />
+    <Rectangle Canvas.Left="20" Canvas.Top="210" Width="440" Height="50">
+      <Rectangle.Fill>
+        <VisualBrush TileMode="Tile" SourceRect="0,0,20,20" DestinationRect="0,0,20,20" Stretch="None">
+          <VisualBrush.Transform>
+            <TransformGroup>
+              <ScaleTransform ScaleX="2" ScaleY="2" />
+              <SkewTransform AngleX="45" />
+              <RotateTransform />
+              <TranslateTransform X="5" Y="5" />
+            </TransformGroup>
+          </VisualBrush.Transform>
+          <VisualBrush.Visual>
+            <Canvas Width="20" Height="20">
+              <Rectangle Canvas.Left="0" Canvas.Top="0" Width="10" Height="10" Fill="Maroon" />
+              <Rectangle Canvas.Left="10" Canvas.Top="0" Width="10" Height="10" Fill="Green" />
+              <Rectangle Canvas.Left="0" Canvas.Top="10" Width="10" Height="10" Fill="Blue" />
+              <Rectangle Canvas.Left="10" Canvas.Top="10" Width="10" Height="10" Fill="Yellow" />
+            </Canvas>
+          </VisualBrush.Visual>
+        </VisualBrush>
+      </Rectangle.Fill>
+    </Rectangle>
+    <TextBlock Canvas.Left="20" Canvas.Top="260" FontSize="30" Text="scale(2), skewX(45) on pattern" />
+  </Canvas>
+</UserControl>

@@ -14,13 +14,19 @@ using System.Reactive.Linq;
 
 namespace Avalonia.Controls
 {
+    [TemplatePart(DATAGRIDROWGROUPHEADER_expanderButton,      typeof(ToggleButton))]
+    [TemplatePart(DATAGRIDROWGROUPHEADER_indentSpacer,        typeof(Control))]
+    [TemplatePart(DATAGRIDROWGROUPHEADER_itemCountElement,    typeof(TextBlock))]
+    [TemplatePart(DATAGRIDROWGROUPHEADER_propertyNameElement, typeof(TextBlock))]
+    [TemplatePart(DataGridRow.DATAGRIDROW_elementRoot,        typeof(Panel))]
+    [TemplatePart(DataGridRow.DATAGRIDROW_elementRowHeader,   typeof(DataGridRowHeader))]
     [PseudoClasses(":pressed", ":current", ":expanded")]
     public class DataGridRowGroupHeader : TemplatedControl
     {
-        private const string DATAGRIDROWGROUPHEADER_expanderButton = "ExpanderButton";
-        private const string DATAGRIDROWGROUPHEADER_indentSpacer = "IndentSpacer";
-        private const string DATAGRIDROWGROUPHEADER_itemCountElement = "ItemCountElement";
-        private const string DATAGRIDROWGROUPHEADER_propertyNameElement = "PropertyNameElement";
+        private const string DATAGRIDROWGROUPHEADER_expanderButton = "PART_ExpanderButton";
+        private const string DATAGRIDROWGROUPHEADER_indentSpacer = "PART_IndentSpacer";
+        private const string DATAGRIDROWGROUPHEADER_itemCountElement = "PART_ItemCountElement";
+        private const string DATAGRIDROWGROUPHEADER_propertyNameElement = "PART_PropertyNameElement";
 
         private bool _areIsCheckedHandlersSuspended;
         private ToggleButton _expanderButton;
@@ -107,7 +113,6 @@ namespace Avalonia.Controls
         /// </summary>
         public DataGridRowGroupHeader()
         {
-            //DefaultStyleKey = typeof(DataGridRowGroupHeader);
             AddHandler(InputElement.PointerPressedEvent, (s, e) => DataGridRowGroupHeader_PointerPressed(e), handledEventsToo: true);
         }
 
@@ -369,7 +374,7 @@ namespace Avalonia.Controls
             ApplyHeaderStatus();
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
             if (IsEnabled)
             {
@@ -377,10 +382,10 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses();
             }
 
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
         }
 
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
             if (IsEnabled)
             {
@@ -388,7 +393,7 @@ namespace Avalonia.Controls
                 UpdatePseudoClasses();
             }
 
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
         }
 
         private void SetIsCheckedNoCallBack(bool value)

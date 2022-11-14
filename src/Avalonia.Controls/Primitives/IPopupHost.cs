@@ -2,6 +2,8 @@ using System;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -14,18 +16,53 @@ namespace Avalonia.Controls.Primitives
     /// (<see cref="PopupRoot"/>) or an <see cref="OverlayPopupHost"/> which is created
     /// on an <see cref="OverlayLayer"/>.
     /// </remarks>
+    [NotClientImplementable]
     public interface IPopupHost : IDisposable, IFocusScope
     {
         /// <summary>
-        /// Sets the control to display in the popup.
+        /// Gets or sets the fixed width of the popup.
         /// </summary>
-        /// <param name="control"></param>
-        void SetChild(IControl? control);
+        double Width { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum width of the popup.
+        /// </summary>
+        double MinWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum width of the popup.
+        /// </summary>
+        double MaxWidth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the fixed height of the popup.
+        /// </summary>
+        double Height { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum height of the popup.
+        /// </summary>
+        double MinHeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum height of the popup.
+        /// </summary>
+        double MaxHeight { get; set; }
 
         /// <summary>
         /// Gets the presenter from the control's template.
         /// </summary>
         IContentPresenter? Presenter { get; }
+
+        /// <summary>
+        /// Gets or sets whether the popup appears on top of all other windows.
+        /// </summary>
+        bool Topmost { get; set; }
+
+        /// <summary>
+        /// Gets or sets a transform that will be applied to the popup.
+        /// </summary>
+        Transform? Transform { get; set; }
 
         /// <summary>
         /// Gets the root of the visual tree in the case where the popup is presented using a
@@ -58,6 +95,12 @@ namespace Avalonia.Controls.Primitives
             Rect? rect = null);
 
         /// <summary>
+        /// Sets the control to display in the popup.
+        /// </summary>
+        /// <param name="control"></param>
+        void SetChild(IControl? control);
+
+        /// <summary>
         /// Shows the popup.
         /// </summary>
         void Show();
@@ -66,14 +109,5 @@ namespace Avalonia.Controls.Primitives
         /// Hides the popup.
         /// </summary>
         void Hide();
-
-        /// <summary>
-        /// Binds the constraints of the popup host to a set of properties, usally those present on
-        /// <see cref="Popup"/>.
-        /// </summary>
-        IDisposable BindConstraints(AvaloniaObject popup, StyledProperty<double> widthProperty,
-            StyledProperty<double> minWidthProperty, StyledProperty<double> maxWidthProperty,
-            StyledProperty<double> heightProperty, StyledProperty<double> minHeightProperty,
-            StyledProperty<double> maxHeightProperty, StyledProperty<bool> topmostProperty);
     }
 }

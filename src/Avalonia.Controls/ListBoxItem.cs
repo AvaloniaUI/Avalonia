@@ -1,6 +1,6 @@
+using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
-using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
@@ -33,6 +33,11 @@ namespace Avalonia.Controls
         {
             get { return GetValue(IsSelectedProperty); }
             set { SetValue(IsSelectedProperty, value); }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ListItemAutomationPeer(this);
         }
     }
 }

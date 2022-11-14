@@ -1,8 +1,9 @@
-﻿using Avalonia.Media;
+﻿using System;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 
 namespace Avalonia.Benchmarks
 {
@@ -99,5 +100,7 @@ namespace Avalonia.Benchmarks
         public void Custom(ICustomDrawOperation custom)
         {
         }
+
+        public object GetFeature(Type t) => null;
     }
 }

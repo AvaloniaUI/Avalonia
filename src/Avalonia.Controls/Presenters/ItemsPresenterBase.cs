@@ -158,7 +158,7 @@ namespace Avalonia.Controls.Presenters
             {
                 ItemsChanged(e);
 
-                _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
+                _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
             }
         }
 

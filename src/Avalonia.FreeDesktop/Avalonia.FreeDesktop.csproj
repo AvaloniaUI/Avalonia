@@ -2,11 +2,19 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <PackageReference Include="Tmds.DBus" Version="0.9.0" />
+    <Compile Include="..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
+    <PackageReference Include="Tmds.DBus" Version="0.9.0" />
+  </ItemGroup>
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
 </Project>

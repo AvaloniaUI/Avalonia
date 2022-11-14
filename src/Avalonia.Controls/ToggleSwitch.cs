@@ -9,6 +9,10 @@ namespace Avalonia.Controls
     /// <summary>
     /// A Toggle Switch control.
     /// </summary>
+    [TemplatePart("PART_MovingKnobs",         typeof(Panel))]
+    [TemplatePart("PART_OffContentPresenter", typeof(ContentPresenter))]
+    [TemplatePart("PART_OnContentPresenter",  typeof(ContentPresenter))]
+    [TemplatePart("PART_SwitchKnob",          typeof(Panel))]
     [PseudoClasses(":dragging")]
     public class ToggleSwitch : ToggleButton
     {
@@ -161,8 +165,8 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
-            _switchKnob = e.NameScope.Find<Panel>("SwitchKnob");
-            _knobsPanel = e.NameScope.Get<Panel>("MovingKnobs");
+            _switchKnob = e.NameScope.Find<Panel>("PART_SwitchKnob");
+            _knobsPanel = e.NameScope.Get<Panel>("PART_MovingKnobs");
             
             _knobsPanel.PointerPressed += KnobsPanel_PointerPressed;
             _knobsPanel.PointerReleased += KnobsPanel_PointerReleased;

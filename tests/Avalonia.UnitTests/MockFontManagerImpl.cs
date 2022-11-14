@@ -24,7 +24,8 @@ namespace Avalonia.UnitTests
             return new[] { _defaultFamilyName };
         }
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily,
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, 
+            FontStretch fontStretch, FontFamily fontFamily,
             CultureInfo culture, out Typeface fontKey)
         {
             fontKey = new Typeface(_defaultFamilyName);
@@ -32,7 +33,7 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             return new MockGlyphTypeface();
         }

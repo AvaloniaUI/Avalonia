@@ -5,6 +5,7 @@
 
 using Avalonia.Collections;
 using Avalonia.Controls.Utils;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Utilities;
 using System;
@@ -811,7 +812,7 @@ namespace Avalonia.Controls
                 if (row.Slot > slotDeleted)
                 {
                     CorrectRowAfterDeletion(row, wasRow);
-                    row.EnsureBackground();
+                    _rowsPresenter?.InvalidateChildIndex(row);
                 }
             }
 
@@ -867,7 +868,7 @@ namespace Avalonia.Controls
                 if (row.Slot >= slotInserted)
                 {
                     DataGrid.CorrectRowAfterInsertion(row, rowInserted);
-                    row.EnsureBackground();
+                    _rowsPresenter?.InvalidateChildIndex(row);
                 }
             }
 
@@ -1485,8 +1486,8 @@ namespace Avalonia.Controls
             // If the row has been recycled, reapply the BackgroundBrush
             if (row.IsRecycled)
             {
-                row.EnsureBackground();
                 row.ApplyCellsState();
+                _rowsPresenter?.InvalidateChildIndex(row);
             }
             else if (row == EditingRow)
             {

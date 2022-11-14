@@ -17,7 +17,7 @@ namespace Avalonia.Data.Core.Plugins
             new Dictionary<(Type, string), PropertyInfo?>();
 
         /// <inheritdoc/>
-        public bool Match(object obj, string propertyName) => GetFirstPropertyWithName(obj.GetType(), propertyName) != null;
+        public bool Match(object obj, string propertyName) => GetFirstPropertyWithName(obj, propertyName) != null;
 
         /// <summary>
         /// Starts monitoring the value of a property on an object.
@@ -36,7 +36,7 @@ namespace Avalonia.Data.Core.Plugins
             if (!reference.TryGetTarget(out var instance) || instance is null)
                 return null;
 
-            var p = GetFirstPropertyWithName(instance.GetType(), propertyName);
+            var p = GetFirstPropertyWithName(instance, propertyName);
 
             if (p != null)
             {
@@ -50,8 +50,16 @@ namespace Avalonia.Data.Core.Plugins
             }
         }
 
-        private PropertyInfo? GetFirstPropertyWithName(Type type, string propertyName)
+        private const BindingFlags PropertyBindingFlags =
+            BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
+        
+        private PropertyInfo? GetFirstPropertyWithName(object instance, string propertyName)
         {
+            if (instance is IReflectableType reflectableType && instance is not Type)
+                return reflectableType.GetTypeInfo().GetProperty(propertyName, PropertyBindingFlags);
+
+            var type = instance.GetType();
+            
             var key = (type, propertyName);
 
             if (!_propertyLookup.TryGetValue(key, out var propertyInfo))
@@ -66,10 +74,7 @@ namespace Avalonia.Data.Core.Plugins
         {
             PropertyInfo? found = null;
 
-            const BindingFlags bindingFlags =
-                BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
-
-            var properties = type.GetProperties(bindingFlags);
+            var properties = type.GetProperties(PropertyBindingFlags);
 
             foreach (PropertyInfo propertyInfo in properties)
             {

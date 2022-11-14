@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 
@@ -82,7 +84,7 @@ namespace Avalonia.LinuxFramebuffer.Output
     {
         public List<DrmConnector> Connectors { get; }= new List<DrmConnector>();
         internal Dictionary<uint, DrmEncoder> Encoders { get; } = new Dictionary<uint, DrmEncoder>();
-        public DrmResources(int fd)
+        public DrmResources(int fd, bool connectorsForceProbe = false)
         {
             var res = drmModeGetResources(fd);
             if (res == null)
@@ -105,7 +107,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             
             for (var c = 0; c < res->count_connectors; c++)
             {
-                var conn = drmModeGetConnector(fd, res->connectors[c]);
+                var conn = connectorsForceProbe ? drmModeGetConnector(fd, res->connectors[c]) : drmModeGetConnectorCurrent(fd, res->connectors[c]);
                 Connectors.Add(new DrmConnector(conn));
                 drmModeFreeConnector(conn);
             }
@@ -142,13 +144,31 @@ namespace Avalonia.LinuxFramebuffer.Output
         public int Fd { get; private set; }
         public DrmCard(string path = null)
         {
-            path = path ?? "/dev/dri/card0";
-            Fd = open(path, 2, 0);
-            if (Fd == -1)
-                throw new Win32Exception("Couldn't open " + path);
+            if(path == null)
+            {
+                var files = Directory.GetFiles("/dev/dri/");
+
+                foreach(var file in files) 
+                {
+                    var match = Regex.Match(file, "card[0-9]+");
+
+                    if(match.Success)
+                    {
+                        Fd = open(file, 2, 0);
+                        if(Fd != -1) break; 
+                    }    
+                }
+
+                if(Fd == -1) throw new Win32Exception("Couldn't open /dev/dri/card[0-9]+");
+            }
+            else 
+            {
+                Fd = open(path, 2, 0);
+                if(Fd == -1) throw new Win32Exception($"Couldn't open {path}");
+            }
         }
 
-        public DrmResources GetResources() => new DrmResources(Fd);
+        public DrmResources GetResources(bool connectorsForceProbe = false) => new DrmResources(Fd, connectorsForceProbe);
         public void Dispose()
         {
             close(Fd);

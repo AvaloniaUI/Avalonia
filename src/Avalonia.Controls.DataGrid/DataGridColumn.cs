@@ -16,6 +16,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -36,6 +37,7 @@ namespace Avalonia.Controls
         private IControl _editingElement;
         private ICellEditBinding _editBinding;
         private IBinding _clipboardContentBinding;
+        private ControlTheme _cellTheme;
         private readonly Classes _cellStyleClasses = new Classes();
 
         /// <summary>
@@ -192,14 +194,14 @@ namespace Avalonia.Controls
             set => SetValue(IsVisibleProperty, value);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == IsVisibleProperty)
             {
                 OwningGrid?.OnColumnVisibleStateChanging(this);
-                var isVisible = (change as AvaloniaPropertyChangedEventArgs<bool>).NewValue.Value;
+                var isVisible = change.GetNewValue<bool>();
 
                 if (_headerCell != null)
                 {
@@ -398,6 +400,24 @@ namespace Avalonia.Controls
                     _cellStyleClasses.Replace(value);
                 }
             }
+        }
+        
+        /// <summary>
+        ///    Backing field for CellTheme property.
+        /// </summary>
+        public static readonly DirectProperty<DataGridColumn, ControlTheme> CellThemeProperty =
+            AvaloniaProperty.RegisterDirect<DataGridColumn, ControlTheme>(
+                nameof(CellTheme),
+                o => o.CellTheme,
+                (o, v) => o.CellTheme = v);
+
+        /// <summary>
+        ///    Gets or sets the <see cref="DataGridColumnHeader"/> cell theme. 
+        /// </summary>
+        public ControlTheme CellTheme
+        {
+            get { return _cellTheme; }
+            set { SetAndRaise(CellThemeProperty, ref _cellTheme, value); }
         }
 
         /// <summary>
@@ -855,7 +875,7 @@ namespace Avalonia.Controls
             if (OwningGrid != null && OwningGrid.UseLayoutRounding)
             {
                 var scale = LayoutHelper.GetLayoutScale(HeaderCell);
-                var roundSize = LayoutHelper.RoundLayoutSize(new Size(leftEdge + ActualWidth, 1), scale, scale);
+                var roundSize = LayoutHelper.RoundLayoutSizeUp(new Size(leftEdge + ActualWidth, 1), scale, scale);
                 LayoutRoundedWidth = roundSize.Width - leftEdge;
             }
             else
@@ -1091,7 +1111,7 @@ namespace Avalonia.Controls
                 {
                     return
                         OwningGrid.DataConnection.SortDescriptions
-                                  .OfType<DataGridComparerSortDesctiption>()
+                                  .OfType<DataGridComparerSortDescription>()
                                   .FirstOrDefault(s => s.SourceComparer == CustomSortComparer);
                 }
 

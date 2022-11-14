@@ -3,6 +3,8 @@
 #include "common.h"
 
 static NSString* s_appTitle = @"Avalonia";
+static int disableSetProcessName = 0;
+static bool disableAppDelegate = false;
 
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -111,11 +113,17 @@ public:
         @autoreleasepool
         {
             auto appTitle = [NSString stringWithUTF8String: utf8String];
-            
-            [[NSProcessInfo processInfo] setProcessName:appTitle];
-            
-            
-            SetProcessName(appTitle);
+            if (disableSetProcessName == 0)
+            {
+                [[NSProcessInfo processInfo] setProcessName:appTitle];
+                
+                SetProcessName(appTitle);
+            }
+            if (disableSetProcessName == 1)
+            {
+                auto rootMenu = [NSApp mainMenu];
+                [rootMenu setTitle:appTitle];
+            }
             
             return S_OK;
         }
@@ -129,6 +137,27 @@ public:
         {
             AvnDesiredActivationPolicy = show
                 ? NSApplicationActivationPolicyRegular : NSApplicationActivationPolicyAccessory;
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT SetDisableSetProcessName(int disable)  override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            disableSetProcessName = disable;
+            return S_OK;
+        }
+    }
+    
+    virtual HRESULT SetDisableAppDelegate(int disable) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool {
+            disableAppDelegate = disable;
             return S_OK;
         }
     }
@@ -175,7 +204,7 @@ public:
         @autoreleasepool{
             [[ThreadingInitializer new] do];
         }
-        InitializeAvnApp(events);
+        InitializeAvnApp(events, disableAppDelegate);
         return S_OK;
     };
     
@@ -335,14 +364,14 @@ public:
             return S_OK;
         }
     }
-    
+        
     virtual HRESULT SetAppMenu (IAvnMenu* appMenu) override
     {
         START_COM_CALL;
         
         @autoreleasepool
         {
-            ::SetAppMenu(s_appTitle, appMenu);
+            ::SetAppMenu(appMenu);
             return S_OK;
         }
     }
@@ -400,6 +429,15 @@ NSPoint ToNSPoint (AvnPoint p)
     return result;
 }
 
+NSRect ToNSRect (AvnRect r)
+{
+    return NSRect
+    {
+        NSPoint { r.X, r.Y },
+        NSSize { r.Width, r.Height }
+    };
+}
+
 AvnPoint ToAvnPoint (NSPoint p)
 {
     AvnPoint result;
@@ -418,7 +456,3 @@ AvnPoint ConvertPointY (AvnPoint p)
     return p;
 }
 
-CGFloat PrimaryDisplayHeight()
-{
-  return NSMaxY([[[NSScreen screens] firstObject] frame]);
-}

@@ -35,7 +35,6 @@ namespace Avalonia.Controls.Converters
                     Bottom ? Indent * thicknessDepth.Bottom : 0);
             }
             return new Thickness(0);
-            
         }
 
         public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

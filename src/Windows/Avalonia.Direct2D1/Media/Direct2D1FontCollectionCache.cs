@@ -5,6 +5,7 @@ using SharpDX.DirectWrite;
 using FontFamily = Avalonia.Media.FontFamily;
 using FontStyle = SharpDX.DirectWrite.FontStyle;
 using FontWeight = SharpDX.DirectWrite.FontWeight;
+using FontStretch = SharpDX.DirectWrite.FontStretch;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -32,7 +33,7 @@ namespace Avalonia.Direct2D1.Media
                 {
                     return fontCollection.GetFontFamily(index).GetFirstMatchingFont(
                         (FontWeight)typeface.Weight,
-                        FontStretch.Normal,
+                        (FontStretch)typeface.Stretch,
                         (FontStyle)typeface.Style);
                 }
             }
@@ -41,7 +42,7 @@ namespace Avalonia.Direct2D1.Media
 
             return InstalledFontCollection.GetFontFamily(index).GetFirstMatchingFont(
                 (FontWeight)typeface.Weight,
-                FontStretch.Normal,
+                (FontStretch)typeface.Stretch,
                 (FontStyle)typeface.Style);
         }
 

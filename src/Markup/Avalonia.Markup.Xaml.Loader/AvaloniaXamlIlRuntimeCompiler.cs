@@ -179,13 +179,15 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var tb = _sreBuilder.DefineType("Builder_" + Guid.NewGuid().ToString("N") + "_" + uri);
             var clrPropertyBuilder = tb.DefineNestedType("ClrProperties_" + Guid.NewGuid().ToString("N"));
             var indexerClosureType = _sreBuilder.DefineType("IndexerClosure_" + Guid.NewGuid().ToString("N"));
+            var trampolineBuilder = _sreBuilder.DefineType("Trampolines_" + Guid.NewGuid().ToString("N"));
 
             bool compileBindingsByDefault = AppContext.TryGetSwitch(UseCompileBindingsByDefaultConfigSwitch, out var compileBindingsSwitchValue) && compileBindingsSwitchValue;
 
             var compiler = new AvaloniaXamlIlCompiler(new AvaloniaXamlIlCompilerConfiguration(_sreTypeSystem, asm,
                 _sreMappings, _sreXmlns, AvaloniaXamlIlLanguage.CustomValueConverter,
                 new XamlIlClrPropertyInfoEmitter(_sreTypeSystem.CreateTypeBuilder(clrPropertyBuilder)),
-                new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType))), 
+                new XamlIlPropertyInfoAccessorFactoryEmitter(_sreTypeSystem.CreateTypeBuilder(indexerClosureType)),
+                new XamlIlTrampolineBuilder(_sreTypeSystem.CreateTypeBuilder(trampolineBuilder))), 
                 _sreEmitMappings,
                 _sreContextType) { EnableIlVerification = true, DefaultCompileBindings = compileBindingsByDefault };
 
@@ -199,6 +201,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             compiler.ParseAndCompile(xaml, uri?.ToString(), null, _sreTypeSystem.CreateTypeBuilder(tb), overrideType);
             var created = tb.CreateTypeInfo();
             clrPropertyBuilder.CreateTypeInfo();
+            indexerClosureType.CreateTypeInfo();
+            trampolineBuilder.CreateTypeInfo();
 
             return LoadOrPopulate(created, rootInstance);
         }

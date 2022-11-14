@@ -1,9 +1,9 @@
 namespace System.Runtime.CompilerServices
 {
-#if !NET5_0_OR_GREATER
+#if NETSTANDARD2_0
     internal class ModuleInitializerAttribute : Attribute
     {
-        
+
     }
 #endif
 }

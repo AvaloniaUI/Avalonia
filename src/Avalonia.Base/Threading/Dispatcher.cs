@@ -83,42 +83,42 @@ namespace Avalonia.Threading
             _jobRunner.HasJobsWithPriority(minimumPriority);
 
         /// <inheritdoc/>
-        public Task InvokeAsync(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public Task InvokeAsync(Action action, DispatcherPriority priority = default)
         {
             _ = action ?? throw new ArgumentNullException(nameof(action));
             return _jobRunner.InvokeAsync(action, priority);
         }
 
         /// <inheritdoc/>
-        public Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = DispatcherPriority.Normal)
+        public Task<TResult> InvokeAsync<TResult>(Func<TResult> function, DispatcherPriority priority = default)
         {
             _ = function ?? throw new ArgumentNullException(nameof(function));
             return _jobRunner.InvokeAsync(function, priority);
         }
 
         /// <inheritdoc/>
-        public Task InvokeAsync(Func<Task> function, DispatcherPriority priority = DispatcherPriority.Normal)
+        public Task InvokeAsync(Func<Task> function, DispatcherPriority priority = default)
         {
             _ = function ?? throw new ArgumentNullException(nameof(function));
             return _jobRunner.InvokeAsync(function, priority).Unwrap();
         }
 
         /// <inheritdoc/>
-        public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> function, DispatcherPriority priority = DispatcherPriority.Normal)
+        public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> function, DispatcherPriority priority = default)
         {
             _ = function ?? throw new ArgumentNullException(nameof(function));
             return _jobRunner.InvokeAsync(function, priority).Unwrap();
         }
 
         /// <inheritdoc/>
-        public void Post(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        public void Post(Action action, DispatcherPriority priority = default)
         {
             _ = action ?? throw new ArgumentNullException(nameof(action));
             _jobRunner.Post(action, priority);
         }
 
         /// <inheritdoc/>
-        public void Post<T>(Action<T> action, T arg, DispatcherPriority priority = DispatcherPriority.Normal)
+        public void Post(SendOrPostCallback action, object? arg, DispatcherPriority priority = default)
         {
             _ = action ?? throw new ArgumentNullException(nameof(action));
             _jobRunner.Post(action, arg, priority);

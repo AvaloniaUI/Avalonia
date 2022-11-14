@@ -9,6 +9,7 @@
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
+        <Compile Include="..\..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\ColorToBrushConverter.cs" />
@@ -18,14 +19,19 @@
         <Compile Include="MarkupExtension.cs" />
         <Compile Include="MarkupExtensions\CompiledBindingExtension.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\ArrayElementPlugin.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\CommandAccessorPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\CompiledBindingPath.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\FindVisualAncestorNode.cs" />
+        <Compile Include="MarkupExtensions\CompiledBindings\MethodAccessorPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\ObservableStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorFactory.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\PropertyInfoAccessorPlugin.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\StrongTypeCastNode.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\TaskStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
+        <Compile Include="MarkupExtensions\On.cs" />
+        <Compile Include="MarkupExtensions\OnFormFactorExtension.cs" />
+        <Compile Include="MarkupExtensions\OnPlatformExtension.cs" />
         <Compile Include="MarkupExtensions\ResolveByNameExtension.cs" />
         <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
@@ -46,6 +52,7 @@
         <Compile Include="Templates\Template.cs" />
         <Compile Include="Templates\TemplateContent.cs" />
         <Compile Include="Templates\TreeDataTemplate.cs" />
+        <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlControlTemplateProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
         <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />
@@ -54,16 +61,19 @@
         <Compile Include="XamlTypes.cs" />
     </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Input\Avalonia.Input.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Layout\Avalonia.Layout.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
-    <ProjectReference Include="..\..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
   </ItemGroup>
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\ApiDiff.props" />
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Compatibility\" />
+  </ItemGroup>
 </Project>

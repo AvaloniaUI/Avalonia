@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia.Automation.Peers;
 using System.Reactive.Disposables;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
@@ -12,14 +13,19 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// A drop-down list control.
     /// </summary>
+    [TemplatePart("PART_Popup", typeof(Popup))]
+    [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
+        public const string pcDropdownOpen = ":dropdownopen";
+        public const string pcPressed = ":pressed";
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
@@ -92,6 +98,7 @@ namespace Avalonia.Controls
             SelectedItemProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.SelectedItemChanged(e));
             KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), Interactivity.RoutingStrategies.Tunnel);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
+            IsDropDownOpenProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.DropdownChanged(e));
         }
 
         /// <summary>
@@ -178,7 +185,13 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            this.UpdateSelectionBoxItem(SelectedItem);
+            UpdateSelectionBoxItem(SelectedItem);
+        }
+
+        public override void InvalidateMirrorTransform()
+        {
+            base.InvalidateMirrorTransform();
+            UpdateFlowDirection();
         }
 
         /// <inheritdoc/>
@@ -259,6 +272,20 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
+        protected override void OnPointerPressed(PointerPressedEventArgs e)
+        {
+            base.OnPointerPressed(e);
+            if(!e.Handled && e.Source is IVisual source)
+            {
+                if (_popup?.IsInsidePopup(source) == true)
+                {
+                    return;
+                }
+            }
+            PseudoClasses.Set(pcPressed, true);
+        }
+
+        /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
             if (!e.Handled && e.Source is IVisual source)
@@ -277,9 +304,11 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
-
+            PseudoClasses.Set(pcPressed, false);
             base.OnPointerReleased(e);
+            
         }
+
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -293,6 +322,11 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ComboBoxAutomationPeer(this);
         }
 
         internal void ItemFocused(ComboBoxItem dropDownItem)
@@ -338,6 +372,8 @@ namespace Avalonia.Controls
             {
                 parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
             }
+
+            UpdateFlowDirection();
         }
 
         private void IsVisibleChanged(bool isVisible)
@@ -405,10 +441,25 @@ namespace Avalonia.Controls
                         }
                     };
                 }
+
+                UpdateFlowDirection();
             }
             else
             {
                 SelectionBoxItem = item;
+            }
+        }
+
+        private void UpdateFlowDirection()
+        {
+            if (SelectionBoxItem is Rectangle rectangle)
+            {
+                if ((rectangle.Fill as VisualBrush)?.Visual is Control content)
+                {
+                    var flowDirection = (((IVisual)content!).VisualParent as Control)?.FlowDirection ?? 
+                        FlowDirection.LeftToRight;
+                    rectangle.FlowDirection = flowDirection;
+                }
             }
         }
 
@@ -426,42 +477,24 @@ namespace Avalonia.Controls
 
         private void SelectNext()
         {
-            int next = SelectedIndex + 1;
-
-            if (next >= ItemCount)
+            if (ItemCount >= 1)
             {
-                if (WrapSelection == true)
-                {
-                    next = 0;
-                }
-                else
-                {
-                    return;
-                }
+                MoveSelection(NavigationDirection.Next, WrapSelection);
             }
-
-
-
-            SelectedIndex = next;
         }
 
         private void SelectPrev()
         {
-            int prev = SelectedIndex - 1;
-
-            if (prev < 0)
+            if (ItemCount >= 1)
             {
-                if (WrapSelection == true)
-                {
-                    prev = ItemCount - 1;
-                }
-                else
-                {
-                    return;
-                }
+                MoveSelection(NavigationDirection.Previous, WrapSelection);
             }
+        }
 
-            SelectedIndex = prev;
+        private void DropdownChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            bool newValue = e.GetNewValue<bool>();
+            PseudoClasses.Set(pcDropdownOpen, newValue);
         }
     }
 }

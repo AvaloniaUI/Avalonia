@@ -4,14 +4,8 @@
     <PackageId>Avalonia.Controls.DataGrid</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
-    <ProjectReference Include="..\Avalonia.Input\Avalonia.Input.csproj" />
-    <ProjectReference Include="..\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
-    <ProjectReference Include="..\Avalonia.Layout\Avalonia.Layout.csproj" />
     <ProjectReference Include="..\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" />
-    <ProjectReference Include="..\Avalonia.Visuals\Avalonia.Visuals.csproj" />
-    <ProjectReference Include="..\Avalonia.Styling\Avalonia.Styling.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />    
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
@@ -23,4 +17,10 @@
   <Import Project="..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\DevAnalyzers.props" />
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Controls.DataGrid.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
 </Project>

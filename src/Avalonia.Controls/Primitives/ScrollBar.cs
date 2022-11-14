@@ -22,6 +22,10 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A scrollbar control.
     /// </summary>
+    [TemplatePart("PART_LineDownButton", typeof(Button))]
+    [TemplatePart("PART_LineUpButton",   typeof(Button))]
+    [TemplatePart("PART_PageDownButton", typeof(Button))]
+    [TemplatePart("PART_PageUpButton",   typeof(Button))]
     [PseudoClasses(":vertical", ":horizontal")]
     public class ScrollBar : RangeBase
     {
@@ -190,13 +194,13 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == OrientationProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
+                UpdatePseudoClasses(change.GetNewValue<Orientation>());
             }
             else if (change.Property == AllowAutoHideProperty)
             {
@@ -214,9 +218,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPointerEnter(PointerEventArgs e)
+        protected override void OnPointerEntered(PointerEventArgs e)
         {
-            base.OnPointerEnter(e);
+            base.OnPointerEntered(e);
 
             if (AllowAutoHide)
             {
@@ -224,9 +228,9 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        protected override void OnPointerLeave(PointerEventArgs e)
+        protected override void OnPointerExited(PointerEventArgs e)
         {
-            base.OnPointerLeave(e);
+            base.OnPointerExited(e);
 
             if (AllowAutoHide)
             {

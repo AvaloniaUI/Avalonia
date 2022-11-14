@@ -8,10 +8,13 @@ using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using JetBrains.Annotations;
+using MicroCom.Runtime;
 
 namespace Avalonia.Native
 {
-    class AvaloniaNativePlatform : IPlatformSettings, IWindowingPlatform
+    class AvaloniaNativePlatform : IWindowingPlatform
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
@@ -21,16 +24,7 @@ namespace Avalonia.Native
         static extern IntPtr CreateAvaloniaNative();
 
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
-
-        public Size DoubleClickSize => new Size(4, 4);
-
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(500); //TODO
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
-        public Size TouchDoubleClickSize => new Size(16, 16);
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
+        [CanBeNull] internal static Compositor Compositor { get; private set; }
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
@@ -79,7 +73,7 @@ namespace Avalonia.Native
             _factory = factory;
         }
 
-        class GCHandleDeallocator : CallbackBase, IAvnGCHandleDeallocatorCallback
+        class GCHandleDeallocator : NativeCallbackBase, IAvnGCHandleDeallocatorCallback
         {
             public void FreeGCHandle(IntPtr handle)
             {
@@ -99,6 +93,8 @@ namespace Avalonia.Native
                 var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
 
                 _factory.MacOptions.SetShowInDock(macOpts.ShowInDock ? 1 : 0);
+                _factory.MacOptions.SetDisableSetProcessName(macOpts.DisableSetProcessName ? 1 : 0);
+                _factory.MacOptions.SetDisableAppDelegate(macOpts.DisableAvaloniaAppDelegate ? 1 : 0);
             }
 
             AvaloniaLocator.CurrentMutable
@@ -107,35 +103,45 @@ namespace Avalonia.Native
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IPlatformSettings>().ToConstant(this)
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
-                .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<ISystemDialogImpl>().ToConstant(new SystemDialogs(_factory.CreateSystemDialogs()))
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Meta, wholeWordTextActionModifiers: KeyModifiers.Alt))
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new MacOSMountedVolumeInfoProvider())
                 .Bind<IPlatformDragSource>().ToConstant(new AvaloniaNativeDragSource(_factory))
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(applicationPlatform)
                 .Bind<INativeApplicationCommands>().ToConstant(new MacOSNativeMenuCommands(_factory.CreateApplicationCommands()));
 
+            var renderLoop = new RenderLoop();
+            AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(renderLoop);
+
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
             hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
             hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
             hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
             hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-
+            
             if (_options.UseGpu)
             {
                 try
                 {
-                    AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>()
-                        .ToConstant(_platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay()));
+                    _platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay());
+                    AvaloniaLocator.CurrentMutable
+                        .Bind<IPlatformOpenGlInterface>().ToConstant(_platformGl)
+                        .Bind<IPlatformGpu>().ToConstant(_platformGl);
+
                 }
                 catch (Exception)
                 {
                     // ignored
                 }
+            }
+            
+
+            if (_options.UseDeferredRendering && _options.UseCompositor)
+            {
+                Compositor = new Compositor(renderLoop, _platformGl);
             }
         }
 

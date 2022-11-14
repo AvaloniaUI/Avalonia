@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
+    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
+    <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
+    <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
+    <AvaloniaResource Include="**/*.xaml" />
+  </ItemGroup>
+  <Import Project="..\..\build\BuildTargets.targets" />
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\ApiDiff.props" />
+</Project>

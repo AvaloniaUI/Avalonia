@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
+using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls.Platform
 {
+    [Unstable]
     public class InternalPlatformThreadingInterface : IPlatformThreadingInterface
     {
         public InternalPlatformThreadingInterface()
@@ -44,7 +43,7 @@ namespace Avalonia.Controls.Platform
                 _priority = priority;
                 _interval = interval;
                 _tick = tick;
-                _timer = new Timer(OnTimer, null, interval, TimeSpan.FromMilliseconds(-1));
+                _timer = new Timer(OnTimer, null, interval, Timeout.InfiniteTimeSpan);
                 _handle = GCHandle.Alloc(_timer);
             }
 
@@ -58,7 +57,7 @@ namespace Avalonia.Controls.Platform
                     if (_timer == null)
                         return;
                     _tick();
-                    _timer?.Change(_interval, TimeSpan.FromMilliseconds(-1));
+                    _timer?.Change(_interval, Timeout.InfiniteTimeSpan);
                 });
             }
 

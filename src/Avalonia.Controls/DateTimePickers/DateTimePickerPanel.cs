@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
+using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
@@ -58,18 +62,18 @@ namespace Avalonia.Controls.Primitives
         private Vector _offset;
         private bool _hasInit;
         private bool _suppressUpdateOffset;
-        private ListBoxItem? _pressedItem;
+        private ScrollContentPresenter? _parentScroller;
 
         public DateTimePickerPanel()
         {
             FormatDate = DateTime.Now;
-            AddHandler(ListBoxItem.PointerPressedEvent, OnItemPointerDown, Avalonia.Interactivity.RoutingStrategies.Bubble);
-            AddHandler(ListBoxItem.PointerReleasedEvent, OnItemPointerUp, Avalonia.Interactivity.RoutingStrategies.Bubble);
+            AddHandler(TappedEvent, OnItemTapped, RoutingStrategies.Bubble);
         }
 
         static DateTimePickerPanel()
         {
             FocusableProperty.OverrideDefaultValue<DateTimePickerPanel>(true);
+            BackgroundProperty.OverrideDefaultValue<DateTimePickerPanel>(Brushes.Transparent);
             AffectsMeasure<DateTimePickerPanel>(ItemHeightProperty);
         }
 
@@ -254,6 +258,8 @@ namespace Avalonia.Controls.Primitives
                 _suppressUpdateOffset = true;
                 SelectedValue = (int)newSel * Increment + MinimumValue;
                 _suppressUpdateOffset = false;
+
+                System.Diagnostics.Debug.WriteLine($"Offset: {_offset} ItemHeight: {ItemHeight}");
             }
         }
 
@@ -269,7 +275,7 @@ namespace Avalonia.Controls.Primitives
 
         public Size Extent => _extent;
 
-        public Size Viewport => new Size(0, ItemHeight);
+        public Size Viewport => Bounds.Size;
 
         public event EventHandler? ScrollInvalidated;
 
@@ -338,6 +344,20 @@ namespace Avalonia.Controls.Primitives
             }
 
             return finalSize;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _parentScroller = this.GetVisualParent() as ScrollContentPresenter;
+            _parentScroller?.AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+        }
+
+        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromVisualTree(e);
+            _parentScroller?.RemoveHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            _parentScroller = null;
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -434,7 +454,7 @@ namespace Avalonia.Controls.Primitives
                 children.Add(new ListBoxItem
                 {
                     Height = ItemHeight,
-                    Classes = new Classes("DateTimePickerItem", $"{PanelType}Item"),
+                    Classes = new Classes($"{PanelType}Item"),
                     VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     Focusable = false
                 });
@@ -523,26 +543,13 @@ namespace Avalonia.Controls.Primitives
             return newValue;
         }
 
-        private void OnItemPointerDown(object? sender, PointerPressedEventArgs e)
+        private void OnItemTapped(object? sender, TappedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed &&
-                e.Source is IVisual source)
-            {
-                _pressedItem = GetItemFromSource(source);
-                e.Handled = true;
-            }
-        }
-
-        private void OnItemPointerUp(object? sender, PointerReleasedEventArgs e)
-        {
-            if (e.GetCurrentPoint(this).Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased &&
-                _pressedItem != null &&
-                e.Source is IVisual source &&
-                GetItemFromSource(source) is ListBoxItem item &&
-                item.Tag is int tag)
+            if (e.Source is IVisual source && 
+                GetItemFromSource(source) is ListBoxItem listBoxItem &&
+                listBoxItem.Tag is int tag)
             {
                 SelectedValue = tag;
-                _pressedItem = null;
                 e.Handled = true;
             }
         }
@@ -565,6 +572,16 @@ namespace Avalonia.Controls.Primitives
         public void RaiseScrollInvalidated(EventArgs e)
         {
             ScrollInvalidated?.Invoke(this, e);
+        }
+
+        private void OnScrollGestureEnded(object? sender, ScrollGestureEndedEventArgs e)
+        {
+            var snapY = Math.Round(Offset.Y / ItemHeight) * ItemHeight;
+
+            if (snapY != Offset.Y)
+            {
+                Offset = Offset.WithY(snapY);
+            }
         }
     }
 }

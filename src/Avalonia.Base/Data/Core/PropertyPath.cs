@@ -10,7 +10,7 @@ namespace Avalonia.Data.Core
 
         public PropertyPath(IEnumerable<IPropertyPathElement> elements)
         {
-            Elements = elements.ToList();
+            Elements = elements.ToArray();
         }
     }
 

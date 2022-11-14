@@ -25,9 +25,9 @@ namespace Avalonia.Skia
         public Vector Dpi { get; }
         public PixelSize PixelSize { get; }
         public int Version { get; private set; }
-        public void Save(string fileName) => throw new NotSupportedException();
+        public void Save(string fileName, int? quality = null) => throw new NotSupportedException();
 
-        public void Save(Stream stream) => throw new NotSupportedException();
+        public void Save(Stream stream, int? quality = null) => throw new NotSupportedException();
 
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
@@ -41,7 +41,7 @@ namespace Avalonia.Skia
                         new GRGlTextureInfo(
                             GlConsts.GL_TEXTURE_2D, (uint)_surface.GetTextureId(),
                             (uint)_surface.InternalFormat)))
-                    using (var surface = SKSurface.Create(context.GrContext, backendTexture, GRSurfaceOrigin.TopLeft,
+                    using (var surface = SKSurface.Create(context.GrContext, backendTexture, GRSurfaceOrigin.BottomLeft,
                         SKColorType.Rgba8888))
                     {
                         // Again, silently ignore, if something went wrong it's not our fault
@@ -101,7 +101,7 @@ namespace Avalonia.Skia
         private bool _disposed;
         private readonly DisposableLock _lock = new DisposableLock();
 
-        public SharedOpenGlBitmapAttachment(GlOpenGlBitmapImpl bitmap, IGlContext context, Action presentCallback)
+        public unsafe SharedOpenGlBitmapAttachment(GlOpenGlBitmapImpl bitmap, IGlContext context, Action presentCallback)
         {
             _bitmap = bitmap;
             _context = context;
@@ -118,8 +118,9 @@ namespace Avalonia.Skia
                 {
                     var gl = _context.GlInterface;
                     
-                    var textures = new int[2];
-                    gl.GenTextures(2, textures);
+                    Span<int> textures = stackalloc int[2];
+                    fixed (int* ptex = textures)
+                        gl.GenTextures(2, ptex);
                     _texture = textures[0];
                     _frontBuffer = textures[1];
 
@@ -138,7 +139,6 @@ namespace Avalonia.Skia
 
                     gl.FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _texture, 0);
                     gl.BindTexture(GL_TEXTURE_2D, oldTexture);
-                    
                 }
             }
         }
@@ -160,15 +160,15 @@ namespace Avalonia.Skia
                     gl.GetIntegerv(GL_ACTIVE_TEXTURE, out var oldActive);
                     
                     gl.BindFramebuffer(GL_FRAMEBUFFER, _fbo);
-                    gl.BindTexture(GL_TEXTURE_2D, _frontBuffer);
                     gl.ActiveTexture(GL_TEXTURE0);
+                    gl.BindTexture(GL_TEXTURE_2D, _frontBuffer);
 
                     gl.CopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, _bitmap.PixelSize.Width,
                         _bitmap.PixelSize.Height);
 
                     gl.BindFramebuffer(GL_FRAMEBUFFER, oldFbo);
-                    gl.BindTexture(GL_TEXTURE_2D, oldTexture);
                     gl.ActiveTexture(oldActive);
+                    gl.BindTexture(GL_TEXTURE_2D, oldTexture);
                     
                     gl.Finish();
                 }
@@ -178,7 +178,7 @@ namespace Avalonia.Skia
             _presentCallback();
         }
 
-        public void Dispose()
+        public unsafe void Dispose()
         {
             var gl = _context.GlInterface;
             _bitmap.Present(null);
@@ -191,7 +191,8 @@ namespace Avalonia.Skia
                 if(_disposed)
                     return;
                 _disposed = true;
-                gl.DeleteTextures(2, new[] { _texture, _frontBuffer });
+                var ptex = stackalloc[] { _texture, _frontBuffer };
+                gl.DeleteTextures(2, ptex);
             }
         }
 

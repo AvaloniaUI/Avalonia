@@ -77,7 +77,7 @@ namespace Avalonia.Controls
             private set;
         }
 
-        public int Count => GetCount(true);
+        public int Count => TryGetCount(true, false, out var count) ? count : 0;
 
         public bool DataIsPrimitive
         {
@@ -193,22 +193,28 @@ namespace Avalonia.Controls
             }
         }
 
-        internal bool Any()
+        /// <summary>Try get number of DataSource itmes.</summary>
+        /// <param name="allowSlow">When "allowSlow" is false, method will not use Linq.Count() method and will return 0 or 1 instead.</param>
+        /// <param name="getAny">If "getAny" is true, method can use Linq.Any() method to speedup.</param>
+        /// <param name="count">number of DataSource itmes.</param>
+        /// <returns>true if able to retrieve number of DataSource itmes; otherwise, false.</returns>
+        internal bool TryGetCount(bool allowSlow, bool getAny, out int count)
         {
-            return GetCount(false) > 0;
+            bool result;
+            (result, count) = DataSource switch
+            {
+                ICollection collection => (true, collection.Count),
+                DataGridCollectionView cv => (true, cv.Count),
+                IEnumerable enumerable when allowSlow && !getAny => (true, enumerable.Cast<object>().Count()),
+                IEnumerable enumerable when getAny => (true, enumerable.Cast<object>().Any() ? 1 : 0),
+                _ => (false, 0)
+            };
+            return result;
         }
 
-        /// <param name="allowSlow">When "allowSlow" is false, method will not use Linq.Count() method and will return 0 or 1 instead.</param>
-        private int GetCount(bool allowSlow)
+        internal bool Any()
         {
-            return DataSource switch
-            {
-                ICollection collection => collection.Count,
-                DataGridCollectionView cv => cv.Count,
-                IEnumerable enumerable when allowSlow => enumerable.Cast<object>().Count(),
-                IEnumerable enumerable when !allowSlow => enumerable.Cast<object>().Any() ? 1 : 0,
-                _ => 0
-            };
+            return TryGetCount(false, true, out var count) && count > 0;
         }
 
         /// <summary>
@@ -383,7 +389,7 @@ namespace Avalonia.Controls
                     List<string> propertyNames = TypeHelper.SplitPropertyPath(propertyName);
                     for (int i = 0; i < propertyNames.Count; i++)
                     {
-                        propertyInfo = propertyType.GetPropertyOrIndexer(propertyNames[i], out object[] index);
+                        propertyInfo = propertyType.GetPropertyOrIndexer(propertyNames[i], out _);
                         if (propertyInfo == null || propertyType.GetIsReadOnly() || propertyInfo.GetIsReadOnly())
                         {
                             // Either the data type is read-only, the property doesn't exist, or it does exist but is read-only
@@ -391,11 +397,10 @@ namespace Avalonia.Controls
                         }
 
                         // Check if EditableAttribute is defined on the property and if it indicates uneditable
-                        object[] attributes = propertyInfo.GetCustomAttributes(typeof(EditableAttribute), true);
+                        var attributes = propertyInfo.GetCustomAttributes(typeof(EditableAttribute), true);
                         if (attributes != null && attributes.Length > 0)
                         {
-                            EditableAttribute editableAttribute = attributes[0] as EditableAttribute;
-                            Debug.Assert(editableAttribute != null);
+                            var editableAttribute = (EditableAttribute)attributes[0];
                             if (!editableAttribute.AllowEdit)
                             {
                                 return true;

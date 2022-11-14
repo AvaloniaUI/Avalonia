@@ -30,7 +30,7 @@ namespace Avalonia.Native
             return visual.VisualRoot as TopLevel;
         }
 
-        class DndCallback : CallbackBase, IAvnDndResultCallback
+        class DndCallback : NativeCallbackBase, IAvnDndResultCallback
         {
             private TaskCompletionSource<DragDropEffects> _tcs;
 

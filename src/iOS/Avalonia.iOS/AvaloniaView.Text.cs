@@ -1,32 +1,54 @@
-using Avalonia.Input;
-using Avalonia.Input.Raw;
-using Foundation;
-using ObjCRuntime;
+#nullable enable
+using Avalonia.Input.TextInput;
+using JetBrains.Annotations;
 using UIKit;
 
-namespace Avalonia.iOS
+namespace Avalonia.iOS;
+
+public partial class AvaloniaView
 {
-    [Adopts("UIKeyInput")]
-    public partial class AvaloniaView
+    private const string ImeLog = "IOSIME";
+    private Rect _cursorRect;
+    private TextInputOptions? _options;
+
+    private static UIResponder? CurrentAvaloniaResponder { get; set; }
+    public override bool BecomeFirstResponder()
     {
-        public override bool CanBecomeFirstResponder => true;
+        var res = base.BecomeFirstResponder();
+        if (res)
+            CurrentAvaloniaResponder = this;
+        return res;
+    }
 
-        [Export("hasText")] public bool HasText => false;
+    public override bool ResignFirstResponder()
+    {
+        var res = base.ResignFirstResponder();
+        if (res && ReferenceEquals(CurrentAvaloniaResponder, this))
+            CurrentAvaloniaResponder = null;
+        return res;
+    }
 
-        [Export("insertText:")]
-        public void InsertText(string text) =>
-            _topLevelImpl.Input?.Invoke(new RawTextInputEventArgs(KeyboardDevice.Instance,
-                0, InputRoot, text));
+    private bool IsDrivingText => CurrentAvaloniaResponder is TextInputResponder t && ReferenceEquals(t.NextResponder, this);
 
-        [Export("deleteBackward")]
-        public void DeleteBackward()
+    void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
+    {
+        _client = client;
+        if (_client == null && IsDrivingText)
+            BecomeFirstResponder();            
+
+        if (_client is { })
         {
-            // TODO: pass this through IME infrastructure instead of emulating a backspace press
-            _topLevelImpl.Input?.Invoke(new RawKeyEventArgs(KeyboardDevice.Instance,
-                0, InputRoot, RawKeyEventType.KeyDown, Key.Back, RawInputModifiers.None));
-            
-            _topLevelImpl.Input?.Invoke(new RawKeyEventArgs(KeyboardDevice.Instance,
-                0, InputRoot, RawKeyEventType.KeyUp, Key.Back, RawInputModifiers.None));
+            new TextInputResponder(this, _client).BecomeFirstResponder();
         }
+    }
+
+    void ITextInputMethodImpl.SetCursorRect(Rect rect) => _cursorRect = rect;
+
+    void ITextInputMethodImpl.SetOptions(TextInputOptions options) => _options = options;
+
+    void ITextInputMethodImpl.Reset()
+    {
+        if (IsDrivingText)
+            BecomeFirstResponder();
     }
 }

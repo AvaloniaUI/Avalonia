@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using Avalonia.Input;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents an <see cref="IMenu"/> or <see cref="IMenuItem"/>.
     /// </summary>
+    [NotClientImplementable]
     public interface IMenuElement : IControl
     {
         /// <summary>

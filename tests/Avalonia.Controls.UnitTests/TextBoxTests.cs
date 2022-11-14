@@ -181,34 +181,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Typing_Beginning_With_0_Should_Not_Modify_Text_When_Bound_To_Int()
-        {
-            using (UnitTestApplication.Start(Services))
-            {
-                var source = new Class1();
-                var target = new TextBox
-                {
-                    DataContext = source,
-                    Template = CreateTemplate(),
-                };
-
-                target.ApplyTemplate();
-                target.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Foo), BindingMode.TwoWay));
-
-                Assert.Equal("0", target.Text);
-
-                target.CaretIndex = 1;
-                target.RaiseEvent(new TextInputEventArgs
-                {
-                    RoutedEvent = InputElement.TextInputEvent,
-                    Text = "2",
-                });
-
-                Assert.Equal("02", target.Text);
-            }
-        }
-
-        [Fact]
         public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
         {
             using (UnitTestApplication.Start(Services))
@@ -862,6 +834,35 @@ namespace Avalonia.Controls.UnitTests
                 RaiseTextEvent(target, "A");
 
                 Assert.Equal(new[] { "0123", "0A3" }, values);
+            }
+        }
+
+        [Fact]
+        public void Should_Fullfill_MaxLines_Contraint()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABC",
+                    MaxLines = 1,
+                    AcceptsReturn= true
+                };
+
+                target.Measure(Size.Infinity);
+
+                AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
+
+                var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                clipboard.SetTextAsync(Environment.NewLine).GetAwaiter().GetResult();
+
+                RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
+                clipboard.ClearAsync().GetAwaiter().GetResult();
+
+                RaiseTextEvent(target, Environment.NewLine);
+
+                Assert.Equal("ABC", target.Text);
             }
         }
 

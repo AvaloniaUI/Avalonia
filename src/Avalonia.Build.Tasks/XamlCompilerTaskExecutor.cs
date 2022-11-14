@@ -39,33 +39,30 @@ namespace Avalonia.Build.Tasks
 
         public static CompileResult Compile(IBuildEngine engine, string input, string[] references,
             string projectDirectory,
-            string output, bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey, bool patchCom,
+            string output, bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey,
             bool skipXamlCompilation)
         {
-            return Compile(engine, input, references, projectDirectory, output, verifyIl, defaultCompileBindings, logImportance, strongNameKey, patchCom, skipXamlCompilation, debuggerLaunch:false);
+            return Compile(engine, input, references, projectDirectory, output, verifyIl, logImportance, strongNameKey, skipXamlCompilation, debuggerLaunch:false);
         }
 
         internal static CompileResult Compile(IBuildEngine engine, string input, string[] references,
             string projectDirectory,
-            string output, bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey, bool patchCom, bool skipXamlCompilation, bool debuggerLaunch)
+            string output, bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
         {
-            var typeSystem = new CecilTypeSystem(references
-                .Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll"))
-                .Concat(new[] { input }), input);
+            var typeSystem = new CecilTypeSystem(
+                references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")),
+                input);
 
             var asm = typeSystem.TargetAssemblyDefinition;
 
             if (!skipXamlCompilation)
             {
                 var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings, logImportance, debuggerLaunch);
-                if (compileRes == null && !patchCom)
+                if (compileRes == null)
                     return new CompileResult(true);
                 if (compileRes == false)
                     return new CompileResult(false);
             }
-
-            if (patchCom)
-                ComInteropHelper.PatchAssembly(asm, typeSystem);
 
             var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
             if (!string.IsNullOrWhiteSpace(strongNameKey))
@@ -113,9 +110,8 @@ namespace Avalonia.Build.Tasks
                 }
             }
             var asm = typeSystem.TargetAssemblyDefinition;
-            var emres = new EmbeddedResources(asm);
             var avares = new AvaloniaResources(asm, projectDirectory);
-            if (avares.Resources.Count(CheckXamlName) == 0 && emres.Resources.Count(CheckXamlName) == 0)
+            if (avares.Resources.Count(CheckXamlName) == 0)
                 // Nothing to do
                 return null;
 
@@ -125,6 +121,9 @@ namespace Avalonia.Build.Tasks
             var indexerAccessorClosure = new TypeDefinition("CompiledAvaloniaXaml", "!IndexerAccessorFactoryClosure",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(indexerAccessorClosure);
+            var trampolineBuilder = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlTrampolines",
+                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+            asm.MainModule.Types.Add(trampolineBuilder);
 
             var (xamlLanguage , emitConfig) = AvaloniaXamlIlLanguage.Configure(typeSystem);
             var compilerConfig = new AvaloniaXamlIlCompilerConfiguration(typeSystem,
@@ -134,6 +133,7 @@ namespace Avalonia.Build.Tasks
                 AvaloniaXamlIlLanguage.CustomValueConverter,
                 new XamlIlClrPropertyInfoEmitter(typeSystem.CreateTypeBuilder(clrPropertiesDef)),
                 new XamlIlPropertyInfoAccessorFactoryEmitter(typeSystem.CreateTypeBuilder(indexerAccessorClosure)),
+                new XamlIlTrampolineBuilder(typeSystem.CreateTypeBuilder(trampolineBuilder)),
                 new DeterministicIdGenerator());
 
 
@@ -179,10 +179,11 @@ namespace Avalonia.Build.Tasks
 
             var stringEquals = asm.MainModule.ImportReference(asm.MainModule.TypeSystem.String.Resolve().Methods.First(
                 m =>
-                    m.IsStatic && m.Name == "Equals" && m.Parameters.Count == 2 &&
+                    m.IsStatic && m.Name == "Equals" && m.Parameters.Count == 3 &&
                     m.ReturnType.FullName == "System.Boolean"
                     && m.Parameters[0].ParameterType.FullName == "System.String"
-                    && m.Parameters[1].ParameterType.FullName == "System.String"));
+                    && m.Parameters[1].ParameterType.FullName == "System.String"
+                    && m.Parameters[2].ParameterType.FullName == "System.StringComparison"));
             
             bool CompileGroup(IResourceGroup group)
             {
@@ -248,7 +249,8 @@ namespace Avalonia.Build.Tasks
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
                             typeSystem.CreateTypeBuilder(classTypeDefinition);
-                        compiler.Compile(parsed, contextClass,
+                        compiler.Compile(parsed, 
+                            contextClass,
                             compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
                                 classTypeDefinition == null),
                             buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true),
@@ -256,6 +258,8 @@ namespace Avalonia.Build.Tasks
                                 true),
                             (closureName, closureBaseType) =>
                                 populateBuilder.DefineSubType(closureBaseType, closureName, false),
+                            (closureName, returnType, parameterTypes) =>
+                                populateBuilder.DefineDelegateSubType(closureName, false, returnType, parameterTypes),
                             res.Uri, res
                         );
                         
@@ -320,8 +324,8 @@ namespace Avalonia.Build.Tasks
                                         var op = i[c].Operand as MethodReference;
                                         
                                         // TODO: Throw an error
-                                        // This usually happens when same XAML resource was added twice for some weird reason
-                                        // We currently support it for dual-named default theme resource
+                                        // This usually happens when the same XAML resource was added twice for some weird reason
+                                        // We currently support it for dual-named default theme resources
                                         if (op != null
                                             && op.Name == TrampolineName)
                                         {
@@ -382,6 +386,7 @@ namespace Avalonia.Build.Tasks
                                 var nop = Instruction.Create(OpCodes.Nop);
                                 i.Add(Instruction.Create(OpCodes.Ldarg_0));
                                 i.Add(Instruction.Create(OpCodes.Ldstr, res.Uri));
+                                i.Add(Instruction.Create(OpCodes.Ldc_I4, (int)StringComparison.OrdinalIgnoreCase));
                                 i.Add(Instruction.Create(OpCodes.Call, stringEquals));
                                 i.Add(Instruction.Create(OpCodes.Brfalse, nop));
                                 if (parameterlessConstructor != null)
@@ -430,9 +435,6 @@ namespace Avalonia.Build.Tasks
                 return true;
             }
             
-            if (emres.Resources.Count(CheckXamlName) != 0)
-                if (!CompileGroup(emres))
-                    return false;
             if (avares.Resources.Count(CheckXamlName) != 0)
             {
                 if (!CompileGroup(avares))

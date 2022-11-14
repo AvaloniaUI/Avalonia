@@ -9,7 +9,7 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 {
     internal class IBusX11TextInputMethod : DBusTextInputMethodBase
     {
-        private IIBusInputContext _context;
+        private IIBusInputContext? _context;
 
         public IBusX11TextInputMethod(Connection connection) : base(connection, 
             "org.freedesktop.portal.IBus")
@@ -53,16 +53,16 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         private void OnCommitText(object wtf)
         {
             // Hello darkness, my old friend
-            var prop = wtf.GetType().GetField("Item3");
-            if (prop != null)
+            if (wtf.GetType().GetField("Item3") is { } prop)
             {
-                var text = (string)prop.GetValue(wtf);
+                var text = prop.GetValue(wtf) as string;
                 if (!string.IsNullOrEmpty(text))
-                    FireCommit(text);
+                    FireCommit(text!);
             }
         }
 
-        protected override Task Disconnect() => _context.DestroyAsync();
+        protected override Task Disconnect() => _context?.DestroyAsync()
+            ?? Task.CompletedTask;
 
         protected override void OnDisconnected()
         {
@@ -71,13 +71,15 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
         }
 
         protected override Task SetCursorRectCore(PixelRect rect) 
-            => _context.SetCursorLocationAsync(rect.X, rect.Y, rect.Width, rect.Height);
+            => _context?.SetCursorLocationAsync(rect.X, rect.Y, rect.Width, rect.Height)
+            ?? Task.CompletedTask;
 
         protected override Task SetActiveCore(bool active)
-            => active ? _context.FocusInAsync() : _context.FocusOutAsync();
+            => (active ? _context?.FocusInAsync() : _context?.FocusOutAsync())
+                ?? Task.CompletedTask;
 
         protected override Task ResetContextCore()
-            => _context.ResetAsync();
+            => _context?.ResetAsync() ?? Task.CompletedTask;
 
         protected override Task<bool> HandleKeyCore(RawKeyEventArgs args, int keyVal, int keyCode)
         {
@@ -94,10 +96,18 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             if (args.Type == RawKeyEventType.KeyUp)
                 state |= IBusModifierMask.ReleaseMask;
 
-            return _context.ProcessKeyEventAsync((uint)keyVal, (uint)keyCode, (uint)state);
+            if(_context is { })
+            {
+                return _context.ProcessKeyEventAsync((uint)keyVal, (uint)keyCode, (uint)state);
+            }
+            else
+            {
+                return Task.FromResult(false);
+            }
+            
         }
 
-        public override void SetOptions(TextInputOptionsQueryEventArgs options)
+        public override void SetOptions(TextInputOptions options)
         {
             // No-op, because ibus 
         }

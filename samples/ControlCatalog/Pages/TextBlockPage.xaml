@@ -117,6 +117,17 @@
           <TextBlock Text="👪 👨‍👩‍👧 👨‍👩‍👧‍👦" />
         </StackPanel>
       </Border>
+      <Border>
+        <SelectableTextBlock SelectionBrush="LightBlue" Margin="10" TextWrapping="Wrap">
+          This <Span FontWeight="Bold">is</Span> a
+          <Span Background="Silver" Foreground="Maroon">TextBlock</Span>
+          with <Span TextDecorations="Underline">several</Span>
+          <Span FontStyle="Italic">Span</Span> elements,
+          <Span Foreground="Blue">
+            using a <Bold>variety</Bold> of <Italic>styles</Italic>
+          </Span>.
+        </SelectableTextBlock>
+      </Border>
     </WrapPanel>
   </StackPanel>
 </UserControl>

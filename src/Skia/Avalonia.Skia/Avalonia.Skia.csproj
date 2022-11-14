@@ -16,5 +16,15 @@
   </ItemGroup>
   
   <Import Project="..\..\..\build\SkiaSharp.props" />
-  <Import Project="..\..\..\build\HarfBuzzSharp.props" />  
+  <Import Project="..\..\..\build\HarfBuzzSharp.props" />
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Skia.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
 </Project>

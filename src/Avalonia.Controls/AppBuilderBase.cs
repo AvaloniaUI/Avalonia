@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -120,38 +119,8 @@ namespace Avalonia.Controls
             return Self;
         }
 
-        /// <summary>
-        /// Starts the application with an instance of <typeparamref name="TMainWindow"/>.
-        /// </summary>
-        /// <typeparam name="TMainWindow">The window type.</typeparam>
-        /// <param name="dataContextProvider">A delegate that will be called to create a data context for the window (optional).</param>
-        [Obsolete("Use either lifetimes or AppMain overload. See see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details")]
-        public void Start<TMainWindow>(Func<object>? dataContextProvider = null)
-            where TMainWindow : Window, new()
-        {
-            AfterSetup(builder =>
-            {
-                var window = new TMainWindow();
-                if (dataContextProvider != null)
-                    window.DataContext = dataContextProvider();
-                ((IClassicDesktopStyleApplicationLifetime)builder.Instance!.ApplicationLifetime!)
-                    .MainWindow = window;
-            });
-            
-            // Copy-pasted because we can't call extension methods due to generic constraints
-            var lifetime = new ClassicDesktopStyleApplicationLifetime() {ShutdownMode = ShutdownMode.OnMainWindowClose};
-            SetupWithLifetime(lifetime);
-            lifetime.Start(Array.Empty<string>());
-        }
-
         public delegate void AppMainDelegate(Application app, string[] args);
-
-        [Obsolete("Use either lifetimes or AppMain overload. See see https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes for details", true)]
-        public void Start()
-        {
-            throw new NotSupportedException();
-        }
-
+        
         public void Start(AppMainDelegate main, string[] args)
         {
             Setup();
@@ -234,13 +203,16 @@ namespace Avalonia.Controls
 
         protected virtual bool CheckSetup => true;
 
+        /// <summary>
+        /// Searches and initiates modules included with <see cref="ExportAvaloniaModuleAttribute"/> attribute.
+        /// </summary>
         private void SetupAvaloniaModules()
         {
             var moduleInitializers = from assembly in AppDomain.CurrentDomain.GetAssemblies()
                                      from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
-                                     where attribute.ForWindowingSubsystem == ""
+                                     where string.IsNullOrEmpty(attribute.ForWindowingSubsystem)
                                       || attribute.ForWindowingSubsystem == WindowingSubsystemName
-                                     where attribute.ForRenderingSubsystem == ""
+                                     where string.IsNullOrEmpty(attribute.ForRenderingSubsystem)
                                       || attribute.ForRenderingSubsystem == RenderingSubsystemName
                                      group attribute by attribute.Name into exports
                                      select (from export in exports

@@ -94,7 +94,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="IsTextSearchEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(IsTextSearchEnabled), false);
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(IsTextSearchEnabled), false);
 
         /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to
@@ -111,14 +111,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
             RoutedEvent.Register<SelectingItemsControl, SelectionChangedEventArgs>(
-                "SelectionChanged",
+                nameof(SelectionChanged),
                 RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="WrapSelection"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> WrapSelectionProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
 
         private static readonly IList Empty = Array.Empty<object>();
         private string _textSearchTerm = string.Empty;
@@ -292,11 +292,11 @@ namespace Avalonia.Controls.Primitives
                             "collection is different to the Items on the control.");
                     }
 
-                    var oldSelection = _selection?.SelectedItems.ToList();
+                    var oldSelection = _selection?.SelectedItems.ToArray();
                     DeinitializeSelectionModel(_selection);
                     _selection = value;
 
-                    if (oldSelection?.Count > 0)
+                    if (oldSelection?.Length > 0)
                     {
                         RaiseEvent(new SelectionChangedEventArgs(
                             SelectionChangedEvent,
@@ -501,12 +501,16 @@ namespace Avalonia.Controls.Primitives
         /// enabled.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="value">The new binding value for the property.</param>
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        /// <param name="state">The current data binding state.</param>
+        /// <param name="error">The current data binding error, if any.</param>
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == SelectedItemProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
         
@@ -533,9 +537,9 @@ namespace Avalonia.Controls.Primitives
 
                 bool Match(ItemContainerInfo info)
                 {
-                    if (info.ContainerControl.IsSet(TextSearch.TextProperty))
+                    if (info.ContainerControl is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
                     {
-                        var searchText = info.ContainerControl.GetValue(TextSearch.TextProperty);
+                        var searchText = ao.GetValue(TextSearch.TextProperty);
 
                         if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
                         {
@@ -582,10 +586,18 @@ namespace Avalonia.Controls.Primitives
                     Selection.SelectAll();
                     e.Handled = true;
                 }
+                else if (e.Key == Key.Space || e.Key == Key.Enter)
+                {
+                    e.Handled = UpdateSelectionFromEventSource(
+                          e.Source,
+                          true,
+                          e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+                          e.KeyModifiers.HasFlag(KeyModifiers.Control));
+                }
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -595,7 +607,7 @@ namespace Avalonia.Controls.Primitives
             }
             if (change.Property == ItemsProperty && _updateState is null && _selection is object)
             {
-                var newValue = change.NewValue.GetValueOrDefault<IEnumerable>();
+                var newValue = change.GetNewValue<IEnumerable>();
                 _selection.Source = newValue;
 
                 if (newValue is null)
@@ -605,7 +617,7 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
-                var newValue = change.NewValue.GetValueOrDefault<SelectionMode>();
+                var newValue = change.GetNewValue<SelectionMode>();
                 _selection.SingleSelect = !newValue.HasAllFlags(SelectionMode.Multiple);
             }
             else if (change.Property == WrapSelectionProperty)
@@ -658,12 +670,14 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
+        /// <param name="fromFocus">Wheter the event is a focus event</param>
         protected void UpdateSelection(
             int index,
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
-            bool rightButton = false)
+            bool rightButton = false,
+            bool fromFocus = false)
         {
             if (index < 0 || index >= ItemCount)
             {
@@ -692,22 +706,25 @@ namespace Avalonia.Controls.Primitives
                 Selection.Clear();
                 Selection.SelectRange(Selection.AnchorIndex, index);
             }
-            else if (multi && toggle)
+            else if (!fromFocus && toggle)
             {
-                if (Selection.IsSelected(index) == true)
+                if (multi)
                 {
-                    Selection.Deselect(index);
+                    if (Selection.IsSelected(index) == true)
+                    {
+                        Selection.Deselect(index);
+                    }
+                    else
+                    {
+                        Selection.Select(index);
+                    }
                 }
                 else
                 {
-                    Selection.Select(index);
+                    SelectedIndex = (SelectedIndex == index) ? -1 : index;
                 }
             }
-            else if (toggle)
-            {
-                SelectedIndex = (SelectedIndex == index) ? -1 : index;
-            }
-            else
+            else if (!toggle)
             {
                 using var operation = Selection.BatchUpdate();
                 Selection.Clear();
@@ -731,18 +748,20 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
+        /// <param name="fromFocus">Wheter the event is a focus event</param>
         protected void UpdateSelection(
             IControl container,
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
-            bool rightButton = false)
+            bool rightButton = false,
+            bool fromFocus = false)
         {
             var index = ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
 
             if (index != -1)
             {
-                UpdateSelection(index, select, rangeModifier, toggleModifier, rightButton);
+                UpdateSelection(index, select, rangeModifier, toggleModifier, rightButton, fromFocus);
             }
         }
 
@@ -755,6 +774,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
+        /// <param name="fromFocus">Wheter the event is a focus event</param>
         /// <returns>
         /// True if the event originated from a container that belongs to the control; otherwise
         /// false.
@@ -764,13 +784,14 @@ namespace Avalonia.Controls.Primitives
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
-            bool rightButton = false)
+            bool rightButton = false,
+            bool fromFocus = false)
         {
             var container = GetContainerFromEventSource(eventSource);
 
             if (container != null)
             {
-                UpdateSelection(container, select, rangeModifier, toggleModifier, rightButton);
+                UpdateSelection(container, select, rangeModifier, toggleModifier, rightButton, fromFocus);
                 return true;
             }
 
@@ -845,8 +866,8 @@ namespace Avalonia.Controls.Primitives
             {
                 var ev = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    e.DeselectedItems.ToList(),
-                    e.SelectedItems.ToList());
+                    e.DeselectedItems.ToArray(),
+                    e.SelectedItems.ToArray());
                 RaiseEvent(ev);
             }
         }
@@ -988,7 +1009,7 @@ namespace Avalonia.Controls.Primitives
                 RaiseEvent(new SelectionChangedEventArgs(
                     SelectionChangedEvent,
                     Array.Empty<object>(),
-                    Selection.SelectedItems.ToList()));
+                    Selection.SelectedItems.ToArray()));
             }
         }
 

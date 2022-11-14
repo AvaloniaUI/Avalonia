@@ -36,8 +36,8 @@ namespace Avalonia.UnitTests
             return _customTypefaces.Select(x => x.FontFamily!.Name);
         }
 
-        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontFamily fontFamily,
-            CultureInfo culture, out Typeface fontKey)
+        public bool TryMatchCharacter(int codepoint, FontStyle fontStyle, FontWeight fontWeight, FontStretch fontStretch,
+            FontFamily fontFamily, CultureInfo culture, out Typeface fontKey)
         {
             foreach (var customTypeface in _customTypefaces)
             {
@@ -58,14 +58,9 @@ namespace Avalonia.UnitTests
             return false;
         }
 
-        public IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface)
+        public IGlyphTypeface CreateGlyphTypeface(Typeface typeface)
         {
             var fontFamily = typeface.FontFamily;
-
-            if (fontFamily == null)
-            {
-                return null;
-            }
 
             if (fontFamily.IsDefault)
             {

@@ -11,6 +11,7 @@ using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.Utilities;
 using Microsoft.Reactive.Testing;
 using Moq;
 using Xunit;
@@ -785,7 +786,7 @@ namespace Avalonia.Base.UnitTests
 
             target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
 
-            Assert.False(source.SetterCalled);
+            Assert.False(source.ValueSetterCalled);
         }
 
         [Fact]
@@ -796,7 +797,7 @@ namespace Avalonia.Base.UnitTests
 
             target.Bind(Class1.DoubleValueProperty, new Binding("[0]", BindingMode.TwoWay) { Source = source });
 
-            Assert.False(source.SetterCalled);
+            Assert.False(source.ValueSetterCalled);
         }
 
         [Fact]
@@ -827,6 +828,59 @@ namespace Avalonia.Base.UnitTests
             source.OnCompleted();
 
             subscription.Dispose();
+        }
+
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Call_Setter_On_Creation_With_Value()
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel() { Value = 1 };
+            source.ResetSetterCalled();
+
+            target.Bind(Class1.DoubleValueProperty, new Binding(nameof(source.Value), BindingMode.TwoWay) { Source = source });
+
+            Assert.False(source.ValueSetterCalled);
+        }
+
+        [Fact]
+        public void TwoWay_Binding_Should_Not_Call_Setter_On_Creation_Indexer_With_Value()
+        {
+            var target = new Class1();
+            var source = new TestTwoWayBindingViewModel() { [0] = 1 };
+            source.ResetSetterCalled();
+
+            target.Bind(Class1.DoubleValueProperty, new Binding("[0]", BindingMode.TwoWay) { Source = source });
+
+            Assert.False(source.ValueSetterCalled);
+        }
+
+
+        [Fact]
+        public void Disposing_a_TwoWay_Binding_Should_Set_Default_Value_On_Binding_Target_But_Not_On_Source()
+        {
+            var target = new Class3();
+
+            // Create a source class which has a Value set to -1 and a Minimum set to -2
+            var source = new TestTwoWayBindingViewModel() { Value = -1, Minimum = -2 };
+
+            // Reset the setter counter
+            source.ResetSetterCalled();
+
+            // 1. bind the minimum
+            var disposable_1 = target.Bind(Class3.MinimumProperty, new Binding("Minimum", BindingMode.TwoWay) { Source = source });
+            // 2. Bind the value
+            var disposable_2 = target.Bind(Class3.ValueProperty, new Binding("Value", BindingMode.TwoWay) { Source = source });
+
+            // Dispose the minimum binding
+            disposable_1.Dispose();
+            // Dispose the value binding
+            disposable_2.Dispose();
+
+
+            // The value setter should be called here as we have disposed minimum fist and the default value of minimum is 0, so this should be changed.
+            Assert.True(source.ValueSetterCalled);
+            // The minimum value should not be changed in the source.
+            Assert.False(source.MinimumSetterCalled);
         }
 
         /// <summary>
@@ -863,6 +917,56 @@ namespace Avalonia.Base.UnitTests
             public static readonly StyledProperty<string> BarProperty =
                 AvaloniaProperty.Register<Class2, string>("Bar", "bardefault");
         }
+
+        private class Class3 : AvaloniaObject 
+        {
+            static Class3()
+            {
+                MinimumProperty.Changed.Subscribe(x => OnMinimumChanged(x));
+            }
+
+            private static void OnMinimumChanged(AvaloniaPropertyChangedEventArgs<double> e)
+            {
+                if (e.Sender is Class3 s)
+                {
+                    s.SetValue(ValueProperty, MathUtilities.Clamp(s.Value, e.NewValue.Value, double.PositiveInfinity));
+                }
+            }
+
+            /// <summary>
+            /// Defines the <see cref="Value"/> property.
+            /// </summary>
+            public static readonly StyledProperty<double> ValueProperty =
+                AvaloniaProperty.Register<Class3, double>(nameof(Value), 0);
+
+            /// <summary>
+            /// Gets or sets the Value property
+            /// </summary>
+            public double Value
+            {
+                get { return GetValue(ValueProperty); }
+                set { SetValue(ValueProperty, value); }
+            }
+
+
+            /// <summary>
+            /// Defines the <see cref="Minimum"/> property.
+            /// </summary>
+            public static readonly StyledProperty<double> MinimumProperty =
+                AvaloniaProperty.Register<Class3, double>(nameof(Minimum), 0);
+
+            /// <summary>
+            /// Gets or sets the minimum property
+            /// </summary>
+            public double Minimum
+            {
+                get { return GetValue(MinimumProperty); }
+                set { SetValue(MinimumProperty, value); }
+            }
+
+
+        }
+
 
         private class TestOneTimeBinding : IBinding
         {
@@ -928,7 +1032,18 @@ namespace Avalonia.Base.UnitTests
                 set
                 {
                     _value = value;
-                    SetterCalled = true;
+                    ValueSetterCalled = true;
+                }
+            }
+
+            private double _minimum;
+            public double Minimum
+            {
+                get => _minimum;
+                set
+                {
+                    _minimum = value;
+                    MinimumSetterCalled = true;
                 }
             }
 
@@ -938,11 +1053,18 @@ namespace Avalonia.Base.UnitTests
                 set
                 {
                     _value = value;
-                    SetterCalled = true;
+                    ValueSetterCalled = true;
                 }
             }
 
-            public bool SetterCalled { get; private set; }
+            public bool ValueSetterCalled { get; private set; }
+            public bool MinimumSetterCalled { get; private set; }
+
+            public void ResetSetterCalled()
+            {
+                ValueSetterCalled = false;
+                MinimumSetterCalled = false;
+            }
         }
     }
 }

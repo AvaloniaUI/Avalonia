@@ -39,26 +39,41 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 targetType = setter.Property.PropertyType;
             }
 
-            // Look upwards though the ambient context for IResourceHosts and IResourceProviders
-            // which might be able to give us the resource.
-            foreach (var e in stack.Parents)
-            {
-                object value;
+            var previousWasControlTheme = false;
 
-                if (e is IResourceHost host && host.TryGetResource(ResourceKey, out value))
+            // Look upwards though the ambient context for IResourceNodes
+            // which might be able to give us the resource.
+            foreach (var parent in stack.Parents)
+            {
+                if (parent is IResourceNode node && node.TryGetResource(ResourceKey, out var value))
                 {
                     return ColorToBrushConverter.Convert(value, targetType);
                 }
-                else if (e is IResourceProvider provider && provider.TryGetResource(ResourceKey, out value))
+
+                // HACK: Temporary fix for #8678. Hard-coded to only work for the DevTools main
+                // window as we don't want 3rd parties to start relying on this hack.
+                //
+                // We need to implement compile-time merging of resource dictionaries and this
+                // hack can be removed.
+                if (previousWasControlTheme &&
+                    parent is IResourceProvider hack &&
+                    hack.Owner?.GetType().FullName == "Avalonia.Diagnostics.Views.MainWindow" &&
+                    hack.Owner.TryGetResource(ResourceKey, out value))
                 {
                     return ColorToBrushConverter.Convert(value, targetType);
                 }
+
+                previousWasControlTheme = parent is ControlTheme;
             }
 
             if (provideTarget.TargetObject is IControl target &&
                 provideTarget.TargetProperty is PropertyInfo property)
             {
-                DelayedBinding.Add(target, property, x => GetValue(x, targetType));
+                // This is stored locally to avoid allocating closure in the outer scope.
+                var localTargetType = targetType;
+                var localInstance = this;
+                
+                DelayedBinding.Add(target, property, x => localInstance.GetValue(x, localTargetType));
                 return AvaloniaProperty.UnsetValue;
             }
 
@@ -71,3 +86,4 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         }
     }
 }
+

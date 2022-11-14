@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.ApplicationLifetimes
 {
     /// <summary>
     /// Controls application lifetime in classic desktop style
     /// </summary>
+    [NotClientImplementable]
     public interface IClassicDesktopStyleApplicationLifetime : IControlledApplicationLifetime
     {
         /// <summary>

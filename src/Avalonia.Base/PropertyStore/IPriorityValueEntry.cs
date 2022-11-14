@@ -5,7 +5,6 @@
     /// </summary>
     internal interface IPriorityValueEntry : IValue
     {
-        void Reparent(IValueSink sink);
     }
 
     /// <summary>
@@ -14,5 +13,6 @@
     /// <typeparam name="T">The property type.</typeparam>
     internal interface IPriorityValueEntry<T> : IPriorityValueEntry, IValue<T>
     {
+        void Reparent(PriorityValue<T> parent);
     }
 }

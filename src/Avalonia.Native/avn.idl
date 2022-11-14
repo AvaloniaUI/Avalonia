@@ -2,6 +2,7 @@
 @clr-access internal
 @clr-map bool int
 @cpp-preamble @@
+#pragma once
 #include "com.h"
 #include "stddef.h"
 @@
@@ -218,6 +219,14 @@ enum SystemDecorations {
     SystemDecorationsFull = 2,
 }
 
+enum AvnAutomationProperty
+{
+    AutomationPeer_BoundingRectangle,
+    AutomationPeer_ClassName,
+    AutomationPeer_Name,
+    RangeValueProvider_Value,
+}
+
 struct AvnSize
 {
     double Width, Height;
@@ -247,8 +256,8 @@ struct AvnScreen
 {
     AvnRect Bounds;
     AvnRect WorkingArea;
-    float PixelDensity;
-    bool Primary;
+    float Scaling;
+    bool IsPrimary;
 }
 
 enum AvnPixelFormat
@@ -412,6 +421,51 @@ enum AvnPlatformResizeReason
     ResizeDpiChange,
 }
 
+enum AvnAutomationControlType
+{
+    AutomationNone,
+    AutomationButton,
+    AutomationCalendar,
+    AutomationCheckBox,
+    AutomationComboBox,
+    AutomationComboBoxItem,
+    AutomationEdit,
+    AutomationHyperlink,
+    AutomationImage,
+    AutomationListItem,
+    AutomationList,
+    AutomationMenu,
+    AutomationMenuBar,
+    AutomationMenuItem,
+    AutomationProgressBar,
+    AutomationRadioButton,
+    AutomationScrollBar,
+    AutomationSlider,
+    AutomationSpinner,
+    AutomationStatusBar,
+    AutomationTab,
+    AutomationTabItem,
+    AutomationText,
+    AutomationToolBar,
+    AutomationToolTip,
+    AutomationTree,
+    AutomationTreeItem,
+    AutomationCustom,
+    AutomationGroup,
+    AutomationThumb,
+    AutomationDataGrid,
+    AutomationDataItem,
+    AutomationDocument,
+    AutomationSplitButton,
+    AutomationWindow,
+    AutomationPane,
+    AutomationHeader,
+    AutomationHeaderItem,
+    AutomationTable,
+    AutomationTitleBar,
+    AutomationSeparator,
+}
+
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
@@ -450,7 +504,7 @@ interface IAvnWindowBase : IUnknown
      HRESULT Close();
      HRESULT Activate();
      HRESULT GetClientSize(AvnSize*ret);
-     HRESULT GetFrameSize(AvnSize*ret);
+     HRESULT GetFrameSize(AvnSize*result);
      HRESULT GetScaling(double*ret);
      HRESULT SetMinMaxSize(AvnSize minSize, AvnSize maxSize);
      HRESULT Resize(double width, double height, AvnPlatformResizeReason reason);
@@ -522,6 +576,7 @@ interface IAvnWindowBaseEvents : IUnknown
      AvnDragDropEffects DragEvent(AvnDragEventType type, AvnPoint position,
                                          AvnInputModifiers modifiers, AvnDragDropEffects effects,
                                          IAvnClipboard* clipboard, [intptr]void* dataObjectHandle);
+     IAvnAutomationPeer* GetAutomationPeer();
 }
 
 [uuid(1ae178ee-1fcc-447f-b6dd-b7bb727f934c)]
@@ -544,6 +599,8 @@ interface IAvnMacOptions : IUnknown
 {
      HRESULT SetShowInDock(int show);
      HRESULT SetApplicationTitle(char* utf8string);
+     HRESULT SetDisableSetProcessName(int disable);
+     HRESULT SetDisableAppDelegate(int disable);
 }
 
 [uuid(04c1b049-1f43-418a-9159-cae627ec1367)]
@@ -586,9 +643,10 @@ interface IAvnSystemDialogEvents : IUnknown
 interface IAvnSystemDialogs : IUnknown
 {
      void SelectFolderDialog(IAvnWindow* parentWindowHandle,
-                                     IAvnSystemDialogEvents* events,
-                                     [const] char* title,
-                                     [const] char* initialPath);
+                             IAvnSystemDialogEvents* events,
+                             bool allowMultiple,
+                             [const] char* title,
+                             [const] char* initialPath);
     
      void OpenFileDialog(IAvnWindow* parentWindowHandle,
                                  IAvnSystemDialogEvents* events,
@@ -764,4 +822,80 @@ interface IAvnApplicationCommands : IUnknown
     HRESULT HideApp();
     HRESULT ShowAll();
     HRESULT HideOthers();
+}
+
+[uuid(b87016f3-7eec-41de-b385-07844c268dc4)]
+interface IAvnAutomationPeer : IUnknown
+{
+     IAvnAutomationNode* GetNode();
+     void SetNode(IAvnAutomationNode* node);
+
+     IAvnString* GetAcceleratorKey();
+     IAvnString* GetAccessKey();
+     AvnAutomationControlType GetAutomationControlType();
+     IAvnString* GetAutomationId();
+     AvnRect GetBoundingRectangle();
+     IAvnAutomationPeerArray* GetChildren();
+     IAvnString* GetClassName();
+     IAvnAutomationPeer* GetLabeledBy();
+     IAvnString* GetName();
+     IAvnAutomationPeer* GetParent();
+     bool HasKeyboardFocus();
+     bool IsContentElement();
+     bool IsControlElement();
+     bool IsEnabled();
+     bool IsKeyboardFocusable();
+     void SetFocus();
+     bool ShowContextMenu();
+
+     IAvnAutomationPeer* GetRootPeer();
+     
+     bool IsRootProvider();
+     IAvnWindowBase* RootProvider_GetWindow();
+     IAvnAutomationPeer* RootProvider_GetFocus();
+     IAvnAutomationPeer* RootProvider_GetPeerFromPoint(AvnPoint point);
+     
+     bool IsExpandCollapseProvider();
+     bool ExpandCollapseProvider_GetIsExpanded();
+     bool ExpandCollapseProvider_GetShowsMenu();
+     void ExpandCollapseProvider_Expand();
+     void ExpandCollapseProvider_Collapse();
+     
+     bool IsInvokeProvider();
+     void InvokeProvider_Invoke();
+     
+     bool IsRangeValueProvider();
+     double RangeValueProvider_GetValue();
+     double RangeValueProvider_GetMinimum();
+     double RangeValueProvider_GetMaximum();
+     double RangeValueProvider_GetSmallChange();
+     double RangeValueProvider_GetLargeChange();
+     void RangeValueProvider_SetValue(double value);
+     
+     bool IsSelectionItemProvider();
+     bool SelectionItemProvider_IsSelected();
+     
+     bool IsToggleProvider();
+     int ToggleProvider_GetToggleState();
+     void ToggleProvider_Toggle();
+     
+     bool IsValueProvider();
+     IAvnString* ValueProvider_GetValue();
+     void ValueProvider_SetValue(char* value);
+}
+
+[uuid(b00af5da-78af-4b33-bfff-4ce13a6239a9)]
+interface IAvnAutomationPeerArray : IUnknown
+{
+     uint GetCount();
+     HRESULT Get(uint index, IAvnAutomationPeer**ppv);
+}
+
+[uuid(004dc40b-e435-49dc-bac5-6272ee35382a)]
+interface IAvnAutomationNode : IUnknown
+{
+    void Dispose();
+    void ChildrenChanged();
+    void PropertyChanged(AvnAutomationProperty property);
+    void FocusChanged();
 }

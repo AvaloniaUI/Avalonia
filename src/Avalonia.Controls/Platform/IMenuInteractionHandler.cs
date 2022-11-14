@@ -1,8 +1,11 @@
-﻿namespace Avalonia.Controls.Platform
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Controls.Platform
 {
     /// <summary>
     /// Handles user interaction for menus.
     /// </summary>
+    [Unstable]
     public interface IMenuInteractionHandler
     {
         /// <summary>

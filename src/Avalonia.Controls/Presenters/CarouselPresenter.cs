@@ -31,7 +31,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="PageTransition"/> property.
         /// </summary>
-        public static readonly StyledProperty<IPageTransition> PageTransitionProperty =
+        public static readonly StyledProperty<IPageTransition?> PageTransitionProperty =
             Carousel.PageTransitionProperty.AddOwner<CarouselPresenter>();
 
         private int _selectedIndex = -1;
@@ -85,7 +85,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a transition to use when switching pages.
         /// </summary>
-        public IPageTransition PageTransition
+        public IPageTransition? PageTransition
         {
             get { return GetValue(PageTransitionProperty); }
             set { SetValue(PageTransitionProperty, value); }

@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 using Avalonia.MicroCom;
+using MicroCom.Runtime;
 using Avalonia.Win32.Win32Com;
 
 // ReSharper disable InconsistentNaming
@@ -225,20 +226,17 @@ namespace Avalonia.Win32.Interop
         [Flags]
         public enum ModifierKeys
         {
-            MK_CONTROL = 0x0008,
+            MK_NONE    = 0x0000,
 
             MK_LBUTTON = 0x0001,
-
-            MK_MBUTTON = 0x0010,
-
             MK_RBUTTON = 0x0002,
 
-            MK_SHIFT = 0x0004,
+            MK_SHIFT   = 0x0004,
+            MK_CONTROL = 0x0008,
 
-            MK_ALT = 0x0020,
-
+            MK_MBUTTON  = 0x0010,
+            MK_ALT      = 0x0020,
             MK_XBUTTON1 = 0x0020,
-
             MK_XBUTTON2 = 0x0040
         }
 
@@ -514,6 +512,33 @@ namespace Avalonia.Win32.Interop
             CS_DROPSHADOW = 0x00020000
         }
 
+        [Flags]
+        public enum PointerDeviceChangeFlags
+        {
+            PDC_ARRIVAL = 0x001,
+            PDC_REMOVAL = 0x002,
+            PDC_ORIENTATION_0 = 0x004,
+            PDC_ORIENTATION_90 = 0x008,
+            PDC_ORIENTATION_180 = 0x010,
+            PDC_ORIENTATION_270 = 0x020,
+            PDC_MODE_DEFAULT = 0x040,
+            PDC_MODE_CENTERED = 0x080,
+            PDC_MAPPING_CHANGE = 0x100,
+            PDC_RESOLUTION = 0x200,
+            PDC_ORIGIN = 0x400,
+            PDC_MODE_ASPECTRATIOPRESERVED = 0x800
+        }
+
+        public enum PointerInputType
+        {
+            PT_NONE = 0x00000000,
+            PT_POINTER = 0x00000001,
+            PT_TOUCH = 0x00000002,
+            PT_PEN = 0x00000003,
+            PT_MOUSE = 0x00000004,
+            PT_TOUCHPAD = 0x00000005
+        }
+
         public enum WindowsMessage : uint
         {
             WM_NULL = 0x0000,
@@ -689,6 +714,25 @@ namespace Avalonia.Win32.Interop
             WM_EXITSIZEMOVE = 0x0232,
             WM_DROPFILES = 0x0233,
             WM_MDIREFRESHMENU = 0x0234,
+
+            WM_POINTERDEVICECHANGE = 0x0238,
+            WM_POINTERDEVICEINRANGE = 0x239,
+            WM_POINTERDEVICEOUTOFRANGE = 0x23A,
+            WM_NCPOINTERUPDATE = 0x0241,
+            WM_NCPOINTERDOWN = 0x0242,
+            WM_NCPOINTERUP = 0x0243,
+            WM_POINTERUPDATE = 0x0245,
+            WM_POINTERDOWN = 0x0246,
+            WM_POINTERUP = 0x0247,
+            WM_POINTERENTER = 0x0249,
+            WM_POINTERLEAVE = 0x024A,
+            WM_POINTERACTIVATE = 0x024B,
+            WM_POINTERCAPTURECHANGED = 0x024C,
+            WM_TOUCHHITTESTING = 0x024D,
+            WM_POINTERWHEEL = 0x024E,
+            WM_POINTERHWHEEL = 0x024F,
+            DM_POINTERHITTEST = 0x0250,
+
             WM_IME_SETCONTEXT = 0x0281,
             WM_IME_NOTIFY = 0x0282,
             WM_IME_CONTROL = 0x0283,
@@ -765,6 +809,14 @@ namespace Avalonia.Win32.Interop
             DWMWA_CLOAK,
             DWMWA_CLOAKED,
             DWMWA_FREEZE_REPRESENTATION,
+            DWMWA_PASSIVE_UPDATE_MODE,
+            DWMWA_USE_HOSTBACKDROPBRUSH,
+            DWMWA_USE_IMMERSIVE_DARK_MODE = 20,
+            DWMWA_WINDOW_CORNER_PREFERENCE = 33,
+            DWMWA_BORDER_COLOR,
+            DWMWA_CAPTION_COLOR,
+            DWMWA_TEXT_COLOR,
+            DWMWA_VISIBLE_FRAME_BORDER_THICKNESS,
             DWMWA_LAST
         };
 
@@ -836,6 +888,134 @@ namespace Avalonia.Win32.Interop
             SCF_ISSECURE = 0x00000001,
         }
 
+        [Flags]
+        public enum PointerFlags
+        {
+            POINTER_FLAG_NONE = 0x00000000,
+            POINTER_FLAG_NEW = 0x00000001,
+            POINTER_FLAG_INRANGE = 0x00000002,
+            POINTER_FLAG_INCONTACT = 0x00000004,
+            POINTER_FLAG_FIRSTBUTTON = 0x00000010,
+            POINTER_FLAG_SECONDBUTTON = 0x00000020,
+            POINTER_FLAG_THIRDBUTTON = 0x00000040,
+            POINTER_FLAG_FOURTHBUTTON = 0x00000080,
+            POINTER_FLAG_FIFTHBUTTON = 0x00000100,
+            POINTER_FLAG_PRIMARY = 0x00002000,
+            POINTER_FLAG_CONFIDENCE = 0x00000400,
+            POINTER_FLAG_CANCELED = 0x00000800,
+            POINTER_FLAG_DOWN = 0x00010000,
+            POINTER_FLAG_UPDATE = 0x00020000,
+            POINTER_FLAG_UP = 0x00040000,
+            POINTER_FLAG_WHEEL = 0x00080000,
+            POINTER_FLAG_HWHEEL = 0x00100000,
+            POINTER_FLAG_CAPTURECHANGED = 0x00200000,
+            POINTER_FLAG_HASTRANSFORM = 0x00400000
+        }
+
+        public enum PointerButtonChangeType : ulong
+        {
+            POINTER_CHANGE_NONE,
+            POINTER_CHANGE_FIRSTBUTTON_DOWN,
+            POINTER_CHANGE_FIRSTBUTTON_UP,
+            POINTER_CHANGE_SECONDBUTTON_DOWN,
+            POINTER_CHANGE_SECONDBUTTON_UP,
+            POINTER_CHANGE_THIRDBUTTON_DOWN,
+            POINTER_CHANGE_THIRDBUTTON_UP,
+            POINTER_CHANGE_FOURTHBUTTON_DOWN,
+            POINTER_CHANGE_FOURTHBUTTON_UP,
+            POINTER_CHANGE_FIFTHBUTTON_DOWN,
+            POINTER_CHANGE_FIFTHBUTTON_UP
+        }
+
+        [Flags]
+        public enum PenFlags
+        {
+            PEN_FLAGS_NONE = 0x00000000,
+            PEN_FLAGS_BARREL = 0x00000001,
+            PEN_FLAGS_INVERTED = 0x00000002,
+            PEN_FLAGS_ERASER = 0x00000004,
+        }
+
+        [Flags]
+        public enum PenMask
+        {
+            PEN_MASK_NONE = 0x00000000,
+            PEN_MASK_PRESSURE = 0x00000001,
+            PEN_MASK_ROTATION = 0x00000002,
+            PEN_MASK_TILT_X = 0x00000004,
+            PEN_MASK_TILT_Y = 0x00000008
+        }
+
+        [Flags]
+        public enum TouchFlags
+        {
+            TOUCH_FLAG_NONE = 0x00000000
+        }
+
+        [Flags]
+        public enum TouchMask
+        {
+            TOUCH_MASK_NONE = 0x00000000,
+            TOUCH_MASK_CONTACTAREA = 0x00000001,
+            TOUCH_MASK_ORIENTATION = 0x00000002,
+            TOUCH_MASK_PRESSURE = 0x00000004,
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct POINTER_TOUCH_INFO
+        {
+            public POINTER_INFO pointerInfo;
+            public TouchFlags touchFlags;
+            public TouchMask touchMask;
+            public int rcContactLeft;
+            public int rcContactTop;
+            public int rcContactRight;
+            public int rcContactBottom;
+            public int rcContactRawLeft;
+            public int rcContactRawTop;
+            public int rcContactRawRight;
+            public int rcContactRawBottom;
+            public uint orientation;
+            public uint pressure;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct POINTER_PEN_INFO
+        {
+            public POINTER_INFO pointerInfo;
+            public PenFlags penFlags;
+            public PenMask penMask;
+            public uint pressure;
+            public uint rotation;
+            public int tiltX;
+            public int tiltY;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 1)]
+        public struct POINTER_INFO
+        {
+            public PointerInputType pointerType;
+            public uint pointerId;
+            public uint frameId;
+            public PointerFlags pointerFlags;
+            public IntPtr sourceDevice;
+            public IntPtr hwndTarget;
+            public int ptPixelLocationX;
+            public int ptPixelLocationY;
+            public int ptHimetricLocationX;
+            public int ptHimetricLocationY;
+            public int ptPixelLocationRawX;
+            public int ptPixelLocationRawY;
+            public int ptHimetricLocationRawX;
+            public int ptHimetricLocationRawY;
+            public uint dwTime;
+            public uint historyCount;
+            public int inputData;
+            public ModifierKeys dwKeyStates;
+            public ulong PerformanceCount;
+            public PointerButtonChangeType ButtonChangeType;
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         public struct RGBQUAD
         {
@@ -903,12 +1083,56 @@ namespace Avalonia.Win32.Interop
 
         public const int SizeOf_BITMAPINFOHEADER = 40;
 
+        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto, SetLastError = true)]
+        unsafe internal static extern int GetMouseMovePointsEx(
+            uint cbSize, MOUSEMOVEPOINT* pointsIn,
+            MOUSEMOVEPOINT* pointsBufferOut, int nBufPoints, uint resolution);
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)] // For GetMouseMovePointsEx
+        public struct MOUSEMOVEPOINT
+        {
+            public int x;                       //Specifies the x-coordinate of the mouse
+            public int y;                       //Specifies the x-coordinate of the mouse
+            public int time;                    //Specifies the time stamp of the mouse coordinate
+            public IntPtr dwExtraInfo;              //Specifies extra information associated with this coordinate.
+        }
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool IsMouseInPointerEnabled();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern int EnableMouseInPointer(bool enable);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerCursorId(uint pointerId, out uint cursorId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerType(uint pointerId, out PointerInputType pointerType);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerInfo(uint pointerId, out POINTER_INFO pointerInfo);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_INFO[] pointerInfos);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerPenInfo(uint pointerId, out POINTER_PEN_INFO penInfo);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerPenInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_PEN_INFO[] penInfos);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerTouchInfo(uint pointerId, out POINTER_TOUCH_INFO touchInfo);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetPointerTouchInfoHistory(uint pointerId, ref int entriesCount, [MarshalAs(UnmanagedType.LPArray), In, Out] POINTER_TOUCH_INFO[] touchInfos);
+
         [DllImport("user32.dll")]
         public static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
                                                       MonitorEnumDelegate lpfnEnum, IntPtr dwData);
-        
+
         public delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref Rect lprcMonitor, IntPtr dwData);
-        
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetDC(IntPtr hWnd);
 
@@ -999,7 +1223,7 @@ namespace Avalonia.Win32.Interop
 
         public static uint GetWindowLong(IntPtr hWnd, int nIndex)
         {
-            if(IntPtr.Size == 4)
+            if (IntPtr.Size == 4)
             {
                 return GetWindowLong32b(hWnd, nIndex);
             }
@@ -1026,7 +1250,7 @@ namespace Avalonia.Win32.Interop
                 return (uint)SetWindowLong64b(hWnd, nIndex, new IntPtr((uint)value)).ToInt32();
             }
         }
-        
+
         public static IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr handle)
         {
             if (IntPtr.Size == 4)
@@ -1060,14 +1284,14 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern bool InvalidateRect(IntPtr hWnd, RECT* lpRect, bool bErase);
-        
-        
+
+
         [DllImport("user32.dll")]
         public static extern bool ValidateRect(IntPtr hWnd, IntPtr lpRect);
 
         [DllImport("user32.dll")]
         public static extern bool IsWindow(IntPtr hWnd);
-        
+
         [DllImport("user32.dll")]
         public static extern bool IsWindowEnabled(IntPtr hWnd);
 
@@ -1094,22 +1318,25 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32")]
         public static extern IntPtr GetMessageExtraInfo();
-        
+
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "RegisterClassExW")]
         public static extern ushort RegisterClassEx(ref WNDCLASSEX lpwcx);
 
         [DllImport("user32.dll")]
         public static extern void RegisterTouchWindow(IntPtr hWnd, int flags);
-        
+
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern uint RegisterWindowMessage(string lpString);
 
         [DllImport("user32.dll")]
         public static extern bool ScreenToClient(IntPtr hWnd, ref POINT lpPoint);
 
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr GetActiveWindow();
-        
+
         [DllImport("user32.dll", SetLastError = true)]
         public static extern IntPtr SetActiveWindow(IntPtr hWnd);
 
@@ -1277,10 +1504,10 @@ namespace Avalonia.Win32.Interop
         public static extern IntPtr SetClipboardData(ClipboardFormat uFormat, IntPtr hMem);
 
         [DllImport("ole32.dll", PreserveSig = false)]
-        public static extern int OleGetClipboard(out IOleDataObject dataObject);
+        public static extern int OleGetClipboard(out IntPtr dataObject);
 
         [DllImport("ole32.dll", PreserveSig = true)]
-        public static extern int OleSetClipboard(IOleDataObject dataObject);
+        public static extern int OleSetClipboard(IntPtr dataObject);
 
         [DllImport("kernel32.dll", ExactSpelling = true)]
         public static extern IntPtr GlobalLock(IntPtr handle);
@@ -1296,7 +1523,7 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr LoadLibrary(string fileName);
-        
+
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr LoadLibraryEx(string fileName, IntPtr hFile, int flags);
 
@@ -1340,7 +1567,7 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         public static extern IntPtr MonitorFromWindow(IntPtr hwnd, MONITOR dwFlags);
-        
+
         [DllImport("user32", EntryPoint = "GetMonitorInfoW", ExactSpelling = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetMonitorInfo([In] IntPtr hMonitor, ref MONITORINFO lpmi);
@@ -1348,14 +1575,14 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32")]
         public static extern unsafe bool GetTouchInputInfo(
             IntPtr hTouchInput,
-            uint        cInputs,
+            uint cInputs,
             TOUCHINPUT* pInputs,
-            int         cbSize
+            int cbSize
         );
-        
+
         [DllImport("user32")]
         public static extern bool CloseTouchInputHandle(IntPtr hTouchInput);
-        
+
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "PostMessageW")]
         public static extern bool PostMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -1364,7 +1591,7 @@ namespace Avalonia.Win32.Interop
         public static extern int SetDIBitsToDevice(IntPtr hdc, int XDest, int YDest, uint
                 dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines,
             IntPtr lpvBits, [In] ref BITMAPINFOHEADER lpbmi, uint fuColorUse);
-        
+
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool CloseHandle(IntPtr hObject);
@@ -1379,27 +1606,27 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("gdi32.dll")]
         public static extern int ChoosePixelFormat(IntPtr hdc, ref PixelFormatDescriptor pfd);
-        
+
         [DllImport("gdi32.dll")]
         public static extern int DescribePixelFormat(IntPtr hdc, ref PixelFormatDescriptor pfd);
 
         [DllImport("gdi32.dll")]
         public static extern int SetPixelFormat(IntPtr hdc, int iPixelFormat, ref PixelFormatDescriptor pfd);
-        
-        
+
+
         [DllImport("gdi32.dll")]
         public static extern int DescribePixelFormat(IntPtr hdc, int iPixelFormat, int bytes, ref PixelFormatDescriptor pfd);
-        
+
         [DllImport("gdi32.dll")]
         public static extern bool SwapBuffers(IntPtr hdc);
 
         [DllImport("opengl32.dll")]
         public static extern IntPtr wglCreateContext(IntPtr hdc);
-        
+
         [DllImport("opengl32.dll")]
         public static extern bool wglDeleteContext(IntPtr context);
 
-        
+
         [DllImport("opengl32.dll")]
         public static extern bool wglMakeCurrent(IntPtr hdc, IntPtr context);
 
@@ -1420,11 +1647,11 @@ namespace Avalonia.Win32.Interop
             uint dwMaximumSizeLow,
             string lpName);
 
-        [DllImport("msvcrt.dll", EntryPoint="memcpy", SetLastError = false, CallingConvention=CallingConvention.Cdecl)]
-        public static extern IntPtr CopyMemory(IntPtr dest, IntPtr src, UIntPtr count); 
-        
+        [DllImport("msvcrt.dll", EntryPoint = "memcpy", SetLastError = false, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr CopyMemory(IntPtr dest, IntPtr src, UIntPtr count);
+
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        public static extern HRESULT RegisterDragDrop(IntPtr hwnd, IDropTarget target);
+        public static extern HRESULT RegisterDragDrop(IntPtr hwnd, IntPtr target);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         public static extern HRESULT RevokeDragDrop(IntPtr hwnd);
@@ -1448,7 +1675,7 @@ namespace Avalonia.Win32.Interop
         public static extern int DragQueryFile(IntPtr hDrop, int iFile, StringBuilder lpszFile, int cch);
 
         [DllImport("ole32.dll", CharSet = CharSet.Auto, ExactSpelling = true, PreserveSig = false)]
-        internal static extern void DoDragDrop(IOleDataObject dataObject, IDropSource dropSource, int allowedEffects, out int finalEffect);
+        internal static extern void DoDragDrop(IntPtr dataObject, IntPtr dropSource, int allowedEffects, [Out] out int finalEffect);
 
         [DllImport("dwmapi.dll")]
         public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
@@ -1457,14 +1684,17 @@ namespace Avalonia.Win32.Interop
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
 
         [DllImport("dwmapi.dll")]
+        public static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, void* pvAttribute, int cbAttribute);
+
+        [DllImport("dwmapi.dll")]
         public static extern int DwmIsCompositionEnabled(out bool enabled);
 
         [DllImport("dwmapi.dll")]
         public static extern void DwmFlush();
-        
+
         [DllImport("dwmapi.dll")]
         public static extern bool DwmDefWindowProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, ref IntPtr plResult);
-        
+
         [DllImport("dwmapi.dll")]
         public static extern void DwmEnableBlurBehindWindow(IntPtr hwnd, ref DWM_BLURBEHIND blurBehind);
         
@@ -1531,8 +1761,8 @@ namespace Avalonia.Win32.Interop
                 throw new Exception("RtlGetVersion failed!");
             }
         }
-        
-        [DllImport("kernel32", EntryPoint="WaitForMultipleObjectsEx", SetLastError = true, CharSet = CharSet.Auto)]
+
+        [DllImport("kernel32", EntryPoint = "WaitForMultipleObjectsEx", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern int IntWaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable);
 
         public const int WAIT_FAILED = unchecked((int)0xFFFFFFFF);
@@ -1540,7 +1770,7 @@ namespace Avalonia.Win32.Interop
         internal static int WaitForMultipleObjectsEx(int nCount, IntPtr[] pHandles, bool bWaitAll, int dwMilliseconds, bool bAlertable)
         {
             int result = IntWaitForMultipleObjectsEx(nCount, pHandles, bWaitAll, dwMilliseconds, bAlertable);
-            if(result ==  WAIT_FAILED)
+            if (result == WAIT_FAILED)
             {
                 throw new Win32Exception();
             }
@@ -1550,6 +1780,46 @@ namespace Avalonia.Win32.Interop
 
         [DllImport("user32.dll")]
         internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+
+        [Flags]
+        public enum GCS : uint
+        {
+            /// <summary>Retrieve or update the attribute of the composition string.</summary>
+            GCS_COMPATTR = 0x0010,
+
+            /// <summary>Retrieve or update clause information of the composition string.</summary>
+            GCS_COMPCLAUSE = 0x0020,
+
+            /// <summary>Retrieve or update the attributes of the reading string of the current composition.</summary>
+            GCS_COMPREADATTR = 0x0002,
+
+            /// <summary>Retrieve or update the clause information of the reading string of the composition string.</summary>
+            GCS_COMPREADCLAUSE = 0x0004,
+
+            /// <summary>Retrieve or update the reading string of the current composition.</summary>
+            GCS_COMPREADSTR = 0x0001,
+
+            /// <summary>Retrieve or update the current composition string.</summary>
+            GCS_COMPSTR = 0x0008,
+
+            /// <summary>Retrieve or update the cursor position in composition string.</summary>
+            GCS_CURSORPOS = 0x0080,
+
+            /// <summary>Retrieve or update the starting position of any changes in composition string.</summary>
+            GCS_DELTASTART = 0x0100,
+
+            /// <summary>Retrieve or update clause information of the result string.</summary>
+            GCS_RESULTCLAUSE = 0x1000,
+
+            /// <summary>Retrieve or update clause information of the reading string.</summary>
+            GCS_RESULTREADCLAUSE = 0x0400,
+
+            /// <summary>Retrieve or update the reading string.</summary>
+            GCS_RESULTREADSTR = 0x0200,
+
+            /// <summary>Retrieve or update the string of the composition result.</summary>
+            GCS_RESULTSTR = 0x0800,
+        }
 
         [DllImport("imm32.dll", SetLastError = true)]
         public static extern IntPtr ImmGetContext(IntPtr hWnd);
@@ -1573,6 +1843,29 @@ namespace Avalonia.Win32.Interop
         public static extern bool ImmSetCompositionWindow(IntPtr hIMC, ref COMPOSITIONFORM lpComp);
         [DllImport("imm32.dll")]
         public static extern bool ImmSetCompositionFont(IntPtr hIMC, ref LOGFONT lf);
+
+        [DllImport("imm32.dll", SetLastError = false, CharSet = CharSet.Unicode)]
+        public static extern int ImmGetCompositionString(IntPtr hIMC, GCS dwIndex, [Out, Optional] IntPtr lpBuf, uint dwBufLen);
+
+        public static string ImmGetCompositionString(IntPtr hIMC, GCS dwIndex)
+        {
+            int bufferLength = ImmGetCompositionString(hIMC, dwIndex, IntPtr.Zero, 0);
+
+            if (bufferLength > 0)
+            {
+                var buffer = new byte[bufferLength];
+
+                fixed(byte* bufferPtr = buffer)
+                {
+                    var error = ImmGetCompositionString(hIMC, dwIndex, (IntPtr)bufferPtr, (uint)bufferLength);
+
+                    return Marshal.PtrToStringUni((IntPtr)bufferPtr);
+                }           
+            }
+
+            return null;
+        }
+
         [DllImport("imm32.dll")]
         public static extern bool ImmNotifyIME(IntPtr hIMC, int dwAction, int dwIndex, int dwValue);
         [DllImport("user32.dll")]
@@ -1599,7 +1892,10 @@ namespace Avalonia.Win32.Interop
 
         public static uint LGID(IntPtr HKL)
         {
-            return (uint)(HKL.ToInt32() & 0xffff);
+            unchecked
+            {
+                return (uint)((ulong)HKL & 0xffff);
+            }
         }
 
         public const int SORT_DEFAULT = 0;
@@ -1612,7 +1908,13 @@ namespace Avalonia.Win32.Interop
         public const int CFS_EXCLUDE = 0x0080;
         public const int CFS_POINT = 0x0002;
         public const int CFS_RECT = 0x0001;
-        public const uint ISC_SHOWUICOMPOSITIONWINDOW = 0x80000000;
+
+        // lParam for WM_IME_SETCONTEXT
+        public const long ISC_SHOWUICANDIDATEWINDOW = 0x00000001;
+        public const long ISC_SHOWUICOMPOSITIONWINDOW = 0x80000000;
+        public const long ISC_SHOWUIGUIDELINE = 0x40000000;
+        public const long ISC_SHOWUIALLCANDIDATEWINDOW = 0x0000000F;
+        public const long ISC_SHOWUIALL = 0xC000000F;
 
         public const int NI_COMPOSITIONSTR = 21;
         public const int CPS_COMPLETE = 1;
@@ -1688,7 +1990,7 @@ namespace Avalonia.Win32.Interop
             DrawLeftBorder = 0x20,
             DrawTopBorder = 0x40,
             DrawRightBorder = 0x80,
-            DrawBottomBorder = 0x100,            
+            DrawBottomBorder = 0x100,
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -1756,9 +2058,9 @@ namespace Avalonia.Win32.Interop
             MDT_ANGULAR_DPI = 1,
             MDT_RAW_DPI = 2,
             MDT_DEFAULT = MDT_EFFECTIVE_DPI
-        } 
+        }
 
-        public enum ClipboardFormat 
+        public enum ClipboardFormat
         {
             /// <summary>
             /// Text format. Each line ends with a carriage return/linefeed (CR-LF) combination. A null character signals the end of the data. Use this format for ANSI text.
@@ -1809,11 +2111,17 @@ namespace Avalonia.Win32.Interop
             public int X;
             public int Y;
         }
-        
+
         public struct SIZE
         {
             public int X;
             public int Y;
+        }
+
+        public struct SIZE_F
+        {
+            public float X;
+            public float Y;
         }
 
         public struct RECT
@@ -2010,7 +2318,7 @@ namespace Avalonia.Win32.Interop
             OFN_NOREADONLYRETURN = 0x00008000,
             OFN_OVERWRITEPROMPT = 0x00000002
         }
-        
+
         public enum HRESULT : uint
         {
             S_FALSE = 0x0001,
@@ -2064,64 +2372,6 @@ namespace Avalonia.Win32.Interop
         }
     }
 
-    [Flags]
-    internal enum DropEffect : int
-    {
-        None = 0,
-        Copy = 1,
-        Move = 2,
-        Link = 4,
-        Scroll = -2147483648,
-    }
-
-    [ComImport]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [Guid("00000122-0000-0000-C000-000000000046")]
-    internal interface IDropTarget
-    {
-        [PreserveSig]
-        UnmanagedMethods.HRESULT DragEnter([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
-        [PreserveSig]
-        UnmanagedMethods.HRESULT DragOver([MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
-        [PreserveSig]
-        UnmanagedMethods.HRESULT DragLeave();
-        [PreserveSig]
-        UnmanagedMethods.HRESULT Drop([MarshalAs(UnmanagedType.Interface)] [In] IOleDataObject pDataObj, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState, [MarshalAs(UnmanagedType.U8)] [In] long pt, [In] [Out] ref DropEffect pdwEffect);
-    }
-
-    [ComImport]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [Guid("00000121-0000-0000-C000-000000000046")]
-    internal interface IDropSource
-    {
-        [PreserveSig]
-        int QueryContinueDrag(int fEscapePressed, [MarshalAs(UnmanagedType.U4)] [In] int grfKeyState);
-        [PreserveSig]
-        int GiveFeedback([MarshalAs(UnmanagedType.U4)] [In] int dwEffect);
-    }
-
-
-    [ComImport]
-    [Guid("0000010E-0000-0000-C000-000000000046")]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IOleDataObject
-    {
-        void GetData([In] ref FORMATETC format, out STGMEDIUM medium);
-        void GetDataHere([In] ref FORMATETC format, ref STGMEDIUM medium);
-        [PreserveSig]
-        int QueryGetData([In] ref FORMATETC format);
-        [PreserveSig]
-        int GetCanonicalFormatEtc([In] ref FORMATETC formatIn, out FORMATETC formatOut);
-        void SetData([In] ref FORMATETC formatIn, [In] ref STGMEDIUM medium, [MarshalAs(UnmanagedType.Bool)] bool release);
-        IEnumFORMATETC EnumFormatEtc(DATADIR direction);
-        [PreserveSig]
-        int DAdvise([In] ref FORMATETC pFormatetc, ADVF advf, IAdviseSink adviseSink, out int connection);
-        void DUnadvise(int connection);
-        [PreserveSig]
-        int EnumDAdvise(out IEnumSTATDATA enumAdvise);
-    }
-
-
     [StructLayoutAttribute(LayoutKind.Sequential)]
     internal struct _DROPFILES
     {
@@ -2130,6 +2380,24 @@ namespace Avalonia.Win32.Interop
         public Int32 Y;
         public bool fNC;
         public bool fWide;
+    }
+
+    [StructLayoutAttribute(LayoutKind.Sequential)]
+    internal struct STGMEDIUM
+    {
+        public TYMED tymed;
+        public IntPtr unionmember;
+        public IntPtr pUnkForRelease;
+    }
+
+    [StructLayoutAttribute(LayoutKind.Sequential)]
+    internal struct FORMATETC
+    {
+        public ushort cfFormat;
+        public IntPtr ptd;
+        public DVASPECT dwAspect;
+        public int lindex;
+        public TYMED tymed;
     }
 
     [Flags]

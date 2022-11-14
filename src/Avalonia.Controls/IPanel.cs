@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Interface for controls that can contain multiple children.
     /// </summary>
+    [NotClientImplementable]
     public interface IPanel : IControl
     {
         /// <summary>

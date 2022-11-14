@@ -10,8 +10,7 @@
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
                 Spacing="16">
-      <StackPanel Orientation="Vertical"
-                  Width="200">
+      <StackPanel Orientation="Vertical">
         <TextBlock Text="SelectedDateFormat: Short"/>
         <CalendarDatePicker Name="DatePicker1"
                     SelectedDateFormat="Short"

@@ -7,7 +7,7 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native.Interop
 {
-    class MenuEvents : CallbackBase, IAvnMenuEvents
+    class MenuEvents : NativeCallbackBase, IAvnMenuEvents
     {
         private IAvnMenu _parent;
 

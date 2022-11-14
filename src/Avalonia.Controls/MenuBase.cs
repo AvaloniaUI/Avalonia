@@ -18,8 +18,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
-        public static readonly DirectProperty<Menu, bool> IsOpenProperty =
-            AvaloniaProperty.RegisterDirect<Menu, bool>(
+        public static readonly DirectProperty<MenuBase, bool> IsOpenProperty =
+            AvaloniaProperty.RegisterDirect<MenuBase, bool>(
                 nameof(IsOpen),
                 o => o.IsOpen);
 
@@ -40,7 +40,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="MenuBase"/> class.
         /// </summary>
-        public MenuBase()
+        protected MenuBase()
         {
             InteractionHandler = new DefaultMenuInteractionHandler(false);
         }
@@ -49,7 +49,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="MenuBase"/> class.
         /// </summary>
         /// <param name="interactionHandler">The menu interaction handler.</param>
-        public MenuBase(IMenuInteractionHandler interactionHandler)
+        protected MenuBase(IMenuInteractionHandler interactionHandler)
         {
             InteractionHandler = interactionHandler ?? throw new ArgumentNullException(nameof(interactionHandler));
         }

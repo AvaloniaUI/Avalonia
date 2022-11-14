@@ -1,16 +1,16 @@
 ﻿using System;
 using System.IO;
-using Avalonia.Platform;
+using Avalonia.Media;
 using HarfBuzzSharp;
 
 namespace Avalonia.UnitTests
 {
-   public class HarfBuzzGlyphTypefaceImpl : IGlyphTypefaceImpl
+    public class HarfBuzzGlyphTypefaceImpl : IGlyphTypeface
     {
         private bool _isDisposed;
         private Blob _blob;
 
-        public HarfBuzzGlyphTypefaceImpl(Stream data, bool isFakeBold = false, bool isFakeItalic = false)
+        public HarfBuzzGlyphTypefaceImpl(Stream data)
         {
             _blob = Blob.FromStream(data);
             
@@ -21,70 +21,43 @@ namespace Avalonia.UnitTests
             Font.SetFunctionsOpenType();
 
             Font.GetScale(out var scale, out _);
-            
-            DesignEmHeight = (short)scale;
-
-            var metrics = Font.OpenTypeMetrics;
 
             const double defaultFontRenderingEmSize = 12.0;
 
-            Ascent = (int)(metrics.GetXVariation(OpenTypeMetricsTag.HorizontalAscender) / defaultFontRenderingEmSize * DesignEmHeight);
+            var metrics = Font.OpenTypeMetrics;
 
-            Descent = (int)(metrics.GetXVariation(OpenTypeMetricsTag.HorizontalDescender) / defaultFontRenderingEmSize * DesignEmHeight);
+            Metrics = new FontMetrics
+            {
+                DesignEmHeight = (short)scale,
+                Ascent = (int)(metrics.GetXVariation(OpenTypeMetricsTag.HorizontalAscender) / defaultFontRenderingEmSize * scale),
+                Descent = (int)(metrics.GetXVariation(OpenTypeMetricsTag.HorizontalDescender) / defaultFontRenderingEmSize * scale),
+                LineGap = (int)(metrics.GetXVariation(OpenTypeMetricsTag.HorizontalLineGap) / defaultFontRenderingEmSize * scale),
 
-            LineGap = (int)(metrics.GetXVariation(OpenTypeMetricsTag.HorizontalLineGap) / defaultFontRenderingEmSize * DesignEmHeight);
+                UnderlinePosition = (int)(metrics.GetXVariation(OpenTypeMetricsTag.UnderlineOffset) / defaultFontRenderingEmSize * scale),
 
-            UnderlinePosition = (int)(metrics.GetXVariation(OpenTypeMetricsTag.UnderlineOffset) / defaultFontRenderingEmSize * DesignEmHeight);
+                UnderlineThickness = (int)(metrics.GetXVariation(OpenTypeMetricsTag.UnderlineSize) / defaultFontRenderingEmSize * scale),
 
-            UnderlineThickness = (int)(metrics.GetXVariation(OpenTypeMetricsTag.UnderlineSize) / defaultFontRenderingEmSize * DesignEmHeight);
+                StrikethroughPosition = (int)(metrics.GetXVariation(OpenTypeMetricsTag.StrikeoutOffset) / defaultFontRenderingEmSize * scale),
 
-            StrikethroughPosition = (int)(metrics.GetXVariation(OpenTypeMetricsTag.StrikeoutOffset) / defaultFontRenderingEmSize * DesignEmHeight);
+                StrikethroughThickness = (int)(metrics.GetXVariation(OpenTypeMetricsTag.StrikeoutSize) / defaultFontRenderingEmSize * scale),
 
-            StrikethroughThickness = (int)(metrics.GetXVariation(OpenTypeMetricsTag.StrikeoutSize) / defaultFontRenderingEmSize * DesignEmHeight);
+                IsFixedPitch = GetGlyphAdvance(GetGlyph('a')) == GetGlyphAdvance(GetGlyph('b'))
+            };           
 
-            IsFixedPitch = GetGlyphAdvance(GetGlyph('a')) == GetGlyphAdvance(GetGlyph('b'));
-
-            IsFakeBold = isFakeBold;
-
-            IsFakeItalic = isFakeItalic;
+            GlyphCount = Face.GlyphCount;
         }
+
+        public FontMetrics Metrics { get; }
 
         public Face Face { get; }
 
         public Font Font { get; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public short DesignEmHeight { get; }
+        public int GlyphCount { get; set; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int Ascent { get; }
+        public FontSimulations FontSimulations { get; }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int Descent { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int LineGap { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int UnderlinePosition { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int UnderlineThickness { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int StrikethroughPosition { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public int StrikethroughThickness { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
-        public bool IsFixedPitch { get; }
-        
-        public bool IsFakeBold { get; }
-        
-        public bool IsFakeItalic { get; }
-
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort GetGlyph(uint codepoint)
         {
             if (Font.TryGetGlyph(codepoint, out var glyph))
@@ -95,7 +68,21 @@ namespace Avalonia.UnitTests
             return 0;
         }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        public bool TryGetGlyph(uint codepoint,out ushort glyph)
+        {
+            glyph = 0;
+
+            if (Font.TryGetGlyph(codepoint, out var glyphId))
+            {
+                glyph = (ushort)glyphId;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort[] GetGlyphs(ReadOnlySpan<uint> codepoints)
         {
             var glyphs = new ushort[codepoints.Length];
@@ -111,13 +98,13 @@ namespace Avalonia.UnitTests
             return glyphs;
         }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public int GetGlyphAdvance(ushort glyph)
         {
             return Font.GetHorizontalGlyphAdvance(glyph);
         }
 
-        /// <inheritdoc cref="IGlyphTypefaceImpl"/>
+        /// <inheritdoc cref="IGlyphTypeface"/>
         public int[] GetGlyphAdvances(ReadOnlySpan<ushort> glyphs)
         {
             var glyphIndices = new uint[glyphs.Length];
@@ -128,6 +115,21 @@ namespace Avalonia.UnitTests
             }
 
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
+        }
+
+        public bool TryGetTable(uint tag, out byte[] table)
+        {
+            table = null;
+            var blob = Face.ReferenceTable(tag);
+
+            if (blob.Length > 0)
+            {
+                table = blob.AsSpan().ToArray();
+
+                return true;
+            }
+
+            return false;
         }
 
         private void Dispose(bool disposing)
@@ -153,6 +155,26 @@ namespace Avalonia.UnitTests
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+        {
+            metrics = default;
+
+            if (!Font.TryGetGlyphExtents(glyph, out var extents))
+            {
+                return false;
+            }
+
+            metrics = new GlyphMetrics
+            {
+                XBearing = extents.XBearing,
+                YBearing = extents.YBearing,
+                Width = extents.Width,
+                Height = extents.Height
+            };
+
+            return true;
         }
     }
 }

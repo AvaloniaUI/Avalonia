@@ -4,7 +4,6 @@ using System.Threading;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
-using Avalonia.Visuals.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -25,8 +24,9 @@ namespace Avalonia.Skia
         public WriteableBitmapImpl(Stream stream)
         {
             using (var skiaStream = new SKManagedStream(stream))
+            using (var skData = SKData.Create(skiaStream))
             {
-                _bitmap = SKBitmap.Decode(skiaStream);
+                _bitmap = SKBitmap.Decode(skData);
 
                 if (_bitmap == null)
                 {
@@ -41,7 +41,8 @@ namespace Avalonia.Skia
         public WriteableBitmapImpl(Stream stream, int decodeSize, bool horizontal, BitmapInterpolationMode interpolationMode)
         {
             using (var skStream = new SKManagedStream(stream))
-            using (var codec = SKCodec.Create(skStream))
+            using (var skData = SKData.Create(skStream))
+            using (var codec = SKCodec.Create(skData))
             {
                 var info = codec.Info;
 
@@ -136,20 +137,20 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void Save(Stream stream)
+        public void Save(Stream stream, int? quality = null)
         {
             using (var image = GetSnapshot())
             {
-                ImageSavingHelper.SaveImage(image, stream);
+                ImageSavingHelper.SaveImage(image, stream, quality);
             }
         }
 
         /// <inheritdoc />
-        public void Save(string fileName)
+        public void Save(string fileName, int? quality = null)
         {
             using (var image = GetSnapshot())
             {
-                ImageSavingHelper.SaveImage(image, fileName);
+                ImageSavingHelper.SaveImage(image, fileName, quality);
             }
         }
 

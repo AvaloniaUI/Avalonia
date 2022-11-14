@@ -15,6 +15,7 @@
         <SolidColorBrush x:Key="PaddingHighlightBrush" Color="#CEDA8E" />
         <SolidColorBrush x:Key="SizeBackgroundBrush" Color="#88B2BD" />
         <SolidColorBrush x:Key="SizeHighlightBrush" Color="#9ED0DC" />
+        <SolidColorBrush x:Key="ThicknessEditorForeground" Color="Black" />
     </UserControl.Resources>
 
     <Grid RowDefinitions="*,Auto">
@@ -46,6 +47,7 @@
 
                 <controls:ThicknessEditor Grid.Row="0" Grid.Column="0" Header="margin" VerticalAlignment="Top"
                                           HorizontalAlignment="Center"
+                                          Foreground="{StaticResource ThicknessEditorForeground}"
                                           Background="{StaticResource MarginBackgroundBrush}"
                                           Highlight="{StaticResource MarginHighlightBrush}"
                                           Thickness="{Binding MarginThickness}">

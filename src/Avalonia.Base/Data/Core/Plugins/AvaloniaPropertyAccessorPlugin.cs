@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.ExceptionServices;
+using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -60,11 +61,10 @@ namespace Avalonia.Data.Core.Plugins
             return AvaloniaPropertyRegistry.Instance.FindRegistered(o, propertyName);
         }
 
-        private class Accessor : PropertyAccessorBase, IObserver<object?>
+        private class Accessor : PropertyAccessorBase, IWeakEventSubscriber<AvaloniaPropertyChangedEventArgs>
         {
             private readonly WeakReference<AvaloniaObject> _reference;
             private readonly AvaloniaProperty _property;
-            private IDisposable? _subscription;
 
             public Accessor(WeakReference<AvaloniaObject> reference, AvaloniaProperty property)
             {
@@ -95,29 +95,45 @@ namespace Avalonia.Data.Core.Plugins
                 return false;
             }
 
+            void IWeakEventSubscriber<AvaloniaPropertyChangedEventArgs>.
+                OnEvent(object? notifyPropertyChanged, WeakEvent ev, AvaloniaPropertyChangedEventArgs e)
+            {
+                if (e.Property == _property)
+                {
+                    SendCurrentValue();
+                }
+            }
+
             protected override void SubscribeCore()
             {
-                _subscription = Instance?.GetObservable(_property).Subscribe(this);
+                SubscribeToChanges();
+                SendCurrentValue();
             }
 
             protected override void UnsubscribeCore()
             {
-                _subscription?.Dispose();
-                _subscription = null;
+                var instance = Instance;
+
+                if (instance != null)
+                    WeakEvents.AvaloniaPropertyChanged.Unsubscribe(instance, this);
             }
 
-            void IObserver<object?>.OnCompleted()
+            private void SendCurrentValue()
             {
+                try
+                {
+                    var value = Value;
+                    PublishValue(value);
+                }
+                catch { }
             }
 
-            void IObserver<object?>.OnError(Exception error)
+            private void SubscribeToChanges()
             {
-                ExceptionDispatchInfo.Capture(error).Throw();
-            }
+                var instance = Instance;
 
-            void IObserver<object?>.OnNext(object? value)
-            {
-                PublishValue(value);
+                if (instance != null)
+                    WeakEvents.AvaloniaPropertyChanged.Subscribe(instance, this);
             }
         }
     }

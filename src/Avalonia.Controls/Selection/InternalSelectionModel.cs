@@ -168,7 +168,7 @@ namespace Avalonia.Controls.Selection
         {
             if (_writableSelectedItems is INotifyCollectionChanged incc)
             {
-                incc.CollectionChanged += OnSelectedItemsCollectionChanged;
+                incc.CollectionChanged -= OnSelectedItemsCollectionChanged;
             }
         }
 
@@ -182,8 +182,8 @@ namespace Avalonia.Controls.Selection
             try
             {
                 var items = WritableSelectedItems;
-                var deselected = e.DeselectedItems.ToList();
-                var selected = e.SelectedItems.ToList();
+                var deselected = e.DeselectedItems.ToArray();
+                var selected = e.SelectedItems.ToArray();
 
                 _ignoreSelectedItemsChanges = true;
 

@@ -39,6 +39,11 @@ namespace Avalonia
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
+        
+        /// <summary>
+        /// Enables new compositing rendering with UWP-like API
+        /// </summary>
+        public bool UseCompositor { get; set; } = true;
 
         /// <summary>
         /// Determines whether to use GPU for rendering in your project. The default value is true.
@@ -78,5 +83,13 @@ namespace Avalonia
         /// Gets or sets a value indicating whether the native macOS menu bar will be enabled for the application.
         /// </summary>
         public bool DisableNativeMenus { get; set; }
+        
+        public bool DisableSetProcessName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether Avalonia can install its own AppDelegate.
+        /// Disabling this can be useful in some scenarios like when running as a plugin inside an existing macOS application.
+        /// </summary>
+        public bool DisableAvaloniaAppDelegate { get; set; }
     }
 }

@@ -1,10 +1,12 @@
 using System.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -12,6 +14,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// An <see cref="ItemsControl"/> in which individual items can be selected.
     /// </summary>
+    [TemplatePart("PART_ScrollViewer", typeof(IScrollable))]
     public class ListBox : SelectingItemsControl
     {
         /// <summary>
@@ -136,7 +139,8 @@ namespace Avalonia.Controls
                     e.Source,
                     true,
                     e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                    e.KeyModifiers.HasAllFlags(KeyModifiers.Control));
+                    e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
+                    fromFocus: true);
             }
         }
 
@@ -155,7 +159,7 @@ namespace Avalonia.Controls
                         e.Source,
                         true,
                         e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
+                        e.KeyModifiers.HasAllFlags(AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>().CommandModifiers),
                         point.Properties.IsRightButtonPressed);
                 }
             }

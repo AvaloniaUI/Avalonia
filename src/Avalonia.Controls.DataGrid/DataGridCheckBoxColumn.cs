@@ -46,7 +46,7 @@ namespace Avalonia.Controls
             set => SetValue(IsThreeStateProperty, value);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 

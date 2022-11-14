@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -10,6 +11,20 @@ namespace Avalonia.Controls
     /// Defines the presenter used for selecting a time. Intended for use with
     /// <see cref="TimePicker"/> but can be used independently
     /// </summary>
+    [TemplatePart("PART_AcceptButton",     typeof(Button))]
+    [TemplatePart("PART_DismissButton",    typeof(Button))]
+    [TemplatePart("PART_HourDownButton",   typeof(RepeatButton))]
+    [TemplatePart("PART_HourSelector",     typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_HourUpButton",     typeof(RepeatButton))]
+    [TemplatePart("PART_MinuteDownButton", typeof(RepeatButton))]
+    [TemplatePart("PART_MinuteSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_MinuteUpButton",   typeof(RepeatButton))]
+    [TemplatePart("PART_PeriodDownButton", typeof(RepeatButton))]
+    [TemplatePart("PART_PeriodHost",       typeof(Panel))]
+    [TemplatePart("PART_PeriodSelector",   typeof(DateTimePickerPanel))]
+    [TemplatePart("PART_PeriodUpButton",   typeof(RepeatButton))]
+    [TemplatePart("PART_PickerContainer",  typeof(Grid))]
+    [TemplatePart("PART_SecondSpacer",     typeof(Rectangle))]
     public class TimePickerPresenter : PickerPresenterBase
     {
         /// <summary>
@@ -107,40 +122,40 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
-            _pickerContainer = e.NameScope.Get<Grid>("PickerContainer");
-            _periodHost = e.NameScope.Get<Panel>("PeriodHost");
+            _pickerContainer = e.NameScope.Get<Grid>("PART_PickerContainer");
+            _periodHost = e.NameScope.Get<Panel>("PART_PeriodHost");
 
-            _hourSelector = e.NameScope.Get<DateTimePickerPanel>("HourSelector");
-            _minuteSelector = e.NameScope.Get<DateTimePickerPanel>("MinuteSelector");
-            _periodSelector = e.NameScope.Get<DateTimePickerPanel>("PeriodSelector");
+            _hourSelector = e.NameScope.Get<DateTimePickerPanel>("PART_HourSelector");
+            _minuteSelector = e.NameScope.Get<DateTimePickerPanel>("PART_MinuteSelector");
+            _periodSelector = e.NameScope.Get<DateTimePickerPanel>("PART_PeriodSelector");
 
-            _spacer2 = e.NameScope.Get<Rectangle>("SecondSpacer");
+            _spacer2 = e.NameScope.Get<Rectangle>("PART_SecondSpacer");
 
-            _acceptButton = e.NameScope.Get<Button>("AcceptButton");
+            _acceptButton = e.NameScope.Get<Button>("PART_AcceptButton");
             _acceptButton.Click += OnAcceptButtonClicked;
 
-            _hourUpButton = e.NameScope.Find<RepeatButton>("HourUpButton");
+            _hourUpButton = e.NameScope.Find<RepeatButton>("PART_HourUpButton");
             if (_hourUpButton != null)
                 _hourUpButton.Click += OnSelectorButtonClick;
-            _hourDownButton = e.NameScope.Find<RepeatButton>("HourDownButton");
+            _hourDownButton = e.NameScope.Find<RepeatButton>("PART_HourDownButton");
             if (_hourDownButton != null)
                 _hourDownButton.Click += OnSelectorButtonClick;
 
-            _minuteUpButton = e.NameScope.Find<RepeatButton>("MinuteUpButton");
+            _minuteUpButton = e.NameScope.Find<RepeatButton>("PART_MinuteUpButton");
             if (_minuteUpButton != null)
                 _minuteUpButton.Click += OnSelectorButtonClick;
-            _minuteDownButton = e.NameScope.Find<RepeatButton>("MinuteDownButton");
+            _minuteDownButton = e.NameScope.Find<RepeatButton>("PART_MinuteDownButton");
             if (_minuteDownButton != null)
                 _minuteDownButton.Click += OnSelectorButtonClick;
 
-            _periodUpButton = e.NameScope.Find<RepeatButton>("PeriodUpButton");
+            _periodUpButton = e.NameScope.Find<RepeatButton>("PART_PeriodUpButton");
             if (_periodUpButton != null)
                 _periodUpButton.Click += OnSelectorButtonClick;
-            _periodDownButton = e.NameScope.Find<RepeatButton>("PeriodDownButton");
+            _periodDownButton = e.NameScope.Find<RepeatButton>("PART_PeriodDownButton");
             if (_periodDownButton != null)
                 _periodDownButton.Click += OnSelectorButtonClick;
 
-            _dismissButton = e.NameScope.Find<Button>("DismissButton");
+            _dismissButton = e.NameScope.Find<Button>("PART_DismissButton");
             if (_dismissButton != null)
                 _dismissButton.Click += OnDismissButtonClicked;
 
@@ -179,7 +194,7 @@ namespace Avalonia.Controls
 
             if (ClockIdentifier == "12HourClock")
             {
-                hr = per == 1 ? hr + 12 : per == 0 && hr == 12 ? 0 : hr;
+                hr = per == 1 ? (hr == 12) ? 12 : hr + 12 : per == 0 && hr == 12 ? 0 : hr;
             }
 
             Time = new TimeSpan(hr, min, 0);
@@ -256,8 +271,11 @@ namespace Avalonia.Controls
 
         internal double GetOffsetForPopup()
         {
+            if (_hourSelector is null)
+                return 0;
+
             var acceptDismissButtonHeight = _acceptButton != null ? _acceptButton.Bounds.Height : 41;
-            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_hourSelector!.ItemHeight / 2);
+            return -(MaxHeight - acceptDismissButtonHeight) / 2 - (_hourSelector.ItemHeight / 2);
         }
     }
 }

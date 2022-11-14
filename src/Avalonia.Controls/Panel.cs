@@ -147,7 +147,7 @@ namespace Avalonia.Controls
                     throw new NotSupportedException();
             }
 
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs());
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
             InvalidateMeasureOnChildrenChanged();
         }
 

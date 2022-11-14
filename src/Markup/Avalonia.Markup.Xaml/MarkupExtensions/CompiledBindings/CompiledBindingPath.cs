@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
@@ -36,6 +37,12 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                     case PropertyElement prop:
                         node = new PropertyAccessorNode(prop.Property.Name, enableValidation, new PropertyInfoAccessorPlugin(prop.Property, prop.AccessorFactory));
                         break;
+                    case MethodAsCommandElement methodAsCommand:
+                        node = new PropertyAccessorNode(methodAsCommand.MethodName, enableValidation, new CommandAccessorPlugin(methodAsCommand.ExecuteMethod, methodAsCommand.CanExecuteMethod, methodAsCommand.DependsOnProperties));
+                        break;
+                    case MethodAsDelegateElement methodAsDelegate:
+                        node = new PropertyAccessorNode(methodAsDelegate.Method.Name, enableValidation, new MethodAccessorPlugin(methodAsDelegate.Method, methodAsDelegate.DelegateType));
+                        break;
                     case ArrayElementPathElement arr:
                         node = new PropertyAccessorNode(CommonPropertyNames.IndexerName, enableValidation, new ArrayElementPlugin(arr.Indices, arr.ElementType));
                         break;
@@ -67,6 +74,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return pathRoot ?? new EmptyExpressionNode();
         }
 
+        internal IEnumerable<ICompiledBindingPathElement> Elements => _elements;
+        
         internal SourceMode SourceMode => _elements.Count > 0 && _elements[0] is IControlSourceBindingPathElement ? SourceMode.Control : SourceMode.Data;
 
         internal object RawSource { get; }
@@ -89,6 +98,18 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public CompiledBindingPathBuilder Property(IPropertyInfo info, Func<WeakReference<object>, IPropertyInfo, IPropertyAccessor> accessorFactory)
         {
             _elements.Add(new PropertyElement(info, accessorFactory, _elements.Count == 0));
+            return this;
+        }
+
+        public CompiledBindingPathBuilder Method(RuntimeMethodHandle handle, RuntimeTypeHandle delegateType)
+        {
+            _elements.Add(new MethodAsDelegateElement(handle, delegateType));
+            return this;
+        }
+
+        public CompiledBindingPathBuilder Command(string methodName, Action<object, object> executeHelper, Func<object, object, bool> canExecuteHelper, string[] dependsOnProperties)
+        {
+            _elements.Add(new MethodAsCommandElement(methodName, executeHelper, canExecuteHelper, dependsOnProperties ?? Array.Empty<string>()));
             return this;
         }
 
@@ -176,6 +197,35 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public override string ToString()
             => _isFirstElement ? Property.Name : $".{Property.Name}";
+    }
+
+    internal class MethodAsDelegateElement : ICompiledBindingPathElement
+    {
+        public MethodAsDelegateElement(RuntimeMethodHandle method, RuntimeTypeHandle delegateType)
+        {
+            Method = (MethodInfo)MethodBase.GetMethodFromHandle(method);
+            DelegateType = Type.GetTypeFromHandle(delegateType);
+        }
+
+        public MethodInfo Method { get; }
+
+        public Type DelegateType { get; }
+    }
+
+    internal class MethodAsCommandElement : ICompiledBindingPathElement
+    {
+        public MethodAsCommandElement(string methodName, Action<object, object> executeHelper, Func<object, object, bool> canExecuteHelper, string[] dependsOnElements)
+        {
+            MethodName = methodName;
+            ExecuteMethod = executeHelper;
+            CanExecuteMethod = canExecuteHelper;
+            DependsOnProperties = new HashSet<string>(dependsOnElements);
+        }
+
+        public string MethodName { get; }
+        public Action<object, object> ExecuteMethod { get; }
+        public Func<object, object, bool> CanExecuteMethod { get; }
+        public HashSet<string> DependsOnProperties { get; }
     }
 
     internal interface IStronglyTypedStreamElement : ICompiledBindingPathElement

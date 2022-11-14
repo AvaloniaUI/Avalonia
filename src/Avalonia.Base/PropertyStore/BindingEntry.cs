@@ -18,19 +18,19 @@ namespace Avalonia.PropertyStore
     /// <typeparam name="T">The property type.</typeparam>
     internal class BindingEntry<T> : IBindingEntry, IPriorityValueEntry<T>, IObserver<BindingValue<T>>
     {
-        private readonly IAvaloniaObject _owner;
-        private IValueSink _sink;
+        private readonly AvaloniaObject _owner;
+        private ValueOwner<T> _sink;
         private IDisposable? _subscription;
         private bool _isSubscribed;
         private bool _batchUpdate;
         private Optional<T> _value;
 
         public BindingEntry(
-            IAvaloniaObject owner,
+            AvaloniaObject owner,
             StyledPropertyBase<T> property,
             IObservable<BindingValue<T>> source,
             BindingPriority priority,
-            IValueSink sink)
+            ValueOwner<T> sink)
         {
             _owner = owner;
             Property = property;
@@ -50,7 +50,7 @@ namespace Avalonia.PropertyStore
         {
             _batchUpdate = false;
 
-            if (_sink is ValueStore)
+            if (_sink.IsValueStore)
                 Start();
         }
 
@@ -113,16 +113,15 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public void Reparent(IValueSink sink) => _sink = sink;
+        public void Reparent(PriorityValue<T> parent) => _sink = new(parent);
 
         public void RaiseValueChanged(
-            IValueSink sink,
-            IAvaloniaObject owner,
+            AvaloniaObject owner,
             AvaloniaProperty property,
             Optional<object?> oldValue,
             Optional<object?> newValue)
         {
-            sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+            owner.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,
                 (AvaloniaProperty<T>)property,
                 oldValue.Cast<T>(),

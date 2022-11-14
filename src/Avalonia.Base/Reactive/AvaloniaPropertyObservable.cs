@@ -49,23 +49,31 @@ namespace Avalonia.Reactive
         {
             if (e.Property == _property)
             {
-                T newValue;
-
-                if (e is AvaloniaPropertyChangedEventArgs<T> typed)
+                if (e.Sender is AvaloniaObject ao)
                 {
-                    newValue = typed.Sender.GetValue(typed.Property);
+                    T newValue;
+
+                    if (e is AvaloniaPropertyChangedEventArgs<T> typed)
+                    {
+                        newValue = AvaloniaObjectExtensions.GetValue(ao, typed.Property);
+                    }
+                    else
+                    {
+                        newValue = (T)e.Sender.GetValue(e.Property)!;
+                    }
+
+                    if (!_value.HasValue ||
+                        !EqualityComparer<T>.Default.Equals(newValue, _value.Value))
+                    {
+                        _value = newValue;
+                        PublishNext(_value.Value!);
+                    }
                 }
                 else
                 {
-                    newValue = (T)e.Sender.GetValue(e.Property)!;
+                    throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
                 }
 
-                if (!_value.HasValue ||
-                    !EqualityComparer<T>.Default.Equals(newValue, _value.Value))
-                {
-                    _value = newValue;
-                    PublishNext(_value.Value!);
-                }
             }
         }
     }

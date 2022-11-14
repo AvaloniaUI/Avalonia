@@ -1,15 +1,23 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
-using Application = Android.App.Application;
-
-using Avalonia;
+using Avalonia.Android;
 
 namespace ControlCatalog.Android
 {
     [Activity(Theme = "@style/MyTheme.Splash", MainLauncher = true, NoHistory = true)]
-    public class SplashActivity : Activity
+    public class SplashActivity : AvaloniaSplashActivity<App>
     {
+        protected override Avalonia.AppBuilder CustomizeAppBuilder(Avalonia.AppBuilder builder)
+        {
+            return base.CustomizeAppBuilder(builder)
+                 .AfterSetup(_ =>
+                 {
+                     Pages.EmbedSample.Implementation = new EmbedSampleAndroid();
+                 });
+        }
+
         protected override void OnCreate(Bundle? savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -18,13 +26,6 @@ namespace ControlCatalog.Android
         protected override void OnResume()
         {
             base.OnResume();
-
-            if (Avalonia.Application.Current == null)
-            {
-                AppBuilder.Configure<App>()
-                    .UseAndroid()
-                    .SetupWithoutStarting();
-            }
 
             StartActivity(new Intent(Application.Context, typeof(MainActivity)));
         }

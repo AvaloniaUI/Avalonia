@@ -36,7 +36,10 @@ public:
     virtual void DestroyDefaultChild(void* child) override
     {
         // ARC will release the object for us
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wunused-value"
         (__bridge_transfer NSView*) child;
+        #pragma clang diagnostic pop
     }
 };
 

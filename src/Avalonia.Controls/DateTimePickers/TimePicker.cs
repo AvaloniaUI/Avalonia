@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Layout;
 using System;
 using System.Globalization;
 
@@ -11,6 +12,18 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a time.
     /// </summary>
+    [TemplatePart("PART_FirstColumnDivider",      typeof(Rectangle))]
+    [TemplatePart("PART_FirstPickerHost",         typeof(Border))]
+    [TemplatePart("PART_FlyoutButton",            typeof(Button))]
+    [TemplatePart("PART_FlyoutButtonContentGrid", typeof(Grid))]
+    [TemplatePart("PART_HourTextBlock",           typeof(TextBlock))]
+    [TemplatePart("PART_MinuteTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PART_PeriodTextBlock",         typeof(TextBlock))]
+    [TemplatePart("PART_PickerPresenter",         typeof(TimePickerPresenter))]
+    [TemplatePart("PART_Popup",                   typeof(Popup))]
+    [TemplatePart("PART_SecondColumnDivider",     typeof(Rectangle))]
+    [TemplatePart("PART_SecondPickerHost",        typeof(Border))]
+    [TemplatePart("PART_ThirdPickerHost",         typeof(Border))]
     [PseudoClasses(":hasnotime")]
     public class TimePicker : TemplatedControl
     {
@@ -20,18 +33,6 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<TimePicker, int> MinuteIncrementProperty =
             AvaloniaProperty.RegisterDirect<TimePicker, int>(nameof(MinuteIncrement),
                 x => x.MinuteIncrement, (x, v) => x.MinuteIncrement = v);
-
-        /// <summary>
-        /// Defines the <see cref="Header"/> property
-        /// </summary>
-        public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<DatePicker, object>(nameof(Header));
-
-        /// <summary>
-        /// Defines the <see cref="HeaderTemplate"/> property
-        /// </summary>
-        public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<DatePicker, IDataTemplate>(nameof(HeaderTemplate));
 
         /// <summary>
         /// Defines the <see cref="ClockIdentifier"/> property
@@ -91,24 +92,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the header
-        /// </summary>
-        public object Header
-        {
-            get => GetValue(HeaderProperty);
-            set => SetValue(HeaderProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the header template
-        /// </summary>
-        public IDataTemplate HeaderTemplate
-        {
-            get => GetValue(HeaderTemplateProperty);
-            set => SetValue(HeaderTemplateProperty, value);
-        }
-
-        /// <summary>
         /// Gets or sets the clock identifier, either 12HourClock or 24HourClock
         /// </summary>
         public string ClockIdentifier
@@ -116,7 +99,7 @@ namespace Avalonia.Controls
             get => _clockIdentifier;
             set
             {
-                if (!(string.IsNullOrEmpty(value) || value == "" || value == "12HourClock" || value == "24HourClock"))
+                if (!(string.IsNullOrEmpty(value) || value == "12HourClock" || value == "24HourClock"))
                     throw new ArgumentException("Invalid ClockIdentifier");
                 SetAndRaise(ClockIdentifierProperty, ref _clockIdentifier, value);
                 SetGrid();
@@ -156,23 +139,23 @@ namespace Avalonia.Controls
             }
             base.OnApplyTemplate(e);
 
-            _flyoutButton = e.NameScope.Find<Button>("FlyoutButton");
+            _flyoutButton = e.NameScope.Find<Button>("PART_FlyoutButton");
 
-            _firstPickerHost = e.NameScope.Find<Border>("FirstPickerHost");
-            _secondPickerHost = e.NameScope.Find<Border>("SecondPickerHost");
-            _thirdPickerHost = e.NameScope.Find<Border>("ThirdPickerHost");
+            _firstPickerHost = e.NameScope.Find<Border>("PART_FirstPickerHost");
+            _secondPickerHost = e.NameScope.Find<Border>("PART_SecondPickerHost");
+            _thirdPickerHost = e.NameScope.Find<Border>("PART_ThirdPickerHost");
 
-            _hourText = e.NameScope.Find<TextBlock>("HourTextBlock");
-            _minuteText = e.NameScope.Find<TextBlock>("MinuteTextBlock");
-            _periodText = e.NameScope.Find<TextBlock>("PeriodTextBlock");
+            _hourText = e.NameScope.Find<TextBlock>("PART_HourTextBlock");
+            _minuteText = e.NameScope.Find<TextBlock>("PART_MinuteTextBlock");
+            _periodText = e.NameScope.Find<TextBlock>("PART_PeriodTextBlock");
 
-            _firstSplitter = e.NameScope.Find<Rectangle>("FirstColumnDivider");
-            _secondSplitter = e.NameScope.Find<Rectangle>("SecondColumnDivider");
+            _firstSplitter = e.NameScope.Find<Rectangle>("PART_FirstColumnDivider");
+            _secondSplitter = e.NameScope.Find<Rectangle>("PART_SecondColumnDivider");
 
-            _contentGrid = e.NameScope.Find<Grid>("FlyoutButtonContentGrid");
+            _contentGrid = e.NameScope.Find<Grid>("PART_FlyoutButtonContentGrid");
 
-            _popup = e.NameScope.Find<Popup>("Popup");
-            _presenter = e.NameScope.Find<TimePickerPresenter>("PickerPresenter");
+            _popup = e.NameScope.Find<Popup>("PART_Popup");
+            _presenter = e.NameScope.Find<TimePickerPresenter>("PART_PickerPresenter");
 
             if (_flyoutButton != null)
                 _flyoutButton.Click += OnFlyoutButtonClicked;
@@ -254,16 +237,28 @@ namespace Avalonia.Controls
 
         private void OnFlyoutButtonClicked(object? sender, Interactivity.RoutedEventArgs e)
         {
-            _presenter!.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
+            if (_presenter == null)
+                throw new InvalidOperationException("No DatePickerPresenter found.");
+            if (_popup == null)
+                throw new InvalidOperationException("No Popup found.");
 
-            _popup!.IsOpen = true;
+            _presenter.Time = SelectedTime ?? DateTime.Now.TimeOfDay;
+
+            _popup.PlacementMode = PlacementMode.AnchorAndGravity;
+            _popup.PlacementAnchor = Primitives.PopupPositioning.PopupAnchor.Bottom;
+            _popup.PlacementGravity = Primitives.PopupPositioning.PopupGravity.Bottom;
+            _popup.PlacementConstraintAdjustment = Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
+            _popup.IsOpen = true;
+
+            // Overlay popup hosts won't get measured until the next layout pass, but we need the
+            // template to be applied to `_presenter` now. Detect this case and force a layout pass.
+            if (!_presenter.IsMeasureValid)
+                (VisualRoot as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
 
             var deltaY = _presenter.GetOffsetForPopup();
 
             // The extra 5 px I think is related to default popup placement behavior
-            _popup.Host!.ConfigurePosition(_popup.PlacementTarget!, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
-                Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
-                 Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
+            _popup.VerticalOffset = deltaY + 5;
         }
 
         private void OnDismissPicker(object? sender, EventArgs e)
