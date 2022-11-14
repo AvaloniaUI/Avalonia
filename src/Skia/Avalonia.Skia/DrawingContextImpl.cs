@@ -35,9 +35,9 @@ namespace Avalonia.Skia
         private GRContext _grContext;
         public GRContext GrContext => _grContext;
         private ISkiaGpu _gpu;
-        private readonly SKPaint _strokePaint = new SKPaint();
-        private readonly SKPaint _fillPaint = new SKPaint();
-        private readonly SKPaint _boxShadowPaint = new SKPaint();
+        private readonly SKPaint _strokePaint = SKPaintCache.Get();
+        private readonly SKPaint _fillPaint = SKPaintCache.Get();
+        private readonly SKPaint _boxShadowPaint = SKPaintCache.Get();
         private static SKShader s_acrylicNoiseShader;
         private readonly ISkiaGpuRenderSession _session;
         private bool _leased = false;
@@ -187,17 +187,13 @@ namespace Avalonia.Skia
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
 
-            using (var paint =
-                new SKPaint
-                {
-                    Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity))
-                })
-            {
-                paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
-                paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
+            var paint = SKPaintCache.Get();
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
+            paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
+            paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
 
-                drawableImage.Draw(this, s, d, paint);
-            }
+            drawableImage.Draw(this, s, d, paint);
+            SKPaintCache.Return(paint);
         }
 
         /// <inheritdoc />
@@ -561,6 +557,11 @@ namespace Avalonia.Skia
             CheckLease();
             try
             {
+                // Return leased paints.
+                SKPaintCache.Return(_strokePaint);
+                SKPaintCache.Return(_fillPaint);
+                SKPaintCache.Return(_boxShadowPaint);
+
                 if (_grContext != null)
                 {
                     Monitor.Exit(_grContext);
@@ -631,15 +632,17 @@ namespace Avalonia.Skia
         public void PopOpacityMask()
         {
             CheckLease();
-            using (var paint = new SKPaint { BlendMode = SKBlendMode.DstIn })
+
+            var paint = SKPaintCache.Get();
+            paint.BlendMode = SKBlendMode.DstIn;
+            
+            Canvas.SaveLayer(paint);
+            SKPaintCache.Return(paint);
+            using (var paintWrapper = _maskStack.Pop())
             {
-                Canvas.SaveLayer(paint);
-                using (var paintWrapper = _maskStack.Pop())
-                {
-                    Canvas.DrawPaint(paintWrapper.Paint);
-                }
-                Canvas.Restore();
+                Canvas.DrawPaint(paintWrapper.Paint);
             }
+            Canvas.Restore();
 
             Canvas.Restore();
         }
