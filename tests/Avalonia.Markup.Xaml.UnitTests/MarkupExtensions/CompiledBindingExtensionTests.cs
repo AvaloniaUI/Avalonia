@@ -787,7 +787,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 Assert.Equal(textBox.InnerLeftContent, result.Content);
             }
         }
-        
+
         [Fact]
         public void ResolvesElementNameInTemplate()
         {

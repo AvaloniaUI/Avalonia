@@ -210,13 +210,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         SelectorType: XamlIlCombinatorSelector.CombinatorSelectorType.Template
                     } templateSelector)
                 {
-                    if (templateSelector.TargetType is {} targetType)
-                    {
-                        return targetType;
-                    }
                     if (templateSelector.Previous is XamlIlNestingSelector nestingSelector)
                     {
                         return nestingSelector.TargetType;
+                    }
+                    if (templateSelector.Previous is XamlIlTypeSelector typeSelector)
+                    {
+                        return typeSelector.TargetType;
                     }
                     return null;
                 }
