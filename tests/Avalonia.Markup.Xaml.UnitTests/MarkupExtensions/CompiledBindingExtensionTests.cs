@@ -755,6 +755,40 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
         
         [Fact]
+        public void ResolvesRelativeSourceBindingFromStyleSelector()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<TextBox xmlns='https://github.com/avaloniaui'
+         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+         InnerLeftContent='Hello'>
+    <TextBox.Styles>
+        <Style Selector='TextBox'>
+            <Setter Property='Template'>
+                <ControlTemplate>
+                    <StackPanel>
+                        <ContentPresenter x:Name='Content' />
+                        <TextPresenter x:Name='PART_TextPresenter' />
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector='^ /template/ ContentPresenter#Content'>
+                <Setter Property='Content' Value='{CompiledBinding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}' />
+            </Style>
+        </Style>
+    </TextBox.Styles>
+</TextBox>";
+
+                var textBox = AvaloniaRuntimeXamlLoader.Parse<TextBox>(xaml);
+                textBox.Measure(new Size(10, 10));
+                
+                var result = textBox.GetTemplateChildren().OfType<ContentPresenter>().First();
+                Assert.Equal(textBox.InnerLeftContent, result.Content);
+            }
+        }
+        
+        [Fact]
         public void ResolvesElementNameInTemplate()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
