@@ -49,29 +49,37 @@ namespace Avalonia.Build.Tasks
             string projectDirectory,
             string output, bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
         {
-            var typeSystem = new CecilTypeSystem(
-                references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")),
-                input);
-
-            var asm = typeSystem.TargetAssemblyDefinition;
-
-            if (!skipXamlCompilation)
+            try
             {
-                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings, logImportance, debuggerLaunch);
-                if (compileRes == null)
-                    return new CompileResult(true);
-                if (compileRes == false)
-                    return new CompileResult(false);
+                var typeSystem = new CecilTypeSystem(
+                    references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")),
+                    input);
+
+                var asm = typeSystem.TargetAssemblyDefinition;
+
+                if (!skipXamlCompilation)
+                {
+                    var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings,
+                        logImportance, debuggerLaunch);
+                    if (compileRes == null)
+                        return new CompileResult(true);
+                    if (compileRes == false)
+                        return new CompileResult(false);
+                }
+
+                var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
+                if (!string.IsNullOrWhiteSpace(strongNameKey))
+                    writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+
+                asm.Write(output, writerParameters);
+
+                return new CompileResult(true, true);
             }
-
-            var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
-            if (!string.IsNullOrWhiteSpace(strongNameKey))
-                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
-
-            asm.Write(output, writerParameters);
-
-            return new CompileResult(true, true);
-
+            catch (Exception ex)
+            {
+                engine.LogError(BuildEngineErrorCode.Unknown, "", ex.Message);
+                return new CompileResult(false);
+            }
         }
 
         static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
@@ -115,6 +123,16 @@ namespace Avalonia.Build.Tasks
                 // Nothing to do
                 return null;
 
+            if (asm.MainModule.TryGetTypeReference("System.Reflection.AssemblyMetadataAttribute", out var asmMetadata))
+            {
+                var ctor = asm.MainModule.ImportReference(asmMetadata.Resolve()
+                    .GetConstructors().First(c => c.Parameters.Count == 2).Resolve());
+                var strType = asm.MainModule.ImportReference(typeof(string));
+                var arg1 = new CustomAttributeArgument(strType, "AvaloniaUseCompiledBindingsByDefault");
+                var arg2 = new CustomAttributeArgument(strType, defaultCompileBindings.ToString());
+                asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg1, arg2 } });
+            }
+            
             var clrPropertiesDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlHelpers",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(clrPropertiesDef);

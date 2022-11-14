@@ -45,16 +45,6 @@
     <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences;_GenerateAvaloniaResourcesDependencyCache</BuildAvaloniaResourcesDependsOn>
   </PropertyGroup>
 
-  <Target Name="AddXamlMetadataAssemblyAttributes"
-          BeforeTargets="CoreGenerateAssemblyInfo">
-    <ItemGroup>
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="$(AvaloniaUseCompiledBindingsByDefault) != ''" >
-        <_Parameter1>AvaloniaUseCompiledBindingsByDefault</_Parameter1>
-        <_Parameter2>$(AvaloniaUseCompiledBindingsByDefault)</_Parameter2>
-      </AssemblyAttribute>
-    </ItemGroup>
-  </Target>
-
   <Target Name="_GenerateAvaloniaResourcesDependencyCache" BeforeTargets="GenerateAvaloniaResources">
     <ItemGroup>
       <CustomAdditionalGenerateAvaloniaResourcesInputs Include="$(IntermediateOutputPath)/Avalonia/Resources.Inputs.cache" />
