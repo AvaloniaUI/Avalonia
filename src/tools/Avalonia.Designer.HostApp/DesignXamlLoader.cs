@@ -8,9 +8,11 @@ namespace Avalonia.Designer.HostApp
 {
     class DesignXamlLoader : AvaloniaXamlLoader.IRuntimeXamlLoader
     {
-        public object Load(Stream stream, Assembly localAsm, object o, Uri baseUri, bool designMode)
+        public object Load(Stream stream, RuntimeXamlLoaderConfiguration configuration)
         {
-            return AvaloniaXamlIlRuntimeCompiler.Load(stream, localAsm, o, baseUri, designMode);
+            return AvaloniaXamlIlRuntimeCompiler.Load(stream,
+                configuration.LocalAssembly, configuration.RootInstance, configuration.BaseUri,
+                configuration.DesignMode, configuration.UseCompiledBindingsByDefault);
         }
     }
 }

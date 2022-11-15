@@ -1603,6 +1603,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
         
+        [Fact]
+        public void Uses_RuntimeLoader_Configuration_To_Enabled_Compiled()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<local:AssignBindingControl xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        X='{Binding StringProperty, DataType=local:TestDataContext}' />";
+                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml, new RuntimeXamlLoaderConfiguration
+                {
+                    UseCompiledBindingsByDefault = true
+                });
+                var compiledPath = ((CompiledBindingExtension)control.X).Path;
+
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                Assert.Equal(typeof(string), node.Property.PropertyType);
+            }
+        }
+        
         void Throws(string type, Action cb)
         {
             try
