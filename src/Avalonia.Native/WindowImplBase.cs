@@ -53,8 +53,7 @@ namespace Avalonia.Native
         protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
-        private bool _deferredRendering = false;
-        private bool _gpu = false;
+        private bool _gpu;
         private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
         private readonly ICursorFactory _cursorFactory;
@@ -70,7 +69,6 @@ namespace Avalonia.Native
         {
             _factory = factory;
             _gpu = opts.UseGpu && glFeature != null;
-            _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
@@ -372,17 +370,10 @@ namespace Avalonia.Native
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
             
-            if (_deferredRendering)
+            return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor)
             {
-                if (AvaloniaNativePlatform.Compositor != null)
-                    return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor)
-                    {
-                        RenderOnlyOnRenderThread = false
-                    };
-                return new DeferredRenderer(root, loop);
-            }
-
-            return new ImmediateRenderer(root);
+                RenderOnlyOnRenderThread = false
+            };
         }
 
         public virtual void Dispose()

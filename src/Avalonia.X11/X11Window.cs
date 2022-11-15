@@ -391,14 +391,7 @@ namespace Avalonia.X11
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
 
-            return _platform.Options.UseDeferredRendering
-                ? _platform.Options.UseCompositor
-                    ? new CompositingRenderer(root, this._platform.Compositor)
-                    : new DeferredRenderer(root, loop)
-                    {
-                        RenderOnlyOnRenderThread = true
-                    }
-                : (IRenderer)new X11ImmediateRendererProxy(root, loop);
+            return new CompositingRenderer(root, this._platform.Compositor);
         }
 
         void OnEvent(ref XEvent ev)

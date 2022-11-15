@@ -53,20 +53,15 @@ namespace Avalonia.Android
             {
                 EglPlatformOpenGlInterface.TryInitialize();
             }
-            
-            if (Options.UseCompositor)
-            {
-                Compositor = new Compositor(
-                    AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                    AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>());
-            }
+
+            Compositor = new Compositor(
+                AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
+                AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>());
         }
     }
 
     public sealed class AndroidPlatformOptions
     {
-        public bool UseDeferredRendering { get; set; } = false;
         public bool UseGpu { get; set; } = true;
-        public bool UseCompositor { get; set; } = true;
     }
 }

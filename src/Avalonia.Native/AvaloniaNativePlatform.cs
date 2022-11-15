@@ -138,11 +138,7 @@ namespace Avalonia.Native
                 }
             }
             
-
-            if (_options.UseDeferredRendering && _options.UseCompositor)
-            {
-                Compositor = new Compositor(renderLoop, _platformGl);
-            }
+            Compositor = new Compositor(renderLoop, _platformGl);
         }
 
         public ITrayIconImpl CreateTrayIcon()

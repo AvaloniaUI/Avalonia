@@ -22,7 +22,6 @@ namespace Avalonia
             return builder
                 .UseHeadless(new AvaloniaHeadlessPlatformOptions
                 {
-                    UseCompositor = true,
                     UseHeadlessDrawing = false
                 })
                 .AfterSetup(_ =>

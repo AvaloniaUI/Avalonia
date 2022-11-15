@@ -42,17 +42,6 @@ namespace Avalonia
     public class Win32PlatformOptions
     {
         /// <summary>
-        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
-        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
-        /// </remarks>
-        public bool UseDeferredRendering { get; set; } = true;
-
-        public bool UseCompositor { get; set; } = true;
-
-        /// <summary>
         /// Enables ANGLE for Windows. For every Windows version that is above Windows 7, the default is true otherwise it's false.
         /// </summary>
         /// <remarks>
@@ -123,8 +112,7 @@ namespace Avalonia.Win32
         /// Gets the actual WindowsVersion. Same as the info returned from RtlGetVersion.
         /// </summary>
         public static Version WindowsVersion { get; } = RtlGetVersion();
-
-        public static bool UseDeferredRendering => Options.UseDeferredRendering;
+        
         internal static bool UseOverlayPopups => Options.OverlayPopups;
         public static Win32PlatformOptions Options { get; private set; }
         
@@ -166,9 +154,8 @@ namespace Avalonia.Win32
 
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
-
-            if (Options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
+            
+            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
         }
 
         public bool HasMessages()

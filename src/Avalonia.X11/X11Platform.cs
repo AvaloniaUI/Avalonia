@@ -106,8 +106,7 @@ namespace Avalonia.X11
             if (gl != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformGpu>().ToConstant(gl);
 
-            if (options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
+            Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
 
         }
 
@@ -226,17 +225,6 @@ namespace Avalonia
         /// The default value is true.
         /// </summary>
         public bool UseDBusFilePicker { get; set; } = true;
-
-        /// <summary>
-        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
-        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
-        /// </remarks>
-        public bool UseDeferredRendering { get; set; } = true;
-
-        public bool UseCompositor { get; set; } = true;
 
         /// <summary>
         /// Determines whether to use IME.

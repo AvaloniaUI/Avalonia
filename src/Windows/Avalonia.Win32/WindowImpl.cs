@@ -546,18 +546,8 @@ namespace Avalonia.Win32
 
             if (customRendererFactory != null)
                 return customRendererFactory.Create(root, loop);
-
-            if (Win32Platform.Compositor != null)
-                return new CompositingRenderer(root, Win32Platform.Compositor);
             
-            return Win32Platform.UseDeferredRendering
-                ? _isUsingComposition
-                    ? new DeferredRenderer(root, loop)
-                    {
-                        RenderOnlyOnRenderThread = true
-                    }
-                    : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock)
-                : new ImmediateRenderer(root);
+            return new CompositingRenderer(root, Win32Platform.Compositor);
         }
 
         public void Resize(Size value, PlatformResizeReason reason)
