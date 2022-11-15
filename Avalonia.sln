@@ -12,11 +12,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Direct2D1", "src\Windows\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj", "{3E908F67-5543-4879-A1DC-08EACE79B3CD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls", "src\Avalonia.Controls\Avalonia.Controls.csproj", "{D2221C82-4A25-4583-9B43-D791E3F6820C}"
-	ProjectSection(ProjectDependencies) = postProject
-		{1BBFAD42-B99E-47E0-B00A-A4BC6B6BB4BB} = {1BBFAD42-B99E-47E0-B00A-A4BC6B6BB4BB}
-		{BF28998D-072C-439A-AFBB-2FE5021241E0} = {BF28998D-072C-439A-AFBB-2FE5021241E0}
-		{FE2F3E5E-1E34-4972-8DC1-5C2C588E5ECE} = {FE2F3E5E-1E34-4972-8DC1-5C2C588E5ECE}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Simple", "src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj", "{3E10A5FA-E8DA-48B1-AD44-6A5B6CB7750F}"
 EndProject
