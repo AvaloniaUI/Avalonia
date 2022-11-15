@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:dialogs="using:Avalonia.Dialogs">
+                    xmlns:dialogs="using:Avalonia.Dialogs"
+                    xmlns:internal="using:Avalonia.Dialogs.Internal">
   <DrawingGroup x:Key="LevelUp">
     <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
     <GeometryDrawing Brush="#FFF6F6F6"
@@ -10,7 +11,7 @@
     <GeometryDrawing Brush="#FF00529C" Geometry="F1M8,11L5,8 2,11 2,13 4,11 4,15 6,15 6,11 8,13z" />
     <GeometryDrawing Brush="#FFF0EFF1" Geometry="F1M8.0001,1.9996L7.5001,3.0006 14.0001,3.0006 14.0001,1.9996z" />
   </DrawingGroup>
-  <dialogs:ResourceSelectorConverter x:Key="Icons">
+  <internal:ResourceSelectorConverter x:Key="Icons">
     <DrawingGroup x:Key="Icon_Folder">
       <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M0,0L16,0 16,16 0,16z" />
       <GeometryDrawing Brush="#FFF6F6F6"
@@ -36,23 +37,23 @@
       <GeometryDrawing Brush="#FF424242"
                        Geometry="F1M13,7L12,7 12,8 13,8z M11,7L10,7 10,8 11,8z M2,10L14,10 14,6.5C14,6.224,13.775,6,13.5,6L2.5,6C2.224,6,2,6.224,2,6.5z M15,11L1,11 1,6.5C1,5.673,1.673,5,2.5,5L13.5,5C14.327,5,15,5.673,15,6.5z" />
     </DrawingGroup>
-  </dialogs:ResourceSelectorConverter>
+  </internal:ResourceSelectorConverter>
 
   <ControlTheme x:Key="{x:Type dialogs:ManagedFileChooser}"
                 TargetType="dialogs:ManagedFileChooser">
     <Setter Property="Template">
-      <ControlTemplate x:DataType="dialogs:ManagedFileChooserViewModel">
+      <ControlTemplate x:DataType="internal:ManagedFileChooserViewModel">
         <DockPanel>
           <DockPanel Margin="0,0,0,5"
                      DockPanel.Dock="Top">
-            <dialogs:ChildFitter Width="{Binding ElementName=Location, Path=Bounds.Height}"
+            <internal:ChildFitter Width="{Binding ElementName=Location, Path=Bounds.Height}"
                                  DockPanel.Dock="Right">
               <Button Command="{Binding GoUp}">
                 <Image Stretch="Fill">
                   <DrawingImage Drawing="{StaticResource LevelUp}" />
                 </Image>
               </Button>
-            </dialogs:ChildFitter>
+            </internal:ChildFitter>
             <TextBox x:Name="Location"
                      Margin="0,0,5,0"
                      Text="{Binding Location}">
@@ -179,7 +180,7 @@
                       <TextBlock.Text>
                         <Binding Path="Size">
                           <Binding.Converter>
-                            <dialogs:FileSizeStringConverter />
+                            <internal:FileSizeStringConverter />
                           </Binding.Converter>
                         </Binding>
                       </TextBlock.Text>

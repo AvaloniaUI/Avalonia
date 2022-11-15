@@ -1,9 +1,8 @@
 using System.Linq;
 using System.Text.RegularExpressions;
-using Avalonia.Dialogs.Internal;
 using Avalonia.Platform.Storage;
 
-namespace Avalonia.Dialogs
+namespace Avalonia.Dialogs.Internal
 {
     public class ManagedFileChooserFilterViewModel : InternalViewModelBase
     {

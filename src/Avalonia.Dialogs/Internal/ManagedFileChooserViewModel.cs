@@ -8,11 +8,10 @@ using System.Runtime.InteropServices;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Dialogs.Internal;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
-namespace Avalonia.Dialogs
+namespace Avalonia.Dialogs.Internal
 {
     public class ManagedFileChooserViewModel : InternalViewModelBase
     {
