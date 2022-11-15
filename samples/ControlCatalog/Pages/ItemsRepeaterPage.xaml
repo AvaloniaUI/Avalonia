@@ -53,10 +53,12 @@
         <ComboBoxItem>UniformGrid - Horizontal</ComboBoxItem>
       </ComboBox>
       <Button Command="{Binding AddItem}">Add Item</Button>
+      <Button Command="{Binding RemoveItem}">Remove Item</Button>
       <Button Command="{Binding RandomizeHeights}">Randomize Heights</Button>
       <Button Command="{Binding ResetItems}">Reset items</Button>
       <Button x:Name="scrollToLast">Scroll to Last</Button>
       <Button x:Name="scrollToRandom">Scroll to Random</Button>
+      <Button x:Name="scrollToSelected">Scroll to Selected</Button>
     </StackPanel>
     <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlHighlightBaseMediumLowBrush}" Margin="0 0 0 16">
       <ScrollViewer Name="scroller"

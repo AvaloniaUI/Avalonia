@@ -4,7 +4,6 @@ using System.Text;
 using Avalonia.Data;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {
@@ -51,34 +50,32 @@ namespace Avalonia.Controls.Documents
             set { SetValue (TextProperty, value); }
         }
 
-        internal override int BuildRun(StringBuilder stringBuilder,
-            IList<ValueSpan<TextRunProperties>> textStyleOverrides, int firstCharacterIndex)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            var length = AppendText(stringBuilder);
+            var text = (Text ?? "").AsMemory();
 
-            textStyleOverrides.Add(new ValueSpan<TextRunProperties>(firstCharacterIndex, length,
-                CreateTextRunProperties()));
+            var textRunProperties = CreateTextRunProperties();           
 
-            return length;
+            var textCharacters = new TextCharacters(text, textRunProperties);
+
+            textRuns.Add(textCharacters);
         }
 
-        internal override int AppendText(StringBuilder stringBuilder)
+        internal override void AppendText(StringBuilder stringBuilder)
         {
             var text = Text ?? "";
 
             stringBuilder.Append(text);
-
-            return text.Length;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             switch (change.Property.Name)
             {
                 case nameof(Text):
-                    Invalidate();
+                    InlineHost?.Invalidate();
                     break;
             }
         }

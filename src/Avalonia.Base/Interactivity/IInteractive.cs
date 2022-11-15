@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Metadata;
 
 #nullable enable
 
@@ -7,6 +8,7 @@ namespace Avalonia.Interactivity
     /// <summary>
     /// Interface for objects that raise routed events.
     /// </summary>
+    [NotClientImplementable]
     public interface IInteractive
     {
         /// <summary>
@@ -29,35 +31,11 @@ namespace Avalonia.Interactivity
             bool handledEventsToo = false);
 
         /// <summary>
-        /// Adds a handler for the specified routed event.
-        /// </summary>
-        /// <typeparam name="TEventArgs">The type of the event's args.</typeparam>
-        /// <param name="routedEvent">The routed event.</param>
-        /// <param name="handler">The handler.</param>
-        /// <param name="routes">The routing strategies to listen to.</param>
-        /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
-        /// <returns>A disposable that terminates the event subscription.</returns>
-        void AddHandler<TEventArgs>(
-            RoutedEvent<TEventArgs> routedEvent,
-            EventHandler<TEventArgs> handler,
-            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
-            bool handledEventsToo = false) where TEventArgs : RoutedEventArgs;
-
-        /// <summary>
         /// Removes a handler for the specified routed event.
         /// </summary>
         /// <param name="routedEvent">The routed event.</param>
         /// <param name="handler">The handler.</param>
         void RemoveHandler(RoutedEvent routedEvent, Delegate handler);
-
-        /// <summary>
-        /// Removes a handler for the specified routed event.
-        /// </summary>
-        /// <typeparam name="TEventArgs">The type of the event's args.</typeparam>
-        /// <param name="routedEvent">The routed event.</param>
-        /// <param name="handler">The handler.</param>
-        void RemoveHandler<TEventArgs>(RoutedEvent<TEventArgs> routedEvent, EventHandler<TEventArgs> handler)
-            where TEventArgs : RoutedEventArgs;
 
         /// <summary>
         /// Adds the object's handlers for a routed event to an event route.

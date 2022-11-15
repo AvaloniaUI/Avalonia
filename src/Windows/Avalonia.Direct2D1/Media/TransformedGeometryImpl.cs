@@ -1,8 +1,10 @@
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using SharpDX.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
+    [Unstable]
     public class TransformedGeometryImpl : GeometryImpl, ITransformedGeometryImpl
     {
         /// <summary>

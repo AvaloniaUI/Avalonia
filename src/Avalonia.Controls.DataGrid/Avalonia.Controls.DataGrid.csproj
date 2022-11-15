@@ -18,4 +18,9 @@
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Controls.DataGrid.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
 </Project>

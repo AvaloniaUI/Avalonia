@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Layout
 {
     /// <summary>
     /// Defines the root of a layoutable tree.
     /// </summary>
+    [NotClientImplementable]
     public interface ILayoutRoot : ILayoutable
     {
         /// <summary>

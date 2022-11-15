@@ -25,13 +25,12 @@ namespace Avalonia.PropertyStore
         public void Start() { }
 
         public void RaiseValueChanged(
-            IValueSink sink,
-            IAvaloniaObject owner,
+            AvaloniaObject owner,
             AvaloniaProperty property,
             Optional<object?> oldValue,
             Optional<object?> newValue)
         {
-            sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+            owner.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                 owner,
                 (AvaloniaProperty<T>)property,
                 oldValue.Cast<T>(),

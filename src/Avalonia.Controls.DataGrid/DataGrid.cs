@@ -32,6 +32,14 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays data in a customizable grid.
     /// </summary>
+    [TemplatePart(DATAGRID_elementBottomRightCornerHeaderName,     typeof(IVisual))]
+    [TemplatePart(DATAGRID_elementColumnHeadersPresenterName,      typeof(DataGridColumnHeadersPresenter))]
+    [TemplatePart(DATAGRID_elementFrozenColumnScrollBarSpacerName, typeof(Control))]
+    [TemplatePart(DATAGRID_elementHorizontalScrollbarName,         typeof(ScrollBar))]
+    [TemplatePart(DATAGRID_elementRowsPresenterName,               typeof(DataGridRowsPresenter))]
+    [TemplatePart(DATAGRID_elementTopLeftCornerHeaderName,         typeof(ContentControl))]
+    [TemplatePart(DATAGRID_elementTopRightCornerHeaderName,        typeof(ContentControl))]
+    [TemplatePart(DATAGRID_elementVerticalScrollbarName,           typeof(ScrollBar))]
     [PseudoClasses(":invalid", ":empty-rows", ":empty-columns")]
     public partial class DataGrid : TemplatedControl
     {
@@ -2159,7 +2167,23 @@ namespace Avalonia.Controls
 
             return desiredSize;
         }
+        
+        /// <inheritdoc/>
+        protected override void OnDataContextBeginUpdate()
+        {
+            base.OnDataContextBeginUpdate();
 
+            NotifyDataContextPropertyForAllRowCells(GetAllRows(), true);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDataContextEndUpdate()
+        {
+            base.OnDataContextEndUpdate();
+
+            NotifyDataContextPropertyForAllRowCells(GetAllRows(), false);
+        }
+        
         /// <summary>
         /// Raises the BeginningEdit event.
         /// </summary>
@@ -3154,6 +3178,20 @@ namespace Avalonia.Controls
                 // Update layout when RowDetails are expanded or collapsed, just updating the vertical scroll bar is not enough
                 // since rows could be added or removed
                 InvalidateMeasure();
+            }
+        }
+
+        private static void NotifyDataContextPropertyForAllRowCells(IEnumerable<DataGridRow> rowSource, bool arg2)
+        {
+            foreach (DataGridRow row in rowSource)
+            {
+                foreach (DataGridCell cell in row.Cells)
+                {
+                    if (cell.Content is StyledElement cellContent)
+                    {
+                        DataContextProperty.Notifying?.Invoke(cellContent, arg2);
+                    }
+                }
             }
         }
 
@@ -5982,15 +6020,14 @@ namespace Avalonia.Controls
         /// <returns>The formatted string.</returns>
         private string FormatClipboardContent(DataGridRowClipboardEventArgs e)
         {
-            StringBuilder text = new StringBuilder();
-            for (int cellIndex = 0; cellIndex < e.ClipboardRowContent.Count; cellIndex++)
+            var text = StringBuilderCache.Acquire();
+            var clipboardRowContent = e.ClipboardRowContent;
+            var numberOfItem = clipboardRowContent.Count;
+            for (int cellIndex = 0; cellIndex < numberOfItem; cellIndex++)
             {
-                DataGridClipboardCellContent cellContent = e.ClipboardRowContent[cellIndex];
-                if (cellContent != null)
-                {
-                    text.Append(cellContent.Content);
-                }
-                if (cellIndex < e.ClipboardRowContent.Count - 1)
+                var cellContent = clipboardRowContent[cellIndex];
+                text.Append(cellContent.Content);
+                if (cellIndex < numberOfItem - 1)
                 {
                     text.Append('\t');
                 }
@@ -6000,7 +6037,7 @@ namespace Avalonia.Controls
                     text.Append('\n');
                 }
             }
-            return text.ToString();
+            return StringBuilderCache.GetStringAndRelease(text);
         }
 
         /// <summary>
@@ -6015,7 +6052,7 @@ namespace Avalonia.Controls
 
             if (ctrl && !shift && !alt && ClipboardCopyMode != DataGridClipboardCopyMode.None && SelectedItems.Count > 0)
             {
-                StringBuilder textBuilder = new StringBuilder();
+                var textBuilder = StringBuilderCache.Acquire();
 
                 if (ClipboardCopyMode == DataGridClipboardCopyMode.IncludeHeader)
                 {
@@ -6041,7 +6078,7 @@ namespace Avalonia.Controls
                     textBuilder.Append(FormatClipboardContent(itemArgs));
                 }
 
-                string text = textBuilder.ToString();
+                string text = StringBuilderCache.GetStringAndRelease(textBuilder);
 
                 if (!string.IsNullOrEmpty(text))
                 {

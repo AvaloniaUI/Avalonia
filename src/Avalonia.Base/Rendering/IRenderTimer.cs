@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Avalonia.Metadata;
 
 namespace Avalonia.Rendering
 {
     /// <summary>
     /// Defines the interface implemented by an application render timer.
     /// </summary>
+    [NotClientImplementable]
     public interface IRenderTimer
     {
         /// <summary>
@@ -16,5 +18,10 @@ namespace Avalonia.Rendering
         /// switch execution to the right thread.
         /// </remarks>
         event Action<TimeSpan> Tick;
+
+        /// <summary>
+        /// Indicates if the timer ticks on a non-UI thread
+        /// </summary>
+        bool RunsInBackground { get; }
     }
 }

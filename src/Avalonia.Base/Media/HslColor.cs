@@ -12,6 +12,7 @@ namespace Avalonia.Media
 {
     /// <summary>
     /// Defines a color using the hue/saturation/lightness (HSL) model.
+    /// This uses a cylindrical-coordinate representation of a color.
     /// </summary>
 #if !BUILDTASK
     public
@@ -98,24 +99,53 @@ namespace Avalonia.Media
         }
 
         /// <summary>
-        /// Gets the Alpha (transparency) component in the range from 0..1.
+        /// Gets the Alpha (transparency) component in the range from 0..1 (percentage).
         /// </summary>
+        /// <remarks>
+        /// <list type="bullet">
+        ///   <item>0 is fully transparent.</item>
+        ///   <item>1 is fully opaque.</item>
+        /// </list>
+        /// </remarks>
         public double A { get; }
 
         /// <summary>
-        /// Gets the Hue component in the range from 0..360.
+        /// Gets the Hue component in the range from 0..360 (degrees).
+        /// This is the color's location, in degrees, on a color wheel/circle from 0 to 360.
         /// Note that 360 is equivalent to 0 and will be adjusted automatically.
         /// </summary>
+        /// <remarks>
+        /// <list type="bullet">
+        ///   <item>0/360 degrees is Red.</item>
+        ///   <item>60 degrees is Yellow.</item>
+        ///   <item>120 degrees is Green.</item>
+        ///   <item>180 degrees is Cyan.</item>
+        ///   <item>240 degrees is Blue.</item>
+        ///   <item>300 degrees is Magenta.</item>
+        /// </list>
+        /// </remarks>
         public double H { get; }
 
         /// <summary>
-        /// Gets the Saturation component in the range from 0..1.
+        /// Gets the Saturation component in the range from 0..1 (percentage).
         /// </summary>
+        /// <remarks>
+        /// <list type="bullet">
+        ///   <item>0 is a shade of gray (no color).</item>
+        ///   <item>1 is the full color.</item>
+        /// </list>
+        /// </remarks>
         public double S { get; }
 
         /// <summary>
-        /// Gets the Lightness component in the range from 0..1.
+        /// Gets the Lightness component in the range from 0..1 (percentage).
         /// </summary>
+        /// <remarks>
+        /// <list type="bullet">
+        ///   <item>0 is fully black.</item>
+        ///   <item>1 is fully white.</item>
+        /// </list>
+        /// </remarks>
         public double L { get; }
 
         /// <inheritdoc/>
@@ -172,7 +202,7 @@ namespace Avalonia.Media
         /// <inheritdoc/>
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Acquire();
 
             // Use a format similar to CSS. However:
             //   - To ensure precision is never lost, allow decimal places.
@@ -195,7 +225,7 @@ namespace Avalonia.Media
             sb.Append(A.ToString(CultureInfo.InvariantCulture));
             sb.Append(')');
 
-            return sb.ToString();
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
 
         /// <summary>
@@ -226,6 +256,8 @@ namespace Avalonia.Media
         /// <returns>True if parsing was successful; otherwise, false.</returns>
         public static bool TryParse(string s, out HslColor hslColor)
         {
+            bool prefixMatched = false;
+
             hslColor = default;
 
             if (s is null)
@@ -241,27 +273,38 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (workingString.Length > 6 &&
+            // Note: The length checks are also an important optimization.
+            // The shortest possible format is "hsl(0,0,0)", Length = 10.
+
+            if (workingString.Length >= 11 &&
                 workingString.StartsWith("hsla(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
+                prefixMatched = true;
             }
 
-            if (workingString.Length > 5 &&
+            if (prefixMatched == false &&
+                workingString.Length >= 10 &&
                 workingString.StartsWith("hsl(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(4, workingString.Length - 5);
+                prefixMatched = true;
+            }
+
+            if (prefixMatched == false)
+            {
+                return false;
             }
 
             string[] components = workingString.Split(',');
 
             if (components.Length == 3) // HSL
             {
-                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
-                    TryInternalParse(components[1], out double saturation) &&
-                    TryInternalParse(components[2], out double lightness))
+                if (components[0].AsSpan().TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                    TryInternalParse(components[1].AsSpan(), out double saturation) &&
+                    TryInternalParse(components[2].AsSpan(), out double lightness))
                 {
                     hslColor = new HslColor(1.0, hue, saturation, lightness);
                     return true;
@@ -269,10 +312,10 @@ namespace Avalonia.Media
             }
             else if (components.Length == 4) // HSLA
             {
-                if (double.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
-                    TryInternalParse(components[1], out double saturation) &&
-                    TryInternalParse(components[2], out double lightness) &&
-                    TryInternalParse(components[3], out double alpha))
+                if (components[0].AsSpan().TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture, out double hue) &&
+                    TryInternalParse(components[1].AsSpan(), out double saturation) &&
+                    TryInternalParse(components[2].AsSpan(), out double lightness) &&
+                    TryInternalParse(components[3].AsSpan(), out double alpha))
                 {
                     hslColor = new HslColor(alpha, hue, saturation, lightness);
                     return true;
@@ -280,28 +323,22 @@ namespace Avalonia.Media
             }
 
             // Local function to specially parse a double value with an optional percentage sign
-            bool TryInternalParse(string inString, out double outDouble)
+            bool TryInternalParse(ReadOnlySpan<char> inString, out double outDouble)
             {
                 // The percent sign, if it exists, must be at the end of the number
-                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+                int percentIndex = inString.IndexOf("%".AsSpan(), StringComparison.Ordinal);
 
                 if (percentIndex >= 0)
                 {
-                    var result = double.TryParse(
-                        inString.Substring(0, percentIndex),
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
-                        out double percentage);
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
+                         out double percentage);
 
                     outDouble = percentage / 100.0;
                     return result;
                 }
                 else
                 {
-                    return double.TryParse(
-                        inString,
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
+                    return inString.TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out outDouble);
                 }
             }

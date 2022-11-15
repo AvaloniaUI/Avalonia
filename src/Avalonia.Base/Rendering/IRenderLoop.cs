@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Rendering
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Rendering
 {
     /// <summary>
     /// The application render loop.
@@ -7,6 +9,7 @@
     /// The render loop is responsible for advancing the animation timer and updating the scene
     /// graph for visible windows.
     /// </remarks>
+    [NotClientImplementable]
     public interface IRenderLoop
     {
         /// <summary>
@@ -24,5 +27,7 @@
         /// </summary>
         /// <param name="i">The update task.</param>
         void Remove(IRenderLoopTask i);
+        
+        bool RunsInBackground { get; }
     }
 }

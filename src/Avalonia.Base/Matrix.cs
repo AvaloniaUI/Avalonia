@@ -1,12 +1,22 @@
 using System;
 using System.Globalization;
+using System.Linq;
+using System.Numerics;
 using Avalonia.Utilities;
 
 namespace Avalonia
 {
     /// <summary>
-    /// A 2x3 matrix.
+    /// A 3x3 matrix.
     /// </summary>
+    /// <remarks>Matrix layout:
+    ///         | 1st col | 2nd col | 3r col |
+    /// 1st row | scaleX  | skewY  | perspX  |
+    /// 2nd row | skewX  | scaleY  | perspY  |
+    /// 3rd row | transX  | transY  | perspZ  |
+    /// 
+    /// Note: Skia.SkMatrix uses a transposed layout (where for example skewX/skewY and persp0/transX are swapped).
+    /// </remarks>
 #if !BUILDTASK
     public
 #endif
@@ -14,40 +24,76 @@ namespace Avalonia
     {
         private readonly double _m11;
         private readonly double _m12;
+        private readonly double _m13;
         private readonly double _m21;
         private readonly double _m22;
+        private readonly double _m23;
         private readonly double _m31;
         private readonly double _m32;
+        private readonly double _m33;
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Matrix"/> struct (equivalent to a 2x3 Matrix without perspective).
+        /// </summary>
+        /// <param name="scaleX">The first element of the first row.</param>
+        /// <param name="skewY">The second element of the first row.</param>
+        /// <param name="skewX">The first element of the second row.</param>
+        /// <param name="scaleY">The second element of the second row.</param>
+        /// <param name="offsetX">The first element of the third row.</param>
+        /// <param name="offsetY">The second element of the third row.</param>
+        public Matrix(
+            double scaleX,
+            double skewY,
+            double skewX,
+            double scaleY,
+            double offsetX,
+            double offsetY) : this( scaleX, skewY, 0, skewX, scaleY, 0, offsetX, offsetY, 1)
+        {
+        }
+
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Matrix"/> struct.
         /// </summary>
-        /// <param name="m11">The first element of the first row.</param>
-        /// <param name="m12">The second element of the first row.</param>
-        /// <param name="m21">The first element of the second row.</param>
-        /// <param name="m22">The second element of the second row.</param>
+        /// <param name="scaleX">The first element of the first row.</param>
+        /// <param name="skewY">The second element of the first row.</param>
+        /// <param name="perspX">The third element of the first row.</param>
+        /// <param name="skewX">The first element of the second row.</param>
+        /// <param name="scaleY">The second element of the second row.</param>
+        /// <param name="perspY">The third element of the second row.</param>
         /// <param name="offsetX">The first element of the third row.</param>
         /// <param name="offsetY">The second element of the third row.</param>
+        /// <param name="perspZ">The third element of the third row.</param>
         public Matrix(
-            double m11,
-            double m12,
-            double m21,
-            double m22,
+            double scaleX,
+            double skewY,
+            double perspX,
+            double skewX,
+            double scaleY,
+            double perspY, 
             double offsetX,
-            double offsetY)
+            double offsetY,
+            double perspZ)
         {
-            _m11 = m11;
-            _m12 = m12;
-            _m21 = m21;
-            _m22 = m22;
+            _m11 = scaleX;
+            _m12 = skewY;
+            _m13 = perspX;
+            _m21 = skewX;
+            _m22 = scaleY;
+            _m23 = perspY;
             _m31 = offsetX;
             _m32 = offsetY;
+            _m33 = perspZ;
         }
 
         /// <summary>
         /// Returns the multiplicative identity matrix.
         /// </summary>
-        public static Matrix Identity { get; } = new Matrix(1.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        public static Matrix Identity { get; } = new Matrix(
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0);
 
         /// <summary>
         /// Returns whether the matrix is the identity matrix.
@@ -60,34 +106,49 @@ namespace Avalonia
         public bool HasInverse => !MathUtilities.IsZero(GetDeterminant());
 
         /// <summary>
-        /// The first element of the first row
+        /// The first element of the first row (scaleX).
         /// </summary>
         public double M11 => _m11;
 
         /// <summary>
-        /// The second element of the first row
+        /// The second element of the first row (skewY).
         /// </summary>
         public double M12 => _m12;
 
         /// <summary>
-        /// The first element of the second row
+        /// The third element of the first row (perspX: input x-axis perspective factor).
+        /// </summary>
+        public double M13 => _m13;
+
+        /// <summary>
+        /// The first element of the second row (skewX).
         /// </summary>
         public double M21 => _m21;
 
         /// <summary>
-        /// The second element of the second row
+        /// The second element of the second row (scaleY).
         /// </summary>
         public double M22 => _m22;
 
         /// <summary>
-        /// The first element of the third row
+        /// The third element of the second row (perspY: input y-axis perspective factor).
+        /// </summary>
+        public double M23 => _m23;
+
+        /// <summary>
+        /// The first element of the third row (offsetX/translateX).
         /// </summary>
         public double M31 => _m31;
 
         /// <summary>
-        /// The second element of the third row
+        /// The second element of the third row (offsetY/translateY).
         /// </summary>
         public double M32 => _m32;
+
+        /// <summary>
+        /// The third element of the third row (perspZ: perspective scale factor).
+        /// </summary>
+        public double M33 => _m33;
 
         /// <summary>
         /// Multiplies two matrices together and returns the resulting matrix.
@@ -98,12 +159,15 @@ namespace Avalonia
         public static Matrix operator *(Matrix value1, Matrix value2)
         {
             return new Matrix(
-                (value1.M11 * value2.M11) + (value1.M12 * value2.M21),
-                (value1.M11 * value2.M12) + (value1.M12 * value2.M22),
-                (value1.M21 * value2.M11) + (value1.M22 * value2.M21),
-                (value1.M21 * value2.M12) + (value1.M22 * value2.M22),
-                (value1._m31 * value2.M11) + (value1._m32 * value2.M21) + value2._m31,
-                (value1._m31 * value2.M12) + (value1._m32 * value2.M22) + value2._m32);
+                (value1.M11 * value2.M11) + (value1.M12 * value2.M21) + (value1.M13 * value2.M31),
+                (value1.M11 * value2.M12) + (value1.M12 * value2.M22) + (value1.M13 * value2.M32),
+                (value1.M11 * value2.M13) + (value1.M12 * value2.M23) + (value1.M13 * value2.M33),
+                (value1.M21 * value2.M11) + (value1.M22 * value2.M21) + (value1.M23 * value2.M31),
+                (value1.M21 * value2.M12) + (value1.M22 * value2.M22) + (value1.M23 * value2.M32),
+                (value1.M21 * value2.M13) + (value1.M22 * value2.M23) + (value1.M23 * value2.M33),
+                (value1.M31 * value2.M11) + (value1.M32 * value2.M21) + (value1.M33 * value2.M31),
+                (value1.M31 * value2.M12) + (value1.M32 * value2.M22) + (value1.M33 * value2.M32), 
+                (value1.M31 * value2.M13) + (value1.M32 * value2.M23) + (value1.M33 * value2.M33));
         }
 
         /// <summary>
@@ -171,7 +235,7 @@ namespace Avalonia
         /// <returns>A scaling matrix.</returns>
         public static Matrix CreateScale(double xScale, double yScale)
         {
-            return CreateScale(new Vector(xScale, yScale));
+            return new Matrix(xScale, 0, 0, yScale, 0, 0);
         }
 
         /// <summary>
@@ -181,7 +245,7 @@ namespace Avalonia
         /// <returns>A scaling matrix.</returns>
         public static Matrix CreateScale(Vector scales)
         {
-            return new Matrix(scales.X, 0, 0, scales.Y, 0, 0);
+            return CreateScale(scales.X, scales.Y);
         }
 
         /// <summary>
@@ -214,7 +278,7 @@ namespace Avalonia
         {
             return angle * 0.0174532925;
         }
-
+        
         /// <summary>
         /// Appends another matrix as post-multiplication operation.
         /// Equivalent to this * value;
@@ -227,7 +291,7 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// Prpends another matrix as pre-multiplication operation.
+        /// Prepends another matrix as pre-multiplication operation.
         /// Equivalent to value * this;
         /// </summary>
         /// <param name="value">A matrix.</param>
@@ -247,7 +311,49 @@ namespace Avalonia
         /// </remarks>
         public double GetDeterminant()
         {
-            return (_m11 * _m22) - (_m12 * _m21);
+            // implemented using "Laplace expansion":
+            return _m11 * (_m22 * _m33 - _m23 * _m32)
+                 - _m12 * (_m21 * _m33 - _m23 * _m31)
+                 + _m13 * (_m21 * _m32 - _m22 * _m31);
+        }
+
+        /// <summary>
+        ///  Transforms the point with the matrix
+        /// </summary>
+        /// <param name="p">The point to be transformed</param>
+        /// <returns>The transformed point</returns>
+        public Point Transform(Point p)
+        {
+            Point transformedResult;
+            
+            // If this matrix contains a non-affine transform with need to extend
+            // the point to a 3D vector and flatten it back for 2d display
+            // by multiplying X and Y with the inverse of the Z axis.
+            // The code below also works with affine transformations, but for performance (and compatibility)
+            // reasons we will use the more complex calculation only if necessary
+            if (ContainsPerspective())
+            {
+                var m44 = new Matrix4x4(
+                    (float)M11, (float)M12, (float)M13, 0,
+                    (float)M21, (float)M22, (float)M23, 0,
+                    (float)M31, (float)M32, (float)M33, 0,
+                    0, 0, 0, 1
+                );
+            
+                var vector = new Vector3((float)p.X, (float)p.Y, 1);
+                var transformedVector = Vector3.Transform(vector, m44);
+                var z = 1 / transformedVector.Z;
+            
+                transformedResult = new Point(transformedVector.X * z, transformedVector.Y * z);
+            }
+            else
+            {
+                return new Point(
+                    (p.X * M11) + (p.Y * M21) + M31,
+                    (p.X * M12) + (p.Y * M22) + M32);
+            }
+
+            return transformedResult;
         }
 
         /// <summary>
@@ -260,10 +366,13 @@ namespace Avalonia
             // ReSharper disable CompareOfFloatsByEqualityOperator
             return _m11 == other.M11 &&
                    _m12 == other.M12 &&
+                   _m13 == other.M13 &&
                    _m21 == other.M21 &&
                    _m22 == other.M22 &&
+                   _m23 == other.M23 &&
                    _m31 == other.M31 &&
-                   _m32 == other.M32;
+                   _m32 == other.M32 &&
+                   _m33 == other.M33;
             // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
@@ -280,9 +389,18 @@ namespace Avalonia
         /// <returns>The hash code.</returns>
         public override int GetHashCode()
         {
-            return M11.GetHashCode() + M12.GetHashCode() +
-                   M21.GetHashCode() + M22.GetHashCode() +
-                   M31.GetHashCode() + M32.GetHashCode();
+            return (_m11, _m12, _m13, _m21, _m22, _m23, _m31, _m32, _m33).GetHashCode();
+        }
+
+        /// <summary>
+        ///  Determines if the current matrix contains perspective (non-affine) transforms (true) or only (affine) transforms that could be mapped into an 2x3 matrix (false).
+        /// </summary>
+        public bool ContainsPerspective()
+        {
+
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            return _m13 != 0 || _m23 != 0 || _m33 != 1;
+            // ReSharper restore CompareOfFloatsByEqualityOperator
         }
 
         /// <summary>
@@ -292,15 +410,25 @@ namespace Avalonia
         public override string ToString()
         {
             CultureInfo ci = CultureInfo.CurrentCulture;
+
+            string msg;
+            double[] values;
+
+            if (ContainsPerspective())
+            {
+                msg = "{{ {{M11:{0} M12:{1} M13:{2}}} {{M21:{3} M22:{4} M23:{5}}} {{M31:{6} M32:{7} M33:{8}}} }}";
+                values = new[] { M11, M12, M13, M21, M22, M23, M31, M32, M33 };
+            }
+            else
+            {
+                msg = "{{ {{M11:{0} M12:{1}}} {{M21:{2} M22:{3}}} {{M31:{4} M32:{5}}} }}";
+                values = new[] { M11, M12, M21, M22, M31, M32 };
+            }
+
             return string.Format(
                 ci,
-                "{{ {{M11:{0} M12:{1}}} {{M21:{2} M22:{3}}} {{M31:{4} M32:{5}}} }}",
-                M11.ToString(ci),
-                M12.ToString(ci),
-                M21.ToString(ci),
-                M22.ToString(ci),
-                M31.ToString(ci),
-                M32.ToString(ci));
+                msg,
+                values.Select((v) => v.ToString(ci)).ToArray());
         }
 
         /// <summary>
@@ -318,14 +446,20 @@ namespace Avalonia
                 return false;
             }
 
+            var invdet = 1 / d;
+            
             inverted = new Matrix(
-                _m22 / d,
-                -_m12 / d,
-                -_m21 / d,
-                _m11 / d,
-                ((_m21 * _m32) - (_m22 * _m31)) / d,
-                ((_m12 * _m31) - (_m11 * _m32)) / d);
-
+                (_m22 * _m33 - _m32 * _m23) * invdet,
+                (_m13 * _m32 - _m12 * _m33) * invdet,
+                (_m12 * _m23 - _m13 * _m22) * invdet,
+                (_m23 * _m31 - _m21 * _m33) * invdet,
+                (_m11 * _m33 - _m13 * _m31) * invdet,
+                (_m21 * _m13 - _m11 * _m23) * invdet,
+                (_m21 * _m32 - _m31 * _m22) * invdet,
+                (_m31 * _m12 - _m11 * _m32) * invdet,
+                (_m11 * _m22 - _m21 * _m12) * invdet
+                );
+            
             return true;
         }
 
@@ -336,7 +470,7 @@ namespace Avalonia
         /// <returns>The inverted matrix.</returns>
         public Matrix Invert()
         {
-            if (!TryInvert(out Matrix inverted))
+            if (!TryInvert(out var inverted))
             {
                 throw new InvalidOperationException("Transform is not invertible.");
             }
@@ -347,20 +481,30 @@ namespace Avalonia
         /// <summary>
         /// Parses a <see cref="Matrix"/> string.
         /// </summary>
-        /// <param name="s">Six comma-delimited double values (m11, m12, m21, m22, offsetX, offsetY) that describe the new <see cref="Matrix"/></param>
+        /// <param name="s">Six or nine comma-delimited double values (m11, m12, m21, m22, offsetX, offsetY[, perspX, perspY, perspZ]) that describe the new <see cref="Matrix"/></param>
         /// <returns>The <see cref="Matrix"/>.</returns>
         public static Matrix Parse(string s)
         {
+            // initialize to satisfy compiler - only used when retrieved from string.
+            double v8 = 0;
+            double v9 = 0;
+
             using (var tokenizer = new StringTokenizer(s, CultureInfo.InvariantCulture, exceptionMessage: "Invalid Matrix."))
             {
-                return new Matrix(
-                    tokenizer.ReadDouble(),
-                    tokenizer.ReadDouble(),
-                    tokenizer.ReadDouble(),
-                    tokenizer.ReadDouble(),
-                    tokenizer.ReadDouble(),
-                    tokenizer.ReadDouble()
-                );
+                var v1 = tokenizer.ReadDouble();
+                var v2 = tokenizer.ReadDouble();
+                var v3 = tokenizer.ReadDouble();
+                var v4 = tokenizer.ReadDouble();
+                var v5 = tokenizer.ReadDouble();
+                var v6 = tokenizer.ReadDouble();
+                var persp = tokenizer.TryReadDouble(out var v7);
+                persp = persp && tokenizer.TryReadDouble(out v8);
+                persp = persp && tokenizer.TryReadDouble(out v9);
+
+                if (persp) 
+                    return new Matrix(v1, v2, v7, v3, v4, v8, v5, v6, v9);
+                else
+                    return new Matrix(v1, v2, v3, v4, v5, v6);
             }
         }
 
@@ -369,14 +513,14 @@ namespace Avalonia
         /// </summary>
         /// <param name="matrix">Matrix to decompose.</param>
         /// <param name="decomposed">Decomposed matrix.</param>
-        /// <returns>The status of the operation.</returns>
+        /// <returns>The status of the operation.</returns>        
         public static bool TryDecomposeTransform(Matrix matrix, out Decomposed decomposed)
         {
             decomposed = default;
 
             var determinant = matrix.GetDeterminant();
             
-            if (MathUtilities.IsZero(determinant))
+            if (MathUtilities.IsZero(determinant) || matrix.ContainsPerspective())
             {
                 return false;
             }

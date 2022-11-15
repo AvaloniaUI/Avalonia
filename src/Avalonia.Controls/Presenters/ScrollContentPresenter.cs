@@ -469,7 +469,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == OffsetProperty && !_arranging)
             {

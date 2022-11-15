@@ -1,12 +1,12 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Represents a setter that has been instanced on a control.
     /// </summary>
+    [Unstable]
     public interface ISetterInstance : IDisposable
     {
         /// <summary>

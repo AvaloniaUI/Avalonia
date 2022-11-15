@@ -9,6 +9,7 @@
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
+        <Compile Include="..\..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\ColorToBrushConverter.cs" />
@@ -28,6 +29,9 @@
         <Compile Include="MarkupExtensions\CompiledBindings\StrongTypeCastNode.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\TaskStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
+        <Compile Include="MarkupExtensions\On.cs" />
+        <Compile Include="MarkupExtensions\OnFormFactorExtension.cs" />
+        <Compile Include="MarkupExtensions\OnPlatformExtension.cs" />
         <Compile Include="MarkupExtensions\ResolveByNameExtension.cs" />
         <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
@@ -48,6 +52,7 @@
         <Compile Include="Templates\Template.cs" />
         <Compile Include="Templates\TemplateContent.cs" />
         <Compile Include="Templates\TreeDataTemplate.cs" />
+        <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlControlTemplateProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlParentStackProvider.cs" />
         <Compile Include="XamlIl\Runtime\IAvaloniaXamlIlXmlNamespaceInfoProviderV1.cs" />
         <Compile Include="XamlIl\Runtime\XamlIlRuntimeHelpers.cs" />
@@ -63,4 +68,12 @@
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\ApiDiff.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Compatibility\" />
+  </ItemGroup>
 </Project>

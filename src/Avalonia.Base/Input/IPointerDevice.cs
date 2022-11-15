@@ -1,23 +1,11 @@
-using System;
-using Avalonia.VisualTree;
 using Avalonia.Input.Raw;
+using Avalonia.Metadata;
 
 namespace Avalonia.Input
 {
+    [NotClientImplementable]
     public interface IPointerDevice : IInputDevice
     {
-        /// <inheritdoc cref="IPointer.Captured" />
-        [Obsolete("Use IPointer")]
-        IInputElement? Captured { get; }
-
-        /// <inheritdoc cref="IPointer.Capture(IInputElement?)" />
-        [Obsolete("Use IPointer")]
-        void Capture(IInputElement? control);
-
-        /// <inheritdoc cref="PointerEventArgs.GetPosition(IVisual?)" />
-        [Obsolete("Use PointerEventArgs.GetPosition")]
-        Point GetPosition(IVisual relativeTo);
-
         /// <summary>
         /// Gets a pointer for specific event args.
         /// </summary>

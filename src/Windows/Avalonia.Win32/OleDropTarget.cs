@@ -5,6 +5,7 @@ using Avalonia.Input.Raw;
 using Avalonia.MicroCom;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 using DropEffect = Avalonia.Win32.Win32Com.DropEffect;
 
 namespace Avalonia.Win32

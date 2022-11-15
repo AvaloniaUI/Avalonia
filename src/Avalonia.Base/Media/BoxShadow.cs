@@ -80,7 +80,7 @@ namespace Avalonia.Media
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
+            var sb = StringBuilderCache.Acquire();
 
             if (IsEmpty)
             {
@@ -114,7 +114,7 @@ namespace Avalonia.Media
 
             sb.AppendFormat(" {0}", Color.ToString());
 
-            return sb.ToString();
+            return StringBuilderCache.GetStringAndRelease(sb);
         }
 
         public static unsafe BoxShadow Parse(string s)

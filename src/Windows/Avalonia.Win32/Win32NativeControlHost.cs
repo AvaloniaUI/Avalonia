@@ -94,6 +94,10 @@ namespace Avalonia.Win32
                     IntPtr.Zero,
                     IntPtr.Zero,
                     IntPtr.Zero);
+
+                if (Handle == IntPtr.Zero)
+                    throw new InvalidOperationException("Unable to create child window for native control host. Application manifest with supported OS list might be required.");
+
                 if (layered)
                     UnmanagedMethods.SetLayeredWindowAttributes(Handle, 0, 255,
                         UnmanagedMethods.LayeredWindowFlags.LWA_ALPHA);

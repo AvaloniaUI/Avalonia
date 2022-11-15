@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 WhitespaceSignificantCollectionAttributes =
                 {
-                     typeSystem.GetType("Avalonia.Metadata.WhitespaceSignificantCollectionAttribute")
+                    typeSystem.GetType("Avalonia.Metadata.WhitespaceSignificantCollectionAttribute")
                 },
                 TrimSurroundingWhitespaceAttributes =
                 {
@@ -56,7 +56,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
                 XmlNamespaceInfoProvider =
                     typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.IAvaloniaXamlIlXmlNamespaceInfoProvider"),
-                DeferredContentPropertyAttributes = {typeSystem.GetType("Avalonia.Metadata.TemplateContentAttribute")},
+                DeferredContentPropertyAttributes = { typeSystem.GetType("Avalonia.Metadata.TemplateContentAttribute") },
                 DeferredContentExecutorCustomizationDefaultTypeParameter = typeSystem.GetType("Avalonia.Controls.IControl"),
                 DeferredContentExecutorCustomizationTypeParameterDeferredContentAttributePropertyNames = new List<string>
                 {
@@ -70,6 +70,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 },
                 InnerServiceProviderFactoryMethod =
                     runtimeHelpers.FindMethod(m => m.Name == "CreateInnerServiceProviderV1"),
+                IAddChild = typeSystem.GetType("Avalonia.Metadata.IAddChild"),
+                IAddChildOfT = typeSystem.GetType("Avalonia.Metadata.IAddChild`1")
             };
             rv.CustomAttributeResolver = new AttributeResolver(typeSystem, rv);
 
@@ -183,6 +185,15 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
         public static bool CustomValueConverter(AstTransformationContext context,
             IXamlAstValueNode node, IXamlType type, out IXamlAstValueNode result)
         {
+            if (node is AvaloniaXamlIlOptionMarkupExtensionTransformer.OptionsMarkupExtensionNode optionsNode)
+            {
+                if (optionsNode.ConvertToReturnType(context, type, out var newOptionsNode))
+                {
+                    result = newOptionsNode;
+                    return true;
+                }
+            }
+
             if (!(node is XamlAstTextNode textNode))
             {
                 result = null;

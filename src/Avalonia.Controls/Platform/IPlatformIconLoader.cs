@@ -1,7 +1,9 @@
 ﻿using System.IO;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
+    [Unstable]
     public interface IPlatformIconLoader
     {
         IWindowIconImpl LoadIcon(string fileName);

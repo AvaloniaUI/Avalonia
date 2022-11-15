@@ -1,12 +1,12 @@
 using System;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Represents a setter for a <see cref="Style"/>.
     /// </summary>
+    [NotClientImplementable]
     public interface ISetter
     {
         /// <summary>

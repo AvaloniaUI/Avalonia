@@ -1,0 +1,74 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Button.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/RadioButton.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Expander.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/RepeatButton.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ToggleSwitch.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ButtonSpinner.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ToggleButton.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DropDownButton.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/PathIcon.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CheckBox.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ToolTip.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Label.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ComboBoxItem.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ComboBox.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Window.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Carousel.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CaptionButtons.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TitleBar.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TextBox.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/AutoCompleteBox.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DataValidationErrors.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ContentControl.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/FlyoutPresenter.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/MenuFlyoutPresenter.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/GridSplitter.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ItemsControl.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ListBoxItem.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ListBox.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ScrollBar.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ScrollViewer.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabStrip.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabStripItem.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabControl.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TabItem.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/PopupRoot.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/OverlayPopupHost.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/WindowNotificationManager.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/EmbeddableControlRoot.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TransitioningContentControl.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TreeView.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TreeViewItem.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ProgressBar.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Separator.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Menu.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/MenuItem.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ContextMenu.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarButton.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarDayButton.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarItem.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Calendar.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/CalendarDatePicker.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/Slider.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NotificationCard.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NativeMenuBar.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/NumericUpDown.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DateTimePickerShared.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/DatePicker.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/TimePicker.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/SplitView.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ManagedFileChooser.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/SplitButton.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/SelectableTextBlock.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Styles.Resources>
+
+  <StyleInclude Source="avares://Avalonia.Themes.Simple/Controls/FocusAdorner.xaml" />
+  <StyleInclude Source="avares://Avalonia.Themes.Simple/Controls/UserControl.xaml" />
+</Styles>

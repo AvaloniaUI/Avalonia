@@ -123,7 +123,7 @@ namespace Avalonia.Threading
         /// <param name="interval">The interval at which to tick.</param>
         /// <param name="priority">The priority to use.</param>
         /// <returns>An <see cref="IDisposable"/> used to cancel the timer.</returns>
-        public static IDisposable Run(Func<bool> action, TimeSpan interval, DispatcherPriority priority = DispatcherPriority.Normal)
+        public static IDisposable Run(Func<bool> action, TimeSpan interval, DispatcherPriority priority = default)
         {
             var timer = new DispatcherTimer(priority) { Interval = interval };
 
@@ -152,7 +152,7 @@ namespace Avalonia.Threading
         public static IDisposable RunOnce(
             Action action,
             TimeSpan interval,
-            DispatcherPriority priority = DispatcherPriority.Normal)
+            DispatcherPriority priority = default)
         {
             interval = (interval != TimeSpan.Zero) ? interval : TimeSpan.FromTicks(1);
             

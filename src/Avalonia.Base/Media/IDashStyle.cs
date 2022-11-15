@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using Avalonia.Metadata;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Represents the sequence of dashes and gaps that will be applied by a <see cref="Pen"/>.
     /// </summary>
+    [NotClientImplementable]
     public interface IDashStyle
     {
         /// <summary>

@@ -89,7 +89,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                             var parts = line.Split(';');
 
                             // Get the directions
-                            var directions = parts[0].Split(' ').Select(PropertyValueAliasHelper.GetBiDiClass)
+                            var directions = parts[0].Split(' ').Select(PropertyValueAliasHelper.GetBidiClass)
                                 .ToArray();
 
                             // Get the bit set
@@ -129,6 +129,8 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
                                     ParagraphEmbeddingLevel = paragraphEmbeddingLevel,
                                     Levels = levels
                                 });
+
+                                break;
                             }
                         }
                     }

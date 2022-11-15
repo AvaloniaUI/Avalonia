@@ -1,5 +1,4 @@
-using System;
-using System.Threading.Tasks;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -7,6 +6,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// Defines a name scope.
     /// </summary>
+    [NotClientImplementable]
     public interface INameScope
     {
         /// <summary>

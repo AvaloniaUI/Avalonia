@@ -155,9 +155,9 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="drawingContext">The drawing context.</param>
         /// <param name="glyphRun">The decorated run.</param>
-        /// <param name="fontMetrics">The font metrics of the decorated run.</param>
+        /// <param name="textMetrics">The font metrics of the decorated run.</param>
         /// <param name="defaultBrush">The default brush that is used to draw the decoration.</param>
-        internal void Draw(DrawingContext drawingContext, GlyphRun glyphRun, FontMetrics fontMetrics, IBrush defaultBrush)
+        internal void Draw(DrawingContext drawingContext, GlyphRun glyphRun, TextMetrics textMetrics, IBrush defaultBrush)
         {
             var baselineOrigin = glyphRun.BaselineOrigin;
             var thickness = StrokeThickness;
@@ -168,16 +168,16 @@ namespace Avalonia.Media
                     switch (Location)
                     {
                         case TextDecorationLocation.Underline:
-                            thickness = fontMetrics.UnderlineThickness;
+                            thickness = textMetrics.UnderlineThickness;
                             break;
                         case TextDecorationLocation.Strikethrough:
-                            thickness = fontMetrics.StrikethroughThickness;
+                            thickness = textMetrics.StrikethroughThickness;
                             break;
                     }
 
                     break;
                 case TextDecorationUnit.FontRenderingEmSize:
-                    thickness = fontMetrics.FontRenderingEmSize * thickness;
+                    thickness = textMetrics.FontRenderingEmSize * thickness;
                     break;
             }
 
@@ -189,17 +189,17 @@ namespace Avalonia.Media
                     origin += glyphRun.BaselineOrigin;
                     break;
                 case TextDecorationLocation.Strikethrough:
-                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + fontMetrics.StrikethroughPosition);
+                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + textMetrics.StrikethroughPosition);
                     break;
                 case TextDecorationLocation.Underline:
-                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + fontMetrics.UnderlinePosition);
+                    origin += new Point(baselineOrigin.X, baselineOrigin.Y + textMetrics.UnderlinePosition);
                     break;
             }
 
             switch (StrokeOffsetUnit)
             {
                 case TextDecorationUnit.FontRenderingEmSize:
-                    origin += new Point(0, StrokeOffset * fontMetrics.FontRenderingEmSize);
+                    origin += new Point(0, StrokeOffset * textMetrics.FontRenderingEmSize);
                     break;
                 case TextDecorationUnit.Pixel:
                     origin += new Point(0, StrokeOffset);
@@ -209,7 +209,7 @@ namespace Avalonia.Media
             var pen = new Pen(Stroke ?? defaultBrush, thickness,
                 new DashStyle(StrokeDashArray, StrokeDashOffset), StrokeLineCap);
 
-            drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Size.Width, 0));
+            drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Metrics.Width, 0));
         }
     }
 }

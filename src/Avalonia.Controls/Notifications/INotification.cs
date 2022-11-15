@@ -1,10 +1,12 @@
 ﻿using System;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Notifications
 {
     /// <summary>
     /// Represents a notification that can be shown in a window or by the host operating system.
     /// </summary>
+    [NotClientImplementable]
     public interface INotification
     {
         /// <summary>

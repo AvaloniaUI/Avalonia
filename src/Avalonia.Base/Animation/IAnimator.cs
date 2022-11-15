@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Metadata;
 
 namespace Avalonia.Animation
 {
     /// <summary>
     /// Interface for Animator objects
     /// </summary>
+    [NotClientImplementable]
     public interface IAnimator : IList<AnimatorKeyFrame>
     {
         /// <summary>

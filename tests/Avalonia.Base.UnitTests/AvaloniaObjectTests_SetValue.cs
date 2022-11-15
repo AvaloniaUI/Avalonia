@@ -18,6 +18,21 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void ClearValue_Resets_Value_To_Style_value()
+        {
+            Class1 target = new Class1();
+
+            target.SetValue(Class1.FooProperty, "style", BindingPriority.Style);
+            target.SetValue(Class1.FooProperty, "local");
+
+            Assert.Equal("local", target.GetValue(Class1.FooProperty));
+
+            target.ClearValue(Class1.FooProperty);
+
+            Assert.Equal("style", target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
         public void ClearValue_Raises_PropertyChanged()
         {
             Class1 target = new Class1();

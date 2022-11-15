@@ -21,16 +21,15 @@ namespace Avalonia
     /// - For a single binding it will be an instance of <see cref="BindingEntry{T}"/>
     /// - For all other cases it will be an instance of <see cref="PriorityValue{T}"/>
     /// </remarks>
-    internal class ValueStore : IValueSink
+    internal class ValueStore
     {
         private readonly AvaloniaObject _owner;
-        private readonly IValueSink _sink;
         private readonly AvaloniaPropertyValueStore<IValue> _values;
         private BatchUpdate? _batchUpdate;
 
         public ValueStore(AvaloniaObject owner)
         {
-            _sink = _owner = owner;
+            _owner = owner;
             _values = new AvaloniaPropertyValueStore<IValue>();
         }
 
@@ -122,7 +121,7 @@ namespace Avalonia
                 }
                 else
                 {
-                    var entry = new ConstantValueEntry<T>(property, value, priority, this);
+                    var entry = new ConstantValueEntry<T>(property, value, priority, new(this));
                     AddValue(property, entry);
                     NotifyValueChanged<T>(property, default, value, priority);
                     result = entry;
@@ -151,7 +150,7 @@ namespace Avalonia
             }
             else
             {
-                var entry = new BindingEntry<T>(_owner, property, source, priority, this);
+                var entry = new BindingEntry<T>(_owner, property, source, priority, new(this));
                 AddValue(property, entry);
                 return entry;
             }
@@ -187,7 +186,7 @@ namespace Avalonia
                         // so there's no way to mark them for removal at the end of a batch update. Instead convert
                         // them to a constant value entry with Unset priority in the event of a local value being
                         // cleared during a batch update.
-                        var sentinel = new ConstantValueEntry<T>(property, Optional<T>.Empty, BindingPriority.Unset, _sink);
+                        var sentinel = new ConstantValueEntry<T>(property, Optional<T>.Empty, BindingPriority.Unset, new(this));
                         _values.SetValue(property, sentinel);
                     }
 
@@ -196,11 +195,11 @@ namespace Avalonia
             }
         }
 
-        public void CoerceValue<T>(StyledPropertyBase<T> property)
+        public void CoerceValue(AvaloniaProperty property)
         {
             if (TryGetValue(property, out var slot))
             {
-                if (slot is PriorityValue<T> p)
+                if (slot is IPriorityValue p)
                 {
                     p.UpdateEffectiveValue();
                 }
@@ -222,7 +221,7 @@ namespace Avalonia
             return null;
         }
 
-        void IValueSink.ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        public void ValueChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
         {
             if (_batchUpdate is object)
             {
@@ -233,11 +232,11 @@ namespace Avalonia
             }
             else
             {
-                _sink.ValueChanged(change);
+                _owner.ValueChanged(change);
             }
         }
 
-        void IValueSink.Completed<T>(
+        public void Completed<T>(
             StyledPropertyBase<T> property,
             IPriorityValueEntry entry,
             Optional<T> oldValue)
@@ -248,7 +247,7 @@ namespace Avalonia
                 if (_batchUpdate is null)
                 {
                     _values.Remove(property);
-                    _sink.Completed(property, entry, oldValue);
+                    _owner.Completed(property, entry, oldValue);
                 }
                 else
                 {
@@ -352,7 +351,7 @@ namespace Avalonia
         {
             if (_batchUpdate is null)
             {
-                _sink.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
+                _owner.ValueChanged(new AvaloniaPropertyChangedEventArgs<T>(
                     _owner,
                     property,
                     oldValue,
@@ -451,7 +450,7 @@ namespace Avalonia
                             };
 
                             // Call _sink.ValueChanged with an appropriately typed AvaloniaPropertyChangedEventArgs<T>.
-                            slot.RaiseValueChanged(_owner._sink, _owner._owner, entry.property, oldValue, newValue);
+                            slot.RaiseValueChanged(_owner._owner, entry.property, oldValue, newValue);
 
                             // During batch update values can't be removed immediately because they're needed to raise
                             // the _sink.ValueChanged notification. They instead mark themselves for removal by setting
@@ -462,10 +461,6 @@ namespace Avalonia
                             {
                                 values.Remove(entry.property);
                             }
-                        }
-                        else
-                        {
-                            throw new AvaloniaInternalException("Value could not be found at the end of batch update.");
                         }
 
                         // If a new batch update was started while ending this one, abort.

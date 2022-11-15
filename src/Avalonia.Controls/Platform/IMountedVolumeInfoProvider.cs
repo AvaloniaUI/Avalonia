@@ -1,13 +1,13 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Avalonia.Platform;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Platform
 {
     /// <summary>
     /// Defines a platform-specific mount volumes info provider implementation.
     /// </summary>
+    [Unstable]
     public interface IMountedVolumeInfoProvider 
     {
         /// <summary>

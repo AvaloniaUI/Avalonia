@@ -13,6 +13,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="gradientStops">The gradient stops.</param>
         /// <param name="opacity">The opacity of the brush.</param>
         /// <param name="transform">The transform of the brush.</param>
+        /// <param name="transformOrigin">The transform origin of the brush</param>
         /// <param name="spreadMethod">The spread method.</param>
         /// <param name="center">The center point for the gradient.</param>
         /// <param name="angle">The starting angle for the gradient.</param>
@@ -20,10 +21,11 @@ namespace Avalonia.Media.Immutable
             IReadOnlyList<ImmutableGradientStop> gradientStops,
             double opacity = 1,
             ImmutableTransform? transform = null,
+            RelativePoint? transformOrigin = null,
             GradientSpreadMethod spreadMethod = GradientSpreadMethod.Pad,
             RelativePoint? center = null,
             double angle = 0)
-            : base(gradientStops, opacity, transform, spreadMethod)
+            : base(gradientStops, opacity, transform, transformOrigin, spreadMethod)
         {
             Center = center ?? RelativePoint.Center;
             Angle = angle;

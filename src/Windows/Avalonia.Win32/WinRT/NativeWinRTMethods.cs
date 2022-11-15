@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.MicroCom;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT
 {
@@ -23,7 +24,7 @@ namespace Avalonia.Win32.WinRT
 
         [DllImport("api-ms-win-core-winrt-string-l1-1-0.dll", 
             CallingConvention = CallingConvention.StdCall, PreserveSig = false)]
-        internal static extern unsafe IntPtr WindowsDeleteString(IntPtr hString);
+        internal static extern unsafe void WindowsDeleteString(IntPtr hString);
         
         [DllImport("Windows.UI.Composition", EntryPoint = "DllGetActivationFactory",
             CallingConvention = CallingConvention.StdCall, PreserveSig = false)]

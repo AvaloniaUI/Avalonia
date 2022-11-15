@@ -3,6 +3,7 @@ using Avalonia.OpenGL;
 using Avalonia.Native.Interop;
 using System.Drawing;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 using Avalonia.Threading;
 
 namespace Avalonia.Native
@@ -37,6 +38,7 @@ namespace Avalonia.Native
 
         internal GlContext MainContext { get; }
         public IGlContext PrimaryContext => MainContext;
+        IPlatformGpuContext IPlatformGpu.PrimaryContext => PrimaryContext;
         
         public bool CanShareContexts => true;
         public bool CanCreateContexts => true;

@@ -610,7 +610,7 @@ namespace Avalonia.Input.Navigation
 
         private static IInputElement? GetActiveElement(IInputElement e)
         {
-            return ((IAvaloniaObject)e).GetValue(KeyboardNavigation.TabOnceActiveElementProperty);
+            return ((AvaloniaObject)e).GetValue(KeyboardNavigation.TabOnceActiveElementProperty);
         }
 
         private static IInputElement GetGroupParent(IInputElement e) => GetGroupParent(e, false);
@@ -655,8 +655,9 @@ namespace Avalonia.Input.Navigation
 
         private static KeyboardNavigationMode GetKeyNavigationMode(IInputElement e)
         {
-            return ((IAvaloniaObject)e).GetValue(KeyboardNavigation.TabNavigationProperty);
+            return ((AvaloniaObject)e).GetValue(KeyboardNavigation.TabNavigationProperty);
         }
+
         private static bool IsFocusScope(IInputElement e) => FocusManager.GetIsFocusScope(e) || GetParent(e) == null;
         private static bool IsGroup(IInputElement e) => GetKeyNavigationMode(e) != KeyboardNavigationMode.Continue;
 

@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using Avalonia.Controls;
 using Avalonia.Styling.Activators;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -94,7 +95,7 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
             if (TargetType != null)
             {
@@ -125,7 +126,7 @@ namespace Avalonia.Styling
             {
                 if (subscribe)
                 {
-                    var observable = new StyleClassActivator(control.Classes, _classes.Value);
+                    var observable = new StyleClassActivator((Classes)control.Classes, _classes.Value);
 
                     return new SelectorMatch(observable);
                 }
@@ -140,10 +141,11 @@ namespace Avalonia.Styling
         }
 
         protected override Selector? MovePrevious() => _previous;
+        protected override Selector? MovePreviousOrParent() => _previous;
 
         private string BuildSelectorString()
         {
-            var builder = new StringBuilder();
+            var builder = StringBuilderCache.Acquire();
 
             if (_previous != null)
             {
@@ -183,7 +185,7 @@ namespace Avalonia.Styling
                 }
             }
 
-            return builder.ToString();
+            return StringBuilderCache.GetStringAndRelease(builder);
         }
     }
 }

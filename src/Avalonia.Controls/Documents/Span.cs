@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {
@@ -14,82 +13,82 @@ namespace Avalonia.Controls.Documents
         /// <summary>
         /// Defines the <see cref="Inlines"/> property.
         /// </summary>
-        public static readonly DirectProperty<Span, InlineCollection> InlinesProperty =
-            AvaloniaProperty.RegisterDirect<Span, InlineCollection>(
-                nameof(Inlines),
-                o => o.Inlines);
+        public static readonly StyledProperty<InlineCollection> InlinesProperty =
+            AvaloniaProperty.Register<Span, InlineCollection>(
+                nameof(Inlines));
 
-        /// <summary>
-        /// Initializes a new instance of a Span element.
-        /// </summary>
         public Span()
         {
-            Inlines = new InlineCollection(this);
-
-            Inlines.Invalidated += (s, e) => Invalidate();
+            Inlines = new InlineCollection
+            {
+                LogicalChildren = LogicalChildren
+            };
         }
 
         /// <summary>
         /// Gets or sets the inlines.
         /// </summary>
         [Content]
-        public InlineCollection Inlines { get; }
-
-        internal override int BuildRun(StringBuilder stringBuilder, IList<ValueSpan<TextRunProperties>> textStyleOverrides, int firstCharacterIndex)
+        public InlineCollection Inlines
         {
-            var length = 0;
-
-            if (Inlines.HasComplexContent)
-            {
-                foreach (var inline in Inlines)
-                {
-                    var inlineLength = inline.BuildRun(stringBuilder, textStyleOverrides, firstCharacterIndex);
-
-                    firstCharacterIndex += inlineLength;
-
-                    length += inlineLength;
-                }
-            }
-            else
-            {
-                if (Inlines.Text == null)
-                {
-                    return length;
-                }
-                
-                stringBuilder.Append(Inlines.Text);
-
-                length = Inlines.Text.Length;
-
-                textStyleOverrides.Add(new ValueSpan<TextRunProperties>(firstCharacterIndex, length,
-                    CreateTextRunProperties()));
-            }
-
-            return length;
+            get => GetValue(InlinesProperty);
+            set => SetValue(InlinesProperty, value);
         }
 
-        internal override int AppendText(StringBuilder stringBuilder)
+        internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            if (Inlines.HasComplexContent)
+            foreach (var inline in Inlines)
             {
-                var length = 0;
+                inline.BuildTextRun(textRuns);
+            }
+        }
 
-                foreach (var inline in Inlines)
-                {
-                    length += inline.AppendText(stringBuilder);
-                }
+        internal override void AppendText(StringBuilder stringBuilder)
+        {
+            foreach (var inline in Inlines)
+            {
+                inline.AppendText(stringBuilder);
+            }
+        }
 
-                return length;
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            switch (change.Property.Name)
+            {
+                case nameof(InlinesProperty):
+                    OnInlinesChanged(change.OldValue as InlineCollection, change.NewValue as InlineCollection);
+                    InlineHost?.Invalidate();
+                    break;
+            }
+        }
+
+        internal override void OnInlineHostChanged(IInlineHost? oldValue, IInlineHost? newValue)
+        {
+            base.OnInlineHostChanged(oldValue, newValue);
+
+            if (Inlines is not null)
+            {
+                Inlines.InlineHost = newValue;
+            }
+        }
+
+        private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
+        {
+            if (oldValue is not null)
+            {
+                oldValue.LogicalChildren = null;
+                oldValue.InlineHost = null;
+                oldValue.Invalidated -= (s, e) => InlineHost?.Invalidate();
             }
 
-            if (Inlines.Text == null)
+            if (newValue is not null)
             {
-                return 0;
+                newValue.LogicalChildren = LogicalChildren;
+                newValue.InlineHost = InlineHost;
+                newValue.Invalidated += (s, e) => InlineHost?.Invalidate();
             }
-         
-            stringBuilder.Append(Inlines.Text);
-
-            return Inlines.Text.Length;
         }
     }
 }

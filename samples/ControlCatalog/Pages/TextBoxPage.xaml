@@ -66,6 +66,12 @@
                  FontFamily="Comic Sans MS"
                  InputMethod.IsInputMethodEnabled="False"
                  Foreground="Red"/>
+        <TextBox AcceptsReturn="True" 
+                 TextWrapping="Wrap" 
+                 Width="200" 
+                 Height="125"
+                 LineHeight="32"
+                 Text="Multiline TextBox with TextWrapping and increased LineHeight.&#xD;&#xD;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est." />
       </StackPanel>
       <StackPanel Orientation="Vertical" Spacing="8" Margin="8">
         <Label Classes="h2" Target="{Binding #firstResMFont}">res_m fonts</Label>

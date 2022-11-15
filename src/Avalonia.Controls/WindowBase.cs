@@ -94,9 +94,6 @@ namespace Avalonia.Controls
         
         public Screens Screens { get; private set; }
 
-        [Obsolete("No longer used. Always returns false.")]
-        protected bool AutoSizing => false;
-
         /// <summary>
         /// Gets or sets the owner of the window.
         /// </summary>
@@ -169,10 +166,6 @@ namespace Avalonia.Controls
             }
         }
 
-
-        [Obsolete("No longer used. Has no effect.")]
-        protected IDisposable BeginAutoSizing() => Disposable.Empty;
-
         /// <summary>
         /// Ensures that the window is initialized.
         /// </summary>
@@ -184,6 +177,26 @@ namespace Avalonia.Controls
                 init.BeginInit();
                 init.EndInit();
             }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnClosed(EventArgs e)
+        {
+            // Window must manually raise Loaded/Unloaded events as it is a visual root and
+            // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
+            OnUnloadedCore();
+
+            base.OnClosed(e);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnOpened(EventArgs e)
+        {
+            // Window must manually raise Loaded/Unloaded events as it is a visual root and
+            // does not raise OnAttachedToVisualTreeCore/OnDetachedFromVisualTreeCore events
+            ScheduleOnLoadedCore();
+
+            base.OnOpened(e);
         }
 
         protected override void HandleClosed()
@@ -207,9 +220,6 @@ namespace Avalonia.Controls
             }
         }
 
-        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
-        protected override void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
-
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
@@ -217,10 +227,14 @@ namespace Avalonia.Controls
         /// <param name="reason">The reason for the resize.</param>
         protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
         {
-            ClientSize = clientSize;
             FrameSize = PlatformImpl?.FrameSize;
-            LayoutManager.ExecuteLayoutPass();
-            Renderer?.Resized(clientSize);
+
+            if (ClientSize != clientSize)
+            {
+                ClientSize = clientSize;
+                LayoutManager.ExecuteLayoutPass();
+                Renderer?.Resized(clientSize);
+            }
         }
 
         /// <summary>

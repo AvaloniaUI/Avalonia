@@ -1,4 +1,3 @@
-
 namespace Avalonia.Controls.Primitives
 {
     /// <summary>

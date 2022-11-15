@@ -1,12 +1,12 @@
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Layout
 {
     /// <summary>
     /// Defines layout-related functionality for a control.
     /// </summary>
+    [NotClientImplementable]
     public interface ILayoutable : IVisual
     {
         /// <summary>

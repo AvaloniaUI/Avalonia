@@ -86,6 +86,16 @@
                         <sys:Exception />
                     </DataValidationErrors.Error>
                 </ComboBox>
+
+                <ComboBox PlaceholderText="Scaled" Width="166" RenderTransformOrigin="0,0">
+                    <ComboBox.RenderTransform>
+                      <ScaleTransform ScaleX="1.5" ScaleY="1.5"/>
+                    </ComboBox.RenderTransform>
+                    <ComboBoxItem>Inline Items</ComboBoxItem>
+                    <ComboBoxItem>Inline Item 2</ComboBoxItem>
+                    <ComboBoxItem>Inline Item 3</ComboBoxItem>
+                    <ComboBoxItem>Inline Item 4</ComboBoxItem>
+                </ComboBox>
             </WrapPanel>
 
             <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>

@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Avalonia.Metadata;
 
 namespace Avalonia.Animation
 {
+    [NotClientImplementable]
     public interface IGlobalClock : IClock
     {
     }

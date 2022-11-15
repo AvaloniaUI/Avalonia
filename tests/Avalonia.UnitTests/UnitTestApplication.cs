@@ -10,7 +10,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
 using Avalonia.Input.Platform;
 using Avalonia.Animation;
-using Avalonia.PlatformSupport;
 
 namespace Avalonia.UnitTests
 {
@@ -72,11 +71,15 @@ namespace Avalonia.UnitTests
                 .Bind<IStyler>().ToConstant(Services.Styler)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
-            var styles = Services.Theme?.Invoke();
+            var theme = Services.Theme?.Invoke();
 
-            if (styles != null)
+            if (theme is Styles styles)
             {
                 Styles.AddRange(styles);
+            }
+            else if (theme is not null)
+            {
+                Styles.Add(theme);
             }
         }
     }

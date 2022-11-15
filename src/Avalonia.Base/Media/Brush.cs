@@ -24,6 +24,12 @@ namespace Avalonia.Media
         public static readonly StyledProperty<ITransform?> TransformProperty =
             AvaloniaProperty.Register<Brush, ITransform?>(nameof(Transform));
 
+        /// <summary>
+        /// Defines the <see cref="TransformOrigin"/> property
+        /// </summary>
+        public static readonly StyledProperty<RelativePoint> TransformOriginProperty =
+            AvaloniaProperty.Register<Brush, RelativePoint>(nameof(TransformOrigin));
+
         /// <inheritdoc/>
         public event EventHandler? Invalidated;
 
@@ -49,6 +55,15 @@ namespace Avalonia.Media
         {
             get { return GetValue(TransformProperty); }
             set { SetValue(TransformProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets the origin of the brush <see cref="Transform"/>
+        /// </summary>
+        public RelativePoint TransformOrigin
+        {
+            get => GetValue(TransformOriginProperty);
+            set => SetValue(TransformOriginProperty, value);
         }
 
         /// <summary>

@@ -107,6 +107,13 @@ namespace Avalonia.Native
         private bool _isExtended;
         public bool IsClientAreaExtendedToDecorations => _isExtended;
 
+        public override void Show(bool activate, bool isDialog)
+        {
+            base.Show(activate, isDialog);
+            
+            InvalidateExtendedMargins();
+        }
+
         protected override bool ChromeHitTest (RawPointerEventArgs e)
         {
             if(_isExtended)

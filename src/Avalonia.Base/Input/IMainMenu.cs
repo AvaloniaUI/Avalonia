@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -7,6 +8,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Defines the interface for a window's main menu.
     /// </summary>
+    [NotClientImplementable]
     public interface IMainMenu : IVisual
     {
         /// <summary>

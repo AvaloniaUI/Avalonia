@@ -1,3 +1,4 @@
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 
@@ -6,6 +7,7 @@ namespace Avalonia.Rendering
     /// <summary>
     /// Represents the root of a renderable tree.
     /// </summary>
+    [NotClientImplementable]
     public interface IRenderRoot : IVisual
     {
         /// <summary>

@@ -35,7 +35,6 @@ namespace Avalonia.Media
         /// Initializes a new instance of the <see cref="DashStyle"/> class.
         /// </summary>
         public DashStyle()
-            : this(null, 0)
         {
         }
 
@@ -112,14 +111,13 @@ namespace Avalonia.Media
         /// <returns></returns>
         public ImmutableDashStyle ToImmutable() => new ImmutableDashStyle(Dashes, Offset);
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == DashesProperty)
             {
-                var oldValue = change.OldValue.GetValueOrDefault<AvaloniaList<double>>();
-                var newValue = change.NewValue.GetValueOrDefault<AvaloniaList<double>>();
+                var (oldValue, newValue) = change.GetOldAndNewValue<AvaloniaList<double>>();
 
                 if (oldValue is object)
                 {

@@ -1,12 +1,12 @@
 using System;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Layout
 {
     /// <summary>
     /// Manages measuring and arranging of controls.
     /// </summary>
+    [NotClientImplementable]
     public interface ILayoutManager : IDisposable
     {
         /// <summary>
@@ -43,17 +43,6 @@ namespace Avalonia.Layout
         /// it to carry out the initial layout of the control.
         /// </remarks>
         void ExecuteInitialLayoutPass();
-
-        /// <summary>
-        /// Executes the initial layout pass on a layout root.
-        /// </summary>
-        /// <param name="root">The control to lay out.</param>
-        /// <remarks>
-        /// You should not usually need to call this method explictly, the layout root will call
-        /// it to carry out the initial layout of the control.
-        /// </remarks>
-        [Obsolete("Call ExecuteInitialLayoutPass without parameter")]
-        void ExecuteInitialLayoutPass(ILayoutRoot root);
 
         /// <summary>
         /// Registers a control as wanting to receive effective viewport notifications.

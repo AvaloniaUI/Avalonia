@@ -14,6 +14,7 @@ using Avalonia.Input.Platform;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
@@ -49,6 +50,8 @@ namespace Avalonia
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
 
+        public bool UseCompositor { get; set; } = true;
+
         /// <summary>
         /// Enables ANGLE for Windows. For every Windows version that is above Windows 7, the default is true otherwise it's false.
         /// </summary>
@@ -61,14 +64,6 @@ namespace Avalonia
         {
             "Microsoft Basic Render"
         };
-
-        /// <summary>
-        /// Enables multitouch support. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
-        /// </remarks>
-        public bool? EnableMultitouch { get; set; } = true;
 
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
@@ -132,18 +127,9 @@ namespace Avalonia.Win32
         public static bool UseDeferredRendering => Options.UseDeferredRendering;
         internal static bool UseOverlayPopups => Options.OverlayPopups;
         public static Win32PlatformOptions Options { get; private set; }
+        
+        internal static Compositor Compositor { get; private set; }
 
-        public Size DoubleClickSize => new Size(
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
-
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
-        public Size TouchDoubleClickSize => new Size(16,16);
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public static void Initialize()
         {
             Initialize(new Win32PlatformOptions());
@@ -160,7 +146,6 @@ namespace Avalonia.Win32
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
-                .Bind<ISystemDialogImpl>().ToSingleton<SystemDialogImpl>()
                 .Bind<IWindowingPlatform>().ToConstant(s_instance)
                 .Bind<PlatformHotkeyConfiguration>().ToConstant(new PlatformHotkeyConfiguration(KeyModifiers.Control)
                 {
@@ -175,12 +160,15 @@ namespace Avalonia.Win32
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
 
-            Win32GlManager.Initialize();
+            var gl = Win32GlManager.Initialize();
 
             _uiThread = Thread.CurrentThread;
 
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
+
+            if (Options.UseCompositor)
+                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
         }
 
         public bool HasMessages()
@@ -242,8 +230,8 @@ namespace Avalonia.Win32
             });
         }
 
-        private static readonly int SignalW = unchecked((int) 0xdeadbeaf);
-        private static readonly int SignalL = unchecked((int)0x12345678);
+        private const int SignalW = unchecked((int)0xdeadbeaf);
+        private const int SignalL = unchecked((int)0x12345678);
 
         public void Signal(DispatcherPriority prio)
         {
@@ -351,7 +339,7 @@ namespace Avalonia.Win32
             using (var memoryStream = new MemoryStream())
             {
                 bitmap.Save(memoryStream);
-                return new IconImpl(new System.Drawing.Bitmap(memoryStream));
+                return CreateIconImpl(memoryStream);
             }
         }
 
@@ -359,11 +347,15 @@ namespace Avalonia.Win32
         {
             try
             {
+                // new Icon() will work only if stream is an "ico" file.
                 return new IconImpl(new System.Drawing.Icon(stream));
             }
             catch (ArgumentException)
             {
-                return new IconImpl(new System.Drawing.Bitmap(stream));
+                // Fallback to Bitmap creation and converting into a windows icon. 
+                using var icon = new System.Drawing.Bitmap(stream);
+                var hIcon = icon.GetHicon();
+                return new IconImpl(System.Drawing.Icon.FromHandle(hIcon));
             }
         }
 
@@ -395,5 +387,25 @@ namespace Avalonia.Win32
 
             SetProcessDPIAware();
         }
+
+        Size IPlatformSettings.GetTapSize(PointerType type)
+        {
+            return type switch
+            {
+                PointerType.Touch => new(10, 10),
+                _ => new(GetSystemMetrics(SystemMetric.SM_CXDRAG), GetSystemMetrics(SystemMetric.SM_CYDRAG)),
+            };
+        }
+
+        Size IPlatformSettings.GetDoubleTapSize(PointerType type)
+        {
+            return type switch
+            {
+                PointerType.Touch => new(16, 16),
+                _ => new(GetSystemMetrics(SystemMetric.SM_CXDOUBLECLK), GetSystemMetrics(SystemMetric.SM_CYDOUBLECLK)),
+            };
+        }
+
+        TimeSpan IPlatformSettings.GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
     }
 }

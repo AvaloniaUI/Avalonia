@@ -17,7 +17,7 @@ namespace Avalonia.FreeDesktop
 {
     public class DBusMenuExporter
     {
-        public static ITopLevelNativeMenuExporter TryCreateTopLevelNativeMenu(IntPtr xid)
+        public static ITopLevelNativeMenuExporter? TryCreateTopLevelNativeMenu(IntPtr xid)
         {
             if (DBusHelper.Connection == null)
                 return null;
@@ -37,10 +37,10 @@ namespace Avalonia.FreeDesktop
         {
             private readonly Connection _dbus;
             private readonly uint _xid;
-            private IRegistrar _registrar;
+            private IRegistrar? _registrar;
             private bool _disposed;
             private uint _revision = 1;
-            private NativeMenu _menu;
+            private NativeMenu? _menu;
             private readonly Dictionary<int, NativeMenuItemBase> _idsToItems = new Dictionary<int, NativeMenuItemBase>();
             private readonly Dictionary<NativeMenuItemBase, int> _itemsToIds = new Dictionary<NativeMenuItemBase, int>();
             private readonly HashSet<NativeMenu> _menus = new HashSet<NativeMenu>();
@@ -73,10 +73,10 @@ namespace Avalonia.FreeDesktop
                     if (_appMenu)
                     {
                         await _dbus.RegisterObjectAsync(this);
-                        _registrar = DBusHelper.Connection.CreateProxy<IRegistrar>(
+                        _registrar = DBusHelper.Connection?.CreateProxy<IRegistrar>(
                             "com.canonical.AppMenu.Registrar",
                             "/com/canonical/AppMenu/Registrar");
-                        if (!_disposed)
+                        if (!_disposed && _registrar is { })
                             await _registrar.RegisterWindowAsync(_xid, ObjectPath);
                     }
                     else
@@ -109,9 +109,9 @@ namespace Avalonia.FreeDesktop
 
 
             public bool IsNativeMenuExported { get; private set; }
-            public event EventHandler OnIsNativeMenuExportedChanged;
+            public event EventHandler? OnIsNativeMenuExportedChanged;
 
-            public void SetNativeMenu(NativeMenu menu)
+            public void SetNativeMenu(NativeMenu? menu)
             {
                 if (menu == null)
                     menu = new NativeMenu();
@@ -153,7 +153,7 @@ namespace Avalonia.FreeDesktop
                 Dispatcher.UIThread.Post(DoLayoutReset, DispatcherPriority.Background);
             }
 
-            private (NativeMenuItemBase item, NativeMenu menu) GetMenu(int id)
+            private (NativeMenuItemBase? item, NativeMenu? menu) GetMenu(int id)
             {
                 if (id == 0)
                     return (null, _menu);
@@ -161,7 +161,7 @@ namespace Avalonia.FreeDesktop
                 return (item, (item as NativeMenuItem)?.Menu);
             }
 
-            private void EnsureSubscribed(NativeMenu menu)
+            private void EnsureSubscribed(NativeMenu? menu)
             {
                 if(menu!=null && _menus.Add(menu))
                     ((INotifyCollectionChanged)menu.Items).CollectionChanged += OnMenuItemsChanged;
@@ -180,12 +180,12 @@ namespace Avalonia.FreeDesktop
                 return id;
             }
 
-            private void OnMenuItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
+            private void OnMenuItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
             {
                 QueueReset();
             }
 
-            private void OnItemPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+            private void OnItemPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
             {
                 QueueReset();
             }
@@ -216,7 +216,7 @@ namespace Avalonia.FreeDesktop
                 "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state", "icon-data"
             };
             
-            object GetProperty((NativeMenuItemBase item, NativeMenu menu) i, string name)
+            object? GetProperty((NativeMenuItemBase? item, NativeMenu? menu) i, string name)
             {
                 var (it, menu) = i;
 
@@ -302,7 +302,7 @@ namespace Avalonia.FreeDesktop
             }
 
             private List<KeyValuePair<string, object>> _reusablePropertyList = new List<KeyValuePair<string, object>>();
-            KeyValuePair<string, object>[] GetProperties((NativeMenuItemBase item, NativeMenu menu) i, string[] names)
+            KeyValuePair<string, object>[] GetProperties((NativeMenuItemBase? item, NativeMenu? menu) i, string[] names)
             {
                 if (names?.Length > 0 != true)
                     names = AllProperties;
@@ -336,11 +336,11 @@ namespace Avalonia.FreeDesktop
                 return Task.FromResult(rv);
             }
 
-            (int, KeyValuePair<string, object>[], object[]) GetLayout(NativeMenuItemBase item, NativeMenu menu, int depth, string[] propertyNames)
+            (int, KeyValuePair<string, object>[], object[]) GetLayout(NativeMenuItemBase? item, NativeMenu? menu, int depth, string[] propertyNames)
             {
                 var id = item == null ? 0 : GetId(item);
                 var props = GetProperties((item, menu), propertyNames);
-                var children = (depth == 0 || menu == null) ? new object[0] : new object[menu.Items.Count];
+                var children = (depth == 0 || menu == null) ? Array.Empty<object>() : new object[menu.Items.Count];
                 if(menu != null)
                     for (var c = 0; c < children.Length; c++)
                     {
@@ -397,7 +397,7 @@ namespace Avalonia.FreeDesktop
             {
                 foreach (var e in Events)
                     HandleEvent(e.id, e.eventId, e.data, e.timestamp);
-                return Task.FromResult(new int[0]);
+                return Task.FromResult(Array.Empty<int>());
             }
 
             public async Task<bool> AboutToShowAsync(int Id)
@@ -407,29 +407,29 @@ namespace Avalonia.FreeDesktop
 
             public async Task<(int[] updatesNeeded, int[] idErrors)> AboutToShowGroupAsync(int[] Ids)
             {
-                return (new int[0], new int[0]);
+                return (Array.Empty<int>(), Array.Empty<int>());
             }
 
             #region Events
 
             private event Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)>
                 ItemsPropertiesUpdated { add { } remove { } }
-            private event Action<(uint revision, int parent)> LayoutUpdated;
+            private event Action<(uint revision, int parent)>? LayoutUpdated;
             private event Action<(int id, uint timestamp)> ItemActivationRequested { add { } remove { } }
             private event Action<PropertyChanges> PropertiesChanged { add { } remove { } }
 
-            async Task<IDisposable> IDBusMenu.WatchItemsPropertiesUpdatedAsync(Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)> handler, Action<Exception> onError)
+            async Task<IDisposable> IDBusMenu.WatchItemsPropertiesUpdatedAsync(Action<((int, IDictionary<string, object>)[] updatedProps, (int, string[])[] removedProps)> handler, Action<Exception>? onError)
             {
                 ItemsPropertiesUpdated += handler;
                 return Disposable.Create(() => ItemsPropertiesUpdated -= handler);
             }
-            async Task<IDisposable> IDBusMenu.WatchLayoutUpdatedAsync(Action<(uint revision, int parent)> handler, Action<Exception> onError)
+            async Task<IDisposable> IDBusMenu.WatchLayoutUpdatedAsync(Action<(uint revision, int parent)> handler, Action<Exception>? onError)
             {
                 LayoutUpdated += handler;
                 return Disposable.Create(() => LayoutUpdated -= handler);
             }
 
-            async Task<IDisposable> IDBusMenu.WatchItemActivationRequestedAsync(Action<(int id, uint timestamp)> handler, Action<Exception> onError)
+            async Task<IDisposable> IDBusMenu.WatchItemActivationRequestedAsync(Action<(int id, uint timestamp)> handler, Action<Exception>? onError)
             {
                 ItemActivationRequested+= handler;
                 return Disposable.Create(() => ItemActivationRequested -= handler);

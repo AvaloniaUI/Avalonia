@@ -15,6 +15,8 @@ namespace Avalonia.Input
             _inputRoot = inputRoot ?? throw new ArgumentNullException(nameof(inputRoot));
         }
 
+        public PixelPoint? LastPosition => _lastPointer?.position;
+        
         public void OnCompleted()
         {
             ClearPointerOver();
@@ -66,27 +68,29 @@ namespace Avalonia.Input
 
                 if (dirtyRect.Contains(clientPoint))
                 {
-                    SetPointerOver(pointer, _inputRoot, _inputRoot.InputHitTest(clientPoint), 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
+                    var element = pointer.Captured ?? _inputRoot.InputHitTest(clientPoint);
+                    SetPointerOver(pointer, _inputRoot, element, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
                 else if (!_inputRoot.Bounds.Contains(clientPoint))
                 {
-                    ClearPointerOver(pointer, _inputRoot, 0, new Point(-1, -1), PointerPointProperties.None, KeyModifiers.None);
+                    ClearPointerOver(pointer, _inputRoot, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
             }
         }
 
         private void ClearPointerOver()
         {
-            if (_lastPointer is (var pointer, var _))
+            if (_lastPointer is (var pointer, var position))
             {
-                ClearPointerOver(pointer, _inputRoot, 0, new Point(-1, -1), PointerPointProperties.None, KeyModifiers.None);
+                var clientPoint = _inputRoot.PointToClient(position);
+                ClearPointerOver(pointer, _inputRoot, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
             }
             _lastPointer = null;
             _lastActivePointerDevice = null;
         }
 
         private void ClearPointerOver(IPointer pointer, IInputRoot root,
-            ulong timestamp, Point position, PointerPointProperties properties, KeyModifiers inputModifiers)
+            ulong timestamp, Point? position, PointerPointProperties properties, KeyModifiers inputModifiers)
         {
             var element = root.PointerOverElement;
             if (element is null)
@@ -94,11 +98,10 @@ namespace Avalonia.Input
                 return;
             }
 
-            // Do not pass rootVisual, when we have unknown (negative) position,
+            // Do not pass rootVisual, when we have unknown position,
             // so GetPosition won't return invalid values.
-            var hasPosition = position.X >= 0 && position.Y >= 0;
-            var e = new PointerEventArgs(InputElement.PointerLeaveEvent, element, pointer,
-                hasPosition ? root : null, hasPosition ? position : default,
+            var e = new PointerEventArgs(InputElement.PointerExitedEvent, element, pointer,
+                position.HasValue ? root : null, position.HasValue ? position.Value : default,
                 timestamp, properties, inputModifiers);
 
             if (element != null && !element.IsAttachedToVisualTree)
@@ -156,6 +159,8 @@ namespace Avalonia.Input
                     ClearPointerOver(pointer, root, timestamp, position, properties, inputModifiers);
                 }
             }
+
+            _lastPointer = (pointer, root.PointToScreen(position));
         }
 
         private void SetPointerOverToElement(IPointer pointer, IInputRoot root, IInputElement element,
@@ -177,7 +182,7 @@ namespace Avalonia.Input
 
             el = root.PointerOverElement;
 
-            var e = new PointerEventArgs(InputElement.PointerLeaveEvent, el, pointer, root, position,
+            var e = new PointerEventArgs(InputElement.PointerExitedEvent, el, pointer, root, position,
                 timestamp, properties, inputModifiers);
             if (el != null && branch != null && !el.IsAttachedToVisualTree)
             {
@@ -193,9 +198,8 @@ namespace Avalonia.Input
             }
 
             el = root.PointerOverElement = element;
-            _lastPointer = (pointer, root.PointToScreen(position));
 
-            e.RoutedEvent = InputElement.PointerEnterEvent;
+            e.RoutedEvent = InputElement.PointerEnteredEvent;
 
             while (el != null && el != branch)
             {

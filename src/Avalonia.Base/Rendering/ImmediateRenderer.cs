@@ -277,18 +277,20 @@ namespace Avalonia.Rendering
                 var m = Matrix.CreateTranslation(visual.Bounds.Position);
 
                 var renderTransform = Matrix.Identity;
+                
+                // this should be calculated BEFORE renderTransform
+                if (visual.HasMirrorTransform)
+                {
+                    var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
+                    renderTransform *= mirrorMatrix;
+                }
 
                 if (visual.RenderTransform != null)
                 {
                     var origin = visual.RenderTransformOrigin.ToPixels(new Size(visual.Bounds.Width, visual.Bounds.Height));
                     var offset = Matrix.CreateTranslation(origin);
-                    renderTransform = (-offset) * visual.RenderTransform.Value * (offset);
-                }
-
-                if (visual.HasMirrorTransform)
-                {
-                    var mirrorMatrix = new Matrix(-1.0, 0.0, 0.0, 1.0, visual.Bounds.Width, 0);
-                    renderTransform *= mirrorMatrix;
+                    var finalTransform = (-offset) * visual.RenderTransform.Value * (offset);
+                    renderTransform *= finalTransform;
                 }
 
                 m = renderTransform * m;
@@ -329,7 +331,11 @@ namespace Avalonia.Rendering
                     if (_updateTransformedBounds)
                         visual.TransformedBounds = transformed;
 
-                    foreach (var child in visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance))
+                    var childrenEnumerable = visual.HasNonUniformZIndexChildren
+                        ? visual.VisualChildren.OrderBy(x => x, ZIndexComparer.Instance)
+                        : (IEnumerable<IVisual>)visual.VisualChildren;
+                    
+                    foreach (var child in childrenEnumerable)
                     {
                         var childBounds = GetTransformedBounds(child);
 

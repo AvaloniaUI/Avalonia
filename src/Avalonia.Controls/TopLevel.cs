@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -11,6 +12,7 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
@@ -34,8 +36,7 @@ namespace Avalonia.Controls
         ICloseable,
         IStyleHost,
         ILogicalRoot,
-        ITextInputMethodRoot,
-        IWeakEventSubscriber<ResourcesChangedEventArgs>
+        ITextInputMethodRoot
     {
         /// <summary>
         /// Defines the <see cref="ClientSize"/> property.
@@ -93,7 +94,9 @@ namespace Avalonia.Controls
         private WindowTransparencyLevel _actualTransparencyLevel;
         private ILayoutManager? _layoutManager;
         private Border? _transparencyFallbackBorder;
-
+        private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
+        private IStorageProvider? _storageProvider;
+        
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
         /// </summary>
@@ -192,7 +195,13 @@ namespace Avalonia.Controls
 
             if (((IStyleHost)this).StylingParent is IResourceHost applicationResources)
             {
-                ResourcesChangedWeakEvent.Subscribe(applicationResources, this);
+                _resourcesChangesSubscriber = new TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>(
+                    this, static (target, _, _, e) =>
+                    {
+                        ((ILogical)target).NotifyResourcesChanged(e);
+                    });
+
+                ResourcesChangedWeakEvent.Subscribe(applicationResources, _resourcesChangesSubscriber);
             }
 
             impl.LostFocus += PlatformImpl_LostFocus;
@@ -277,6 +286,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IRenderer Renderer { get; private set; }
 
+        internal PixelPoint? LastPointerPosition => _pointerOverPreProcessor?.LastPosition;
+        
         /// <summary>
         /// Gets the access key handler for the window.
         /// </summary>
@@ -292,14 +303,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(PointerOverElementProperty); }
             set { SetValue(PointerOverElementProperty, value); }
-        }
-
-        /// <inheritdoc/>
-        IMouseDevice? IInputRoot.MouseDevice => PlatformImpl?.MouseDevice;
-
-        void IWeakEventSubscriber<ResourcesChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, ResourcesChangedEventArgs e)
-        {
-            ((ILogical)this).NotifyResourcesChanged(e);
         }
 
         /// <summary>
@@ -318,6 +321,11 @@ namespace Avalonia.Controls
         double IRenderRoot.RenderScaling => PlatformImpl?.RenderScaling ?? 1;
 
         IStyleHost IStyleHost.StylingParent => _globalStyles!;
+        
+        public IStorageProvider StorageProvider => _storageProvider
+            ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
+            ?? (PlatformImpl as ITopLevelImplWithStorageProvider)?.StorageProvider
+            ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
 
         IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
 
@@ -396,9 +404,6 @@ namespace Avalonia.Controls
 
             LayoutManager?.Dispose();
         }
-
-        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
-        protected virtual void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
 
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.
@@ -483,7 +488,11 @@ namespace Avalonia.Controls
         /// Raises the <see cref="Opened"/> event.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnOpened(EventArgs e) => Opened?.Invoke(this, e);
+        protected virtual void OnOpened(EventArgs e)
+        {
+            FrameSize = PlatformImpl?.FrameSize;
+            Opened?.Invoke(this, e);  
+        } 
 
         /// <summary>
         /// Raises the <see cref="Closed"/> event.

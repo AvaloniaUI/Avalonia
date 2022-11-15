@@ -1,10 +1,11 @@
-﻿#nullable enable
+﻿using Avalonia.Metadata;
 
 namespace Avalonia.Styling.Activators
 {
     /// <summary>
     /// Receives notifications from an <see cref="IStyleActivator"/>.
     /// </summary>
+    [Unstable]
     public interface IStyleActivatorSink
     {
         /// <summary>

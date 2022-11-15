@@ -1,4 +1,5 @@
 using Avalonia.Controls.Primitives;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -6,6 +7,7 @@ namespace Avalonia.Controls.Presenters
     /// Interface for controls that present a single item of data inside a
     /// <see cref="TemplatedControl"/> template.
     /// </summary>
+    [NotClientImplementable]
     public interface IContentPresenter : IPresenter
     {
         /// <summary>

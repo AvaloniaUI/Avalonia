@@ -1,5 +1,8 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Input.TextInput
 {
+    [Unstable]
     public interface ITextInputMethodImpl
     {
         void SetClient(ITextInputMethodClient? client);
@@ -8,6 +11,7 @@ namespace Avalonia.Input.TextInput
         void Reset();
     }
     
+    [NotClientImplementable]
     public interface ITextInputMethodRoot : IInputRoot
     {
         ITextInputMethodImpl? InputMethod { get; }

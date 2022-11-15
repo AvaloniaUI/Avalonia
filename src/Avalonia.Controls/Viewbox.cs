@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls
@@ -8,13 +9,13 @@ namespace Avalonia.Controls
     /// </summary>
     public class Viewbox : Control
     {
-        private Decorator _containerVisual;
+        private readonly ViewboxContainer _containerVisual;
 
         /// <summary>
         /// Defines the <see cref="Stretch"/> property.
         /// </summary>
         public static readonly StyledProperty<Stretch> StretchProperty =
-            AvaloniaProperty.Register<Image, Stretch>(nameof(Stretch), Stretch.Uniform);
+            AvaloniaProperty.Register<Viewbox, Stretch>(nameof(Stretch), Stretch.Uniform);
 
         /// <summary>
         /// Defines the <see cref="StretchDirection"/> property.
@@ -37,9 +38,11 @@ namespace Avalonia.Controls
 
         public Viewbox()
         {
-            _containerVisual = new Decorator();
+            // The Child control is hosted inside a ViewboxContainer control so that the transform
+            // can be applied independently of the Viewbox and Child transforms.
+            _containerVisual = new ViewboxContainer();
             _containerVisual.RenderTransformOrigin = RelativePoint.TopLeft;
-            LogicalChildren.Add(_containerVisual);
+            ((ISetLogicalParent)_containerVisual).SetParent(this);
             VisualChildren.Add(_containerVisual);
         }
 
@@ -82,13 +85,28 @@ namespace Avalonia.Controls
             set => _containerVisual.RenderTransform = value;
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == ChildProperty)
             {
-                _containerVisual.Child = change.NewValue.GetValueOrDefault<IControl>();
+                var (oldChild, newChild) = change.GetOldAndNewValue<IControl>();
+
+                if (oldChild is not null)
+                {
+                    ((ISetLogicalParent)oldChild).SetParent(null);
+                    LogicalChildren.Remove(oldChild);
+                }
+
+                _containerVisual.Child = newChild;
+
+                if (newChild is not null)
+                {
+                    ((ISetLogicalParent)newChild).SetParent(this);
+                    LogicalChildren.Add(newChild);
+                }
+
                 InvalidateMeasure();
             }
         }
@@ -120,7 +138,7 @@ namespace Avalonia.Controls
                 var childSize = child.DesiredSize;
                 var scale = Stretch.CalculateScaling(finalSize, childSize, StretchDirection);
 
-                InternalTransform = new ScaleTransform(scale.X, scale.Y);
+                InternalTransform = new ImmutableTransform(Matrix.CreateScale(scale.X, scale.Y));
 
                 child.Arrange(new Rect(childSize));
 
@@ -128,6 +146,34 @@ namespace Avalonia.Controls
             }
 
             return finalSize;
+        }
+
+        /// <summary>
+        /// A simple container control which hosts its child as a visual but not logical child.
+        /// </summary>
+        private class ViewboxContainer : Control
+        {
+            private IControl? _child;
+
+            public IControl? Child
+            {
+                get => _child;
+                set
+                {
+                    if (_child != value)
+                    {
+                        if (_child is not null)
+                            VisualChildren.Remove(_child);
+
+                        _child = value;
+
+                        if (_child is not null)
+                            VisualChildren.Add(_child);
+
+                        InvalidateMeasure();
+                    }
+                }
+            }
         }
     }
 }

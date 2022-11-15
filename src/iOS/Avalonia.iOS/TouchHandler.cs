@@ -41,7 +41,7 @@ namespace Avalonia.iOS
                         _ => RawPointerEventType.TouchUpdate
                     }, pt, RawInputModifiers.None, id);
 
-                _device.ProcessRawEvent(ev);
+                _tl.Input?.Invoke(ev);
                 
                 if (t.Phase == UITouchPhase.Cancelled || t.Phase == UITouchPhase.Ended)
                     _knownTouches.Remove(t);

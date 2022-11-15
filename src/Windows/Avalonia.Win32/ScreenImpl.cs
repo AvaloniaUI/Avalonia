@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
+    [Unstable]
     public class ScreenImpl : IScreenImpl
     {
         public int ScreenCount

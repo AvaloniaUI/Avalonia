@@ -94,7 +94,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<KeyEventArgs> KeyDownEvent =
             RoutedEvent.Register<InputElement, KeyEventArgs>(
-                "KeyDown",
+                nameof(KeyDown),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<KeyEventArgs> KeyUpEvent =
             RoutedEvent.Register<InputElement, KeyEventArgs>(
-                "KeyUp",
+                nameof(KeyUp),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<TextInputEventArgs> TextInputEvent =
             RoutedEvent.Register<InputElement, TextInputEventArgs>(
-                "TextInput",
+                nameof(TextInput),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         
         /// <summary>
@@ -124,27 +124,31 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<TextInputMethodClientRequestedEventArgs> TextInputMethodClientRequestedEvent =
             RoutedEvent.Register<InputElement, TextInputMethodClientRequestedEventArgs>(
-                "TextInputMethodClientRequested",
+                nameof(TextInputMethodClientRequested),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
-        /// Defines the <see cref="PointerEnter"/> event.
+        /// Defines the <see cref="PointerEntered"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerEnterEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerEnter), RoutingStrategies.Direct);
+        public static readonly RoutedEvent<PointerEventArgs> PointerEnteredEvent =
+            RoutedEvent.Register<InputElement, PointerEventArgs>(
+                nameof(PointerEntered),
+                RoutingStrategies.Direct);
 
         /// <summary>
-        /// Defines the <see cref="PointerLeave"/> event.
+        /// Defines the <see cref="PointerExited"/> event.
         /// </summary>
-        public static readonly RoutedEvent<PointerEventArgs> PointerLeaveEvent =
-            RoutedEvent.Register<InputElement, PointerEventArgs>(nameof(PointerLeave), RoutingStrategies.Direct);
+        public static readonly RoutedEvent<PointerEventArgs> PointerExitedEvent =
+            RoutedEvent.Register<InputElement, PointerEventArgs>(
+                nameof(PointerExited),
+                RoutingStrategies.Direct);
 
         /// <summary>
         /// Defines the <see cref="PointerMoved"/> event.
         /// </summary>
         public static readonly RoutedEvent<PointerEventArgs> PointerMovedEvent =
             RoutedEvent.Register<InputElement, PointerEventArgs>(
-                "PointerMove",
+                nameof(PointerMoved),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -152,7 +156,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<PointerPressedEventArgs> PointerPressedEvent =
             RoutedEvent.Register<InputElement, PointerPressedEventArgs>(
-                "PointerPressed",
+                nameof(PointerPressed),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -160,7 +164,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<PointerReleasedEventArgs> PointerReleasedEvent =
             RoutedEvent.Register<InputElement, PointerReleasedEventArgs>(
-                "PointerReleased",
+                nameof(PointerReleased),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
         
         /// <summary>
@@ -168,7 +172,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<PointerCaptureLostEventArgs> PointerCaptureLostEvent =
             RoutedEvent.Register<InputElement, PointerCaptureLostEventArgs>(
-                "PointerCaptureLost", 
+                nameof(PointerCaptureLost), 
                 RoutingStrategies.Direct);
 
         /// <summary>
@@ -176,7 +180,7 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<PointerWheelEventArgs> PointerWheelChangedEvent =
             RoutedEvent.Register<InputElement, PointerWheelEventArgs>(
-                "PointerWheelChanged",
+                nameof(PointerWheelChanged),
                 RoutingStrategies.Tunnel | RoutingStrategies.Bubble);
 
         /// <summary>
@@ -208,8 +212,8 @@ namespace Avalonia.Input
             KeyDownEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyDown(e));
             KeyUpEvent.AddClassHandler<InputElement>((x, e) => x.OnKeyUp(e));
             TextInputEvent.AddClassHandler<InputElement>((x, e) => x.OnTextInput(e));
-            PointerEnterEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerEnterCore(e));
-            PointerLeaveEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerLeaveCore(e));
+            PointerEnteredEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerEnteredCore(e));
+            PointerExitedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerExitedCore(e));
             PointerMovedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerMoved(e));
             PointerPressedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerPressed(e));
             PointerReleasedEvent.AddClassHandler<InputElement>((x, e) => x.OnPointerReleased(e));
@@ -279,19 +283,19 @@ namespace Avalonia.Input
         /// <summary>
         /// Occurs when the pointer enters the control.
         /// </summary>
-        public event EventHandler<PointerEventArgs>? PointerEnter
+        public event EventHandler<PointerEventArgs>? PointerEntered
         {
-            add { AddHandler(PointerEnterEvent, value); }
-            remove { RemoveHandler(PointerEnterEvent, value); }
+            add { AddHandler(PointerEnteredEvent, value); }
+            remove { RemoveHandler(PointerEnteredEvent, value); }
         }
 
         /// <summary>
         /// Occurs when the pointer leaves the control.
         /// </summary>
-        public event EventHandler<PointerEventArgs>? PointerLeave
+        public event EventHandler<PointerEventArgs>? PointerExited
         {
-            add { AddHandler(PointerLeaveEvent, value); }
-            remove { RemoveHandler(PointerLeaveEvent, value); }
+            add { AddHandler(PointerExitedEvent, value); }
+            remove { RemoveHandler(PointerExitedEvent, value); }
         }
 
         /// <summary>
@@ -539,18 +543,18 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerEnter"/> event occurs.
+        /// Called before the <see cref="PointerEntered"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPointerEnter(PointerEventArgs e)
+        protected virtual void OnPointerEntered(PointerEventArgs e)
         {
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerLeave"/> event occurs.
+        /// Called before the <see cref="PointerExited"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        protected virtual void OnPointerLeave(PointerEventArgs e)
+        protected virtual void OnPointerExited(PointerEventArgs e)
         {
         }
 
@@ -561,7 +565,9 @@ namespace Avalonia.Input
         protected virtual void OnPointerMoved(PointerEventArgs e)
         {
             if (_gestureRecognizers?.HandlePointerMoved(e) == true)
+            {
                 e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -571,7 +577,9 @@ namespace Avalonia.Input
         protected virtual void OnPointerPressed(PointerPressedEventArgs e)
         {
             if (_gestureRecognizers?.HandlePointerPressed(e) == true)
+            {
                 e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -581,7 +589,9 @@ namespace Avalonia.Input
         protected virtual void OnPointerReleased(PointerReleasedEventArgs e)
         {
             if (_gestureRecognizers?.HandlePointerReleased(e) == true)
+            {
                 e.Handled = true;
+            }
         }
 
         /// <summary>
@@ -601,21 +611,21 @@ namespace Avalonia.Input
         {
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == IsFocusedProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<bool>(), null);
+                UpdatePseudoClasses(change.GetNewValue<bool>(), null);
             }
             else if (change.Property == IsPointerOverProperty)
             {
-                UpdatePseudoClasses(null, change.NewValue.GetValueOrDefault<bool>());
+                UpdatePseudoClasses(null, change.GetNewValue<bool>());
             }
             else if (change.Property == IsKeyboardFocusWithinProperty)
             {
-                PseudoClasses.Set(":focus-within", change.NewValue.GetValueOrDefault<bool>());
+                PseudoClasses.Set(":focus-within", change.GetNewValue<bool>());
             }
         }
 
@@ -634,23 +644,23 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerEnter"/> event occurs.
+        /// Called before the <see cref="PointerEntered"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private void OnPointerEnterCore(PointerEventArgs e)
+        private void OnPointerEnteredCore(PointerEventArgs e)
         {
             IsPointerOver = true;
-            OnPointerEnter(e);
+            OnPointerEntered(e);
         }
 
         /// <summary>
-        /// Called before the <see cref="PointerLeave"/> event occurs.
+        /// Called before the <see cref="PointerExited"/> event occurs.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private void OnPointerLeaveCore(PointerEventArgs e)
+        private void OnPointerExitedCore(PointerEventArgs e)
         {
             IsPointerOver = false;
-            OnPointerLeave(e);
+            OnPointerExited(e);
         }
 
         /// <summary>

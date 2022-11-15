@@ -218,6 +218,8 @@ namespace Avalonia.Controls.Primitives
             {
                 // No explicit height values were set so we can autosize
                 autoSizeHeight = true;
+                // We need to invalidate desired height in order to grow or shrink as needed
+                InvalidateDesiredHeight();
                 measureHeight = double.PositiveInfinity;
             }
             else

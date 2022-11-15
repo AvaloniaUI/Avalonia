@@ -11,7 +11,9 @@ using Avalonia.Input.Raw;
 using Avalonia.Native.Interop;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 
 namespace Avalonia.Native
@@ -45,7 +47,7 @@ namespace Avalonia.Native
     }
 
     internal abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost
+        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
     {
         protected readonly IAvaloniaNativeFactory _factory;
         protected IInputRoot _inputRoot;
@@ -73,6 +75,7 @@ namespace Avalonia.Native
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
             _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
+            StorageProvider = new SystemDialogs(this, _factory.CreateSystemDialogs());
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext glContext)
@@ -84,11 +87,12 @@ namespace Avalonia.Native
             if (_gpu)
                 _glSurface = new GlPlatformSurface(window, _glContext);
             Screen = new ScreenImpl(screens);
+
             _savedLogicalSize = ClientSize;
             _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
 
-            var monitor = Screen.AllScreens.OrderBy(x => x.PixelDensity)
+            var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
 
             Resize(new Size(monitor.WorkingArea.Width * 0.75d, monitor.WorkingArea.Height * 0.7d), PlatformResizeReason.Layout);
@@ -116,8 +120,12 @@ namespace Avalonia.Native
             {
                 if (_native != null)
                 {
-                    var s = _native.FrameSize;
-                    return new Size(s.Width, s.Height);
+                    unsafe
+                    {
+                        var s = new AvnSize { Width = -1, Height = -1 };
+                        _native.GetFrameSize(&s);
+                        return s.Width < 0  && s.Height < 0 ? null : new Size(s.Width, s.Height);
+                    }
                 }
 
                 return default;
@@ -359,13 +367,18 @@ namespace Avalonia.Native
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
+            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
+            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
+            if (customRendererFactory != null)
+                return customRendererFactory.Create(root, loop);
+            
             if (_deferredRendering)
             {
-                var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-                var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-
-                if (customRendererFactory != null)
-                    return customRendererFactory.Create(root, loop);
+                if (AvaloniaNativePlatform.Compositor != null)
+                    return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor)
+                    {
+                        RenderOnlyOnRenderThread = false
+                    };
                 return new DeferredRenderer(root, loop);
             }
 
@@ -510,5 +523,7 @@ namespace Avalonia.Native
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0, 0);
 
         public IPlatformHandle Handle { get; private set; }
+
+        public IStorageProvider StorageProvider { get; }
     }
 }

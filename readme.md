@@ -70,11 +70,15 @@ For more information see the [.NET Foundation Code of Conduct](https://dotnetfou
 
 Avalonia is licenced under the [MIT licence](licence.md).
 
-## Support Avalonia
+## Donate
+
+Donating to the project is a fantastic way to thank our valued contributors for their hard work. Your donations are shared among our community and awarded for significant contributions.  
+
+If you need support see Commercial Support section below.
+
+Donate with BTC or use [Open Collective](https://opencollective.com/avalonia).
 
 **BTC**: bc1q05wx78qemgy9x6ytl5ljk2xrt00yqargyjm8gx
-
-This will be shared with the community and awarded for significant contributions.
 
 ### Backers
 
@@ -98,6 +102,11 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 <a href="https://opencollective.com/Avalonia/sponsor/9/website" target="_blank"><img src="https://opencollective.com/Avalonia/sponsor/9/avatar.svg"></a>
 <a href="https://baseheadinc.com/" target="_blank"><img height="50" src="https://baseheadinc.com/wp-content/uploads/2020/09/BH-Logo-for-Site-Header-New.png"></a>
 
+## Commercial Support 
+
+We have a range of [support plans available](https://avaloniaui.net/support) for those looking to partner with the creators of Avalonia, enabling access to the best support at every step of the development process.
+
+*Please note that donations are not considered payment for commercial support agreements. Please contact us to discuss your needs first. [team@avaloniaui.net](mailto://team@avaloniaui.net)*
 ## .NET Foundation
 
 This project is supported by the [.NET Foundation](https://dotnetfoundation.org).

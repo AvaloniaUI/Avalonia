@@ -31,6 +31,19 @@ public class WeakEvents
                 return () => s.PropertyChanged -= handler;
             });
 
+
+    /// <summary>
+    /// Represents PropertyChanged event from <see cref="AvaloniaObject"/>
+    /// </summary>
+    public static readonly WeakEvent<AvaloniaObject, AvaloniaPropertyChangedEventArgs>
+        AvaloniaPropertyChanged = WeakEvent.Register<AvaloniaObject, AvaloniaPropertyChangedEventArgs>(
+            (s, h) =>
+            {
+                EventHandler<AvaloniaPropertyChangedEventArgs> handler = (_, e) => h(s, e);
+                s.PropertyChanged += handler;
+                return () => s.PropertyChanged -= handler;
+            });
+
     /// <summary>
     /// Represents CanExecuteChanged event from <see cref="ICommand"/>
     /// </summary>

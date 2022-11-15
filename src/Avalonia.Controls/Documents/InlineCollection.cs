@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Text;
 using Avalonia.Collections;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Documents
 {
@@ -12,32 +12,55 @@ namespace Avalonia.Controls.Documents
     [WhitespaceSignificantCollection]
     public class InlineCollection : AvaloniaList<Inline>
     {
-        private string? _text = string.Empty;
+        private IAvaloniaList<ILogical>? _logicalChildren;
+        private IInlineHost? _inlineHost;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InlineCollection"/> class.
         /// </summary>
-        public InlineCollection(ILogical parent) : base(0)
+        public InlineCollection()
         {
             ResetBehavior = ResetBehavior.Remove;
-            
+
             this.ForEachItem(
                 x =>
-                {
-                    ((ISetLogicalParent)x).SetParent(parent);
-                    x.Invalidated += Invalidate;
+                {                   
+                    x.InlineHost = InlineHost;
+                    LogicalChildren?.Add(x);
                     Invalidate();
                 },
                 x =>
                 {
-                    ((ISetLogicalParent)x).SetParent(null);
-                    x.Invalidated -= Invalidate;
+                    LogicalChildren?.Remove(x);
+                    x.InlineHost = InlineHost;
                     Invalidate();
                 },
                 () => throw new NotSupportedException());
         }
 
-        public bool HasComplexContent => Count > 0;
+        internal IAvaloniaList<ILogical>? LogicalChildren
+        {
+            get => _logicalChildren;
+            set
+            {
+                var oldValue = _logicalChildren;
+
+                _logicalChildren = value;
+
+                OnParentChanged(oldValue, value);
+            }
+        }
+
+        internal IInlineHost? InlineHost
+        {
+            get => _inlineHost;
+            set
+            {
+                _inlineHost = value;
+
+                OnInlineHostChanged(value);
+            }
+        }
 
         /// <summary>
         /// Gets or adds the text held by the inlines collection.
@@ -49,75 +72,107 @@ namespace Avalonia.Controls.Documents
         {
             get
             {
-                if (!HasComplexContent)
+                if (Count == 0)
                 {
-                    return _text;
+                    return null;
                 }
-                
-                var builder = new StringBuilder();
 
-                foreach(var inline in this)
+                var builder = StringBuilderCache.Acquire();
+
+                foreach (var inline in this)
                 {
                     inline.AppendText(builder);
                 }
 
-                return builder.ToString();
+                return StringBuilderCache.GetStringAndRelease(builder);
             }
-            set
-            {
-                if (HasComplexContent)
-                {
-                    Add(new Run(value));
-                }
-                else
-                {
-                    _text = value;
-                }
+
+        }
+
+        public override void Add(Inline inline)
+        {
+            if (InlineHost is TextBlock textBlock && !string.IsNullOrEmpty(textBlock._text))
+            {          
+                base.Add(new Run(textBlock._text));
+
+                textBlock._text = null;                
             }
+
+            base.Add(inline);
         }
 
         /// <summary>
-        /// Add a text segment to the collection.
+        /// Adds a text segment to the collection.
         /// <remarks>
         /// For non complex content this appends the text to the end of currently held text.
         /// For complex content this adds a <see cref="Run"/> to the collection.
         /// </remarks>
         /// </summary>
-        /// <param name="text"></param>
+        /// <param name="text">The to be added text.</param>
         public void Add(string text)
         {
-            if (HasComplexContent)
+            if (InlineHost is TextBlock textBlock && !textBlock.HasComplexContent)
             {
-                Add(new Run(text));
+                textBlock._text += text;
             }
             else
             {
-                _text += text;
+                Add(new Run(text));
             }
         }
 
-        public override void Add(Inline item)
+        /// <summary>
+        /// Adds a control wrapped inside a <see cref="InlineUIContainer"/> to the collection.
+        /// </summary>
+        /// <param name="control">The to be added control.</param>
+        public void Add(IControl control)
         {
-            if (!HasComplexContent)
-            {
-                base.Add(new Run(_text));
-                
-                _text = string.Empty;
-            }
-            
-            base.Add(item);
+            Add(new InlineUIContainer(control));
         }
 
         /// <summary>
         /// Raised when an inline in the collection changes.
         /// </summary>
         public event EventHandler? Invalidated;
-        
+
         /// <summary>
         /// Raises the <see cref="Invalidated"/> event.
         /// </summary>
-        protected void Invalidate() => Invalidated?.Invoke(this, EventArgs.Empty);
+        protected void Invalidate()
+        {
+            if (InlineHost != null)
+            {
+                InlineHost.Invalidate();
+            }
 
-        private void Invalidate(object? sender, EventArgs e) => Invalidate();
+            Invalidated?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void OnParentChanged(IAvaloniaList<ILogical>? oldParent, IAvaloniaList<ILogical>? newParent)
+        {
+            foreach (var child in this)
+            {
+                if (oldParent != newParent)
+                {
+                    if (oldParent != null)
+                    {
+                        oldParent.Remove(child);
+                    }
+
+                    if(newParent != null)
+                    {
+                        newParent.Add(child);
+                    }
+                }
+            }
+        }
+
+        private void OnInlineHostChanged(IInlineHost? inlineHost)
+        {
+            foreach (var child in this)
+            {
+                child.InlineHost = inlineHost;
+            }
+        }
     }
 }

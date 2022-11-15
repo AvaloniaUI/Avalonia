@@ -11,7 +11,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
-using Avalonia.Themes.Default;
+using Avalonia.Themes.Simple;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.Views
@@ -19,17 +19,28 @@ namespace Avalonia.Diagnostics.Views
     internal class MainWindow : Window, IStyleHost
     {
         private readonly IDisposable? _keySubscription;
+        private readonly IDisposable? _pointerSubscription;
         private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
         private AvaloniaObject? _root;
+        private PixelPoint _lastPointerPosition;
 
         public MainWindow()
         {
             InitializeComponent();
 
+            // Apply the SimpleTheme.Window theme; this must be done after the XAML is parsed as
+            // the theme is included in the MainWindow's XAML.
+            if (Theme is null && this.FindResource(typeof(Window)) is ControlTheme windowTheme)
+                Theme = windowTheme;
+
             _keySubscription = InputManager.Instance?.Process
                 .OfType<RawKeyEventArgs>()
                 .Where(x => x.Type == RawKeyEventType.KeyDown)
                 .Subscribe(RawKeyDown);
+            _pointerSubscription = InputManager.Instance?.Process
+                .OfType<RawPointerEventArgs>()
+                .Subscribe(x => _lastPointerPosition = x.Root.PointToScreen(x.Position));
+
 
             _frozenPopupStates = new Dictionary<Popup, IDisposable>();
 
@@ -84,6 +95,7 @@ namespace Avalonia.Diagnostics.Views
         {
             base.OnClosed(e);
             _keySubscription?.Dispose();
+            _pointerSubscription?.Dispose();
 
             foreach (var state in _frozenPopupStates)
             {
@@ -108,9 +120,7 @@ namespace Avalonia.Diagnostics.Views
 
         private IControl? GetHoveredControl(TopLevel topLevel)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var point = (topLevel as IInputRoot)?.MouseDevice?.GetPosition(topLevel) ?? default;
-#pragma warning restore CS0618 // Type or member is obsolete
+            var point = topLevel.PointToClient(_lastPointerPosition);
 
             return (IControl?)topLevel.GetVisualsAt(point, x =>
                 {

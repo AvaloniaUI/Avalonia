@@ -1,8 +1,11 @@
-﻿namespace Avalonia.Media
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Media
 {
     /// <summary>
     /// A brush that draws with a linear gradient.
     /// </summary>
+    [NotClientImplementable]
     public interface ILinearGradientBrush : IGradientBrush
     {
         /// <summary>

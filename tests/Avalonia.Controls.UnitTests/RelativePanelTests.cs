@@ -138,5 +138,34 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new Rect(0, 0, 20, 20), target.Children[0].Bounds);
             Assert.Equal(new Rect(0, -20, 20, 20), target.Children[1].Bounds);
         }
+
+        [Theory]
+        [InlineData(100, 100, 100, 100)]
+        [InlineData(100, double.PositiveInfinity, 100, 40)]
+        [InlineData(double.PositiveInfinity, 100, 20, 100)]
+        [InlineData(double.PositiveInfinity, double.PositiveInfinity, 20, 40)]
+        public void StretchedPanel_Measures_Correctly(double availableWidth, double availableHeight, double desiredWidth, double desiredHeight)
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            var rect1 = new Rectangle { Height = 20, Width = 20 };
+            var rect2 = new Rectangle { Height = 20, Width = 20 };
+
+            var target = new RelativePanel
+            {
+                VerticalAlignment = Layout.VerticalAlignment.Stretch,
+                HorizontalAlignment = Layout.HorizontalAlignment.Stretch,
+                Children =
+                {
+                    rect1, rect2
+                }
+            };
+
+            RelativePanel.SetBelow(rect2, rect1);
+            target.Measure(new Size(availableWidth, availableHeight));
+            target.Arrange(new Rect(target.DesiredSize));
+            
+            Assert.Equal(desiredWidth, target.DesiredSize.Width);
+            Assert.Equal(desiredHeight, target.DesiredSize.Height);
+        }
     }
 }

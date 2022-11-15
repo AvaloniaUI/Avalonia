@@ -9,6 +9,7 @@ using System;
 using System.Globalization;
 #if !BUILDTASK
 using Avalonia.Animation.Animators;
+using static Avalonia.Utilities.SpanHelpers;
 #endif
 
 namespace Avalonia.Media
@@ -166,7 +167,10 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            // Note: The length checks are also an important optimization.
+            // The shortest possible CSS format is "rbg(0,0,0)", Length = 10.
+
+            if (s.Length >= 10 &&
                 (s[0] == 'r' || s[0] == 'R') &&
                 (s[1] == 'g' || s[1] == 'G') &&
                 (s[2] == 'b' || s[2] == 'B') &&
@@ -175,7 +179,7 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
                 (s[1] == 's' || s[1] == 'S') &&
                 (s[2] == 'l' || s[2] == 'L') &&
@@ -185,7 +189,7 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
                 (s[1] == 's' || s[1] == 'S') &&
                 (s[2] == 'v' || s[2] == 'V') &&
@@ -229,7 +233,10 @@ namespace Avalonia.Media
             // At this point all parsing uses strings
             var str = s.ToString();
 
-            if (s.Length > 5 &&
+            // Note: The length checks are also an important optimization.
+            // The shortest possible CSS format is "rbg(0,0,0)", Length = 10.
+
+            if (s.Length >= 10 &&
                 (s[0] == 'r' || s[0] == 'R') &&
                 (s[1] == 'g' || s[1] == 'G') &&
                 (s[2] == 'b' || s[2] == 'B') &&
@@ -238,7 +245,7 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
                 (s[1] == 's' || s[1] == 'S') &&
                 (s[2] == 'l' || s[2] == 'L') &&
@@ -248,7 +255,7 @@ namespace Avalonia.Media
                 return true;
             }
 
-            if (s.Length > 5 &&
+            if (s.Length >= 10 &&
                 (s[0] == 'h' || s[0] == 'H') &&
                 (s[1] == 's' || s[1] == 'S') &&
                 (s[2] == 'v' || s[2] == 'V') &&
@@ -271,6 +278,9 @@ namespace Avalonia.Media
             return false;
         }
 
+        /// <summary>
+        /// Parses the given span of characters representing a hex color value into a new <see cref="Color"/>.
+        /// </summary>
         private static bool TryParseHexFormat(ReadOnlySpan<char> s, out Color color)
         {
             static bool TryParseCore(ReadOnlySpan<char> input, ref Color color)
@@ -286,9 +296,7 @@ namespace Avalonia.Media
                     return false;
                 }
 
-                // TODO: (netstandard 2.1) Can use allocation free parsing.
-                if (!uint.TryParse(input.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture,
-                    out var parsed))
+                if (!input.TryParseUInt(NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var parsed))
                 {
                     return false;
                 }
@@ -325,8 +333,13 @@ namespace Avalonia.Media
             return TryParseCore(input, ref color);
         }
 
+        /// <summary>
+        /// Parses the given string representing a CSS color value into a new <see cref="Color"/>.
+        /// </summary>
         private static bool TryParseCssFormat(string s, out Color color)
         {
+            bool prefixMatched = false;
+
             color = default;
 
             if (s is null)
@@ -342,27 +355,35 @@ namespace Avalonia.Media
                 return false;
             }
 
-            if (workingString.Length > 6 &&
+            if (workingString.Length >= 11 &&
                 workingString.StartsWith("rgba(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(5, workingString.Length - 6);
+                prefixMatched = true;
             }
 
-            if (workingString.Length > 5 &&
+            if (prefixMatched == false &&
+                workingString.Length >= 10 &&
                 workingString.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase) &&
                 workingString.EndsWith(")", StringComparison.Ordinal))
             {
                 workingString = workingString.Substring(4, workingString.Length - 5);
+                prefixMatched = true;
+            }
+
+            if (prefixMatched == false)
+            {
+                return false;
             }
 
             string[] components = workingString.Split(',');
 
             if (components.Length == 3) // RGB
             {
-                if (byte.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out byte red) &&
-                    byte.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out byte green) &&
-                    byte.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out byte blue))
+                if (InternalTryParseByte(components[0].AsSpan(), out byte red) &&
+                    InternalTryParseByte(components[1].AsSpan(), out byte green) &&
+                    InternalTryParseByte(components[2].AsSpan(), out byte blue))
                 {
                     color = new Color(0xFF, red, green, blue);
                     return true;
@@ -370,39 +391,54 @@ namespace Avalonia.Media
             }
             else if (components.Length == 4) // RGBA
             {
-                if (byte.TryParse(components[0], NumberStyles.Number, CultureInfo.InvariantCulture, out byte red) &&
-                    byte.TryParse(components[1], NumberStyles.Number, CultureInfo.InvariantCulture, out byte green) &&
-                    byte.TryParse(components[2], NumberStyles.Number, CultureInfo.InvariantCulture, out byte blue) &&
-                    TryInternalParse(components[3], out double alpha))
+                if (InternalTryParseByte(components[0].AsSpan(), out byte red) &&
+                    InternalTryParseByte(components[1].AsSpan(), out byte green) &&
+                    InternalTryParseByte(components[2].AsSpan(), out byte blue) &&
+                    InternalTryParseDouble(components[3].AsSpan(), out double alpha))
                 {
-                    color = new Color((byte)(alpha * 255), red, green, blue);
+                    color = new Color((byte)Math.Round(alpha * 255.0), red, green, blue);
                     return true;
                 }
             }
 
-            // Local function to specially parse a double value with an optional percentage sign
-            bool TryInternalParse(string inString, out double outDouble)
+            // Local function to specially parse a byte value with an optional percentage sign
+            bool InternalTryParseByte(ReadOnlySpan<char> inString, out byte outByte)
             {
                 // The percent sign, if it exists, must be at the end of the number
-                int percentIndex = inString.IndexOf("%", StringComparison.Ordinal);
+                int percentIndex = inString.IndexOf("%".AsSpan(), StringComparison.Ordinal);
 
                 if (percentIndex >= 0)
                 {
-                    var result = double.TryParse(
-                        inString.Substring(0, percentIndex),
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out double percentage);
+
+                    outByte = (byte)Math.Round((percentage / 100.0) * 255.0);
+                    return result;
+                }
+                else
+                {
+                    return inString.TryParseByte(NumberStyles.Number, CultureInfo.InvariantCulture,
+                        out outByte);
+                }
+            }
+
+            // Local function to specially parse a double value with an optional percentage sign
+            bool InternalTryParseDouble(ReadOnlySpan<char> inString, out double outDouble)
+            {
+                // The percent sign, if it exists, must be at the end of the number
+                int percentIndex = inString.IndexOf("%".AsSpan(), StringComparison.Ordinal);
+
+                if (percentIndex >= 0)
+                {
+                    var result = inString.Slice(0, percentIndex).TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
+                         out double percentage);
 
                     outDouble = percentage / 100.0;
                     return result;
                 }
                 else
                 {
-                    return double.TryParse(
-                        inString,
-                        NumberStyles.Number,
-                        CultureInfo.InvariantCulture,
+                    return inString.TryParseDouble(NumberStyles.Number, CultureInfo.InvariantCulture,
                         out outDouble);
                 }
             }

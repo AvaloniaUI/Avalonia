@@ -19,7 +19,7 @@
       <ColumnDefinition Width="Auto"/>
       <!--
       When selecting the Application node, we need this trick to hide Layout Visualizer 
-      because when using the GridSplitter it sets the Witdth property of ColumnDefinition
+      because when using the GridSplitter it sets the Width property of ColumnDefinition
       (see https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Controls/GridSplitter.cs#L528) 
       and if we hide the contents of the column, the space is not reclaimed 
       (see discussion https://github.com/AvaloniaUI/Avalonia/discussions/6773). 
@@ -30,7 +30,11 @@
     <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*">
 
       <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto">
-        <Button Grid.Column="0" Grid.RowSpan="2" Content="^" Command="{Binding ApplyParentProperty}" />
+        <Button Grid.Column="0" Grid.RowSpan="2" Content="^" 
+                IsEnabled="{Binding CanNavigateToParentProperty}"
+                Margin="0 0 4 0"
+                ToolTip.Tip="Navigate to parent property"
+                Command="{Binding NavigateToParentProperty}" />
         <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding SelectedEntityName}" FontWeight="Bold" />
         <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding SelectedEntityType}" FontStyle="Italic" />
       </Grid>
@@ -58,15 +62,15 @@
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" />
           <DataGridTextColumn Header="Type" Binding="{Binding Type}"
                               IsReadOnly="True"
-                              IsVisible="{Binding !$parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              IsVisible="{Binding !$parent[UserControl;2].DataContext.ShowDetailsPropertyType}"
                               />
-          <DataGridTextColumn Header="Assinged Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
+          <DataGridTextColumn Header="Assigned Type" Binding="{Binding AssignedType, Converter={StaticResource GetTypeName}}"
                               IsReadOnly="True"
-                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDetailsPropertyType}"
                               />
           <DataGridTextColumn Header="Property Type" Binding="{Binding PropertyType, Converter={StaticResource GetTypeName}}"
                               IsReadOnly="True"
-                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDettailsPropertyType}"
+                              IsVisible="{Binding $parent[UserControl;2].DataContext.ShowDetailsPropertyType}"
                               />
           <DataGridTextColumn Header="Priority" Binding="{Binding Priority}" IsReadOnly="True" />
         </DataGrid.Columns>

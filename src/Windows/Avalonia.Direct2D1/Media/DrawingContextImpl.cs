@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -10,12 +11,14 @@ using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 using BitmapInterpolationMode = Avalonia.Media.Imaging.BitmapInterpolationMode;
+using Avalonia.Metadata;
 
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
+    [Unstable]
     public class DrawingContextImpl : IDrawingContextImpl
     {
         private readonly IVisualBrushRenderer _visualBrushRenderer;
@@ -71,6 +74,12 @@ namespace Avalonia.Direct2D1.Media
         {
             get { return _deviceContext.Transform.ToAvalonia(); }
             set { _deviceContext.Transform = value.ToDirect2D(); }
+        }
+
+        public Matrix4x4 Transform4x4
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
@@ -605,5 +614,6 @@ namespace Avalonia.Direct2D1.Media
         }
         
         public void Custom(ICustomDrawOperation custom) => custom.Render(this);
+        public object GetFeature(Type t) => null;
     }
 }

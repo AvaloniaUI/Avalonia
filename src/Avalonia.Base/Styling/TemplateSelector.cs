@@ -36,7 +36,7 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
             var templatedParent = control.TemplatedParent as IStyleable;
 
@@ -45,9 +45,10 @@ namespace Avalonia.Styling
                 return SelectorMatch.NeverThisInstance;
             }
 
-            return _parent.Match(templatedParent, subscribe);
+            return _parent.Match(templatedParent, parent, subscribe);
         }
 
         protected override Selector? MovePrevious() => null;
+        protected override Selector? MovePreviousOrParent() => _parent;
     }
 }

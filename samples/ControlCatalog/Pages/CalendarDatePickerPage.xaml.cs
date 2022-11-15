@@ -10,11 +10,11 @@ namespace ControlCatalog.Pages
         {
             InitializeComponent();
             
-            var dp1 = this.FindControl<CalendarDatePicker>("DatePicker1");
-            var dp2 = this.FindControl<CalendarDatePicker>("DatePicker2");
-            var dp3 = this.FindControl<CalendarDatePicker>("DatePicker3");
-            var dp4 = this.FindControl<CalendarDatePicker>("DatePicker4");
-            var dp5 = this.FindControl<CalendarDatePicker>("DatePicker5");
+            var dp1 = this.Get<CalendarDatePicker>("DatePicker1");
+            var dp2 = this.Get<CalendarDatePicker>("DatePicker2");
+            var dp3 = this.Get<CalendarDatePicker>("DatePicker3");
+            var dp4 = this.Get<CalendarDatePicker>("DatePicker4");
+            var dp5 = this.Get<CalendarDatePicker>("DatePicker5");
 
             dp1.SelectedDate = DateTime.Today;
             dp2.SelectedDate = DateTime.Today.AddDays(10);
@@ -23,7 +23,7 @@ namespace ControlCatalog.Pages
 
             dp4.TemplateApplied += (s, e) =>
             {
-                dp4.BlackoutDates.AddDatesInPast();
+                dp4.BlackoutDates?.AddDatesInPast();
             };
             
         }

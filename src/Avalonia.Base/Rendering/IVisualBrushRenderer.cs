@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Platform;
 
 namespace Avalonia.Rendering
@@ -6,6 +7,7 @@ namespace Avalonia.Rendering
     /// <summary>
     /// Defines a renderer used to render a visual brush to a bitmap.
     /// </summary>
+    [Unstable]
     public interface IVisualBrushRenderer
     {
         /// <summary>

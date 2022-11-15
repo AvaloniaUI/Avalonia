@@ -1,8 +1,11 @@
-﻿namespace Avalonia.Media
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Media
 {
     /// <summary>
     /// Describes how a stroke is drawn.
     /// </summary>
+    [NotClientImplementable]
     public interface IPen
     {
         /// <summary>

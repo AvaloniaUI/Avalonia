@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Input
 {
     /// <summary>
     /// Defines the interface for top-level input elements.
     /// </summary>
+    [NotClientImplementable]
     public interface IInputRoot : IInputElement
     {
         /// <summary>
@@ -24,10 +27,5 @@ namespace Avalonia.Input
         /// Gets or sets a value indicating whether access keys are shown in the window.
         /// </summary>
         bool ShowAccessKeys { get; set; }
-
-        /// <summary>
-        /// Gets associated mouse device
-        /// </summary>
-        IMouseDevice? MouseDevice { get; }
     }
 }

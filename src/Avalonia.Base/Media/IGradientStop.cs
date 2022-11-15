@@ -1,8 +1,11 @@
-﻿namespace Avalonia.Media
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Media
 {
     /// <summary>
     /// Describes the location and color of a transition point in a gradient.
     /// </summary>
+    [NotClientImplementable]
     public interface IGradientStop
     {
         /// <summary>

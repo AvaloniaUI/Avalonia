@@ -8,26 +8,48 @@
                 Margin="0,16,0,0"
                 HorizontalAlignment="Center"
                 Spacing="16">
-      <Expander Header="Expand Up" ExpandDirection="Up">
+      <Expander Header="Expand Up" ExpandDirection="Up"
+                CornerRadius="{Binding CornerRadius}">
         <StackPanel>
           <TextBlock>Expanded content</TextBlock>
         </StackPanel>
       </Expander>
-      <Expander Header="Expand Down" ExpandDirection="Down">
+      <Expander Header="Expand Down" ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
         <StackPanel>
           <TextBlock>Expanded content</TextBlock>
         </StackPanel>
       </Expander>
-      <Expander Header="Expand Left" ExpandDirection="Left">
+      <Expander Header="Expand Left" ExpandDirection="Left"
+                CornerRadius="{Binding CornerRadius}">
         <StackPanel>
           <TextBlock>Expanded content</TextBlock>
         </StackPanel>
       </Expander>
-      <Expander Header="Expand Right" ExpandDirection="Right">
+      <Expander Header="Expand Right" ExpandDirection="Right"
+                CornerRadius="{Binding CornerRadius}">
         <StackPanel>
           <TextBlock>Expanded content</TextBlock>
         </StackPanel>
       </Expander>
-    </StackPanel>    
+      <Expander ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <Expander.Header>
+          <Button Content="Control in Header" />
+        </Expander.Header>
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
+      <Expander Header="Disabled"
+                IsEnabled="False"
+                ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
+      <CheckBox IsChecked="{Binding Rounded}">Rounded</CheckBox>
+    </StackPanel>
   </StackPanel>
 </UserControl>

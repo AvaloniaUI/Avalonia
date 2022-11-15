@@ -9,6 +9,7 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -51,67 +52,67 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Foreground"/> property.
         /// </summary>
-        public static readonly AttachedProperty<IBrush?> ForegroundProperty =
+        public static readonly StyledProperty<IBrush?> ForegroundProperty =
             TextElement.ForegroundProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontFamily"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
+        public static readonly StyledProperty<FontFamily> FontFamilyProperty =
             TextElement.FontFamilyProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontSize"/> property.
         /// </summary>
-        public static readonly AttachedProperty<double> FontSizeProperty =
+        public static readonly StyledProperty<double> FontSizeProperty =
             TextElement.FontSizeProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontStyle"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontStyle> FontStyleProperty =
+        public static readonly StyledProperty<FontStyle> FontStyleProperty =
             TextElement.FontStyleProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontWeight"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontWeight> FontWeightProperty =
+        public static readonly StyledProperty<FontWeight> FontWeightProperty =
             TextElement.FontWeightProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="FontStretch"/> property.
         /// </summary>
-        public static readonly AttachedProperty<FontStretch> FontStretchProperty =
+        public static readonly StyledProperty<FontStretch> FontStretchProperty =
             TextElement.FontStretchProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="TextAlignment"/> property
         /// </summary>
-        public static readonly AttachedProperty<TextAlignment> TextAlignmentProperty =
+        public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="TextWrapping"/> property
         /// </summary>
-        public static readonly AttachedProperty<TextWrapping> TextWrappingProperty =
+        public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
             TextBlock.TextWrappingProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="TextTrimming"/> property
         /// </summary>
-        public static readonly AttachedProperty<TextTrimming> TextTrimmingProperty =
+        public static readonly StyledProperty<TextTrimming> TextTrimmingProperty =
             TextBlock.TextTrimmingProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="LineHeight"/> property
         /// </summary>
-        public static readonly AttachedProperty<double> LineHeightProperty =
+        public static readonly StyledProperty<double> LineHeightProperty =
             TextBlock.LineHeightProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="MaxLines"/> property
         /// </summary>
-        public static readonly AttachedProperty<int> MaxLinesProperty =
+        public static readonly StyledProperty<int> MaxLinesProperty =
             TextBlock.MaxLinesProperty.AddOwner<ContentPresenter>();
                 
         /// <summary>
@@ -403,7 +404,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
             switch (change.Property.Name)
@@ -414,6 +415,10 @@ namespace Avalonia.Controls.Presenters
                     break;
                 case nameof(TemplatedParent):
                     TemplatedParentChanged(change);
+                    break;
+                case nameof(UseLayoutRounding):
+                case nameof(BorderThickness):
+                    _layoutThickness = null;
                     break;
             }
         }
@@ -495,10 +500,43 @@ namespace Avalonia.Controls.Presenters
             InvalidateMeasure();
         }
 
+        private Thickness? _layoutThickness;
+        private double _scale;
+
+        private Thickness LayoutThickness
+        {
+            get
+            {
+                VerifyScale();
+
+                if (_layoutThickness == null)
+                {
+                    var borderThickness = BorderThickness;
+
+                    if (UseLayoutRounding)
+                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
+
+                    _layoutThickness = borderThickness;
+                }
+
+                return _layoutThickness.Value;
+            }
+        }
+
+        private void VerifyScale()
+        {
+            var currentScale = LayoutHelper.GetLayoutScale(this);
+            if (MathUtilities.AreClose(currentScale, _scale))
+                return;
+
+            _scale = currentScale;
+            _layoutThickness = null;
+        }
+
         /// <inheritdoc/>
         public override void Render(DrawingContext context)
         {
-            _borderRenderer.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
+            _borderRenderer.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow);
         }
 
@@ -566,13 +604,22 @@ namespace Avalonia.Controls.Presenters
         {
             if (Child == null) return finalSize;
 
-            var padding = Padding + BorderThickness;
+            var useLayoutRounding = UseLayoutRounding;
+            var scale = LayoutHelper.GetLayoutScale(this);
+            var padding = Padding;
+            var borderThickness = BorderThickness;
+
+            if (useLayoutRounding)
+            {
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale, scale);
+                borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, scale, scale);
+            }
+
+            padding += borderThickness;
             var horizontalContentAlignment = HorizontalContentAlignment;
             var verticalContentAlignment = VerticalContentAlignment;
-            var useLayoutRounding = UseLayoutRounding;
             var availableSize = finalSize;
             var sizeForChild = availableSize;
-            var scale = LayoutHelper.GetLayoutScale(this);
             var originX = offset.X;
             var originY = offset.Y;
 
@@ -588,8 +635,8 @@ namespace Avalonia.Controls.Presenters
 
             if (useLayoutRounding)
             {
-                sizeForChild = LayoutHelper.RoundLayoutSize(sizeForChild, scale, scale);
-                availableSize = LayoutHelper.RoundLayoutSize(availableSize, scale, scale);
+                sizeForChild = LayoutHelper.RoundLayoutSizeUp(sizeForChild, scale, scale);
+                availableSize = LayoutHelper.RoundLayoutSizeUp(availableSize, scale, scale);
             }
 
             switch (horizontalContentAlignment)

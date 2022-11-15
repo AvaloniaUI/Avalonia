@@ -447,6 +447,27 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Reset_Popup_Parent_On_Target_Detached()
+        {
+            using (Application())
+            {
+                var userControl = new UserControl();
+                var window = PreparedWindow(userControl);
+                window.Show();
+                
+                var menu = new ContextMenu();
+                userControl.ContextMenu = menu;
+                menu.Open();
+                
+                var popup = Assert.IsType<Popup>(menu.Parent);
+                Assert.NotNull(popup.Parent);
+                
+                window.Content = null;
+                Assert.Null(popup.Parent);
+            }
+        }
+
+        [Fact]
         public void Context_Menu_In_Resources_Can_Be_Shared()
         {
             using (Application())

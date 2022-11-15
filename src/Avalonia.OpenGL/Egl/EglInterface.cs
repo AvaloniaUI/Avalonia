@@ -2,31 +2,26 @@
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
+using Avalonia.SourceGenerator;
 
 namespace Avalonia.OpenGL.Egl
 {
-    public class EglInterface : GlInterfaceBase
+    public unsafe partial class EglInterface
     {
-        public EglInterface() : base(Load())
+        public EglInterface(Func<string, IntPtr> getProcAddress)
+        {
+            Initialize(getProcAddress);
+        }
+        
+        public EglInterface(string library) : this(Load(library))
+        {
+        }
+
+        public EglInterface() : this(Load())
         {
             
         }
 
-        public EglInterface(Func<Utf8Buffer,IntPtr> getProcAddress) : base(getProcAddress)
-        {
-            
-        }
-        
-        public EglInterface(Func<string, IntPtr> getProcAddress) : base(getProcAddress)
-        {
-            
-        }
-        
-        public EglInterface(string library) : base(Load(library))
-        {
-        }
-
-        
         static Func<string, IntPtr> Load()
         {
             var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
@@ -46,119 +41,75 @@ namespace Avalonia.OpenGL.Egl
         }
 
         // ReSharper disable UnassignedGetOnlyAutoProperty
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate int EglGetError();
-        [GlEntryPoint("eglGetError")]
-        public EglGetError GetError { get; }
+        
+        [GetProcAddress("eglGetError")]
+        public partial int GetError();
+        
+        [GetProcAddress("eglGetDisplay")]
+        public partial IntPtr GetDisplay(IntPtr nativeDisplay);
+        
+        [GetProcAddress("eglGetPlatformDisplayEXT", true)]
+        public partial IntPtr GetPlatformDisplayExt(int platform, IntPtr nativeDisplay, int[] attrs);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglGetDisplay(IntPtr nativeDisplay);
-        [GlEntryPoint("eglGetDisplay")]
-        public EglGetDisplay GetDisplay { get; }
+        [GetProcAddress("eglInitialize")]        
+        public partial bool Initialize(IntPtr display, out int major, out int minor);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglGetPlatformDisplayEXT(int platform, IntPtr nativeDisplay, int[] attrs);
-        [GlEntryPoint("eglGetPlatformDisplayEXT")]
-        [GlOptionalEntryPoint]
-        public EglGetPlatformDisplayEXT GetPlatformDisplayEXT { get; }
+        [GetProcAddress("eglGetProcAddress")]        
+        public partial IntPtr GetProcAddress(IntPtr proc);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglInitialize(IntPtr display, out int major, out int minor);
-        [GlEntryPoint("eglInitialize")]
-        public EglInitialize Initialize { get; }
+        [GetProcAddress("eglBindAPI")]
+        public partial bool BindApi(int api);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglGetProcAddress(Utf8Buffer proc);
-        [GlEntryPoint("eglGetProcAddress")]
-        public EglGetProcAddress GetProcAddress { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglBindApi(int api);
-        [GlEntryPoint("eglBindAPI")]
-        public EglBindApi BindApi { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglChooseConfig(IntPtr display, int[] attribs,
+        [GetProcAddress("eglChooseConfig")]
+        public partial bool ChooseConfig(IntPtr display, int[] attribs,
             out IntPtr surfaceConfig, int numConfigs, out int choosenConfig);
-        [GlEntryPoint("eglChooseConfig")]
-        public EglChooseConfig ChooseConfig { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglCreateContext(IntPtr display, IntPtr config,
+        
+        [GetProcAddress("eglCreateContext")]
+        public partial IntPtr CreateContext(IntPtr display, IntPtr config,
             IntPtr share, int[] attrs);
-        [GlEntryPoint("eglCreateContext")]
-        public EglCreateContext CreateContext { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglDestroyContext(IntPtr display, IntPtr context);
-        [GlEntryPoint("eglDestroyContext")]
-        public EglDestroyContext DestroyContext { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglCreatePBufferSurface(IntPtr display, IntPtr config, int[] attrs);
-        [GlEntryPoint("eglCreatePbufferSurface")]
-        public EglCreatePBufferSurface CreatePBufferSurface { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglMakeCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
-        [GlEntryPoint("eglMakeCurrent")]
-        public EglMakeCurrent MakeCurrent { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglGetCurrentContext();
-        [GlEntryPoint("eglGetCurrentContext")]
-        public EglGetCurrentContext GetCurrentContext { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglGetCurrentDisplay();
-        [GlEntryPoint("eglGetCurrentDisplay")]
-        public EglGetCurrentContext GetCurrentDisplay { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglGetCurrentSurface(int readDraw);
-        [GlEntryPoint("eglGetCurrentSurface")] 
-        public EglGetCurrentSurface GetCurrentSurface { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate void EglDisplaySurfaceVoidDelegate(IntPtr display, IntPtr surface);
-        [GlEntryPoint("eglDestroySurface")]
-        public EglDisplaySurfaceVoidDelegate DestroySurface { get; }
         
-        [GlEntryPoint("eglSwapBuffers")]
-        public EglDisplaySurfaceVoidDelegate SwapBuffers { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr
-            EglCreateWindowSurface(IntPtr display, IntPtr config, IntPtr window, int[] attrs);
-        [GlEntryPoint("eglCreateWindowSurface")]
-        public EglCreateWindowSurface CreateWindowSurface { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglGetConfigAttrib(IntPtr display, IntPtr config, int attr, out int rv);
-        [GlEntryPoint("eglGetConfigAttrib")]
-        public EglGetConfigAttrib GetConfigAttrib { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglWaitGL();
-        [GlEntryPoint("eglWaitGL")]
-        public EglWaitGL WaitGL { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglWaitClient();
-        [GlEntryPoint("eglWaitClient")]
-        public EglWaitGL WaitClient { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglWaitNative(int engine);
-        [GlEntryPoint("eglWaitNative")]
-        public EglWaitNative WaitNative { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglQueryString(IntPtr display, int i);
+        [GetProcAddress("eglDestroyContext")]
+        public partial bool DestroyContext(IntPtr display, IntPtr context);
         
-        [GlEntryPoint("eglQueryString")]
-        public EglQueryString QueryStringNative { get; }
+        [GetProcAddress("eglCreatePbufferSurface")]
+        public partial IntPtr CreatePBufferSurface(IntPtr display, IntPtr config, int[] attrs);
 
+        [GetProcAddress("eglMakeCurrent")]
+        public partial bool MakeCurrent(IntPtr display, IntPtr draw, IntPtr read, IntPtr context);
+        
+        [GetProcAddress("eglGetCurrentContext")]
+        public partial IntPtr GetCurrentContext();
+
+        [GetProcAddress("eglGetCurrentDisplay")]
+        public partial IntPtr GetCurrentDisplay();
+        
+        [GetProcAddress("eglGetCurrentSurface")] 
+        public partial IntPtr GetCurrentSurface(int readDraw);
+
+        [GetProcAddress("eglDestroySurface")]
+        public partial void DestroySurface(IntPtr display, IntPtr surface);
+
+        [GetProcAddress("eglSwapBuffers")]
+        public partial void SwapBuffers(IntPtr display, IntPtr surface);
+
+        [GetProcAddress("eglCreateWindowSurface")]
+        public partial IntPtr CreateWindowSurface(IntPtr display, IntPtr config, IntPtr window, int[] attrs);
+
+        [GetProcAddress("eglGetConfigAttrib")]
+        public partial bool GetConfigAttrib(IntPtr display, IntPtr config, int attr, out int rv);
+        
+        [GetProcAddress("eglWaitGL")]
+        public partial bool WaitGL();
+        
+        [GetProcAddress("eglWaitClient")]
+        public partial bool WaitClient();
+        
+        [GetProcAddress("eglWaitNative")]
+        public partial bool WaitNative(int engine);
+        
+        [GetProcAddress("eglQueryString")]
+        public partial IntPtr QueryStringNative(IntPtr display, int i);
+        
         public string QueryString(IntPtr display, int i)
         {
             var rv = QueryStringNative(display, i);
@@ -166,25 +117,15 @@ namespace Avalonia.OpenGL.Egl
                 return null;
             return Marshal.PtrToStringAnsi(rv);
         }
+        
+        [GetProcAddress("eglCreatePbufferFromClientBuffer")]
+        public partial IntPtr CreatePbufferFromClientBuffer(IntPtr display, int buftype, IntPtr buffer, IntPtr config, int[] attrib_list);
+        
+        [GetProcAddress("eglQueryDisplayAttribEXT", true)]
+        public partial bool QueryDisplayAttribExt(IntPtr display, int attr, out IntPtr res);
 
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate IntPtr EglCreatePbufferFromClientBuffer(IntPtr display, int buftype, IntPtr buffer, IntPtr config, int[] attrib_list);
-        [GlEntryPoint("eglCreatePbufferFromClientBuffer")]
-
-        public EglCreatePbufferFromClientBuffer CreatePbufferFromClientBuffer { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglQueryDisplayAttribEXT(IntPtr display, int attr, out IntPtr res);
-
-        [GlEntryPoint("eglQueryDisplayAttribEXT"), GlOptionalEntryPoint]
-        public EglQueryDisplayAttribEXT QueryDisplayAttribExt { get; }
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public delegate bool EglQueryDeviceAttribEXT(IntPtr display, int attr, out IntPtr res);
-
-        [GlEntryPoint("eglQueryDeviceAttribEXT"), GlOptionalEntryPoint]
-        public EglQueryDisplayAttribEXT QueryDeviceAttribExt { get; }
-
-        // ReSharper restore UnassignedGetOnlyAutoProperty
+        
+        [GetProcAddress("eglQueryDeviceAttribEXT", true)]
+        public partial bool QueryDeviceAttribExt(IntPtr display, int attr, out IntPtr res);
     }
 }

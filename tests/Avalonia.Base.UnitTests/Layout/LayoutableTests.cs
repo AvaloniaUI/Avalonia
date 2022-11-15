@@ -173,37 +173,6 @@ namespace Avalonia.Base.UnitTests.Layout
             target.Verify(x => x.InvalidateMeasure(root), Times.Once());
         }
 
-        [Theory]
-        [InlineData(16, 6, 5.333333333333333)]
-        [InlineData(18, 10, 4)]
-        public void UseLayoutRounding_Arranges_Center_Alignment_Correctly_With_Fractional_Scaling(
-            double containerWidth,
-            double childWidth,
-            double expectedX)
-        {
-            Border target;
-            var root = new TestRoot
-            {
-                LayoutScaling = 1.5,
-                UseLayoutRounding = true,
-                Child = new Decorator
-                {
-                    Width = containerWidth,
-                    Height = 100,
-                    Child = target = new Border
-                    {
-                        Width = childWidth,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                    }
-                }
-            };
-
-            root.Measure(new Size(100, 100));
-            root.Arrange(new Rect(target.DesiredSize));
-
-            Assert.Equal(new Rect(expectedX, 0, childWidth, 100), target.Bounds);
-        }
-
         [Fact]
         public void LayoutUpdated_Is_Called_At_End_Of_Layout_Pass()
         {
@@ -319,6 +288,103 @@ namespace Avalonia.Base.UnitTests.Layout
             layoutManager.VerifyRemove(
                 x => x.LayoutUpdated -= It.IsAny<EventHandler>(),
                 Times.Once);
+        }
+
+        [Fact]
+        public void Making_Control_Invisible_Should_Invalidate_Parent_Measure()
+        {
+            Border child;
+            var target = new StackPanel
+            {
+                Children =
+                {
+                    (child = new Border
+                    {
+                        Width = 100,
+                    }),
+                }
+            };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.True(target.IsMeasureValid);
+            Assert.True(target.IsArrangeValid);
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+
+            child.IsVisible = false;
+
+            Assert.False(target.IsMeasureValid);
+            Assert.False(target.IsArrangeValid);
+            Assert.True(child.IsMeasureValid);
+            Assert.True(child.IsArrangeValid);
+        }
+
+        [Fact]
+        public void Making_Control_Visible_Should_Invalidate_Own_And_Parent_Measure()
+        {
+            Border child;
+            var target = new StackPanel
+            {
+                Children =
+                {
+                    (child = new Border
+                    {
+                        Width = 100,
+                        IsVisible = false,
+                    }),
+                }
+            };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.True(target.IsMeasureValid);
+            Assert.True(target.IsArrangeValid);
+            Assert.True(child.IsMeasureValid);
+            Assert.False(child.IsArrangeValid);
+
+            child.IsVisible = true;
+
+            Assert.False(target.IsMeasureValid);
+            Assert.False(target.IsArrangeValid);
+            Assert.False(child.IsMeasureValid);
+            Assert.False(child.IsArrangeValid);
+        }
+
+        [Fact]
+        public void Measuring_Invisible_Control_Should_Not_Invalidate_Parent_Measure()
+        {
+            Border child;
+            var target = new StackPanel
+            {
+                Children =
+                {
+                    (child = new Border
+                    {
+                        Width = 100,
+                    }),
+                }
+            };
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+
+            Assert.True(target.IsMeasureValid);
+            Assert.True(target.IsArrangeValid);
+            Assert.Equal(new Size(100, 0), child.DesiredSize);
+
+            child.IsVisible = false;
+            Assert.Equal(default, child.DesiredSize);
+
+            target.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            target.Arrange(new Rect(target.DesiredSize));
+            child.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+            Assert.True(target.IsMeasureValid);
+            Assert.True(target.IsArrangeValid);
+            Assert.Equal(default, child.DesiredSize);
         }
 
         private class TestLayoutable : Layoutable

@@ -17,9 +17,9 @@ namespace ControlCatalog.Pages
         public ImagePage()
         {
             InitializeComponent();
-            _bitmapImage = this.FindControl<Image>("bitmapImage");
-            _drawingImage = this.FindControl<Image>("drawingImage");
-            _croppedImage = this.FindControl<Image>("croppedImage");
+            _bitmapImage = this.Get<Image>("bitmapImage");
+            _drawingImage = this.Get<Image>("drawingImage");
+            _croppedImage = this.Get<Image>("croppedImage");
         }
 
         private void InitializeComponent()
@@ -50,8 +50,11 @@ namespace ControlCatalog.Pages
             if (_croppedImage != null)
             {
                 var comboxBox = (ComboBox)sender;
-                var croppedBitmap = _croppedImage.Source as CroppedBitmap;
-                croppedBitmap.SourceRect = GetCropRect(comboxBox.SelectedIndex);
+                if (_croppedImage.Source is CroppedBitmap croppedBitmap)
+                {
+                    croppedBitmap.SourceRect = GetCropRect(comboxBox.SelectedIndex);
+                }
+                
             }
         }
 

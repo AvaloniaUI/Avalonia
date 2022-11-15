@@ -12,6 +12,7 @@ using Xunit;
 using Splat;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
+using Avalonia.Threading;
 
 namespace Avalonia.ReactiveUI.UnitTests
 {
@@ -109,10 +110,12 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             var fakeRenderedDecorator = new TestRoot();
             fakeRenderedDecorator.Child = userControl;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.True(activated[0]);
             Assert.Equal(1, activated.Count);
 
             fakeRenderedDecorator.Child = null;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.True(activated[0]);
             Assert.False(activated[1]);
             Assert.Equal(2, activated.Count);
@@ -139,9 +142,11 @@ namespace Avalonia.ReactiveUI.UnitTests
 
             var fakeRenderedDecorator = new TestRoot();
             fakeRenderedDecorator.Child = userControl;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.True(userControl.Active);
 
             fakeRenderedDecorator.Child = null;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.False(userControl.Active);
         }
 
@@ -154,9 +159,11 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Assert.False(window.Active);
 
                 window.Show();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.True(window.Active);
 
                 window.Close();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.False(window.Active);
             }
         }
@@ -171,9 +178,11 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Assert.False(viewModel.IsActivated);
 
                 window.Show();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.True(viewModel.IsActivated);
 
                 window.Close();
+                Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
                 Assert.False(viewModel.IsActivated);
             }
         }
@@ -187,9 +196,11 @@ namespace Avalonia.ReactiveUI.UnitTests
             Assert.False(viewModel.IsActivated);
 
             root.Child = control;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.True(viewModel.IsActivated);
 
             root.Child = null;
+            Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
             Assert.False(viewModel.IsActivated);
         }
     }

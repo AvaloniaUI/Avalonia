@@ -1,3 +1,4 @@
+using Avalonia.Metadata;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Presenters
@@ -13,6 +14,7 @@ namespace Avalonia.Controls.Presenters
     /// parent control's template is instantiated so they register themselves using this 
     /// interface.
     /// </remarks>
+    [NotClientImplementable]
     public interface IItemsPresenterHost : ITemplatedControl
     {
         /// <summary>

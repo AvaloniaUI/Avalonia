@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
@@ -232,6 +233,13 @@ namespace Avalonia.Controls
                     StopListeningForDefault(inputElement);
                 }
             }
+            if (IsCancel)
+            {
+                if (e.Root is IInputElement inputElement)
+                {
+                    StopListeningForCancel(inputElement);
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -274,24 +282,29 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            switch (e.Key)
             {
-                OnClick();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Space)
-            {
-                if (ClickMode == ClickMode.Press)
-                {
+                case Key.Enter:
                     OnClick();
+                    e.Handled = true;
+                    break;
+
+                case Key.Space:
+                {
+                    if (ClickMode == ClickMode.Press)
+                    {
+                        OnClick();
+                    }
+
+                    IsPressed = true;
+                    e.Handled = true;
+                    break;
                 }
-                IsPressed = true;
-                e.Handled = true;
-            }
-            else if (e.Key == Key.Escape && Flyout != null)
-            {
-                // If Flyout doesn't have focusable content, close the flyout here
-                Flyout.Hide();
+
+                case Key.Escape when Flyout != null:
+                    // If Flyout doesn't have focusable content, close the flyout here
+                    CloseFlyout();
+                    break;
             }
 
             base.OnKeyDown(e);
@@ -309,6 +322,8 @@ namespace Avalonia.Controls
                 IsPressed = false;
                 e.Handled = true;
             }
+
+            base.OnKeyUp(e);
         }
 
         /// <summary>
@@ -318,7 +333,14 @@ namespace Avalonia.Controls
         {
             if (IsEffectivelyEnabled)
             {
-                OpenFlyout();
+                if (_isFlyoutOpen)
+                {
+                    CloseFlyout();
+                }
+                else
+                {
+                    OpenFlyout();
+                }
 
                 var e = new RoutedEventArgs(ClickEvent);
                 RaiseEvent(e);
@@ -337,6 +359,14 @@ namespace Avalonia.Controls
         protected virtual void OpenFlyout()
         {
             Flyout?.ShowAt(this);
+        }
+
+        /// <summary>
+        /// Closes the button's flyout.
+        /// </summary>
+        protected virtual void CloseFlyout()
+        {
+            Flyout?.Hide();
         }
 
         /// <summary>
@@ -393,6 +423,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
         {
+            base.OnPointerCaptureLost(e);
+
             IsPressed = false;
         }
 
@@ -407,13 +439,15 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            base.OnApplyTemplate(e);
+
             UnregisterFlyoutEvents(Flyout);
             RegisterFlyoutEvents(Flyout);
             UpdatePseudoClasses();
         }
 
         /// <inheritdoc/>
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -421,12 +455,13 @@ namespace Avalonia.Controls
             {
                 if (((ILogical)this).IsAttachedToLogicalTree)
                 {
-                    if (change.OldValue.GetValueOrDefault() is ICommand oldCommand)
+                    var (oldValue, newValue) = change.GetOldAndNewValue<ICommand?>();
+                    if (oldValue is ICommand oldCommand)
                     {
                         oldCommand.CanExecuteChanged -= CanExecuteChanged;
                     }
 
-                    if (change.NewValue.GetValueOrDefault() is ICommand newCommand)
+                    if (newValue is ICommand newCommand)
                     {
                         newCommand.CanExecuteChanged += CanExecuteChanged;
                     }
@@ -440,7 +475,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == IsCancelProperty)
             {
-                var isCancel = change.NewValue.GetValueOrDefault<bool>();
+                var isCancel = change.GetNewValue<bool>();
 
                 if (VisualRoot is IInputElement inputRoot)
                 {
@@ -456,7 +491,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == IsDefaultProperty)
             {
-                var isDefault = change.NewValue.GetValueOrDefault<bool>();
+                var isDefault = change.GetNewValue<bool>();
 
                 if (VisualRoot is IInputElement inputRoot)
                 {
@@ -476,13 +511,11 @@ namespace Avalonia.Controls
             }
             else if (change.Property == FlyoutProperty)
             {
-                var oldFlyout = change.OldValue.GetValueOrDefault() as FlyoutBase;
-                var newFlyout = change.NewValue.GetValueOrDefault() as FlyoutBase;
+                var (oldFlyout, newFlyout) = change.GetOldAndNewValue<FlyoutBase?>();
 
                 // If flyout is changed while one is already open, make sure we 
                 // close the old one first
-                if (oldFlyout != null &&
-                    oldFlyout.IsOpen)
+                if (oldFlyout != null && oldFlyout.IsOpen)
                 {
                     oldFlyout.Hide();
                 }
@@ -498,12 +531,15 @@ namespace Avalonia.Controls
         protected override AutomationPeer OnCreateAutomationPeer() => new ButtonAutomationPeer(this);
 
         /// <inheritdoc/>
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
-            base.UpdateDataValidation(property, value);
+            base.UpdateDataValidation(property, state, error);
             if (property == CommandProperty)
             {
-                if (value.Type == BindingValueType.BindingError)
+                if (state == BindingValueType.BindingError)
                 {
                     if (_commandCanExecute)
                     {

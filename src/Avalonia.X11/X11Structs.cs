@@ -32,6 +32,7 @@ using System.Collections;
 using System.Drawing;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable IdentifierTypo
@@ -545,7 +546,7 @@ namespace Avalonia.X11 {
         {
             if (data == null)
                 throw new InvalidOperationException();
-            return *(T*)data;
+            return Unsafe.ReadUnaligned<T>(data);
         }
     }
 
@@ -660,7 +661,7 @@ namespace Avalonia.X11 {
 			Type type = ev.GetType ();
 			FieldInfo [] fields = type.GetFields (System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance);
 			for (int i = 0; i < fields.Length; i++) {
-				if (result != string.Empty) {
+				if (!string.IsNullOrEmpty(result)) {
 					result += ", ";
 				}
 				object value = fields [i].GetValue (ev);

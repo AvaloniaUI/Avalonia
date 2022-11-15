@@ -42,7 +42,7 @@ namespace Avalonia.Win32.Automation
             return GetOrCreate(focus);
         }
 
-        public void FocusChanged(object sender, EventArgs e)
+        public void FocusChanged(object? sender, EventArgs e)
         {
             RaiseFocusChanged(GetOrCreate(Peer.GetFocus()));
         }

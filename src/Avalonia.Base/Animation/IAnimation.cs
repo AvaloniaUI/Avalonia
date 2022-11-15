@@ -1,12 +1,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Metadata;
 
 namespace Avalonia.Animation
 {
     /// <summary>
     /// Interface for Animation objects
     /// </summary>
+    [NotClientImplementable]
     public interface IAnimation
     {
         /// <summary>

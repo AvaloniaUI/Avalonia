@@ -2,12 +2,12 @@
 using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 using Avalonia.Styling;
-
-#nullable enable
 
 namespace Avalonia
 {
+    [NotClientImplementable]
     public interface IStyledElement :
         IStyleable,
         IStyleHost,

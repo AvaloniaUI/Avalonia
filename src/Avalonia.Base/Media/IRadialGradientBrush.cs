@@ -1,8 +1,11 @@
-﻿namespace Avalonia.Media
+﻿using Avalonia.Metadata;
+
+namespace Avalonia.Media
 {
     /// <summary>
     /// Paints an area with a radial gradient.
     /// </summary>
+    [NotClientImplementable]
     public interface IRadialGradientBrush : IGradientBrush
     {
         /// <summary>

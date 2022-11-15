@@ -5,12 +5,15 @@ namespace Avalonia.Input
 {
     public class KeyEventArgs : RoutedEventArgs
     {
+        internal KeyEventArgs()
+        {
+
+        }
+
         public IKeyboardDevice? Device { get; set; }
 
         public Key Key { get; set; }
 
-        [Obsolete("Use KeyModifiers")]
-        public InputModifiers Modifiers => (InputModifiers)KeyModifiers;
         public KeyModifiers KeyModifiers { get; set; }
     }
 }

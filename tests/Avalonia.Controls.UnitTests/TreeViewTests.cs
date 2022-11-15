@@ -18,6 +18,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using JetBrains.Annotations;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests
@@ -70,6 +71,35 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal(5, items.Count);
             Assert.All(items, x => Assert.IsType<Canvas>(x.HeaderPresenter.Child));
+        }
+
+        [Fact]
+        public void Items_Should_Be_Created_Using_ItemConatinerTheme_If_Present()
+        {
+            TreeView target;
+            var theme = new ControlTheme();
+
+            var root = new TestRoot
+            {
+                Child = target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = CreateTestTreeData(),
+                    ItemContainerTheme = theme,
+                    ItemTemplate = new FuncTreeDataTemplate<Node>(
+                        (_, __) => new Canvas(),
+                        x => x.Children),
+                }
+            };
+
+            ApplyTemplates(target);
+
+            var items = target.ItemContainerGenerator.Index.Containers
+                .OfType<TreeViewItem>()
+                .ToList();
+
+            Assert.Equal(5, items.Count);
+            Assert.All(items, x => Assert.Same(theme, x.ItemContainerTheme));
         }
 
         [Fact]
@@ -856,28 +886,31 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Right_Click_On_SelectedItem_Should_Not_Clear_Existing_Selection()
         {
-            var tree = CreateTestTreeData();
-            var target = new TreeView
+            using (UnitTestApplication.Start())
             {
-                Template = CreateTreeViewTemplate(),
-                Items = tree,
-                SelectionMode = SelectionMode.Multiple,
-            };
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                    SelectionMode = SelectionMode.Multiple,
+                };
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
 
-            var visualRoot = new TestRoot();
-            visualRoot.Child = target;
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
+                target.SelectAll();
 
-            CreateNodeDataTemplate(target);
-            ApplyTemplates(target);
-            target.ExpandSubTree((TreeViewItem)target.Presenter.Panel.Children[0]);
-            target.SelectAll();
+                AssertChildrenSelected(target, tree[0]);
+                Assert.Equal(5, target.SelectedItems.Count);
 
-            AssertChildrenSelected(target, tree[0]);
-            Assert.Equal(5, target.SelectedItems.Count);
+                _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Right);
 
-            _mouse.Click((Interactive)target.Presenter.Panel.Children[0], MouseButton.Right);
-
-            Assert.Equal(5, target.SelectedItems.Count);
+                Assert.Equal(5, target.SelectedItems.Count);
+            }
         }
 
         [Fact]

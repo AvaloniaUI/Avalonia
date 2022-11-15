@@ -15,20 +15,18 @@ namespace Avalonia.Android
         private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
 
-        private IDisposable? _timerSubscription;
+        private IDisposable _timerSubscription;
 
         public AvaloniaView(Context context) : base(context)
         {
-            _view = new ViewImpl(context);
+            _view = new ViewImpl(this);
             AddView(_view.View);
-            
-        }
 
-        internal void Prepare ()
-        {
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
         }
+
+        internal TopLevelImpl TopLevelImpl => _view;
 
         public object Content
         {
@@ -73,7 +71,7 @@ namespace Avalonia.Android
 
         class ViewImpl : TopLevelImpl
         {
-            public ViewImpl(Context context) : base(context)
+            public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
                 View.Focusable = true;
                 View.FocusChange += ViewImpl_FocusChange;

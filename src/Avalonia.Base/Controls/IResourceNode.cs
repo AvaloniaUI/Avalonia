@@ -1,6 +1,5 @@
 ﻿using System;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -12,6 +11,7 @@ namespace Avalonia.Controls
     /// (<see cref="IResourceHost"/>) and resource providers such as <see cref="ResourceDictionary"/>
     /// (see <see cref="IResourceProvider"/>).
     /// </remarks>
+    [NotClientImplementable]
     public interface IResourceNode
     {
         /// <summary>

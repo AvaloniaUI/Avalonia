@@ -1,8 +1,8 @@
 ﻿#nullable enable
 using System;
-using System.Text;
 using Avalonia.LogicalTree;
 using Avalonia.Styling.Activators;
+using Avalonia.Utilities;
 
 namespace Avalonia.Styling
 {
@@ -48,7 +48,7 @@ namespace Avalonia.Styling
         public int Step { get; }
         public int Offset { get; }
 
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
             if (!(control is ILogical logical))
             {
@@ -105,11 +105,13 @@ namespace Avalonia.Styling
         }
 
         protected override Selector? MovePrevious() => _previous;
+        protected override Selector? MovePreviousOrParent() => _previous;
 
         public override string ToString()
         {
             var expectedCapacity = NthLastChildSelectorName.Length + 8;
-            var stringBuilder = new StringBuilder(_previous?.ToString(), expectedCapacity);
+            var stringBuilder =  StringBuilderCache.Acquire(expectedCapacity);
+            stringBuilder.Append(_previous?.ToString());
             
             stringBuilder.Append(':');
             stringBuilder.Append(_reversed ? NthLastChildSelectorName : NthChildSelectorName);
@@ -139,7 +141,7 @@ namespace Avalonia.Styling
 
             stringBuilder.Append(')');
 
-            return stringBuilder.ToString();
+            return StringBuilderCache.GetStringAndRelease(stringBuilder);
         }
     }
 }

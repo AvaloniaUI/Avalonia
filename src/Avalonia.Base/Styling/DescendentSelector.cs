@@ -35,7 +35,7 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
             var c = (ILogical)control;
             var descendantMatches = new OrActivatorBuilder();
@@ -46,7 +46,7 @@ namespace Avalonia.Styling
 
                 if (c is IStyleable)
                 {
-                    var match = _parent.Match((IStyleable)c, subscribe);
+                    var match = _parent.Match((IStyleable)c, parent, subscribe);
 
                     if (match.Result == SelectorMatchResult.Sometimes)
                     {
@@ -70,5 +70,6 @@ namespace Avalonia.Styling
         }
 
         protected override Selector? MovePrevious() => null;
+        protected override Selector? MovePreviousOrParent() => _parent;
     }
 }

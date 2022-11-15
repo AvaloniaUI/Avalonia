@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
@@ -17,7 +16,7 @@ namespace Avalonia.Skia
         {
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
-            var bidiLevel = options.BidLevel;
+            var bidiLevel = options.BidiLevel;
             var culture = options.Culture;
 
             using (var buffer = new Buffer())
@@ -32,11 +31,11 @@ namespace Avalonia.Skia
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
 
-                var font = ((GlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((GlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 
-                if (buffer.Direction == Direction.RightToLeft)
+                if(buffer.Direction == Direction.RightToLeft)
                 {
                     buffer.Reverse();
                 }
@@ -59,13 +58,13 @@ namespace Avalonia.Skia
 
                     var glyphIndex = (ushort)sourceInfo.Codepoint;
 
-                    var glyphCluster = (int)sourceInfo.Cluster;
+                    var glyphCluster = (int)(sourceInfo.Cluster);
 
-                    var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale);
+                    var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if(glyphIndex == 0 && text.Buffer.Span[glyphCluster] == '\t')
+                    if(text.Buffer.Span[glyphCluster] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 
@@ -91,7 +90,7 @@ namespace Avalonia.Skia
             
             var second = glyphInfos[length - 1];
 
-            if (!new Codepoint((int)second.Codepoint).IsBreakChar)
+            if (!new Codepoint(second.Codepoint).IsBreakChar)
             {
                 return;
             }

@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using Avalonia.Media;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
+    [Unstable]
     public interface IFontManagerImpl
     {
         /// <summary>
@@ -41,6 +43,6 @@ namespace Avalonia.Platform
         /// <returns>0
         ///     The created glyph typeface. Can be <c>Null</c> if it was not possible to create a glyph typeface.
         /// </returns>
-        IGlyphTypefaceImpl CreateGlyphTypeface(Typeface typeface);
+        IGlyphTypeface CreateGlyphTypeface(Typeface typeface);
     }
 }

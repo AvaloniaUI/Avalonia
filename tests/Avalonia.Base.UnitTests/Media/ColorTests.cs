@@ -216,8 +216,8 @@ namespace Avalonia.Base.UnitTests.Media
 
                 Tuple.Create("hsl(-1000, -1000, -1000)",   new HslColor(1, 0, 0, 0)),   // Clamps to min
                 Tuple.Create("hsl(-1000, -1000%, -1000%)", new HslColor(1, 0, 0, 0)),   // Clamps to min
-                Tuple.Create("hsl(1000, 1000, 1000)",      new HslColor(1, 0, 1, 1)),   // Clamps to max
-                Tuple.Create("hsl(1000, 1000%, 1000%)",    new HslColor(1, 0, 1, 1)),   // Clamps to max
+                Tuple.Create("hsl(1000, 1000, 1000)",      new HslColor(1, 0, 1, 1)),   // Clamps to max (Hue wraps to zero)
+                Tuple.Create("hsl(1000, 1000%, 1000%)",    new HslColor(1, 0, 1, 1)),   // Clamps to max (Hue wraps to zero)
 
                 Tuple.Create("hsl(300, 0.8, 0.2)", new HslColor(1.0, 300, 0.8, 0.2)),
                 Tuple.Create("hsl(300, 80%, 20%)", new HslColor(1.0, 300, 0.8, 0.2)),
@@ -262,8 +262,8 @@ namespace Avalonia.Base.UnitTests.Media
 
                 Tuple.Create("hsv(-1000, -1000, -1000)",   new HsvColor(1, 0, 0, 0)),   // Clamps to min
                 Tuple.Create("hsv(-1000, -1000%, -1000%)", new HsvColor(1, 0, 0, 0)),   // Clamps to min
-                Tuple.Create("hsv(1000, 1000, 1000)",      new HsvColor(1, 0, 1, 1)),   // Clamps to max
-                Tuple.Create("hsv(1000, 1000%, 1000%)",    new HsvColor(1, 0, 1, 1)),   // Clamps to max
+                Tuple.Create("hsv(1000, 1000, 1000)",      new HsvColor(1, 0, 1, 1)),   // Clamps to max (Hue wraps to zero)
+                Tuple.Create("hsv(1000, 1000%, 1000%)",    new HsvColor(1, 0, 1, 1)),   // Clamps to max (Hue wraps to zero)
 
                 Tuple.Create("hsv(300, 0.8, 0.2)", new HsvColor(1.0, 300, 0.8, 0.2)),
                 Tuple.Create("hsv(300, 80%, 20%)", new HsvColor(1.0, 300, 0.8, 0.2)),
@@ -303,8 +303,20 @@ namespace Avalonia.Base.UnitTests.Media
                 Tuple.Create("#123456", new Color(0xff, 0x12, 0x34, 0x56)),
 
                 Tuple.Create("rgb(100, 30, 45)",       new Color(255, 100, 30, 45)),
-                Tuple.Create("rgba(100, 30, 45, 0.9)", new Color(229, 100, 30, 45)),
-                Tuple.Create("rgba(100, 30, 45, 90%)", new Color(229, 100, 30, 45)),
+                Tuple.Create("rgba(100, 30, 45, 0.9)", new Color(230, 100, 30, 45)),
+                Tuple.Create("rgba(100, 30, 45, 90%)", new Color(230, 100, 30, 45)),
+
+                Tuple.Create("rgb(255,0,0)", new Color(255, 255, 0, 0)),
+                Tuple.Create("rgb(0,255,0)", new Color(255, 0, 255, 0)),
+                Tuple.Create("rgb(0,0,255)", new Color(255, 0, 0, 255)),
+
+                Tuple.Create("rgb(100%, 0, 0)", new Color(255, 255, 0, 0)),
+                Tuple.Create("rgb(0, 100%, 0)", new Color(255, 0, 255, 0)),
+                Tuple.Create("rgb(0, 0, 100%)", new Color(255, 0, 0, 255)),
+
+                Tuple.Create("rgba(0, 0, 100%, 50%)",    new Color(128, 0, 0, 255)),
+                Tuple.Create("rgba(50%, 10%, 80%, 50%)", new Color(128, 128, 26, 204)),
+                Tuple.Create("rgba(50%, 10%, 80%, 0.5)", new Color(128, 128, 26, 204)),
 
                 // HSL
                 Tuple.Create("hsl(296, 85%, 12%)",         new Color(255, 53, 5, 57)),

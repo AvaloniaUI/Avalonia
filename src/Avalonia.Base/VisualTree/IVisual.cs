@@ -1,9 +1,8 @@
 using System;
 using Avalonia.Collections;
 using Avalonia.Media;
+using Avalonia.Metadata;
 using Avalonia.Rendering;
-
-#nullable enable
 
 namespace Avalonia.VisualTree
 {
@@ -18,6 +17,7 @@ namespace Avalonia.VisualTree
     /// implemented by <see cref="Visual"/>. It should not be necessary to implement it
     /// anywhere else.
     /// </remarks>
+    [NotClientImplementable]
     public interface IVisual
     {
         /// <summary>
@@ -79,6 +79,11 @@ namespace Avalonia.VisualTree
         /// Gets a value indicating whether to apply mirror transform on this control.
         /// </summary>
         bool HasMirrorTransform { get; }
+        
+        /// <summary>
+        /// Gets a value indicating whether to sort children when rendering this control
+        /// </summary>
+        bool HasNonUniformZIndexChildren { get; }
 
         /// <summary>
         /// Gets or sets the render transform of the control.

@@ -1,12 +1,14 @@
 using System;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Metadata;
 
 namespace Avalonia.LogicalTree
 {
     /// <summary>
     /// Represents a node in the logical tree.
     /// </summary>
+    [NotClientImplementable]
     public interface ILogical
     {
         /// <summary>

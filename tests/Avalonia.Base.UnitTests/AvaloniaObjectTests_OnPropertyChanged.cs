@@ -109,25 +109,26 @@ namespace Avalonia.Base.UnitTests
             public List<AvaloniaPropertyChangedEventArgs> Changes { get; }
             public List<AvaloniaPropertyChangedEventArgs> CoreChanges { get; }
 
-            protected override void OnPropertyChangedCore<T>(AvaloniaPropertyChangedEventArgs<T> change)
+            protected override void OnPropertyChangedCore(AvaloniaPropertyChangedEventArgs change)
             {
                 CoreChanges.Add(Clone(change));
                 base.OnPropertyChangedCore(change);
             }
 
-            protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+            protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
             {
                 Changes.Add(Clone(change));
                 base.OnPropertyChanged(change);
             }
 
-            private static AvaloniaPropertyChangedEventArgs<T> Clone<T>(AvaloniaPropertyChangedEventArgs<T> change)
+            private static AvaloniaPropertyChangedEventArgs Clone(AvaloniaPropertyChangedEventArgs change)
             {
-                var result = new AvaloniaPropertyChangedEventArgs<T>(
+                var e = (AvaloniaPropertyChangedEventArgs<string>)change;
+                var result = new AvaloniaPropertyChangedEventArgs<string>(
                     change.Sender,
-                    change.Property,
-                    change.OldValue,
-                    change.NewValue,
+                    e.Property,
+                    e.OldValue,
+                    e.NewValue,
                     change.Priority);
 
                 if (!change.IsEffectiveValueChange)

@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media.TextFormatting;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 
 namespace Avalonia.Platform
@@ -6,6 +7,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// An abstraction that is used produce shaped text.
     /// </summary>
+    [Unstable]
     public interface ITextShaperImpl
     {
         /// <summary>

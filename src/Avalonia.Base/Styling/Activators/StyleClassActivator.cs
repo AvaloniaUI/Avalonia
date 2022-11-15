@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
+using Avalonia.Controls;
 
 #nullable enable
 
@@ -10,20 +11,16 @@ namespace Avalonia.Styling.Activators
     /// An <see cref="IStyleActivator"/> which is active when a set of classes match those on a
     /// control.
     /// </summary>
-    internal sealed class StyleClassActivator : StyleActivatorBase
+    internal sealed class StyleClassActivator : StyleActivatorBase, IClassesChangedListener
     {
         private readonly IList<string> _match;
-        private readonly IAvaloniaReadOnlyList<string> _classes;
-        private NotifyCollectionChangedEventHandler? _classesChangedHandler;
+        private readonly Classes _classes;
 
-        public StyleClassActivator(IAvaloniaReadOnlyList<string> classes, IList<string> match)
+        public StyleClassActivator(Classes classes, IList<string> match)
         {
             _classes = classes;
             _match = match;
         }
-
-        private NotifyCollectionChangedEventHandler ClassesChangedHandler =>
-            _classesChangedHandler ??= ClassesChanged;
 
         public static bool AreClassesMatching(IReadOnlyList<string> classes, IList<string> toMatch)
         {
@@ -55,23 +52,20 @@ namespace Avalonia.Styling.Activators
             return remainingMatches == 0;
         }
 
+        void IClassesChangedListener.Changed()
+        {
+            PublishNext(IsMatching());
+        }
+
         protected override void Initialize()
         {
             PublishNext(IsMatching());
-            _classes.CollectionChanged += ClassesChangedHandler;
+            _classes.AddListener(this);
         }
 
         protected override void Deinitialize()
         {
-            _classes.CollectionChanged -= ClassesChangedHandler;
-        }
-
-        private void ClassesChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action != NotifyCollectionChangedAction.Move)
-            {
-                PublishNext(IsMatching());
-            }
+            _classes.RemoveListener(this);
         }
 
         private bool IsMatching() => AreClassesMatching(_classes, _match);

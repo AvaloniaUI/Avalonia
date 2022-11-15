@@ -1,6 +1,4 @@
-﻿using Avalonia.Media.TextFormatting.Unicode;
-
-namespace Avalonia.Media.TextFormatting
+﻿namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Represents a base class for text formatting.

@@ -37,13 +37,13 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, bool subscribe)
+        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
         {
             var controlParent = ((ILogical)control).LogicalParent;
 
             if (controlParent != null)
             {
-                var parentMatch = _parent.Match((IStyleable)controlParent, subscribe);
+                var parentMatch = _parent.Match((IStyleable)controlParent, parent, subscribe);
 
                 if (parentMatch.Result == SelectorMatchResult.Sometimes)
                 {
@@ -65,5 +65,6 @@ namespace Avalonia.Styling
         }
 
         protected override Selector? MovePrevious() => null;
+        protected override Selector? MovePreviousOrParent() => _parent;
     }
 }

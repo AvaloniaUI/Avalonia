@@ -53,6 +53,11 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         public ITransform? Transform { get; }
 
+        /// <summary>
+        /// Gets the transform origin of the brush
+        /// </summary>
+        public RelativePoint TransformOrigin { get; }
+
         public bool Equals(ImmutableSolidColorBrush? other)
         {
             if (ReferenceEquals(null, other)) return false;

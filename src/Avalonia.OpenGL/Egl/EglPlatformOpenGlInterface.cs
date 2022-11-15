@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Logging;
+using Avalonia.Platform;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl
@@ -12,6 +13,7 @@ namespace Avalonia.OpenGL.Egl
         
         public EglContext PrimaryEglContext { get; }
         public IGlContext PrimaryContext => PrimaryEglContext;
+        IPlatformGpuContext IPlatformGpu.PrimaryContext => PrimaryContext;
         
         public EglPlatformOpenGlInterface(EglDisplay display)
         {
@@ -42,10 +44,13 @@ namespace Avalonia.OpenGL.Egl
 
         public IGlContext CreateContext() => Display.CreateContext(null);
         public IGlContext CreateSharedContext() => Display.CreateContext(PrimaryEglContext);
-        
+
 
         public EglSurface CreateWindowSurface(IntPtr window)
         {
+            if (window == IntPtr.Zero)
+                throw new OpenGlException($"Window {window} is invalid.");
+
             using (PrimaryContext.MakeCurrent())
             {
                 var s = Display.EglInterface.CreateWindowSurface(Display.Handle, Display.Config, window,

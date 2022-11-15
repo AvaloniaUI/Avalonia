@@ -52,14 +52,14 @@ namespace Avalonia.Base.UnitTests
             source.OnNext(BindingValue<int>.DataValidationError(new Exception()));
             source.OnNext(7);
 
-            var result = target.Notifications.Cast<BindingValue<int>>().ToList();
+            var result = target.Notifications;
             Assert.Equal(4, result.Count);
-            Assert.Equal(BindingValueType.Value, result[0].Type);
-            Assert.Equal(6, result[0].Value);
-            Assert.Equal(BindingValueType.BindingError, result[1].Type);
-            Assert.Equal(BindingValueType.DataValidationError, result[2].Type);
-            Assert.Equal(BindingValueType.Value, result[3].Type);
-            Assert.Equal(7, result[3].Value);
+            Assert.Equal(BindingValueType.Value, result[0].type);
+            Assert.Equal(6, result[0].value);
+            Assert.Equal(BindingValueType.BindingError, result[1].type);
+            Assert.Equal(BindingValueType.DataValidationError, result[2].type);
+            Assert.Equal(BindingValueType.Value, result[3].type);
+            Assert.Equal(7, result[3].value);
         }
 
         [Fact]
@@ -72,8 +72,7 @@ namespace Avalonia.Base.UnitTests
             target.Bind(Class1.NonValidatedDirectProperty, source);
             source.OnNext(1);
 
-            var result = target.Notifications.Cast<BindingValue<int>>().ToList();
-            Assert.Equal(1, result.Count);
+            Assert.Equal(1, target.Notifications.Count);
         }
 
         [Fact]
@@ -154,13 +153,14 @@ namespace Avalonia.Base.UnitTests
                 set { SetAndRaise(ValidatedDirectStringProperty, ref _directString, value); }
             }
 
-            public IList<object> Notifications { get; } = new List<object>();
+            public List<(BindingValueType type, object value)> Notifications { get; } = new();
 
-            protected override void UpdateDataValidation<T>(
-                AvaloniaProperty<T> property,
-                BindingValue<T> value)
+            protected override void UpdateDataValidation(
+                AvaloniaProperty property,
+                BindingValueType state,
+                Exception error)
             {
-                Notifications.Add(value);
+                Notifications.Add((state, GetValue(property)));
             }
         }
 

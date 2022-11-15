@@ -10,7 +10,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         ///     This test is used to generate all Unicode related types.
         ///     We only need to run this when the Unicode spec changes.
         /// </summary>
-        [Fact(Skip = "Only run when the Unicode spec changes.")]
+        [Fact(Skip = "Only run when we update the trie.")]
         public void Should_Generate_Data()
         {
             if (!Directory.Exists("Generated"))
@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             foreach (var value in unicodeData.Values)
             {
-                var data = unicodeDataTrie.Get(value.Codepoint);
+                var data = unicodeDataTrie.Get((uint)value.Codepoint);
                 
                 Assert.Equal(value.GeneralCategory, GetValue(data, 0, UnicodeData.CATEGORY_MASK));
                 
@@ -35,7 +35,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             foreach (var value in biDiData.Values)
             {
-                var data = biDiTrie.Get(value.Codepoint);
+                var data = biDiTrie.Get((uint)value.Codepoint);
                 
                 Assert.Equal(value.Bracket, GetValue(data, 0, UnicodeData.BIDIPAIREDBRACKED_MASK));
                 

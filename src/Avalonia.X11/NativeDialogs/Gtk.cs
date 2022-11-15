@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Interop;
+using JetBrains.Annotations;
+
 // ReSharper disable IdentifierTypo
 namespace Avalonia.X11.NativeDialogs
 {
@@ -195,7 +197,10 @@ namespace Avalonia.X11.NativeDialogs
 
         [DllImport(GtkName)]
         public static extern void gtk_file_chooser_set_current_name(IntPtr chooser, Utf8Buffer file);
-        
+
+        [DllImport(GtkName)]
+        public static extern void gtk_file_chooser_set_current_folder(IntPtr chooser, Utf8Buffer file);
+
         [DllImport(GtkName)]
         public static extern IntPtr gtk_file_filter_new();
         
@@ -204,6 +209,9 @@ namespace Avalonia.X11.NativeDialogs
         
         [DllImport(GtkName)]
         public static extern IntPtr gtk_file_filter_add_pattern(IntPtr filter, Utf8Buffer pattern);
+        
+        [DllImport(GtkName)]
+        public static extern IntPtr gtk_file_filter_add_mime_type (IntPtr filter, Utf8Buffer mimeType);
         
         [DllImport(GtkName)]
         public static extern IntPtr gtk_file_chooser_add_filter(IntPtr chooser, IntPtr filter);
@@ -252,8 +260,12 @@ namespace Avalonia.X11.NativeDialogs
 
         public static Task<bool> StartGtk()
         {
-            var tcs = new TaskCompletionSource<bool>();
-            new Thread(() =>
+            return StartGtkCore();
+        }
+
+        private static void GtkThread(TaskCompletionSource<bool> tcs)
+        {
+            try
             {
                 try
                 {
@@ -287,7 +299,17 @@ namespace Avalonia.X11.NativeDialogs
                 tcs.SetResult(true);
                 while (true)
                     gtk_main_iteration();
-            }) {Name = "GTK3THREAD", IsBackground = true}.Start();
+            }
+            catch
+            {
+                tcs.SetResult(false);
+            }
+        }
+        
+        private static Task<bool> StartGtkCore()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            new Thread(() => GtkThread(tcs)) {Name = "GTK3THREAD", IsBackground = true}.Start();
             return tcs.Task;
         }
     }

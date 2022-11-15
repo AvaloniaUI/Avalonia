@@ -1,6 +1,5 @@
 using Avalonia.LogicalTree;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -10,6 +9,7 @@ namespace Avalonia.Controls
     /// <remarks>
     /// You should not usually need to use this interface - it is for advanced scenarios only.
     /// </remarks>
+    [NotClientImplementable]
     public interface ISetLogicalParent
     {
         /// <summary>

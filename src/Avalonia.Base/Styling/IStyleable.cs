@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Collections;
-
-#nullable enable
+using Avalonia.Metadata;
 
 namespace Avalonia.Styling
 {
     /// <summary>
     /// Interface for styleable elements.
     /// </summary>
+    [NotClientImplementable]
     public interface IStyleable : IAvaloniaObject, INamed
     {
         /// <summary>
@@ -25,6 +25,11 @@ namespace Avalonia.Styling
         /// Gets the template parent of this element if the control comes from a template.
         /// </summary>
         ITemplatedControl? TemplatedParent { get; }
+
+        /// <summary>
+        /// Gets the effective theme for the control as used by the syling system.
+        /// </summary>
+        ControlTheme? GetEffectiveTheme();
 
         /// <summary>
         /// Notifies the element that a style has been applied.

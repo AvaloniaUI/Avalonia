@@ -40,19 +40,16 @@ namespace Avalonia.Controls
             control = control ?? throw new ArgumentNullException(nameof(control));
             key = key ?? throw new ArgumentNullException(nameof(key));
 
-            IResourceHost? current = control;
+            IResourceNode? current = control;
 
             while (current != null)
             {
-                if (current is IResourceHost host)
+                if (current.TryGetResource(key, out value))
                 {
-                    if (host.TryGetResource(key, out value))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
 
-                current = (current as IStyledElement)?.StylingParent as IResourceHost;
+                current = (current as IStyledElement)?.StylingParent as IResourceNode;
             }
 
             value = null;
@@ -135,6 +132,11 @@ namespace Avalonia.Controls
             {
                 _target.OwnerChanged += OwnerChanged;
                 _owner = _target.Owner;
+
+                if (_owner is object)
+                {
+                    _owner.ResourcesChanged += ResourcesChanged;
+                }
             }
 
             protected override void Deinitialize()
