@@ -3,7 +3,9 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:col="using:System.Collections"
-    xmlns:sys="using:System">
+    xmlns:sys="using:System"
+    xmlns:viewModels="using:ControlCatalog.ViewModels"
+    x:DataType="viewModels:ComboBoxPageViewModel">
     <StackPanel Orientation="Vertical" Spacing="4">
         <TextBlock Classes="h2">A drop-down list.</TextBlock>
 
@@ -39,7 +41,7 @@
                         </col:ArrayList>
                     </ComboBox.Items>
                     <ComboBox.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="sys:String">
                             <Panel>
                                 <TextBlock Text="{Binding}" />
                                 <TextBlock IsVisible="{Binding Converter={x:Static ObjectConverters.IsNull}}" Text="Null object" />
@@ -71,7 +73,7 @@
                     SelectedIndex="0"
                     WrapSelection="{Binding WrapSelection}">
                     <ComboBox.ItemTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="FontFamily">
                             <TextBlock FontFamily="{Binding}" Text="{Binding Name}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>

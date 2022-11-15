@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:dialogs="clr-namespace:Avalonia.Dialogs;assembly=Avalonia.Dialogs">
+        xmlns:dialogs="using:Avalonia.Dialogs">
   <Design.PreviewWith>
     <Border Padding="20" Width="800" Height="500">
       <dialogs:ManagedFileChooser/>
@@ -131,7 +131,8 @@
         </dialogs:ResourceSelectorConverter>
       </ResourceDictionary>
     </ControlTheme.Resources>
-    <Setter Property="Template">
+    <Setter Property="Template"
+            x:DataType="dialogs:ManagedFileChooserViewModel">
       <ControlTemplate>
         <DockPanel>
           <ListBox x:Name="PART_QuickLinks" DockPanel.Dock="Left" Items="{Binding QuickLinks}" SelectedIndex="{Binding QuickLinksSelectedIndex}" Focusable="False">
@@ -222,7 +223,7 @@
                 Background="Transparent"
                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="dialogs:ManagedFileChooserItemViewModel">
                   <Grid Background="Transparent">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition SharedSizeGroup="Icon" />

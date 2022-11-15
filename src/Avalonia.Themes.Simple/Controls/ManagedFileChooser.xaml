@@ -1,6 +1,6 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:dialogs="clr-namespace:Avalonia.Dialogs;assembly=Avalonia.Dialogs">
+                    xmlns:dialogs="using:Avalonia.Dialogs">
   <DrawingGroup x:Key="LevelUp">
     <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M16,16L0,16 0,0 16,0z" />
     <GeometryDrawing Brush="#FFF6F6F6"
@@ -41,7 +41,7 @@
   <ControlTheme x:Key="{x:Type dialogs:ManagedFileChooser}"
                 TargetType="dialogs:ManagedFileChooser">
     <Setter Property="Template">
-      <ControlTemplate>
+      <ControlTemplate x:DataType="dialogs:ManagedFileChooserViewModel">
         <DockPanel>
           <DockPanel Margin="0,0,0,5"
                      DockPanel.Dock="Top">

@@ -1,8 +1,9 @@
 using System;
+using Avalonia.Dialogs.Internal;
 
 namespace Avalonia.Dialogs
 {
-    internal class ManagedFileChooserItemViewModel : InternalViewModelBase
+    public class ManagedFileChooserItemViewModel : InternalViewModelBase
     {
         private string _displayName;
         private string _path;

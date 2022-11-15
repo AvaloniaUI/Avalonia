@@ -292,7 +292,7 @@ namespace Avalonia.Diagnostics.ViewModels
         
         [DependsOn(nameof(TreePageViewModel.SelectedNode))]
         [DependsOn(nameof(Content))]
-        bool CanShot(object? parameter)
+        public bool CanShot(object? parameter)
         {
             return Content is TreePageViewModel tree
                 && tree.SelectedNode != null
@@ -300,7 +300,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 && visual.VisualRoot != null;
         }
 
-        async void Shot(object? parameter)
+        public async void Shot(object? parameter)
         {
             if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control
                 && _screenshotHandler is { }

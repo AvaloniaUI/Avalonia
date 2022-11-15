@@ -8,30 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Data.Converters;
 using Avalonia.Data;
+using ControlCatalog.Models;
 
 namespace ControlCatalog.Pages
 {
     public class AutoCompleteBoxPage : UserControl
     {
-        public class StateData
-        {
-            public string Name { get; private set; }
-            public string Abbreviation { get; private set; }
-            public string Capital { get; private set; }
-
-            public StateData(string name, string abbreviatoin, string capital)
-            {
-                Name = name;
-                Abbreviation = abbreviatoin;
-                Capital = capital;
-            }
-
-            public override string ToString()
-            {
-                return Name;
-            }
-        }
-
         private StateData[] BuildAllStates()
         {
             return new StateData[]
