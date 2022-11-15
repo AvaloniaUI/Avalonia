@@ -36,7 +36,7 @@ namespace Avalonia.Build.Tasks
 
             var res = XamlCompilerTaskExecutor.Compile(BuildEngine, input,
                 File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
-                ProjectDirectory, OutputPath, VerifyIl, outputImportance,
+                ProjectDirectory, OutputPath, VerifyIl, DefaultCompileBindings, outputImportance,
                 (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null, SkipXamlCompilation, DebuggerLaunch);
             if (!res.Success)
                 return false;
@@ -71,6 +71,9 @@ namespace Avalonia.Build.Tasks
         public string OutputPath { get; set; }
 
         public bool VerifyIl { get; set; }
+
+        public bool DefaultCompileBindings { get; set; }
+        
         public bool SkipXamlCompilation { get; set; }
         
         public string AssemblyOriginatorKeyFile { get; set; }
