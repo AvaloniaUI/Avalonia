@@ -1,0 +1,67 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type RefreshVisualizer}"
+                TargetType="RefreshVisualizer">
+    <Setter Property="IsTabStop" Value="False"/>
+    <Setter Property="IsHitTestVisible" Value="False"/>
+    <Setter Property="Height"
+            Value="100"/>
+    <Setter Property="Background"
+            Value="{DynamicResource RefreshVisualizerBackground}"/>
+    <Setter Property="Foreground"
+            Value="{DynamicResource RefreshVisualizerForeground}"/>
+    <Setter Property="Template">
+      <ControlTemplate>
+          <Grid Name="PART_Root" MinHeight="80" Background="{TemplateBinding Background}">
+            <Grid.Styles>
+              <Style Selector="Grid.pending > Grid">
+                <Style.Animations>
+                  <Animation IterationCount="1" Duration="0:0:0.25">
+                    <KeyFrame Cue="0%">
+                      <Setter Property="ScaleTransform.ScaleX"
+                              Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="0%">
+                      <Setter Property="ScaleTransform.ScaleY"
+                              Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                      <Setter Property="ScaleTransform.ScaleX"
+                              Value="1.2"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="50%">
+                      <Setter Property="ScaleTransform.ScaleY"
+                              Value="1.2"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                      <Setter Property="ScaleTransform.ScaleX"
+                              Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                      <Setter Property="ScaleTransform.ScaleY"
+                              Value="1"/>
+                    </KeyFrame>
+                  </Animation>
+                </Style.Animations>
+              </Style>
+              <Style Selector="Grid > Grid > PathIcon.refreshing">
+                <Style.Animations>
+                  <Animation Duration="0:0:1"
+                             IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                      <Setter Property="RotateTransform.Angle"
+                              Value="0"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                      <Setter Property="RotateTransform.Angle"
+                              Value="360"/>
+                    </KeyFrame>
+                  </Animation>
+                </Style.Animations>
+              </Style>
+            </Grid.Styles>
+          </Grid>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

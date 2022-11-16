@@ -33,6 +33,8 @@
         <SolidColorBrush x:Key="ThemeControlHighlightHighBrush" Color="{StaticResource ThemeControlHighlightHighColor}" />
         <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{StaticResource ThemeForegroundColor}" />
 
-        <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" />
+        <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" />      
+        <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="Black"/>
+        <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent"/>
     </Style.Resources>
 </Style>

@@ -65,6 +65,8 @@
         <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/ManagedFileChooser.xaml" />
         <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/SplitButton.xaml" />
         <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/SelectableTextBlock.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/RefreshContainer.xaml" />
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Controls/RefreshVisualizer.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Styles.Resources>

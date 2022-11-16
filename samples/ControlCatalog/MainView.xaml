@@ -132,6 +132,9 @@
       <TabItem Header="RadioButton">
         <pages:RadioButtonPage />
       </TabItem>
+      <TabItem Header="RefreshContainer">
+        <pages:RefreshContainerPage />
+      </TabItem>
       <TabItem Header="RelativePanel">
         <pages:RelativePanelPage />
       </TabItem>

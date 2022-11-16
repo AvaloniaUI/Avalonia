@@ -46,6 +46,14 @@ namespace Avalonia.Input
         private static readonly WeakReference<IInteractive?> s_lastPress = new WeakReference<IInteractive?>(null);
         private static Point s_lastPressPoint;
 
+        public static readonly RoutedEvent<PullGestureEventArgs> PullGestureEvent =
+            RoutedEvent.Register<PullGestureEventArgs>(
+                "PullGesture", RoutingStrategies.Bubble, typeof(Gestures));
+
+        public static readonly RoutedEvent<PullGestureEndedEventArgs> PullGestureEndedEvent =
+            RoutedEvent.Register<PullGestureEndedEventArgs>(
+                "PullGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
+
         static Gestures()
         {
             InputElement.PointerPressedEvent.RouteFinished.Subscribe(PointerPressed);
