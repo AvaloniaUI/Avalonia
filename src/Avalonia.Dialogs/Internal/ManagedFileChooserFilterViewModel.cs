@@ -2,9 +2,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Avalonia.Platform.Storage;
 
-namespace Avalonia.Dialogs
+namespace Avalonia.Dialogs.Internal
 {
-    internal class ManagedFileChooserFilterViewModel : InternalViewModelBase
+    public class ManagedFileChooserFilterViewModel : AvaloniaDialogsInternalViewModelBase
     {
         private readonly Regex[] _patterns;
         public string Name { get; }

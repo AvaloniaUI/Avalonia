@@ -1,8 +1,6 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Layout;
 
-namespace Avalonia.Dialogs
+namespace Avalonia.Dialogs.Internal
 {
     public class ChildFitter : Decorator
     {

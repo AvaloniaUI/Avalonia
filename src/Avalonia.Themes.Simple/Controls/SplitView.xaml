@@ -34,8 +34,7 @@
     <!-- Left -->
     <Style Selector="^:left">
       <Setter Property="Template">
-        <ControlTemplate x:CompileBindings="True"
-                         TargetType="SplitView">
+        <ControlTemplate TargetType="SplitView">
           <Grid Name="Container"
                 Background="{TemplateBinding Background}">
             <Grid.ColumnDefinitions>
@@ -118,8 +117,7 @@
     <!-- Right -->
     <Style Selector="^:right">
       <Setter Property="Template">
-        <ControlTemplate TargetType="SplitView"
-                         x:CompileBindings="True">
+        <ControlTemplate TargetType="SplitView">
           <Grid Name="Container" Background="{TemplateBinding Background}">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />

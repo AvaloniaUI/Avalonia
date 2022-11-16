@@ -32,7 +32,7 @@ namespace Avalonia.Diagnostics.ViewModels
         public TreeNode? SelectedNode
         {
             get => _selectedNode;
-            private set
+            set
             {
                 if (RaiseAndSetIfChanged(ref _selectedNode, value))
                 {
