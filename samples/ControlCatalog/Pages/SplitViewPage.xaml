@@ -2,8 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ControlCatalog.Pages.SplitViewPage">
+             x:Class="ControlCatalog.Pages.SplitViewPage"
+             x:DataType="viewModels:SplitViewPageViewModel">
 
   <Border>
 
@@ -51,7 +53,7 @@
         <!--{Binding SelectedItem.Tag, ElementName=PaneBackgroundSelector}-->
         <SplitView Name="SplitView"
                       PanePlacement="{Binding PanePlacement}"
-                      PaneBackground="{Binding SelectedItem.Tag, ElementName=PaneBackgroundSelector}"
+                      PaneBackground="{Binding ((Control)SelectedItem).Tag, ElementName=PaneBackgroundSelector, FallbackValue={x:Null}}"
                       OpenPaneLength="{Binding Value, ElementName=OpenPaneLengthSlider}"
                       CompactPaneLength="{Binding Value, ElementName=CompactPaneLengthSlider}"
                       DisplayMode="{Binding CurrentDisplayMode}">
