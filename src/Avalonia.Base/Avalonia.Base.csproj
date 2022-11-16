@@ -47,11 +47,10 @@
   </ItemGroup>
   
   <ItemGroup Label="Build dependency">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-      <UndefineProperties>TargetFramework</UndefineProperties>
-    </ProjectReference>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj" 
+                      SetTargetFramework="TargetFramework=netstandard2.0"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>
