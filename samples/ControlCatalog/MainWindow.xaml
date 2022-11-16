@@ -5,7 +5,7 @@
         Icon="/Assets/test_icon.ico"
         xmlns:local="using:ControlCatalog"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:ControlCatalog.ViewModels"
+        xmlns:vm="clr-namespace:ControlCatalog.ViewModels;assembly=ControlCatalog"
         xmlns:v="using:ControlCatalog.Views"
         ExtendClientAreaToDecorationsHint="{Binding ExtendClientAreaEnabled}"
         ExtendClientAreaChromeHints="{Binding ChromeHints}"
