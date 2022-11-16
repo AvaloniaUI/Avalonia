@@ -28,7 +28,8 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// Sets the non-committed input string
         /// </summary>
-        void SetPreeditText(string text);
+        void SetPreeditText(string? text);
+
         /// <summary>
         /// Indicates if text input client is capable of providing the text around the cursor
         /// </summary>
@@ -41,14 +42,8 @@ namespace Avalonia.Input.TextInput
         /// Should be fired when surrounding text changed
         /// </summary>
         event EventHandler? SurroundingTextChanged;
-        /// <summary>
-        /// Returns the text before the cursor. Must return a non-empty string if cursor is not at the beginning of the text entry
-        /// </summary>
-        string? TextBeforeCursor { get; }
-        /// <summary>
-        /// Returns the text before the cursor. Must return a non-empty string if cursor is not at the end of the text entry
-        /// </summary>
-        string? TextAfterCursor { get; }
+
+        void SelectInSurroundingText(int start, int end);
     }
 
     public struct TextInputMethodSurroundingText

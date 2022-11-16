@@ -495,6 +495,7 @@ namespace Avalonia.Controls
                     break;
 
                 case NavigationDirection.Down:
+                case NavigationDirection.Right:
                     if (from?.IsExpanded == true && intoChildren && from.ItemCount > 0)
                     {
                         result = (TreeViewItem)from.ItemContainerGenerator.ContainerFromIndex(0)!;
@@ -529,7 +530,7 @@ namespace Avalonia.Controls
                         e.Source,
                         true,
                         e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
+                        e.KeyModifiers.HasAllFlags(AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>().CommandModifiers),
                         point.Properties.IsRightButtonPressed);
                 }
             }

@@ -183,8 +183,11 @@ static IAvnGlSurfaceRenderTarget* CreateGlRenderTarget(IOSurfaceRenderTarget* ta
                 [_layer setContents: (__bridge IOSurface*) surface->surface];
             }
             [CATransaction commit];
-            [CATransaction flush];
         }
+        // This can trigger event processing on the main thread
+        // which might need to lock the renderer
+        // which can cause a deadlock. So flush call is outside of the lock
+        [CATransaction flush];
     }
     else
         dispatch_async(dispatch_get_main_queue(), ^{

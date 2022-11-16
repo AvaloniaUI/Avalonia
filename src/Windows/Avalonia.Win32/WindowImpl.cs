@@ -65,6 +65,7 @@ namespace Avalonia.Win32
         private bool _isUsingComposition;
         private IBlurHost _blurHost;
         private PlatformResizeReason _resizeReason;
+        private MOUSEMOVEPOINT _lastWmMousePoint;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -107,6 +108,7 @@ namespace Avalonia.Win32
         private static readonly POINTER_TOUCH_INFO[] s_historyTouchInfos = new POINTER_TOUCH_INFO[MaxPointerHistorySize];
         private static readonly POINTER_PEN_INFO[] s_historyPenInfos = new POINTER_PEN_INFO[MaxPointerHistorySize];
         private static readonly POINTER_INFO[] s_historyInfos = new POINTER_INFO[MaxPointerHistorySize];
+        private static readonly MOUSEMOVEPOINT[] s_mouseHistoryInfos = new MOUSEMOVEPOINT[64];
 
         public WindowImpl()
         {
@@ -224,7 +226,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.Primary)?.PixelDensity ?? 1;
+        private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.IsPrimary)?.Scaling ?? 1;
 
         public double RenderScaling => _scaling;
 
@@ -285,11 +287,12 @@ namespace Avalonia.Win32
 
             set
             {
-                if (IsWindowVisible(_hwnd))
+                if (IsWindowVisible(_hwnd) && _lastWindowState != value)
                 {
                     ShowWindow(value, value != WindowState.Minimized); // If the window is minimized, it shouldn't be activated
                 }
 
+                _lastWindowState = value;
                 _showWindowState = value;
             }
         }

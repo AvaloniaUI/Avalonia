@@ -20,7 +20,7 @@ namespace ControlCatalog.Pages
             SetXamlTexts();
         }
 
-        private void Afp_DoubleTapped(object sender, RoutedEventArgs e)
+        private void Afp_DoubleTapped(object? sender, RoutedEventArgs e)
         {
             if (sender is Panel p)
             {

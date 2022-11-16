@@ -80,8 +80,8 @@ namespace Avalonia.X11
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
-                .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
-                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
+                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
@@ -278,7 +278,8 @@ namespace Avalonia
             "llvmpipe"
         };
 
-        public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name;
+        
+        public string WmClass { get; set; }
 
         /// <summary>
         /// Enables multitouch support. The default value is true.
@@ -287,6 +288,18 @@ namespace Avalonia
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
+
+        public X11PlatformOptions()
+        {
+            try
+            {
+                WmClass = Assembly.GetEntryAssembly()?.GetName()?.Name;
+            }
+            catch
+            {
+                //
+            }
+        }
     }
     public static class AvaloniaX11PlatformExtensions
     {

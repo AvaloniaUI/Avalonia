@@ -39,46 +39,52 @@ namespace Avalonia.Build.Tasks
 
         public static CompileResult Compile(IBuildEngine engine, string input, string[] references,
             string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom,
+            string output, bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey,
             bool skipXamlCompilation)
         {
-            return Compile(engine, input, references, projectDirectory, output, verifyIl, logImportance, strongNameKey, patchCom, skipXamlCompilation, debuggerLaunch:false);
+            return Compile(engine, input, references, projectDirectory, output, verifyIl, defaultCompileBindings, logImportance, strongNameKey, skipXamlCompilation, debuggerLaunch:false);
         }
 
         internal static CompileResult Compile(IBuildEngine engine, string input, string[] references,
             string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool patchCom, bool skipXamlCompilation, bool debuggerLaunch)
+            string output, bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
         {
-            var typeSystem = new CecilTypeSystem(
-                references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")),
-                input);
-
-            var asm = typeSystem.TargetAssemblyDefinition;
-
-            if (!skipXamlCompilation)
+            try
             {
-                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance, debuggerLaunch);
-                if (compileRes == null && !patchCom)
-                    return new CompileResult(true);
-                if (compileRes == false)
-                    return new CompileResult(false);
+                var typeSystem = new CecilTypeSystem(
+                    references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")),
+                    input);
+
+                var asm = typeSystem.TargetAssemblyDefinition;
+
+                if (!skipXamlCompilation)
+                {
+                    var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings,
+                        logImportance, debuggerLaunch);
+                    if (compileRes == null)
+                        return new CompileResult(true);
+                    if (compileRes == false)
+                        return new CompileResult(false);
+                }
+
+                var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
+                if (!string.IsNullOrWhiteSpace(strongNameKey))
+                    writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+
+                asm.Write(output, writerParameters);
+
+                return new CompileResult(true, true);
             }
-
-            if (patchCom)
-                ComInteropHelper.PatchAssembly(asm, typeSystem);
-
-            var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
-            if (!string.IsNullOrWhiteSpace(strongNameKey))
-                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
-
-            asm.Write(output, writerParameters);
-
-            return new CompileResult(true, true);
-
+            catch (Exception ex)
+            {
+                engine.LogError(BuildEngineErrorCode.Unknown, "", ex.Message);
+                return new CompileResult(false);
+            }
         }
 
         static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
-            string projectDirectory, bool verifyIl, 
+            string projectDirectory, bool verifyIl,
+            bool defaultCompileBindings,
             MessageImportance logImportance
             , bool debuggerLaunch = false)
         {
@@ -112,12 +118,20 @@ namespace Avalonia.Build.Tasks
                 }
             }
             var asm = typeSystem.TargetAssemblyDefinition;
-            var emres = new EmbeddedResources(asm);
             var avares = new AvaloniaResources(asm, projectDirectory);
-            if (avares.Resources.Count(CheckXamlName) == 0 && emres.Resources.Count(CheckXamlName) == 0)
+            if (avares.Resources.Count(CheckXamlName) == 0)
                 // Nothing to do
                 return null;
-
+            if (typeSystem.FindType("System.Reflection.AssemblyMetadataAttribute") is {} asmMetadata)
+            {
+                var ctor = asm.MainModule.ImportReference(typeSystem.GetTypeReference(asmMetadata).Resolve()
+                    .GetConstructors().First(c => c.Parameters.Count == 2).Resolve());
+                var strType = asm.MainModule.ImportReference(typeof(string));
+                var arg1 = new CustomAttributeArgument(strType, "AvaloniaUseCompiledBindingsByDefault");
+                var arg2 = new CustomAttributeArgument(strType, defaultCompileBindings.ToString());
+                asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg1, arg2 } });
+            }
+            
             var clrPropertiesDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlHelpers",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(clrPropertiesDef);
@@ -147,7 +161,7 @@ namespace Avalonia.Build.Tasks
             var contextClass = XamlILContextDefinition.GenerateContextClass(typeSystem.CreateTypeBuilder(contextDef), typeSystem,
                 xamlLanguage, emitConfig);
 
-            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, emitConfig, contextClass) { EnableIlVerification = verifyIl };
+            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, emitConfig, contextClass) { EnableIlVerification = verifyIl, DefaultCompileBindings = defaultCompileBindings };
 
             var editorBrowsableAttribute = typeSystem
                 .GetTypeReference(typeSystem.FindType("System.ComponentModel.EditorBrowsableAttribute"))
@@ -182,10 +196,11 @@ namespace Avalonia.Build.Tasks
 
             var stringEquals = asm.MainModule.ImportReference(asm.MainModule.TypeSystem.String.Resolve().Methods.First(
                 m =>
-                    m.IsStatic && m.Name == "Equals" && m.Parameters.Count == 2 &&
+                    m.IsStatic && m.Name == "Equals" && m.Parameters.Count == 3 &&
                     m.ReturnType.FullName == "System.Boolean"
                     && m.Parameters[0].ParameterType.FullName == "System.String"
-                    && m.Parameters[1].ParameterType.FullName == "System.String"));
+                    && m.Parameters[1].ParameterType.FullName == "System.String"
+                    && m.Parameters[2].ParameterType.FullName == "System.StringComparison"));
             
             bool CompileGroup(IResourceGroup group)
             {
@@ -326,8 +341,8 @@ namespace Avalonia.Build.Tasks
                                         var op = i[c].Operand as MethodReference;
                                         
                                         // TODO: Throw an error
-                                        // This usually happens when same XAML resource was added twice for some weird reason
-                                        // We currently support it for dual-named default theme resource
+                                        // This usually happens when the same XAML resource was added twice for some weird reason
+                                        // We currently support it for dual-named default theme resources
                                         if (op != null
                                             && op.Name == TrampolineName)
                                         {
@@ -388,6 +403,7 @@ namespace Avalonia.Build.Tasks
                                 var nop = Instruction.Create(OpCodes.Nop);
                                 i.Add(Instruction.Create(OpCodes.Ldarg_0));
                                 i.Add(Instruction.Create(OpCodes.Ldstr, res.Uri));
+                                i.Add(Instruction.Create(OpCodes.Ldc_I4, (int)StringComparison.OrdinalIgnoreCase));
                                 i.Add(Instruction.Create(OpCodes.Call, stringEquals));
                                 i.Add(Instruction.Create(OpCodes.Brfalse, nop));
                                 if (parameterlessConstructor != null)
@@ -436,9 +452,6 @@ namespace Avalonia.Build.Tasks
                 return true;
             }
             
-            if (emres.Resources.Count(CheckXamlName) != 0)
-                if (!CompileGroup(emres))
-                    return false;
             if (avares.Resources.Count(CheckXamlName) != 0)
             {
                 if (!CompileGroup(avares))

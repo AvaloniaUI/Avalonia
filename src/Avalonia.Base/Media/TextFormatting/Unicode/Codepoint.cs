@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -104,7 +105,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         
         /// <summary>
         /// Gets the canonical representation of a given codepoint.
-        /// <see href="http://www.unicode.org/L2/L2013/13123-norm-and-bpa.pdf"/>
+        /// <see href="https://www.unicode.org/L2/L2013/13123-norm-and-bpa.pdf"/>
         /// </summary>
         /// <param name="codePoint">The code point to be mapped.</param>
         /// <returns>The mapped canonical code point, or the passed <paramref name="codePoint"/>.</returns>
@@ -165,7 +166,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="index">The index to read at.</param>
         /// <param name="count">The count of character that were read.</param>
         /// <returns></returns>
-        public static Codepoint ReadAt(ReadOnlySlice<char> text, int index, out int count)
+        public static Codepoint ReadAt(ReadOnlySpan<char> text, int index, out int count)
         {
             count = 1;
 
@@ -224,7 +225,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if <paramref name="value"/> is between
+        /// Returns <see langword="true"/> if <paramref name="cp"/> is between
         /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

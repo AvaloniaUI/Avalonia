@@ -2,10 +2,10 @@ using System;
 using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
-using Avalonia.Platform;
 using Avalonia.Themes.Fluent;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
@@ -20,15 +20,14 @@ namespace ControlCatalog
 
             var sideBar = this.Get<TabControl>("Sidebar");
 
-            if (AvaloniaLocator.Current?.GetService<IRuntimePlatform>()?.GetRuntimeInfo().IsDesktop == true)
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime)
             {
-                IList tabItems = ((IList)sideBar.Items);
-                tabItems.Add(new TabItem()
+                var tabItems = (sideBar.Items as IList);
+                tabItems?.Add(new TabItem()
                 {
                     Header = "Screens",
                     Content = new ScreenPage()
                 });
-
             }
 
             var themes = this.Get<ComboBox>("Themes");
@@ -36,7 +35,7 @@ namespace ControlCatalog
             {
                 if (themes.SelectedItem is CatalogTheme theme)
                 {
-                    var themeStyle = Application.Current.Styles[0];
+                    var themeStyle = Application.Current!.Styles[0];
                     if (theme == CatalogTheme.FluentLight)
                     {
                         if (App.Fluent.Mode != FluentThemeMode.Light)
@@ -58,19 +57,19 @@ namespace ControlCatalog
                         Application.Current.Styles[1] = App.ColorPickerFluent;
                         Application.Current.Styles[2] = App.DataGridFluent;
                     }
-                    else if (theme == CatalogTheme.DefaultLight)
+                    else if (theme == CatalogTheme.SimpleLight)
                     {
-                        App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Light;
-                        Application.Current.Styles[0] = App.DefaultLight;
-                        Application.Current.Styles[1] = App.ColorPickerDefault;
-                        Application.Current.Styles[2] = App.DataGridDefault;
+                        App.Simple.Mode = Avalonia.Themes.Simple.SimpleThemeMode.Light;
+                        Application.Current.Styles[0] = App.SimpleLight;
+                        Application.Current.Styles[1] = App.ColorPickerSimple;
+                        Application.Current.Styles[2] = App.DataGridSimple;
                     }
-                    else if (theme == CatalogTheme.DefaultDark)
+                    else if (theme == CatalogTheme.SimpleDark)
                     {
-                        App.Default.Mode = Avalonia.Themes.Default.SimpleThemeMode.Dark;
-                        Application.Current.Styles[0] = App.DefaultDark;
-                        Application.Current.Styles[1] = App.ColorPickerDefault;
-                        Application.Current.Styles[2] = App.DataGridDefault;
+                        App.Simple.Mode = Avalonia.Themes.Simple.SimpleThemeMode.Dark;
+                        Application.Current.Styles[0] = App.SimpleDark;
+                        Application.Current.Styles[1] = App.ColorPickerSimple;
+                        Application.Current.Styles[2] = App.DataGridSimple;
                     }
                 }
             };

@@ -1,21 +1,10 @@
-﻿using System;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Logging;
 
 namespace Avalonia
 {
     public static class LoggingExtensions
     {
-        [Obsolete("Use LogToTrace")]
-        public static T LogToDebug<T>(
-            this T builder,
-            LogEventLevel level = LogEventLevel.Warning,
-            params string[] areas)
-                where T : AppBuilderBase<T>, new()
-        {
-            return LogToTrace(builder, level, areas);
-        }
-
         /// <summary>
         /// Logs Avalonia events to the <see cref="System.Diagnostics.Trace"/> sink.
         /// </summary>

@@ -1,6 +1,6 @@
 ﻿// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using Avalonia.Threading;
@@ -297,7 +297,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    if (item != null && DateTime.Compare(this[index], item) != 0 && Calendar.IsValidDateSelection(_owner, item))
+                    if (DateTime.Compare(this[index], item) != 0 && Calendar.IsValidDateSelection(_owner, item))
                     {
                         removedItems.Add(this[index]);
                         base.SetItem(index, item);

@@ -51,7 +51,16 @@ namespace Avalonia.LinuxFramebuffer.Output
             if(connector == null)
                 throw new InvalidOperationException("Unable to find connected DRM connector");
 
-            var mode = connector.Modes.OrderByDescending(x => x.IsPreferred)
+            DrmModeInfo? mode = null;
+
+            if (options?.VideoMode != null)
+            {
+                mode = connector.Modes
+                    .FirstOrDefault(x => x.Resolution.Width == options.VideoMode.Value.Width &&
+                                         x.Resolution.Height == options.VideoMode.Value.Height);
+            }
+            
+            mode ??= connector.Modes.OrderByDescending(x => x.IsPreferred)
                 .ThenByDescending(x => x.Resolution.Width * x.Resolution.Height)
                 //.OrderByDescending(x => x.Resolution.Width * x.Resolution.Height)
                 .FirstOrDefault();
@@ -99,7 +108,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             // prepare for the new ioctl call
             var handles = new uint[] {handle, 0, 0, 0};
             var pitches = new uint[] {stride, 0, 0, 0};
-            var offsets = new uint[] {};
+            var offsets = Array.Empty<uint>();
 
             var ret = drmModeAddFB2(_card.Fd, w, h, format, handles, pitches,
                                     offsets, out var fbHandle, 0);

@@ -1,12 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using Microsoft.CodeAnalysis;
 
 namespace IntegrationTestApp
 {
@@ -16,6 +18,7 @@ namespace IntegrationTestApp
         {
             InitializeComponent();
             InitializeViewMenu();
+            InitializeGesturesTab();
             this.AttachDevTools();
             AddHandler(Button.ClickEvent, OnButtonClick);
             ListBoxItems = Enumerable.Range(0, 100).Select(x => "Item " + x).ToList();
@@ -31,20 +34,23 @@ namespace IntegrationTestApp
 
         private void InitializeViewMenu()
         {
-            var mainTabs = this.FindControl<TabControl>("MainTabs");
+            var mainTabs = this.Get<TabControl>("MainTabs");
             var viewMenu = (NativeMenuItem)NativeMenu.GetMenu(this).Items[1];
 
-            foreach (TabItem tabItem in mainTabs.Items)
+            if (mainTabs.Items is not null)
             {
-                var menuItem = new NativeMenuItem
+                foreach (TabItem tabItem in mainTabs.Items)
                 {
-                    Header = (string)tabItem.Header!,
-                    IsChecked = tabItem.IsSelected,
-                    ToggleType = NativeMenuItemToggleType.Radio,
-                };
+                    var menuItem = new NativeMenuItem
+                    {
+                        Header = (string)tabItem.Header!,
+                        IsChecked = tabItem.IsSelected,
+                        ToggleType = NativeMenuItemToggleType.Radio,
+                    };
 
-                menuItem.Click += (s, e) => tabItem.IsSelected = true;
-                viewMenu.Menu.Items.Add(menuItem);
+                    menuItem.Click += (s, e) => tabItem.IsSelected = true;
+                    viewMenu?.Menu?.Items.Add(menuItem);
+                }
             }
         }
 
@@ -61,6 +67,17 @@ namespace IntegrationTestApp
                 WindowStartupLocation = (WindowStartupLocation)locationComboBox.SelectedIndex,
             };
 
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            {
+                // Make sure the windows have unique names and AutomationIds.
+                var existing = lifetime.Windows.OfType<ShowWindowTest>().Count();
+                if (existing > 0)
+                {
+                    AutomationProperties.SetAutomationId(window, window.Name + (existing + 1));
+                    window.Title += $" {existing + 1}";
+                }
+            }
+            
             if (size.HasValue)
             {
                 window.Width = size.Value.Width;
@@ -99,15 +116,48 @@ namespace IntegrationTestApp
 
             foreach (var window in lifetime.Windows)
             {
+                window.Show();
                 if (window.WindowState == WindowState.Minimized)
                     window.WindowState = WindowState.Normal;
             }
         }
 
+        private void InitializeGesturesTab()
+        {
+            var gestureBorder = this.GetControl<Border>("GestureBorder");
+            var gestureBorder2 = this.GetControl<Border>("GestureBorder2");
+            var lastGesture = this.GetControl<TextBlock>("LastGesture");
+            var resetGestures = this.GetControl<Button>("ResetGestures");
+            gestureBorder.Tapped += (s, e) => lastGesture.Text = "Tapped";
+            
+            gestureBorder.DoubleTapped += (s, e) =>
+            {
+                lastGesture.Text = "DoubleTapped";
+
+                // Testing #8733
+                gestureBorder.IsVisible = false;
+                gestureBorder2.IsVisible = true;
+            };
+
+            gestureBorder2.DoubleTapped += (s, e) =>
+            {
+                lastGesture.Text = "DoubleTapped2";
+            };
+
+            Gestures.AddRightTappedHandler(gestureBorder, (s, e) => lastGesture.Text = "RightTapped");
+            
+            resetGestures.Click += (s, e) =>
+            {
+                lastGesture.Text = string.Empty;
+                gestureBorder.IsVisible = true;
+                gestureBorder2.IsVisible = false;
+            };
+        }
+
         private void MenuClicked(object? sender, RoutedEventArgs e)
         {
-            var clickedMenuItemTextBlock = this.FindControl<TextBlock>("ClickedMenuItem");
-            clickedMenuItemTextBlock.Text = ((MenuItem)sender!).Header.ToString();
+            var clickedMenuItemTextBlock = this.Get<TextBlock>("ClickedMenuItem");
+            clickedMenuItemTextBlock.Text = (sender as MenuItem)?.Header?.ToString();
         }
 
         private void OnButtonClick(object? sender, RoutedEventArgs e)
@@ -115,13 +165,13 @@ namespace IntegrationTestApp
             var source = e.Source as Button;
 
             if (source?.Name == "ComboBoxSelectionClear")
-                this.FindControl<ComboBox>("BasicComboBox").SelectedIndex = -1;
+                this.Get<ComboBox>("BasicComboBox").SelectedIndex = -1;
             if (source?.Name == "ComboBoxSelectFirst")
-                this.FindControl<ComboBox>("BasicComboBox").SelectedIndex = 0;
+                this.Get<ComboBox>("BasicComboBox").SelectedIndex = 0;
             if (source?.Name == "ListBoxSelectionClear")
-                this.FindControl<ListBox>("BasicListBox").SelectedIndex = -1;
+                this.Get<ListBox>("BasicListBox").SelectedIndex = -1;
             if (source?.Name == "MenuClickedMenuItemReset")
-                this.FindControl<TextBlock>("ClickedMenuItem").Text = "None";
+                this.Get<TextBlock>("ClickedMenuItem").Text = "None";
             if (source?.Name == "ShowWindow")
                 ShowWindow();
             if (source?.Name == "SendToBack")

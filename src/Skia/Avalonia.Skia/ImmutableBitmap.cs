@@ -1,11 +1,8 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
-using Avalonia.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -142,13 +139,13 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void Save(string fileName)
+        public void Save(string fileName, int? quality = null)
         {
             ImageSavingHelper.SaveImage(_image, fileName);
         }
 
         /// <inheritdoc />
-        public void Save(Stream stream)
+        public void Save(Stream stream, int? quality = null)
         {
             ImageSavingHelper.SaveImage(_image, stream);
         }

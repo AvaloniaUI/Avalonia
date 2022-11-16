@@ -93,22 +93,6 @@ namespace Avalonia.Media.Imaging
         /// Initializes a new instance of the <see cref="Bitmap"/> class.
         /// </summary>
         /// <param name="format">The pixel format.</param>
-        /// <param name="data">The pointer to the source bytes.</param>
-        /// <param name="size">The size of the bitmap in device pixels.</param>
-        /// <param name="dpi">The DPI of the bitmap.</param>
-        /// <param name="stride">The number of bytes per row.</param>
-        [Obsolete("Use overload taking an AlphaFormat.")]
-        public Bitmap(PixelFormat format, IntPtr data, PixelSize size, Vector dpi, int stride)
-        {
-            var ri = GetFactory();
-            PlatformImpl = RefCountable.Create(ri
-                .LoadBitmap(format, ri.DefaultAlphaFormat, data, size, dpi, stride));
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Bitmap"/> class.
-        /// </summary>
-        /// <param name="format">The pixel format.</param>
         /// <param name="alphaFormat">The alpha format.</param>
         /// <param name="data">The pointer to the source bytes.</param>
         /// <param name="size">The size of the bitmap in device pixels.</param>
@@ -137,18 +121,28 @@ namespace Avalonia.Media.Imaging
         /// Saves the bitmap to a file.
         /// </summary>
         /// <param name="fileName">The filename.</param>
-        public void Save(string fileName)
+        /// <param name="quality">
+        /// The optional quality for compression. 
+        /// The quality value is interpreted from 0 - 100. If quality is null the default quality 
+        /// setting is applied.
+        /// </param>
+        public void Save(string fileName, int? quality = null)
         {
-            PlatformImpl.Item.Save(fileName);
+            PlatformImpl.Item.Save(fileName, quality);
         }
 
         /// <summary>
         /// Saves the bitmap to a stream.
         /// </summary>
         /// <param name="stream">The stream.</param>
-        public void Save(Stream stream)
+        /// <param name="quality">
+        /// The optional quality for compression. 
+        /// The quality value is interpreted from 0 - 100. If quality is null the default quality 
+        /// setting is applied.
+        /// </param>
+        public void Save(Stream stream, int? quality = null)
         {
-            PlatformImpl.Item.Save(stream);
+            PlatformImpl.Item.Save(stream, quality);
         }
 
         /// <inheritdoc/>

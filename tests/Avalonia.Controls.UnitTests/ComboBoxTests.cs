@@ -29,11 +29,36 @@ namespace Avalonia.Controls.UnitTests
             _helper.Down(target);
             _helper.Up(target);
             Assert.True(target.IsDropDownOpen);
+            Assert.True(target.Classes.Contains(ComboBox.pcDropdownOpen));
 
             _helper.Down(target);
             _helper.Up(target);
 
             Assert.False(target.IsDropDownOpen);
+            Assert.True(!target.Classes.Contains(ComboBox.pcDropdownOpen));
+        }
+
+        [Fact]
+        public void Clicking_On_Control_PseudoClass()
+        {
+            var target = new ComboBox
+            {
+                Items = new[] { "Foo", "Bar" },
+            };
+
+            _helper.Down(target);
+            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+            _helper.Up(target);
+            Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
+            Assert.True(target.Classes.Contains(ComboBox.pcDropdownOpen));
+
+            _helper.Down(target);
+            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+            _helper.Up(target);
+            Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
+
+            Assert.False(target.IsDropDownOpen);
+            Assert.True(!target.Classes.Contains(ComboBox.pcDropdownOpen));
         }
 
         [Fact]

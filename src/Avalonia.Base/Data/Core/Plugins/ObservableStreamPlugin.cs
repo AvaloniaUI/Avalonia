@@ -42,7 +42,7 @@ namespace Avalonia.Data.Core.Plugins
             if (target is IObservable<object?> result)
             {
                 return result;
-            };
+            }
 
             // If the observable returns a value type then we need to call Observable.Select on it.
             // First get the type of T in `IObservable<T>`.

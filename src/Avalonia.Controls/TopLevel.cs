@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -403,9 +404,6 @@ namespace Avalonia.Controls
 
             LayoutManager?.Dispose();
         }
-
-        [Obsolete("Use HandleResized(Size, PlatformResizeReason)")]
-        protected virtual void HandleResized(Size clientSize) => HandleResized(clientSize, PlatformResizeReason.Unspecified);
 
         /// <summary>
         /// Handles a resize notification from <see cref="ITopLevelImpl.Resized"/>.

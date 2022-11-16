@@ -63,7 +63,7 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
-        _isDialog = isDialog;
+        _isDialog = isDialog || _parent != nullptr;
 
         WindowBaseImpl::Show(activate, isDialog);
 
@@ -91,13 +91,13 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
         if(_parent != nullptr)
         {
             _parent->_children.remove(this);
-            
-            _parent->BringToFront();
         }
 
         auto cparent = dynamic_cast<WindowImpl *>(parent);
         
         _parent = cparent;
+
+        _isDialog = _parent != nullptr;
         
         if(_parent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
@@ -121,7 +121,7 @@ void WindowImpl::BringToFront()
 {
     if(Window != nullptr)
     {
-        if (![Window isMiniaturized])
+        if ([Window isVisible] && ![Window isMiniaturized])
         {
             if(IsDialog())
             {

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
@@ -49,13 +51,13 @@ internal abstract class IOSStorageItem : IStorageBookmarkItem
         return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(Url.RemoveLastPathComponent()));
     }
 
-    public Task ReleaseBookmark()
+    public Task ReleaseBookmarkAsync()
     {
         // no-op
         return Task.CompletedTask;
     }
 
-    public Task<string?> SaveBookmark()
+    public Task<string?> SaveBookmarkAsync()
     {
         try
         {
@@ -102,12 +104,12 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
 
     public bool CanOpenWrite => true;
 
-    public Task<Stream> OpenRead()
+    public Task<Stream> OpenReadAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Read));
     }
 
-    public Task<Stream> OpenWrite()
+    public Task<Stream> OpenWriteAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Write));
     }
@@ -117,5 +119,20 @@ internal sealed class IOSStorageFolder : IOSStorageItem, IStorageBookmarkFolder
 {
     public IOSStorageFolder(NSUrl url) : base(url)
     {
+    }
+
+    public Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
+    {
+        var content = NSFileManager.DefaultManager.GetDirectoryContent(Url, null, NSDirectoryEnumerationOptions.None, out var error);
+        if (error is not null)
+        {
+            return Task.FromException<IReadOnlyList<IStorageItem>>(new NSErrorException(error));
+        }
+
+        var items = content
+            .Select(u => u.HasDirectoryPath ? (IStorageItem)new IOSStorageFolder(u) : new IOSStorageFile(u))
+            .ToArray();
+
+        return Task.FromResult<IReadOnlyList<IStorageItem>>(items);
     }
 }

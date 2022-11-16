@@ -113,24 +113,6 @@ namespace Avalonia.Interactivity
         {
         }
 
-        [Obsolete("Use overload taking Action<TTarget, TEventArgs>.")]
-        public IDisposable AddClassHandler<TTarget>(
-            Func<TTarget, Action<TEventArgs>> handler,
-            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
-            bool handledEventsToo = false)
-            where TTarget : class, IInteractive
-        {
-            void Adapter(object? sender, RoutedEventArgs e)
-            {
-                if (sender is TTarget target && e is TEventArgs args)
-                {
-                    handler(target)(args);
-                }
-            }
-
-            return AddClassHandler(typeof(TTarget), Adapter, routes, handledEventsToo);
-        }
-
         public IDisposable AddClassHandler<TTarget>(
             Action<TTarget, TEventArgs> handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,

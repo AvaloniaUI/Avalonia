@@ -755,6 +755,40 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         }
         
         [Fact]
+        public void ResolvesRelativeSourceBindingFromStyleSelector()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<TextBox xmlns='https://github.com/avaloniaui'
+         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+         InnerLeftContent='Hello'>
+    <TextBox.Styles>
+        <Style Selector='TextBox'>
+            <Setter Property='Template'>
+                <ControlTemplate>
+                    <StackPanel>
+                        <ContentPresenter x:Name='Content' />
+                        <TextPresenter x:Name='PART_TextPresenter' />
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector='^ /template/ ContentPresenter#Content'>
+                <Setter Property='Content' Value='{CompiledBinding InnerLeftContent, RelativeSource={RelativeSource TemplatedParent}}' />
+            </Style>
+        </Style>
+    </TextBox.Styles>
+</TextBox>";
+
+                var textBox = AvaloniaRuntimeXamlLoader.Parse<TextBox>(xaml);
+                textBox.Measure(new Size(10, 10));
+                
+                var result = textBox.GetTemplateChildren().OfType<ContentPresenter>().First();
+                Assert.Equal(textBox.InnerLeftContent, result.Content);
+            }
+        }
+
+        [Fact]
         public void ResolvesElementNameInTemplate()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -1562,6 +1596,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         X='{CompiledBinding StringProperty, DataType=local:TestDataContext}' />";
                 var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var compiledPath = ((CompiledBindingExtension)control.X).Path;
+
+                var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
+                Assert.Equal(typeof(string), node.Property.PropertyType);
+            }
+        }
+        
+        [Fact]
+        public void Uses_RuntimeLoader_Configuration_To_Enabled_Compiled()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<local:AssignBindingControl xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        X='{Binding StringProperty, DataType=local:TestDataContext}' />";
+                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml, new RuntimeXamlLoaderConfiguration
+                {
+                    UseCompiledBindingsByDefault = true
+                });
                 var compiledPath = ((CompiledBindingExtension)control.X).Path;
 
                 var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));

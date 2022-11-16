@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using Avalonia.Controls;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 
@@ -91,7 +93,8 @@ namespace Avalonia.Media
                 runProps,
                 TextWrapping.WrapWithOverflow,
                 0, // line height not specified
-                0 // indentation not specified
+                0, // indentation not specified
+                0
             );
 
             InvalidateMetrics();
@@ -654,14 +657,16 @@ namespace Avalonia.Media
 
             // line break before _currentLine, needed in case we have to reformat it with collapsing symbol
             private TextLineBreak? _previousLineBreak;
+            private int _position;
+            private int _length;
 
             internal LineEnumerator(FormattedText text)
             {
                 _previousHeight = 0;
-                Length = 0;
+                _length = 0;
                 _previousLineBreak = null;
 
-                Position = 0;
+                _position = 0;
                 _lineCount = 0;
                 _totalHeight = 0;
                 Current = null;
@@ -678,9 +683,17 @@ namespace Avalonia.Media
                 _nextLine = null;
             }
 
-            private int Position { get; set; }
+            public int Position 
+            { 
+                get => _position; 
+                private set => _position = value;
+            }
 
-            private int Length { get; set; }
+            public int Length 
+            { 
+                get => _length; 
+                private set => _length = value; 
+            }
 
             /// <summary>
             /// Gets the current text line in the collection
@@ -1290,6 +1303,92 @@ namespace Avalonia.Media
             CombineGeometryRecursive(drawing, ref transform, ref accumulatedGeometry);
 
             return accumulatedGeometry;
+        }
+
+        /// <summary>
+        /// Builds a highlight geometry object.
+        /// </summary>
+        /// <param name="origin">The origin of the highlight region</param>
+        /// <returns>Geometry that surrounds the text.</returns>
+        public Geometry? BuildHighlightGeometry(Point origin)
+        {
+            return BuildHighlightGeometry(origin, 0, _text.Length);
+        }
+
+        /// <summary>
+        /// Builds a highlight geometry object for a given character range.
+        /// </summary>
+        /// <param name="origin">The origin of the highlight region.</param>
+        /// <param name="startIndex">The start index of initial character the bounds should be obtained for.</param>
+        /// <param name="count">The number of characters the bounds should be obtained for.</param>
+        /// <returns>Geometry that surrounds the specified character range.</returns>
+        public Geometry? BuildHighlightGeometry(Point origin, int startIndex, int count)
+        {
+            ValidateRange(startIndex, count);
+
+            Geometry? accumulatedBounds = null;
+
+            using (var enumerator = GetEnumerator())
+            {
+                var lineOrigin = origin;
+
+                while (enumerator.MoveNext())
+                {
+                    var currentLine = enumerator.Current!;
+
+                    int x0 = Math.Max(enumerator.Position, startIndex);
+                    int x1 = Math.Min(enumerator.Position + enumerator.Length, startIndex + count);
+
+                    // check if this line is intersects with the specified character range
+                    if (x0 < x1)
+                    {
+                        var highlightBounds = currentLine.GetTextBounds(x0,x1 - x0);
+
+                        if (highlightBounds != null)
+                        {
+                            foreach (var bound in highlightBounds)
+                            {
+                                var rect = bound.Rectangle;
+
+                                if (FlowDirection == FlowDirection.RightToLeft)
+                                {
+                                    // Convert logical units (which extend leftward from the right edge
+                                    // of the paragraph) to physical units.
+                                    //
+                                    // Note that since rect is in logical units, rect.Right corresponds to 
+                                    // the visual *left* edge of the rectangle in the RTL case. Specifically,
+                                    // is the distance leftward from the right edge of the formatting rectangle
+                                    // whose width is the paragraph width passed to FormatLine.
+                                    //
+                                    rect = rect.WithX(enumerator.CurrentParagraphWidth - rect.Right);
+                                }
+
+                                rect = new Rect(new Point(rect.X + lineOrigin.X, rect.Y + lineOrigin.Y), rect.Size);
+
+                                RectangleGeometry rectangleGeometry = new RectangleGeometry(rect);
+
+                                if (accumulatedBounds == null)
+                                {
+                                    accumulatedBounds = rectangleGeometry;
+                                }
+                                else
+                                {
+                                    accumulatedBounds = Geometry.Combine(accumulatedBounds, rectangleGeometry, GeometryCombineMode.Union);
+                                }                                  
+                            }
+                        }
+                    }
+
+                    AdvanceLineOrigin(ref lineOrigin, currentLine);
+                }
+            }
+
+            if (accumulatedBounds?.PlatformImpl == null || accumulatedBounds.PlatformImpl.Bounds.IsEmpty)
+            {
+                return null;
+            }            
+
+            return accumulatedBounds;
         }
 
         /// <summary>

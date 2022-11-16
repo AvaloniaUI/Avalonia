@@ -6,7 +6,6 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
-    
   - task: PowerShell@2
     displayName: Get PR Number
     inputs:
@@ -31,14 +30,20 @@ jobs:
     vmImage: 'ubuntu-20.04'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.418'
+    displayName: 'Use .NET Core SDK 6.0.401'
     inputs:
-      version: 3.1.418
+      version: 6.0.401
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.202'
+    displayName: 'Use .NET Core SDK 7.0'
     inputs:
-      version: 6.0.202
+      version: 7.0.100
+
+  - task: CmdLine@2
+    displayName: 'Install Workloads'
+    inputs:
+      script: |
+       dotnet workload install wasm-tools wasm-experimental
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -59,25 +64,24 @@ jobs:
   variables:
     SolutionDir: '$(Build.SourcesDirectory)'
   pool:
-    vmImage: 'macOS-10.15'
+    vmImage: 'macos-12'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.418'
+    displayName: 'Use .NET Core SDK 6.0.401'
     inputs:
-      version: 3.1.418
+      version: 6.0.401
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.202'
+    displayName: 'Use .NET Core SDK 7.0.100'
     inputs:
-      version: 6.0.202
-      
+      version: 7.0.100
+
   - task: CmdLine@2
-    displayName: 'Install Mono 5.18'
+    displayName: 'Install Workloads'
     inputs:
       script: |
-        curl -o ./mono.pkg https://download.mono-project.com/archive/5.18.0/macos-10-universal/MonoFramework-MDK-5.18.0.225.macos10.xamarin.universal.pkg 
-        sudo installer -verbose -pkg ./mono.pkg -target /
-
+       dotnet workload install wasm-tools wasm-experimental
+      
   - task: CmdLine@2
     displayName: 'Generate avalonia-native'
     inputs:
@@ -91,10 +95,10 @@ jobs:
     inputs:
       actions: 'build'
       scheme: ''
-      sdk: 'macosx11.1'
+      sdk: 'macosx12.3'
       configuration: 'Release'
       xcWorkspacePath: '**/*.xcodeproj/project.xcworkspace'
-      xcodeVersion: '12' # Options: 8, 9, default, specifyPath
+      xcodeVersion: '13' # Options: 8, 9, default, specifyPath
       args: '-derivedDataPath ./'
 
   - task: CmdLine@2
@@ -134,26 +138,26 @@ jobs:
     SolutionDir: '$(Build.SourcesDirectory)'
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 3.1.418'
+    displayName: 'Use .NET Core SDK 6.0.401'
     inputs:
-      version: 3.1.418
+      version: 6.0.401
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.202'
+    displayName: 'Use .NET Core SDK 7.0.100'
     inputs:
-      version: 6.0.202
+      version: 7.0.100
 
   - task: CmdLine@2
     displayName: 'Install Workloads'
     inputs:
       script: |
-       dotnet workload install android ios
+       dotnet workload install android ios wasm-tools wasm-experimental
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.24.0 
+       dotnet tool install --global Nuke.GlobalTool --version 6.2.1 
 
   - task: CmdLine@2
     displayName: 'Run Nuke'

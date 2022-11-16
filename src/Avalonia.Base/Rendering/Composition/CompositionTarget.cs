@@ -31,7 +31,7 @@ namespace Avalonia.Rendering.Composition
         /// <param name="point"></param>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public PooledList<CompositionVisual>? TryHitTest(Point point, Func<IVisual, bool>? filter)
+        public PooledList<CompositionVisual>? TryHitTest(Point point, Func<CompositionVisual, bool>? filter)
         {
             Server.Readback.NextRead();
             if (Root == null)
@@ -88,10 +88,14 @@ namespace Avalonia.Rendering.Composition
         }
         
         void HitTestCore(CompositionVisual visual, Point globalPoint, PooledList<CompositionVisual> result,
-            Func<IVisual, bool>? filter)
+            Func<CompositionVisual, bool>? filter)
         {
             if (visual.Visible == false)
                 return;
+            
+            if (filter != null && !filter(visual))
+                return;
+            
             if (!TryTransformTo(visual, globalPoint, out var point))
                 return;
 
@@ -111,7 +115,7 @@ namespace Avalonia.Rendering.Composition
                 }
             
             // Hit-test the current node
-            if (visual.HitTest(point, filter)) 
+            if (visual.HitTest(point)) 
                 result.Add(visual);
         }
 
@@ -125,7 +129,7 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         internal void ImmediateUIThreadRender()
         {
-            Compositor.RequestCommitAsync();
+            Compositor.Commit();
             Compositor.Server.Render();
         }
     }

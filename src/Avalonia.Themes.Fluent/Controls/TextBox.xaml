@@ -161,6 +161,7 @@
                                     TextAlignment="{TemplateBinding TextAlignment}"
                                     TextWrapping="{TemplateBinding TextWrapping}"
                                     LineHeight="{TemplateBinding LineHeight}"
+                                    LetterSpacing="{TemplateBinding LetterSpacing}"
                                     PasswordChar="{TemplateBinding PasswordChar}"
                                     RevealPassword="{TemplateBinding RevealPassword}"
                                     SelectionBrush="{TemplateBinding SelectionBrush}"
@@ -234,7 +235,8 @@
       <Setter Property="InnerRightContent">
         <Template>
           <ToggleButton Theme="{StaticResource FluentTextBoxToggleButton}"
-                        IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}">
+                        IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}"
+                        ClipToBounds="True">
             <Panel>
               <PathIcon Data="{StaticResource PasswordBoxRevealButtonData}"
                         Height="8" Width="12"
@@ -252,7 +254,8 @@
       <Setter Property="InnerRightContent">
         <Template>
           <Button Theme="{StaticResource FluentTextBoxButton}"
-                  Command="{Binding $parent[TextBox].Clear}">
+                  Command="{Binding $parent[TextBox].Clear}"
+                  ClipToBounds="True">
             <PathIcon Data="{StaticResource TextBoxClearButtonData}" Height="10" Width="10"/>
           </Button>
         </Template>

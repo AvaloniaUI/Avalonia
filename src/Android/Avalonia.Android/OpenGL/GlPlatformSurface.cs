@@ -1,4 +1,5 @@
-﻿using Avalonia.OpenGL.Egl;
+﻿using Avalonia.OpenGL;
+using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 
 namespace Avalonia.Android.OpenGL
@@ -19,7 +20,8 @@ namespace Avalonia.Android.OpenGL
 
         public static GlPlatformSurface TryCreate(IEglWindowGlPlatformSurfaceInfo info)
         {
-            if (EglPlatformOpenGlInterface.TryCreate() is EglPlatformOpenGlInterface egl)
+            var feature = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            if (feature is EglPlatformOpenGlInterface egl)
             {
                 return new GlPlatformSurface(egl, info);
             }

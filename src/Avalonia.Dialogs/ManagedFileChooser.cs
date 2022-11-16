@@ -10,8 +10,8 @@ using Avalonia.LogicalTree;
 
 namespace Avalonia.Dialogs
 {
-    [TemplatePart("QuickLinks", typeof(Control))]
-    [TemplatePart("Files",      typeof(ListBox))]
+    [TemplatePart("PART_QuickLinks", typeof(Control))]
+    [TemplatePart("PART_Files",      typeof(ListBox))]
     public class ManagedFileChooser : TemplatedControl
     {
         private Control _quickLinksRoot;
@@ -36,9 +36,8 @@ namespace Avalonia.Dialogs
             if (_quickLinksRoot != null)
             {
                 var isQuickLink = _quickLinksRoot.IsLogicalAncestorOf(e.Source as Control);
-#pragma warning disable CS0618 // Type or member is obsolete
+
                 if (e.ClickCount == 2 || isQuickLink)
-#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     if (model.ItemType == ManagedFileChooserItemType.File)
                     {
@@ -91,8 +90,8 @@ namespace Avalonia.Dialogs
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            _quickLinksRoot = e.NameScope.Get<Control>("QuickLinks");
-            _filesView = e.NameScope.Get<ListBox>("Files");
+            _quickLinksRoot = e.NameScope.Get<Control>("PART_QuickLinks");
+            _filesView = e.NameScope.Get<ListBox>("PART_Files");
         }
     }
 }

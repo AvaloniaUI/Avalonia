@@ -2167,7 +2167,23 @@ namespace Avalonia.Controls
 
             return desiredSize;
         }
+        
+        /// <inheritdoc/>
+        protected override void OnDataContextBeginUpdate()
+        {
+            base.OnDataContextBeginUpdate();
 
+            NotifyDataContextPropertyForAllRowCells(GetAllRows(), true);
+        }
+
+        /// <inheritdoc/>
+        protected override void OnDataContextEndUpdate()
+        {
+            base.OnDataContextEndUpdate();
+
+            NotifyDataContextPropertyForAllRowCells(GetAllRows(), false);
+        }
+        
         /// <summary>
         /// Raises the BeginningEdit event.
         /// </summary>
@@ -3162,6 +3178,20 @@ namespace Avalonia.Controls
                 // Update layout when RowDetails are expanded or collapsed, just updating the vertical scroll bar is not enough
                 // since rows could be added or removed
                 InvalidateMeasure();
+            }
+        }
+
+        private static void NotifyDataContextPropertyForAllRowCells(IEnumerable<DataGridRow> rowSource, bool arg2)
+        {
+            foreach (DataGridRow row in rowSource)
+            {
+                foreach (DataGridCell cell in row.Cells)
+                {
+                    if (cell.Content is StyledElement cellContent)
+                    {
+                        DataContextProperty.Notifying?.Invoke(cellContent, arg2);
+                    }
+                }
             }
         }
 
@@ -5990,7 +6020,7 @@ namespace Avalonia.Controls
         /// <returns>The formatted string.</returns>
         private string FormatClipboardContent(DataGridRowClipboardEventArgs e)
         {
-            var text = new StringBuilder();
+            var text = StringBuilderCache.Acquire();
             var clipboardRowContent = e.ClipboardRowContent;
             var numberOfItem = clipboardRowContent.Count;
             for (int cellIndex = 0; cellIndex < numberOfItem; cellIndex++)
@@ -6007,7 +6037,7 @@ namespace Avalonia.Controls
                     text.Append('\n');
                 }
             }
-            return text.ToString();
+            return StringBuilderCache.GetStringAndRelease(text);
         }
 
         /// <summary>
@@ -6022,7 +6052,7 @@ namespace Avalonia.Controls
 
             if (ctrl && !shift && !alt && ClipboardCopyMode != DataGridClipboardCopyMode.None && SelectedItems.Count > 0)
             {
-                StringBuilder textBuilder = new StringBuilder();
+                var textBuilder = StringBuilderCache.Acquire();
 
                 if (ClipboardCopyMode == DataGridClipboardCopyMode.IncludeHeader)
                 {
@@ -6048,7 +6078,7 @@ namespace Avalonia.Controls
                     textBuilder.Append(FormatClipboardContent(itemArgs));
                 }
 
-                string text = textBuilder.ToString();
+                string text = StringBuilderCache.GetStringAndRelease(textBuilder);
 
                 if (!string.IsNullOrEmpty(text))
                 {

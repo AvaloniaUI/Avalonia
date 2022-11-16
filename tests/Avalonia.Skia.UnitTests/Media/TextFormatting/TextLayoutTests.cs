@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Media;
@@ -577,9 +578,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var glyphTypeface = Typeface.Default.GlyphTypeface;
 
-                var emHeight = glyphTypeface.DesignEmHeight;
+                var emHeight = glyphTypeface.Metrics.DesignEmHeight;
 
-                var lineHeight = (glyphTypeface.Descent - glyphTypeface.Ascent) * (12.0 / emHeight);
+                var lineHeight = glyphTypeface.Metrics.LineSpacing * (12.0 / emHeight);
 
                 var layout = new TextLayout(
                     text,
@@ -914,14 +915,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         public void Should_Get_CharacterHit_From_Distance_RTL()
         {
             using (Start())
-            { 
+            {
                 var text = "أَبْجَدِيَّة عَرَبِيَّة";
 
                 var layout = new TextLayout(
-                  text,
-                  Typeface.Default,
-                  12,
-                  Brushes.Black);
+                    text,
+                    Typeface.Default,
+                    12,
+                    Brushes.Black);
 
                 var textLine = layout.TextLines[0];
 
@@ -952,6 +953,68 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 rect = layout.HitTestTextPosition(23);
 
                 Assert.Equal(0, rect.Left, 5);
+
+            }
+        }
+
+        [Fact]
+        public void Should_Get_CharacterHit_From_Distance_RTL_With_TextStyles()
+        {
+            using (Start())
+            {
+                var text = "أَبْجَدِيَّة عَرَبِيَّة";
+
+                var i = 0;
+
+                var graphemeEnumerator = new GraphemeEnumerator(text.AsMemory());
+
+                while (graphemeEnumerator.MoveNext())
+                {
+                    var grapheme = graphemeEnumerator.Current;
+
+                    var textStyleOverrides = new[] { new ValueSpan<TextRunProperties>(i, grapheme.Text.Length, new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Red)) };
+
+                    i += grapheme.Text.Length;
+
+                    var layout = new TextLayout(
+                        text,
+                        Typeface.Default,
+                        12,
+                        Brushes.Black,
+                        textStyleOverrides: textStyleOverrides);
+
+                    var textLine = layout.TextLines[0];
+
+                    var shapedRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+
+                    var clusters = shapedRuns.SelectMany(x => x.ShapedBuffer.GlyphClusters).ToList();
+
+                    var glyphAdvances = shapedRuns.SelectMany(x => x.ShapedBuffer.GlyphAdvances).ToList();
+
+                    var currentX = 0.0;
+
+                    var cluster = text.Length;
+
+                    for (int j = 0; j < clusters.Count - 1; j++)
+                    {                     
+                        var glyphAdvance = glyphAdvances[j];
+
+                        var characterHit = textLine.GetCharacterHitFromDistance(currentX);
+
+                        Assert.Equal(cluster, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+
+                        var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
+
+                        Assert.Equal(currentX, distance, 5);
+
+                        currentX += glyphAdvance;
+
+                        if(glyphAdvance > 0)
+                        {
+                            cluster = clusters[j];
+                        }
+                    }
+                }
             }
         }
 

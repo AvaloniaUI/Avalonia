@@ -11,7 +11,7 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
-using Avalonia.Themes.Default;
+using Avalonia.Themes.Simple;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.Views
@@ -27,6 +27,11 @@ namespace Avalonia.Diagnostics.Views
         public MainWindow()
         {
             InitializeComponent();
+
+            // Apply the SimpleTheme.Window theme; this must be done after the XAML is parsed as
+            // the theme is included in the MainWindow's XAML.
+            if (Theme is null && this.FindResource(typeof(Window)) is ControlTheme windowTheme)
+                Theme = windowTheme;
 
             _keySubscription = InputManager.Instance?.Process
                 .OfType<RawKeyEventArgs>()

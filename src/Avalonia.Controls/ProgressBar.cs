@@ -110,7 +110,7 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<string> ProgressTextFormatProperty =
             AvaloniaProperty.Register<ProgressBar, string>(nameof(ProgressTextFormat), "{1:0}%");
-        
+
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
@@ -119,14 +119,12 @@ namespace Avalonia.Controls
                 nameof(Percentage),
                 o => o.Percentage);
 
-        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public static readonly DirectProperty<ProgressBar, double> IndeterminateStartingOffsetProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
                 nameof(IndeterminateStartingOffset),
                 p => p.IndeterminateStartingOffset,
                 (p, o) => p.IndeterminateStartingOffset = o);
 
-        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public static readonly DirectProperty<ProgressBar, double> IndeterminateEndingOffsetProperty =
             AvaloniaProperty.RegisterDirect<ProgressBar, double>(
                 nameof(IndeterminateEndingOffset),
@@ -138,15 +136,13 @@ namespace Avalonia.Controls
             get { return _percentage; }
             private set { SetAndRaise(PercentageProperty, ref _percentage, value); }
         }
-        
-        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
+
         public double IndeterminateStartingOffset
         {
             get => _indeterminateStartingOffset;
             set => SetAndRaise(IndeterminateStartingOffsetProperty, ref _indeterminateStartingOffset, value);
         }
 
-        [Obsolete("To be removed when Avalonia.Themes.Default is discontinued.")]
         public double IndeterminateEndingOffset
         {
             get => _indeterminateEndingOffset;
@@ -160,6 +156,7 @@ namespace Avalonia.Controls
             MinimumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             MaximumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+            OrientationProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
         }
 
         public ProgressBar()
@@ -220,13 +217,13 @@ namespace Avalonia.Controls
         {
             // dispose any previous track size listener
             _trackSizeChangedListener?.Dispose();
-            
+
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 
             // listen to size changes of the indicators track (parent) and update the indicator there. 
             _trackSizeChangedListener = _indicator.Parent?.GetPropertyChangedObservable(BoundsProperty)
                 .Subscribe(_ => UpdateIndicator());
-            
+
             UpdateIndicator();
         }
 
@@ -234,7 +231,7 @@ namespace Avalonia.Controls
         {
             // Gets the size of the parent indicator container
             var barSize = _indicator?.Parent?.Bounds.Size ?? Bounds.Size;
-            
+
             if (_indicator != null)
             {
                 if (IsIndeterminate)
@@ -255,11 +252,9 @@ namespace Avalonia.Controls
                     TemplateProperties.Container2AnimationEndPosition = barIndicatorWidth2 * 1.66; // Position at 166%
 
 
-#pragma warning disable CS0618 // Type or member is obsolete
                     // Remove these properties when we switch to fluent as default and removed the old one.
                     IndeterminateStartingOffset = -dim;
                     IndeterminateEndingOffset = dim;
-#pragma warning restore CS0618 // Type or member is obsolete
 
                     var padding = Padding;
                     var rectangle = new RectangleGeometry(
@@ -274,10 +269,18 @@ namespace Avalonia.Controls
                 {
                     double percent = Maximum == Minimum ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
 
+                    // When the Orientation changed, the indicator's Width or Height should set to double.NaN.
                     if (Orientation == Orientation.Horizontal)
+                    {
                         _indicator.Width = barSize.Width * percent;
+                        _indicator.Height = double.NaN;
+                    }
                     else
+                    {
+                        _indicator.Width = double.NaN;
                         _indicator.Height = barSize.Height * percent;
+                    }
+
 
                     Percentage = percent * 100;
                 }

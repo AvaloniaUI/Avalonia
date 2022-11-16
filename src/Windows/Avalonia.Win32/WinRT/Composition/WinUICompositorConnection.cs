@@ -12,6 +12,7 @@ using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition
 {
@@ -120,10 +121,14 @@ namespace Avalonia.Win32.WinRT.Composition
 
         private void RunLoop()
         {
+            var cts = new CancellationTokenSource();
+            AppDomain.CurrentDomain.ProcessExit += (sender, args) =>
+                cts.Cancel();
+                
             using (var act = _compositor5.RequestCommitAsync())
                 act.SetCompleted(new RunLoopHandler(this));
 
-            while (true)
+            while (!cts.IsCancellationRequested)
             {
                 UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
                 lock (_pumpLock)
@@ -169,8 +174,9 @@ namespace Avalonia.Win32.WinRT.Composition
             using var sc = _syncContext.EnsureLocked();
             using var desktopTarget = _compositorDesktopInterop.CreateDesktopWindowTarget(hWnd, 0);
             using var target = desktopTarget.QueryInterface<ICompositionTarget>();
+            using var device2 = _device.QueryInterface<ICompositionGraphicsDevice2>();
 
-            using var drawingSurface = _device.CreateDrawingSurface(new UnmanagedMethods.SIZE(), DirectXPixelFormat.B8G8R8A8UIntNormalized,
+            using var drawingSurface = device2.CreateDrawingSurface2(new UnmanagedMethods.SIZE(), DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 DirectXAlphaMode.Premultiplied);
             using var surface = drawingSurface.QueryInterface<ICompositionSurface>();
             using var surfaceInterop = drawingSurface.QueryInterface<ICompositionDrawingSurfaceInterop>();
