@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Dialogs.Internal;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 

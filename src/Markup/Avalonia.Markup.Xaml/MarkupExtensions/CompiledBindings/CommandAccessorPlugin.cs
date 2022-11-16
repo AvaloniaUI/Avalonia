@@ -124,7 +124,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             {
                 if (_dependsOnProperties is { Count: > 0 } && _reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
                 {
-                    WeakEventHandlerManager.Unsubscribe<PropertyChangedEventArgs, InpcPropertyAccessor>(
+                    WeakEventHandlerManager.Unsubscribe<PropertyChangedEventArgs, CommandAccessor>(
                         inpc,
                         nameof(INotifyPropertyChanged.PropertyChanged),
                         OnNotifyPropertyChanged);
@@ -145,7 +145,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             {
                 if (_dependsOnProperties is { Count:>0 } && _reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
                 {
-                    WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, InpcPropertyAccessor>(
+                    WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, CommandAccessor>(
                         inpc,
                         nameof(INotifyPropertyChanged.PropertyChanged),
                         OnNotifyPropertyChanged);

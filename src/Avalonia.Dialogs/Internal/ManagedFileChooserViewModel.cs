@@ -11,9 +11,9 @@ using Avalonia.Controls.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 
-namespace Avalonia.Dialogs
+namespace Avalonia.Dialogs.Internal
 {
-    internal class ManagedFileChooserViewModel : InternalViewModelBase
+    public class ManagedFileChooserViewModel : AvaloniaDialogsInternalViewModelBase
     {
         private readonly ManagedFileDialogOptions _options;
         public event Action CancelRequested;

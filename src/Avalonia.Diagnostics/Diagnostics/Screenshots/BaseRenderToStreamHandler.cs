@@ -8,9 +8,8 @@ namespace Avalonia.Diagnostics.Screenshots
     /// </summary>
     public abstract class BaseRenderToStreamHandler : IScreenshotHandler
     {
-
         /// <summary>
-        /// Get stream
+        /// Get stream to write a screenshot to.
         /// </summary>
         /// <param name="control"></param>
         /// <returns>stream to render the control</returns>
