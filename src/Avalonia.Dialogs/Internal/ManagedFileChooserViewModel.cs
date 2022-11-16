@@ -13,7 +13,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.Dialogs.Internal
 {
-    public class ManagedFileChooserViewModel : InternalViewModelBase
+    public class ManagedFileChooserViewModel : AvaloniaDialogsInternalViewModelBase
     {
         private readonly ManagedFileDialogOptions _options;
         public event Action CancelRequested;

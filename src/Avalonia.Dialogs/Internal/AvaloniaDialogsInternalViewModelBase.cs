@@ -4,11 +4,11 @@ using System.Runtime.CompilerServices;
 
 namespace Avalonia.Dialogs.Internal
 {
-    public class InternalViewModelBase : INotifyPropertyChanged
+    public class AvaloniaDialogsInternalViewModelBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        internal protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
             if (!EqualityComparer<T>.Default.Equals(field, value))
             {
@@ -20,7 +20,7 @@ namespace Avalonia.Dialogs.Internal
             return false;
         }
 
-        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        internal protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

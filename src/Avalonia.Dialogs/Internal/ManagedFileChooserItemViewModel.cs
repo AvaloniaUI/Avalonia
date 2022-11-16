@@ -2,7 +2,7 @@ using System;
 
 namespace Avalonia.Dialogs.Internal
 {
-    public class ManagedFileChooserItemViewModel : InternalViewModelBase
+    public class ManagedFileChooserItemViewModel : AvaloniaDialogsInternalViewModelBase
     {
         private string _displayName;
         private string _path;

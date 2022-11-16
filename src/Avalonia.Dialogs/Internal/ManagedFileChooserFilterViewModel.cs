@@ -4,7 +4,7 @@ using Avalonia.Platform.Storage;
 
 namespace Avalonia.Dialogs.Internal
 {
-    public class ManagedFileChooserFilterViewModel : InternalViewModelBase
+    public class ManagedFileChooserFilterViewModel : AvaloniaDialogsInternalViewModelBase
     {
         private readonly Regex[] _patterns;
         public string Name { get; }
