@@ -1,6 +1,5 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    x:CompileBindings="True">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <ControlTheme x:Key="SimpleButtonSpinnerRepeatButton"
                 BasedOn="{StaticResource {x:Type RepeatButton}}"

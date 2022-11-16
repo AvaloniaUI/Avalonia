@@ -7,8 +7,7 @@
 
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="clr-namespace:System;assembly=netstandard"
-                    x:CompileBindings="True">
+                    xmlns:sys="using:System">
   <Design.PreviewWith>
     <Border Height="500"
             Padding="20">

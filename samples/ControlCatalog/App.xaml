@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ControlCatalog.ViewModels"
              x:DataType="vm:ApplicationViewModel"
-             x:CompileBindings="True"
              Name="Avalonia ControlCatalog"
              x:Class="ControlCatalog.App">
   <Application.Resources>

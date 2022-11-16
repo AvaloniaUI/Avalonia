@@ -1,5 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:CompileBindings="True">
+        xmlns:collections="using:Avalonia.Collections">
   <Styles.Resources>
     <x:Double x:Key="ListAccentLowOpacity">0.6</x:Double>
     <x:Double x:Key="ListAccentMediumOpacity">0.8</x:Double>
@@ -402,7 +402,7 @@
       <Setter Property="FontSize" Value="15" />
       <Setter Property="MinHeight" Value="32" />
       <Setter Property="Template">
-        <ControlTemplate>
+        <ControlTemplate x:DataType="collections:DataGridCollectionViewGroup">
           <DataGridFrozenGrid Name="PART_Root"
                               Background="{TemplateBinding Background}"
                               MinHeight="{TemplateBinding MinHeight}"
@@ -433,7 +433,7 @@
                          IsVisible="{TemplateBinding IsPropertyNameVisible}"
                          Foreground="{TemplateBinding Foreground}" />
               <TextBlock Margin="4,0,0,0"
-                         Text="{ReflectionBinding Key}"
+                         Text="{Binding Key}"
                          Foreground="{TemplateBinding Foreground}" />
               <TextBlock Name="PART_ItemCountElement"
                          Margin="4,0,0,0"

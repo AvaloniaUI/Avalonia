@@ -3,7 +3,7 @@ using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 
-namespace Avalonia.Dialogs
+namespace Avalonia.Dialogs.Internal
 {
     public class ResourceSelectorConverter : ResourceDictionary, IValueConverter
     {
