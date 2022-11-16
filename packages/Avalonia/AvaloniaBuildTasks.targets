@@ -99,6 +99,7 @@
       AssemblyFile="@(IntermediateAssembly)"
       ReferencesFilePath="$(AvaloniaXamlReferencesTemporaryFilePath)"
       OriginalCopyPath="$(AvaloniaXamlOriginalCopyFilePath)"
+      RefAssemblyFile="@(IntermediateRefAssembly)"
       ProjectDirectory="$(MSBuildProjectDirectory)"
       VerifyIl="$(AvaloniaXamlIlVerifyIl)"
       ReportImportance="$(AvaloniaXamlReportImportance)"

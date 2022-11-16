@@ -473,13 +473,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 Assert.True(styles.Count == 1);
 
-                var styleInclude = styles.First() as StyleInclude;
+                var styleInclude = styles.First() as IStyle;
 
                 Assert.NotNull(styleInclude);
-
-                var style = styleInclude.Loaded;
-
-                Assert.NotNull(style);
             }
         }
 
