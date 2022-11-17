@@ -65,16 +65,6 @@ namespace Avalonia.Headless
         }
     }
 
-    class HeadlessPlatformSettingsStub : IPlatformSettings
-    {
-        public Size DoubleClickSize { get; } = new Size(2, 2);
-        public TimeSpan DoubleClickTime { get; } = TimeSpan.FromMilliseconds(500);
-
-        public Size TouchDoubleClickSize => new Size(16,16);
-
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
-    }
-
     class HeadlessGlyphTypefaceImpl : IGlyphTypeface
     {
         public FontMetrics Metrics => new FontMetrics
@@ -101,6 +91,8 @@ namespace Avalonia.Headless
         public bool IsFixedPitch => true;
 
         public int GlyphCount => 1337;
+
+        public FontSimulations FontSimulations { get; }
 
         public void Dispose()
         {
@@ -137,6 +129,17 @@ namespace Avalonia.Headless
         {
             table = null;
             return false;
+        }
+
+        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+        {
+            metrics = new GlyphMetrics
+            {
+                Height = 10,
+                Width = 10
+            };
+
+            return true;
         }
     }
 

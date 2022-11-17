@@ -878,7 +878,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textLine =
                     formatter.FormatLine(textSource, 0, 200,
-                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left, true, true, defaultProperties, TextWrapping.NoWrap, 0, 0));
+                        new GenericTextParagraphProperties(FlowDirection.LeftToRight, TextAlignment.Left, 
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
 
                 var textBounds = textLine.GetTextBounds(0, 3);
 
@@ -924,7 +925,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textLine =
                     formatter.FormatLine(textSource, 0, 200,
-                        new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Left, true, true, defaultProperties, TextWrapping.NoWrap, 0, 0));
+                        new GenericTextParagraphProperties(FlowDirection.RightToLeft, TextAlignment.Left, 
+                        true, true, defaultProperties, TextWrapping.NoWrap, 0, 0, 0));
 
                 var textBounds = textLine.GetTextBounds(0, 4);
 

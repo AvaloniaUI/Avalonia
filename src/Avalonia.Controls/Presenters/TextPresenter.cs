@@ -9,6 +9,7 @@ using Avalonia.VisualTree;
 using Avalonia.Layout;
 using Avalonia.Media.Immutable;
 using Avalonia.Controls.Documents;
+using Avalonia.Input.TextInput;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -79,6 +80,12 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<double> LineHeightProperty =
             TextBlock.LineHeightProperty.AddOwner<TextPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="LetterSpacing"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> LetterSpacingProperty =
+            TextBlock.LetterSpacingProperty.AddOwner<TextPresenter>();
 
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -213,6 +220,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the letter spacing.
+        /// </summary>
+        public double LetterSpacing
+        {
+            get => GetValue(LetterSpacingProperty);
+            set => SetValue(LetterSpacingProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the text alignment.
         /// </summary>
         public TextAlignment TextAlignment
@@ -333,7 +349,7 @@ namespace Avalonia.Controls.Presenters
 
             var textLayout = new TextLayout(text, typeface, FontSize, foreground, TextAlignment,
                 TextWrapping, maxWidth: maxWidth, maxHeight: maxHeight, textStyleOverrides: textStyleOverrides,
-                flowDirection: FlowDirection, lineHeight: LineHeight);
+                flowDirection: FlowDirection, lineHeight: LineHeight, letterSpacing: LetterSpacing);
 
             return textLayout;
         }
@@ -499,7 +515,12 @@ namespace Avalonia.Controls.Presenters
         {
             if (!string.IsNullOrEmpty(_preeditText))
             {
-                var text = _text?.Substring(0, _caretIndex) + _preeditText + _text?.Substring(_caretIndex);
+                if (string.IsNullOrEmpty(_text) || _caretIndex > _text.Length)
+                {
+                    return _preeditText;
+                }
+
+                var text = _text.Substring(0, _caretIndex) + _preeditText + _text.Substring(_caretIndex);
 
                 return text;
             }
@@ -853,28 +874,11 @@ namespace Avalonia.Controls.Presenters
 
             if (string.IsNullOrEmpty(newValue))
             {
-                if (!string.IsNullOrEmpty(oldValue))
-                {
-                    var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + newValue?.Length ?? 0;
-
-                    var characterHit = GetCharacterHitFromTextPosition(textPosition);
-
-                    UpdateCaret(characterHit, true);
-                }
-
-                _compositionStartHit = new CharacterHit(-1);
+                UpdateCaret(_lastCharacterHit);
             }
             else
             {
-                if (_compositionStartHit.FirstCharacterIndex == -1)
-                {
-                    _compositionStartHit = _lastCharacterHit;
-                }
-            }
-
-            if (_compositionStartHit.FirstCharacterIndex != -1)
-            {
-                var textPosition = _compositionStartHit.FirstCharacterIndex + _compositionStartHit.TrailingLength + newValue?.Length ?? 0;
+                var textPosition = _caretIndex + newValue?.Length ?? 0;
 
                 var characterHit = GetCharacterHitFromTextPosition(textPosition);
 
@@ -915,6 +919,9 @@ namespace Avalonia.Controls.Presenters
                 case nameof(Text):
                 case nameof(TextAlignment):
                 case nameof(TextWrapping):
+
+                case nameof(LineHeight):
+                case nameof(LetterSpacing):
 
                 case nameof(SelectionStart):
                 case nameof(SelectionEnd):

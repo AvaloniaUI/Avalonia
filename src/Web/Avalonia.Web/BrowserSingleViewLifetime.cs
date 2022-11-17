@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Web.Skia;
 using System.Runtime.Versioning;
+using Avalonia.Platform;
 
 namespace Avalonia.Web;
 
@@ -22,7 +23,6 @@ public class BrowserPlatformOptions
 {
     public Func<string, string> FrameworkAssetPathResolver { get; set; } = new(fileName => $"./{fileName}");
 }
-
 
 [SupportedOSPlatform("browser")]
 public static class WebAppBuilder

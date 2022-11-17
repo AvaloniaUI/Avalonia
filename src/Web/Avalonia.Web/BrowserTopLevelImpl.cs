@@ -67,17 +67,22 @@ namespace Avalonia.Web
 
         public bool RawPointerEvent(
             RawPointerEventType eventType, string pointerType,
-            RawPointerPoint p, RawInputModifiers modifiers, long touchPointId)
+            RawPointerPoint p, RawInputModifiers modifiers, long touchPointId,
+            Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints = null)
         {
             if (_inputRoot is { }
                 && Input is { } input)
             {
                 var device = GetPointerDevice(pointerType);
                 var args = device is TouchDevice ?
-                    new RawTouchEventArgs(device, Timestamp, _inputRoot, eventType, p, modifiers, touchPointId) :
+                    new RawTouchEventArgs(device, Timestamp, _inputRoot, eventType, p, modifiers, touchPointId)
+                    {
+                        IntermediatePoints = intermediatePoints
+                    } :
                     new RawPointerEventArgs(device, Timestamp, _inputRoot, eventType, p, modifiers)
                     {
-                        RawPointerId = touchPointId
+                        RawPointerId = touchPointId,
+                        IntermediatePoints = intermediatePoints
                     };
 
                 input.Invoke(args);

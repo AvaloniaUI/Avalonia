@@ -8,6 +8,7 @@
 @clr-map Matrix4x4 System.Numerics.Matrix4x4
 @clr-map RECT Avalonia.Win32.Interop.UnmanagedMethods.RECT
 @clr-map SIZE Avalonia.Win32.Interop.UnmanagedMethods.SIZE
+@clr-map SIZE_F Avalonia.Win32.Interop.UnmanagedMethods.SIZE_F
 @clr-map POINT Avalonia.Win32.Interop.UnmanagedMethods.POINT
 @clr-map HWND IntPtr
 @clr-map BOOL int
@@ -442,10 +443,16 @@ interface IDesktopWindowContentBridgeInterop : IUnknown
 [uuid(FB22C6E1-80A2-4667-9936-DBEAF6EEFE95)]
 interface ICompositionGraphicsDevice : IInspectable
 {
-    HRESULT CreateDrawingSurface([in] SIZE sizePixels, [in] DirectXPixelFormat pixelFormat,
+    HRESULT CreateDrawingSurface([in] SIZE_F sizePixels, [in] DirectXPixelFormat pixelFormat,
         [in] DirectXAlphaMode alphaMode, [out] [retval] ICompositionDrawingSurface** result);
     HRESULT AddRenderingDeviceReplaced(void* handler, void* token);
     HRESULT RemoveRenderingDeviceReplaced([in] int token);
+}
+
+[uuid(0FB8BDF6-C0F0-4BCC-9FB8-084982490D7D)]
+interface ICompositionGraphicsDevice2 : IInspectable
+{
+    HRESULT CreateDrawingSurface2([in] SIZE sizePixels, [in] DirectXPixelFormat pixelFormat, [in] DirectXAlphaMode alphaMode, [out] [retval] ICompositionDrawingSurface** result);
 }
 
 [uuid(1527540D-42C7-47A6-A408-668F79A90DFB)]
@@ -465,7 +472,7 @@ interface ICompositionDrawingSurface : IInspectable
 {
     [propget] HRESULT GetAlphaMode([out] [retval] DirectXAlphaMode* value);
     [propget] HRESULT GetPixelFormat([out] [retval] DirectXPixelFormat* value);
-    [propget] HRESULT GetSize([out] [retval] POINT* value);
+    [propget] HRESULT GetSize([out] [retval] SIZE_F* value);
 }
 
 enum CompositionBitmapInterpolationMode

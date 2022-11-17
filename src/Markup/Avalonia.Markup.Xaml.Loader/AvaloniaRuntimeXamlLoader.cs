@@ -26,6 +26,22 @@ namespace Avalonia.Markup.Xaml
                 return Load(stream, localAssembly, rootInstance, uri, designMode);
             }
         }
+        
+        /// <summary>
+        /// Loads XAML from a string.
+        /// </summary>
+        /// <param name="xaml">The string containing the XAML.</param>
+        /// <param name="configuration">Xaml loader configuration.</param>
+        /// <returns>The loaded object.</returns>
+        public static object Load(string xaml, RuntimeXamlLoaderConfiguration configuration)
+        {
+            Contract.Requires<ArgumentNullException>(xaml != null);
+
+            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
+            {
+                return Load(stream, configuration);
+            }
+        }
 
         /// <summary>
         /// Loads XAML from a stream.
@@ -38,7 +54,17 @@ namespace Avalonia.Markup.Xaml
         /// <returns>The loaded object.</returns>
         public static object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null,
             bool designMode = false)
-            => AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri, designMode);
+            => AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri, designMode, false);
+        
+        /// <summary>
+        /// Loads XAML from a stream.
+        /// </summary>
+        /// <param name="stream">The stream containing the XAML.</param>
+        /// <param name="configuration">Xaml loader configuration.</param>
+        /// <returns>The loaded object.</returns>
+        public static object Load(Stream stream, RuntimeXamlLoaderConfiguration configuration)
+            => AvaloniaXamlIlRuntimeCompiler.Load(stream, configuration.LocalAssembly, configuration.RootInstance,
+                configuration.BaseUri, configuration.DesignMode, configuration.UseCompiledBindingsByDefault);
 
         /// <summary>
         /// Parse XAML from a string.

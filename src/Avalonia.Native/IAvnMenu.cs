@@ -44,7 +44,6 @@ namespace Avalonia.Native.Interop.Impl
 {
     partial class __MicroComIAvnMenuProxy
     {
-        private MenuEvents _events;
         private AvaloniaNativeMenuExporter _exporter;
         private List<__MicroComIAvnMenuItemProxy> _menuItems = new List<__MicroComIAvnMenuItemProxy>();
         private Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy> _menuItemLookup = new Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy>();
@@ -71,23 +70,13 @@ namespace Avalonia.Native.Interop.Impl
 
         public static __MicroComIAvnMenuProxy Create(IAvaloniaNativeFactory factory)
         {
-            var events = new MenuEvents();
+            using var events = new MenuEvents();
 
             var menu = (__MicroComIAvnMenuProxy)factory.CreateMenu(events);
 
             events.Initialise(menu);
 
-            menu._events = events;
-
             return menu;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _events.Dispose();
-            }
         }
 
         private void RemoveAndDispose(__MicroComIAvnMenuItemProxy item)

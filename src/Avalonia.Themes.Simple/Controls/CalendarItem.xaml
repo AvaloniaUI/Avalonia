@@ -162,7 +162,7 @@
       </ControlTemplate>
     </Setter>
     <Setter Property="DayTitleTemplate">
-      <Template>
+      <Template x:DataType="x:String">
         <TextBlock Margin="0,4,0,4"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"

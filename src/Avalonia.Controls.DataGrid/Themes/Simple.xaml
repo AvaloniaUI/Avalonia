@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:collections="using:Avalonia.Collections">
   <Styles.Resources>
     <Thickness x:Key="DataGridTextColumnCellTextBlockMargin">4</Thickness>
     <ControlTheme x:Key="DataGridCellTextBlockTheme"
@@ -253,7 +254,7 @@
       <Setter Property="Background" Value="{DynamicResource ThemeControlMidHighBrush}" />
       <Setter Property="Height" Value="20" />
       <Setter Property="Template">
-        <ControlTemplate>
+        <ControlTemplate x:DataType="collections:DataGridCollectionViewGroup">
           <DataGridFrozenGrid Name="Root"
                               ColumnDefinitions="Auto,Auto,Auto,Auto"
                               RowDefinitions="Auto,*,Auto">

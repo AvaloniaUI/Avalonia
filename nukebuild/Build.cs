@@ -145,8 +145,25 @@ partial class Build : NukeBuild
     {
         Information($"Running tests from {projectName}");
         var project = Solution.GetProject(projectName).NotNull("project != null");
+        // Nuke and MSBuild tools have build-in helpers to get target frameworks from the project.
+        // Unfortunately, it gets broken with every second SDK update, so we had to do it manually.
+        var fileXml = XDocument.Parse(File.ReadAllText(project.Path));
+        var targetFrameworks = fileXml.Descendants("TargetFrameworks")
+            .FirstOrDefault()?.Value.Split(';').Select(f => f.Trim());
+        if (targetFrameworks is null)
+        {
+            var targetFramework = fileXml.Descendants("TargetFramework").FirstOrDefault()?.Value;
+            if (targetFramework is not null)
+            {
+                targetFrameworks = new[] { targetFramework };
+            }
+        }
+        if (targetFrameworks is null)
+        {
+            throw new InvalidOperationException("No target frameworks were found in the test project");
+        }
 
-        foreach (var fw in project.GetTargetFrameworks())
+        foreach (var fw in targetFrameworks)
         {
             if (fw.StartsWith("net4")
                 && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)

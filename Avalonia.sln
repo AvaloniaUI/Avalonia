@@ -41,6 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A689DE
 		src\Shared\IsExternalInit.cs = src\Shared\IsExternalInit.cs
 		src\Shared\ModuleInitializer.cs = src\Shared\ModuleInitializer.cs
 		src\Shared\SourceGeneratorAttributes.cs = src\Shared\SourceGeneratorAttributes.cs
+		src\Avalonia.Base\Compatibility\StringCompatibilityExtensions.cs = src\Avalonia.Base\Compatibility\StringCompatibilityExtensions.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.ReactiveUI", "src\Avalonia.ReactiveUI\Avalonia.ReactiveUI.csproj", "{6417B24E-49C2-4985-8DB2-3AB9D898EC91}"
@@ -521,6 +522,7 @@ Global
 		{3B8519C1-2F51-4F12-A348-120AB91D4532}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C90FE60B-B01E-4F35-91D6-379D6966030F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C90FE60B-B01E-4F35-91D6-379D6966030F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C90FE60B-B01E-4F35-91D6-379D6966030F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{C90FE60B-B01E-4F35-91D6-379D6966030F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C90FE60B-B01E-4F35-91D6-379D6966030F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FED9A71D-00D7-4F40-A9E4-1229EEA28EEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.ScrollViewerPage">
+             xmlns:pages="using:ControlCatalog.Pages"
+             x:Class="ControlCatalog.Pages.ScrollViewerPage"
+             x:DataType="pages:ScrollViewerPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Allows for horizontal and vertical content scrolling.</TextBlock>
 

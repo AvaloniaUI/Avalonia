@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Linq;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;

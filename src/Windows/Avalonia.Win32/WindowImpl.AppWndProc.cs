@@ -272,13 +272,34 @@ namespace Avalonia.Win32
                             TrackMouseEvent(ref tm);
                         }
 
+                        var point = DipFromLParam(lParam);
+
+                        // Prepare points for the IntermediatePoints call.
+                        var p = new POINT()
+                        {
+                            X = (int)(point.X * RenderScaling),
+                            Y = (int)(point.Y * RenderScaling)
+                        };
+                        ClientToScreen(_hwnd, ref p);
+                        var currPoint = new MOUSEMOVEPOINT()
+                        {
+                            x = p.X & 0xFFFF,
+                            y = p.Y & 0xFFFF,
+                            time = (int)timestamp
+                        };
+                        var prevPoint = _lastWmMousePoint;
+                        _lastWmMousePoint = currPoint;
+
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
                             _owner,
                             RawPointerEventType.Move,
-                            DipFromLParam(lParam),
-                            GetMouseModifiers(wParam));
+                            point,
+                            GetMouseModifiers(wParam))
+                        {
+                            IntermediatePoints = new Lazy<IReadOnlyList<RawPointerPoint>>(() => CreateLazyIntermediatePoints(currPoint, prevPoint))
+                        };
 
                         break;
                     }
@@ -655,7 +676,10 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_SETCONTEXT:
                     {
-                        DefWindowProc(Hwnd, msg, wParam, (IntPtr)(lParam.ToInt64() & ~ISC_SHOWUICOMPOSITIONWINDOW));
+                        unchecked
+                        {
+                            DefWindowProc(Hwnd, msg, wParam, lParam & ~(nint)ISC_SHOWUICOMPOSITIONWINDOW);
+                        }
 
                         UpdateInputMethod(GetKeyboardLayout(0));
 
@@ -784,6 +808,65 @@ namespace Avalonia.Win32
             }
 
             return null;
+        }
+
+        private unsafe IReadOnlyList<RawPointerPoint> CreateLazyIntermediatePoints(MOUSEMOVEPOINT movePoint, MOUSEMOVEPOINT prevMovePoint)
+        {
+            // To understand some of this code, please check MS docs:
+            // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmousemovepointsex#remarks
+
+            fixed (MOUSEMOVEPOINT* movePoints = s_mouseHistoryInfos)
+            {
+                var movePointCopy = movePoint;
+                movePointCopy.time = 0; // empty "time" as otherwise WinAPI will always fail
+                int pointsCount = GetMouseMovePointsEx(
+                    (uint)(Marshal.SizeOf(movePointCopy)),
+                    &movePointCopy, movePoints, s_mouseHistoryInfos.Length,
+                    1);
+
+                // GetMouseMovePointsEx can return -1 if point wasn't found or there is so beeg delay that original points were erased from the buffer.
+                if (pointsCount <= 1)
+                {
+                    return Array.Empty<RawPointerPoint>();
+                }
+
+                s_intermediatePointsPooledList.Clear();
+                s_intermediatePointsPooledList.Capacity = pointsCount;
+                for (int i = pointsCount - 1; i >= 1; i--)
+                {
+                    var historyInfo = s_mouseHistoryInfos[i];
+                    // Skip points newer than current point.
+                    if (historyInfo.time > movePoint.time ||
+                        (historyInfo.time == movePoint.time &&
+                         historyInfo.x == movePoint.x &&
+                         historyInfo.y == movePoint.y))
+                    {
+                        continue;
+                    }
+                    // Skip poins older from previous WM_MOUSEMOVE point.
+                    if (historyInfo.time < prevMovePoint.time ||
+                        (historyInfo.time == prevMovePoint.time &&
+                            historyInfo.x == prevMovePoint.x &&
+                            historyInfo.y == prevMovePoint.y))
+                    {
+                        continue;
+                    }
+
+                    // To support multiple screens.
+                    if (historyInfo.x > 32767)
+                        historyInfo.x -= 65536;
+
+                    if (historyInfo.y > 32767)
+                        historyInfo.y -= 65536;
+
+                    var point = PointToClient(new PixelPoint(historyInfo.x, historyInfo.y));
+                    s_intermediatePointsPooledList.Add(new RawPointerPoint
+                    {
+                        Position = point
+                    });
+                }
+                return s_intermediatePointsPooledList;
+            }
         }
 
         private RawPointerEventArgs CreatePointerArgs(IInputDevice device, ulong timestamp, RawPointerEventType eventType, RawPointerPoint point, RawInputModifiers modifiers, uint rawPointerId)

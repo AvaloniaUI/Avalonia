@@ -12,7 +12,7 @@ namespace Avalonia.Skia
     {
         private bool _isDisposed;
 
-        public GlyphTypefaceImpl(SKTypeface typeface, bool isFakeBold = false, bool isFakeItalic = false)
+        public GlyphTypefaceImpl(SKTypeface typeface, FontSimulations fontSimulations)
         {
             Typeface = typeface ?? throw new ArgumentNullException(nameof(typeface));
 
@@ -52,9 +52,7 @@ namespace Avalonia.Skia
 
             GlyphCount = Typeface.GlyphCount;
 
-            IsFakeBold = isFakeBold;
-
-            IsFakeItalic = isFakeItalic;
+            FontSimulations = fontSimulations;
         }
 
         public Face Face { get; }
@@ -63,15 +61,33 @@ namespace Avalonia.Skia
 
         public SKTypeface Typeface { get; }
 
+        public FontSimulations FontSimulations { get; }
+
         public int ReplacementCodepoint { get; }
 
         public FontMetrics Metrics { get; }
 
         public int GlyphCount { get; }
 
-        public bool IsFakeBold { get; }
+        public bool TryGetGlyphMetrics(ushort glyph, out GlyphMetrics metrics)
+        {
+            metrics = default;
 
-        public bool IsFakeItalic { get; }
+            if (!Font.TryGetGlyphExtents(glyph, out var extents))
+            {
+                return false;
+            }
+            
+            metrics = new GlyphMetrics
+            {
+                XBearing = extents.XBearing,
+                YBearing = extents.YBearing,
+                Width = extents.Width,
+                Height = extents.Height
+            };
+                
+            return true;
+        }
 
         /// <inheritdoc cref="IGlyphTypeface"/>
         public ushort GetGlyph(uint codepoint)

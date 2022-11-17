@@ -2,10 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:integrationTestApp="using:IntegrationTestApp"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="IntegrationTestApp.MainWindow"
         Name="MainWindow"
-        Title="IntegrationTestApp">
+        Title="IntegrationTestApp"
+        x:DataType="integrationTestApp:MainWindow">
   <NativeMenu.Menu>
     <NativeMenu>
       <NativeMenuItem Header="File">
@@ -67,6 +69,23 @@
           <Button Name="ComboBoxSelectionClear">Clear Selection</Button>
           <Button Name="ComboBoxSelectFirst">Select First</Button>
         </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Gestures">
+        <DockPanel>
+          <DockPanel DockPanel.Dock="Top">
+            <Button Name="ResetGestures" DockPanel.Dock="Right">Reset</Button>
+            <TextBlock Name="LastGesture" />
+          </DockPanel>
+          <Panel>
+            <Border Name="GestureBorder" Background="Blue"
+                    AutomationProperties.AccessibilityView="Content"
+                    AutomationProperties.ControlTypeOverride="Image"/>
+            <Border Name="GestureBorder2" Background="Green" IsVisible="False"
+                    AutomationProperties.AccessibilityView="Content"
+                    AutomationProperties.ControlTypeOverride="Image"/>
+          </Panel>
+        </DockPanel>
       </TabItem>
 
       <TabItem Header="ListBox">

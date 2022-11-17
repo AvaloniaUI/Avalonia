@@ -19,12 +19,11 @@ export class AvaloniaDOM {
         canvas.classList.add("avalonia-canvas");
         canvas.style.backgroundColor = "#ccc";
         canvas.style.width = "100%";
-        canvas.style.height = "100%";
         canvas.style.position = "absolute";
 
         // Native controls host
         const nativeHost = document.createElement("div");
-        canvas.id = `nativeHost${randomIdPart}`;
+        nativeHost.id = `nativeHost${randomIdPart}`;
         nativeHost.classList.add("avalonia-native-host");
         nativeHost.style.left = "0px";
         nativeHost.style.top = "0px";
@@ -34,7 +33,7 @@ export class AvaloniaDOM {
 
         // IME
         const inputElement = document.createElement("input");
-        canvas.id = `input${randomIdPart}`;
+        inputElement.id = `inputElement${randomIdPart}`;
         inputElement.classList.add("avalonia-input-element");
         inputElement.autocapitalize = "none";
         inputElement.type = "text";

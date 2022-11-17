@@ -51,7 +51,16 @@ namespace Avalonia.LinuxFramebuffer.Output
             if(connector == null)
                 throw new InvalidOperationException("Unable to find connected DRM connector");
 
-            var mode = connector.Modes.OrderByDescending(x => x.IsPreferred)
+            DrmModeInfo? mode = null;
+
+            if (options?.VideoMode != null)
+            {
+                mode = connector.Modes
+                    .FirstOrDefault(x => x.Resolution.Width == options.VideoMode.Value.Width &&
+                                         x.Resolution.Height == options.VideoMode.Value.Height);
+            }
+            
+            mode ??= connector.Modes.OrderByDescending(x => x.IsPreferred)
                 .ThenByDescending(x => x.Resolution.Width * x.Resolution.Height)
                 //.OrderByDescending(x => x.Resolution.Width * x.Resolution.Height)
                 .FirstOrDefault();
