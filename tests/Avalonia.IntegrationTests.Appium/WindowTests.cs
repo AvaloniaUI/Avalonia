@@ -29,7 +29,7 @@ namespace Avalonia.IntegrationTests.Appium
         [MemberData(nameof(StartupLocationData))]
         public void StartupLocation(Size? size, ShowWindowMode mode, WindowStartupLocation location)
         {
-            using var window = OpenWindow(size, mode, location);
+            using var window = OpenWindow(size, mode, location, ShowWindowState.Default);
             var info = GetWindowInfo();
 
             if (size.HasValue)
@@ -61,7 +61,7 @@ namespace Avalonia.IntegrationTests.Appium
         [PlatformFact(TestPlatforms.Windows)]
         public void OnWindows_Docked_Windows_Retain_Size_Position_When_Restored()
         {
-            using (OpenWindow(new Size(400, 400), ShowWindowMode.NonOwned, WindowStartupLocation.Manual))
+            using (OpenWindow(new Size(400, 400), ShowWindowMode.NonOwned, WindowStartupLocation.Manual, ShowWindowState.Default))
             {
                 var windowState = _session.FindElementByAccessibilityId("WindowState");
 
@@ -102,7 +102,7 @@ namespace Avalonia.IntegrationTests.Appium
         [InlineData(ShowWindowMode.Modal)]
         public void WindowState(ShowWindowMode mode)
         {
-            using var window = OpenWindow(null, mode, WindowStartupLocation.Manual);
+            using var window = OpenWindow(null, mode, WindowStartupLocation.Manual, ShowWindowState.Default);
             var windowState = _session.FindElementByAccessibilityId("WindowState");
             var original = GetWindowInfo();
 
@@ -139,6 +139,17 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal(original.Position, current.Position);
                 Assert.Equal(original.FrameSize, current.FrameSize);
             }
+        }
+        
+        [Theory]
+        [InlineData(ShowWindowState.Maximized, null)]
+        [InlineData(ShowWindowState.Maximized, true)]
+        public void InitialWindowState(ShowWindowState state, bool size)
+        {
+            using var window = OpenWindow(size? new Size(400, 400) : null, ShowWindowMode.NonOwned, WindowStartupLocation.Manual, state);
+            var windowState = _session.FindElementByAccessibilityId("WindowState");
+
+            Assert.Equal("Maximized", windowState.GetComboBoxValue());
         }
 
         public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
@@ -189,11 +200,12 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        private IDisposable OpenWindow(Size? size, ShowWindowMode mode, WindowStartupLocation location)
+        private IDisposable OpenWindow(Size? size, ShowWindowMode mode, WindowStartupLocation location, ShowWindowState initialWindowState)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
             var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
+            var stateComboBox = _session.FindElementByAccessibilityId("ShowWindowState");
             var showButton = _session.FindElementByAccessibilityId("ShowWindow");
 
             if (size.HasValue)
@@ -204,6 +216,12 @@ namespace Avalonia.IntegrationTests.Appium
 
             locationComboBox.Click();
             _session.FindElementByName(location.ToString()).SendClick();
+
+            if (initialWindowState != ShowWindowState.Default)
+            {
+                stateComboBox.Click();
+                _session.FindElementByName(initialWindowState.ToString()).SendClick();
+            }
 
             return showButton.OpenWindowWithClick();
         }
@@ -244,6 +262,12 @@ namespace Avalonia.IntegrationTests.Appium
             NonOwned,
             Owned,
             Modal
+        }
+        
+        public enum ShowWindowState
+        {
+            Default,
+            Maximized
         }
 
         private record WindowInfo(

@@ -59,6 +59,7 @@ namespace IntegrationTestApp
             var sizeTextBox = this.GetControl<TextBox>("ShowWindowSize");
             var modeComboBox = this.GetControl<ComboBox>("ShowWindowMode");
             var locationComboBox = this.GetControl<ComboBox>("ShowWindowLocation");
+            var windowStateComboBox = this.GetControl<ComboBox>("ShowWindowState");
             var size = !string.IsNullOrWhiteSpace(sizeTextBox.Text) ? Size.Parse(sizeTextBox.Text) : (Size?)null;
             var owner = (Window)this.GetVisualRoot()!;
 
@@ -66,6 +67,11 @@ namespace IntegrationTestApp
             {
                 WindowStartupLocation = (WindowStartupLocation)locationComboBox.SelectedIndex,
             };
+
+            if (windowStateComboBox.SelectedIndex > 0)
+            {
+                window.WindowState = (WindowState)windowStateComboBox.SelectedIndex;
+            }
 
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
             {
