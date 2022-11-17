@@ -1,0 +1,17 @@
+﻿<Styles x:Class="Avalonia.Themes.Simple.SimpleTheme"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="/Accents/Base.xaml" />  
+      </ResourceDictionary.MergedDictionaries>
+      
+      <!-- Add these as resources and not part MergedDictionaries so we can add or remove easier -->
+      <ResourceInclude x:Key="BaseDark" Source="/Accents/BaseDark.xaml" />
+      <ResourceInclude x:Key="BaseLight" Source="/Accents/BaseLight.xaml" />
+    </ResourceDictionary>
+  </Styles.Resources>
+  
+  <StyleInclude Source="/Controls/SimpleControls.xaml" />
+</Styles>
