@@ -734,12 +734,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             {
                 var xaml = @"
 <ContentControl xmlns='https://github.com/avaloniaui'
-                Content='Hello'>
+                Focusable='True'>
     <ContentControl.Styles>
         <Style Selector='ContentControl'>
             <Setter Property='Template'>
                 <ControlTemplate>
-                    <ContentPresenter Content='{CompiledBinding Content, RelativeSource={RelativeSource TemplatedParent}}' />
+                    <ContentPresenter Focusable='{CompiledBinding !Focusable, RelativeSource={RelativeSource TemplatedParent}}' />
                 </ControlTemplate>
             </Setter>
         </Style>
@@ -747,10 +747,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </ContentControl>";
 
                 var contentControl = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
+                contentControl.DataContext = new TestDataContext(); // should be ignored
                 contentControl.Measure(new Size(10, 10));
                 
                 var result = contentControl.GetTemplateChildren().OfType<ContentPresenter>().First();
-                Assert.Equal("Hello", result.Content);
+                Assert.Equal(false, result.Focusable);
             }
         }
         
@@ -781,6 +782,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </TextBox>";
 
                 var textBox = AvaloniaRuntimeXamlLoader.Parse<TextBox>(xaml);
+                textBox.DataContext = new TestDataContext(); // should be ignored
                 textBox.Measure(new Size(10, 10));
                 
                 var result = textBox.GetTemplateChildren().OfType<ContentPresenter>().First();
