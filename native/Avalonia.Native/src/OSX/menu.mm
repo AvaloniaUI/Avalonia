@@ -292,8 +292,13 @@ void AvnAppMenuItem::RaiseOnClicked()
 AvnAppMenu::AvnAppMenu(IAvnMenuEvents* events)
 {
     _baseEvents = events;
-    id del = [[AvnMenuDelegate alloc] initWithParent: this];
-    _native = [[AvnMenu alloc] initWithDelegate: del];
+    _delegate = [[AvnMenuDelegate alloc] initWithParent: this];
+    _native = [[AvnMenu alloc] initWithDelegate: _delegate];
+}
+
+AvnAppMenu::~AvnAppMenu()
+{
+    [_delegate parentDestroyed];
 }
 
 
@@ -394,7 +399,7 @@ HRESULT AvnAppMenu::Clear()
 
 @implementation AvnMenuDelegate
 {
-    ComPtr<AvnAppMenu> _parent;
+    AvnAppMenu* _parent;
 }
 - (id) initWithParent:(AvnAppMenu *)parent
 {
@@ -402,6 +407,12 @@ HRESULT AvnAppMenu::Clear()
     _parent = parent;
     return self;
 }
+
+- (void) parentDestroyed
+{
+    _parent = nullptr;
+}
+
 - (BOOL)menu:(NSMenu *)menu updateItem:(NSMenuItem *)item atIndex:(NSInteger)index shouldCancel:(BOOL)shouldCancel
 {
     if(shouldCancel)
@@ -416,17 +427,20 @@ HRESULT AvnAppMenu::Clear()
 
 - (void)menuNeedsUpdate:(NSMenu *)menu
 {
-    _parent->RaiseNeedsUpdate();
+    if(_parent)
+        _parent->RaiseNeedsUpdate();
 }
 
 - (void)menuWillOpen:(NSMenu *)menu
 {
-    _parent->RaiseOpening();
+    if(_parent)
+        _parent->RaiseOpening();
 }
 
 - (void)menuDidClose:(NSMenu *)menu
 {
-    _parent->RaiseClosed();
+    if(_parent)
+        _parent->RaiseClosed();
 }
 
 @end
