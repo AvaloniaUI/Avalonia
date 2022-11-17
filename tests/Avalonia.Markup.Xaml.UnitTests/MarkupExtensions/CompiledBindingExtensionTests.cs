@@ -139,6 +139,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
         
+        
+        [Fact]
+        public void ResolvesStaticClrPropertyBased()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding StaticProperty}' Name='textBlock' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+                textBlock.DataContext = new TestDataContext();
+
+                Assert.Equal(TestDataContext.StaticProperty, textBlock.Text);
+            }
+        }
+        
         [Fact]
         public void ResolvesDataTypeFromBindingProperty()
         {
@@ -1716,7 +1737,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         string IHasExplicitProperty.ExplicitProperty => "Hello"; 
 
-        public string ExplicitProperty => "Bye"; 
+        public string ExplicitProperty => "Bye";
+
+        public static string StaticProperty => "World"; 
 
         public class NonIntegerIndexer : NotifyingBase, INonIntegerIndexerDerived
         {
