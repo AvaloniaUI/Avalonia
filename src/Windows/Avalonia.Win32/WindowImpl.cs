@@ -567,7 +567,7 @@ namespace Avalonia.Win32
 
         public void Resize(Size value, PlatformResizeReason reason)
         {
-            if (WindowState is WindowState.Maximized or WindowState.FullScreen)
+            if (WindowState != WindowState.Normal)
                 return;
 
             int requestedClientWidth = (int)(value.Width * RenderScaling);
