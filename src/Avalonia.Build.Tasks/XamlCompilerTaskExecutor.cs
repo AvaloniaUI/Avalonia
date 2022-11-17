@@ -57,40 +57,40 @@ namespace Avalonia.Build.Tasks
         {
             try
             {
-	            references = references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")).ToArray();
-	            var typeSystem = new CecilTypeSystem(references, input);
-	            var refTypeSystem = !string.IsNullOrWhiteSpace(refInput) && File.Exists(refInput) ? new CecilTypeSystem(references, refInput) : null;
+                references = references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")).ToArray();
+                var typeSystem = new CecilTypeSystem(references, input);
+                var refTypeSystem = !string.IsNullOrWhiteSpace(refInput) && File.Exists(refInput) ? new CecilTypeSystem(references, refInput) : null;
 
-	            var asm = typeSystem.TargetAssemblyDefinition;
-	            var refAsm = refTypeSystem?.TargetAssemblyDefinition;
-	            if (!skipXamlCompilation)
-	            {
+                var asm = typeSystem.TargetAssemblyDefinition;
+                var refAsm = refTypeSystem?.TargetAssemblyDefinition;
+                if (!skipXamlCompilation)
+                {
 	                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings, logImportance, debuggerLaunch);
 	                if (compileRes == null)
 	                    return new CompileResult(true);
 	                if (compileRes == false)
 	                    return new CompileResult(false);
-	
+
 	                if (refTypeSystem is not null)
 	                {
 	                    var refCompileRes = CompileCoreForRefAssembly(engine, typeSystem, refTypeSystem);
 	                    if (refCompileRes == false)
 	                        return new CompileResult(false);
 	                }
-	            }
+                }
 
-	            var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
-	            if (!string.IsNullOrWhiteSpace(strongNameKey))
+                var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
+                if (!string.IsNullOrWhiteSpace(strongNameKey))
 	                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
-	
-	            asm.Write(output, writerParameters);
-	            
-	            var refWriterParameters = new WriterParameters { WriteSymbols = false };
-	            if (!string.IsNullOrWhiteSpace(strongNameKey))
+
+                asm.Write(output, writerParameters);
+
+                var refWriterParameters = new WriterParameters { WriteSymbols = false };
+                if (!string.IsNullOrWhiteSpace(strongNameKey))
 	                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
-	            refAsm?.Write(refOutput, refWriterParameters);
-	
-	            return new CompileResult(true, true);
+                refAsm?.Write(refOutput, refWriterParameters);
+
+                return new CompileResult(true, true);
             }
             catch (Exception ex)
             {

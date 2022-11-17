@@ -7,7 +7,7 @@
         <ResourceInclude Source="/Accents/Base.xaml" />  
       </ResourceDictionary.MergedDictionaries>
       
-      <!-- Add these as resources and not part MergedDictionaries so we can add or remove easier -->
+      <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
       <ResourceInclude x:Key="BaseDark" Source="/Accents/BaseDark.xaml" />
       <ResourceInclude x:Key="BaseLight" Source="/Accents/BaseLight.xaml" />
     </ResourceDictionary>
