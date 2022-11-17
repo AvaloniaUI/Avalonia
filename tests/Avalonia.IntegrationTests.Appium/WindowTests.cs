@@ -217,12 +217,9 @@ namespace Avalonia.IntegrationTests.Appium
             locationComboBox.Click();
             _session.FindElementByName(location.ToString()).SendClick();
 
-            if (initialWindowState != ShowWindowState.Default)
-            {
-                stateComboBox.Click();
-                _session.FindElementByName(initialWindowState.ToString()).SendClick();
-            }
-
+            stateComboBox.Click();
+            _session.FindElementByName(initialWindowState.ToString()).SendClick();
+            
             return showButton.OpenWindowWithClick();
         }
 
