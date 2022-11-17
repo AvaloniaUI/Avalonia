@@ -44,6 +44,8 @@ namespace Avalonia.Native
             if (_referencedFromManaged == false && _referencedFromNative == false)
             {
                 _destroyed = true;
+                Shadow?.Dispose();
+                Shadow = null;
                 Destroyed();
             }
         }
