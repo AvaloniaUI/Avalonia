@@ -12,27 +12,27 @@ namespace Avalonia.Controls
 
         private readonly bool _hasDefaultRefreshInfoProviderAdapter;
 
-        private ScrollViewerIRefreshInfoProviderAdapter _refreshInfoProviderAdapter;
-        private RefreshInfoProvider _refreshInfoProvider;
-        private IDisposable _visualizerSizeSubscription;
+        private ScrollViewerIRefreshInfoProviderAdapter? _refreshInfoProviderAdapter;
+        private RefreshInfoProvider? _refreshInfoProvider;
+        private IDisposable? _visualizerSizeSubscription;
         private Grid? _visualizerPresenter;
-        private RefreshVisualizer _refreshVisualizer;
+        private RefreshVisualizer? _refreshVisualizer;
 
         public static readonly RoutedEvent<RefreshRequestedEventArgs> RefreshRequestedEvent =
             RoutedEvent.Register<RefreshContainer, RefreshRequestedEventArgs>(nameof(RefreshRequested), RoutingStrategies.Bubble);
 
-        internal static readonly DirectProperty<RefreshContainer, ScrollViewerIRefreshInfoProviderAdapter> RefreshInfoProviderAdapterProperty =
-            AvaloniaProperty.RegisterDirect<RefreshContainer, ScrollViewerIRefreshInfoProviderAdapter>(nameof(RefreshInfoProviderAdapter),
+        internal static readonly DirectProperty<RefreshContainer, ScrollViewerIRefreshInfoProviderAdapter?> RefreshInfoProviderAdapterProperty =
+            AvaloniaProperty.RegisterDirect<RefreshContainer, ScrollViewerIRefreshInfoProviderAdapter?>(nameof(RefreshInfoProviderAdapter),
                 (s) => s.RefreshInfoProviderAdapter, (s, o) => s.RefreshInfoProviderAdapter = o);
 
-        public static readonly DirectProperty<RefreshContainer, RefreshVisualizer> RefreshVisualizerProperty =
-            AvaloniaProperty.RegisterDirect<RefreshContainer, RefreshVisualizer>(nameof(RefreshVisualizer),
+        public static readonly DirectProperty<RefreshContainer, RefreshVisualizer?> RefreshVisualizerProperty =
+            AvaloniaProperty.RegisterDirect<RefreshContainer, RefreshVisualizer?>(nameof(RefreshVisualizer),
                 s => s.RefreshVisualizer, (s, o) => s.RefreshVisualizer = o);
 
         public static readonly StyledProperty<PullDirection> PullDirectionProperty =
             AvaloniaProperty.Register<RefreshContainer, PullDirection>(nameof(PullDirection), PullDirection.TopToBottom);
 
-        public ScrollViewerIRefreshInfoProviderAdapter RefreshInfoProviderAdapter
+        public ScrollViewerIRefreshInfoProviderAdapter? RefreshInfoProviderAdapter
         {
             get => _refreshInfoProviderAdapter; set
             {
@@ -42,7 +42,7 @@ namespace Avalonia.Controls
 
         private bool _hasDefaultRefreshVisualizer;
 
-        public RefreshVisualizer RefreshVisualizer
+        public RefreshVisualizer? RefreshVisualizer
         {
             get => _refreshVisualizer; set
             {
@@ -88,7 +88,7 @@ namespace Avalonia.Controls
             else
             {
                 _hasDefaultRefreshVisualizer = false;
-                RaisePropertyChanged(RefreshVisualizerProperty, null, _refreshVisualizer);
+                RaisePropertyChanged(RefreshVisualizerProperty, default, _refreshVisualizer);
             }
 
             OnPullDirectionChanged();
@@ -115,19 +115,23 @@ namespace Avalonia.Controls
 
             if (change.Property == RefreshInfoProviderAdapterProperty)
             {
-                if (_refreshInfoProvider != null)
+                if (_refreshVisualizer != null)
                 {
-                    _refreshVisualizer.RefreshInfoProvider = _refreshInfoProvider;
-                }
-                else
-                {
-                    if (RefreshInfoProviderAdapter != null && _refreshVisualizer != null)
+                    if (_refreshInfoProvider != null)
                     {
-                        _refreshInfoProvider = RefreshInfoProviderAdapter.AdaptFromTree(this, _refreshVisualizer.Bounds.Size);
-
-                        if (_refreshInfoProvider != null)
+                        _refreshVisualizer.RefreshInfoProvider = _refreshInfoProvider;
+                    }
+                    else
+                    {
+                        if (RefreshInfoProviderAdapter != null && _refreshVisualizer != null)
                         {
-                            _refreshVisualizer.RefreshInfoProvider = _refreshInfoProvider;
+                            _refreshInfoProvider = RefreshInfoProviderAdapter?.AdaptFromTree(this, _refreshVisualizer.Bounds.Size);
+
+                            if (_refreshInfoProvider != null)
+                            {
+                                _refreshVisualizer.RefreshInfoProvider = _refreshInfoProvider;
+                                RefreshInfoProviderAdapter?.SetAnimations(_refreshVisualizer);
+                            }
                         }
                     }
                 }
@@ -157,7 +161,7 @@ namespace Avalonia.Controls
 
         private void OnPullDirectionChanged()
         {
-            if (_visualizerPresenter != null)
+            if (_visualizerPresenter != null && _refreshVisualizer != null)
             {
                 switch (PullDirection)
                 {

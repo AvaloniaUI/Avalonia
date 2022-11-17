@@ -14,37 +14,7 @@
       <ControlTemplate>
           <Grid Name="PART_Root" MinHeight="80" Background="{TemplateBinding Background}">
             <Grid.Styles>
-              <Style Selector="Grid.pending > Grid">
-                <Style.Animations>
-                  <Animation IterationCount="1" Duration="0:0:0.25">
-                    <KeyFrame Cue="0%">
-                      <Setter Property="ScaleTransform.ScaleX"
-                              Value="1"/>
-                    </KeyFrame>
-                    <KeyFrame Cue="0%">
-                      <Setter Property="ScaleTransform.ScaleY"
-                              Value="1"/>
-                    </KeyFrame>
-                    <KeyFrame Cue="50%">
-                      <Setter Property="ScaleTransform.ScaleX"
-                              Value="1.2"/>
-                    </KeyFrame>
-                    <KeyFrame Cue="50%">
-                      <Setter Property="ScaleTransform.ScaleY"
-                              Value="1.2"/>
-                    </KeyFrame>
-                    <KeyFrame Cue="100%">
-                      <Setter Property="ScaleTransform.ScaleX"
-                              Value="1"/>
-                    </KeyFrame>
-                    <KeyFrame Cue="100%">
-                      <Setter Property="ScaleTransform.ScaleY"
-                              Value="1"/>
-                    </KeyFrame>
-                  </Animation>
-                </Style.Animations>
-              </Style>
-              <Style Selector="Grid > Grid > PathIcon.refreshing">
+              <Style Selector="Grid > PathIcon.refreshing">
                 <Style.Animations>
                   <Animation Duration="0:0:1"
                              IterationCount="Infinite">

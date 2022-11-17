@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Rendering.Composition;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.PullToRefresh
@@ -11,9 +12,9 @@ namespace Avalonia.Controls.PullToRefresh
         private const int InitialOffsetThreshold = 1;
 
         private PullDirection _refreshPullDirection;
-        private ScrollViewer _scrollViewer;
-        private RefreshInfoProvider _refreshInfoProvider;
-        private PullGestureRecognizer _pullGestureRecognizer;
+        private ScrollViewer? _scrollViewer;
+        private RefreshInfoProvider? _refreshInfoProvider;
+        private PullGestureRecognizer? _pullGestureRecognizer;
         private InputElement? _interactionSource;
         private bool _isVisualizerInteractionSourceAttached;
 
@@ -22,7 +23,7 @@ namespace Avalonia.Controls.PullToRefresh
             _refreshPullDirection = pullDirection;
         }
 
-        public RefreshInfoProvider AdaptFromTree(IVisual root, Size refreshVIsualizerSize)
+        public RefreshInfoProvider? AdaptFromTree(IVisual root, Size? refreshVIsualizerSize)
         {
             if (root is ScrollViewer scrollViewer)
             {
@@ -44,7 +45,7 @@ namespace Avalonia.Controls.PullToRefresh
                 }
             }
 
-            ScrollViewer AdaptFromTreeRecursiveHelper(IVisual root, int depth)
+            ScrollViewer? AdaptFromTreeRecursiveHelper(IVisual root, int depth)
             {
                 if (depth == 0)
                 {
@@ -74,7 +75,7 @@ namespace Avalonia.Controls.PullToRefresh
             return null;
         }
 
-        public RefreshInfoProvider Adapt(ScrollViewer adaptee, Size refreshVIsualizerSize)
+        public RefreshInfoProvider Adapt(ScrollViewer adaptee, Size? refreshVIsualizerSize)
         {
             if (adaptee == null)
             {
@@ -121,7 +122,7 @@ namespace Avalonia.Controls.PullToRefresh
                 }
             }
 
-            _refreshInfoProvider = new RefreshInfoProvider(_refreshPullDirection, refreshVIsualizerSize, content);
+            _refreshInfoProvider = new RefreshInfoProvider(_refreshPullDirection, refreshVIsualizerSize, ElementComposition.GetElementVisual(content));
 
             _pullGestureRecognizer = new PullGestureRecognizer(_refreshPullDirection);
 
@@ -140,7 +141,7 @@ namespace Avalonia.Controls.PullToRefresh
             return _refreshInfoProvider;
         }
 
-        private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        private void ScrollViewer_ScrollChanged(object? sender, ScrollChangedEventArgs e)
         {
             if (_isVisualizerInteractionSourceAttached && _refreshInfoProvider != null && _refreshInfoProvider.IsInteractingForRefresh)
             {
@@ -151,9 +152,46 @@ namespace Avalonia.Controls.PullToRefresh
             }
         }
 
-        private void ScrollViewer_Loaded(object sender, RoutedEventArgs e)
+        public void SetAnimations(RefreshVisualizer refreshVisualizer)
         {
-            var content = _scrollViewer.Content as Visual;
+            var visualizerComposition = ElementComposition.GetElementVisual(refreshVisualizer);
+            if (visualizerComposition != null)
+            {
+                var compositor = visualizerComposition.Compositor;
+
+                var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+                offsetAnimation.Target = "Offset";
+                offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
+                offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
+
+                var animation = compositor.CreateImplicitAnimationCollection();
+                animation["Offset"] = offsetAnimation;
+                visualizerComposition.ImplicitAnimations = animation;
+            }
+
+            if(_scrollViewer != null && _scrollViewer.Content is Visual visual)
+            {
+                var scollContentComposition = ElementComposition.GetElementVisual(visual);
+
+                if(scollContentComposition != null)
+                {
+                    var compositor = scollContentComposition.Compositor;
+
+                    var offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+                    offsetAnimation.Target = "Offset";
+                    offsetAnimation.InsertExpressionKeyFrame(1.0f, "this.FinalValue");
+                    offsetAnimation.Duration = TimeSpan.FromMilliseconds(150);
+
+                    var animation = compositor.CreateImplicitAnimationCollection();
+                    animation["Offset"] = offsetAnimation;
+                    scollContentComposition.ImplicitAnimations = animation;
+                }
+            }
+        }
+
+        private void ScrollViewer_Loaded(object? sender, RoutedEventArgs? e)
+        {
+            var content = _scrollViewer?.Content as Visual;
             if (content == null)
             {
                 throw new ArgumentException(nameof(_scrollViewer), "Adaptee's content property must be a Visual");
@@ -166,23 +204,26 @@ namespace Avalonia.Controls.PullToRefresh
 
             MakeInteractionSource(content.Parent as InputElement);
 
-            _scrollViewer.Loaded -= ScrollViewer_Loaded;
+            if (_scrollViewer != null)
+            {
+                _scrollViewer.Loaded -= ScrollViewer_Loaded;
+            }
         }
 
-        private void MakeInteractionSource(InputElement element)
+        private void MakeInteractionSource(InputElement? element)
         {
             _interactionSource = element;
 
-            if (_pullGestureRecognizer != null)
+            if (_pullGestureRecognizer != null && _refreshInfoProvider != null)
             {
-                element.GestureRecognizers.Add(_pullGestureRecognizer);
-                _interactionSource.AddHandler(Gestures.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
-                _interactionSource.AddHandler(Gestures.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
+                element?.GestureRecognizers.Add(_pullGestureRecognizer);
+                _interactionSource?.AddHandler(Gestures.PullGestureEvent, _refreshInfoProvider.InteractingStateEntered);
+                _interactionSource?.AddHandler(Gestures.PullGestureEndedEvent, _refreshInfoProvider.InteractingStateExited);
                 _isVisualizerInteractionSourceAttached = true;
             }
         }
 
-        private void ScrollViewer_PointerReleased(object sender, PointerReleasedEventArgs e)
+        private void ScrollViewer_PointerReleased(object? sender, PointerReleasedEventArgs e)
         {
             if (_refreshInfoProvider != null)
             {
@@ -190,9 +231,12 @@ namespace Avalonia.Controls.PullToRefresh
             }
         }
 
-        private void ScrollViewer_PointerPressed(object sender, PointerPressedEventArgs e)
+        private void ScrollViewer_PointerPressed(object? sender, PointerPressedEventArgs e)
         {
-            _refreshInfoProvider.PeekingMode = !IsWithinOffsetThreashold();
+            if (_refreshInfoProvider != null)
+            {
+                _refreshInfoProvider.PeekingMode = !IsWithinOffsetThreashold();
+            }
         }
 
         private bool IsWithinOffsetThreashold()
@@ -219,9 +263,12 @@ namespace Avalonia.Controls.PullToRefresh
 
         private void CleanUpScrollViewer()
         {
-            _scrollViewer.PointerPressed -= ScrollViewer_PointerPressed;
-            _scrollViewer.PointerReleased -= ScrollViewer_PointerReleased;
-            _scrollViewer.ScrollChanged -= ScrollViewer_ScrollChanged;
+            if (_scrollViewer != null)
+            {
+                _scrollViewer.PointerPressed -= ScrollViewer_PointerPressed;
+                _scrollViewer.PointerReleased -= ScrollViewer_PointerReleased;
+                _scrollViewer.ScrollChanged -= ScrollViewer_ScrollChanged;
+            }
         }
     }
 }

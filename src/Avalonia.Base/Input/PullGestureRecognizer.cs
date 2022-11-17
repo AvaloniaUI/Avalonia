@@ -100,7 +100,7 @@ namespace Avalonia.Input
 
         public void PointerPressed(PointerPressedEventArgs e)
         {
-            if (_target != null && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (_target != null)// && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
                 var position = e.GetPosition(_target);
 

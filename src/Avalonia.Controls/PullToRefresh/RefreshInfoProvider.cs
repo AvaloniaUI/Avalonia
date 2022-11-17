@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Controls.PullToRefresh
 {
@@ -11,7 +12,7 @@ namespace Avalonia.Controls.PullToRefresh
         private readonly PullDirection _refreshPullDirection;
         private readonly Size _refreshVisualizerSize;
 
-        private readonly Visual _visual;
+        private readonly CompositionVisual? _visual;
         private bool _isInteractingForRefresh;
         private double _interactionRatio;
         private bool _entered;
@@ -60,7 +61,7 @@ namespace Avalonia.Controls.PullToRefresh
             }
         }
 
-        internal Visual Visual => _visual;
+        internal CompositionVisual? Visual => _visual;
 
         public event EventHandler<RoutedEventArgs> RefreshStarted
         {
@@ -74,7 +75,7 @@ namespace Avalonia.Controls.PullToRefresh
             remove => RemoveHandler(RefreshCompletedEvent, value);
         }
 
-        internal void InteractingStateEntered(object sender, PullGestureEventArgs e)
+        internal void InteractingStateEntered(object? sender, PullGestureEventArgs e)
         {
             if (!_entered)
             {
@@ -85,7 +86,7 @@ namespace Avalonia.Controls.PullToRefresh
             ValuesChanged(e.Delta);
         }
 
-        internal void InteractingStateExited(object sender, PullGestureEndedEventArgs e)
+        internal void InteractingStateExited(object? sender, PullGestureEndedEventArgs e)
         {
             IsInteractingForRefresh = false;
             _entered = false;
@@ -94,10 +95,10 @@ namespace Avalonia.Controls.PullToRefresh
         }
 
 
-        public RefreshInfoProvider(PullDirection refreshPullDirection, Size refreshVIsualizerSize, Visual visual)
+        public RefreshInfoProvider(PullDirection refreshPullDirection, Size? refreshVIsualizerSize, CompositionVisual? visual)
         {
             _refreshPullDirection = refreshPullDirection;
-            _refreshVisualizerSize = refreshVIsualizerSize;
+            _refreshVisualizerSize = refreshVIsualizerSize ?? default;
             _visual = visual;
         }
 
