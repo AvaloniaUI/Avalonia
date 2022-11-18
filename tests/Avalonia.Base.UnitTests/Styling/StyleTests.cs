@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Animation;
+using Avalonia.Base.UnitTests.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Diagnostics;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -146,7 +149,7 @@ namespace Avalonia.Base.UnitTests.Styling
             target.Classes.Add("foo");
             target.Classes.Remove("foo");
 
-            Assert.Equal(new[] { "foodefault", "Foo", "Bar", "foodefault" }, values);
+            Assert.Equal(new[] { "foodefault", "Bar", "foodefault" }, values);
         }
 
         [Fact]
@@ -224,6 +227,75 @@ namespace Avalonia.Base.UnitTests.Styling
             target.Classes.Remove("foo");
 
             Assert.Equal(new[] { "foodefault", "Bar" }, values);
+        }
+
+        [Fact]
+        public void Later_Styles_Should_Override_Earlier_4()
+        {
+            Styles styles = new Styles
+            {
+                new Style(x => x.OfType<Class1>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo1"),
+                    },
+                },
+
+                new Style(x => x.OfType<Class1>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo2"),
+                        new Setter(Class1.DoubleProperty, 123.4),
+                    },
+                }
+            };
+
+            var target = new Class1();
+            styles.TryAttach(target, null);
+            target.Classes.Add("foo");
+
+            Assert.Equal("foo2", target.Foo);
+            Assert.Equal(123.4, target.Double);
+        }
+
+        [Fact]
+        public void Later_Styles_Should_Override_Earlier_With_Begin_End_Styling()
+        {
+            Styles styles = new Styles
+            {
+                new Style(x => x.OfType<Class1>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo1"),
+                        new Setter(Class1.DoubleProperty, 123.4),
+                    },
+                },
+
+                new Style(x => x.OfType<Class1>().Class("foo").Class("bar"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo2"),
+                    },
+                },
+            };
+
+            var target = new Class1();
+            target.GetValueStore().BeginStyling();
+            styles.TryAttach(target, null);
+            target.GetValueStore().EndStyling();
+            target.Classes.Add("bar");
+            target.Classes.Add("foo");
+
+            Assert.Equal("foo2", target.Foo);
+            Assert.Equal(123.4, target.Double);
+
+            target.Classes.Remove("foo");
+
+            Assert.Equal(0, target.Double);
         }
 
         [Fact]
@@ -490,9 +562,9 @@ namespace Avalonia.Base.UnitTests.Styling
             };
 
             var target = new Class1();
-            target.BeginBatchUpdate();
+            target.GetValueStore().BeginStyling();
             styles.TryAttach(target, null);
-            target.EndBatchUpdate();
+            target.GetValueStore().EndStyling();
 
             Assert.NotNull(target.Child);
             Assert.Equal(1, instantiationCount);
@@ -703,6 +775,28 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
+        public void DetachStyles_Should_Detach_Activator()
+        {
+            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Class1.FooProperty, "Foo"),
+                },
+            };
+
+            var target = new Class1();
+
+            style.TryAttach(target, null);
+
+            Assert.Equal(1, target.Classes.ListenerCount);
+
+            ((IStyleable)target).DetachStyles();
+
+            Assert.Equal(0, target.Classes.ListenerCount);
+        }
+
+        [Fact]
         public void Should_Set_Owner_On_Assigned_Resources()
         {
             var host = new Mock<IResourceHost>();
@@ -771,6 +865,56 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Throws<InvalidOperationException>(() => parent.Children.Add(nested));
         }
 
+        [Fact]
+        public void Animations_Should_Be_Activated_And_Deactivated()
+        {
+            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
+            {
+                Animations =
+                {
+                    new Avalonia.Animation.Animation
+                    {
+                        Duration = TimeSpan.FromSeconds(1),
+                        Children =
+                        {
+                            new KeyFrame
+                            {
+                                Setters = 
+                                { 
+                                    new Setter { Property = Class1.DoubleProperty, Value = 5.0 } 
+                                },
+                            },
+                            new KeyFrame
+                            {
+                                Setters =
+                                {
+                                    new Setter { Property = Class1.DoubleProperty, Value = 10.0 }
+                                },
+                                Cue = new Cue(1d)
+                            }
+                        },
+                    }
+                }
+            };
+
+            var clock = new TestClock();
+            var target = new Class1 { Clock = clock };
+
+            style.TryAttach(target, null);
+
+            Assert.Equal(0.0, target.Double);
+
+            target.Classes.Add("foo");
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(5.0, target.Double);
+
+            clock.Step(TimeSpan.FromSeconds(0.5));
+            Assert.Equal(7.5, target.Double);
+
+            target.Classes.Remove("foo");
+            Assert.Equal(0.0, target.Double);
+        }
+
         private class Class1 : Control
         {
             public static readonly StyledProperty<string> FooProperty =
@@ -778,6 +922,9 @@ namespace Avalonia.Base.UnitTests.Styling
 
             public static readonly StyledProperty<Class1> ChildProperty =
                 AvaloniaProperty.Register<Class1, Class1>(nameof(Child));
+
+            public static readonly StyledProperty<double> DoubleProperty =
+                AvaloniaProperty.Register<Class1, double>(nameof(Double));
 
             public string Foo
             {
@@ -789,6 +936,12 @@ namespace Avalonia.Base.UnitTests.Styling
             {
                 get => GetValue(ChildProperty);
                 set => SetValue(ChildProperty, value);
+            }
+
+            public double Double
+            {
+                get => GetValue(DoubleProperty);
+                set => SetValue(DoubleProperty, value);
             }
 
             protected override Size MeasureOverride(Size availableSize)
