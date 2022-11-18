@@ -235,7 +235,7 @@ namespace Avalonia.Animation
 
         private object? GetAnimationBaseValue(AvaloniaProperty property)
         {
-            var value = this.GetBaseValue(property, BindingPriority.LocalValue);
+            var value = this.GetBaseValue(property);
 
             if (value == AvaloniaProperty.UnsetValue)
             {

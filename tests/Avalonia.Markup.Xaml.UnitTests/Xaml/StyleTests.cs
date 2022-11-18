@@ -467,7 +467,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 collection.Remove(Brushes.Green);
 
-                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
+                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors().ToList());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);
