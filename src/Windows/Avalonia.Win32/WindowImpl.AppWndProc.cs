@@ -399,9 +399,13 @@ namespace Avalonia.Win32
                             Resized(clientSize / RenderScaling, _resizeReason);
                         }
 
-                        var windowState = size == SizeCommand.Maximized ?
-                            WindowState.Maximized :
-                            (size == SizeCommand.Minimized ? WindowState.Minimized : WindowState.Normal);
+                        var windowState = size switch
+                        {
+                            SizeCommand.Maximized => WindowState.Maximized,
+                            SizeCommand.Minimized => WindowState.Minimized,
+                            _ when _isFullScreenActive => WindowState.FullScreen,
+                            _ => WindowState.Normal,
+                        };
 
                         if (windowState != _lastWindowState)
                         {
