@@ -103,6 +103,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType TextTrimming { get; }
         public IXamlType ISetter { get; }
         public IXamlType IStyle { get; }
+        public IXamlType StyleInclude { get; }
+        public IXamlType ResourceInclude { get; }
         public IXamlType IResourceDictionary { get; }
         public IXamlType ResourceDictionary { get; }
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
@@ -234,6 +236,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             TextTrimming = cfg.TypeSystem.GetType("Avalonia.Media.TextTrimming");
             ISetter = cfg.TypeSystem.GetType("Avalonia.Styling.ISetter");
             IStyle = cfg.TypeSystem.GetType("Avalonia.Styling.IStyle");
+            StyleInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.StyleInclude");
+            ResourceInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.ResourceInclude");
             IResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.IResourceDictionary");
             ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
             ResourceDictionaryDeferredAdd = ResourceDictionary.FindMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,

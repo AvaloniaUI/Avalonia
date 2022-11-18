@@ -10,28 +10,28 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 
 internal class AvaloniaXamlIlAssetIncludeTransformer : IXamlAstTransformer
 {
-    private const string StyleIncludeName = "StyleInclude";
-    private const string ResourceIncludeName = "ResourceInclude";
-
     public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
     {
         if (node is not XamlAstObjectNode objectNode
-            || objectNode.Type.GetClrType() is not {Name: StyleIncludeName or ResourceIncludeName} objectNodeType)
+            || (objectNode.Type.GetClrType() != context.GetAvaloniaTypes().StyleInclude
+                && objectNode.Type.GetClrType() != context.GetAvaloniaTypes().ResourceInclude))
         {
             return node;
         }
+
+        var nodeTypeName = objectNode.Type.GetClrType().Name;
 
         var sourceProperty = objectNode.Children.OfType<XamlAstXamlPropertyValueNode>().FirstOrDefault(n => n.Property.GetClrProperty().Name == "Source");
         var directives = objectNode.Children.OfType<XamlAstXmlDirective>().ToList();
         if (sourceProperty is null
             || objectNode.Children.Count != (directives.Count + 1))
         {
-            // Don't transform node with any other property, as we don't know how to transform them.
-            return node;
+            throw new XamlParseException($"Unexpected property on the {nodeTypeName} node", node);
         }
 
         if (sourceProperty.Values.OfType<XamlAstTextNode>().FirstOrDefault() is not { } sourceTextNode)
         {
+            // TODO: make it a compiler warning
             // Source value can be set with markup extension instead of a text node, we don't support it here yet.
             return node;
         }
@@ -39,18 +39,19 @@ internal class AvaloniaXamlIlAssetIncludeTransformer : IXamlAstTransformer
         var originalAssetPath = sourceTextNode.Text;
         if (!(originalAssetPath.StartsWith("avares://") || originalAssetPath.StartsWith("/")))
         {
-            // Only "avares" protocol supported or relative paths.
-            return node;
+            throw new XamlParseException(
+                $"{nodeTypeName}.Source supports only \"avares://\" absolute paths or relative paths starting with \"/\"",
+                sourceTextNode);
         }
 
-        var runtimeHelpers = context.Configuration.TypeSystem.FindType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
-        var markerMethodName = "Resolve" + objectNodeType.Name;
+        var runtimeHelpers = context.GetAvaloniaTypes().RuntimeHelpers;
+        var markerMethodName = "Resolve" + nodeTypeName;
         var markerMethod = runtimeHelpers.FindMethod(m => m.Name == markerMethodName && m.Parameters.Count == 3);
         if (markerMethod is null)
         {
-            throw new XamlParseException($"Marker method \"{markerMethodName}\" was not found for the \"{objectNodeType.Name}\" node", node);
+            throw new XamlParseException($"Marker method \"{markerMethodName}\" was not found for the \"{nodeTypeName}\" node", node);
         }
-
+        
         return new XamlValueWithManipulationNode(
             node,
             new AssetIncludeMethodNode(node, markerMethod, originalAssetPath),
