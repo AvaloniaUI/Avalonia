@@ -30,7 +30,7 @@
       <ComboBoxItem>Normal</ComboBoxItem>
       <ComboBoxItem>Minimized</ComboBoxItem>
       <ComboBoxItem>Maximized</ComboBoxItem>
-      <ComboBoxItem>Fullscreen</ComboBoxItem>
+      <ComboBoxItem>FullScreen</ComboBoxItem>
     </ComboBox>
 
     <Label Grid.Column="0" Grid.Row="8">Order (mac)</Label>
