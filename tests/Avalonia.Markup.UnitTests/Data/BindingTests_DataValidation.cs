@@ -54,7 +54,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 DataContext = new Class1(),
             };
 
-            var target = new Binding(nameof(Class1.Foo)) { Priority = BindingPriority.TemplatedParent };
+            var target = new Binding(nameof(Class1.Foo)) { Priority = BindingPriority.Template };
             var instanced = target.Initiate(textBlock, TextBlock.TextProperty, enableDataValidation: true);
             var subject = (BindingExpression)instanced.Subject;
             object result = null;

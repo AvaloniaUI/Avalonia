@@ -891,14 +891,14 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Path = nameof(TextPresenter.Text),
                         Mode = BindingMode.TwoWay,
-                        Priority = BindingPriority.TemplatedParent,
+                        Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
                     [!!TextPresenter.CaretIndexProperty] = new Binding
                     {
                         Path = nameof(TextPresenter.CaretIndex),
                         Mode = BindingMode.TwoWay,
-                        Priority = BindingPriority.TemplatedParent,
+                        Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     }
                 }.RegisterInNameScope(scope));
