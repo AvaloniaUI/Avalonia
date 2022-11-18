@@ -75,8 +75,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         }
 
         internal IEnumerable<ICompiledBindingPathElement> Elements => _elements;
-        
-        internal SourceMode SourceMode => _elements.Count > 0 && _elements[0] is IControlSourceBindingPathElement ? SourceMode.Control : SourceMode.Data;
+
+        internal SourceMode SourceMode => _elements.OfType<IControlSourceBindingPathElement>().Any()
+            ? SourceMode.Control : SourceMode.Data;
 
         internal object RawSource { get; }
 

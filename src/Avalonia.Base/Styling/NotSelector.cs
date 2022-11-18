@@ -35,11 +35,11 @@ namespace Avalonia.Styling
         public override Type? TargetType => _previous?.TargetType;
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
-                _selectorString = $"{_previous?.ToString()}:not({_argument})";
+                _selectorString = $"{_previous?.ToString(owner)}:not({_argument})";
             }
 
             return _selectorString;

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Data.Converters;
 using Avalonia.Data;
+using ControlCatalog.Models;
 
 namespace ControlCatalog.Pages
 {

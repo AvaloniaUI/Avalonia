@@ -1,8 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="using:System"
-                    x:CompileBindings="True"
-                    x:DataType="DataValidationErrors">
+                    xmlns:collections="using:System.Collections">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -99,7 +98,7 @@
             </Style>
           </Panel.Styles>
           <ToolTip.Tip>
-            <ItemsControl Items="{ReflectionBinding}" />
+            <ItemsControl Items="{Binding}" x:DataType="collections:IEnumerable" />
           </ToolTip.Tip>
           <Path Width="14"
                 Height="14"

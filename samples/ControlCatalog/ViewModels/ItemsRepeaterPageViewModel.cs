@@ -10,25 +10,25 @@ namespace ControlCatalog.ViewModels
     {
         private int _newItemIndex = 1;
         private int _newGenerationIndex = 0;
-        private ObservableCollection<Item> _items;
+        private ObservableCollection<ItemsRepeaterPageViewModelItem> _items;
 
         public ItemsRepeaterPageViewModel()
         {
             _items = CreateItems();
         }
 
-        public ObservableCollection<Item> Items
+        public ObservableCollection<ItemsRepeaterPageViewModelItem> Items
         {
             get => _items;
             set => this.RaiseAndSetIfChanged(ref _items, value);
         }
 
-        public Item? SelectedItem { get; set; }
+        public ItemsRepeaterPageViewModelItem? SelectedItem { get; set; }
 
         public void AddItem()
         {
             var index = SelectedItem != null ? Items.IndexOf(SelectedItem) : -1;
-            Items.Insert(index + 1, new Item(index + 1, $"New Item {_newItemIndex++}"));
+            Items.Insert(index + 1, new ItemsRepeaterPageViewModelItem(index + 1, $"New Item {_newItemIndex++}"));
         }
 
         public void RemoveItem()
@@ -59,33 +59,33 @@ namespace ControlCatalog.ViewModels
             Items = CreateItems();
         }
 
-        private ObservableCollection<Item> CreateItems()
+        private ObservableCollection<ItemsRepeaterPageViewModelItem> CreateItems()
         {
             var suffix = _newGenerationIndex == 0 ? string.Empty : $"[{_newGenerationIndex.ToString()}]";
 
             _newGenerationIndex++;
 
-            return new ObservableCollection<Item>(
-                Enumerable.Range(1, 100000).Select(i => new Item(i, $"Item {i.ToString()} {suffix}")));
+            return new ObservableCollection<ItemsRepeaterPageViewModelItem>(
+                Enumerable.Range(1, 100000).Select(i => new ItemsRepeaterPageViewModelItem(i, $"Item {i.ToString()} {suffix}")));
         }
+    }
+    
+    public class ItemsRepeaterPageViewModelItem : ViewModelBase
+    {
+        private double _height = double.NaN;
 
-        public class Item : ViewModelBase
+        public ItemsRepeaterPageViewModelItem(int index, string text)
         {
-            private double _height = double.NaN;
-
-            public Item(int index, string text)
-            {
-                Index = index;
-                Text = text;
-            }
-            public int Index { get; }
-            public string Text { get; }
+            Index = index;
+            Text = text;
+        }
+        public int Index { get; }
+        public string Text { get; }
             
-            public double Height 
-            {
-                get => _height;
-                set => this.RaiseAndSetIfChanged(ref _height, value);
-            }
+        public double Height 
+        {
+            get => _height;
+            set => this.RaiseAndSetIfChanged(ref _height, value);
         }
     }
 }

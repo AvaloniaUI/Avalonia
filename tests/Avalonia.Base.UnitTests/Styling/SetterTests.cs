@@ -5,10 +5,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
-using Avalonia.Diagnostics;
+using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using Moq;
 using Xunit;
+
+#nullable enable
 
 namespace Avalonia.Base.UnitTests.Styling
 {
@@ -28,13 +31,13 @@ namespace Avalonia.Base.UnitTests.Styling
             var control = new TextBlock();
             var subject = new BehaviorSubject<object>("foo");
             var descriptor = InstancedBinding.OneWay(subject);
-            var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TextProperty, null, false) == descriptor);
+            var binding = Mock.Of<IBinding>(x => x.Initiate(control, TextBlock.TagProperty, null, false) == descriptor);
             var style = Mock.Of<IStyle>();
-            var setter = new Setter(TextBlock.TextProperty, binding);
+            var setter = new Setter(TextBlock.TagProperty, binding);
 
-            setter.Instance(control).Start(false);
+            Apply(setter, control);
 
-            Assert.Equal("foo", control.Text);
+            Assert.Equal("foo", control.Tag);
         }
 
         [Fact]
@@ -47,7 +50,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var style = Mock.Of<IStyle>();
             var setter = new Setter(TextBlock.TagProperty, binding);
 
-            setter.Instance(control).Start(false);
+            Apply(setter, control);
 
             Assert.Equal(null, control.Text);
         }
@@ -60,133 +63,463 @@ namespace Avalonia.Base.UnitTests.Styling
             var style = Mock.Of<IStyle>();
             var setter = new Setter(Decorator.ChildProperty, template);
 
-            setter.Instance(control).Start(false);
+            Apply(setter, control);
 
             Assert.IsType<Canvas>(control.Child);
         }
 
         [Fact]
+        public void Can_Set_Direct_Property_In_Style_Without_Activator()
+        {
+            var control = new TextBlock();
+            var target = new Setter();
+            var style = new Style(x => x.Is<TextBlock>())
+            {
+                Setters =
+                {
+                    new Setter(TextBlock.TextProperty, "foo"),
+                }
+            };
+
+            Apply(style, control);
+
+            Assert.Equal("foo", control.Text);
+        }
+
+        [Fact]
+        public void Can_Set_Direct_Property_Binding_In_Style_Without_Activator()
+        {
+            var control = new TextBlock();
+            var target = new Setter();
+            var source = new BehaviorSubject<object?>("foo");
+            var style = new Style(x => x.Is<TextBlock>())
+            {
+                Setters =
+                {
+                    new Setter(TextBlock.TextProperty, source.ToBinding()),
+                }
+            };
+
+            Apply(style, control);
+
+            Assert.Equal("foo", control.Text);
+        }
+
+        [Fact]
+        public void Cannot_Set_Direct_Property_Binding_In_Style_With_Activator()
+        {
+            var control = new TextBlock();
+            var target = new Setter();
+            var source = new BehaviorSubject<object?>("foo");
+            var style = new Style(x => x.Is<TextBlock>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(TextBlock.TextProperty, source.ToBinding()),
+                }
+            };
+
+            Assert.Throws<InvalidOperationException>(() => Apply(style, control));
+        }
+
+        [Fact]
+        public void Cannot_Set_Direct_Property_In_Style_With_Activator()
+        {
+            var control = new TextBlock();
+            var target = new Setter();
+            var style = new Style(x => x.Is<TextBlock>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(TextBlock.TextProperty, "foo"),
+                }
+            };
+
+            Assert.Throws<InvalidOperationException>(() => Apply(style, control));
+        }
+
+        [Fact]
         public void Does_Not_Call_Converter_ConvertBack_On_OneWay_Binding()
         {
-            var control = new Decorator { Name = "foo" };
-            var style = Mock.Of<IStyle>();
+            var control = new Decorator
+            {
+                Name = "foo",
+                Classes = { "foo" },
+            };
+
             var binding = new Binding("Name", BindingMode.OneWay)
             {
                 Converter = new TestConverter(),
                 RelativeSource = new RelativeSource(RelativeSourceMode.Self),
             };
-            var setter = new Setter(Decorator.TagProperty, binding);
 
-            var instance = setter.Instance(control);
-            instance.Start(true);
-            instance.Activate();
+            var style = new Style(x => x.OfType<Decorator>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Decorator.TagProperty, binding)
+                },
+            };
+
+            Apply(style, control);
 
             Assert.Equal("foobar", control.Tag);
 
             // Issue #1218 caused TestConverter.ConvertBack to throw here.
-            instance.Deactivate();
+            control.Classes.Remove("foo");
             Assert.Null(control.Tag);
         }
 
         [Fact]
         public void Setter_Should_Apply_Value_Without_Activator_With_Style_Priority()
         {
-            var control = new Control();
-            var setter = new Setter(TextBlock.TagProperty, "foo");
+            var control = new Border();
+            var style = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter(Control.TagProperty, "foo"),
+                },
+            };
+            var raised = 0;
 
-            setter.Instance(control).Start(false);
+            control.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Control.TagProperty, e.Property);
+                Assert.Equal(BindingPriority.Style, e.Priority);
+                ++raised;
+            };
 
-            Assert.Equal("foo", control.Tag);
-            Assert.Equal(BindingPriority.Style, control.GetDiagnostic(TextBlock.TagProperty).Priority);
+            Apply(style, control);
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
-        public void Setter_Should_Apply_Value_With_Activator_As_Binding_With_StyleTrigger_Priority()
+        public void Setter_Should_Apply_Value_With_Activator_With_StyleTrigger_Priority()
         {
-            var control = new Canvas();
-            var setter = new Setter(TextBlock.TagProperty, "foo");
+            var control = new Border { Classes = { "foo" } };
+            var style = new Style(x => x.OfType<Border>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Control.TagProperty, "foo"),
+                },
+            };
+            var activator = new Subject<bool>();
+            var raised = 0;
 
-            var instance = setter.Instance(control);
-            instance.Start(true);
-            instance.Activate();
+            control.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Border.TagProperty, e.Property);
+                Assert.Equal(BindingPriority.StyleTrigger, e.Priority);
+                ++raised;
+            };
 
-            Assert.Equal("foo", control.Tag);
-            Assert.Equal(BindingPriority.StyleTrigger, control.GetDiagnostic(TextBlock.TagProperty).Priority);
+            Apply(style, control);
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
         public void Setter_Should_Apply_Binding_Without_Activator_With_Style_Priority()
         {
-            var control = new Canvas();
-            var source = new { Foo = "foo" };
-            var setter = new Setter(TextBlock.TagProperty, new Binding
+            var control = new Border
             {
-                Source = source,
-                Path = nameof(source.Foo),
-            });
+                DataContext = "foo",
+            };
 
-            setter.Instance(control).Start(false);
+            var style = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter(Control.TagProperty, new Binding()),
+                },
+            };
 
-            Assert.Equal("foo", control.Tag);
-            Assert.Equal(BindingPriority.Style, control.GetDiagnostic(TextBlock.TagProperty).Priority);
+            var raised = 0;
+
+            control.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Control.TagProperty, e.Property);
+                Assert.Equal(BindingPriority.Style, e.Priority);
+                ++raised;
+            };
+
+            Apply(style, control);
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
         public void Setter_Should_Apply_Binding_With_Activator_With_StyleTrigger_Priority()
         {
-            var control = new Canvas();
-            var source = new { Foo = "foo" };
-            var setter = new Setter(TextBlock.TagProperty, new Binding
+            var control = new Border
             {
-                Source = source,
-                Path = nameof(source.Foo),
-            });
+                Classes = { "foo" },
+                DataContext = "foo",
+            };
 
-            var instance = setter.Instance(control);
-            instance.Start(true);
-            instance.Activate();
+            var style = new Style(x => x.OfType<Border>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Control.TagProperty, new Binding()),
+                },
+            };
 
-            Assert.Equal("foo", control.Tag);
-            Assert.Equal(BindingPriority.StyleTrigger, control.GetDiagnostic(TextBlock.TagProperty).Priority);
+            var raised = 0;
+
+            control.PropertyChanged += (s, e) =>
+            {
+                Assert.Equal(Control.TagProperty, e.Property);
+                Assert.Equal(BindingPriority.StyleTrigger, e.Priority);
+                ++raised;
+            };
+
+            Apply(style, control);
+
+            Assert.Equal(1, raised);
         }
 
         [Fact]
-        public void Disposing_Setter_Should_Preserve_LocalValue()
+        public void Direct_Property_Setter_With_TwoWay_Binding_Should_Update_Source()
         {
-            var control = new Canvas();
-            var setter = new Setter(TextBlock.TagProperty, "foo");
+            using var app = UnitTestApplication.Start(TestServices.MockThreadingInterface);
+            var data = new Data { Foo = "foo" };
+            var control = new TextBox
+            {
+                DataContext = data,
+            };
 
-            var instance = setter.Instance(control);
-            instance.Start(true);
-            instance.Activate();
+            var style = new Style(x => x.OfType<TextBox>())
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = TextBox.TextProperty,
+                        Value = new Binding
+                        {
+                            Path = "Foo",
+                            Mode = BindingMode.TwoWay
+                        }
+                    }
+                },
+            };
 
-            control.Tag = "bar";
+            Apply(style, control);
+            Assert.Equal("foo", control.Text);
 
-            instance.Dispose();
-
-            Assert.Equal("bar", control.Tag);
+            control.Text = "bar";
+            Assert.Equal("bar", data.Foo);
         }
 
         [Fact]
-        public void Disposing_Binding_Setter_Should_Preserve_LocalValue()
+        public void Styled_Property_Setter_With_TwoWay_Binding_Should_Update_Source()
         {
-            var control = new Canvas();
-            var source = new { Foo = "foo" };
-            var setter = new Setter(TextBlock.TagProperty, new Binding
+            var data = new Data { Bar = Brushes.Red };
+            var control = new Border
             {
-                Source = source,
-                Path = nameof(source.Foo),
-            });
+                DataContext = data,
+            };
 
-            var instance = setter.Instance(control);
-            instance.Start(true);
-            instance.Activate();
+            var style = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = new Binding
+                        {
+                            Path = "Bar",
+                            Mode = BindingMode.TwoWay
+                        }
+                    }
+                },
+            };
 
-            control.Tag = "bar";
+            Apply(style, control);
+            Assert.Equal(Brushes.Red, control.Background);
 
-            instance.Dispose();
+            control.Background = Brushes.Green;
+            Assert.Equal(Brushes.Green, data.Bar);
+        }
 
-            Assert.Equal("bar", control.Tag);
+        [Fact]
+        public void Non_Active_Styled_Property_Binding_Should_Be_Unsubscribed()
+        {
+            var data = new Data { Bar = Brushes.Red };
+            var control = new Border
+            {
+                DataContext = data,
+            };
+
+            var style1 = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = new Binding("Bar"),
+                    }
+                },
+            };
+
+            var style2 = new Style(x => x.OfType<Border>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = Brushes.Green,
+                    }
+                },
+            };
+
+            Apply(style1, control);
+            Apply(style2, control);
+
+            // `style1` is initially active.
+            Assert.Equal(Brushes.Red, control.Background);
+            Assert.Equal(1, data.PropertyChangedSubscriptionCount);
+
+            // Activate `style2`.
+            control.Classes.Add("foo");
+            Assert.Equal(Brushes.Green, control.Background);
+
+            // The binding from `style1` is now inactive and so should be unsubscribed.
+            Assert.Equal(0, data.PropertyChangedSubscriptionCount);
+        }
+
+        [Fact]
+        public void Non_Active_Styled_Property_Setter_With_TwoWay_Binding_Should_Not_Update_Source()
+        {
+            var data = new Data { Bar = Brushes.Red };
+            var control = new Border
+            {
+                DataContext = data,
+            };
+
+            var style1 = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = new Binding
+                        {
+                            Path = "Bar",
+                            Mode = BindingMode.TwoWay
+                        }
+                    }
+                },
+            };
+
+            var style2 = new Style(x => x.OfType<Border>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = Brushes.Green,
+                    }
+                },
+            };
+
+            Apply(style1, control);
+            Apply(style2, control);
+
+            // `style1` is initially active.
+            Assert.Equal(Brushes.Red, control.Background);
+
+            // Activate `style2`.
+            control.Classes.Add("foo");
+            Assert.Equal(Brushes.Green, control.Background);
+
+            // The two-way binding from `style1` is now inactive and so should not write back to
+            // the DataContext.
+            Assert.Equal(Brushes.Red, data.Bar);
+        }
+
+        [Fact]
+        public void Styled_Property_Setter_With_TwoWay_Binding_Updates_Source_When_Made_Active()
+        {
+            var data = new Data { Bar = Brushes.Red };
+            var control = new Border
+            {
+                Classes = { "foo" },
+                DataContext = data,
+            };
+
+            var style1 = new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = new Binding
+                        {
+                            Path = "Bar",
+                            Mode = BindingMode.TwoWay
+                        }
+                    }
+                },
+            };
+
+            var style2 = new Style(x => x.OfType<Border>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter
+                    {
+                        Property = Border.BackgroundProperty,
+                        Value = Brushes.Green,
+                    }
+                },
+            };
+
+            Apply(style1, control);
+            Apply(style2, control);
+
+            // `style2` is initially active.
+            Assert.Equal(Brushes.Green, control.Background);
+
+            // Deactivate `style2`.
+            control.Classes.Remove("foo");
+            Assert.Equal(Brushes.Red, control.Background);
+
+            // The two-way binding from `style1` is now active and so should write back to the
+            // DataContext.
+            control.Background = Brushes.Blue;
+            Assert.Equal(Brushes.Blue, data.Bar);
+        }
+
+        private void Apply(Style style, Control control)
+        {
+            style.TryAttach(control, null);
+        }
+
+        private void Apply(Setter setter, Control control)
+        {
+            var style = new Style(x => x.Is<Control>())
+            {
+                Setters = { setter },
+            };
+
+            Apply(style, control);
+        }
+
+        private class Data : NotifyingBase
+        {
+            public string? Foo { get; set; }
+            public IBrush? Bar { get; set; }
         }
 
         private class TestConverter : IValueConverter

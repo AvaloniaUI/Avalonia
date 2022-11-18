@@ -2,7 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ControlCatalog.DecoratedWindow"
         Title="Avalonia Control Gallery"
-        xmlns:local="clr-namespace:ControlCatalog" SystemDecorations="None" Name="Window">
+        SystemDecorations="None" Name="Window">
         <NativeMenu.Menu>
     <NativeMenu>
       <NativeMenuItem Header="Decorated">
@@ -43,8 +43,13 @@
                 <StackPanel>
                     <TextBlock>Hello world!</TextBlock>
 
-                    <CheckBox IsChecked="{Binding ElementName=Window, Path=HasSystemDecorations}">Decorated</CheckBox>
-
+                    <ComboBox SelectedItem="{Binding ElementName=Window, Path=SystemDecorations}">
+                      <ComboBox.Items>
+                        <SystemDecorations>None</SystemDecorations>
+                        <SystemDecorations>BorderOnly</SystemDecorations>
+                        <SystemDecorations>Full</SystemDecorations>
+                      </ComboBox.Items>
+                    </ComboBox>
                     <CheckBox IsChecked="{Binding ElementName=Window, Path=CanResize}">CanResize</CheckBox>
                 </StackPanel>
             </Border>

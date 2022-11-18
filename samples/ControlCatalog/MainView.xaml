@@ -1,9 +1,11 @@
 <UserControl x:Class="ControlCatalog.MainView"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
-             xmlns:models="clr-namespace:ControlCatalog.Models"
-             xmlns:pages="clr-namespace:ControlCatalog.Pages">
+             xmlns:controls="using:ControlSamples"
+             xmlns:models="using:ControlCatalog.Models"
+             xmlns:pages="using:ControlCatalog.Pages"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:DataType="viewModels:MainWindowViewModel">
   <Grid>
     <Grid.Styles>
       <Style Selector="TextBlock.h2">

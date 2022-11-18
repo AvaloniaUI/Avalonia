@@ -5,8 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-
-using MiniMvvm;
+using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages
 {
@@ -14,33 +13,27 @@ namespace ControlCatalog.Pages
 
     public class TabControlPage : UserControl
     {
-        private static IBitmap LoadBitmap(string uri)
-        {
-            var assets = AvaloniaLocator.Current!.GetService<IAssetLoader>()!;
-            return new Bitmap(assets.Open(new Uri(uri)));
-        }
-
         public TabControlPage()
         {
             InitializeComponent();
 
-            DataContext = new PageViewModel
+            DataContext = new TabControlPageViewModel
             {
                 Tabs = new[]
                 {
-                    new TabItemViewModel
+                    new TabControlPageViewModelItem
                     {
                         Header = "Arch",
                         Text = "This is the first templated tab page.",
-                        Image = TabControlPage.LoadBitmap("avares://ControlCatalog/Assets/delicate-arch-896885_640.jpg"),
+                        Image = LoadBitmap("avares://ControlCatalog/Assets/delicate-arch-896885_640.jpg"),
                     },
-                    new TabItemViewModel
+                    new TabControlPageViewModelItem
                     {
                         Header = "Leaf",
                         Text = "This is the second templated tab page.",
-                        Image = TabControlPage.LoadBitmap("avares://ControlCatalog/Assets/maple-leaf-888807_640.jpg"),
+                        Image = LoadBitmap("avares://ControlCatalog/Assets/maple-leaf-888807_640.jpg"),
                     },
-                    new TabItemViewModel
+                    new TabControlPageViewModelItem
                     {
                         Header = "Disabled",
                         Text = "You should not see this.",
@@ -56,25 +49,10 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
 
-        private class PageViewModel : ViewModelBase
+        private IBitmap LoadBitmap(string uri)
         {
-            private Dock _tabPlacement;
-
-            public TabItemViewModel[]? Tabs { get; set; }
-
-            public Dock TabPlacement
-            {
-                get { return _tabPlacement; }
-                set { this.RaiseAndSetIfChanged(ref _tabPlacement, value); }
-            }
-        }
-
-        private class TabItemViewModel
-        {
-            public string? Header { get; set; }
-            public string? Text { get; set; }
-            public IBitmap? Image { get; set; }
-            public bool IsEnabled { get; set; } = true;
+            var assets = AvaloniaLocator.Current!.GetService<IAssetLoader>()!;
+            return new Bitmap(assets.Open(new Uri(uri)));
         }
     }
 }

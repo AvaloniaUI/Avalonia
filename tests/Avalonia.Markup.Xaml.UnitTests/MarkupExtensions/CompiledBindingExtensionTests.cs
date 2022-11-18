@@ -139,6 +139,27 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
         
+        
+        [Fact]
+        public void ResolvesStaticClrPropertyBased()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
+        x:DataType='local:TestDataContext'>
+    <TextBlock Text='{CompiledBinding StaticProperty}' Name='textBlock' />
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var textBlock = window.FindControl<TextBlock>("textBlock");
+                textBlock.DataContext = new TestDataContext();
+
+                Assert.Equal(TestDataContext.StaticProperty, textBlock.Text);
+            }
+        }
+        
         [Fact]
         public void ResolvesDataTypeFromBindingProperty()
         {
@@ -734,12 +755,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             {
                 var xaml = @"
 <ContentControl xmlns='https://github.com/avaloniaui'
-                Content='Hello'>
+                Focusable='True'>
     <ContentControl.Styles>
         <Style Selector='ContentControl'>
             <Setter Property='Template'>
                 <ControlTemplate>
-                    <ContentPresenter Content='{CompiledBinding Content, RelativeSource={RelativeSource TemplatedParent}}' />
+                    <ContentPresenter Focusable='{CompiledBinding !Focusable, RelativeSource={RelativeSource TemplatedParent}}' />
                 </ControlTemplate>
             </Setter>
         </Style>
@@ -747,10 +768,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </ContentControl>";
 
                 var contentControl = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
+                contentControl.DataContext = new TestDataContext(); // should be ignored
                 contentControl.Measure(new Size(10, 10));
                 
                 var result = contentControl.GetTemplateChildren().OfType<ContentPresenter>().First();
-                Assert.Equal("Hello", result.Content);
+                Assert.Equal(false, result.Focusable);
             }
         }
         
@@ -781,6 +803,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 </TextBox>";
 
                 var textBox = AvaloniaRuntimeXamlLoader.Parse<TextBox>(xaml);
+                textBox.DataContext = new TestDataContext(); // should be ignored
                 textBox.Measure(new Size(10, 10));
                 
                 var result = textBox.GetTemplateChildren().OfType<ContentPresenter>().First();
@@ -1714,7 +1737,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         string IHasExplicitProperty.ExplicitProperty => "Hello"; 
 
-        public string ExplicitProperty => "Bye"; 
+        public string ExplicitProperty => "Bye";
+
+        public static string StaticProperty => "World"; 
 
         public class NonIntegerIndexer : NotifyingBase, INonIntegerIndexerDerived
         {
