@@ -10,8 +10,8 @@ namespace Avalonia.PropertyStore
     internal class ImmediateValueFrame : ValueFrame
     {
         public ImmediateValueFrame(BindingPriority priority)
+            : base(priority, FrameType.Style)
         {
-            Priority = priority;
         }
 
         public TypedBindingEntry<T> AddBinding<T>(

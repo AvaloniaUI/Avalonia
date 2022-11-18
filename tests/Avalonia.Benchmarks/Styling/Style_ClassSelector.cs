@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using BenchmarkDotNet.Attributes;
 
@@ -35,7 +36,7 @@ namespace Avalonia.Benchmarks.Styling
             target.GetValueStore().BeginStyling();
 
             for (var i = 0; i < 50; ++i)
-                _style.TryAttach(target, null);
+                _style.TryAttach(target, null, FrameType.Style);
 
             target.GetValueStore().EndStyling();
         }
@@ -48,7 +49,7 @@ namespace Avalonia.Benchmarks.Styling
             target.GetValueStore().BeginStyling();
 
             for (var i = 0; i < 50; ++i)
-                _style.TryAttach(target, null);
+                _style.TryAttach(target, null, FrameType.Style);
 
             target.GetValueStore().EndStyling();
 
@@ -64,7 +65,7 @@ namespace Avalonia.Benchmarks.Styling
             target.GetValueStore().BeginStyling();
 
             for (var i = 0; i < 50; ++i)
-                _style.TryAttach(target, null);
+                _style.TryAttach(target, null, FrameType.Style);
 
             target.GetValueStore().EndStyling();
 

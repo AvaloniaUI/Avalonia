@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
@@ -11,6 +12,7 @@ using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 
 namespace Avalonia
@@ -69,10 +71,10 @@ namespace Avalonia
         private IAvaloniaList<ILogical>? _logicalChildren;
         private IResourceDictionary? _resources;
         private Styles? _styles;
-        private bool _styled;
+        private bool _stylesApplied;
+        private bool _themeApplied;
         private ITemplatedControl? _templatedParent;
         private bool _dataContextUpdating;
-        private bool _hasPromotedTheme;
         private ControlTheme? _implicitTheme;
 
         /// <summary>
@@ -141,7 +143,7 @@ namespace Avalonia
 
             set
             {
-                if (_styled)
+                if (_stylesApplied)
                 {
                     throw new InvalidOperationException("Cannot set Name : styled element already styled.");
                 }
@@ -353,31 +355,31 @@ namespace Avalonia
         /// </returns>
         public bool ApplyStyling()
         {
-            if (_initCount == 0 && !_styled)
+            if (_initCount == 0 && (!_stylesApplied || !_themeApplied))
             {
-                var hasPromotedTheme = _hasPromotedTheme;
-
                 GetValueStore().BeginStyling();
 
                 try
                 {
-                    ApplyControlTheme();
-                    ApplyStyles(this);
+                    if (!_themeApplied)
+                    {
+                        ApplyControlTheme();
+                        _themeApplied = true;
+                    }
+
+                    if (!_stylesApplied)
+                    {
+                        ApplyStyles(this);
+                        _stylesApplied = true;
+                    }
                 }
                 finally
                 {
-                    _styled = true;
                     GetValueStore().EndStyling();
-                }
-
-                if (hasPromotedTheme)
-                {
-                    _hasPromotedTheme = false;
-                    ClearValue(ThemeProperty);
                 }
             }
 
-            return _styled;
+            return _stylesApplied;
         }
 
         /// <summary>
@@ -615,31 +617,25 @@ namespace Avalonia
 
             if (change.Property == ThemeProperty)
             {
-                var (oldValue, newValue) = change.GetOldAndNewValue<ControlTheme?>();
-
-                // Changing the theme detaches all styles, meaning that if the theme property was
-                // set via a style, it will get cleared! To work around this, if the value was
-                // applied at less than local value priority then promote the value to local value
-                // priority until styling is re-applied.
-                if (change.Priority > BindingPriority.LocalValue)
-                {
-                    Theme = newValue;
-                    _hasPromotedTheme = true;
-                }
-                else if (_hasPromotedTheme && change.Priority == BindingPriority.LocalValue)
-                {
-                    _hasPromotedTheme = false;
-                }
-
-                InvalidateStyles();
-
-                if (oldValue is not null)
-                    DetachControlThemeFromTemplateChildren(oldValue);
+                OnControlThemeChanged();
+                _themeApplied = false;
             }
         }
 
-        internal virtual void DetachControlThemeFromTemplateChildren(ControlTheme theme)
+        private protected virtual void OnControlThemeChanged()
         {
+            var values = GetValueStore();
+            values.BeginStyling();
+            try { values.RemoveFrames(FrameType.Theme); }
+            finally { values.EndStyling(); }
+        }
+
+        internal virtual void OnTemplatedParentControlThemeChanged()
+        {
+            var values = GetValueStore();
+            values.BeginStyling();
+            try { values.RemoveFrames(FrameType.TemplatedParentTheme); }
+            finally { values.EndStyling(); }
         }
 
         internal ControlTheme? GetEffectiveTheme()
@@ -736,26 +732,28 @@ namespace Avalonia
             var theme = GetEffectiveTheme();
 
             if (theme is not null)
-                ApplyControlTheme(theme);
+                ApplyControlTheme(theme, FrameType.Theme);
 
             if (TemplatedParent is StyledElement styleableParent &&
                 styleableParent.GetEffectiveTheme() is { } parentTheme)
             {
-                ApplyControlTheme(parentTheme);
+                ApplyControlTheme(parentTheme, FrameType.TemplatedParentTheme);
             }
         }
 
-        private void ApplyControlTheme(ControlTheme theme)
+        private void ApplyControlTheme(ControlTheme theme, FrameType type)
         {
-            if (theme.BasedOn is ControlTheme basedOn)
-                ApplyControlTheme(basedOn);
+            Debug.Assert(type is FrameType.Theme or FrameType.TemplatedParentTheme);
 
-            theme.TryAttach(this, null);
+            if (theme.BasedOn is ControlTheme basedOn)
+                ApplyControlTheme(basedOn, type);
+
+            theme.TryAttach(this, type);
 
             if (theme.HasChildren)
             {
                 foreach (var child in theme.Children)
-                    ApplyStyle(child, null);
+                    ApplyStyle(child, null, type);
             }
         }
 
@@ -768,17 +766,17 @@ namespace Avalonia
             if (host.IsStylesInitialized)
             {
                 foreach (var style in host.Styles)
-                    ApplyStyle(style, host);
+                    ApplyStyle(style, host, FrameType.Style);
             }
         }
 
-        private void ApplyStyle(IStyle style, IStyleHost? host)
+        private void ApplyStyle(IStyle style, IStyleHost? host, FrameType type)
         {
             if (style is Style s)
-                s.TryAttach(this, host);
+                s.TryAttach(this, host, type);
 
             foreach (var child in style.Children)
-                ApplyStyle(child, host);
+                ApplyStyle(child, host, type);
         }
 
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
@@ -895,6 +893,7 @@ namespace Avalonia
             for (var i = valueStore.Frames.Count - 1; i >= 0; --i)
             {
                 if (valueStore.Frames[i] is StyleInstance si &&
+                    si.Source is not ControlTheme &&
                     (styles is null || styles.Contains(si.Source)))
                 {
                     valueStore.RemoveFrame(si);
@@ -902,7 +901,7 @@ namespace Avalonia
             }
 
             valueStore.EndStyling();
-            _styled = false;
+            _stylesApplied = false;
         }
 
         private void InvalidateStylesOnThisAndDescendents()

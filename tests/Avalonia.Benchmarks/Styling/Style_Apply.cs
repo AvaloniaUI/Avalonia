@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using BenchmarkDotNet.Attributes;
 
@@ -56,7 +57,7 @@ namespace Avalonia.Benchmarks.Styling
             target.GetValueStore().BeginStyling();
 
             foreach (var style in _styles)
-                style.TryAttach(target, null);
+                style.TryAttach(target, null, FrameType.Style);
 
             target.GetValueStore().EndStyling();
         }

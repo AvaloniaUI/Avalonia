@@ -5,6 +5,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -435,7 +436,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 }
             };
 
-            style.TryAttach(control, control);
+            style.TryAttach(control, control, FrameType.Style);
 
             // Which means that the transition state hasn't been initialized with the new
             // Transitions when the Opacity change notification gets raised here.

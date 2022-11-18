@@ -5,6 +5,7 @@ using Avalonia.Base.UnitTests.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -27,7 +28,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, null);
+            style.TryAttach(target, null, FrameType.Style);
 
             Assert.Equal("Foo", target.Foo);
         }
@@ -45,7 +46,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, null);
+            style.TryAttach(target, null, FrameType.Style);
             Assert.Equal("foodefault", target.Foo);
             target.Classes.Add("foo");
             Assert.Equal("Foo", target.Foo);
@@ -66,7 +67,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, target);
+            style.TryAttach(target, target, FrameType.Style);
 
             Assert.Equal("Foo", target.Foo);
         }
@@ -92,7 +93,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var target = new Class1();
             var other = new Class1();
 
-            style.TryAttach(target, other);
+            style.TryAttach(target, other, FrameType.Style);
 
             Assert.Equal("foodefault", target.Foo);
         }
@@ -113,7 +114,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 Foo = "Original",
             };
 
-            style.TryAttach(target, null);
+            style.TryAttach(target, null, FrameType.Style);
             Assert.Equal("Original", target.Foo);
         }
 
@@ -577,7 +578,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 Child = border = new Border(),
             };
 
-            style.TryAttach(border, null);
+            style.TryAttach(border, null, FrameType.Style);
 
             Assert.Equal(new Thickness(4), border.BorderThickness);
             root.Child = null;
@@ -761,7 +762,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, null);
+            style.TryAttach(target, null, FrameType.Style);
 
             Assert.Equal(1, target.Classes.ListenerCount);
 
@@ -874,7 +875,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var clock = new TestClock();
             var target = new Class1 { Clock = clock };
 
-            style.TryAttach(target, null);
+            style.TryAttach(target, null, FrameType.Style);
 
             Assert.Equal(0.0, target.Double);
 

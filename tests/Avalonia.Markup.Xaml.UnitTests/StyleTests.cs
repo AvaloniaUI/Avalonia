@@ -2,6 +2,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -54,7 +55,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                     }
                 };
 
-                style.TryAttach(control, control);
+                style.TryAttach(control, control, FrameType.Style);
                 Assert.Equal("foo", control.Text);
 
                 control.Text = "bar";

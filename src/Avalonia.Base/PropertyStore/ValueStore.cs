@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
-using Avalonia.Logging;
 using Avalonia.Utilities;
+using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.PropertyStore
 {
@@ -580,6 +580,29 @@ namespace Avalonia.PropertyStore
             return false;
         }
 
+        public void RemoveFrames(FrameType type)
+        {
+            var removed = false;
+
+            for (var i = _frames.Count - 1; i >= 0; --i)
+            {
+                var frame = _frames[i];
+
+                if (frame.FramePriority.IsType(type))
+                {
+                    _frames.RemoveAt(i);
+                    frame.Dispose();
+                    removed = true;
+                }
+            }
+
+            if (removed)
+            {
+                ++_frameGeneration;
+                ReevaluateEffectiveValues();
+            }
+        }
+
         public AvaloniaPropertyValue GetDiagnostic(AvaloniaProperty property)
         {
             object? value;
@@ -612,7 +635,7 @@ namespace Avalonia.PropertyStore
         {
             Debug.Assert(!_frames.Contains(frame));
 
-            var index = BinarySearchFrame(frame.Priority);
+            var index = BinarySearchFrame(frame.FramePriority);
             _frames.Insert(index, frame);
             ++_frameGeneration;
             frame.SetOwner(this);
@@ -626,7 +649,7 @@ namespace Avalonia.PropertyStore
         {
             Debug.Assert(priority != BindingPriority.LocalValue);
 
-            var index = BinarySearchFrame(priority);
+            var index = BinarySearchFrame(priority.ToFramePriority());
 
             if (index > 0 && _frames[index - 1] is ImmediateValueFrame f &&
                 f.Priority == priority &&
@@ -914,7 +937,7 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        private int BinarySearchFrame(BindingPriority priority)
+        private int BinarySearchFrame(FramePriority priority)
         {
             var lo = 0;
             var hi = _frames.Count - 1;
@@ -923,7 +946,7 @@ namespace Avalonia.PropertyStore
             while (lo <= hi)
             {
                 var i = lo + ((hi - lo) >> 1);
-                var order = priority - _frames[i].Priority;
+                var order = priority - _frames[i].FramePriority;
 
                 if (order <= 0)
                 {

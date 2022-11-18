@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Logging;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 #nullable enable
@@ -793,6 +794,12 @@ namespace Avalonia.Layout
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
 
             base.OnVisualParentChanged(oldParent, newParent);
+        }
+
+        private protected override void OnControlThemeChanged()
+        {
+            base.OnControlThemeChanged();
+            InvalidateMeasure();
         }
 
         /// <summary>

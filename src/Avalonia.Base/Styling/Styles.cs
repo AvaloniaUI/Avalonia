@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -233,7 +234,7 @@ namespace Avalonia.Styling
             {
                 if (s is not Style style)
                     continue;
-                var r = style.TryAttach(target, host);
+                var r = style.TryAttach(target, host, FrameType.Style);
                 if (r > result)
                     result = r;
             }
