@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:dialogs="clr-namespace:Avalonia.Dialogs;assembly=Avalonia.Dialogs">
+        xmlns:dialogs="using:Avalonia.Dialogs"
+        xmlns:internal="using:Avalonia.Dialogs.Internal">
   <Design.PreviewWith>
     <Border Padding="20" Width="800" Height="500">
       <dialogs:ManagedFileChooser/>
@@ -23,7 +24,7 @@
           <GeometryDrawing Brush="#FF00529C" Geometry="F1M8,11L5,8 2,11 2,13 4,11 4,15 6,15 6,11 8,13z" />
           <GeometryDrawing Brush="#FFF0EFF1" Geometry="F1M8.0001,1.9996L7.5001,3.0006 14.0001,3.0006 14.0001,1.9996z" />
         </DrawingGroup>
-        <dialogs:ResourceSelectorConverter x:Key="Icons">
+        <internal:ResourceSelectorConverter x:Key="Icons">
           <DrawingGroup x:Key="Icon_Folder">
             <GeometryDrawing Geometry="M 0 0 L 16 16"/>
             <GeometryDrawing Geometry="M 0 3 C 0,1 0,1 2,1 L 5 1 C 5.5,1 6,1 6.5,1.5 L 8 3 L 14 3 C 16,3 16,3 16,5
@@ -128,10 +129,11 @@
             </GeometryDrawing>
             <GeometryDrawing Geometry="M 3.23483495705 9.76516504295 A 0.375,0.375 180 1 0 3.76516504295,9.23483495705 A 0.4375,0.4375 135 0 1 3.23483495705,9.76516504295 Z" Brush="#FF00B300"/>
           </DrawingGroup>
-        </dialogs:ResourceSelectorConverter>
+        </internal:ResourceSelectorConverter>
       </ResourceDictionary>
     </ControlTheme.Resources>
-    <Setter Property="Template">
+    <Setter Property="Template"
+            x:DataType="internal:ManagedFileChooserViewModel">
       <ControlTemplate>
         <DockPanel>
           <ListBox x:Name="PART_QuickLinks" DockPanel.Dock="Left" Items="{Binding QuickLinks}" SelectedIndex="{Binding QuickLinksSelectedIndex}" Focusable="False">
@@ -222,7 +224,7 @@
                 Background="Transparent"
                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
               <ListBox.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="internal:ManagedFileChooserItemViewModel">
                   <Grid Background="Transparent">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition SharedSizeGroup="Icon" />
@@ -247,7 +249,7 @@
                       <TextBlock.Text>
                         <Binding Path="Size">
                           <Binding.Converter>
-                            <dialogs:FileSizeStringConverter/>
+                            <internal:FileSizeStringConverter/>
                           </Binding.Converter>
                         </Binding>
                       </TextBlock.Text>

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -15,7 +14,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class ControlDetailsViewModel : ViewModelBase, IDisposable
+    internal class ControlDetailsViewModel : ViewModelBase, IDisposable, IClassesChangedListener
     {
         private readonly IAvaloniaObject _avaloniaObject;
         private IDictionary<object, PropertyViewModel[]>? _propertyIndex;
@@ -46,7 +45,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (avaloniaObject is StyledElement styledElement)
             {
-                styledElement.Classes.CollectionChanged += OnClassesChanged;
+                styledElement.Classes.AddListener(this);
 
                 var pseudoClassAttributes = styledElement.GetType().GetCustomAttributes<PseudoClassesAttribute>(true);
 
@@ -250,7 +249,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (_avaloniaObject is StyledElement se)
             {
-                se.Classes.CollectionChanged -= OnClassesChanged;
+                se.Classes.RemoveListener(this);
             }
         }
 
@@ -325,7 +324,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private void OnClassesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        void IClassesChangedListener.Changed()
         {
             if (!SnapshotStyles)
             {

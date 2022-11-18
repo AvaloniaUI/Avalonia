@@ -1,9 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:viewModels="using:VirtualizationDemo.ViewModels"
         x:Class="VirtualizationDemo.MainWindow"
         Title="AvaloniaUI Virtualization Test"
         Width="800"
-        Height="600">
+        Height="600"
+        x:DataType="viewModels:MainWindowViewModel">
     <DockPanel LastChildFill="True" Margin="16">
         <StackPanel DockPanel.Dock="Right" 
                     Margin="16 0 0 0" 

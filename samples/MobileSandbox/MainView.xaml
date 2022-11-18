@@ -1,6 +1,8 @@
 <UserControl x:Class="MobileSandbox.MainView"
              xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mobileSandbox="using:MobileSandbox"
+             x:DataType="mobileSandbox:MainView">
   <StackPanel Margin="100 50" Spacing="50">
     <TextBlock Text="Login" Foreground="White" />
     <TextBox Watermark="Text" />

@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.ExpanderPage">
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.ExpanderPage"
+             x:DataType="viewModels:ExpanderPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Expands to show nested content</TextBlock>
 

@@ -180,10 +180,23 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.False(miniaturizeButton.Enabled);
             }
         }
+        
+        [PlatformTheory(TestPlatforms.MacOS)]
+        [InlineData(ShowWindowMode.Owned)]
+        public void Minimize_Button_Disabled_Owned_Window(ShowWindowMode mode)
+        {
+            using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))
+            {
+                var secondaryWindow = GetWindow("SecondaryWindow");
+                var (_, miniaturizeButton, _) = secondaryWindow.GetChromeButtons();
+
+                Assert.Equal(false, miniaturizeButton.Enabled);
+            }
+        }
+        
 
         [PlatformTheory(TestPlatforms.MacOS)]
         [InlineData(ShowWindowMode.NonOwned)]
-        [InlineData(ShowWindowMode.Owned)]
         public void Minimize_Button_Minimizes_Window(ShowWindowMode mode)
         {
             using (OpenWindow(new PixelSize(200, 100), mode, WindowStartupLocation.Manual))

@@ -29,6 +29,9 @@
         <Compile Include="MarkupExtensions\CompiledBindings\StrongTypeCastNode.cs" />
         <Compile Include="MarkupExtensions\CompiledBindings\TaskStreamPlugin.cs" />
         <Compile Include="MarkupExtensions\DynamicResourceExtension.cs" />
+        <Compile Include="MarkupExtensions\On.cs" />
+        <Compile Include="MarkupExtensions\OnFormFactorExtension.cs" />
+        <Compile Include="MarkupExtensions\OnPlatformExtension.cs" />
         <Compile Include="MarkupExtensions\ResolveByNameExtension.cs" />
         <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
@@ -41,6 +44,7 @@
         <Compile Include="MarkupExtensions\ReflectionBindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="RuntimeXamlLoaderConfiguration.cs" />
         <Compile Include="Styling\StyleInclude.cs" />
         <Compile Include="Templates\ControlTemplate.cs" />
         <Compile Include="Templates\DataTemplate.cs" />
