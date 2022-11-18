@@ -504,7 +504,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
         private void Apply(Style style, Control control)
         {
-            style.TryAttach(control, null, FrameType.Style);
+            StyleHelpers.TryAttach(style, control);
         }
 
         private void Apply(Setter setter, Control control)

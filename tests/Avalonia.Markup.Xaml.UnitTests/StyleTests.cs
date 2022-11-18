@@ -55,7 +55,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                     }
                 };
 
-                style.TryAttach(control, control, FrameType.Style);
+                StyleHelpers.TryAttach(style, control);
                 Assert.Equal("foo", control.Text);
 
                 control.Text = "bar";

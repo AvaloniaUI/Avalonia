@@ -436,7 +436,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 }
             };
 
-            style.TryAttach(control, control, FrameType.Style);
+            StyleHelpers.TryAttach(style, control);
 
             // Which means that the transition state hasn't been initialized with the new
             // Transitions when the Opacity change notification gets raised here.
