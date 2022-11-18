@@ -21,7 +21,7 @@ namespace ControlCatalog.Pages
 
         private async void RefreshContainerPage_RefreshRequested(object? sender, RefreshRequestedEventArgs e)
         {
-            var deferral = e.GetRefreshCompletionDeferral();
+            var deferral = e.GetDeferral();
 
             await _viewModel.AddToTop();
 

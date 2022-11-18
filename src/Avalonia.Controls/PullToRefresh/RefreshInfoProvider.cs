@@ -5,9 +5,9 @@ using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Controls.PullToRefresh
 {
-    public class RefreshInfoProvider : Interactive
+    internal class RefreshInfoProvider : Interactive
     {
-        internal const double ExecutionRatio = 0.8;
+        internal const double DefaultExecutionRatio = 0.8;
 
         private readonly PullDirection _refreshPullDirection;
         private readonly Size _refreshVisualizerSize;
@@ -20,6 +20,11 @@ namespace Avalonia.Controls.PullToRefresh
         public DirectProperty<RefreshInfoProvider, bool> IsInteractingForRefreshProperty =
             AvaloniaProperty.RegisterDirect<RefreshInfoProvider, bool>(nameof(IsInteractingForRefresh),
                 s => s.IsInteractingForRefresh, (s, o) => s.IsInteractingForRefresh = o);
+
+
+        public DirectProperty<RefreshInfoProvider, double> ExecutionRatioProperty =
+            AvaloniaProperty.RegisterDirect<RefreshInfoProvider, double>(nameof(ExecutionRatio),
+                s => s.ExecutionRatio);
 
         public DirectProperty<RefreshInfoProvider, double> InteractionRatioProperty =
             AvaloniaProperty.RegisterDirect<RefreshInfoProvider, double>(nameof(InteractionRatio),
@@ -41,7 +46,8 @@ namespace Avalonia.Controls.PullToRefresh
 
         public bool IsInteractingForRefresh
         {
-            get => _isInteractingForRefresh; internal set
+            get => _isInteractingForRefresh;
+            internal set
             {
                 var isInteractingForRefresh = value && !PeekingMode;
 
@@ -59,6 +65,11 @@ namespace Avalonia.Controls.PullToRefresh
             {
                 SetAndRaise(InteractionRatioProperty, ref _interactionRatio, value);
             }
+        }
+
+        public double ExecutionRatio
+        {
+            get => DefaultExecutionRatio;
         }
 
         internal CompositionVisual? Visual => _visual;

@@ -19,7 +19,7 @@ namespace ControlCatalog.ViewModels
 
         public async Task AddToTop()
         {
-            await Task.Delay(1000);
+            await Task.Delay(3000);
             Items.Insert(0, $"Item {200 - Items.Count}");
         }
     }

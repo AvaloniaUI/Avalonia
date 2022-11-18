@@ -11,7 +11,7 @@ namespace Avalonia.Input
 
         private static int _nextId = 1;
 
-        public static int GetNextFreeId() => _nextId++;
+        internal static int GetNextFreeId() => _nextId++;
         
         public PullGestureEventArgs(int id, Vector delta, PullDirection pullDirection) : base(Gestures.PullGestureEvent)
         {

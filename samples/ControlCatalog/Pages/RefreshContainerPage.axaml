@@ -16,6 +16,7 @@
                       DockPanel.Dock="Bottom"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
+                      PullDirection="TopToBottom"
                       RefreshRequested="RefreshContainerPage_RefreshRequested"
                       Margin="5">
       <ListBox HorizontalAlignment="Stretch"

@@ -6,7 +6,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.PullToRefresh
 {
-    public class ScrollViewerIRefreshInfoProviderAdapter
+    internal class ScrollViewerIRefreshInfoProviderAdapter
     {
         private const int MaxSearchDepth = 10;
         private const int InitialOffsetThreshold = 1;
