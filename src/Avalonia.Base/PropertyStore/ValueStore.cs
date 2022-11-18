@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
@@ -588,7 +590,31 @@ namespace Avalonia.PropertyStore
             {
                 var frame = _frames[i];
 
-                if (frame.FramePriority.IsType(type))
+                if (frame is not ImmediateValueFrame && frame.FramePriority.IsType(type))
+                {
+                    _frames.RemoveAt(i);
+                    frame.Dispose();
+                    removed = true;
+                }
+            }
+
+            if (removed)
+            {
+                ++_frameGeneration;
+                ReevaluateEffectiveValues();
+            }
+        }
+
+
+        public void RemoveFrames(IReadOnlyList<IStyle> styles)
+        {
+            var removed = false;
+
+            for (var i = _frames.Count - 1; i >= 0; --i)
+            {
+                var frame = _frames[i];
+
+                if (frame is StyleInstance style && styles.Contains(style.Source))
                 {
                     _frames.RemoveAt(i);
                     frame.Dispose();

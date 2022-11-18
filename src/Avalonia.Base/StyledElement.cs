@@ -382,11 +382,6 @@ namespace Avalonia
             return _stylesApplied;
         }
 
-        /// <summary>
-        /// Detaches all styles from the element and queues a restyle.
-        /// </summary>
-        protected virtual void InvalidateStyles() => DetachStyles();
-
         protected void InitializeIfNeeded()
         {
             if (_initCount == 0 && !IsInitialized)
@@ -508,17 +503,16 @@ namespace Avalonia
             };
         }
 
-        void IStyleable.DetachStyles() => DetachStyles();
-
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
         {
-            InvalidateStylesOnThisAndDescendents();
+            if (HasSettersOrAnimations(styles))
+                InvalidateStyles(recurse: true);
         }
 
         void IStyleHost.StylesRemoved(IReadOnlyList<IStyle> styles)
         {
-            var allStyles = RecurseStyles(styles);
-            DetachStylesFromThisAndDescendents(allStyles);
+            if (FlattenStyles(styles) is { } allStyles)
+                DetachStyles(allStyles);
         }
 
         protected virtual void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -661,6 +655,23 @@ namespace Avalonia
                 return _implicitTheme;
 
             return null;
+        }
+
+        internal virtual void InvalidateStyles(bool recurse)
+        {
+            var values = GetValueStore();
+            values.BeginStyling();
+            try { values.RemoveFrames(FrameType.Style); }
+            finally { values.EndStyling(); }
+
+            _stylesApplied = false;
+
+            if (recurse && GetInheritanceChildren() is { } children)
+            {
+                var childCount = children.Count;
+                for (var i = 0; i < childCount; ++i)
+                    (children[i] as StyledElement)?.InvalidateStyles(recurse);
+            }
         }
 
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
@@ -822,7 +833,7 @@ namespace Avalonia
             {
                 _logicalRoot = null;
                 _implicitTheme = null;
-                DetachStyles();
+                InvalidateStyles(recurse: false);
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);
 
@@ -884,52 +895,20 @@ namespace Avalonia
             }
         }
 
-        private void DetachStyles(IReadOnlyList<StyleBase>? styles = null)
+        private void DetachStyles(IReadOnlyList<Style> styles)
         {
-            var valueStore = GetValueStore();
+            var values = GetValueStore();
+            values.BeginStyling();
+            try { values.RemoveFrames(styles); }
+            finally { values.EndStyling(); }
 
-            valueStore.BeginStyling();
-
-            for (var i = valueStore.Frames.Count - 1; i >= 0; --i)
-            {
-                if (valueStore.Frames[i] is StyleInstance si &&
-                    si.Source is not ControlTheme &&
-                    (styles is null || styles.Contains(si.Source)))
-                {
-                    valueStore.RemoveFrame(si);
-                }
-            }
-
-            valueStore.EndStyling();
-            _stylesApplied = false;
-        }
-
-        private void InvalidateStylesOnThisAndDescendents()
-        {
-            InvalidateStyles();
-
-            if (_logicalChildren is object)
+            if (_logicalChildren is not null)
             {
                 var childCount = _logicalChildren.Count;
 
                 for (var i = 0; i < childCount; ++i)
                 {
-                    (_logicalChildren[i] as StyledElement)?.InvalidateStylesOnThisAndDescendents();
-                }
-            }
-        }
-
-        private void DetachStylesFromThisAndDescendents(IReadOnlyList<StyleBase> styles)
-        {
-            DetachStyles(styles);
-
-            if (_logicalChildren is object)
-            {
-                var childCount = _logicalChildren.Count;
-
-                for (var i = 0; i < childCount; ++i)
-                {
-                    (_logicalChildren[i] as StyledElement)?.DetachStylesFromThisAndDescendents(styles);
+                    (_logicalChildren[i] as StyledElement)?.DetachStyles(styles);
                 }
             }
         }
@@ -949,6 +928,48 @@ namespace Avalonia
                 e ??= ResourcesChangedEventArgs.Empty;
                 NotifyChildResourcesChanged(e);
             }
+        }
+
+        private static IReadOnlyList<Style>? FlattenStyles(IReadOnlyList<IStyle> styles)
+        {
+            List<Style>? result = null;
+
+            static void FlattenStyle(IStyle style, ref List<Style>? result)
+            {
+                if (style is Style s)
+                    (result ??= new()).Add(s);
+                FlattenStyles(style.Children, ref result);
+            }
+
+            static void FlattenStyles(IReadOnlyList<IStyle> styles, ref List<Style>? result)
+            {
+                var count = styles.Count;
+                for (var i = 0; i < count; ++i)
+                    FlattenStyle(styles[i], ref result);
+            }
+
+            FlattenStyles(styles, ref result);
+            return result;
+        }
+
+        private static bool HasSettersOrAnimations(IReadOnlyList<IStyle> styles)
+        {
+            static bool StyleHasSettersOrAnimations(IStyle style)
+            {
+                if (style is StyleBase s && s.HasSettersOrAnimations)
+                    return true;
+                return HasSettersOrAnimations(style.Children);
+            }
+
+            var count = styles.Count;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (StyleHasSettersOrAnimations(styles[i]))
+                    return true;
+            }
+
+            return false;
         }
 
         private static IReadOnlyList<StyleBase> RecurseStyles(IReadOnlyList<IStyle> styles)

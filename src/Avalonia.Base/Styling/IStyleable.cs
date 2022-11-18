@@ -24,7 +24,5 @@ namespace Avalonia.Styling
         /// Gets the template parent of this element if the control comes from a template.
         /// </summary>
         ITemplatedControl? TemplatedParent { get; }
-
-        void DetachStyles();
     }
 }

@@ -45,7 +45,7 @@ namespace Avalonia.Benchmarks.Styling
             if ((string)_control.Tag != "TextBox")
                 throw new Exception("Invalid benchmark state");
 
-            ((IStyleable)_control).DetachStyles();
+            _control.InvalidateStyles(true);
 
             if (_control.Tag is not null)
                 throw new Exception("Invalid benchmark state");

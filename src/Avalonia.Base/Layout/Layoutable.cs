@@ -720,9 +720,9 @@ namespace Avalonia.Layout
             return finalSize;
         }
 
-        protected sealed override void InvalidateStyles()
+        internal sealed override void InvalidateStyles(bool recurse)
         {
-            base.InvalidateStyles();
+            base.InvalidateStyles(recurse);
             InvalidateMeasure();
         }
 

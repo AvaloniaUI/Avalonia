@@ -618,15 +618,15 @@ namespace Avalonia.Base.UnitTests.Styling
             var root = new TestRoot
             {
                 Styles =
+                {
+                    new Style(x => x.OfType<Border>())
                     {
-                        new Style(x => x.OfType<Border>())
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
-                            }
+                            new Setter(Border.BorderThicknessProperty, new Thickness(4)),
                         }
-                    },
+                    }
+                },
                 Child = border,
             };
 
@@ -636,9 +636,9 @@ namespace Avalonia.Base.UnitTests.Styling
             root.Styles.Add(new Style(x => x.OfType<Border>())
             {
                 Setters =
-                    {
-                        new Setter(Border.BorderThicknessProperty, new Thickness(6)),
-                    }
+                {
+                    new Setter(Border.BorderThicknessProperty, new Thickness(6)),
+                }
             });
 
             root.Measure(Size.Infinity);
@@ -652,18 +652,18 @@ namespace Avalonia.Base.UnitTests.Styling
             var root = new TestRoot
             {
                 Styles =
+                {
+                    new Styles
                     {
-                        new Styles
+                        new Style(x => x.OfType<Border>())
                         {
-                            new Style(x => x.OfType<Border>())
+                            Setters =
                             {
-                                Setters =
-                                {
-                                    new Setter(Border.BorderThicknessProperty, new Thickness(4)),
-                                }
+                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
                             }
                         }
-                    },
+                    }
+                },
                 Child = border,
             };
 
@@ -750,7 +750,34 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void DetachStyles_Should_Detach_Activator()
+        public void Adding_Style_With_No_Setters_Or_Animations_Should_Not_Invalidate_Styles()
+        {
+            var border = new Border();
+            var root = new TestRoot
+            {
+                Styles =
+                    {
+                        new Style(x => x.OfType<Border>())
+                        {
+                            Setters =
+                            {
+                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
+                            }
+                        }
+                    },
+                Child = border,
+            };
+
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(4), border.BorderThickness);
+
+            root.Styles.Add(new Style(x => x.OfType<Border>()));
+
+            Assert.Equal(new Thickness(4), border.BorderThickness);
+        }
+
+        [Fact]
+        public void Invalidating_Styles_Should_Detach_Activator()
         {
             Style style = new Style(x => x.OfType<Class1>().Class("foo"))
             {
@@ -766,7 +793,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             Assert.Equal(1, target.Classes.ListenerCount);
 
-            ((IStyleable)target).DetachStyles();
+            target.InvalidateStyles(recurse: false);
 
             Assert.Equal(0, target.Classes.ListenerCount);
         }

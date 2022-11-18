@@ -77,7 +77,7 @@ namespace Avalonia.Benchmarks.Styling
         {
             public static readonly StyledProperty<string?> StringProperty =
                 AvaloniaProperty.Register<TestClass, string?>("String");
-            public void DetachStyles() => InvalidateStyles();
+            public void DetachStyles() => InvalidateStyles(recurse: true);
         }
 
         private class TestClass2 : Control
