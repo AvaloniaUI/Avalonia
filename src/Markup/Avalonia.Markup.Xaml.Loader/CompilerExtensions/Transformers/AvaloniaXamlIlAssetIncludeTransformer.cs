@@ -39,9 +39,7 @@ internal class AvaloniaXamlIlAssetIncludeTransformer : IXamlAstTransformer
         var originalAssetPath = sourceTextNode.Text;
         if (!(originalAssetPath.StartsWith("avares://") || originalAssetPath.StartsWith("/")))
         {
-            throw new XamlParseException(
-                $"{nodeTypeName}.Source supports only \"avares://\" absolute paths or relative paths starting with \"/\"",
-                sourceTextNode);
+            return node;
         }
 
         var runtimeHelpers = context.GetAvaloniaTypes().RuntimeHelpers;
