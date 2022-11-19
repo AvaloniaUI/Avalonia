@@ -59,14 +59,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 
                 var field = _builder.DefineField(types.IPropertyInfo, name + "!Field", false, true);
 
-                void Load(IXamlMethod m, IXamlILEmitter cg)
+                void Load(IXamlMethod m, IXamlILEmitter cg, bool passThis)
                 {
-                    cg
-                        .Ldarg_0();
-                    if (m.DeclaringType.IsValueType)
-                        cg.Unbox(m.DeclaringType);
-                    else
-                        cg.Castclass(m.DeclaringType);
+                    if (passThis)
+                    {
+                        cg
+                            .Ldarg_0();
+                        if (m.DeclaringType.IsValueType)
+                            cg.Unbox(m.DeclaringType);
+                        else
+                            cg.Castclass(m.DeclaringType);
+                    }
 
                     foreach (var indexerArg in indexerArguments)
                     {
@@ -80,7 +83,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         new[] {types.XamlIlTypes.Object}, name + "!Getter", false, true, false);
                 if (getter != null)
                 {
-                    Load(property.Getter, getter.Generator);
+                    Load(property.Getter, getter.Generator, !property.Getter.IsStatic);
                     
                     getter.Generator.EmitCall(property.Getter);
                     if (property.Getter.ReturnType.IsValueType)
@@ -95,7 +98,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                         name + "!Setter", false, true, false);
                 if (setter != null)
                 {
-                    Load(property.Setter, setter.Generator);
+                    Load(property.Setter, setter.Generator, !property.Getter.IsStatic);
                     
                     setter.Generator.Ldarg(1);
                     if (property.Setter.Parameters[0].IsValueType)
