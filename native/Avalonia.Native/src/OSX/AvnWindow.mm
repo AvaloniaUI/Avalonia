@@ -170,9 +170,7 @@
     _closed = false;
     _isEnabled = true;
 
-    [self backingScaleFactor];
     [self setOpaque:NO];
-    [self setBackgroundColor: [NSColor clearColor]];
 
     _isExtended = false;
     _isTransitioningToFullScreen = false;
