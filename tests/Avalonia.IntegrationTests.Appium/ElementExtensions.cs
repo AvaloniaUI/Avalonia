@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
+using System.Threading;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
@@ -110,24 +111,30 @@ namespace Avalonia.IntegrationTests.Appium
             {
                 var oldWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
                 var oldWindowTitles = oldWindows.ToDictionary(x => x.Text);
-                
+
                 element.Click();
+                
+                // Wait for animations to run.
+                Thread.Sleep(1000);
 
                 var newWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
                 var newWindowTitles = newWindows.ToDictionary(x => x.Text);
                 var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
-                var newWindow = (AppiumWebElement)newWindowTitles[newWindowTitle]; 
-                
+
                 return Disposable.Create(() =>
                 {
                     // TODO: We should be able to use Cmd+W here but Avalonia apps don't seem to have this shortcut
                     // set up by default.
-                    var (close, _, _) = newWindow.GetChromeButtons();
+                    var windows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
+                    var text = windows.Select(x => x.Text).ToList();
+                    var newWindow = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"))
+                        .First(x => x.Text == newWindowTitle);
+                    var (close, _, _) = ((AppiumWebElement)newWindow).GetChromeButtons();
                     close!.Click();
                 });
             }
         }
-
+    
         public static void SendClick(this AppiumWebElement element)
         {
             // The Click() method seems to correspond to accessibilityPerformPress on macOS but certain controls

@@ -536,27 +536,24 @@ namespace Avalonia
                 BindingPriority.LocalValue);
         }
 
-        protected internal sealed override void LogBindingError(AvaloniaProperty property, Exception e)
+        internal override ParametrizedLogger? GetBindingWarningLogger(
+            AvaloniaProperty property,
+            Exception? e)
         {
-            // Don't log a binding error unless the control is attached to a logical tree.
-            if (((ILogical)this).IsAttachedToLogicalTree)
-            {
-                if (e is BindingChainException b &&
-                    string.IsNullOrEmpty(b.ExpressionErrorPoint) &&
-                    DataContext == null)
-                {
-                    // The error occurred at the root of the binding chain and DataContext is null;
-                    // don't log this - the DataContext probably hasn't been set up yet.
-                    return;
-                }
+            // Don't log a binding error unless the control is attached to the logical tree.
+            if (!((ILogical)this).IsAttachedToLogicalTree)
+                return null;
 
-                Logger.TryGet(LogEventLevel.Warning, LogArea.Binding)?.Log(
-                    this,
-                    "Error in binding to {Target}.{Property}: {Message}",
-                    this,
-                    property,
-                    e.Message);
+            if (e is BindingChainException b &&
+                string.IsNullOrEmpty(b.ExpressionErrorPoint) &&
+                DataContext == null)
+            {
+                // The error occurred at the root of the binding chain and DataContext is null;
+                // don't log this - the DataContext probably hasn't been set up yet.
+                return null;
             }
+
+            return Logger.TryGet(LogEventLevel.Warning, LogArea.Binding);
         }
 
         /// <summary>

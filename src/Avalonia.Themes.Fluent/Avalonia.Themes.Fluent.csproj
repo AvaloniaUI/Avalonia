@@ -10,6 +10,7 @@
     <AvaloniaResource Include="**/*.xaml" />
     <AvaloniaResource Include="Assets\*" />  
   </ItemGroup>
+  <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ApiDiff.props" />

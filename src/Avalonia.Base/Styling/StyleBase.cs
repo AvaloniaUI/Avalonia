@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Metadata;
+using Avalonia.PropertyStore;
 using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
@@ -18,6 +19,7 @@ namespace Avalonia.Styling
         private List<ISetter>? _setters;
         private List<IAnimation>? _animations;
         private StyleCache? _childCache;
+        private StyleInstance? _sharedInstance;
 
         public IList<IStyle> Children => _children ??= new(this);
 
@@ -80,11 +82,46 @@ namespace Avalonia.Styling
             return _resources?.TryGetResource(key, out result) ?? false;
         }
 
-        internal void Attach(IStyleable target, IStyleActivator? activator)
+        internal ValueFrame Attach(IStyleable target, IStyleActivator? activator)
         {
-            var instance = new StyleInstance(this, target, _setters, _animations, activator);
-            target.StyleApplied(instance);
-            instance.Start();
+            if (target is not AvaloniaObject ao)
+                throw new InvalidOperationException("Styles can only be applied to AvaloniaObjects.");
+
+            StyleInstance instance;
+
+            if (_sharedInstance is not null)
+            {
+                instance = _sharedInstance;
+            }
+            else
+            {
+                var canShareInstance = activator is null;
+
+                instance = new StyleInstance(this, activator);
+
+                if (_setters is not null)
+                {
+                    foreach (var setter in _setters)
+                    {
+                        var setterInstance = setter.Instance(instance, target);
+                        instance.Add(setterInstance);
+                        canShareInstance &= setterInstance == setter;
+                    }
+                }
+
+                if (_animations is not null)
+                    instance.Add(_animations);
+
+                if (canShareInstance)
+                {
+                    instance.MakeShared();
+                    _sharedInstance = instance;
+                }
+            }
+
+            ao.GetValueStore().AddFrame(instance);
+            instance.ApplyAnimations(ao);
+            return instance;
         }
 
         internal SelectorMatchResult TryAttachChildren(IStyleable target, object? host)

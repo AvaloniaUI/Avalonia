@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.TreeViewPage">
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.TreeViewPage"
+             x:DataType="viewModels:TreeViewPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Displays a hierachical tree of data.</TextBlock>
 

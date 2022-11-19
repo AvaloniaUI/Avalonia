@@ -61,7 +61,7 @@ namespace Avalonia.Benchmarks.Themes
             AssetLoader.RegisterResUriParsers();
             return new Styles
             {
-                new Avalonia.Themes.Fluent.FluentTheme(new Uri("avares://Avalonia.Benchmarks"))
+                new Avalonia.Themes.Fluent.FluentTheme()
                 {
 
                 }

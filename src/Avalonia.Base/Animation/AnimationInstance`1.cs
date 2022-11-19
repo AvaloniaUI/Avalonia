@@ -229,7 +229,7 @@ namespace Avalonia.Animation
         private void UpdateNeutralValue()
         {
             var property = _animator.Property ?? throw new InvalidOperationException("Animator has no property specified.");
-            var baseValue = _targetControl.GetBaseValue(property, BindingPriority.LocalValue);
+            var baseValue = _targetControl.GetBaseValue(property);
 
             _neutralValue = baseValue != AvaloniaProperty.UnsetValue ?
                 (T)baseValue! : (T)_targetControl.GetValue(property)!;

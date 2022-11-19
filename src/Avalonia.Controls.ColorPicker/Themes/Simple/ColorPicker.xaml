@@ -1,10 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="using:Avalonia.Controls"
-                    xmlns:converters="using:Avalonia.Controls.Converters"
-                    xmlns:primitives="using:Avalonia.Controls.Primitives"
-                    xmlns:pc="clr-namespace:Avalonia.Controls.Primitives.Converters;assembly=Avalonia.Controls.ColorPicker"
-                    x:CompileBindings="True">
+                    xmlns:primitives="using:Avalonia.Controls.Primitives">
 
   <ResourceDictionary.MergedDictionaries>
     <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/ColorView.xaml" />

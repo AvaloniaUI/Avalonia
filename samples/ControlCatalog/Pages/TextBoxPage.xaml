@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.TextBoxPage"
-             xmlns:sys="clr-namespace:System;assembly=netstandard">
+             xmlns:sys="using:System">
   <StackPanel Orientation="Vertical" Spacing="4">
     <Label Classes="h2">A control into which the user can input text</Label>
 

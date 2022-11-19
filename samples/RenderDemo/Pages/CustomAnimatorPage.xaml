@@ -1,7 +1,7 @@
 <UserControl 
   xmlns="https://github.com/avaloniaui" 
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
-  xmlns:pages="clr-namespace:RenderDemo.Pages"
+  xmlns:pages="using:RenderDemo.Pages"
   x:Class="RenderDemo.Pages.CustomAnimatorPage"
   MaxWidth="600">
   <Grid>

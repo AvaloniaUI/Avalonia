@@ -12,7 +12,7 @@ namespace Avalonia.Markup.Xaml.Styling
     /// </summary>
     public class StyleInclude : IStyle, IResourceProvider
     {
-        private readonly Uri _baseUri;
+        private readonly Uri? _baseUri;
         private IStyle[]? _loaded;
         private bool _isLoading;
 
@@ -20,7 +20,7 @@ namespace Avalonia.Markup.Xaml.Styling
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
         /// </summary>
         /// <param name="baseUri">The base URL for the XAML context.</param>
-        public StyleInclude(Uri baseUri)
+        public StyleInclude(Uri? baseUri)
         {
             _baseUri = baseUri;
         }

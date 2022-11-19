@@ -10,7 +10,7 @@ pkill IntegrationTestApp
 rm -rf $(osascript -e "POSIX path of (path to application id \"net.avaloniaui.avalonia.integrationtestapp\")")
 pkill IntegrationTestApp
 ./samples/IntegrationTestApp/bundle.sh
-open -n ./samples/IntegrationTestApp/bin/Debug/net6.0/osx-arm64/publish/IntegrationTestApp.app
+open -n ./samples/IntegrationTestApp/bin/Debug/net7.0/osx-arm64/publish/IntegrationTestApp.app
 pkill IntegrationTestApp
 open -b net.avaloniaui.avalonia.integrationtestapp
 dotnet test tests/Avalonia.IntegrationTests.Appium/ -l "console;verbosity=detailed"
