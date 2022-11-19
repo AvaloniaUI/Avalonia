@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -69,7 +70,6 @@ namespace Avalonia
         private IResourceDictionary? _resources;
         private Styles? _styles;
         private bool _styled;
-        private List<IStyleInstance>? _appliedStyles;
         private ITemplatedControl? _templatedParent;
         private bool _dataContextUpdating;
         private bool _hasPromotedTheme;
@@ -333,7 +333,7 @@ namespace Avalonia
                 throw new InvalidOperationException("BeginInit was not called.");
             }
 
-            if (--_initCount == 0 && _logicalRoot != null)
+            if (--_initCount == 0 && _logicalRoot is not null)
             {
                 ApplyStyling();
                 InitializeIfNeeded();
@@ -351,18 +351,25 @@ namespace Avalonia
         {
             if (_initCount == 0 && !_styled)
             {
-                try
+                var styler = AvaloniaLocator.Current.GetService<IStyler>();
+                var hasPromotedTheme = _hasPromotedTheme;
+
+                if (styler is object)
                 {
-                    BeginBatchUpdate();
-                    AvaloniaLocator.Current.GetService<IStyler>()?.ApplyStyles(this);
-                }
-                finally
-                {
-                    _styled = true;
-                    EndBatchUpdate();
+                    GetValueStore().BeginStyling();
+
+                    try
+                    {
+                        styler.ApplyStyles(this);
+                    }
+                    finally
+                    {
+                        _styled = true;
+                        GetValueStore().EndStyling();
+                    }
                 }
 
-                if (_hasPromotedTheme)
+                if (hasPromotedTheme)
                 {
                     _hasPromotedTheme = false;
                     ClearValue(ThemeProperty);
@@ -389,14 +396,15 @@ namespace Avalonia
 
         internal StyleDiagnostics GetStyleDiagnosticsInternal()
         {
-            IReadOnlyList<IStyleInstance>? appliedStyles = _appliedStyles;
+            var styles = new List<IStyleInstance>();
 
-            if (appliedStyles is null)
+            foreach (var frame in GetValueStore().Frames)
             {
-                appliedStyles = Array.Empty<IStyleInstance>();
+                if (frame is IStyleInstance style)
+                    styles.Add(style);
             }
 
-            return new StyleDiagnostics(appliedStyles);
+            return new StyleDiagnostics(styles);
         }
 
         /// <inheritdoc/>
@@ -522,19 +530,7 @@ namespace Avalonia
             return null;
         }
 
-        void IStyleable.StyleApplied(IStyleInstance instance)
-        {
-            instance = instance ?? throw new ArgumentNullException(nameof(instance));
-
-            _appliedStyles ??= new List<IStyleInstance>();
-            _appliedStyles.Add(instance);
-        }
-
         void IStyleable.DetachStyles() => DetachStyles();
-
-        void IStyleable.DetachStyles(IReadOnlyList<IStyle> styles) => DetachStyles(styles);
-
-        void IStyleable.InvalidateStyles() => InvalidateStyles();
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
         {
@@ -643,13 +639,15 @@ namespace Avalonia
 
             if (change.Property == ThemeProperty)
             {
+                var (oldValue, newValue) = change.GetOldAndNewValue<ControlTheme?>();
+
                 // Changing the theme detaches all styles, meaning that if the theme property was
                 // set via a style, it will get cleared! To work around this, if the value was
                 // applied at less than local value priority then promote the value to local value
                 // priority until styling is re-applied.
                 if (change.Priority > BindingPriority.LocalValue)
                 {
-                    Theme = change.GetNewValue<ControlTheme?>();
+                    Theme = newValue;
                     _hasPromotedTheme = true;
                 }
                 else if (_hasPromotedTheme && change.Priority == BindingPriority.LocalValue)
@@ -658,7 +656,14 @@ namespace Avalonia
                 }
 
                 InvalidateStyles();
+
+                if (oldValue is not null)
+                    DetachControlThemeFromTemplateChildren(oldValue);
             }
+        }
+
+        internal virtual void DetachControlThemeFromTemplateChildren(ControlTheme theme)
+        {
         }
 
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
@@ -830,57 +835,23 @@ namespace Avalonia
             }
         }
 
-        private void DetachStyles()
+        private void DetachStyles(IReadOnlyList<StyleBase>? styles = null)
         {
-            if (_appliedStyles?.Count > 0)
+            var valueStore = GetValueStore();
+
+            valueStore.BeginStyling();
+
+            for (var i = valueStore.Frames.Count - 1; i >= 0; --i)
             {
-                BeginBatchUpdate();
-
-                try
+                if (valueStore.Frames[i] is StyleInstance si &&
+                    (styles is null || styles.Contains(si.Source)))
                 {
-                    foreach (var i in _appliedStyles)
-                    {
-                        i.Dispose();
-                    }
-
-                    _appliedStyles.Clear();
-                }
-                finally
-                {
-                    EndBatchUpdate();
+                    valueStore.RemoveFrame(si);
                 }
             }
 
+            valueStore.EndStyling();
             _styled = false;
-        }
-
-        private void DetachStyles(IReadOnlyList<IStyle> styles)
-        {
-            styles = styles ?? throw new ArgumentNullException(nameof(styles));
-
-            if (_appliedStyles is null)
-            {
-                return;
-            }
-
-            var count = styles.Count;
-
-            for (var i = 0; i < count; ++i)
-            {
-                for (var j = _appliedStyles.Count - 1; j >= 0; --j)
-                {
-                    var applied = _appliedStyles[j];
-
-                    if (applied.Source == styles[i])
-                    {
-                        _appliedStyles.RemoveAt(j);
-                        applied.Dispose();
-                    }
-
-                    if (j > _appliedStyles.Count)
-                        j = _appliedStyles.Count;
-                }
-            }
         }
 
         private void InvalidateStylesOnThisAndDescendents()
@@ -898,7 +869,7 @@ namespace Avalonia
             }
         }
 
-        private void DetachStylesFromThisAndDescendents(IReadOnlyList<IStyle> styles)
+        private void DetachStylesFromThisAndDescendents(IReadOnlyList<StyleBase> styles)
         {
             DetachStyles(styles);
 
@@ -930,38 +901,24 @@ namespace Avalonia
             }
         }
 
-        private static IReadOnlyList<IStyle> RecurseStyles(IReadOnlyList<IStyle> styles)
+        private static IReadOnlyList<StyleBase> RecurseStyles(IReadOnlyList<IStyle> styles)
         {
-            var count = styles.Count;
-            List<IStyle>? result = null;
-
-            for (var i = 0; i < count; ++i)
-            {
-                var style = styles[i];
-
-                if (style.Children.Count > 0)
-                {
-                    if (result is null)
-                    {
-                        result = new List<IStyle>(styles);
-                    }
-
-                    RecurseStyles(style.Children, result);
-                }
-            }
-
-            return result ?? styles;
+            var result = new List<StyleBase>();
+            RecurseStyles(styles, result);
+            return result;
         }
 
-        private static void RecurseStyles(IReadOnlyList<IStyle> styles, List<IStyle> result)
+        private static void RecurseStyles(IReadOnlyList<IStyle> styles, List<StyleBase> result)
         {
             var count = styles.Count;
 
             for (var i = 0; i < count; ++i)
             {
-                var style = styles[i];
-                result.Add(style);
-                RecurseStyles(style.Children, result);
+                var s = styles[i];
+                if (s is StyleBase style)
+                    result.Add(style);
+                else if (s is IReadOnlyList<IStyle> children)
+                    RecurseStyles(children, result);
             }
         }
     }

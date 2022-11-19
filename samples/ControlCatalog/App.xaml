@@ -9,6 +9,15 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://ControlSamples/HamburgerMenu/HamburgerMenu.xaml" />
       </ResourceDictionary.MergedDictionaries>
+
+      <StyleInclude x:Key="DataGridFluent" Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+      <StyleInclude x:Key="DataGridSimple" Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml" />
+      <StyleInclude x:Key="ColorPickerFluent" Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+      <StyleInclude x:Key="ColorPickerSimple" Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml" />
+      <ResourceInclude x:Key="FluentAccentColors" Source="avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml" />
+      <ResourceInclude x:Key="FluentBaseLightColors" Source="avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml" />
+      <ResourceInclude x:Key="FluentBaseDarkColors" Source="avares://Avalonia.Themes.Fluent/Accents/BaseDark.xaml" />
+      <ResourceInclude x:Key="FluentBaseColors" Source="avares://Avalonia.Themes.Fluent/Accents/Base.xaml" />
     </ResourceDictionary>
   </Application.Resources>
   <Application.Styles>
