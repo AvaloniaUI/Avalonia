@@ -16,31 +16,19 @@ namespace ControlCatalog.ViewModels
 
         public bool? ShowNavBar
         {
-            get => _showNavBar; set
-            {
-                _showNavBar = value;
-
-                RaisePropertyChanged();
-            }
+            get => _showNavBar;
+            set => RaiseAndSetIfChanged(ref _showNavBar, value);
         }
 
         public bool? ShowBackButton
         {
-            get => _showBackButton; set
-            {
-                _showBackButton = value;
-
-                RaisePropertyChanged();
-            }
+            get => _showBackButton;
+            set => RaiseAndSetIfChanged(ref _showBackButton, value);
         }
         public INavigationRouter NavigationRouter
         {
-            get => _navigationRouter; set
-            {
-                _navigationRouter = value;
-
-                RaisePropertyChanged();
-            }
+            get => _navigationRouter; 
+            set => RaiseAndSetIfChanged(ref _navigationRouter, value);
         }
 
         public async void NavigateTo(object page)
