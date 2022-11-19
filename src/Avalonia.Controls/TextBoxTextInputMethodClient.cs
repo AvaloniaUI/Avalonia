@@ -182,5 +182,16 @@ namespace Avalonia.Controls
 
             }, DispatcherPriority.Input);
         }
+
+        public void SetPreeditSelection(int start, int end)
+        {
+            if (_presenter == null)
+            {
+                return;
+            }
+
+            _presenter.PreeditStart = start;
+            _presenter.PreeditEnd = end;
+        }
     }
 }

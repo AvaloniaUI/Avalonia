@@ -30,6 +30,8 @@ namespace Avalonia.Input.TextInput
         /// </summary>
         void SetPreeditText(string? text);
 
+        void SetPreeditSelection(int start, int end);
+
         /// <summary>
         /// Indicates if text input client is capable of providing the text around the cursor
         /// </summary>

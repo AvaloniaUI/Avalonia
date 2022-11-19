@@ -303,7 +303,12 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public override bool SetComposingRegion(int start, int end)
         {
-            //System.Diagnostics.Debug.WriteLine($"Composing Region: [{start}|{end}] {SurroundingText.Text?.Substring(start, end - start)}");
+            var currentSelection = SurroundingText.CursorOffset;
+
+            if (ComposingText != null)
+            {
+                FinishComposingText();
+            }
 
             ComposingRegion = new ComposingRegion(start, end);
 
@@ -316,20 +321,31 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             ComposingText = composingText;
 
+            if (ComposingRegion != null)
+            {
+                _inputMethod.Client?.SetPreeditSelection((int)ComposingRegion?.Start, (int)ComposingRegion?.End);
+            }
+            else
+            {
+                _inputMethod.Client?.SetPreeditSelection(SurroundingText.AnchorOffset, SurroundingText.CursorOffset);
+            }
+
             _inputMethod.Client?.SetPreeditText(ComposingText);
+
+            if(composingText.Length == 0)
+            {
+                _inputMethod.Client?.SetPreeditText(null);
+                DeleteSurroundingText((int)(SurroundingText.CursorOffset - ComposingRegion?.Start), (int)(ComposingRegion?.End - SurroundingText.CursorOffset));
+            }
 
             return base.SetComposingText(text, newCursorPosition);
         }
 
         public override bool FinishComposingText()
         {
-            if (!string.IsNullOrEmpty(ComposingText))
+            if (ComposingText != null)
             {
-                CommitText(ComposingText, ComposingText.Length);
-            }
-            else
-            {
-                ComposingRegion = new ComposingRegion(SurroundingText.CursorOffset, SurroundingText.CursorOffset);
+                CommitText(ComposingText, 1);
             }
 
             return base.FinishComposingText();
@@ -407,7 +423,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             ComposingText = null;
 
-            ComposingRegion = new ComposingRegion(newCursorPosition, newCursorPosition);
+            if(newCursorPosition > 0)
+            {
+                _inputMethod.Client.SelectInSurroundingText((int)(start + committedText.Length + newCursorPosition - 1), (int)(start + committedText.Length + newCursorPosition - 1));
+            }
 
             return base.CommitText(text, newCursorPosition);
         }

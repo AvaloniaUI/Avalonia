@@ -45,6 +45,16 @@ namespace Avalonia.Controls.Presenters
                 o => o.SelectionEnd,
                 (o, v) => o.SelectionEnd = v);
 
+        public static readonly DirectProperty<TextPresenter, int> PreeditStartProperty =
+            TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
+                o => o.SelectionStart,
+                (o, v) => o.SelectionStart = v);
+
+        public static readonly DirectProperty<TextPresenter, int> PreeditEndProperty =
+            TextBox.SelectionEndProperty.AddOwner<TextPresenter>(
+                o => o.SelectionEnd,
+                (o, v) => o.SelectionEnd = v);
+
         /// <summary>
         /// Defines the <see cref="Text"/> property.
         /// </summary>
@@ -107,6 +117,8 @@ namespace Avalonia.Controls.Presenters
         private Point _navigationPosition;
         private string? _preeditText;
         private CharacterHit _compositionStartHit = new CharacterHit(-1);
+        private int _preeditStart;
+        private int _preeditEnd;
 
         static TextPresenter()
         {
@@ -330,6 +342,32 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        public int PreeditStart
+        {
+            get
+            {
+                return _preeditStart;
+            }
+
+            set
+            {
+                SetAndRaise(PreeditStartProperty, ref _preeditStart, value);
+            }
+        }
+
+        public int PreeditEnd
+        {
+            get
+            {
+                return _preeditEnd;
+            }
+
+            set
+            {
+                SetAndRaise(PreeditEndProperty, ref _preeditEnd, value);
+            }
+        }
+
         protected override bool BypassFlowDirectionPolicies => true;
 
         /// <summary>
@@ -391,7 +429,7 @@ namespace Avalonia.Controls.Presenters
 
         public override void Render(DrawingContext context)
         {
-            var selectionStart = SelectionStart;
+            var selectionStart =  SelectionStart;
             var selectionEnd = SelectionEnd;
             var selectionBrush = SelectionBrush;
 
@@ -513,14 +551,14 @@ namespace Avalonia.Controls.Presenters
 
         private string? GetText()
         {
-            if (!string.IsNullOrEmpty(_preeditText))
+            if (_preeditText != null)
             {
                 if (string.IsNullOrEmpty(_text) || _caretIndex > _text.Length)
                 {
                     return _preeditText;
                 }
 
-                var text = _text.Substring(0, _caretIndex) + _preeditText + _text.Substring(_caretIndex);
+                var text = _text.Substring(0, _preeditStart) + _preeditText + _text.Substring(_preeditEnd);
 
                 return text;
             }
@@ -549,9 +587,9 @@ namespace Avalonia.Controls.Presenters
 
             var foreground = Foreground;
 
-            if (!string.IsNullOrEmpty(_preeditText))
+            if (_preeditText != null)
             {
-                var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
+                var preeditHighlight = new ValueSpan<TextRunProperties>(_preeditStart, _preeditText.Length,
                         new GenericTextRunProperties(typeface, FontSize,
                         foregroundBrush: foreground,
                         textDecorations: TextDecorations.Underline));
@@ -872,13 +910,13 @@ namespace Avalonia.Controls.Presenters
         {
             InvalidateTextLayout();
 
-            if (string.IsNullOrEmpty(newValue))
+            if (newValue == null)
             {
                 UpdateCaret(_lastCharacterHit);
             }
             else
             {
-                var textPosition = _caretIndex + newValue?.Length ?? 0;
+                var textPosition = _preeditStart + newValue?.Length ?? 0;
 
                 var characterHit = GetCharacterHitFromTextPosition(textPosition);
 
@@ -929,6 +967,8 @@ namespace Avalonia.Controls.Presenters
 
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):
+                case nameof(PreeditStart):
+                case nameof(PreeditEnd):
 
                 case nameof(FlowDirection):
                     {
