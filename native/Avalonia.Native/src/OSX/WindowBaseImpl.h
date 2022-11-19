@@ -90,7 +90,7 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT CreateNativeControlHost(IAvnNativeControlHost **retOut) override;
 
-    virtual HRESULT SetBlurEnabled(bool enable) override;
+    virtual HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode) override;
 
     virtual HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
             IAvnClipboard *clipboard, IAvnDndResultCallback *cb,
