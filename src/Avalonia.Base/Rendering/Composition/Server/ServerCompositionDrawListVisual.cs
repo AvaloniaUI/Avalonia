@@ -59,12 +59,17 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         base.DeserializeChangesCore(reader, commitedAt);
     }
 
-    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+    protected void RenderSelf(CompositorDrawingContextProxy canvas)
     {
         if (_renderCommands != null)
         {
             _renderCommands.Render(canvas);
         }
+    }
+    
+    protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
+    {
+        RenderSelf(canvas);
         base.RenderCore(canvas, currentTransformedClip);
     }
     
