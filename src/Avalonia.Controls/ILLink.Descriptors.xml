@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="Avalonia.Controls">
+    <type fullname="Avalonia.Controls.NativeMenu*" preserve="all"/>
+  </assembly>
+</linker>
