@@ -1,9 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
 {
@@ -19,8 +14,6 @@ namespace Avalonia.Controls.Utils
 
             void OnRedoStackChanged();
         }
-
-
 
         private readonly LinkedList<TState> _states = new LinkedList<TState>();
 
@@ -65,6 +58,7 @@ namespace Avalonia.Controls.Utils
         }
 
         public bool HasState => _currentNode != null;
+
         public void UpdateLastState(TState state)
         {
             if (_states.Last != null)

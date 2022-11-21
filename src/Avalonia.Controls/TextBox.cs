@@ -28,60 +28,108 @@ namespace Avalonia.Controls
     [PseudoClasses(":empty")]
     public class TextBox : TemplatedControl, UndoRedoHelper<TextBox.UndoRedoState>.IUndoRedoHost
     {
+        /// <summary>
+        /// Gets a platform-specific <see cref="KeyGesture"/> for the Cut action
+        /// </summary>
         public static KeyGesture? CutGesture { get; } = AvaloniaLocator.Current
             .GetService<PlatformHotkeyConfiguration>()?.Cut.FirstOrDefault();
 
+        /// <summary>
+        /// Gets a platform-specific <see cref="KeyGesture"/> for the Copy action
+        /// </summary>
         public static KeyGesture? CopyGesture { get; } = AvaloniaLocator.Current
             .GetService<PlatformHotkeyConfiguration>()?.Copy.FirstOrDefault();
 
+        /// <summary>
+        /// Gets a platform-specific <see cref="KeyGesture"/> for the Paste action
+        /// </summary>
         public static KeyGesture? PasteGesture { get; } = AvaloniaLocator.Current
             .GetService<PlatformHotkeyConfiguration>()?.Paste.FirstOrDefault();
 
+        /// <summary>
+        /// Defines the <see cref="AcceptsReturn"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> AcceptsReturnProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsReturn));
 
+        /// <summary>
+        /// Defines the <see cref="AcceptsTab"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> AcceptsTabProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(AcceptsTab));
 
+        /// <summary>
+        /// Defines the <see cref="CaretIndex"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, int> CaretIndexProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(CaretIndex),
                 o => o.CaretIndex,
                 (o, v) => o.CaretIndex = v);
 
+        /// <summary>
+        /// Defines the <see cref="IsReadOnly"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> IsReadOnlyProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(IsReadOnly));
 
+        /// <summary>
+        /// Defines the <see cref="PasswordChar"/> property
+        /// </summary>
         public static readonly StyledProperty<char> PasswordCharProperty =
             AvaloniaProperty.Register<TextBox, char>(nameof(PasswordChar));
 
+        /// <summary>
+        /// Defines the <see cref="SelectionBrush"/> property
+        /// </summary>
         public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionBrush));
 
+        /// <summary>
+        /// Defines the <see cref="SelectionForegroundBrush"/> property
+        /// </summary>
         public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(SelectionForegroundBrush));
 
+        /// <summary>
+        /// Defines the <see cref="CaretBrush"/> property
+        /// </summary>
         public static readonly StyledProperty<IBrush?> CaretBrushProperty =
             AvaloniaProperty.Register<TextBox, IBrush?>(nameof(CaretBrush));
 
+        /// <summary>
+        /// Defines the <see cref="SelectionStart"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, int> SelectionStartProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(SelectionStart),
                 o => o.SelectionStart,
                 (o, v) => o.SelectionStart = v);
 
+        /// <summary>
+        /// Defines the <see cref="SelectionEnd"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, int> SelectionEndProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(SelectionEnd),
                 o => o.SelectionEnd,
                 (o, v) => o.SelectionEnd = v);
 
+        /// <summary>
+        /// Defines the <see cref="MaxLength"/> property
+        /// </summary>
         public static readonly StyledProperty<int> MaxLengthProperty =
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLength), defaultValue: 0);
 
+        /// <summary>
+        /// Defines the <see cref="MaxLines"/> property
+        /// </summary>
         public static readonly StyledProperty<int> MaxLinesProperty =
             AvaloniaProperty.Register<TextBox, int>(nameof(MaxLines), defaultValue: 0);
 
+        /// <summary>
+        /// Defines the <see cref="Text"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, string?> TextProperty =
             TextBlock.TextProperty.AddOwnerWithDataValidation<TextBox>(
                 o => o.Text,
@@ -89,6 +137,9 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay,
                 enableDataValidation: true);
 
+        /// <summary>
+        /// Defines the <see cref="TextAlignment"/> property
+        /// </summary>
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
             TextBlock.TextAlignmentProperty.AddOwner<TextBox>();
 
@@ -119,45 +170,78 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> LetterSpacingProperty =
             TextBlock.LetterSpacingProperty.AddOwner<TextBox>();
 
+        /// <summary>
+        /// Defines the <see cref="Watermark"/> property
+        /// </summary>
         public static readonly StyledProperty<string?> WatermarkProperty =
             AvaloniaProperty.Register<TextBox, string?>(nameof(Watermark));
 
+        /// <summary>
+        /// Defines the <see cref="UseFloatingWatermark"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> UseFloatingWatermarkProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(UseFloatingWatermark));
 
+        /// <summary>
+        /// Defines the <see cref="NewLine"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, string> NewLineProperty =
             AvaloniaProperty.RegisterDirect<TextBox, string>(nameof(NewLine),
                 textbox => textbox.NewLine, (textbox, newline) => textbox.NewLine = newline);
 
+        /// <summary>
+        /// Defines the <see cref="InnerLeftContent"/> property
+        /// </summary>
         public static readonly StyledProperty<object> InnerLeftContentProperty =
             AvaloniaProperty.Register<TextBox, object>(nameof(InnerLeftContent));
 
+        /// <summary>
+        /// Defines the <see cref="InnerRightContent"/> property
+        /// </summary>
         public static readonly StyledProperty<object> InnerRightContentProperty =
             AvaloniaProperty.Register<TextBox, object>(nameof(InnerRightContent));
 
+        /// <summary>
+        /// Defines the <see cref="RevealPassword"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> RevealPasswordProperty =
             AvaloniaProperty.Register<TextBox, bool>(nameof(RevealPassword));
 
+        /// <summary>
+        /// Defines the <see cref="CanCut"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, bool> CanCutProperty =
             AvaloniaProperty.RegisterDirect<TextBox, bool>(
                 nameof(CanCut),
                 o => o.CanCut);
 
+        /// <summary>
+        /// Defines the <see cref="CanCopy"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, bool> CanCopyProperty =
             AvaloniaProperty.RegisterDirect<TextBox, bool>(
                 nameof(CanCopy),
                 o => o.CanCopy);
 
+        /// <summary>
+        /// Defines the <see cref="CanPaste"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, bool> CanPasteProperty =
             AvaloniaProperty.RegisterDirect<TextBox, bool>(
                 nameof(CanPaste),
                 o => o.CanPaste);
 
+        /// <summary>
+        /// Defines the <see cref="IsUndoEnabled"/> property
+        /// </summary>
         public static readonly StyledProperty<bool> IsUndoEnabledProperty =
             AvaloniaProperty.Register<TextBox, bool>(
                 nameof(IsUndoEnabled),
                 defaultValue: true);
 
+        /// <summary>
+        /// Defines the <see cref="UndoLimit"/> property
+        /// </summary>
         public static readonly DirectProperty<TextBox, int> UndoLimitProperty =
             AvaloniaProperty.RegisterDirect<TextBox, int>(
                 nameof(UndoLimit),
@@ -212,9 +296,13 @@ namespace Avalonia.Controls
             RoutedEvent.Register<TextBox, TextChangingEventArgs>(
                 nameof(TextChanging), RoutingStrategies.Bubble);
 
+        /// <summary>
+        /// Stores the state information for available actions in the UndoRedoHelper
+        /// </summary>
         readonly struct UndoRedoState : IEquatable<UndoRedoState>
         {
             public string? Text { get; }
+
             public int CaretPosition { get; }
 
             public UndoRedoState(string? text, int caretPosition)
@@ -287,18 +375,27 @@ namespace Avalonia.Controls
             UpdatePseudoclasses();
         }
 
+        /// <summary>
+        /// Gets or sets a value that determines whether the TextBox allows and displays newline or return characters
+        /// </summary>
         public bool AcceptsReturn
         {
             get => GetValue(AcceptsReturnProperty);
             set => SetValue(AcceptsReturnProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value that determins whether the TextBox allows and displays tabs
+        /// </summary>
         public bool AcceptsTab
         {
             get => GetValue(AcceptsTabProperty);
             set => SetValue(AcceptsTabProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the index of the text caret
+        /// </summary>
         public int CaretIndex
         {
             get => _caretIndex;
@@ -315,36 +412,54 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value whether this TextBox is read-only
+        /// </summary>
         public bool IsReadOnly
         {
             get => GetValue(IsReadOnlyProperty);
             set => SetValue(IsReadOnlyProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="char"/> that should be used for password masking
+        /// </summary>
         public char PasswordChar
         {
             get => GetValue(PasswordCharProperty);
             set => SetValue(PasswordCharProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a brush that is used to highlight selected text
+        /// </summary>
         public IBrush? SelectionBrush
         {
             get => GetValue(SelectionBrushProperty);
             set => SetValue(SelectionBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a brush that is used for the foreground of selected text
+        /// </summary>
         public IBrush? SelectionForegroundBrush
         {
             get => GetValue(SelectionForegroundBrushProperty);
             set => SetValue(SelectionForegroundBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a brush that is used for the text caret
+        /// </summary>
         public IBrush? CaretBrush
         {
             get => GetValue(CaretBrushProperty);
             set => SetValue(CaretBrushProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the starting position of the text selected in the TextBox
+        /// </summary>
         public int SelectionStart
         {
             get => _selectionStart;
@@ -365,6 +480,13 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the end position of the text selected in the TextBox
+        /// </summary>
+        /// <remarks>
+        /// When the SelectionEnd is equal to <see cref="SelectionStart"/>, there is no 
+        /// selected text and it marks the caret position
+        /// </remarks>
         public int SelectionEnd
         {
             get => _selectionEnd;
@@ -384,19 +506,28 @@ namespace Avalonia.Controls
                 }
             }
         }
-
+        
+        /// <summary>
+        /// Gets or sets the maximum character length of the TextBox
+        /// </summary>
         public int MaxLength
         {
             get => GetValue(MaxLengthProperty);
             set => SetValue(MaxLengthProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of lines the TextBox can contain
+        /// </summary>
         public int MaxLines
         {
             get => GetValue(MaxLinesProperty);
             set => SetValue(MaxLinesProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the spacing between characters
+        /// </summary>
         public double LetterSpacing
         {
             get => GetValue(LetterSpacingProperty);
@@ -412,6 +543,9 @@ namespace Avalonia.Controls
             set => SetValue(LineHeightProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the Text content of the TextBox
+        /// </summary>
         [Content]
         public string? Text
         {
@@ -441,6 +575,9 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the text selected in the TextBox
+        /// </summary>
         public string SelectedText
         {
             get => GetSelection();
@@ -477,6 +614,9 @@ namespace Avalonia.Controls
             set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Media.TextAlignment"/> of the TextBox
+        /// </summary>
         public TextAlignment TextAlignment
         {
             get => GetValue(TextAlignmentProperty);
@@ -503,24 +643,36 @@ namespace Avalonia.Controls
             set => SetValue(UseFloatingWatermarkProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets custom content that is positioned on the left side of the text layout box
+        /// </summary>
         public object InnerLeftContent
         {
             get => GetValue(InnerLeftContentProperty);
             set => SetValue(InnerLeftContentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets custom content that is positioned on the right side of the text layout box
+        /// </summary>
         public object InnerRightContent
         {
             get => GetValue(InnerRightContentProperty);
             set => SetValue(InnerRightContentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets whether text masked by <see cref="PasswordChar"/> should be revealed
+        /// </summary>
         public bool RevealPassword
         {
             get => GetValue(RevealPasswordProperty);
             set => SetValue(RevealPasswordProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Media.TextWrapping"/> of the TextBox
+        /// </summary>
         public TextWrapping TextWrapping
         {
             get => GetValue(TextWrappingProperty);
@@ -580,6 +732,9 @@ namespace Avalonia.Controls
             set => SetValue(IsUndoEnabledProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the maximum number of items that can reside in the Undo stack
+        /// </summary>
         public int UndoLimit
         {
             get => _undoRedoHelper.Limit;
@@ -621,18 +776,27 @@ namespace Avalonia.Controls
             private set => SetAndRaise(CanRedoProperty, ref _canRedo, value);
         }
 
+        /// <summary>
+        /// Raised when content is being copied to the clipboard
+        /// </summary>
         public event EventHandler<RoutedEventArgs>? CopyingToClipboard
         {
             add => AddHandler(CopyingToClipboardEvent, value);
             remove => RemoveHandler(CopyingToClipboardEvent, value);
         }
 
+        /// <summary>
+        /// Raised when content is being cut to the clipboard
+        /// </summary>
         public event EventHandler<RoutedEventArgs>? CuttingToClipboard
         {
             add => AddHandler(CuttingToClipboardEvent, value);
             remove => RemoveHandler(CuttingToClipboardEvent, value);
         }
 
+        /// <summary>
+        /// Raised when content is being pasted from the clipboard
+        /// </summary>
         public event EventHandler<RoutedEventArgs>? PastingFromClipboard
         {
             add => AddHandler(PastingFromClipboardEvent, value);
@@ -862,6 +1026,9 @@ namespace Avalonia.Controls
             return text;
         }
 
+        /// <summary>
+        /// Cuts the current text onto the clipboard
+        /// </summary>
         public async void Cut()
         {
             var text = GetSelection();
@@ -882,6 +1049,9 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Copies the current text onto the clipboard
+        /// </summary>
         public async void Copy()
         {
             var text = GetSelection();
@@ -900,6 +1070,9 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Pastes the current clipboard text content into the TextBox
+        /// </summary>
         public async void Paste()
         {
             var eventArgs = new RoutedEventArgs(PastingFromClipboardEvent);
@@ -1434,6 +1607,9 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Clears the text in the TextBox
+        /// </summary>
         public void Clear()
         {
             Text = string.Empty;
