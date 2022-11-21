@@ -17,7 +17,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Automation.Peers;
-using System.Diagnostics;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls
@@ -167,6 +166,18 @@ namespace Avalonia.Controls
                 unsetValue: -1);
 
         /// <summary>
+        /// Defines the <see cref="CanUndo"/> property
+        /// </summary>
+        public static readonly DirectProperty<TextBox, bool> CanUndoProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(nameof(CanUndo), x => x.CanUndo);
+
+        /// <summary>
+        /// Defines the <see cref="CanRedo"/> property
+        /// </summary>
+        public static readonly DirectProperty<TextBox, bool> CanRedoProperty =
+            AvaloniaProperty.RegisterDirect<TextBox, bool>(nameof(CanRedo), x => x.CanRedo);
+
+        /// <summary>
         /// Defines the <see cref="CopyingToClipboard"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
@@ -232,6 +243,8 @@ namespace Avalonia.Controls
         private bool _canPaste;
         private string _newLine = Environment.NewLine;
         private static readonly string[] invalidCharacters = new String[1] { "\u007f" };
+        private bool _canUndo;
+        private bool _canRedo;
 
         private int _wordSelectionStart = -1;
         private int _selectedTextChangesMadeSinceLastUndoSnapshot;
@@ -590,6 +603,24 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Gets a value that indicates whether the undo stack has an action that can be undone
+        /// </summary>
+        public bool CanUndo
+        {
+            get => _canUndo;
+            private set => SetAndRaise(CanUndoProperty, ref _canUndo, value);
+        }
+
+        /// <summary>
+        /// Gets a value that indicates whether the redo stack has an action that can be redone
+        /// </summary>
+        public bool CanRedo
+        {
+            get => _canRedo;
+            private set => SetAndRaise(CanRedoProperty, ref _canRedo, value);
+        }
+
         public event EventHandler<RoutedEventArgs>? CopyingToClipboard
         {
             add => AddHandler(CopyingToClipboardEvent, value);
@@ -943,30 +974,13 @@ namespace Avalonia.Controls
             }
             else if (Match(keymap.Undo) && IsUndoEnabled)
             {
-                try
-                {
-                    SnapshotUndoRedo();
-                    _isUndoingRedoing = true;
-                    _undoRedoHelper.Undo();
-                }
-                finally
-                {
-                    _isUndoingRedoing = false;
-                }
+                Undo();
 
                 handled = true;
             }
             else if (Match(keymap.Redo) && IsUndoEnabled)
             {
-                try
-                {
-                    _isUndoingRedoing = true;
-                    _undoRedoHelper.Redo();
-                }
-                finally
-                {
-                    _isUndoingRedoing = false;
-                }
+                Redo();
 
                 handled = true;
             }
@@ -1703,5 +1717,60 @@ namespace Avalonia.Controls
                 }
             }
         }
+
+        /// <summary>
+        /// Undoes the first action in the undo stack
+        /// </summary>
+        public void Undo()
+        {
+            if (IsUndoEnabled && CanUndo)
+            {
+                try
+                {
+                    SnapshotUndoRedo();
+                    _isUndoingRedoing = true;
+                    _undoRedoHelper.Undo();
+                }
+                finally
+                {
+                    _isUndoingRedoing = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reapplies the first item on the redo stack
+        /// </summary>
+        public void Redo()
+        {
+            if (IsUndoEnabled && CanRedo)
+            {
+                try
+                {
+                    _isUndoingRedoing = true;
+                    _undoRedoHelper.Redo();
+                }
+                finally
+                {
+                    _isUndoingRedoing = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called from the UndoRedoHelper when the undo stack is modified
+        /// </summary>
+        void UndoRedoHelper<UndoRedoState>.IUndoRedoHost.OnUndoStackChanged()
+        {
+            CanUndo = _undoRedoHelper.CanUndo;
+        }
+
+        /// <summary>
+        /// Called from the UndoRedoHelper when the redo stack is modified
+        /// </summary>
+        void UndoRedoHelper<UndoRedoState>.IUndoRedoHost.OnRedoStackChanged()
+        {
+            CanRedo = _undoRedoHelper.CanRedo;
+        }           
     }
 }
