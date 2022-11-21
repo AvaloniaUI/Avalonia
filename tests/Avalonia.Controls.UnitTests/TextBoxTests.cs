@@ -866,6 +866,176 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void CanUndo_CanRedo_Is_False_When_Initialized()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "New Text"
+                };
+
+                tb.Measure(Size.Infinity);
+
+                Assert.False(tb.CanUndo);
+                Assert.False(tb.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void CanUndo_CanRedo_and_Programmatic_Undo_Redo_Works()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                };
+
+                tb.Measure(Size.Infinity);
+
+                // See GH #6024 for a bit more insight on when Undo/Redo snapshots are taken:
+                // - Every 'Space', but only when space is handled in OnKeyDown - Spaces in TextInput event won't work
+                // - Every 7 chars in a long word
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "123");
+
+                // NOTE: the spaces won't actually add spaces b/c they're sent only as key events and not Text events
+                //       so our final text is without spaces
+                Assert.Equal("ABCDEF123", tb.Text);
+
+                Assert.True(tb.CanUndo);
+
+                tb.Undo();
+
+                // Undo will take us back one step
+                Assert.Equal("ABCDEF", tb.Text);
+
+                Assert.True(tb.CanRedo);
+
+                tb.Redo();
+
+                // Redo should restore us
+                Assert.Equal("ABCDEF123", tb.Text);
+            }
+        }
+
+        [Fact]
+        public void Setting_UndoLimit_Clears_Undo_Redo()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                };
+
+                tb.Measure(Size.Infinity);
+
+                // This is all the same as the above test (CanUndo_CanRedo_and_Programmatic_Undo_Redo_Works)
+                // We do this to get the undo/redo stacks in a state where both are active
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "123");
+
+                Assert.Equal("ABCDEF123", tb.Text);
+                Assert.True(tb.CanUndo);
+                tb.Undo();
+                // Undo will take us back one step
+                Assert.Equal("ABCDEF", tb.Text);
+                Assert.True(tb.CanRedo);
+                tb.Redo();
+                // Redo should restore us
+                Assert.Equal("ABCDEF123", tb.Text);
+
+                // Change the undo limit, this should clear both stacks setting CanUndo and CanRedo to false
+                tb.UndoLimit = 1;
+
+                Assert.False(tb.CanUndo);
+                Assert.False(tb.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void Setting_IsUndoEnabled_To_False_Clears_Undo_Redo()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                };
+
+                tb.Measure(Size.Infinity);
+
+                // This is all the same as the above test (CanUndo_CanRedo_and_Programmatic_Undo_Redo_Works)
+                // We do this to get the undo/redo stacks in a state where both are active
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "123");
+
+                Assert.Equal("ABCDEF123", tb.Text);
+                Assert.True(tb.CanUndo);
+                tb.Undo();
+                // Undo will take us back one step
+                Assert.Equal("ABCDEF", tb.Text);
+                Assert.True(tb.CanRedo);
+                tb.Redo();
+                // Redo should restore us
+                Assert.Equal("ABCDEF123", tb.Text);
+
+                // Disable Undo/Redo, this should clear both stacks setting CanUndo and CanRedo to false
+                tb.IsUndoEnabled = false;
+
+                Assert.False(tb.CanUndo);
+                Assert.False(tb.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void UndoLimit_Count_Is_Respected()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    UndoLimit = 3 // Something small for this test
+                };
+
+                tb.Measure(Size.Infinity);
+
+                // Push 3 undoable actions, we should only be able to recover 2
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "123");
+
+                Assert.Equal("ABCDEF123", tb.Text);
+
+                // Undo will take us back one step
+                tb.Undo();                
+                Assert.Equal("ABCDEF", tb.Text);
+
+                // Undo again
+                tb.Undo();
+                Assert.Equal("ABC", tb.Text);
+
+                // We now should not be able to undo again
+                Assert.False(tb.CanUndo);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
