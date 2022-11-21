@@ -344,10 +344,14 @@ namespace Avalonia
         /// Applies styling to the control if the control is initialized and styling is not
         /// already applied.
         /// </summary>
+        /// <remarks>
+        /// The styling system will automatically apply styling when required, so it should not
+        /// usually be necessary to call this method manually.
+        /// </remarks>
         /// <returns>
         /// A value indicating whether styling is now applied to the control.
         /// </returns>
-        protected bool ApplyStyling()
+        public bool ApplyStyling()
         {
             if (_initCount == 0 && !_styled)
             {
