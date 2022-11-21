@@ -67,6 +67,15 @@ namespace Avalonia.Styling
             return match;
         }
 
+        public override string ToString() => ToString(null);
+
+        /// <summary>
+        /// Gets a string representing the selector, with the nesting separator (`^`) replaced with
+        /// the parent selector.
+        /// </summary>
+        /// <param name="owner">The owner style.</param>
+        public abstract string ToString(Style? owner);
+
         /// <summary>
         /// Evaluates the selector for a match.
         /// </summary>

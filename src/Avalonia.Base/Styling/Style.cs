@@ -1,4 +1,5 @@
 using System;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -48,7 +49,9 @@ namespace Avalonia.Styling
                         SelectorMatch.NeverThisInstance);
 
                 if (match.IsMatch)
+                {
                     Attach(target, match.Activator);
+                }
 
                 result = match.Result;
             }
@@ -65,17 +68,7 @@ namespace Avalonia.Styling
         /// Returns a string representation of the style.
         /// </summary>
         /// <returns>A string representation of the style.</returns>
-        public override string ToString()
-        {
-            if (Selector != null)
-            {
-                return "Style: " + Selector.ToString();
-            }
-            else
-            {
-                return "Style";
-            }
-        }
+        public override string ToString() => Selector?.ToString(this) ?? "Style";
 
         internal override void SetParent(StyleBase? parent)
         {

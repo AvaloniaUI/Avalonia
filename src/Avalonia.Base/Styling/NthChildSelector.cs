@@ -107,11 +107,11 @@ namespace Avalonia.Styling
         protected override Selector? MovePrevious() => _previous;
         protected override Selector? MovePreviousOrParent() => _previous;
 
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             var expectedCapacity = NthLastChildSelectorName.Length + 8;
             var stringBuilder =  StringBuilderCache.Acquire(expectedCapacity);
-            stringBuilder.Append(_previous?.ToString());
+            stringBuilder.Append(_previous?.ToString(owner));
             
             stringBuilder.Append(':');
             stringBuilder.Append(_reversed ? NthLastChildSelectorName : NthChildSelectorName);
