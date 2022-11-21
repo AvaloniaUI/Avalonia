@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Controls
 {
-    public class NavigationRouter : INavigationRouter
+    public class StackNavigationRouter : INavigationRouter
     {
         private readonly Stack<object?> _backStack;
         private object? _currentPage;
@@ -32,7 +32,7 @@ namespace Avalonia.Controls
 
         public bool CanGoForward => false;
 
-        public NavigationRouter()
+        public StackNavigationRouter()
         {
             _backStack = new Stack<object?>();
         }

@@ -227,7 +227,7 @@ namespace Avalonia.Controls
 
         public NavigationControl()
         {
-            NavigationRouter = new NavigationRouter();
+            NavigationRouter = new StackNavigationRouter();
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

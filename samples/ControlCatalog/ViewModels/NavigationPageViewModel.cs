@@ -11,7 +11,7 @@ namespace ControlCatalog.ViewModels
 
         public NavigationPageViewModel()
         {
-            _navigationRouter = new NavigationRouter();
+            _navigationRouter = new StackNavigationRouter();
         }
 
         public bool? ShowNavBar

@@ -36,7 +36,7 @@
       Grid.ColumnSpan="2">
       <NavigationControl.HeaderTemplate>
         <DataTemplate>
-          <Label Content="{Binding Title}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+          <Label Content="{ReflectionBinding Title}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
         </DataTemplate>
       </NavigationControl.HeaderTemplate>
       <NavigationControl.DataTemplates>
