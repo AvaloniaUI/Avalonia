@@ -1,7 +1,5 @@
-<Style xmlns="https://github.com/avaloniaui"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:sys="clr-namespace:System;assembly=netstandard">
-  <Style.Resources>
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- Resources for Button.xaml -->
     <StaticResource x:Key="AccentButtonBackground" ResourceKey="SystemControlBackgroundAccentBrush" />
     <StaticResource x:Key="AccentButtonBackgroundPointerOver" ResourceKey="SystemAccentColorLight1" />
@@ -637,5 +635,4 @@
     <!-- BaseResources for RefreshVisualizer.xaml -->
     <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="Black"/>
     <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent"/> 
-  </Style.Resources>
-</Style>
+</ResourceDictionary>

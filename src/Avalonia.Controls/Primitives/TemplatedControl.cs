@@ -6,6 +6,7 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -364,17 +365,6 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == ThemeProperty)
-            {
-                foreach (var child in this.GetTemplateChildren())
-                    child.InvalidateStyles();
-            }
-        }
-
         /// <summary>
         /// Called when the <see cref="Template"/> property changes.
         /// </summary>
@@ -403,6 +393,58 @@ namespace Avalonia.Controls.Primitives
                     ApplyTemplatedParent(child, templatedParent);
                 }
             }
+        }
+
+        internal override void DetachControlThemeFromTemplateChildren(ControlTheme theme)
+        {
+            static ControlTheme? GetControlTheme(StyleBase style)
+            {
+                var s = style;
+
+                while (s is not null)
+                {
+                    if (s is ControlTheme c)
+                        return c;
+                    s = s.Parent as StyleBase;
+                }
+
+                return null;
+            }
+
+            static void Detach(Visual control, ITemplatedControl templatedParent, ControlTheme theme)
+            {
+                var valueStore = control.GetValueStore();
+                var count = valueStore.Frames.Count;
+
+                if (control != templatedParent)
+                {
+                    valueStore.BeginStyling();
+
+                    for (var i = count - 1; i >= 0; --i)
+                    {
+                        if (valueStore.Frames[i] is StyleInstance si &&
+                            si.Source is StyleBase style &&
+                            GetControlTheme(style) == theme)
+                        {
+                            valueStore.RemoveFrame(si);
+                        }
+                    }
+
+                    valueStore.EndStyling();
+                }
+
+                var children = ((IVisual)control).VisualChildren;
+                count = children.Count;
+
+                for (var i = 0; i < count; i++)
+                {
+                    if (children[i] is Visual v &&
+                        v.TemplatedParent == templatedParent)
+                        Detach(v, templatedParent, theme);
+                }
+            }
+
+            Detach(this, this, theme);
         }
     }
 }

@@ -33,9 +33,7 @@
         <Compile Include="MarkupExtensions\OnFormFactorExtension.cs" />
         <Compile Include="MarkupExtensions\OnPlatformExtension.cs" />
         <Compile Include="MarkupExtensions\ResolveByNameExtension.cs" />
-        <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
-        <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="Parsers\PropertyParser.cs" />
         <Compile Include="Converters\BitmapTypeConverter.cs" />
         <Compile Include="Converters\IconTypeConverter.cs" />
@@ -45,6 +43,7 @@
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="RuntimeXamlLoaderConfiguration.cs" />
+        <Compile Include="Styling\ResourceInclude.cs" />
         <Compile Include="Styling\StyleInclude.cs" />
         <Compile Include="Templates\ControlTemplate.cs" />
         <Compile Include="Templates\DataTemplate.cs" />

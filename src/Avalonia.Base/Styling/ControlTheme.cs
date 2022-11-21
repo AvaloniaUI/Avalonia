@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -51,13 +52,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        public override string ToString()
-        {
-            if (TargetType is not null)
-                return "ControlTheme: " + TargetType.Name;
-            else
-                return "ControlTheme";
-        }
+        public override string ToString() => TargetType?.Name ?? "ControlTheme";
 
         internal override void SetParent(StyleBase? parent)
         {

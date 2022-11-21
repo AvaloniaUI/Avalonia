@@ -1,8 +1,6 @@
-<Style
+<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=netstandard">
-    <Style.Resources>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
         <Color x:Key="ThemeBackgroundColor">#FFFFFFFF</Color>
         <Color x:Key="ThemeBorderLowColor">#FFAAAAAA</Color>
@@ -36,5 +34,4 @@
         <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" />      
         <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="Black"/>
         <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent"/>
-    </Style.Resources>
-</Style>
+</ResourceDictionary>
