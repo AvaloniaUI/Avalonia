@@ -570,7 +570,7 @@ namespace Avalonia.Controls
                 // Also don't need to check IsUndoEnabled here, that's done in SnapshotUndoRedo
                 if (!_isUndoingRedoing)
                 {
-                    SnapshotUndoRedo(false);
+                    SnapshotUndoRedo();
                 }
 
                 var textChanged = SetAndRaise(TextProperty, ref _text, value);
