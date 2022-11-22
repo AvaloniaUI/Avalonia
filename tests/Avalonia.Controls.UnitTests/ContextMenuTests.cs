@@ -29,6 +29,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -61,6 +62,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -130,6 +132,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -158,6 +161,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -186,6 +190,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -207,6 +212,7 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -390,7 +396,8 @@ namespace Avalonia.Controls.UnitTests
 
                 var sp = new StackPanel { Children = { target1, target2 } };
                 var window = new Window { Content = sp };
-                
+
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -594,6 +601,7 @@ namespace Avalonia.Controls.UnitTests
             windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
             var w = new Window(windowImpl.Object) { Content = content };
+            w.ApplyStyling();
             w.ApplyTemplate();
             w.Presenter.ApplyTemplate();
             return w;

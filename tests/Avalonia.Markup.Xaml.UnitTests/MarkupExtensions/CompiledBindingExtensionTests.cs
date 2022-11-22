@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Subjects;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -26,6 +27,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 {
     public class CompiledBindingExtensionTests
     {
+        static CompiledBindingExtensionTests()
+        {
+            RuntimeHelpers.RunClassConstructor(typeof(RelativeSource).TypeHandle);
+        }
+
         [Fact]
         public void ResolvesClrPropertyBasedOnDataContextType()
         {

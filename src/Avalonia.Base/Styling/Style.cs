@@ -1,5 +1,4 @@
 using System;
-using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -35,35 +34,6 @@ namespace Avalonia.Styling
             set => _selector = ValidateSelector(value);
         }
 
-        public override SelectorMatchResult TryAttach(IStyleable target, object? host)
-        {
-            _ = target ?? throw new ArgumentNullException(nameof(target));
-
-            var result = SelectorMatchResult.NeverThisType;
-
-            if (HasSettersOrAnimations)
-            {
-                var match = Selector?.Match(target, Parent, true) ??
-                    (target == host ?
-                        SelectorMatch.AlwaysThisInstance :
-                        SelectorMatch.NeverThisInstance);
-
-                if (match.IsMatch)
-                {
-                    Attach(target, match.Activator);
-                }
-
-                result = match.Result;
-            }
-
-            var childResult = TryAttachChildren(target, host);
-
-            if (childResult > result)
-                result = childResult;
-
-            return result;
-        }
-
         /// <summary>
         /// Returns a string representation of the style.
         /// </summary>
@@ -86,6 +56,30 @@ namespace Avalonia.Styling
             }
 
             base.SetParent(parent);
+        }
+
+        internal override SelectorMatchResult TryAttach(IStyleable target, object? host)
+        {
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
+            var result = SelectorMatchResult.NeverThisType;
+
+            if (HasSettersOrAnimations)
+            {
+                var match = Selector?.Match(target, Parent, true) ??
+                    (target == host ?
+                        SelectorMatch.AlwaysThisInstance :
+                        SelectorMatch.NeverThisInstance);
+
+                if (match.IsMatch)
+                {
+                    Attach(target, match.Activator);
+                }
+
+                result = match.Result;
+            }
+
+            return result;
         }
 
         private static Selector? ValidateSelector(Selector? selector)
