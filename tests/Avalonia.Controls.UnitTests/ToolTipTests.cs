@@ -51,6 +51,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = panel;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -114,6 +115,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -140,6 +142,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -183,6 +186,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -215,6 +219,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = decorator;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -237,6 +242,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = decorator;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -261,6 +267,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = decorator;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
@@ -286,6 +293,7 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 

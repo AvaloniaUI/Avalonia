@@ -569,6 +569,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
                 var window = new Window(windowImpl.Object);
+                window.ApplyStyling();
                 window.ApplyTemplate();
 
                 var target = new Popup() 
@@ -1090,6 +1091,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         private Window PreparedWindow(object content = null)
         {
             var w = new Window { Content = content };
+            w.ApplyStyling();
             w.ApplyTemplate();
             return w;
         }
