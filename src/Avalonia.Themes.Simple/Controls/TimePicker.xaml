@@ -7,8 +7,7 @@
 
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="clr-namespace:System;assembly=netstandard"
-                    x:CompileBindings="True">
+                    xmlns:sys="using:System">
   <Design.PreviewWith>
     <Border Height="500"
             Padding="20">
@@ -33,7 +32,6 @@
   <x:Double x:Key="TimePickerFlyoutPresenterItemHeight">40</x:Double>
   <x:Double x:Key="TimePickerSpacerThemeWidth">1</x:Double>
   <Thickness x:Key="TimePickerBorderThemeThickness">1</Thickness>
-  <Thickness x:Key="TimePickerTopHeaderMargin">0,0,0,4</Thickness>
   <x:Double x:Key="TimePickerFlyoutPresenterHighlightHeight">40</x:Double>
   <x:Double x:Key="TimePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
   <x:Double x:Key="TimePickerThemeMinWidth">242</x:Double>
@@ -90,20 +88,8 @@
       <ControlTemplate>
         <DataValidationErrors>
           <Grid Name="LayoutRoot"
-                Margin="{TemplateBinding Padding}"
-                RowDefinitions="Auto,*">
-            <ContentPresenter x:Name="HeaderContentPresenter"
-                              Grid.Row="0"
-                              MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
-                              Margin="{DynamicResource TimePickerTopHeaderMargin}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Top"
-                              Content="{TemplateBinding Header}"
-                              ContentTemplate="{TemplateBinding HeaderTemplate}"
-                              Foreground="{DynamicResource ThemeForegroundColor}" />
-
+                Margin="{TemplateBinding Padding}">
             <Button x:Name="PART_FlyoutButton"
-                    Grid.Row="1"
                     MinWidth="{DynamicResource TimePickerThemeMinWidth}"
                     MaxWidth="{DynamicResource TimePickerThemeMaxWidth}"
                     HorizontalAlignment="Stretch"
@@ -180,10 +166,6 @@
         </DataValidationErrors>
       </ControlTemplate>
     </Setter>
-
-    <Style Selector="^:disabled /template/ ContentPresenter#HeaderContentPresenter">
-      <Setter Property="TextElement.Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
-    </Style>
 
     <Style Selector="^:disabled /template/ Rectangle">
       <Setter Property="Opacity" Value="{DynamicResource ThemeDisabledOpacity}" />

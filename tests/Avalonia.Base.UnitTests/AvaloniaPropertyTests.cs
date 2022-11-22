@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 using Xunit;
@@ -149,7 +150,7 @@ namespace Avalonia.Base.UnitTests
 
             internal override IDisposable RouteBind(
                 AvaloniaObject o,
-                IObservable<BindingValue<object>> source,
+                IObservable<object> source,
                 BindingPriority priority)
             {
                 throw new NotImplementedException();
@@ -165,12 +166,7 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override object RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority)
-            {
-                throw new NotImplementedException();
-            }
-
-            internal override void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject oldParent)
+            internal override object RouteGetBaseValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();
             }
@@ -183,7 +179,7 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
-            internal override ISetterInstance CreateSetterInstance(IStyleable target, object value)
+            internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();
             }

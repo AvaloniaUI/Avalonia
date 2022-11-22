@@ -12,7 +12,6 @@ namespace Avalonia.Styling.Activators
         /// Called when the subscribed activator value changes.
         /// </summary>
         /// <param name="value">The new value.</param>
-        /// <param name="tag">The subscription tag.</param>
-        void OnNext(bool value, int tag);
+        void OnNext(bool value);
     }
 }

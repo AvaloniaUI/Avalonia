@@ -130,17 +130,6 @@ namespace Avalonia.Win32
         
         internal static Compositor Compositor { get; private set; }
 
-        public Size DoubleClickSize => new Size(
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
-
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
-        public Size TouchDoubleClickSize => new Size(16,16);
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public static void Initialize()
         {
             Initialize(new Win32PlatformOptions());
@@ -241,8 +230,8 @@ namespace Avalonia.Win32
             });
         }
 
-        private static readonly int SignalW = unchecked((int) 0xdeadbeaf);
-        private static readonly int SignalL = unchecked((int)0x12345678);
+        private const int SignalW = unchecked((int)0xdeadbeaf);
+        private const int SignalL = unchecked((int)0x12345678);
 
         public void Signal(DispatcherPriority prio)
         {
@@ -398,5 +387,25 @@ namespace Avalonia.Win32
 
             SetProcessDPIAware();
         }
+
+        Size IPlatformSettings.GetTapSize(PointerType type)
+        {
+            return type switch
+            {
+                PointerType.Touch => new(10, 10),
+                _ => new(GetSystemMetrics(SystemMetric.SM_CXDRAG), GetSystemMetrics(SystemMetric.SM_CYDRAG)),
+            };
+        }
+
+        Size IPlatformSettings.GetDoubleTapSize(PointerType type)
+        {
+            return type switch
+            {
+                PointerType.Touch => new(16, 16),
+                _ => new(GetSystemMetrics(SystemMetric.SM_CXDOUBLECLK), GetSystemMetrics(SystemMetric.SM_CYDOUBLECLK)),
+            };
+        }
+
+        TimeSpan IPlatformSettings.GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
     }
 }

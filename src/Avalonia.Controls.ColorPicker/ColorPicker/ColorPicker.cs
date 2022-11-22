@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Controls
+﻿using Avalonia.Controls.Primitives;
+
+namespace Avalonia.Controls
 {
     /// <summary>
     /// Presents a color for user editing using a spectrum, palette and component sliders within a drop down.
@@ -11,9 +13,6 @@
         /// </summary>
         public ColorPicker() : base()
         {
-            // Completely ignore property changes here
-            // The ColorView in the control template is responsible to manage this
-            base.ignorePropertyChanged = true;
         }
     }
 }

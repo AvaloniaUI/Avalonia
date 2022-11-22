@@ -340,7 +340,7 @@ namespace Avalonia.FreeDesktop
             {
                 var id = item == null ? 0 : GetId(item);
                 var props = GetProperties((item, menu), propertyNames);
-                var children = (depth == 0 || menu == null) ? new object[0] : new object[menu.Items.Count];
+                var children = (depth == 0 || menu == null) ? Array.Empty<object>() : new object[menu.Items.Count];
                 if(menu != null)
                     for (var c = 0; c < children.Length; c++)
                     {
@@ -397,7 +397,7 @@ namespace Avalonia.FreeDesktop
             {
                 foreach (var e in Events)
                     HandleEvent(e.id, e.eventId, e.data, e.timestamp);
-                return Task.FromResult(new int[0]);
+                return Task.FromResult(Array.Empty<int>());
             }
 
             public async Task<bool> AboutToShowAsync(int Id)
@@ -407,7 +407,7 @@ namespace Avalonia.FreeDesktop
 
             public async Task<(int[] updatesNeeded, int[] idErrors)> AboutToShowGroupAsync(int[] Ids)
             {
-                return (new int[0], new int[0]);
+                return (Array.Empty<int>(), Array.Empty<int>());
             }
 
             #region Events

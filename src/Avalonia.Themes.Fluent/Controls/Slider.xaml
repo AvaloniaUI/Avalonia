@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="clr-namespace:System;assembly=netstandard">
+                    xmlns:sys="using:System">
   <Design.PreviewWith>
     <Border Margin="20" Width="400" Height="600">
       <DockPanel LastChildFill="True">
@@ -99,18 +99,8 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}">
-              <Grid
-                  Name="grid"
-                  Margin="{TemplateBinding Padding}"
-                  RowDefinitions="Auto, *">
-                <ContentPresenter
-                    x:Name="HeaderContentPresenter"
-                    Grid.Row="0"
-                    Margin="{DynamicResource SliderTopHeaderMargin}"
-                    TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}"
-                    TextElement.Foreground="{DynamicResource SliderHeaderForeground}" />
                 <Grid x:Name="SliderContainer"
-                      Grid.Row="1"
+                      Margin="{TemplateBinding Padding}"
                       Background="{DynamicResource SliderContainerBackground}">
                   <Grid.Styles>
                     <Style Selector="TickBar">
@@ -191,7 +181,6 @@
                     </Track>
                   </Grid>
                 </Grid>
-              </Grid>
             </Border>
           </DataValidationErrors>
         </ControlTemplate>
@@ -205,19 +194,10 @@
                 BorderBrush="{TemplateBinding BorderBrush}"
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}">
-              <Grid
-                  Name="grid"
-                  Margin="{TemplateBinding Padding}"
-                  RowDefinitions="Auto, *">
-                <ContentPresenter
-                    x:Name="HeaderContentPresenter"
-                    Grid.Row="0"
-                    Margin="{DynamicResource SliderTopHeaderMargin}"
-                    TextElement.FontWeight="{DynamicResource SliderHeaderThemeFontWeight}"
-                    TextElement.Foreground="{DynamicResource SliderHeaderForeground}" />
                 <Grid x:Name="SliderContainer"
                       Grid.Row="1"
-                      Background="{DynamicResource SliderContainerBackground}">
+                      Background="{DynamicResource SliderContainerBackground}"
+                      Margin="{TemplateBinding Padding}">
                   <Grid.Styles>
                     <Style Selector="TickBar">
                       <Setter Property="ReservedSpace" Value="{Binding #PART_Track.Thumb.Bounds}" />
@@ -298,7 +278,6 @@
                     </Track>
                   </Grid>
                 </Grid>
-              </Grid>
             </Border>
           </DataValidationErrors>
         </ControlTemplate>
@@ -326,9 +305,6 @@
     <!--  Disabled State  -->
 
     <Style Selector="^:disabled">
-      <Style Selector="^ /template/ ContentPresenter#HeaderContentPresenter">
-        <Setter Property="Foreground" Value="{DynamicResource SliderHeaderForegroundDisabled}" />
-      </Style>
       <Style Selector="^ /template/ RepeatButton#PART_DecreaseButton">
         <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillDisabled}" />
       </Style>

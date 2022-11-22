@@ -31,7 +31,7 @@ namespace Avalonia.Direct2D1.Media
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
-                var font = ((GlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((GlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 
@@ -64,7 +64,7 @@ namespace Avalonia.Direct2D1.Media
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if (glyphIndex == 0 && text.Buffer.Span[glyphCluster] == '\t')
+                    if (text.Buffer.Span[glyphCluster] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 

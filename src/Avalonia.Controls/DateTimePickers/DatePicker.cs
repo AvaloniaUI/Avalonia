@@ -41,18 +41,6 @@ namespace Avalonia.Controls
                 x => x.DayVisible, (x, v) => x.DayVisible = v);
 
         /// <summary>
-        /// Defines the <see cref="Header"/> Property
-        /// </summary>
-        public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<DatePicker, object>(nameof(Header));
-
-        /// <summary>
-        /// Defines the <see cref="HeaderTemplate"/> Property
-        /// </summary>
-        public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<DatePicker, IDataTemplate>(nameof(HeaderTemplate));
-
-        /// <summary>
         /// Defines the <see cref="MaxYear"/> Property
         /// </summary>
         public static readonly DirectProperty<DatePicker, DateTimeOffset> MaxYearProperty =
@@ -150,24 +138,6 @@ namespace Avalonia.Controls
                 SetAndRaise(DayVisibleProperty, ref _dayVisible, value);
                 SetGrid();
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the DatePicker header
-        /// </summary>
-        public object Header
-        {
-            get => GetValue(HeaderProperty);
-            set => SetValue(HeaderProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the header template
-        /// </summary>
-        public IDataTemplate HeaderTemplate
-        {
-            get => GetValue(HeaderTemplateProperty);
-            set => SetValue(HeaderTemplateProperty, value);
         }
 
         /// <summary>

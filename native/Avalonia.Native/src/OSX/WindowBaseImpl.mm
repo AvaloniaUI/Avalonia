@@ -489,10 +489,11 @@ HRESULT WindowBaseImpl::CreateNativeControlHost(IAvnNativeControlHost **retOut) 
     return S_OK;
 }
 
-HRESULT WindowBaseImpl::SetBlurEnabled(bool enable) {
+HRESULT WindowBaseImpl::SetTransparencyMode(AvnWindowTransparencyMode mode) {
     START_COM_CALL;
 
-    [StandardContainer ShowBlur:enable];
+    [Window setBackgroundColor: (mode != Transparent ? [NSColor windowBackgroundColor] : [NSColor clearColor])];
+    [StandardContainer ShowBlur: mode == Blur];
 
     return S_OK;
 }

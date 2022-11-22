@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Media.Imaging;
+using Microsoft.Diagnostics.Runtime;
 
 namespace Avalonia.Benchmarks
 {
@@ -112,14 +113,14 @@ namespace Avalonia.Benchmarks
             return new MockFontManagerImpl();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
-        {
-            return new NullGlyphRun();
-        }
-
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            throw new NotImplementedException();
+            return new MockStreamGeometryImpl();
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        {
+            return new MockGlyphRun();
         }
 
         public bool SupportsIndividualRoundRects => true;

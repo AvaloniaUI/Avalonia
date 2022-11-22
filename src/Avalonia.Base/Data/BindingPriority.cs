@@ -35,6 +35,11 @@ namespace Avalonia.Data
         /// A style binding.
         /// </summary>
         Style,
+        
+        /// <summary>
+        /// The value is inherited from an ancestor element.
+        /// </summary>
+        Inherited,
 
         /// <summary>
         /// The binding is uninitialized.

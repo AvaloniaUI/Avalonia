@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Avalonia.Styling.Activators
 {
@@ -11,47 +9,45 @@ namespace Avalonia.Styling.Activators
     internal class AndActivator : StyleActivatorBase, IStyleActivatorSink
     {
         private List<IStyleActivator>? _sources;
-        private ulong _flags;
-        private ulong _mask;
 
         public int Count => _sources?.Count ?? 0;
 
         public void Add(IStyleActivator activator)
         {
+            if (IsSubscribed)
+                throw new AvaloniaInternalException("AndActivator is already subscribed.");
             _sources ??= new List<IStyleActivator>();
             _sources.Add(activator);
         }
 
-        void IStyleActivatorSink.OnNext(bool value, int tag)
+        void IStyleActivatorSink.OnNext(bool value) => ReevaluateIsActive();
+
+        protected override bool EvaluateIsActive()
         {
-            if (value)
+            if (_sources is null || _sources.Count == 0)
+                return true;
+
+            var count = _sources.Count;
+            var mask = (1ul << count) - 1;
+            var flags = 0UL;
+
+            for (var i = 0; i < count; ++i)
             {
-                _flags |= 1ul << tag;
-            }
-            else
-            {
-                _flags &= ~(1ul << tag);
+                if (_sources[i].GetIsActive())
+                    flags |= 1ul << i;
             }
 
-            if (_mask != 0)
-            {
-                PublishNext(_flags == _mask);
-            }
+            return flags == mask;
         }
 
         protected override void Initialize()
         {
             if (_sources is object)
             {
-                var i = 0;
-
                 foreach (var source in _sources)
                 {
-                    source.Subscribe(this, i++);
+                    source.Subscribe(this);
                 }
-
-                _mask = (1ul << Count) - 1;
-                PublishNext(_flags == _mask);
             }
         }
 
@@ -64,8 +60,6 @@ namespace Avalonia.Styling.Activators
                     source.Unsubscribe(this);
                 }
             }
-
-            _mask = 0;
         }
     }
 }

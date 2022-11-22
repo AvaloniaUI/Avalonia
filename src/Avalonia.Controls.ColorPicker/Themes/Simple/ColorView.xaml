@@ -3,12 +3,10 @@
                     xmlns:controls="using:Avalonia.Controls"
                     xmlns:converters="using:Avalonia.Controls.Converters"
                     xmlns:primitives="using:Avalonia.Controls.Primitives"
-                    xmlns:pc="clr-namespace:Avalonia.Controls.Primitives.Converters;assembly=Avalonia.Controls.ColorPicker"
-                    xmlns:globalization="clr-namespace:System.Globalization;assembly=mscorlib"
-                    x:CompileBindings="True">
+                    xmlns:pc="using:Avalonia.Controls.Primitives.Converters"
+                    xmlns:globalization="using:System.Globalization">
 
   <pc:ContrastBrushConverter x:Key="ContrastBrushConverter" />
-  <pc:ThirdComponentConverter x:Key="ThirdComponentConverter" />
   <converters:ColorToDisplayNameConverter x:Key="ColorToDisplayNameConverter" />
   <converters:ColorToHexConverter x:Key="ColorToHexConverter" />
   <converters:DoNothingForNullConverter x:Key="DoNothingForNullConverter" />
@@ -215,23 +213,21 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border
-            Name="PART_LayoutRoot"
-            Background="{TemplateBinding Background}"
-            BorderBrush="{TemplateBinding BorderBrush}"
-            BorderThickness="{TemplateBinding BorderThickness}"
-            CornerRadius="{TemplateBinding CornerRadius}"
-            Padding="{TemplateBinding Padding}">
+        <Border Name="PART_LayoutRoot"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}">
           <Panel>
-            <ContentPresenter
-                Name="PART_ContentPresenter"
-                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                Content="{TemplateBinding Header}"
-                ContentTemplate="{TemplateBinding HeaderTemplate}"
-                FontFamily="{TemplateBinding FontFamily}"
-                FontSize="{TemplateBinding FontSize}"
-                FontWeight="{TemplateBinding FontWeight}" />
+            <ContentPresenter Name="PART_ContentPresenter"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding HeaderTemplate}"
+                              FontFamily="{TemplateBinding FontFamily}"
+                              FontSize="{TemplateBinding FontSize}"
+                              FontWeight="{TemplateBinding FontWeight}" />
             <Border Name="PART_SelectedPipe"
                     Height="2"
                     Margin="0,0,0,2"
@@ -332,7 +328,7 @@
                                         IsSaturationValueMaxForced="False"
                                         Orientation="Vertical"
                                         ColorModel="Hsva"
-                                        ColorComponent="{Binding Components, ElementName=ColorSpectrum, Converter={StaticResource ThirdComponentConverter}}"
+                                        ColorComponent="{Binding ThirdComponent, ElementName=ColorSpectrum}"
                                         HsvColor="{Binding HsvColor, ElementName=ColorSpectrum}"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Stretch"

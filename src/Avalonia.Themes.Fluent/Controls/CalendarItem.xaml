@@ -1,14 +1,12 @@
 ﻿<!--
 // (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 -->
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="clr-namespace:System;assembly=netstandard"
-        x:CompileBindings="True"
-        x:DataType="CalendarItem">
+        xmlns:sys="using:System">
   <Design.PreviewWith>
     <Border Padding="20">
       <Calendar DisplayDate="2000-01-01">
@@ -58,7 +56,7 @@
   <ControlTheme x:Key="{x:Type CalendarItem}" TargetType="CalendarItem">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="DayTitleTemplate">
-      <Template>
+      <Template x:DataType="x:String">
         <TextBlock Text="{Binding}"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
@@ -112,7 +110,7 @@
               </Button>
             </Grid>
             <!--Border below is used only for MonthView but it can't be moved inside of Grid because CalendarItem expects it to be empty and it will cause side-effects-->
-            <Border Name="BackgroundLayer" Background="{TemplateBinding BorderBrush}" Margin="0,38,0,0" IsVisible="{ReflectionBinding #MonthView.IsVisible}" Grid.Row="1" />
+            <Border Name="BackgroundLayer" Background="{TemplateBinding BorderBrush}" Margin="0,38,0,0" IsVisible="{Binding #PART_MonthView.IsVisible}" Grid.Row="1" />
             <Grid Name="PART_MonthView" Grid.Row="1" IsVisible="False" MinHeight="290">
               <Grid.RowDefinitions>
                 <!--This should always be the week day names??-->

@@ -110,14 +110,21 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(destinationSize, new Vector(96, 96));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
         {
             return new HeadlessGlyphRunStub();
         }
 
-        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        class HeadlessGlyphRunStub : IGlyphRunImpl
         {
-            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
+            public void Dispose()
+            {
+            }
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -201,13 +208,6 @@ namespace Avalonia.Headless
 
             public IGeometryImpl SourceGeometry { get; }
             public Matrix Transform { get; }
-        }
-
-        class HeadlessGlyphRunStub : IGlyphRunImpl
-        {
-            public void Dispose()
-            {
-            }
         }
 
         class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
@@ -323,12 +323,12 @@ namespace Avalonia.Headless
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
             public int Version { get; set; }
-            public void Save(string fileName)
+            public void Save(string fileName, int? quality = null)
             {
 
             }
 
-            public void Save(Stream stream)
+            public void Save(Stream stream, int? quality = null)
             {
 
             }

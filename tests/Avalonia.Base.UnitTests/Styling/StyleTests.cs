@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Animation;
+using Avalonia.Base.UnitTests.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -146,7 +148,7 @@ namespace Avalonia.Base.UnitTests.Styling
             target.Classes.Add("foo");
             target.Classes.Remove("foo");
 
-            Assert.Equal(new[] { "foodefault", "Foo", "Bar", "foodefault" }, values);
+            Assert.Equal(new[] { "foodefault", "Bar", "foodefault" }, values);
         }
 
         [Fact]
@@ -227,10 +229,77 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
+        public void Later_Styles_Should_Override_Earlier_4()
+        {
+            Styles styles = new Styles
+            {
+                new Style(x => x.OfType<Class1>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo1"),
+                    },
+                },
+
+                new Style(x => x.OfType<Class1>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo2"),
+                        new Setter(Class1.DoubleProperty, 123.4),
+                    },
+                }
+            };
+
+            var target = new Class1();
+            styles.TryAttach(target, null);
+            target.Classes.Add("foo");
+
+            Assert.Equal("foo2", target.Foo);
+            Assert.Equal(123.4, target.Double);
+        }
+
+        [Fact]
+        public void Later_Styles_Should_Override_Earlier_With_Begin_End_Styling()
+        {
+            Styles styles = new Styles
+            {
+                new Style(x => x.OfType<Class1>().Class("foo"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo1"),
+                        new Setter(Class1.DoubleProperty, 123.4),
+                    },
+                },
+
+                new Style(x => x.OfType<Class1>().Class("foo").Class("bar"))
+                {
+                    Setters =
+                    {
+                        new Setter(Class1.FooProperty, "foo2"),
+                    },
+                },
+            };
+
+            var target = new Class1();
+            target.GetValueStore().BeginStyling();
+            styles.TryAttach(target, null);
+            target.GetValueStore().EndStyling();
+            target.Classes.Add("bar");
+            target.Classes.Add("foo");
+
+            Assert.Equal("foo2", target.Foo);
+            Assert.Equal(123.4, target.Double);
+
+            target.Classes.Remove("foo");
+
+            Assert.Equal(0, target.Double);
+        }
+
+        [Fact]
         public void Inactive_Values_Should_Not_Be_Made_Active_During_Style_Attach()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
-
             var root = new TestRoot
             {
                 Styles =
@@ -265,8 +334,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Inactive_Bindings_Should_Not_Be_Made_Active_During_Style_Attach()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
-
             var root = new TestRoot
             {
                 Styles =
@@ -308,8 +375,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Inactive_Values_Should_Not_Be_Made_Active_During_Style_Detach()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
-
             var root = new TestRoot
             {
                 Styles =
@@ -345,8 +410,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Inactive_Values_Should_Not_Be_Made_Active_During_Style_Detach_2()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
-
             var root = new TestRoot
             {
                 Styles =
@@ -382,8 +445,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Inactive_Bindings_Should_Not_Be_Made_Active_During_Style_Detach()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
-
             var root = new TestRoot
             {
                 Styles =
@@ -490,9 +551,9 @@ namespace Avalonia.Base.UnitTests.Styling
             };
 
             var target = new Class1();
-            target.BeginBatchUpdate();
+            target.GetValueStore().BeginStyling();
             styles.TryAttach(target, null);
-            target.EndBatchUpdate();
+            target.GetValueStore().EndStyling();
 
             Assert.NotNull(target.Child);
             Assert.Equal(1, instantiationCount);
@@ -526,41 +587,36 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Removing_Style_Should_Detach_From_Control()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            var border = new Border();
+            var root = new TestRoot
             {
-                var border = new Border();
-                var root = new TestRoot
-                {
-                    Styles =
-                    { 
-                        new Style(x => x.OfType<Border>())
+                Styles =
+                { 
+                    new Style(x => x.OfType<Border>())
+                    {
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
-                            }
+                            new Setter(Border.BorderThicknessProperty, new Thickness(4)),
                         }
-                    },
-                    Child = border,
-                };
+                    }
+                },
+                Child = border,
+            };
 
-                root.Measure(Size.Infinity);
-                Assert.Equal(new Thickness(4), border.BorderThickness);
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(4), border.BorderThickness);
 
-                root.Styles.RemoveAt(0);
-                Assert.Equal(new Thickness(0), border.BorderThickness);
-            }
+            root.Styles.RemoveAt(0);
+            Assert.Equal(new Thickness(0), border.BorderThickness);
         }
 
         [Fact]
         public void Adding_Style_Should_Attach_To_Control()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            var border = new Border();
+            var root = new TestRoot
             {
-                var border = new Border();
-                var root = new TestRoot
-                {
-                    Styles =
+                Styles =
                     {
                         new Style(x => x.OfType<Border>())
                         {
@@ -570,34 +626,31 @@ namespace Avalonia.Base.UnitTests.Styling
                             }
                         }
                     },
-                    Child = border,
-                };
+                Child = border,
+            };
 
-                root.Measure(Size.Infinity);
-                Assert.Equal(new Thickness(4), border.BorderThickness);
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(4), border.BorderThickness);
 
-                root.Styles.Add(new Style(x => x.OfType<Border>())
-                {
-                    Setters =
+            root.Styles.Add(new Style(x => x.OfType<Border>())
+            {
+                Setters =
                     {
                         new Setter(Border.BorderThicknessProperty, new Thickness(6)),
                     }
-                });
+            });
 
-                root.Measure(Size.Infinity);
-                Assert.Equal(new Thickness(6), border.BorderThickness);
-            }
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(6), border.BorderThickness);
         }
 
         [Fact]
         public void Removing_Style_With_Nested_Style_Should_Detach_From_Control()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            var border = new Border();
+            var root = new TestRoot
             {
-                var border = new Border();
-                var root = new TestRoot
-                {
-                    Styles =
+                Styles =
                     {
                         new Styles
                         {
@@ -610,96 +663,111 @@ namespace Avalonia.Base.UnitTests.Styling
                             }
                         }
                     },
-                    Child = border,
-                };
+                Child = border,
+            };
 
-                root.Measure(Size.Infinity);
-                Assert.Equal(new Thickness(4), border.BorderThickness);
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(4), border.BorderThickness);
 
-                root.Styles.RemoveAt(0);
-                Assert.Equal(new Thickness(0), border.BorderThickness);
-            }
+            root.Styles.RemoveAt(0);
+            Assert.Equal(new Thickness(0), border.BorderThickness);
         }
-        
+
         [Fact]
         public void Adding_Nested_Style_Should_Attach_To_Control()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            var border = new Border();
+            var root = new TestRoot
             {
-                var border = new Border();
-                var root = new TestRoot
+                Styles =
                 {
-                    Styles =
+                    new Styles
                     {
-                        new Styles
+                        new Style(x => x.OfType<Border>())
                         {
-                            new Style(x => x.OfType<Border>())
+                            Setters =
                             {
-                                Setters =
-                                {
-                                    new Setter(Border.BorderThicknessProperty, new Thickness(4)),
-                                }
+                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
                             }
                         }
-                    },
-                    Child = border,
-                };
-
-                root.Measure(Size.Infinity);
-                Assert.Equal(new Thickness(4), border.BorderThickness);
-
-                ((Styles)root.Styles[0]).Add(new Style(x => x.OfType<Border>())
-                {
-                    Setters =
-                    {
-                        new Setter(Border.BorderThicknessProperty, new Thickness(6)),
                     }
-                });
+                },
+                Child = border,
+            };
 
-                root.Measure(Size.Infinity);
-                Assert.Equal(new Thickness(6), border.BorderThickness);
-            }
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(4), border.BorderThickness);
+
+            ((Styles)root.Styles[0]).Add(new Style(x => x.OfType<Border>())
+            {
+                Setters =
+                {
+                    new Setter(Border.BorderThicknessProperty, new Thickness(6)),
+                }
+            });
+
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(6), border.BorderThickness);
         }
 
         [Fact]
         public void Removing_Nested_Style_Should_Detach_From_Control()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            var border = new Border();
+            var root = new TestRoot
             {
-                var border = new Border();
-                var root = new TestRoot
+                Styles =
                 {
-                    Styles =
+                    new Styles
                     {
-                        new Styles
+                        new Style(x => x.OfType<Border>())
                         {
-                            new Style(x => x.OfType<Border>())
+                            Setters =
                             {
-                                Setters =
-                                {
-                                    new Setter(Border.BorderThicknessProperty, new Thickness(4)),
-                                }
-                            },
-                            new Style(x => x.OfType<Border>())
+                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
+                            }
+                        },
+                        new Style(x => x.OfType<Border>())
+                        {
+                            Setters =
                             {
-                                Setters =
-                                {
-                                    new Setter(Border.BorderThicknessProperty, new Thickness(6)),
-                                }
-                            },
-                        }
-                    },
-                    Child = border,
-                };
+                                new Setter(Border.BorderThicknessProperty, new Thickness(6)),
+                            }
+                        },
+                    }
+                },
+                Child = border,
+            };
 
-                root.Measure(Size.Infinity);
-                Assert.Equal(new Thickness(6), border.BorderThickness);
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(6), border.BorderThickness);
 
-                ((Styles)root.Styles[0]).RemoveAt(1);
+            ((Styles)root.Styles[0]).RemoveAt(1);
 
-                root.Measure(Size.Infinity);
-                Assert.Equal(new Thickness(4), border.BorderThickness);
-            }
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(4), border.BorderThickness);
+        }
+
+        [Fact]
+        public void DetachStyles_Should_Detach_Activator()
+        {
+            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
+            {
+                Setters =
+                {
+                    new Setter(Class1.FooProperty, "Foo"),
+                },
+            };
+
+            var target = new Class1();
+
+            style.TryAttach(target, null);
+
+            Assert.Equal(1, target.Classes.ListenerCount);
+
+            ((IStyleable)target).DetachStyles();
+
+            Assert.Equal(0, target.Classes.ListenerCount);
         }
 
         [Fact]
@@ -771,6 +839,56 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.Throws<InvalidOperationException>(() => parent.Children.Add(nested));
         }
 
+        [Fact]
+        public void Animations_Should_Be_Activated_And_Deactivated()
+        {
+            Style style = new Style(x => x.OfType<Class1>().Class("foo"))
+            {
+                Animations =
+                {
+                    new Avalonia.Animation.Animation
+                    {
+                        Duration = TimeSpan.FromSeconds(1),
+                        Children =
+                        {
+                            new KeyFrame
+                            {
+                                Setters = 
+                                { 
+                                    new Setter { Property = Class1.DoubleProperty, Value = 5.0 } 
+                                },
+                            },
+                            new KeyFrame
+                            {
+                                Setters =
+                                {
+                                    new Setter { Property = Class1.DoubleProperty, Value = 10.0 }
+                                },
+                                Cue = new Cue(1d)
+                            }
+                        },
+                    }
+                }
+            };
+
+            var clock = new TestClock();
+            var target = new Class1 { Clock = clock };
+
+            style.TryAttach(target, null);
+
+            Assert.Equal(0.0, target.Double);
+
+            target.Classes.Add("foo");
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(5.0, target.Double);
+
+            clock.Step(TimeSpan.FromSeconds(0.5));
+            Assert.Equal(7.5, target.Double);
+
+            target.Classes.Remove("foo");
+            Assert.Equal(0.0, target.Double);
+        }
+
         private class Class1 : Control
         {
             public static readonly StyledProperty<string> FooProperty =
@@ -778,6 +896,9 @@ namespace Avalonia.Base.UnitTests.Styling
 
             public static readonly StyledProperty<Class1> ChildProperty =
                 AvaloniaProperty.Register<Class1, Class1>(nameof(Child));
+
+            public static readonly StyledProperty<double> DoubleProperty =
+                AvaloniaProperty.Register<Class1, double>(nameof(Double));
 
             public string Foo
             {
@@ -789,6 +910,12 @@ namespace Avalonia.Base.UnitTests.Styling
             {
                 get => GetValue(ChildProperty);
                 set => SetValue(ChildProperty, value);
+            }
+
+            public double Double
+            {
+                get => GetValue(DoubleProperty);
+                set => SetValue(DoubleProperty, value);
             }
 
             protected override Size MeasureOverride(Size availableSize)

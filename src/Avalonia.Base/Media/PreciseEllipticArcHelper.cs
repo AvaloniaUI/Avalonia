@@ -1081,7 +1081,7 @@ namespace Avalonia.Media
 
                 Point c = rest * (cs) + translation;
 
-                // See "http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter" to understand
+                // See "https://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter" to understand
                 // how the ellipse center is calculated 
 
 

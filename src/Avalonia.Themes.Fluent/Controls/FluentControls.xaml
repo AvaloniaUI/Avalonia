@@ -1,5 +1,4 @@
 ﻿<Styles
-    x:Class="Avalonia.Themes.Fluent.Controls.FluentControls"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Styles.Resources>
@@ -68,7 +67,7 @@
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Slider.xaml" />
                 <!--  ManagedFileChooser comes last because it uses (and overrides) styles for a multitude of other controls...the dialogs were originally UserControls, after all  -->
                 <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/ManagedFileChooser.xaml" />
-                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RichTextBlock.xaml"/>
+                <ResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/SelectableTextBlock.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Styling.Activators;
 
 #nullable enable
@@ -55,11 +56,11 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
-                _selectorString = string.Join(", ", _selectors);
+                _selectorString = string.Join(", ", _selectors.Select(x => x.ToString(owner)));
             }
 
             return _selectorString;

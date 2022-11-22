@@ -50,6 +50,7 @@ namespace Avalonia.Controls.UnitTests
                 var control = CreateControl();
                 TextBox textBox = GetTextBox(control);
                 var window = new Window { Content = control };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 Dispatcher.UIThread.RunJobs();

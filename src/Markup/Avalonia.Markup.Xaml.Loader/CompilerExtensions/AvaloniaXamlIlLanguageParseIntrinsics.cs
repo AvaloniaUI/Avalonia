@@ -48,10 +48,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 try
                 {
                     var thickness = Thickness.Parse(text);
-            
+
                     result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Thickness, types.ThicknessFullConstructor,
                         new[] { thickness.Left, thickness.Top, thickness.Right, thickness.Bottom });
-                
+
                     return true;
                 }
                 catch
@@ -65,10 +65,10 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 try
                 {
                     var point = Point.Parse(text);
-            
+
                     result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Point, types.PointFullConstructor,
                         new[] { point.X, point.Y });
-                
+
                     return true;
                 }
                 catch
@@ -76,16 +76,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a point", node);
                 }
             }
-            
+
             if (type.Equals(types.Vector))
             {
                 try
                 {
                     var vector = Vector.Parse(text);
-            
+
                     result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Vector, types.VectorFullConstructor,
                         new[] { vector.X, vector.Y });
-                
+
                     return true;
                 }
                 catch
@@ -93,16 +93,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a vector", node);
                 }
             }
-            
+
             if (type.Equals(types.Size))
             {
                 try
                 {
                     var size = Size.Parse(text);
-                
+
                     result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Size, types.SizeFullConstructor,
                         new[] { size.Width, size.Height });
-                
+
                     return true;
                 }
                 catch
@@ -110,16 +110,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a size", node);
                 }
             }
-            
+
             if (type.Equals(types.Matrix))
             {
                 try
                 {
                     var matrix = Matrix.Parse(text);
-                    
+
                     result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.Matrix, types.MatrixFullConstructor,
                         new[] { matrix.M11, matrix.M12, matrix.M21, matrix.M22, matrix.M31, matrix.M32 });
-                
+
                     return true;
                 }
                 catch
@@ -127,16 +127,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a matrix", node);
                 }
             }
-            
+
             if (type.Equals(types.CornerRadius))
             {
                 try
                 {
                     var cornerRadius = CornerRadius.Parse(text);
-            
+
                     result = new AvaloniaXamlIlVectorLikeConstantAstNode(node, types, types.CornerRadius, types.CornerRadiusFullConstructor,
                         new[] { cornerRadius.TopLeft, cornerRadius.TopRight, cornerRadius.BottomRight, cornerRadius.BottomLeft });
-                
+
                     return true;
                 }
                 catch
@@ -144,7 +144,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     throw new XamlX.XamlLoadException($"Unable to parse \"{text}\" as a corner radius", node);
                 }
             }
-            
+
             if (type.Equals(types.Color))
             {
                 if (!Color.TryParse(text, out Color color))
@@ -165,9 +165,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 try
                 {
                     var relativePoint = RelativePoint.Parse(text);
-                
+
                     var relativePointTypeRef = new XamlAstClrTypeReference(node, types.RelativePoint, false);
-                    
+
                     result = new XamlAstNewClrObjectNode(node, relativePointTypeRef, types.RelativePointFullConstructor, new List<IXamlAstValueNode>
                     {
                         new XamlConstantNode(node, types.XamlIlTypes.Double, relativePoint.Point.X),
@@ -188,9 +188,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 try
                 {
                     var gridLength = GridLength.Parse(text);
-                
+
                     result = new AvaloniaXamlIlGridLengthAstNode(node, types, gridLength);
-                    
+
                     return true;
                 }
                 catch
@@ -201,12 +201,12 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             if (type.Equals(types.Cursor))
             {
-                if (TypeSystemHelpers.TryGetEnumValueNode(types.StandardCursorType, text, node, out var enumConstantNode))
+                if (TypeSystemHelpers.TryGetEnumValueNode(types.StandardCursorType, text, node, false, out var enumConstantNode))
                 {
                     var cursorTypeRef = new XamlAstClrTypeReference(node, types.Cursor, false);
 
                     result = new XamlAstNewClrObjectNode(node, cursorTypeRef, types.CursorTypeConstructor, new List<IXamlAstValueNode> { enumConstantNode });
-                    
+
                     return true;
                 }
             }
@@ -270,12 +270,33 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            if (type.Equals(types.Uri))
+            {
+                var uriText = text.Trim();
+
+                var kind = ((!uriText?.StartsWith("/") == true) ? UriKind.Absolute : UriKind.Relative);
+
+                if (string.IsNullOrWhiteSpace(uriText) || !Uri.TryCreate(uriText, kind, out var _))
+                {
+                        throw new XamlX.XamlLoadException($"Unable to parse text {uriText} as a {kind} uri.", node);
+                }
+                result = new XamlAstNewClrObjectNode(node
+                    , new(node, types.Uri, false)
+                    , types.UriConstructor
+                    , new List<IXamlAstValueNode>()
+                    {
+                        new XamlConstantNode(node, context.Configuration.WellKnownTypes.String, uriText),
+                        new XamlConstantNode(node, types.UriKind, (int)kind),
+                    });
+                return true;
+            }
+
             result = null;
             return false;
         }
 
         private static bool ConvertDefinitionList(
-            IXamlAstValueNode node, 
+            IXamlAstValueNode node,
             string text,
             AvaloniaXamlIlWellKnownTypes types,
             IXamlType listType,

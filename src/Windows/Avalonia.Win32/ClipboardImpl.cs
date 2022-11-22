@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32
 {
@@ -83,7 +84,7 @@ namespace Avalonia.Win32
 
             while (true)
             {
-                var ptr = MicroCom.MicroComRuntime.GetNativeIntPtr<Win32Com.IDataObject>(wrapper);
+                var ptr = wrapper.GetNativeIntPtr<Win32Com.IDataObject>();
                 var hr = UnmanagedMethods.OleSetClipboard(ptr);
 
                 if (hr == 0)
@@ -107,7 +108,7 @@ namespace Avalonia.Win32
 
                 if (hr == 0)
                 {
-                    using var proxy = MicroCom.MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
+                    using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
                     using var wrapper = new OleDataObject(proxy);
                     var formats = wrapper.GetDataFormats().ToArray();
                     return formats;
@@ -131,7 +132,7 @@ namespace Avalonia.Win32
 
                 if (hr == 0)
                 {
-                    using var proxy = MicroCom.MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
+                    using var proxy = MicroComRuntime.CreateProxyFor<Win32Com.IDataObject>(dataObject, true);
                     using var wrapper = new OleDataObject(proxy);
                     var rv = wrapper.Get(format);
                     return rv;

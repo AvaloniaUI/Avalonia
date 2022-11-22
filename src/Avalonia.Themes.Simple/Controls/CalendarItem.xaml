@@ -1,7 +1,7 @@
 <!--
   // (c) Copyright Microsoft Corporation.
   // This source is subject to the Microsoft Public License (Ms-PL).
-  // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+  // Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
   // All other rights reserved.
 -->
 
@@ -162,7 +162,7 @@
       </ControlTemplate>
     </Setter>
     <Setter Property="DayTitleTemplate">
-      <Template>
+      <Template x:DataType="x:String">
         <TextBlock Margin="0,4,0,4"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"

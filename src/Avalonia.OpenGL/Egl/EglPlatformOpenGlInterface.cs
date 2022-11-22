@@ -44,10 +44,13 @@ namespace Avalonia.OpenGL.Egl
 
         public IGlContext CreateContext() => Display.CreateContext(null);
         public IGlContext CreateSharedContext() => Display.CreateContext(PrimaryEglContext);
-        
+
 
         public EglSurface CreateWindowSurface(IntPtr window)
         {
+            if (window == IntPtr.Zero)
+                throw new OpenGlException($"Window {window} is invalid.");
+
             using (PrimaryContext.MakeCurrent())
             {
                 var s = Display.EglInterface.CreateWindowSurface(Display.Handle, Display.Config, window,

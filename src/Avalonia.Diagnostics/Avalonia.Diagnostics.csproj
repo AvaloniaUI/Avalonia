@@ -19,7 +19,8 @@
     <ProjectReference Include="..\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="3.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.8.0" />
   </ItemGroup>
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\Rx.props" />

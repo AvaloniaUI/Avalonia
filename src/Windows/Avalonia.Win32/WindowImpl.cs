@@ -65,6 +65,7 @@ namespace Avalonia.Win32
         private bool _isUsingComposition;
         private IBlurHost _blurHost;
         private PlatformResizeReason _resizeReason;
+        private MOUSEMOVEPOINT _lastWmMousePoint;
 
 #if USE_MANAGED_DRAG
         private readonly ManagedWindowResizeDragHelper _managedDrag;
@@ -107,6 +108,7 @@ namespace Avalonia.Win32
         private static readonly POINTER_TOUCH_INFO[] s_historyTouchInfos = new POINTER_TOUCH_INFO[MaxPointerHistorySize];
         private static readonly POINTER_PEN_INFO[] s_historyPenInfos = new POINTER_PEN_INFO[MaxPointerHistorySize];
         private static readonly POINTER_INFO[] s_historyInfos = new POINTER_INFO[MaxPointerHistorySize];
+        private static readonly MOUSEMOVEPOINT[] s_mouseHistoryInfos = new MOUSEMOVEPOINT[64];
 
         public WindowImpl()
         {
@@ -224,7 +226,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.Primary)?.PixelDensity ?? 1;
+        private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.IsPrimary)?.Scaling ?? 1;
 
         public double RenderScaling => _scaling;
 
@@ -267,6 +269,11 @@ namespace Avalonia.Win32
         {
             get
             {
+                if (!IsWindowVisible(_hwnd))
+                {
+                    return _showWindowState;
+                }
+
                 if (_isFullScreenActive)
                 {
                     return WindowState.FullScreen;
@@ -560,6 +567,9 @@ namespace Avalonia.Win32
 
         public void Resize(Size value, PlatformResizeReason reason)
         {
+            if (WindowState != WindowState.Normal)
+                return;
+
             int requestedClientWidth = (int)(value.Width * RenderScaling);
             int requestedClientHeight = (int)(value.Height * RenderScaling);
 
@@ -900,11 +910,10 @@ namespace Avalonia.Win32
 
                 var window_rect = monitor_info.rcMonitor.ToPixelRect();
 
+                _isFullScreenActive = true;
                 SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
                              window_rect.Width, window_rect.Height,
                              SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
-
-                _isFullScreenActive = true;
             }
             else
             {

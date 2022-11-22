@@ -998,6 +998,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Order_Of_Setting_Items_And_SelectedIndex_During_Initialization_Should_Not_Matter()
         {
+            using var app = Start();
             var items = new[] { "Foo", "Bar" };
             var target = new SelectingItemsControl();
 
@@ -1015,6 +1016,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Order_Of_Setting_Items_And_SelectedItem_During_Initialization_Should_Not_Matter()
         {
+            using var app = Start();
             var items = new[] { "Foo", "Bar" };
             var target = new SelectingItemsControl();
 
@@ -1847,6 +1849,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         public void Preserves_SelectedItem_When_Items_Changed()
         {
             // Issue #4048
+            using var app = Start();
             var target = new SelectingItemsControl
             {
                 Items = new[] { "foo", "bar", "baz"},
@@ -1867,6 +1870,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_SelectedItems_Raises_PropertyChanged()
         {
+            using var app = Start();
             var target = new TestSelector
             {
                 Items = new[] { "foo", "bar", "baz" },
@@ -1895,6 +1899,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_Selection_Raises_SelectedItems_PropertyChanged()
         {
+            using var app = Start();
             var target = new TestSelector
             {
                 Items = new[] { "foo", "bar", "baz" },
@@ -2048,6 +2053,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 Assert.Equal(items[0], target.SelectedItem);
             }
+        }
+
+        private static IDisposable Start()
+        {
+            return UnitTestApplication.Start(new TestServices(
+                fontManagerImpl: new MockFontManagerImpl(),
+                textShaperImpl: new MockTextShaperImpl()));
         }
 
         private static void Prepare(SelectingItemsControl target)
