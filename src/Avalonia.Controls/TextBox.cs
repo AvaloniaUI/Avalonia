@@ -369,6 +369,7 @@ namespace Avalonia.Controls
                 ScrollViewer.HorizontalScrollBarVisibilityProperty,
                 horizontalScrollBarVisibility,
                 BindingPriority.Style);
+
             _undoRedoHelper = new UndoRedoHelper<UndoRedoState>(this);
             _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
             _hasDoneSnapshotOnce = false;
@@ -560,13 +561,19 @@ namespace Avalonia.Controls
                 SelectionStart = CoerceCaretIndex(selectionStart, value);
                 SelectionEnd = CoerceCaretIndex(selectionEnd, value);
 
-                var textChanged = SetAndRaise(TextProperty, ref _text, value);
-
-                if (textChanged && IsUndoEnabled && !_isUndoingRedoing)
+                // Before #9490, snapshot here was done AFTER text change - this doesn't make sense
+                // since intial state would never be no text and you'd always have to make a text 
+                // change before undo would be available
+                // The undo/redo stacks were also cleared at this point, which also doesn't make sense
+                // as it is still valid to want to undo a programmatic text set
+                // So we snapshot text now BEFORE the change so we can always revert
+                // Also don't need to check IsUndoEnabled here, that's done in SnapshotUndoRedo
+                if (!_isUndoingRedoing)
                 {
-                    _undoRedoHelper.Clear();
-                    SnapshotUndoRedo(); // so we always have an initial state
+                    SnapshotUndoRedo(false);
                 }
+
+                var textChanged = SetAndRaise(TextProperty, ref _text, value);
 
                 if (textChanged)
                 {
@@ -1903,6 +1910,8 @@ namespace Avalonia.Controls
             {
                 try
                 {
+                    // Snapshot the current Text state - this will get popped on to the redo stack
+                    // when we call undo below
                     SnapshotUndoRedo();
                     _isUndoingRedoing = true;
                     _undoRedoHelper.Undo();
@@ -1947,6 +1956,6 @@ namespace Avalonia.Controls
         void UndoRedoHelper<UndoRedoState>.IUndoRedoHost.OnRedoStackChanged()
         {
             CanRedo = _undoRedoHelper.CanRedo;
-        }           
+        }
     }
 }
