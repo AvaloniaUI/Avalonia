@@ -498,7 +498,7 @@ namespace Avalonia.Base.UnitTests.Animation
         private static IDisposable Start()
         {
             var clock = new MockGlobalClock();
-            var services = TestServices.RealStyler.With(globalClock: clock);
+            var services = new TestServices(globalClock: clock);
             return UnitTestApplication.Start(services);
         }
 

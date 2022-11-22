@@ -249,65 +249,67 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void Adding_Tree_To_IStyleRoot_Should_Style_Controls()
+        public void Adding_Tree_To_Root_Should_Style_Controls()
         {
-            using (AvaloniaLocator.EnterScope())
+            var root = new TestRoot
             {
-                var root = new TestRoot();
-                var parent = new Border();
-                var child = new Border();
-                var grandchild = new Control();
-                var styler = new Mock<IStyler>();
+                Styles =
+                {
+                    new Style(x => x.Is<Control>())
+                    {
+                        Setters = { new Setter(Control.TagProperty, "foo") }
+                    }
+                }
+            };
 
-                AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
+            var grandchild = new Control();
+            var child = new Border { Child = grandchild };
+            var parent = new Border { Child = child };
 
-                parent.Child = child;
-                child.Child = grandchild;
+            Assert.Null(parent.Tag);
+            Assert.Null(child.Tag);
+            Assert.Null(grandchild.Tag);
 
-                styler.Verify(x => x.ApplyStyles(It.IsAny<IStyleable>()), Times.Never());
+            root.Child = parent;
 
-                root.Child = parent;
-
-                styler.Verify(x => x.ApplyStyles(parent), Times.Once());
-                styler.Verify(x => x.ApplyStyles(child), Times.Once());
-                styler.Verify(x => x.ApplyStyles(grandchild), Times.Once());
-            }
+            Assert.Equal("foo", parent.Tag);
+            Assert.Equal("foo", child.Tag);
+            Assert.Equal("foo", grandchild.Tag);
         }
 
         [Fact]
         public void Styles_Not_Applied_Until_Initialization_Finished()
         {
-            using (AvaloniaLocator.EnterScope())
+            var root = new TestRoot
             {
-                var root = new TestRoot();
-                var child = new Border();
-                var styler = new Mock<IStyler>();
+                Styles =
+                {
+                    new Style(x => x.Is<Control>())
+                    {
+                        Setters = { new Setter(Control.TagProperty, "foo") }
+                    }
+                }
+            };
 
-                AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
+            var child = new Border();
 
-                ((ISupportInitialize)child).BeginInit();
-                root.Child = child;
-                styler.Verify(x => x.ApplyStyles(It.IsAny<IStyleable>()), Times.Never());
+            ((ISupportInitialize)child).BeginInit();
+            root.Child = child;
+            Assert.Null(child.Tag);
 
-                ((ISupportInitialize)child).EndInit();
-                styler.Verify(x => x.ApplyStyles(child), Times.Once());
-            }
+            ((ISupportInitialize)child).EndInit();
+            Assert.Equal("foo", child.Tag);
         }
 
         [Fact]
         public void Name_Cannot_Be_Set_After_Added_To_Logical_Tree()
         {
-            using (AvaloniaLocator.EnterScope())
-            {
-                var root = new TestRoot();
-                var child = new Border();
+            var root = new TestRoot();
+            var child = new Border();
 
-                AvaloniaLocator.CurrentMutable.BindToSelf<IStyler>(new Styler());
+            root.Child = child;
 
-                root.Child = child;
-
-                Assert.Throws<InvalidOperationException>(() => child.Name = "foo");
-            }
+            Assert.Throws<InvalidOperationException>(() => child.Name = "foo");
         }
 
         [Fact]
@@ -328,7 +330,7 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Style_Is_Removed_When_Control_Removed_From_Logical_Tree()
         {
-            var app = UnitTestApplication.Start(TestServices.RealStyler);
+            var app = UnitTestApplication.Start();
             var target = new Border();
             var root = new TestRoot
             {

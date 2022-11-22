@@ -344,29 +344,30 @@ namespace Avalonia
         /// Applies styling to the control if the control is initialized and styling is not
         /// already applied.
         /// </summary>
+        /// <remarks>
+        /// The styling system will automatically apply styling when required, so it should not
+        /// usually be necessary to call this method manually.
+        /// </remarks>
         /// <returns>
         /// A value indicating whether styling is now applied to the control.
         /// </returns>
-        protected bool ApplyStyling()
+        public bool ApplyStyling()
         {
             if (_initCount == 0 && !_styled)
             {
-                var styler = AvaloniaLocator.Current.GetService<IStyler>();
                 var hasPromotedTheme = _hasPromotedTheme;
 
-                if (styler is object)
-                {
-                    GetValueStore().BeginStyling();
+                GetValueStore().BeginStyling();
 
-                    try
-                    {
-                        styler.ApplyStyles(this);
-                    }
-                    finally
-                    {
-                        _styled = true;
-                        GetValueStore().EndStyling();
-                    }
+                try
+                {
+                    ApplyControlTheme();
+                    ApplyStyles(this);
+                }
+                finally
+                {
+                    _styled = true;
+                    GetValueStore().EndStyling();
                 }
 
                 if (hasPromotedTheme)
@@ -505,31 +506,6 @@ namespace Avalonia
             };
         }
 
-        ControlTheme? IStyleable.GetEffectiveTheme()
-        {
-            var theme = Theme;
-
-            // Explitly set Theme property takes precedence.
-            if (theme is not null)
-                return theme;
-
-            // If the Theme property is not set, try to find a ControlTheme resource with our StyleKey.
-            if (_implicitTheme is null)
-            {
-                var key = ((IStyleable)this).StyleKey;
-
-                if (this.TryFindResource(key, out var value) && value is ControlTheme t)
-                    _implicitTheme = t;
-                else
-                    _implicitTheme = s_invalidTheme;
-            }
-
-            if (_implicitTheme != s_invalidTheme)
-                return _implicitTheme;
-
-            return null;
-        }
-
         void IStyleable.DetachStyles() => DetachStyles();
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
@@ -666,6 +642,31 @@ namespace Avalonia
         {
         }
 
+        internal ControlTheme? GetEffectiveTheme()
+        {
+            var theme = Theme;
+
+            // Explitly set Theme property takes precedence.
+            if (theme is not null)
+                return theme;
+
+            // If the Theme property is not set, try to find a ControlTheme resource with our StyleKey.
+            if (_implicitTheme is null)
+            {
+                var key = ((IStyleable)this).StyleKey;
+
+                if (this.TryFindResource(key, out var value) && value is ControlTheme t)
+                    _implicitTheme = t;
+                else
+                    _implicitTheme = s_invalidTheme;
+            }
+
+            if (_implicitTheme != s_invalidTheme)
+                return _implicitTheme;
+
+            return null;
+        }
+
         private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
         {
             if (o is StyledElement element)
@@ -728,6 +729,56 @@ namespace Avalonia
             {
                 throw new ArgumentException("Cannot add null to LogicalChildren.");
             }
+        }
+
+        private void ApplyControlTheme()
+        {
+            var theme = GetEffectiveTheme();
+
+            if (theme is not null)
+                ApplyControlTheme(theme);
+
+            if (TemplatedParent is StyledElement styleableParent &&
+                styleableParent.GetEffectiveTheme() is { } parentTheme)
+            {
+                ApplyControlTheme(parentTheme);
+            }
+        }
+
+        private void ApplyControlTheme(ControlTheme theme)
+        {
+            if (theme.BasedOn is ControlTheme basedOn)
+                ApplyControlTheme(basedOn);
+
+            theme.TryAttach(this, null);
+
+            if (theme.HasChildren)
+            {
+                foreach (var child in theme.Children)
+                    ApplyStyle(child, null);
+            }
+        }
+
+        private void ApplyStyles(IStyleHost host)
+        {
+            var parent = host.StylingParent;
+            if (parent != null)
+                ApplyStyles(parent);
+            
+            if (host.IsStylesInitialized)
+            {
+                foreach (var style in host.Styles)
+                    ApplyStyle(style, host);
+            }
+        }
+
+        private void ApplyStyle(IStyle style, IStyleHost? host)
+        {
+            if (style is Style s)
+                s.TryAttach(this, host);
+
+            foreach (var child in style.Children)
+                ApplyStyle(child, host);
         }
 
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
