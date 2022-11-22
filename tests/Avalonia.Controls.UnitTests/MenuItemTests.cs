@@ -193,6 +193,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new MenuItem();
                 var contextMenu = new ContextMenu { Items = new AvaloniaList<MenuItem> { target } };
                 var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 
@@ -232,6 +233,7 @@ namespace Avalonia.Controls.UnitTests
                 var flyout = new MenuFlyout { Items = new AvaloniaList<MenuItem> { target } };
                 var button = new Button { Flyout = flyout };
                 var window = new Window { Content = button };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 
@@ -271,6 +273,7 @@ namespace Avalonia.Controls.UnitTests
                 var parentMenuItem = new MenuItem { Items = new AvaloniaList<MenuItem> { target } };
                 var contextMenu = new ContextMenu { Items = new AvaloniaList<MenuItem> { parentMenuItem } };
                 var window = new Window { Content = new Panel { ContextMenu = contextMenu } };
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 contextMenu.Open();

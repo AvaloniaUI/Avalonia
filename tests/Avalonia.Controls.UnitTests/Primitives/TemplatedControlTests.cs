@@ -170,36 +170,41 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Templated_Children_Should_Be_Styled()
         {
-            using (UnitTestApplication.Start(TestServices.MockStyler))
-            {
-                TestTemplatedControl target;
+            TestTemplatedControl target;
 
-                var root = new TestRoot
+            var root = new TestRoot
+            {
+                Styles =
                 {
-                    Child = target = new TestTemplatedControl
+                    new Style(x => x.Is<Control>())
                     {
-                        Template = new FuncControlTemplate((_, __) =>
+                        Setters =
                         {
-                            return new StackPanel
-                            {
-                                Children =
+                            new Setter(Control.TagProperty, "foo")
+                        }
+                    }
+                },
+                Child = target = new TestTemplatedControl
+                {
+                    Template = new FuncControlTemplate((_, __) =>
+                    {
+                        return new StackPanel
+                        {
+                            Children =
                                 {
                                     new TextBlock
                                     {
                                     }
                                 }
-                            };
-                        }),
-                    }
-                };
+                        };
+                    }),
+                }
+            };
 
-                target.ApplyTemplate();
+            target.ApplyTemplate();
 
-                var styler = Mock.Get(UnitTestApplication.Current.Services.Styler);
-                styler.Verify(x => x.ApplyStyles(It.IsAny<TestTemplatedControl>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<StackPanel>()), Times.Once());
-                styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
-            }
+            foreach (Control child in target.GetTemplateChildren())
+                Assert.Equal("foo", child.Tag);
         }
 
         [Fact]
@@ -351,166 +356,154 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Removing_From_LogicalTree_Should_Not_Remove_Child()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            Border templateChild = new Border();
+            TestTemplatedControl target;
+            var root = new TestRoot
             {
-                Border templateChild = new Border();
-                TestTemplatedControl target;
-                var root = new TestRoot
+                Styles =
                 {
-                    Styles =
+                    new Style(x => x.OfType<TestTemplatedControl>())
                     {
-                        new Style(x => x.OfType<TestTemplatedControl>())
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(
-                                    TemplatedControl.TemplateProperty,
-                                    new FuncControlTemplate((_, __) => new Decorator
-                                    {
-                                        Child = new Border(),
-                                    }))
-                            }
+                            new Setter(
+                                TemplatedControl.TemplateProperty,
+                                new FuncControlTemplate((_, __) => new Decorator
+                                {
+                                    Child = new Border(),
+                                }))
                         }
-                    },
-                    Child = target = new TestTemplatedControl()
-                };
+                    }
+                },
+                Child = target = new TestTemplatedControl()
+            };
 
-                Assert.NotNull(target.Template);
-                target.ApplyTemplate();
+            Assert.NotNull(target.Template);
+            target.ApplyTemplate();
 
-                root.Child = null;
+            root.Child = null;
 
-                Assert.Null(target.Template);
-                Assert.IsType<Decorator>(target.GetVisualChildren().Single());
-            }
+            Assert.Null(target.Template);
+            Assert.IsType<Decorator>(target.GetVisualChildren().Single());
         }
 
         [Fact]
         public void Re_adding_To_Same_LogicalTree_Should_Not_Recreate_Template()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            TestTemplatedControl target;
+            var root = new TestRoot
             {
-                TestTemplatedControl target;
-                var root = new TestRoot
+                Styles =
                 {
-                    Styles =
+                    new Style(x => x.OfType<TestTemplatedControl>())
                     {
-                        new Style(x => x.OfType<TestTemplatedControl>())
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(
-                                    TemplatedControl.TemplateProperty,
-                                    new FuncControlTemplate((_, __) => new Decorator
-                                    {
-                                        Child = new Border(),
-                                    }))
-                            }
+                            new Setter(
+                                TemplatedControl.TemplateProperty,
+                                new FuncControlTemplate((_, __) => new Decorator
+                                {
+                                    Child = new Border(),
+                                }))
                         }
-                    },
-                    Child = target = new TestTemplatedControl()
-                };
+                    }
+                },
+                Child = target = new TestTemplatedControl()
+            };
 
-                Assert.NotNull(target.Template);
-                target.ApplyTemplate();
-                var expected = (Decorator)target.GetVisualChildren().Single();
+            Assert.NotNull(target.Template);
+            target.ApplyTemplate();
+            var expected = (Decorator)target.GetVisualChildren().Single();
 
-                root.Child = null;
-                root.Child = target;
-                target.ApplyTemplate();
+            root.Child = null;
+            root.Child = target;
+            target.ApplyTemplate();
 
-                Assert.Same(expected, target.GetVisualChildren().Single());
-            }
+            Assert.Same(expected, target.GetVisualChildren().Single());
         }
 
         [Fact]
         public void Re_adding_To_Different_LogicalTree_Should_Recreate_Template()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            TestTemplatedControl target;
+
+            var root = new TestRoot
             {
-                TestTemplatedControl target;
-
-                var root = new TestRoot
+                Styles =
                 {
-                    Styles =
+                    new Style(x => x.OfType<TestTemplatedControl>())
                     {
-                        new Style(x => x.OfType<TestTemplatedControl>())
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(
-                                    TemplatedControl.TemplateProperty,
-                                    new FuncControlTemplate((_, __) => new Decorator
-                                    {
-                                        Child = new Border(),
-                                    }))
-                            }
+                            new Setter(
+                                TemplatedControl.TemplateProperty,
+                                new FuncControlTemplate((_, __) => new Decorator
+                                {
+                                    Child = new Border(),
+                                }))
                         }
-                    },
-                    Child = target = new TestTemplatedControl()
-                };
+                    }
+                },
+                Child = target = new TestTemplatedControl()
+            };
 
-                var root2 = new TestRoot
+            var root2 = new TestRoot
+            {
+                Styles =
                 {
-                    Styles =
+                    new Style(x => x.OfType<TestTemplatedControl>())
                     {
-                        new Style(x => x.OfType<TestTemplatedControl>())
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(
-                                    TemplatedControl.TemplateProperty,
-                                    new FuncControlTemplate((_, __) => new Decorator
-                                    {
-                                        Child = new Border(),
-                                    }))
-                            }
+                            new Setter(
+                                TemplatedControl.TemplateProperty,
+                                new FuncControlTemplate((_, __) => new Decorator
+                                {
+                                    Child = new Border(),
+                                }))
                         }
-                    },
-                };
+                    }
+                },
+            };
 
-                Assert.NotNull(target.Template);
-                target.ApplyTemplate();
+            Assert.NotNull(target.Template);
+            target.ApplyTemplate();
 
-                var expected = (Decorator)target.GetVisualChildren().Single();
+            var expected = (Decorator)target.GetVisualChildren().Single();
 
-                root.Child = null;
-                root2.Child = target;
-                target.ApplyTemplate();
+            root.Child = null;
+            root2.Child = target;
+            target.ApplyTemplate();
 
-                var child = target.GetVisualChildren().Single();
-                Assert.NotNull(target.Template);
-                Assert.NotNull(child);
-                Assert.NotSame(expected, child);
-            }
+            var child = target.GetVisualChildren().Single();
+            Assert.NotNull(target.Template);
+            Assert.NotNull(child);
+            Assert.NotSame(expected, child);
         }
 
         [Fact]
         public void Moving_To_New_LogicalTree_Should_Detach_Attach_Template_Child()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            TestTemplatedControl target;
+            var root = new TestRoot
             {
-                TestTemplatedControl target;
-                var root = new TestRoot
+                Child = target = new TestTemplatedControl
                 {
-                    Child = target = new TestTemplatedControl
-                    {
-                        Template = new FuncControlTemplate((_, __) => new Decorator()),
-                    }
-                };
+                    Template = new FuncControlTemplate((_, __) => new Decorator()),
+                }
+            };
 
-                Assert.NotNull(target.Template);
-                target.ApplyTemplate();
+            Assert.NotNull(target.Template);
+            target.ApplyTemplate();
 
-                var templateChild = (ILogical)target.GetVisualChildren().Single();
-                Assert.True(templateChild.IsAttachedToLogicalTree);
+            var templateChild = (ILogical)target.GetVisualChildren().Single();
+            Assert.True(templateChild.IsAttachedToLogicalTree);
 
-                root.Child = null;
-                Assert.False(templateChild.IsAttachedToLogicalTree);
+            root.Child = null;
+            Assert.False(templateChild.IsAttachedToLogicalTree);
 
-                var newRoot = new TestRoot { Child = target };
-                Assert.True(templateChild.IsAttachedToLogicalTree);
-            }
+            var newRoot = new TestRoot { Child = target };
+            Assert.True(templateChild.IsAttachedToLogicalTree);
         }
 
         [Fact]
