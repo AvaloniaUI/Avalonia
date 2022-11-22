@@ -1378,17 +1378,17 @@ namespace Avalonia.Media.TextFormatting
 
         private TextLineMetrics CreateLineMetrics()
         {
-            var glyphTypeface = _paragraphProperties.DefaultTextRunProperties.Typeface.GlyphTypeface;
+            var fontMetrics = _paragraphProperties.DefaultTextRunProperties.Typeface.GlyphTypeface.Metrics;
             var fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
-            var scale = fontRenderingEmSize / glyphTypeface.DesignEmHeight;
+            var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
 
             var width = 0d;
             var widthIncludingWhitespace = 0d;
             var trailingWhitespaceLength = 0;
             var newLineLength = 0;
-            var ascent = glyphTypeface.Ascent * scale;
-            var descent = glyphTypeface.Descent * scale;
-            var lineGap = glyphTypeface.LineGap * scale;
+            var ascent = fontMetrics.Ascent * scale;
+            var descent = fontMetrics.Descent * scale;
+            var lineGap = fontMetrics.LineGap * scale;
 
             var height = descent - ascent + lineGap;
 
@@ -1400,26 +1400,26 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextCharacters textRun:
                         {
-                            var fontMetrics =
-                                new FontMetrics(textRun.Properties.Typeface, textRun.Properties.FontRenderingEmSize);
+                            var textMetrics =
+                                new TextMetrics(textRun.Properties.Typeface, textRun.Properties.FontRenderingEmSize);
 
                             if (fontRenderingEmSize < textRun.Properties.FontRenderingEmSize)
                             {
                                 fontRenderingEmSize = textRun.Properties.FontRenderingEmSize;
 
-                                if (ascent > fontMetrics.Ascent)
+                                if (ascent > textMetrics.Ascent)
                                 {
-                                    ascent = fontMetrics.Ascent;
+                                    ascent = textMetrics.Ascent;
                                 }
 
-                                if (descent < fontMetrics.Descent)
+                                if (descent < textMetrics.Descent)
                                 {
-                                    descent = fontMetrics.Descent;
+                                    descent = textMetrics.Descent;
                                 }
 
-                                if (lineGap < fontMetrics.LineGap)
+                                if (lineGap < textMetrics.LineGap)
                                 {
-                                    lineGap = fontMetrics.LineGap;
+                                    lineGap = textMetrics.LineGap;
                                 }
 
                                 if (descent - ascent + lineGap > height)

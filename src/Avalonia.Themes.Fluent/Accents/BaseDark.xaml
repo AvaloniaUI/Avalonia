@@ -1,7 +1,5 @@
-<Style xmlns="https://github.com/avaloniaui"
-       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       xmlns:sys="clr-namespace:System;assembly=netstandard">
-  <Style.Resources>
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- System Control Colors -->
     <Color x:Key="SystemAltHighColor">#FF000000</Color>
     <Color x:Key="SystemAltLowColor">#33000000</Color>
@@ -175,6 +173,5 @@
     <Thickness x:Key="MenuFlyoutScrollerMargin">0,4,0,4</Thickness>
 
     <!-- Moved from Menu.xaml -->
-    <Thickness x:Key="MenuBarItemPadding">12,0,12,0</Thickness> 
-  </Style.Resources>
-</Style>
+    <Thickness x:Key="MenuBarItemPadding">12,0,12,0</Thickness>
+</ResourceDictionary>

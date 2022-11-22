@@ -661,7 +661,7 @@ namespace Avalonia.X11 {
 			Type type = ev.GetType ();
 			FieldInfo [] fields = type.GetFields (System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance);
 			for (int i = 0; i < fields.Length; i++) {
-				if (result != string.Empty) {
+				if (!string.IsNullOrEmpty(result)) {
 					result += ", ";
 				}
 				object value = fields [i].GetValue (ev);

@@ -31,7 +31,7 @@ namespace Avalonia.Skia
 
                 buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
 
-                var font = ((GlyphTypefaceImpl)typeface.PlatformImpl).Font;
+                var font = ((GlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 
@@ -60,11 +60,11 @@ namespace Avalonia.Skia
 
                     var glyphCluster = (int)(sourceInfo.Cluster);
 
-                    var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale);
+                    var glyphAdvance = GetGlyphAdvance(glyphPositions, i, textScale) + options.LetterSpacing;
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if(glyphIndex == 0 && text.Buffer.Span[glyphCluster] == '\t')
+                    if(text.Buffer.Span[glyphCluster] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 

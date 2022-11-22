@@ -110,7 +110,7 @@ namespace Avalonia.Controls
 
         public static readonly StyledProperty<string> ProgressTextFormatProperty =
             AvaloniaProperty.Register<ProgressBar, string>(nameof(ProgressTextFormat), "{1:0}%");
-        
+
         public static readonly StyledProperty<Orientation> OrientationProperty =
             AvaloniaProperty.Register<ProgressBar, Orientation>(nameof(Orientation), Orientation.Horizontal);
 
@@ -136,7 +136,7 @@ namespace Avalonia.Controls
             get { return _percentage; }
             private set { SetAndRaise(PercentageProperty, ref _percentage, value); }
         }
-        
+
         public double IndeterminateStartingOffset
         {
             get => _indeterminateStartingOffset;
@@ -156,6 +156,7 @@ namespace Avalonia.Controls
             MinimumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             MaximumProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
             IsIndeterminateProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
+            OrientationProperty.Changed.AddClassHandler<ProgressBar>((x, e) => x.UpdateIndicatorWhenPropChanged(e));
         }
 
         public ProgressBar()
@@ -216,13 +217,13 @@ namespace Avalonia.Controls
         {
             // dispose any previous track size listener
             _trackSizeChangedListener?.Dispose();
-            
+
             _indicator = e.NameScope.Get<Border>("PART_Indicator");
 
             // listen to size changes of the indicators track (parent) and update the indicator there. 
             _trackSizeChangedListener = _indicator.Parent?.GetPropertyChangedObservable(BoundsProperty)
                 .Subscribe(_ => UpdateIndicator());
-            
+
             UpdateIndicator();
         }
 
@@ -230,7 +231,7 @@ namespace Avalonia.Controls
         {
             // Gets the size of the parent indicator container
             var barSize = _indicator?.Parent?.Bounds.Size ?? Bounds.Size;
-            
+
             if (_indicator != null)
             {
                 if (IsIndeterminate)
@@ -268,10 +269,18 @@ namespace Avalonia.Controls
                 {
                     double percent = Maximum == Minimum ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
 
+                    // When the Orientation changed, the indicator's Width or Height should set to double.NaN.
                     if (Orientation == Orientation.Horizontal)
+                    {
                         _indicator.Width = barSize.Width * percent;
+                        _indicator.Height = double.NaN;
+                    }
                     else
+                    {
+                        _indicator.Width = double.NaN;
                         _indicator.Height = barSize.Height * percent;
+                    }
+
 
                     Percentage = percent * 100;
                 }

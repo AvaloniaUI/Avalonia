@@ -12,12 +12,16 @@ namespace Avalonia.Build.Tasks
             Enum.TryParse(ReportImportance, true, out MessageImportance outputImportance);
 
             OutputPath = OutputPath ?? AssemblyFile;
+            RefOutputPath = RefOutputPath ?? RefAssemblyFile;
             var outputPdb = GetPdbPath(OutputPath);
             var input = AssemblyFile;
+            var refInput = RefOutputPath;
             var inputPdb = GetPdbPath(input);
-            // Make a copy and delete the original file to prevent MSBuild from thinking that everything is OK 
+            // Make a copy and delete the original file to prevent MSBuild from thinking that everything is OK
             if (OriginalCopyPath != null)
             {
+                var originalCopyPathRef = Path.ChangeExtension(OriginalCopyPath, ".ref.dll");
+                
                 File.Copy(AssemblyFile, OriginalCopyPath, true);
                 input = OriginalCopyPath;
                 File.Delete(AssemblyFile);
@@ -29,16 +33,25 @@ namespace Avalonia.Build.Tasks
                     File.Delete(inputPdb);
                     inputPdb = copyPdb;
                 }
+                
+                if (!string.IsNullOrWhiteSpace(RefAssemblyFile) && File.Exists(RefAssemblyFile))
+                {
+                    // We also copy ref assembly just for case if needed later for testing.
+                    // But do not remove the original one, as MSBuild actually complains about it with multi-thread compiling.
+                    File.Copy(RefAssemblyFile, originalCopyPathRef, true);
+                    refInput = originalCopyPathRef;
+                }
             }
 
             var msg = $"CompileAvaloniaXamlTask -> AssemblyFile:{AssemblyFile}, ProjectDirectory:{ProjectDirectory}, OutputPath:{OutputPath}";
             BuildEngine.LogMessage(msg, outputImportance < MessageImportance.Low ? MessageImportance.High : outputImportance);
 
-            var res = XamlCompilerTaskExecutor.Compile(BuildEngine, input,
+            var res = XamlCompilerTaskExecutor.Compile(BuildEngine,
+                input, OutputPath,
+                refInput, RefOutputPath,
                 File.ReadAllLines(ReferencesFilePath).Where(l => !string.IsNullOrWhiteSpace(l)).ToArray(),
-                ProjectDirectory, OutputPath, VerifyIl, outputImportance,
-                (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null,
-                EnableComInteropPatching, SkipXamlCompilation, DebuggerLaunch);
+                ProjectDirectory, VerifyIl, DefaultCompileBindings, outputImportance,
+                (SignAssembly && !DelaySign) ? AssemblyOriginatorKeyFile : null, SkipXamlCompilation, DebuggerLaunch);
             if (!res.Success)
                 return false;
             if (!res.WrittenFile)
@@ -69,11 +82,15 @@ namespace Avalonia.Build.Tasks
         [Required]
         public string ProjectDirectory { get; set; }
         
+        public string RefAssemblyFile { get; set; }
+        public string RefOutputPath { get; set; }
+        
         public string OutputPath { get; set; }
 
         public bool VerifyIl { get; set; }
+
+        public bool DefaultCompileBindings { get; set; }
         
-        public bool EnableComInteropPatching { get; set; }
         public bool SkipXamlCompilation { get; set; }
         
         public string AssemblyOriginatorKeyFile { get; set; }

@@ -32,12 +32,12 @@ namespace Avalonia.Benchmarks.Styling
         {
             var target = new TestClass();
 
-            target.BeginBatchUpdate();
+            target.GetValueStore().BeginStyling();
 
             for (var i = 0; i < 50; ++i)
                 _style.TryAttach(target, null);
 
-            target.EndBatchUpdate();
+            target.GetValueStore().EndStyling();
         }
 
         [Benchmark(OperationsPerInvoke = 50)]
@@ -45,12 +45,12 @@ namespace Avalonia.Benchmarks.Styling
         {
             var target = new TestClass();
 
-            target.BeginBatchUpdate();
+            target.GetValueStore().BeginStyling();
 
             for (var i = 0; i < 50; ++i)
                 _style.TryAttach(target, null);
 
-            target.EndBatchUpdate();
+            target.GetValueStore().EndStyling();
 
             target.Classes.Add("foo");
             target.Classes.Remove("foo");
@@ -61,12 +61,12 @@ namespace Avalonia.Benchmarks.Styling
         {
             var target = new TestClass();
 
-            target.BeginBatchUpdate();
+            target.GetValueStore().BeginStyling();
 
             for (var i = 0; i < 50; ++i)
                 _style.TryAttach(target, null);
 
-            target.EndBatchUpdate();
+            target.GetValueStore().EndStyling();
 
             target.DetachStyles();
         }

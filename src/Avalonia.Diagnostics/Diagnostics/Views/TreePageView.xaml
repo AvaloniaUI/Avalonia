@@ -1,7 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
-             x:Class="Avalonia.Diagnostics.Views.TreePageView">
+             xmlns:vm="using:Avalonia.Diagnostics.ViewModels"
+             x:Class="Avalonia.Diagnostics.Views.TreePageView"
+             x:DataType="vm:TreePageViewModel">
   <Grid ColumnDefinitions="0.35*,4,0.65*">
     <TreeView Name="tree"
               BorderThickness="0"
@@ -18,7 +19,7 @@
         </TreeDataTemplate>
       </TreeView.DataTemplates>
       <TreeView.Styles>
-        <Style Selector="TreeViewItem">
+        <Style Selector="TreeViewItem" x:DataType="vm:TreeNode">
           <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
           <Setter Property="Background" Value="Transparent" />
         </Style>

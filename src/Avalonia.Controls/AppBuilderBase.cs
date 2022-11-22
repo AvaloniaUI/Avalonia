@@ -210,9 +210,9 @@ namespace Avalonia.Controls
         {
             var moduleInitializers = from assembly in AppDomain.CurrentDomain.GetAssemblies()
                                      from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
-                                     where attribute.ForWindowingSubsystem == ""
+                                     where string.IsNullOrEmpty(attribute.ForWindowingSubsystem)
                                       || attribute.ForWindowingSubsystem == WindowingSubsystemName
-                                     where attribute.ForRenderingSubsystem == ""
+                                     where string.IsNullOrEmpty(attribute.ForRenderingSubsystem)
                                       || attribute.ForRenderingSubsystem == RenderingSubsystemName
                                      group attribute by attribute.Name into exports
                                      select (from export in exports

@@ -7,7 +7,7 @@ namespace Avalonia.Input
     {
         private readonly PointerEventArgs lastPointerEventArgs;
 
-        public TappedEventArgs(RoutedEvent routedEvent, PointerEventArgs lastPointerEventArgs)
+        internal TappedEventArgs(RoutedEvent routedEvent, PointerEventArgs lastPointerEventArgs)
             : base(routedEvent)
         {
             this.lastPointerEventArgs = lastPointerEventArgs;

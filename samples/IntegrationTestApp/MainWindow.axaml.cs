@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
@@ -17,6 +18,7 @@ namespace IntegrationTestApp
         {
             InitializeComponent();
             InitializeViewMenu();
+            InitializeGesturesTab();
             this.AttachDevTools();
             AddHandler(Button.ClickEvent, OnButtonClick);
             ListBoxItems = Enumerable.Range(0, 100).Select(x => "Item " + x).ToList();
@@ -57,6 +59,7 @@ namespace IntegrationTestApp
             var sizeTextBox = this.GetControl<TextBox>("ShowWindowSize");
             var modeComboBox = this.GetControl<ComboBox>("ShowWindowMode");
             var locationComboBox = this.GetControl<ComboBox>("ShowWindowLocation");
+            var stateComboBox = this.GetControl<ComboBox>("ShowWindowState");
             var size = !string.IsNullOrWhiteSpace(sizeTextBox.Text) ? Size.Parse(sizeTextBox.Text) : (Size?)null;
             var owner = (Window)this.GetVisualRoot()!;
 
@@ -83,6 +86,7 @@ namespace IntegrationTestApp
             }
 
             sizeTextBox.Text = string.Empty;
+            window.WindowState = (WindowState)stateComboBox.SelectedIndex;
 
             switch (modeComboBox.SelectedIndex)
             {
@@ -118,6 +122,38 @@ namespace IntegrationTestApp
                 if (window.WindowState == WindowState.Minimized)
                     window.WindowState = WindowState.Normal;
             }
+        }
+
+        private void InitializeGesturesTab()
+        {
+            var gestureBorder = this.GetControl<Border>("GestureBorder");
+            var gestureBorder2 = this.GetControl<Border>("GestureBorder2");
+            var lastGesture = this.GetControl<TextBlock>("LastGesture");
+            var resetGestures = this.GetControl<Button>("ResetGestures");
+            gestureBorder.Tapped += (s, e) => lastGesture.Text = "Tapped";
+            
+            gestureBorder.DoubleTapped += (s, e) =>
+            {
+                lastGesture.Text = "DoubleTapped";
+
+                // Testing #8733
+                gestureBorder.IsVisible = false;
+                gestureBorder2.IsVisible = true;
+            };
+
+            gestureBorder2.DoubleTapped += (s, e) =>
+            {
+                lastGesture.Text = "DoubleTapped2";
+            };
+
+            Gestures.AddRightTappedHandler(gestureBorder, (s, e) => lastGesture.Text = "RightTapped");
+            
+            resetGestures.Click += (s, e) =>
+            {
+                lastGesture.Text = string.Empty;
+                gestureBorder.IsVisible = true;
+                gestureBorder2.IsVisible = false;
+            };
         }
 
         private void MenuClicked(object? sender, RoutedEventArgs e)

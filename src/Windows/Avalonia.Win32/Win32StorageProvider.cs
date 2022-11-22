@@ -12,6 +12,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Win32.Interop;
 using Avalonia.Win32.Win32Com;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32
 {

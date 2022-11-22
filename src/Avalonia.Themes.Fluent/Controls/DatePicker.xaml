@@ -7,8 +7,7 @@
 
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:sys="clr-namespace:System;assembly=netstandard"
-        x:CompileBindings="True">
+        xmlns:sys="using:System">
   <Design.PreviewWith>
     <Border Padding="20" Height="500">
       <StackPanel Spacing="20" VerticalAlignment="Center">
@@ -28,7 +27,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <Thickness x:Key="DatePickerTopHeaderMargin">0,0,0,4</Thickness>
   <x:Double x:Key="DatePickerFlyoutPresenterHighlightHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterItemHeight">40</x:Double>
   <x:Double x:Key="DatePickerFlyoutPresenterAcceptDismissHostGridHeight">41</x:Double>
@@ -84,18 +82,8 @@
     <Setter Property="Template">
       <ControlTemplate>
         <DataValidationErrors>
-          <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}" RowDefinitions="Auto,*">
-            <ContentPresenter Name="HeaderContentPresenter" Grid.Row="0"
-                              Content="{TemplateBinding Header}"
-                              Foreground="{DynamicResource DatePickerHeaderForeground}"
-                              ContentTemplate="{TemplateBinding HeaderTemplate}"
-                              Margin="{DynamicResource DatePickerTopHeaderMargin}"
-                              MaxWidth="{DynamicResource DatePickerThemeMaxWidth}"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Top"/>
-
+          <Grid Name="LayoutRoot" Margin="{TemplateBinding Padding}">
             <Button Name="PART_FlyoutButton"
-                    Grid.Row="1"
                     Theme="{StaticResource FluentDatePickerFlyoutButton}"
                     Foreground="{TemplateBinding Foreground}"
                     Background="{TemplateBinding Background}"

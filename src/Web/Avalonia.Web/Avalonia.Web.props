@@ -1,5 +1,0 @@
-﻿<Project>  
-  <PropertyGroup>
-    <EmccExtraLDFlags>$(EmccExtraLDFlags) --js-library="$(MSBuildThisFileDirectory)\interop.js"</EmccExtraLDFlags>
-  </PropertyGroup>
-</Project>

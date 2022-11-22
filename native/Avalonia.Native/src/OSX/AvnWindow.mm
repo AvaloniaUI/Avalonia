@@ -171,9 +171,7 @@
     _closed = false;
     _isEnabled = true;
 
-    [self backingScaleFactor];
     [self setOpaque:NO];
-    [self setBackgroundColor: [NSColor clearColor]];
 
     _isExtended = false;
     _isTransitioningToFullScreen = false;
@@ -385,7 +383,7 @@
     return true;
 }
 
--(void)resignKeyWindow
+-(void)windowDidResignKey:(NSNotification *)notification
 {
     if(_parent)
         _parent->BaseEvents->Deactivated();
@@ -393,8 +391,6 @@
     [self showAppMenuOnly];
     
     [self invalidateShadow];
-
-    [super resignKeyWindow];
 }
 
 - (void)windowDidMove:(NSNotification *_Nonnull)notification

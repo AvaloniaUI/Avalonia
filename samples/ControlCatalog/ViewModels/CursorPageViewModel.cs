@@ -27,18 +27,18 @@ namespace ControlCatalog.ViewModels
         public IEnumerable<StandardCursorModel> StandardCursors { get; }
         
         public Cursor CustomCursor { get; }
-
-        public class StandardCursorModel
+    }
+    
+    public class StandardCursorModel
+    {
+        public StandardCursorModel(StandardCursorType type)
         {
-            public StandardCursorModel(StandardCursorType type)
-            {
-                Type = type;
-                Cursor = new Cursor(type);
-            }
-
-            public StandardCursorType Type { get; }
-            
-            public Cursor Cursor { get; }
+            Type = type;
+            Cursor = new Cursor(type);
         }
+
+        public StandardCursorType Type { get; }
+            
+        public Cursor Cursor { get; }
     }
 }

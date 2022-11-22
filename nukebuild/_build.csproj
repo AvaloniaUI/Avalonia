@@ -13,11 +13,11 @@
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="6.2.1" />
     <PackageReference Include="vswhere" Version="2.6.7" Condition=" '$(OS)' == 'Windows_NT' " />
-    <PackageReference Include="MicroCom.CodeGenerator" Version="0.10.4" />
+    <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
-   <PackageReference Include="SourceLink" Version="1.1.0" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="17.3.1" PrivateAssets="All" />
+    <PackageReference Include="SourceLink" Version="1.1.0" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="17.3.2" PrivateAssets="All" />
     <PackageReference Include="xunit.runner.console" Version="2.4.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

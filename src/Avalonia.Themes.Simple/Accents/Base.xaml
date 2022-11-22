@@ -1,8 +1,7 @@
-﻿<Style
+﻿<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=netstandard">
-    <Style.Resources>
+    xmlns:sys="using:System">
         <Color x:Key="ThemeAccentColor">#CC119EDA</Color>
         <Color x:Key="ThemeAccentColor2">#99119EDA</Color>
         <Color x:Key="ThemeAccentColor3">#66119EDA</Color>
@@ -60,5 +59,4 @@
 
         <sys:Double x:Key="IconElementThemeHeight">20</sys:Double>
         <sys:Double x:Key="IconElementThemeWidth">20</sys:Double>
-    </Style.Resources>
-</Style>
+</ResourceDictionary>
