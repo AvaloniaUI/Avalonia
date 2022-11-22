@@ -1056,6 +1056,7 @@ namespace Avalonia.Controls.UnitTests
                 control.Items = CreateSimpleStringArray();
                 TextBox textBox = GetTextBox(control);
                 var window = new Window {Content = control};
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 Dispatcher.UIThread.RunJobs();

@@ -51,6 +51,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 };
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 target.ApplyTemplate();
@@ -177,6 +178,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 };
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 target.ApplyTemplate();
