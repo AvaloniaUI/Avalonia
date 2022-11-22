@@ -19,7 +19,6 @@ public class StyledElementTests_Theming
         [Fact]
         public void Theme_Is_Applied_When_Attached_To_Logical_Tree()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = CreateTarget();
 
             Assert.Null(target.Template);
@@ -37,7 +36,6 @@ public class StyledElementTests_Theming
         [Fact]
         public void Theme_Is_Applied_To_Derived_Class_When_Attached_To_Logical_Tree()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = new DerivedThemedControl
             {
                 Theme = CreateTheme(),
@@ -58,7 +56,6 @@ public class StyledElementTests_Theming
         [Fact]
         public void Theme_Is_Detached_When_Theme_Property_Cleared()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = CreateTarget();
             var root = CreateRoot(target);
 
@@ -71,8 +68,6 @@ public class StyledElementTests_Theming
         [Fact]
         public void Theme_Is_Detached_From_Template_Controls_When_Theme_Property_Cleared()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
-
             var theme = new ControlTheme
             {
                 TargetType = typeof(ThemedControl),
@@ -105,7 +100,6 @@ public class StyledElementTests_Theming
         [Fact]
         public void Theme_Is_Applied_On_Layout_After_Theme_Property_Changes()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = new ThemedControl();
             var root = CreateRoot(target);
 
@@ -124,7 +118,6 @@ public class StyledElementTests_Theming
         [Fact]
         public void BasedOn_Theme_Is_Applied_When_Attached_To_Logical_Tree()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = CreateTarget(CreateDerivedTheme());
 
             Assert.Null(target.Template);
@@ -163,7 +156,6 @@ public class StyledElementTests_Theming
         [Fact]
         public void Implicit_Theme_Is_Applied_When_Attached_To_Logical_Tree()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = CreateTarget();
             var root = CreateRoot(target);
             Assert.NotNull(target.Template);
@@ -178,21 +170,19 @@ public class StyledElementTests_Theming
         [Fact]
         public void Implicit_Theme_Is_Cleared_When_Removed_From_Logical_Tree()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = CreateTarget();
             var root = CreateRoot(target);
             
-            Assert.NotNull(((IStyleable)target).GetEffectiveTheme());
+            Assert.NotNull(target.GetEffectiveTheme());
 
             root.Child = null;
 
-            Assert.Null(((IStyleable)target).GetEffectiveTheme());
+            Assert.Null(target.GetEffectiveTheme());
         }
 
         [Fact]
         public void Nested_Style_Can_Override_Property_In_Inner_Templated_Control()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = new ThemedControl2
             {
                 Theme = new ControlTheme(typeof(ThemedControl2))
@@ -236,7 +226,6 @@ public class StyledElementTests_Theming
         [Fact]
         public void Theme_Is_Applied_When_Attached_To_Logical_Tree()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = CreateTarget();
 
             Assert.Null(target.Theme);
@@ -248,16 +237,15 @@ public class StyledElementTests_Theming
             Assert.NotNull(target.Template);
 
             var border = Assert.IsType<Border>(target.VisualChild);
-            Assert.Equal(border.Background, Brushes.Red);
+            Assert.Equal(Brushes.Red, border.Background);
 
             target.Classes.Add("foo");
-            Assert.Equal(border.Background, Brushes.Green);
+            Assert.Equal(Brushes.Green, border.Background);
         }
 
         [Fact]
         public void Theme_Can_Be_Changed_By_Style_Class()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = CreateTarget();
             var theme1 = CreateTheme();
             var theme2 = new ControlTheme(typeof(ThemedControl));
@@ -290,7 +278,6 @@ public class StyledElementTests_Theming
         [Fact]
         public void Theme_Can_Be_Set_To_LocalValue_While_Updating_Due_To_Style_Class()
         {
-            using var app = UnitTestApplication.Start(TestServices.RealStyler);
             var target = CreateTarget();
             var theme1 = CreateTheme();
             var theme2 = new ControlTheme(typeof(ThemedControl));

@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var items = new[] { "Foo", "Bar", "Baz " };
-                var theme = new ControlTheme();
+                var theme = new ControlTheme(typeof(ListBoxItem));
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
@@ -121,7 +121,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var items = new[] { "Foo", "Bar", "Baz " };
-                var theme = new ControlTheme();
+                var theme = new ControlTheme(typeof(ListBoxItem));
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
