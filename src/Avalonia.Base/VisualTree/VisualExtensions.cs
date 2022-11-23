@@ -379,6 +379,11 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
+        /// Returns a value indicating whether this control is attached to a visual root.
+        /// </summary>
+        public static bool IsAttachedToVisualTree(this Visual visual) => visual.IsAttachedToVisualTree;
+
+        /// <summary>
         /// Tests whether an <see cref="Visual"/> is an ancestor of another visual.
         /// </summary>
         /// <param name="visual">The visual.</param>
