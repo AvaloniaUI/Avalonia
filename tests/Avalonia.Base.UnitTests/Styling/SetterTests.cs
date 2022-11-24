@@ -6,6 +6,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -503,7 +504,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
         private void Apply(Style style, Control control)
         {
-            style.TryAttach(control, null);
+            StyleHelpers.TryAttach(style, control);
         }
 
         private void Apply(Setter setter, Control control)
