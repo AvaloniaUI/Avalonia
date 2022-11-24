@@ -19,6 +19,7 @@ namespace Avalonia.Controls
         private Button? _backButton;
         private Button? _forwardButton;
         private INavigationRouter? _navigationRouter;
+        private TransitioningContentControl? _contentPresenter;
 
         /// <summary>
         /// Defines the <see cref="CanGoBack"/> property.
@@ -37,9 +38,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="CurrentPage"/> property.
         /// </summary>
-        public static readonly DirectProperty<NavigationControl, object?> CurrentPageProperty =
-            AvaloniaProperty.RegisterDirect<NavigationControl, object?>(nameof(CurrentPage),
-                o => o.CurrentPage, (o, v) => o.CurrentPage = v);
+        public static readonly StyledProperty<object?> CurrentPageProperty =
+            AvaloniaProperty.Register<NavigationControl, object?>(nameof(CurrentPage));
 
         /// <summary>
         /// Defines the <see cref="IsBackButtonVisible"/> property.
@@ -166,7 +166,8 @@ namespace Avalonia.Controls
 
         private void NavigationRouter_Navigated(object? sender, NavigatedEventArgs e)
         {
-            RaisePropertyChanged(CurrentPageProperty, null, CurrentPage);
+            _contentPresenter?.SetValue(ContentControl.ContentProperty, e.To);
+
             RaisePropertyChanged(CanGoBackProperty, null, CanGoBack);
             RaisePropertyChanged(CanGoForwardProperty, null, CanGoForward);
         }
@@ -176,13 +177,8 @@ namespace Avalonia.Controls
         /// </summary>
         public object? CurrentPage
         {
-            get => NavigationRouter?.CurrentPage;
-            set
-            {
-                var oldView = CurrentPage;
-                NavigationRouter?.NavigateToAsync(value);
-                RaisePropertyChanged(CurrentPageProperty, oldView, CurrentPage);
-            }
+            get => GetValue(CurrentPageProperty);
+            set => SetValue(CurrentPageProperty, value);
         }
 
         /// <summary>
@@ -237,6 +233,8 @@ namespace Avalonia.Controls
             BackButton = e.NameScope.Get<Button>("PART_BackButton");
 
             ForwardButton = e.NameScope.Get<Button>("PART_ForwardButton");
+
+            _contentPresenter = e.NameScope.Get<TransitioningContentControl>("PART_ContentPresenter");
         }
 
         private async void BackButton_Clicked(object? sender, RoutedEventArgs eventArgs)

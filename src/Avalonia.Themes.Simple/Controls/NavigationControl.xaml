@@ -61,7 +61,6 @@
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           CornerRadius="{TemplateBinding CornerRadius}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
                           Content="{TemplateBinding CurrentPage}"
                           Padding="{TemplateBinding Padding}"
                           Margin="{DynamicResource NavigationControlPageMargin}"
