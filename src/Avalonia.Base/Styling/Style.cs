@@ -1,4 +1,5 @@
 using System;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -58,7 +59,7 @@ namespace Avalonia.Styling
             base.SetParent(parent);
         }
 
-        internal override SelectorMatchResult TryAttach(IStyleable target, object? host)
+        internal SelectorMatchResult TryAttach(IStyleable target, object? host, FrameType type)
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
@@ -73,7 +74,7 @@ namespace Avalonia.Styling
 
                 if (match.IsMatch)
                 {
-                    Attach(target, match.Activator);
+                    Attach(target, match.Activator, type);
                 }
 
                 result = match.Result;

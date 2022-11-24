@@ -1,13 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Utilities;
-using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.PropertyStore
 {
+    internal enum FrameType
+    {
+        Style,
+        TemplatedParentTheme,
+        Theme,
+    }
+
     internal abstract class ValueFrame
     {
         private List<IValueEntry>? _entries;
@@ -15,11 +20,18 @@ namespace Avalonia.PropertyStore
         private ValueStore? _owner;
         private bool _isShared;
 
+        protected ValueFrame(BindingPriority priority, FrameType type)
+        {
+            Priority = priority;
+            FramePriority = priority.ToFramePriority(type);
+        }
+
         public int EntryCount => _index.Count;
         public bool IsActive => GetIsActive(out _);
         public ValueStore? Owner => !_isShared ? _owner : 
             throw new AvaloniaInternalException("Cannot get owner for shared ValueFrame");
-        public BindingPriority Priority { get; protected set; }
+        public BindingPriority Priority { get; }
+        public FramePriority FramePriority { get; }
 
         public bool Contains(AvaloniaProperty property) => _index.ContainsKey(property);
 
