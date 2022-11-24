@@ -8,6 +8,7 @@ namespace ControlCatalog.ViewModels
         private bool? _showNavBar = true;
         private bool? _showBackButton = true;
         private INavigationRouter _navigationRouter;
+        private string? _title;
 
         public NavigationPageViewModel()
         {
@@ -18,6 +19,12 @@ namespace ControlCatalog.ViewModels
         {
             get => _showNavBar;
             set => RaiseAndSetIfChanged(ref _showNavBar, value);
+        }
+
+        public string? Title
+        {
+            get => _title;
+            set => RaiseAndSetIfChanged(ref _title, value);
         }
 
         public bool? ShowBackButton
@@ -35,6 +42,15 @@ namespace ControlCatalog.ViewModels
         {
             if (NavigationRouter != null)
             {
+                if(page is ListBoxPageViewModel)
+                {
+                    Title = "ListBox Page";
+                }
+                else if(page is MenuPageViewModel)
+                {
+                    Title = "Menu Page";
+                }
+
                 await NavigationRouter.NavigateToAsync(page);
             }
         }

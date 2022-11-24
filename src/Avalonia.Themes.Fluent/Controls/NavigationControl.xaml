@@ -51,7 +51,7 @@
               </Button>
               <ContentPresenter Name="PART_Header"
                   ContentTemplate="{TemplateBinding HeaderTemplate}"
-                  Content="{TemplateBinding CurrentPage}"
+                  Content="{TemplateBinding Header}"
                 />
             </DockPanel>
 

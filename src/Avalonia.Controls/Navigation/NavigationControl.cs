@@ -36,10 +36,10 @@ namespace Avalonia.Controls
                 o => o.CanGoForward);
 
         /// <summary>
-        /// Defines the <see cref="CurrentPage"/> property.
+        /// Defines the <see cref="Header"/> property.
         /// </summary>
-        public static readonly StyledProperty<object?> CurrentPageProperty =
-            AvaloniaProperty.Register<NavigationControl, object?>(nameof(CurrentPage));
+        public static readonly StyledProperty<object?> HeaderProperty =
+            AvaloniaProperty.Register<NavigationControl, object?>(nameof(Header));
 
         /// <summary>
         /// Defines the <see cref="IsBackButtonVisible"/> property.
@@ -173,12 +173,12 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the current content.
+        /// Gets or sets the header content.
         /// </summary>
-        public object? CurrentPage
+        public object? Header
         {
-            get => GetValue(CurrentPageProperty);
-            set => SetValue(CurrentPageProperty, value);
+            get => GetValue(HeaderProperty);
+            set => SetValue(HeaderProperty, value);
         }
 
         /// <summary>

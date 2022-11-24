@@ -31,12 +31,13 @@
       IsBackButtonVisible="{Binding ShowBackButton}"
       IsNavBarVisible="{Binding ShowNavBar}"
       NavigationRouter="{Binding NavigationRouter}"
+      Header="{Binding Title}"
       Margin="5" 
       Grid.Row="1" 
       Grid.ColumnSpan="2">
       <NavigationControl.HeaderTemplate>
         <DataTemplate>
-          <Label Content="{ReflectionBinding Title}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+          <Label Content="{ReflectionBinding}" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
         </DataTemplate>
       </NavigationControl.HeaderTemplate>
       <NavigationControl.DataTemplates>

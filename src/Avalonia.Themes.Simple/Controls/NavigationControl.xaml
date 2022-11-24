@@ -50,7 +50,7 @@
               </Button>
               <ContentPresenter Name="PART_Header"
                   ContentTemplate="{TemplateBinding HeaderTemplate}"
-                  Content="{TemplateBinding CurrentPage}"
+                  Content="{TemplateBinding Header}"
                 />
             </DockPanel>
 
@@ -61,7 +61,6 @@
                           BorderBrush="{TemplateBinding BorderBrush}"
                           BorderThickness="{TemplateBinding BorderThickness}"
                           CornerRadius="{TemplateBinding CornerRadius}"
-                          Content="{TemplateBinding CurrentPage}"
                           Padding="{TemplateBinding Padding}"
                           Margin="{DynamicResource NavigationControlPageMargin}"
                           VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
