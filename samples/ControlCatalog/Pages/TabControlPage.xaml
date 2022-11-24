@@ -56,7 +56,7 @@
                     HeaderDisplayMemberBinding="{Binding Header, x:DataType=viewModels:TabControlPageViewModelItem}"
                     TabStripPlacement="{Binding TabPlacement}">
                     <TabControl.ContentTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="viewModels:TabControlPageViewModelItem">
                             <StackPanel Orientation="Vertical" Spacing="8">
                                 <TextBlock Text="{Binding Text}"/>
                                 <Image Source="{Binding Image}" Width="300"/>
