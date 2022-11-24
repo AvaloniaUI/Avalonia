@@ -5,7 +5,7 @@ namespace Avalonia.Input
 {
     public class KeyEventArgs : RoutedEventArgs
     {
-        internal KeyEventArgs()
+        public KeyEventArgs()
         {
 
         }
