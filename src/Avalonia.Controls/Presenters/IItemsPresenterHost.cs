@@ -18,9 +18,9 @@ namespace Avalonia.Controls.Presenters
     public interface IItemsPresenterHost
     {
         /// <summary>
-        /// Registers an <see cref="IItemsPresenter"/> with a host control.
+        /// Registers an <see cref="ItemsPresenter"/> with a host control.
         /// </summary>
         /// <param name="presenter">The items presenter.</param>
-        void RegisterItemsPresenter(IItemsPresenter presenter);
+        void RegisterItemsPresenter(ItemsPresenter presenter);
     }
 }

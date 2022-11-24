@@ -273,11 +273,8 @@
           <Border Name="border" BoxShadow="inset -6 0 3 -3 #20000000" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
             <ScrollViewer Name="PART_ScrollViewer" HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}" VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
               <ItemsPresenter Name="PART_ItemsPresenter"
-                              Items="{TemplateBinding Items}"
                               ItemsPanel="{TemplateBinding ItemsPanel}"
-                              ItemTemplate="{TemplateBinding ItemTemplate}"
-                              Margin="{TemplateBinding Padding}"
-                              VirtualizationMode="{TemplateBinding VirtualizationMode}"/>
+                              Margin="{TemplateBinding Padding}"/>
             </ScrollViewer>
           </Border>
         </ControlTemplate>

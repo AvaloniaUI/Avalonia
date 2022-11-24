@@ -10,7 +10,6 @@
                 CornerRadius="{TemplateBinding CornerRadius}">
           <CarouselPresenter Margin="{TemplateBinding Padding}"
                              IsVirtualized="{TemplateBinding IsVirtualized}"
-                             Items="{TemplateBinding Items}"
                              ItemsPanel="{TemplateBinding ItemsPanel}"
                              PageTransition="{TemplateBinding PageTransition}"
                              SelectedIndex="{TemplateBinding SelectedIndex}" />

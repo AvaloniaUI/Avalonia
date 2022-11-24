@@ -174,7 +174,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the items presenter control.
         /// </summary>
-        public IItemsPresenter? Presenter
+        public ItemsPresenter? Presenter
         {
             get;
             protected set;
@@ -189,7 +189,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        void IItemsPresenterHost.RegisterItemsPresenter(IItemsPresenter presenter)
+        void IItemsPresenterHost.RegisterItemsPresenter(ItemsPresenter presenter)
         {
             if (Presenter is IChildIndexProvider oldInnerProvider)
             {
@@ -408,12 +408,6 @@ namespace Avalonia.Controls
             UpdateItemCount();
             RemoveControlItemsFromLogicalChildren(oldValue);
             AddControlItemsToLogicalChildren(newValue);
-
-            if (Presenter != null)
-            {
-                Presenter.Items = newValue;
-            }
-
             SubscribeToItems(newValue);
         }
 
@@ -437,8 +431,6 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
-
-            Presenter?.ItemsChanged(e);
         }
 
         /// <summary>

@@ -1115,10 +1115,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Name = "popup",
                 PlacementTarget = control,
-                Child = new ItemsPresenter
-                {
-                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
-                }
+                Child = new ItemsPresenter(),
             }.RegisterInNameScope(scope);
         }
 

@@ -57,7 +57,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="VirtualizationMode"/> property.
         /// </summary>
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<ComboBox>();
+            VirtualizingStackPanel.VirtualizationModeProperty.AddOwner<ComboBox>();
 
         /// <summary>
         /// Defines the <see cref="PlaceholderText"/> property.

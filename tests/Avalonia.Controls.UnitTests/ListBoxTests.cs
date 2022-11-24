@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Subjects;
@@ -330,38 +331,39 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void ListBox_After_Scroll_IndexOutOfRangeException_Shouldnt_Be_Thrown()
         {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var items = Enumerable.Range(0, 11).Select(x => $"{x}").ToArray();
+            throw new NotImplementedException();
+            ////using (UnitTestApplication.Start(TestServices.StyledWindow))
+            ////{
+            ////    var items = Enumerable.Range(0, 11).Select(x => $"{x}").ToArray();
 
-                var target = new ListBox
-                {
-                    Template = ListBoxTemplate(),
-                    Items = items,
-                    ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 11 })
-                };
+            ////    var target = new ListBox
+            ////    {
+            ////        Template = ListBoxTemplate(),
+            ////        Items = items,
+            ////        ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 11 })
+            ////    };
 
-                Prepare(target);
+            ////    Prepare(target);
 
-                var panel = target.Presenter.Panel as IVirtualizingPanel;
+            ////    var panel = target.Presenter.Panel as IVirtualizingPanel;
 
-                var listBoxItems = panel.Children.OfType<ListBoxItem>();
+            ////    var listBoxItems = panel.Children.OfType<ListBoxItem>();
 
-                //virtualization should have created exactly 10 items
-                Assert.Equal(10, listBoxItems.Count());
-                Assert.Equal("0", listBoxItems.First().DataContext);
-                Assert.Equal("9", listBoxItems.Last().DataContext);
+            ////    //virtualization should have created exactly 10 items
+            ////    Assert.Equal(10, listBoxItems.Count());
+            ////    Assert.Equal("0", listBoxItems.First().DataContext);
+            ////    Assert.Equal("9", listBoxItems.Last().DataContext);
 
-                //instead pixeloffset > 0 there could be pretty complex sequence for repro
-                //it involves add/remove/scroll to end multiple actions
-                //which i can't find so far :(, but this is the simplest way to add it to unit test
-                panel.PixelOffset = 1;
+            ////    //instead pixeloffset > 0 there could be pretty complex sequence for repro
+            ////    //it involves add/remove/scroll to end multiple actions
+            ////    //which i can't find so far :(, but this is the simplest way to add it to unit test
+            ////    panel.PixelOffset = 1;
 
-                //here scroll to end -> IndexOutOfRangeException is thrown
-                target.Scroll.Offset = new Vector(0, 2);
+            ////    //here scroll to end -> IndexOutOfRangeException is thrown
+            ////    target.Scroll.Offset = new Vector(0, 2);
 
-                Assert.True(true);
-            }
+            ////    Assert.True(true);
+            ////}
         }
 
         [Fact]
@@ -600,9 +602,7 @@ namespace Avalonia.Controls.UnitTests
                     Content = new ItemsPresenter
                     {
                         Name = "PART_ItemsPresenter",
-                        [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                         [~ItemsPresenter.ItemsPanelProperty] = parent.GetObservable(ItemsControl.ItemsPanelProperty).ToBinding(),
-                        [~ItemsPresenter.VirtualizationModeProperty] = parent.GetObservable(ListBox.VirtualizationModeProperty).ToBinding(),
                     }.RegisterInNameScope(scope)
                 }.RegisterInNameScope(scope));
         }

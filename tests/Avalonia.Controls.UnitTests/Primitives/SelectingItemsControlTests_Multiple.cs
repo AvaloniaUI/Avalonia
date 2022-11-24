@@ -1536,7 +1536,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 }.RegisterInNameScope(scope));
         }

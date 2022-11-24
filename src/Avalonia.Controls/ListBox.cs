@@ -51,7 +51,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="VirtualizationMode"/> property.
         /// </summary>
         public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<ListBox>();
+            VirtualizingStackPanel.VirtualizationModeProperty.AddOwner<ListBox>();
 
         private IScrollable? _scroll;
 

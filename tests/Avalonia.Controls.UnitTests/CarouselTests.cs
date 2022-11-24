@@ -300,7 +300,6 @@ namespace Avalonia.Controls.UnitTests
             {
                 Name = "PART_ItemsPresenter",
                 [~CarouselPresenter.IsVirtualizedProperty] = control[~Carousel.IsVirtualizedProperty],
-                [~CarouselPresenter.ItemsProperty] = control[~Carousel.ItemsProperty],
                 [~CarouselPresenter.ItemsPanelProperty] = control[~Carousel.ItemsPanelProperty],
                 [~CarouselPresenter.SelectedIndexProperty] = control[~Carousel.SelectedIndexProperty],
                 [~CarouselPresenter.PageTransitionProperty] = control[~Carousel.PageTransitionProperty],
