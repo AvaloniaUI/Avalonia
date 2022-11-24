@@ -172,7 +172,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the animation played when content appears and disappears.
+        /// Gets or sets the current content.
         /// </summary>
         public object? CurrentPage
         {
