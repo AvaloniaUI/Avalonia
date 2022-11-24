@@ -292,13 +292,13 @@ namespace Avalonia.Controls.UnitTests
             // as they are in Avalonia.Markup.Xaml.
             DelayedBinding.Add(presenter, ContentPresenter.ContentProperty, new Binding("Content")
             {
-                Priority = BindingPriority.TemplatedParent,
+                Priority = BindingPriority.Template,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
             });
 
             DelayedBinding.Add(presenter, ContentPresenter.ContentTemplateProperty, new Binding("ContentTemplate")
             {
-                Priority = BindingPriority.TemplatedParent,
+                Priority = BindingPriority.Template,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
             });
 

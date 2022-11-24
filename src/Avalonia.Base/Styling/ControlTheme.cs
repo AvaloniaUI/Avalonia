@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
@@ -36,8 +37,10 @@ namespace Avalonia.Styling
             throw new InvalidOperationException("ControlThemes cannot be added as a nested style.");
         }
 
-        internal override SelectorMatchResult TryAttach(IStyleable target, object? host)
+        internal SelectorMatchResult TryAttach(IStyleable target, FrameType type)
         {
+            Debug.Assert(type is FrameType.Theme or FrameType.TemplatedParentTheme);
+
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
             if (TargetType is null)
@@ -45,7 +48,7 @@ namespace Avalonia.Styling
 
             if (HasSettersOrAnimations && TargetType.IsAssignableFrom(target.StyleKey))
             {
-                Attach(target, null);
+                Attach(target, null, type);
                 return SelectorMatchResult.AlwaysThisType;
             }
 

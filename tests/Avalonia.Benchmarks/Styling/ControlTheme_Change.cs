@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
@@ -9,13 +10,15 @@ using BenchmarkDotNet.Attributes;
 namespace Avalonia.Benchmarks.Styling
 {
     [MemoryDiagnoser]
-    public class Style_Apply_Detach_Complex : IDisposable
+    public class ControlTheme_Change : IDisposable
     {
         private readonly IDisposable _app;
         private readonly TestRoot _root;
         private readonly TextBox _control;
+        private readonly ControlTheme _theme1;
+        private readonly ControlTheme _theme2;
 
-        public Style_Apply_Detach_Complex()
+        public ControlTheme_Change()
         {
             _app = UnitTestApplication.Start(
                 TestServices.StyledWindow.With(
@@ -26,32 +29,52 @@ namespace Avalonia.Benchmarks.Styling
             // each with a bunch of styles applied.
             var (rootPanel, leafPanel) = CreateNestedPanels(10);
 
-            // We're benchmarking how long it takes to apply styles to a TextBox in this situation.
-            _control = new TextBox();
+            // We're benchmarking how long it takes to switch control theme on a TextBox in this
+            // situation.
+            var baseTheme = (ControlTheme)Application.Current.FindResource(typeof(TextBox)) ??
+                throw new Exception("Base TextBox theme not found.");
+
+            _theme1 = new ControlTheme(typeof(TextBox))
+            {
+                BasedOn = baseTheme,
+                Setters = { new Setter(TextBox.BackgroundProperty, Brushes.Red) },
+            };
+
+            _theme2 = new ControlTheme(typeof(TextBox))
+            {
+                BasedOn = baseTheme,
+                Setters = { new Setter(TextBox.BackgroundProperty, Brushes.Green) },
+            };
+
+            _control = new TextBox { Theme = _theme1 };
             leafPanel.Children.Add(_control);
 
             _root = new TestRoot(true, rootPanel)
             {
                 Renderer = new NullRenderer(),
             };
+
+            _root.LayoutManager.ExecuteInitialLayoutPass();
         }
 
         [Benchmark]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public void Apply_Detach_Styles()
+        public void Change_ControlTheme()
         {
-            // Styles will have already been attached when attached to the logical tree, so remove
-            // the styles first.
-            if ((string)_control.Tag != "TextBox")
+            if (_control.Background != Brushes.Red)
                 throw new Exception("Invalid benchmark state");
 
-            _control.InvalidateStyles(true);
+            _control.Theme = _theme2;
+            _root.LayoutManager.ExecuteLayoutPass();
 
-            if (_control.Tag is not null)
+            if (_control.Background != Brushes.Green)
                 throw new Exception("Invalid benchmark state");
 
-            // Then re-apply the styles.
-            _control.ApplyStyling();
+            _control.Theme = _theme1;
+            _root.LayoutManager.ExecuteLayoutPass();
+
+            if (_control.Background != Brushes.Red)
+                throw new Exception("Invalid benchmark state");
         }
 
         public void Dispose()

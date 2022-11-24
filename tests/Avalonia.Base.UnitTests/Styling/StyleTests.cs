@@ -5,6 +5,7 @@ using Avalonia.Base.UnitTests.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -27,7 +28,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, null);
+            StyleHelpers.TryAttach(style, target);
 
             Assert.Equal("Foo", target.Foo);
         }
@@ -45,7 +46,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, null);
+            StyleHelpers.TryAttach(style, target);
             Assert.Equal("foodefault", target.Foo);
             target.Classes.Add("foo");
             Assert.Equal("Foo", target.Foo);
@@ -66,7 +67,7 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, target);
+            StyleHelpers.TryAttach(style, target);
 
             Assert.Equal("Foo", target.Foo);
         }
@@ -92,7 +93,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var target = new Class1();
             var other = new Class1();
 
-            style.TryAttach(target, other);
+            StyleHelpers.TryAttach(style, target, host: other);
 
             Assert.Equal("foodefault", target.Foo);
         }
@@ -113,7 +114,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 Foo = "Original",
             };
 
-            style.TryAttach(target, null);
+            StyleHelpers.TryAttach(style, target);
             Assert.Equal("Original", target.Foo);
         }
 
@@ -577,7 +578,7 @@ namespace Avalonia.Base.UnitTests.Styling
                 Child = border = new Border(),
             };
 
-            style.TryAttach(border, null);
+            StyleHelpers.TryAttach(style, border);
 
             Assert.Equal(new Thickness(4), border.BorderThickness);
             root.Child = null;
@@ -617,15 +618,15 @@ namespace Avalonia.Base.UnitTests.Styling
             var root = new TestRoot
             {
                 Styles =
+                {
+                    new Style(x => x.OfType<Border>())
                     {
-                        new Style(x => x.OfType<Border>())
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
-                            }
+                            new Setter(Border.BorderThicknessProperty, new Thickness(4)),
                         }
-                    },
+                    }
+                },
                 Child = border,
             };
 
@@ -635,9 +636,9 @@ namespace Avalonia.Base.UnitTests.Styling
             root.Styles.Add(new Style(x => x.OfType<Border>())
             {
                 Setters =
-                    {
-                        new Setter(Border.BorderThicknessProperty, new Thickness(6)),
-                    }
+                {
+                    new Setter(Border.BorderThicknessProperty, new Thickness(6)),
+                }
             });
 
             root.Measure(Size.Infinity);
@@ -651,18 +652,18 @@ namespace Avalonia.Base.UnitTests.Styling
             var root = new TestRoot
             {
                 Styles =
+                {
+                    new Styles
                     {
-                        new Styles
+                        new Style(x => x.OfType<Border>())
                         {
-                            new Style(x => x.OfType<Border>())
+                            Setters =
                             {
-                                Setters =
-                                {
-                                    new Setter(Border.BorderThicknessProperty, new Thickness(4)),
-                                }
+                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
                             }
                         }
-                    },
+                    }
+                },
                 Child = border,
             };
 
@@ -749,7 +750,34 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void DetachStyles_Should_Detach_Activator()
+        public void Adding_Style_With_No_Setters_Or_Animations_Should_Not_Invalidate_Styles()
+        {
+            var border = new Border();
+            var root = new TestRoot
+            {
+                Styles =
+                    {
+                        new Style(x => x.OfType<Border>())
+                        {
+                            Setters =
+                            {
+                                new Setter(Border.BorderThicknessProperty, new Thickness(4)),
+                            }
+                        }
+                    },
+                Child = border,
+            };
+
+            root.Measure(Size.Infinity);
+            Assert.Equal(new Thickness(4), border.BorderThickness);
+
+            root.Styles.Add(new Style(x => x.OfType<Border>()));
+
+            Assert.Equal(new Thickness(4), border.BorderThickness);
+        }
+
+        [Fact]
+        public void Invalidating_Styles_Should_Detach_Activator()
         {
             Style style = new Style(x => x.OfType<Class1>().Class("foo"))
             {
@@ -761,11 +789,11 @@ namespace Avalonia.Base.UnitTests.Styling
 
             var target = new Class1();
 
-            style.TryAttach(target, null);
+            StyleHelpers.TryAttach(style, target);
 
             Assert.Equal(1, target.Classes.ListenerCount);
 
-            ((IStyleable)target).DetachStyles();
+            target.InvalidateStyles(recurse: false);
 
             Assert.Equal(0, target.Classes.ListenerCount);
         }
@@ -874,7 +902,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var clock = new TestClock();
             var target = new Class1 { Clock = clock };
 
-            style.TryAttach(target, null);
+            StyleHelpers.TryAttach(style, target);
 
             Assert.Equal(0.0, target.Double);
 
