@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reactive.Subjects;
 using Avalonia.Animation;
 using Avalonia.Data;
@@ -27,10 +26,13 @@ namespace Avalonia.Styling
         private List<IAnimation>? _animations;
         private Subject<bool>? _animationTrigger;
 
-        public StyleInstance(IStyle style, IStyleActivator? activator)
+        public StyleInstance(
+            IStyle style,
+            IStyleActivator? activator,
+            FrameType type)
+            : base(GetPriority(activator), type)
         {
             _activator = activator;
-            Priority = activator is object ? BindingPriority.StyleTrigger : BindingPriority.Style;
             Source = style;
         }
 
@@ -98,6 +100,11 @@ namespace Avalonia.Styling
             _isActive = _activator?.GetIsActive() ?? true;
             hasChanged = _isActive != previous;
             return _isActive;
+        }
+
+        private static BindingPriority GetPriority(IStyleActivator? activator)
+        {
+            return activator is not null ? BindingPriority.StyleTrigger : BindingPriority.Style;
         }
     }
 }

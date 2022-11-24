@@ -4,8 +4,11 @@ using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
+using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Lifecycle;
+
+using AndroidRect = Android.Graphics.Rect;
 
 namespace Avalonia.Android
 {
@@ -15,6 +18,7 @@ namespace Avalonia.Android
 
         public Action<int, Result, Intent> ActivityResult { get; set; }
         internal AvaloniaView View;
+        private GlobalLayoutListener _listener;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -32,6 +36,10 @@ namespace Avalonia.Android
             base.OnCreate(savedInstanceState);
 
             SetContentView(View);
+
+            _listener = new GlobalLayoutListener(View);
+
+            View.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
         }
 
         public object Content
@@ -57,6 +65,8 @@ namespace Avalonia.Android
         {
             View.Content = null;
 
+            View.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
+
             base.OnDestroy();
         }
 
@@ -65,6 +75,21 @@ namespace Avalonia.Android
             base.OnActivityResult(requestCode, resultCode, data);
 
             ActivityResult?.Invoke(requestCode, resultCode, data);
+        }
+
+        class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
+        {
+            private AvaloniaView _view;
+
+            public GlobalLayoutListener(AvaloniaView view)
+            {
+                _view = view;
+            }
+
+            public void OnGlobalLayout()
+            {
+                _view.TopLevelImpl?.Resize(_view.TopLevelImpl.ClientSize);
+            }
         }
     }
 }

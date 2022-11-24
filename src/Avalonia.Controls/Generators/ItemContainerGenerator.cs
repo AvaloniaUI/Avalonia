@@ -205,7 +205,7 @@ namespace Avalonia.Controls.Generators
                 result.SetValue(
                     StyledElement.ThemeProperty,
                     ItemContainerTheme,
-                    BindingPriority.TemplatedParent);
+                    BindingPriority.Template);
             }
 
             return result;
