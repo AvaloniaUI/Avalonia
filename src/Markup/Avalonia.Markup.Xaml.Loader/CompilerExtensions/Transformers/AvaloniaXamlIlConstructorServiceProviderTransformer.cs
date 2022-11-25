@@ -21,7 +21,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         c.IsPublic && !c.IsStatic && c.Parameters.Count == 1 && c.Parameters[0]
                             .Equals(sp)))
                     {
-                        on.Arguments.Add(new InjectServiceProviderNode(sp, on));
+                        on.Arguments.Add(new InjectServiceProviderNode(sp, on, true));
                     }
                 }
             }
@@ -29,19 +29,33 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             return node;
         }
 
-        class InjectServiceProviderNode : XamlAstNode, IXamlAstValueNode,IXamlAstNodeNeedsParentStack,
+        internal class InjectServiceProviderNode : XamlAstNode, IXamlAstValueNode,IXamlAstNodeNeedsParentStack,
             IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
         {
-            public InjectServiceProviderNode(IXamlType type, IXamlLineInfo lineInfo) : base(lineInfo)
+            private readonly bool _inheritContext;
+
+            public InjectServiceProviderNode(IXamlType type, IXamlLineInfo lineInfo, bool inheritContext) : base(lineInfo)
             {
+                _inheritContext = inheritContext;
                 Type = new XamlAstClrTypeReference(lineInfo, type, false);
             }
 
             public IXamlAstTypeReference Type { get; }
-            public bool NeedsParentStack => true;
+            public bool NeedsParentStack => _inheritContext;
             public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
             {
-                codeGen.Ldloc(context.ContextLocal);
+                if (_inheritContext)
+                {
+                    codeGen.Ldloc(context.ContextLocal);
+                }
+                else
+                {
+                    var method = context.GetAvaloniaTypes().RuntimeHelpers
+                        .FindMethod(m => m.Name == "CreateRootServiceProviderV2");
+                    codeGen.EmitCall(method);
+                    context.RuntimeContext.Factory(codeGen);
+                }
+
                 return XamlILNodeEmitResult.Type(0, Type.GetClrType());
             }
         }

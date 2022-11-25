@@ -231,8 +231,6 @@ namespace Avalonia.Build.Tasks
                 });
                 asm.MainModule.Types.Add(typeDef);
                 var builder = typeSystem.CreateTypeBuilder(typeDef);
-
-                var populateMethodsToTransform = new List<(MethodDefinition populateMethod, string resourceFilePath)>();
                 
                 IReadOnlyCollection<XamlDocumentResource> parsedXamlDocuments = new List<XamlDocumentResource>();
                 foreach (var res in group.Resources.Where(CheckXamlName).OrderBy(x => x.FilePath.ToLowerInvariant()))
@@ -347,23 +345,11 @@ namespace Avalonia.Build.Tasks
                             res.Uri, res
                         );
 
-                        var compiledPopulateMethod = typeSystem.GetTypeReference(populateBuilder).Resolve()
-                            .Methods.First(m => m.Name == populateName);
-
-                        // Include populate method and all nested methods/closures used in the populate method,
-                        // So we can replace style/resource includes in all of them. 
-                        populateMethodsToTransform.Add((compiledPopulateMethod, res.FilePath));
-                        populateMethodsToTransform.AddRange(compiledPopulateMethod.Body.Instructions
-                            .Where(b => b.OpCode == OpCodes.Call || b.OpCode == OpCodes.Callvirt || b.OpCode == OpCodes.Ldftn)
-                            .Select(b => b.Operand)
-                            .OfType<MethodReference>()
-                            .Where(m => compiledPopulateMethod.DeclaringType.NestedTypes.Contains(m.DeclaringType))
-                            .Select(m => m.Resolve())
-                            .Where(m => m.HasBody)
-                            .Select(m => (m, res.FilePath)));
-
                         if (classTypeDefinition != null)
                         {
+                            var compiledPopulateMethod = typeSystem.GetTypeReference(populateBuilder).Resolve()
+                                .Methods.First(m => m.Name == document.PopulateMethod.Name);
+
                             var designLoaderFieldType = typeSystem
                                 .GetType("System.Action`1")
                                 .MakeGenericType(typeSystem.GetType("System.Object"));
@@ -512,14 +498,6 @@ namespace Avalonia.Build.Tasks
                     res.Remove();
                 }
 
-                foreach (var (populateMethod, resourceFilePath) in populateMethodsToTransform)
-                {
-                    if (!TransformXamlIncludes(engine, typeSystem, populateMethod, resourceFilePath, createRootServiceProviderMethod))
-                    {
-                        return false;
-                    }
-                }
-
                 // Technically that's a hack, but it fixes corert incompatibility caused by deterministic builds
                 int dupeCounter = 1;
                 foreach (var grp in typeDef.NestedTypes.GroupBy(x => x.Name))
@@ -592,117 +570,6 @@ namespace Avalonia.Build.Tasks
                     0, 0, 0, 0,
                     e.Message, "", "Avalonia"));
                 return false;
-            }
-
-            return true;
-        }
-        
-        private static bool TransformXamlIncludes(
-            IBuildEngine engine, CecilTypeSystem typeSystem,
-            MethodDefinition populateMethod, string resourceFilePath,
-            MethodReference createRootServiceProviderMethod)
-        {
-            var asm = typeSystem.TargetAssemblyDefinition;
-            foreach (var instruction in populateMethod.Body.Instructions.ToArray())
-            {
-                const string resolveStyleIncludeName = "ResolveStyleInclude";
-                const string resolveResourceInclude = "ResolveResourceInclude";
-                if (instruction.OpCode == OpCodes.Call
-                    && instruction.Operand is MethodReference
-                    {
-                        Name: resolveStyleIncludeName or resolveResourceInclude,
-                        DeclaringType: { Name: "XamlIlRuntimeHelpers" }
-                    })
-                {
-                    int lineNumber = 0, linePosition = 0;
-                    bool instructionsModified = false;
-                    try
-                    {
-                        var assetSource = (string)instruction.Previous.Previous.Previous.Operand;
-                        lineNumber = GetConstValue(instruction.Previous.Previous);
-                        linePosition = GetConstValue(instruction.Previous);
-
-                        var index = populateMethod.Body.Instructions.IndexOf(instruction);
-
-                        assetSource = assetSource.Replace("avares://", "");
-
-                        var assemblyNameSeparator = assetSource.IndexOf('/');
-                        var fileNameSeparator = assetSource.LastIndexOf('/');
-                        if (assemblyNameSeparator < 0 || fileNameSeparator < 0)
-                        {
-                            throw new InvalidProgramException(
-                                $"Invalid asset source \"{assetSource}\". It must contain assembly name and relative path.");
-                        }
-
-                        var assetAssemblyName = assetSource.Substring(0, assemblyNameSeparator);
-                        var assetAssembly = typeSystem.FindAssembly(assetAssemblyName)
-                                            ?? throw new InvalidProgramException(
-                                                $"Unable to resolve assembly \"{assetAssemblyName}\"");
-
-                        var fileName = Path.GetFileNameWithoutExtension(assetSource.Replace('/', '.'));
-                        if (assetAssembly.FindType(fileName) is { } type
-                            && type.FindConstructor() is { } ctor)
-                        {
-                            var ctorMethod =
-                                asm.MainModule.ImportReference(typeSystem.GetMethodReference(ctor));
-                            instructionsModified = true;
-                            populateMethod.Body.Instructions[index - 3] = Instruction.Create(OpCodes.Nop);
-                            populateMethod.Body.Instructions[index - 2] = Instruction.Create(OpCodes.Nop);
-                            populateMethod.Body.Instructions[index - 1] = Instruction.Create(OpCodes.Nop);
-                            populateMethod.Body.Instructions[index] = Instruction.Create(OpCodes.Newobj, ctorMethod);
-                        }
-                        else
-                        {
-                            var resources = assetAssembly.FindType("CompiledAvaloniaXaml.!AvaloniaResources")
-                                            ?? throw new InvalidOperationException(
-                                                $"Unable to resolve \"!AvaloniaResources\" type on \"{assetAssemblyName}\" assembly");
-
-                            var relativeName = "Build:" + assetSource.Substring(assemblyNameSeparator);
-                            var buildMethod = resources.FindMethod(m => m.Name == relativeName)
-                                              ?? throw new InvalidOperationException(
-                                                  $"Unable to resolve build method \"{relativeName}\" resource on the \"{assetAssemblyName}\" assembly");
-
-                            var methodReference = asm.MainModule.ImportReference(typeSystem.GetMethodReference(buildMethod));
-                            instructionsModified = true;
-                            populateMethod.Body.Instructions[index - 3] = Instruction.Create(OpCodes.Nop);
-                            populateMethod.Body.Instructions[index - 2] = Instruction.Create(OpCodes.Nop);
-                            populateMethod.Body.Instructions[index - 1] =
-                                Instruction.Create(OpCodes.Call, createRootServiceProviderMethod);
-                            populateMethod.Body.Instructions[index] = Instruction.Create(OpCodes.Call, methodReference);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        if (instructionsModified)
-                        {
-                            engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", "XAMLIL", resourceFilePath,
-                                lineNumber, linePosition, lineNumber, linePosition,
-                                e.Message, "", "Avalonia"));
-                            return false;
-                        }
-                        else
-                        {
-                            engine.LogWarningEvent(new BuildWarningEventArgs("Avalonia", "XAMLIL",
-                                resourceFilePath,
-                                lineNumber, linePosition, lineNumber, linePosition,
-                                e.Message, "", "Avalonia"));
-                        }
-                    }
-                    
-                    static int GetConstValue(Instruction instruction)
-                    {
-                        if (instruction.OpCode is { Code : >= Code.Ldc_I4_0 and <= Code.Ldc_I4_8 })
-                        {
-                            return instruction.OpCode.Code - Code.Ldc_I4_0;
-                        }
-                        if (instruction.Operand is not null)
-                        {
-                            return Convert.ToInt32(instruction.Operand);
-                        }
-
-                        return 0;
-                    }
-                }
             }
 
             return true;
