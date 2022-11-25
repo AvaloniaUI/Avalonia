@@ -41,11 +41,11 @@ namespace Avalonia.Markup.Xaml
             bool designMode = false)
             => AvaloniaXamlIlRuntimeCompiler.Load(new RuntimeXamlLoaderDocument(uri, rootInstance, stream),
                 new RuntimeXamlLoaderConfiguration { DesignMode = designMode, LocalAssembly = localAssembly });
-        
+
         /// <summary>
         /// Loads XAML from a stream.
         /// </summary>
-        /// <param name="stream">The stream containing the XAML.</param>
+        /// <param name="document">The stream containing the XAML.</param>
         /// <param name="configuration">Xaml loader configuration.</param>
         /// <returns>The loaded object.</returns>
         public static object Load(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration? configuration = null)
