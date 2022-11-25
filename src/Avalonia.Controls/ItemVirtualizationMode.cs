@@ -14,5 +14,10 @@
         /// Virtualize items without smooth scrolling.
         /// </summary>
         Simple,
+
+        /// <summary>
+        /// Virtualize items with smooth scrolling.
+        /// </summary>
+        Smooth,
     }
 }

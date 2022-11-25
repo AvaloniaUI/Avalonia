@@ -61,7 +61,7 @@ namespace Avalonia.Controls
         static ListBox()
         {
             ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
-            VirtualizationModeProperty.OverrideDefaultValue<ListBox>(ItemVirtualizationMode.Simple);
+            VirtualizationModeProperty.OverrideDefaultValue<ListBox>(ItemVirtualizationMode.Smooth);
         }
 
         /// <summary>

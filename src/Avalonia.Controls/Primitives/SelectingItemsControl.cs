@@ -373,7 +373,7 @@ namespace Avalonia.Controls.Primitives
         /// Scrolls the specified item into view.
         /// </summary>
         /// <param name="index">The index of the item.</param>
-        public void ScrollIntoView(int index) => throw new NotImplementedException(); ////Presenter?.ScrollIntoView(index);
+        public void ScrollIntoView(int index) => Presenter?.ScrollIntoView(index);
 
         /// <summary>
         /// Scrolls the specified item into view.

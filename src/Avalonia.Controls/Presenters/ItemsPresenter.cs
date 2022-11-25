@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Specialized;
 using System.Diagnostics;
 
 namespace Avalonia.Controls.Presenters
@@ -39,14 +36,23 @@ namespace Avalonia.Controls.Presenters
 
         public override sealed void ApplyTemplate()
         {
-            if (Panel is null)
+            if (Panel is null && ItemsControl is not null)
             {
                 Panel = ItemsPanel.Build();
                 Panel.SetValue(TemplatedParentProperty, TemplatedParent);
                 LogicalChildren.Add(Panel);
                 VisualChildren.Add(Panel);
-                CreateGeneratorIfSimplePanel();
+
+                if (Panel is VirtualizingPanel v)
+                    v.Attach(ItemsControl);
+                else
+                    CreateSimplePanelGenerator();
             }
+        }
+
+        internal void ScrollIntoView(int index)
+        {
+
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -55,30 +61,37 @@ namespace Avalonia.Controls.Presenters
 
             if (change.Property == TemplatedParentProperty)
             {
-                _generator?.Dispose();
-                _generator = null;
+                ResetState();
+                ItemsControl = null;
 
                 if (change.NewValue is ItemsControl itemsControl)
                 {
                     ItemsControl = itemsControl;
                     ((IItemsPresenterHost)itemsControl)?.RegisterItemsPresenter(this);
-                    CreateGeneratorIfSimplePanel();
                 }
             }
             else if (change.Property == ItemsPanelProperty)
             {
-                _generator?.Dispose();
-                _generator = null;
-                LogicalChildren.Clear();
-                VisualChildren.Clear();
-                Panel = null;
+                ResetState();
                 InvalidateMeasure();
             }
         }
 
-        private void CreateGeneratorIfSimplePanel()
+        private void ResetState()
         {
-            if (ItemsControl is null || Panel is null || Panel is IVirtualizingPanel)
+            _generator?.Dispose();
+            _generator = null;
+            LogicalChildren.Clear();
+            VisualChildren.Clear();
+            (Panel as VirtualizingPanel)?.Detach();
+            Panel = null;
+        }
+
+        private void CreateSimplePanelGenerator()
+        {
+            Debug.Assert(Panel is not VirtualizingPanel);
+
+            if (ItemsControl is null || Panel is null)
                 return;
 
             _generator?.Dispose();

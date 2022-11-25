@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using Avalonia.Controls.Utils;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -10,13 +11,12 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     internal class ItemsPresenterContainerGenerator : IDisposable
     {
-        private static NotifyCollectionChangedEventArgs s_Reset = new(NotifyCollectionChangedAction.Reset);
-        private ItemsPresenter _presenter;
+        private readonly ItemsPresenter _presenter;
 
         public ItemsPresenterContainerGenerator(ItemsPresenter presenter)
         {
             Debug.Assert(presenter.ItemsControl is not null);
-            Debug.Assert(presenter.Panel is not null or IVirtualizingPanel);
+            Debug.Assert(presenter.Panel is not null or VirtualizingPanel);
             
             _presenter = presenter;
             _presenter.ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Presenters
             if (_presenter.ItemsControl.Items is INotifyCollectionChanged incc)
                 incc.CollectionChanged += OnItemsChanged;
 
-            OnItemsChanged(null, s_Reset);
+            OnItemsChanged(null, CollectionUtils.ResetEventArgs);
         }
 
         public void Dispose()
@@ -43,7 +43,7 @@ namespace Avalonia.Controls.Presenters
             {
                 if (e.OldValue is INotifyCollectionChanged inccOld)
                     inccOld.CollectionChanged -= OnItemsChanged;
-                OnItemsChanged(null, s_Reset);
+                OnItemsChanged(null, CollectionUtils.ResetEventArgs);
                 if (e.NewValue is INotifyCollectionChanged inccNew)
                     inccNew.CollectionChanged += OnItemsChanged;
             }
