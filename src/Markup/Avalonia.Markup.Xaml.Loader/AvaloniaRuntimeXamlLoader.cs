@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using Avalonia.Markup.Xaml.XamlIl;
-
+#nullable enable
 namespace Avalonia.Markup.Xaml
 {
     public static class AvaloniaRuntimeXamlLoader
@@ -17,29 +18,13 @@ namespace Avalonia.Markup.Xaml
         /// <param name="uri">The URI of the XAML being loaded.</param>
         /// <param name="designMode">Indicates whether the XAML is being loaded in design mode.</param>
         /// <returns>The loaded object.</returns>
-        public static object Load(string xaml, Assembly localAssembly = null, object rootInstance = null, Uri uri = null, bool designMode = false)
+        public static object Load(string xaml, Assembly? localAssembly = null, object? rootInstance = null, Uri? uri = null, bool designMode = false)
         {
-            Contract.Requires<ArgumentNullException>(xaml != null);
+            xaml = xaml ?? throw new ArgumentNullException(nameof(xaml));
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
             {
                 return Load(stream, localAssembly, rootInstance, uri, designMode);
-            }
-        }
-        
-        /// <summary>
-        /// Loads XAML from a string.
-        /// </summary>
-        /// <param name="xaml">The string containing the XAML.</param>
-        /// <param name="configuration">Xaml loader configuration.</param>
-        /// <returns>The loaded object.</returns>
-        public static object Load(string xaml, RuntimeXamlLoaderConfiguration configuration)
-        {
-            Contract.Requires<ArgumentNullException>(xaml != null);
-
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(xaml)))
-            {
-                return Load(stream, configuration);
             }
         }
 
@@ -52,9 +37,10 @@ namespace Avalonia.Markup.Xaml
         /// <param name="uri">The URI of the XAML being loaded.</param>
         /// <param name="designMode">Indicates whether the XAML is being loaded in design mode.</param>
         /// <returns>The loaded object.</returns>
-        public static object Load(Stream stream, Assembly localAssembly, object rootInstance = null, Uri uri = null,
+        public static object Load(Stream stream, Assembly? localAssembly = null, object? rootInstance = null, Uri? uri = null,
             bool designMode = false)
-            => AvaloniaXamlIlRuntimeCompiler.Load(stream, localAssembly, rootInstance, uri, designMode, false);
+            => AvaloniaXamlIlRuntimeCompiler.Load(new RuntimeXamlLoaderDocument(uri, rootInstance, stream),
+                new RuntimeXamlLoaderConfiguration { DesignMode = designMode, LocalAssembly = localAssembly });
         
         /// <summary>
         /// Loads XAML from a stream.
@@ -62,9 +48,17 @@ namespace Avalonia.Markup.Xaml
         /// <param name="stream">The stream containing the XAML.</param>
         /// <param name="configuration">Xaml loader configuration.</param>
         /// <returns>The loaded object.</returns>
-        public static object Load(Stream stream, RuntimeXamlLoaderConfiguration configuration)
-            => AvaloniaXamlIlRuntimeCompiler.Load(stream, configuration.LocalAssembly, configuration.RootInstance,
-                configuration.BaseUri, configuration.DesignMode, configuration.UseCompiledBindingsByDefault);
+        public static object Load(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration? configuration = null)
+            => AvaloniaXamlIlRuntimeCompiler.Load(document, configuration ?? new RuntimeXamlLoaderConfiguration());
+
+        /// <summary>
+        /// Loads group of XAML files from a stream.
+        /// </summary>
+        /// <param name="documents">Collection of documents.</param>
+        /// <param name="configuration">Xaml loader configuration.</param>
+        /// <returns>The loaded objects per each input document.</returns>
+        public static IReadOnlyList<object> LoadGroup(IReadOnlyCollection<RuntimeXamlLoaderDocument> documents, RuntimeXamlLoaderConfiguration? configuration = null)
+            => AvaloniaXamlIlRuntimeCompiler.LoadGroup(documents, configuration ?? new RuntimeXamlLoaderConfiguration());
 
         /// <summary>
         /// Parse XAML from a string.
@@ -72,7 +66,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="xaml">The string containing the XAML.</param>
         /// <param name="localAssembly">Default assembly for clr-namespace:.</param>
         /// <returns>The loaded object.</returns>
-        public static object Parse(string xaml, Assembly localAssembly = null)
+        public static object Parse(string xaml, Assembly? localAssembly = null)
             => Load(xaml, localAssembly);
 
         /// <summary>
@@ -82,7 +76,7 @@ namespace Avalonia.Markup.Xaml
         /// <param name="xaml">>The string containing the XAML.</param>
         /// <param name="localAssembly">>Default assembly for clr-namespace:.</param>
         /// <returns>The loaded object.</returns>
-        public static T Parse<T>(string xaml, Assembly localAssembly = null)
+        public static T Parse<T>(string xaml, Assembly? localAssembly = null)
             => (T)Parse(xaml, localAssembly);
             
     }

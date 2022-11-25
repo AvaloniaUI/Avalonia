@@ -11,7 +11,7 @@ namespace Avalonia.Markup.Xaml
     {
         public interface IRuntimeXamlLoader
         {
-            object Load(Stream stream, RuntimeXamlLoaderConfiguration configuration);
+            object Load(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration);
         }
         
         /// <summary>
@@ -64,10 +64,9 @@ namespace Avalonia.Markup.Xaml
                 using (var stream = asset.stream)
                 {
                     var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
-                    return runtimeLoader.Load(stream, new RuntimeXamlLoaderConfiguration
+                    return runtimeLoader.Load(new RuntimeXamlLoaderDocument(absoluteUri, stream), new RuntimeXamlLoaderConfiguration
                     {
-                        LocalAssembly = asset.assembly,
-                        BaseUri = absoluteUri
+                        LocalAssembly = asset.assembly
                     });
                 }
             }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using XamlX.Emit;
 using XamlX.IL;
 using XamlX.Transform;
@@ -260,6 +261,14 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         }
 
         public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> ctx)
+        {
+            if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))
+                return rv;
+            ctx.SetItem(rv = new AvaloniaXamlIlWellKnownTypes(ctx.Configuration));
+            return rv;
+        }
+        
+        public static AvaloniaXamlIlWellKnownTypes GetAvaloniaTypes(this AstGroupTransformationContext ctx)
         {
             if (ctx.TryGetItem<AvaloniaXamlIlWellKnownTypes>(out var rv))
                 return rv;
