@@ -233,13 +233,14 @@ namespace Avalonia.Build.Tasks
                 var builder = typeSystem.CreateTypeBuilder(typeDef);
 
                 var populateMethodsToTransform = new List<(MethodDefinition populateMethod, string resourceFilePath)>();
-
-                foreach (var res in group.Resources.Where(CheckXamlName).OrderBy(x=>x.FilePath.ToLowerInvariant()))
+                
+                IReadOnlyCollection<XamlDocumentResource> parsedXamlDocuments = new List<XamlDocumentResource>();
+                foreach (var res in group.Resources.Where(CheckXamlName).OrderBy(x => x.FilePath.ToLowerInvariant()))
                 {
+                    engine.LogMessage($"XAMLIL: {res.Name} -> {res.Uri}", logImportance);
+
                     try
                     {
-                        engine.LogMessage($"XAMLIL: {res.Name} -> {res.Uri}", logImportance);
-
                         // StreamReader is needed here to handle BOM
                         var xaml = new StreamReader(new MemoryStream(res.FileContents)).ReadToEnd();
                         var parsed = XDocumentXamlParser.Parse(xaml);
@@ -276,9 +277,9 @@ namespace Avalonia.Build.Tasks
                         
                         
                         compiler.Transform(parsed);
+
                         var populateName = classType == null ? "Populate:" + res.Name : "!XamlIlPopulate";
-                        var buildName = classType == null ? "Build:" + res.Name : null; 
-                        
+                        var buildName = classType == null ? "Build:" + res.Name : null;
                         var classTypeDefinition =
                             classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
 
@@ -286,11 +287,57 @@ namespace Avalonia.Build.Tasks
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
                             typeSystem.CreateTypeBuilder(classTypeDefinition);
-                        compiler.Compile(parsed, 
-                            contextClass,
+
+                        ((List<XamlDocumentResource>)parsedXamlDocuments).Add(new XamlDocumentResource(
+                            parsed, res.Uri, res, classType,
+                            populateBuilder,
                             compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
                                 classTypeDefinition == null),
-                            buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true),
+                            buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true)));
+                    }
+                    catch (Exception e)
+                    {
+                        int lineNumber = 0, linePosition = 0;
+                        if (e is XamlParseException xe)
+                        {
+                            lineNumber = xe.LineNumber;
+                            linePosition = xe.LinePosition;
+                        }
+
+                        engine.LogError(BuildEngineErrorCode.TransformError, res.FilePath, e.Message, lineNumber, linePosition);
+                        return false;
+                    }
+                }
+
+                try
+                {
+                    compiler.TransformGroup(parsedXamlDocuments);
+                }
+                catch (XamlDocumentParseException e)
+                {
+                    engine.LogError(BuildEngineErrorCode.TransformError, e.FilePath, e.Message, e.LineNumber, e.LinePosition);
+                }
+                catch (XamlParseException e)
+                {
+                    engine.LogError(BuildEngineErrorCode.TransformError, "", e.Message, e.LineNumber, e.LinePosition);
+                }
+
+                foreach (var document in parsedXamlDocuments)
+                {
+                    var parsed = document.XamlDocument;
+                    var res = (IResource)document.FileSource;
+                    var classType = document.ClassType;
+                    var populateBuilder = document.TypeBuilder;
+
+                    try
+                    {
+                        var classTypeDefinition =
+                            classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
+
+                        compiler.Compile(parsed, 
+                            contextClass,
+                            document.PopulateMethod,
+                            document.BuildMethod,
                             builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name,
                                 true),
                             (closureName, closureBaseType) =>
@@ -417,12 +464,12 @@ namespace Avalonia.Build.Tasks
 
                         }
 
-                        if (buildName != null || classTypeDefinition != null)
+                        if (document.BuildMethod != null || classTypeDefinition != null)
                         {
-                            var compiledBuildMethod = buildName == null ?
+                            var compiledBuildMethod = document.BuildMethod == null ?
                                 null :
                                 typeSystem.GetTypeReference(builder).Resolve()
-                                    .Methods.First(m => m.Name == buildName);
+                                    .Methods.First(m => m.Name == document.BuildMethod.Name);
                             var parameterlessConstructor = compiledBuildMethod != null ?
                                 null :
                                 classTypeDefinition.GetConstructors().FirstOrDefault(c =>
@@ -459,9 +506,7 @@ namespace Avalonia.Build.Tasks
                             lineNumber = xe.LineNumber;
                             linePosition = xe.LinePosition;
                         }
-                        engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", "XAMLIL", res.FilePath,
-                            lineNumber, linePosition, lineNumber, linePosition,
-                            e.Message, "", "Avalonia"));
+                        engine.LogError(BuildEngineErrorCode.EmitError, res.FilePath, e.Message, lineNumber, linePosition);
                         return false;
                     }
                     res.Remove();
