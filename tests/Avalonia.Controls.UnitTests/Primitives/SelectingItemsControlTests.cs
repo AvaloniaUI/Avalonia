@@ -1475,7 +1475,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             Height = 10
                         }),
                     AutoScrollToSelectedItem = true,
-                    VirtualizationMode = ItemVirtualizationMode.Simple,
                 };
 
                 var root = new TestRoot(true, target);

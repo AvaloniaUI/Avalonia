@@ -369,7 +369,6 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void LayoutManager_Should_Measure_Arrange_All()
         {
-            var virtualizationMode = ItemVirtualizationMode.Simple;
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var items = new AvaloniaList<string>(Enumerable.Range(1, 7).Select(v => v.ToString()));
@@ -387,7 +386,6 @@ namespace Avalonia.Controls.UnitTests
                 target.Height = 110;
                 target.Width = 50;
                 target.DataContext = items;
-                target.VirtualizationMode = virtualizationMode;
 
                 target.ItemTemplate = new FuncDataTemplate<object>((c, _) =>
                 {
@@ -448,7 +446,6 @@ namespace Avalonia.Controls.UnitTests
                     AutoScrollToSelectedItem = true,
                     Height = 100,
                     Width = 50,
-                    VirtualizationMode = ItemVirtualizationMode.Simple,
                     ItemTemplate = new FuncDataTemplate<object>((c, _) => new Border() { Height = 10 }),
                     Items = items,
                 };
@@ -488,7 +485,6 @@ namespace Avalonia.Controls.UnitTests
                     Items = items,
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 10 }),
                     SelectionMode = SelectionMode.AlwaysSelected,
-                    VirtualizationMode = ItemVirtualizationMode.None,
                 };
 
                 Prepare(target);
@@ -532,7 +528,6 @@ namespace Avalonia.Controls.UnitTests
                     VerticalAlignment = Layout.VerticalAlignment.Top,
                     AutoScrollToSelectedItem = true,
                     Width = 50,
-                    VirtualizationMode = ItemVirtualizationMode.Simple,
                     ItemTemplate = new FuncDataTemplate<object>((c, _) => new Border() { Height = 10 }),
                     Items = items,
                 };
@@ -705,7 +700,6 @@ namespace Avalonia.Controls.UnitTests
                 Items = new[] { "Foo" },
                 ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
                 SelectionMode = SelectionMode.AlwaysSelected,
-                VirtualizationMode = ItemVirtualizationMode.None
             };
 
             Prepare(target);

@@ -836,7 +836,6 @@ namespace Avalonia.LeakTests
                     {
                         Width = 100,
                         Height = 100,
-                        VirtualizationMode = ItemVirtualizationMode.None,
                         // Create a button with binding to the KeyGesture in the template and add it to references list
                         ItemTemplate = new FuncDataTemplate(typeof(KeyGesture), (o, scope) =>
                         {

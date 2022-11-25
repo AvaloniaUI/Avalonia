@@ -149,8 +149,7 @@
                      Items="{Binding Items}"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      SelectedItems="{Binding SelectedItems}"
-                     SelectionMode="{Binding SelectionMode}"
-                     VirtualizationMode="Simple">
+                     SelectionMode="{Binding SelectionMode}">
               <ListBox.ItemTemplate>
                 <DataTemplate>
                   <Grid Background="Transparent">

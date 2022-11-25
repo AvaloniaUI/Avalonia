@@ -54,12 +54,6 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<ComboBox, object?>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
 
         /// <summary>
-        /// Defines the <see cref="VirtualizationMode"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            VirtualizingStackPanel.VirtualizationModeProperty.AddOwner<ComboBox>();
-
-        /// <summary>
         /// Defines the <see cref="PlaceholderText"/> property.
         /// </summary>
         public static readonly StyledProperty<string?> PlaceholderTextProperty =
@@ -144,15 +138,6 @@ namespace Avalonia.Controls
         {
             get { return GetValue(PlaceholderForegroundProperty); }
             set { SetValue(PlaceholderForegroundProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets the virtualization mode for the items.
-        /// </summary>
-        public ItemVirtualizationMode VirtualizationMode
-        {
-            get { return GetValue(VirtualizationModeProperty); }
-            set { SetValue(VirtualizationModeProperty, value); }
         }
 
         /// <summary>

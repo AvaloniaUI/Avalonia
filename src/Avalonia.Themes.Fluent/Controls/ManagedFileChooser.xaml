@@ -216,7 +216,6 @@
               <TextBlock Grid.Column="8" Text="Size" />
             </Grid>
             <ListBox x:Name="PART_Files"
-                VirtualizationMode="Simple"
                 Items="{Binding Items}"
                 Margin="0 5"
                 SelectionMode="{Binding SelectionMode}"

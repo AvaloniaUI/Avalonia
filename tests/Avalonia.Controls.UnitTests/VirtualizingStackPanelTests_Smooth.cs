@@ -161,7 +161,6 @@ namespace Avalonia.Controls.UnitTests
                 Template = new FuncControlTemplate<ItemsControl>((_, _) => scroll),
                 ItemsPanel = new FuncTemplate<Panel>(() => target),
                 ItemTemplate = new FuncDataTemplate<string>((x, _) => new Canvas { Width = 100, Height = 10 }),
-                [VirtualizingStackPanel.VirtualizationModeProperty] = ItemVirtualizationMode.Smooth,
             };
 
             var root = new TestRoot(true, itemsControl);

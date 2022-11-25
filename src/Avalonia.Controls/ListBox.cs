@@ -47,12 +47,6 @@ namespace Avalonia.Controls
         public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
 
-        /// <summary>
-        /// Defines the <see cref="VirtualizationMode"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            VirtualizingStackPanel.VirtualizationModeProperty.AddOwner<ListBox>();
-
         private IScrollable? _scroll;
 
         /// <summary>
@@ -61,7 +55,6 @@ namespace Avalonia.Controls
         static ListBox()
         {
             ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
-            VirtualizationModeProperty.OverrideDefaultValue<ListBox>(ItemVirtualizationMode.Smooth);
         }
 
         /// <summary>
@@ -98,15 +91,6 @@ namespace Avalonia.Controls
         {
             get { return base.SelectionMode; }
             set { base.SelectionMode = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the virtualization mode for the items.
-        /// </summary>
-        public ItemVirtualizationMode VirtualizationMode
-        {
-            get { return GetValue(VirtualizationModeProperty); }
-            set { SetValue(VirtualizationModeProperty, value); }
         }
 
         /// <summary>
