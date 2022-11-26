@@ -45,32 +45,37 @@ namespace Avalonia.Threading
         /// <summary>
         /// The job will be processed after other non-idle operations have completed.
         /// </summary>
-        public static readonly DispatcherPriority Background = new(1);
+        public static readonly DispatcherPriority Background = new(MinValue + 1);
 
         /// <summary>
         /// The job will be processed with the same priority as input.
         /// </summary>
-        public static readonly DispatcherPriority Input = new(2);
+        public static readonly DispatcherPriority Input = new(Background + 1);
 
         /// <summary>
         /// The job will be processed after layout and render but before input.
         /// </summary>
-        public static readonly DispatcherPriority Loaded = new(3);
-        
+        public static readonly DispatcherPriority Loaded = new(Input + 1);
+
         /// <summary>
         /// The job will be processed with the same priority as render.
         /// </summary>
-        public static readonly DispatcherPriority Render = new(5);
-        
+        public static readonly DispatcherPriority Render = new(Loaded + 1);
+
         /// <summary>
         /// The job will be processed with the same priority as composition updates.
         /// </summary>
-        public static readonly DispatcherPriority Composition = new(6);
-        
+        public static readonly DispatcherPriority Composition = new(Render + 1);
+
         /// <summary>
-        /// The job will be processed with the same priority as render.
+        /// The job will be processed with the same priority as composition updates.
         /// </summary>
-        public static readonly DispatcherPriority Layout = new(7);
+        public static readonly DispatcherPriority PreComposition = new(Composition + 1);
+
+        /// <summary>
+        /// The job will be processed with the same priority as layout.
+        /// </summary>
+        public static readonly DispatcherPriority Layout = new(PreComposition + 1);
 
         /// <summary>
         /// The job will be processed with the same priority as data binding.
@@ -80,7 +85,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// The job will be processed before other asynchronous operations.
         /// </summary>
-        public static readonly DispatcherPriority Send = new(8);
+        public static readonly DispatcherPriority Send = new(Layout + 1);
 
         /// <summary>
         /// Maximum possible priority
