@@ -94,7 +94,7 @@ namespace Avalonia.Build.Tasks
             }
             catch (Exception ex)
             {
-                engine.LogError(BuildEngineErrorCode.Unknown, "", ex.Message);
+                engine.LogError(BuildEngineErrorCode.Unknown, "", ex);
                 return new CompileResult(false);
             }
         }
@@ -302,7 +302,7 @@ namespace Avalonia.Build.Tasks
                             linePosition = xe.LinePosition;
                         }
 
-                        engine.LogError(BuildEngineErrorCode.TransformError, res.FilePath, e.Message, lineNumber, linePosition);
+                        engine.LogError(BuildEngineErrorCode.TransformError, res.FilePath, e, lineNumber, linePosition);
                         return false;
                     }
                 }
@@ -313,11 +313,11 @@ namespace Avalonia.Build.Tasks
                 }
                 catch (XamlDocumentParseException e)
                 {
-                    engine.LogError(BuildEngineErrorCode.TransformError, e.FilePath, e.Message, e.LineNumber, e.LinePosition);
+                    engine.LogError(BuildEngineErrorCode.TransformError, e.FilePath, e, e.LineNumber, e.LinePosition);
                 }
                 catch (XamlParseException e)
                 {
-                    engine.LogError(BuildEngineErrorCode.TransformError, "", e.Message, e.LineNumber, e.LinePosition);
+                    engine.LogError(BuildEngineErrorCode.TransformError, "", e, e.LineNumber, e.LinePosition);
                 }
 
                 foreach (var document in parsedXamlDocuments)
@@ -403,15 +403,11 @@ namespace Avalonia.Build.Tasks
                                     if (i[c].OpCode == OpCodes.Call)
                                     {
                                         var op = i[c].Operand as MethodReference;
-                                        
-                                        // TODO: Throw an error
-                                        // This usually happens when the same XAML resource was added twice for some weird reason
-                                        // We currently support it for dual-named default theme resources
                                         if (op != null
                                             && op.Name == TrampolineName)
                                         {
-                                            foundXamlLoader = true;
-                                            break;
+                                            throw new InvalidProgramException("Same XAML file was loaded twice." +
+                                                "Make sure there is no x:Class duplicates no files were added to the AvaloniaResource msbuild items group twice.");
                                         }
                                         if (op != null
                                             && op.Name == "Load"
@@ -455,7 +451,7 @@ namespace Avalonia.Build.Tasks
                             var compiledBuildMethod = document.BuildMethod == null ?
                                 null :
                                 typeSystem.GetTypeReference(builder).Resolve()
-                                    .Methods.First(m => m.Name == document.BuildMethod.Name);
+                                    .Methods.First(m => m.Name == document.BuildMethod?.Name);
                             var parameterlessConstructor = compiledBuildMethod != null ?
                                 null :
                                 classTypeDefinition.GetConstructors().FirstOrDefault(c =>
@@ -492,7 +488,7 @@ namespace Avalonia.Build.Tasks
                             lineNumber = xe.LineNumber;
                             linePosition = xe.LinePosition;
                         }
-                        engine.LogError(BuildEngineErrorCode.EmitError, res.FilePath, e.Message, lineNumber, linePosition);
+                        engine.LogError(BuildEngineErrorCode.EmitError, res.FilePath, e, lineNumber, linePosition);
                         return false;
                     }
                     res.Remove();

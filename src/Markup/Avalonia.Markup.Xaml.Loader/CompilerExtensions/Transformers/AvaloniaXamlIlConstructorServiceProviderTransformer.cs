@@ -53,7 +53,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     var method = context.GetAvaloniaTypes().RuntimeHelpers
                         .FindMethod(m => m.Name == "CreateRootServiceProviderV2");
                     codeGen.EmitCall(method);
-                    context.RuntimeContext.Factory(codeGen);
                 }
 
                 return XamlILNodeEmitResult.Type(0, Type.GetClrType());

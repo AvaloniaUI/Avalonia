@@ -7,6 +7,16 @@ namespace Avalonia.Build.Tasks
     {
         static string FormatErrorCode(BuildEngineErrorCode code) => $"AVLN:{(int)code:0000}";
 
+        public static void LogError(this IBuildEngine engine, BuildEngineErrorCode code, string file, Exception ex,
+            int lineNumber = 0, int linePosition = 0)
+        {
+#if DEBUG
+            LogError(engine, code, file, ex.ToString(), lineNumber, linePosition);
+#else
+            LogError(engine, code, file, ex.Message, lineNumber, linePosition);
+#endif
+        }
+        
         public static void LogError(this IBuildEngine engine, BuildEngineErrorCode code, string file, string message,
             int lineNumber = 0, int linePosition = 0)
         {
