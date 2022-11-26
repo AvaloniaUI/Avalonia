@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml.Styling;
+using Avalonia.Markup.Xaml.XamlIl.Runtime;
+using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Avalonia.UnitTests;
@@ -264,5 +268,44 @@ public class StyleIncludeTests
 </ContentControl>");
         Assert.IsType<SimpleTheme>(control.Styles[0]);
         Assert.IsType<SimpleTheme>(control.Styles[1]);
+    }
+
+    [Fact]
+    public void StyleInclude_From_CodeBehind_Resolves_Compiled()
+    {
+        using var locatorScope = AvaloniaLocator.EnterScope();
+        AvaloniaLocator.CurrentMutable.BindToSelf<IAssetLoader>(new AssetLoader(GetType().Assembly));
+        
+        var sp = new TestServiceProvider();
+        var styleInclude = new StyleInclude(sp)
+        {
+            Source = new Uri("avares://Avalonia.Markup.Xaml.UnitTests/Xaml/StyleWithServiceLocator.xaml")
+        };
+
+        var loaded = Assert.IsType<StyleWithServiceLocator>(styleInclude.Loaded);
+        
+        Assert.Equal(
+            sp.GetService<IAvaloniaXamlIlParentStackProvider>().Parents, 
+            loaded.ServiceProvider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents);
+    }
+
+    private class TestServiceProvider : IServiceProvider, IUriContext, IAvaloniaXamlIlParentStackProvider
+    {
+        private IServiceProvider _root = XamlIlRuntimeHelpers.CreateRootServiceProviderV2();
+        public object GetService(Type serviceType)
+        {
+            if (serviceType == typeof(IUriContext))
+            {
+                return this;
+            }
+            if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
+            {
+                return this;
+            }
+            return _root.GetService(serviceType);
+        }
+
+        public Uri BaseUri { get; set; }
+        public IEnumerable<object> Parents { get; } = new[] { new ContentControl() };
     }
 }

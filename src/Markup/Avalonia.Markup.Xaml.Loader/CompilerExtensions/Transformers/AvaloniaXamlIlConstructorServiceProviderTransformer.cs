@@ -41,6 +41,18 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             public bool NeedsParentStack => true;
             public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
             {
+                if (_inheritContext)
+                {
+                    codeGen.Ldloc(context.ContextLocal);
+                }
+                else
+                {
+                    codeGen.Ldloc(context.ContextLocal);
+                    var method = context.GetAvaloniaTypes().RuntimeHelpers
+                        .FindMethod(m => m.Name == "CreateRootServiceProviderV3");
+                    codeGen.EmitCall(method);
+                }
+
                 codeGen.Ldloc(context.ContextLocal);
                 return XamlILNodeEmitResult.Type(0, Type.GetClrType());
             }
