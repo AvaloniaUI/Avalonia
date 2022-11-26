@@ -453,12 +453,15 @@ namespace Avalonia
             }
         }
 
+        private protected virtual CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
+            => new CompositionDrawListVisual(compositor,
+                new ServerCompositionDrawListVisual(compositor.Server, this), this);
+        
         internal CompositionVisual AttachToCompositor(Compositor compositor)
         {
             if (CompositionVisual == null || CompositionVisual.Compositor != compositor)
             {
-                CompositionVisual = new CompositionDrawListVisual(compositor,
-                    new ServerCompositionDrawListVisual(compositor.Server, this), this);
+                CompositionVisual = CreateCompositionVisual(compositor);
             }
 
             return CompositionVisual;
