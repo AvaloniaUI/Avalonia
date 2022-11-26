@@ -48,7 +48,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (Opacity != 1)
                 canvas.PushOpacity(Opacity);
             var boundsRect = new Rect(new Size(Size.X, Size.Y));
-            if(ClipToBounds)
+            if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PushClip(Root!.SnapToDevicePixels(boundsRect));
             if (Clip != null) 
                 canvas.PushGeometryClip(Clip);
@@ -65,11 +65,13 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PopOpacityMask();
             if (Clip != null)
                 canvas.PopGeometryClip();
-            if (ClipToBounds)
+            if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PopClip();
             if(Opacity != 1)
                 canvas.PopOpacity();
         }
+
+        protected virtual bool HandlesClipToBounds => false;
         
         private ReadbackData _readback0, _readback1, _readback2;
 
