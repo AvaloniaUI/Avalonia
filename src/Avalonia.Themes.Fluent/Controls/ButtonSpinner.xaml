@@ -70,7 +70,6 @@
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
-    <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Padding" Value="10, 0" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />

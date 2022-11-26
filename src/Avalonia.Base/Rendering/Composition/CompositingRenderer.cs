@@ -146,8 +146,18 @@ public class CompositingRenderer : IRendererWithCompositor
                 return result == 0 ? lhs.index.CompareTo(rhs.index) : result;
             });
         }
-
-        if (compositionChildren.Count == visualChildren.Count)
+        
+        var childVisual = v.ChildCompositionVisual;
+        
+        // Check if the current visual somehow got migrated to another compositor
+        if (childVisual != null && childVisual.Compositor != v.CompositionVisual.Compositor)
+            childVisual = null;
+        
+        var expectedCount = visualChildren.Count;
+        if (childVisual != null)
+            expectedCount++;
+        
+        if (compositionChildren.Count == expectedCount)
         {
             bool mismatch = false;
             if (sortedChildren != null)
@@ -167,6 +177,9 @@ public class CompositingRenderer : IRendererWithCompositor
                         break;
                     }
 
+            if (childVisual != null &&
+                !ReferenceEquals(compositionChildren[compositionChildren.Count - 1], childVisual))
+                mismatch = true;
 
             if (!mismatch)
             {
@@ -193,6 +206,9 @@ public class CompositingRenderer : IRendererWithCompositor
                 if (compositionChild != null)
                     compositionChildren.Add(compositionChild);
             }
+
+        if (childVisual != null)
+            compositionChildren.Add(childVisual);
     }
 
     private void UpdateCore()

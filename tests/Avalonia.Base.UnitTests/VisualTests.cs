@@ -281,13 +281,17 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Decorator();
             var root = new TestRoot { Child = target, DataContext = "foo" };
-            var called = false;
+            var called = 0;
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
                 if (level >= Avalonia.Logging.LogEventLevel.Warning)
                 {
-                    called = true;
+                    Assert.Equal("Error in binding to {Target}.{Property}: {Message}", mt);
+                    Assert.Same(target, pv[0]);
+                    Assert.Equal(Decorator.TagProperty, pv[1]);
+                    Assert.Equal("Could not find a matching property accessor for 'Foo' on 'foo'", pv[2]);
+                    ++called;
                 }
             };
 
@@ -296,7 +300,7 @@ namespace Avalonia.Base.UnitTests
                 target.Bind(Decorator.TagProperty, new Binding("Foo"));
             }
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]

@@ -1,14 +1,12 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:default="using:Avalonia.Themes.Simple">
-  <default:InverseBooleanValueConverter x:Key="AvaloniaThemesSimpleNativeMenuBarInverseBooleanValueConverter"
-                                        Default="True" />
   <default:IBitmapToImageConverter x:Key="AvaloniaThemesSimpleNativeMenuBarIBitmapToImageConverter" />
   <ControlTheme x:Key="{x:Type NativeMenuBar}"
                 TargetType="NativeMenuBar">
     <Setter Property="Template">
       <ControlTemplate>
-        <Menu IsVisible="{Binding $parent[TopLevel].(NativeMenu.IsNativeMenuExported), Converter={StaticResource AvaloniaThemesSimpleNativeMenuBarInverseBooleanValueConverter}}"
+        <Menu IsVisible="{Binding !$parent[TopLevel].(NativeMenu.IsNativeMenuExported)}"
               Items="{Binding $parent[TopLevel].(NativeMenu.Menu).Items}">
           <Menu.Styles>
             <!-- Don't use x:DataType and compiled bindings here, as it might crash https://github.com/AvaloniaUI/Avalonia/pull/7954  -->

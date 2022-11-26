@@ -1,7 +1,9 @@
+using System;
+
 namespace Avalonia.Data
 {
     /// <summary>
-    /// The priority of a binding.
+    /// The priority of a value or binding.
     /// </summary>
     public enum BindingPriority
     {
@@ -16,29 +18,36 @@ namespace Avalonia.Data
         LocalValue = 0,
 
         /// <summary>
-        /// A triggered style binding.
+        /// A triggered style value.
         /// </summary>
         /// <remarks>
         /// A style trigger is a selector such as .class which overrides a
-        /// <see cref="TemplatedParent"/> binding. In this way, a basic control can have
-        /// for example a Background from the templated parent which changes when the
-        /// control has the :pointerover class.
+        /// <see cref="Template"/> value. In this way, a control can have, e.g. a Background from
+        /// the template which changes when the control has the :pointerover class.
         /// </remarks>
         StyleTrigger,
 
         /// <summary>
-        /// A binding to a property on the templated parent.
+        /// A value from the control's template.
         /// </summary>
-        TemplatedParent,
+        Template,
 
         /// <summary>
-        /// A style binding.
+        /// A style value.
         /// </summary>
         Style,
+        
+        /// <summary>
+        /// The value is inherited from an ancestor element.
+        /// </summary>
+        Inherited,
 
         /// <summary>
-        /// The binding is uninitialized.
+        /// The value is uninitialized.
         /// </summary>
         Unset = int.MaxValue,
+
+        [Obsolete("Use Template priority")]
+        TemplatedParent = Template,
     }
 }

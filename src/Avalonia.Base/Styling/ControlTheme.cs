@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -28,40 +30,29 @@ namespace Avalonia.Styling
         /// </summary>
         public ControlTheme? BasedOn { get; set; }
 
-        public override SelectorMatchResult TryAttach(IStyleable target, object? host)
+        public override string ToString() => TargetType?.Name ?? "ControlTheme";
+
+        internal override void SetParent(StyleBase? parent)
         {
+            throw new InvalidOperationException("ControlThemes cannot be added as a nested style.");
+        }
+
+        internal SelectorMatchResult TryAttach(IStyleable target, FrameType type)
+        {
+            Debug.Assert(type is FrameType.Theme or FrameType.TemplatedParentTheme);
+
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
             if (TargetType is null)
                 throw new InvalidOperationException("ControlTheme has no TargetType.");
 
-            var result = BasedOn?.TryAttach(target, host) ?? SelectorMatchResult.NeverThisType;
-
             if (HasSettersOrAnimations && TargetType.IsAssignableFrom(target.StyleKey))
             {
-                Attach(target, null);
-                result = SelectorMatchResult.AlwaysThisType;
+                Attach(target, null, type);
+                return SelectorMatchResult.AlwaysThisType;
             }
 
-            var childResult = TryAttachChildren(target, host);
-
-            if (childResult > result)
-                result = childResult;
-
-            return result;
-        }
-
-        public override string ToString()
-        {
-            if (TargetType is not null)
-                return "ControlTheme: " + TargetType.Name;
-            else
-                return "ControlTheme";
-        }
-
-        internal override void SetParent(StyleBase? parent)
-        {
-            throw new InvalidOperationException("ControlThemes cannot be added as a nested style.");
+            return SelectorMatchResult.NeverThisType;
         }
     }
 }

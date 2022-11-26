@@ -5,7 +5,10 @@ using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Platform;
+using Avalonia.Styling;
 
 // ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedParameter.Global
@@ -14,6 +17,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
 {
     public static class XamlIlRuntimeHelpers
     {
+        public static IStyle ResolveStyleInclude(string absoluteSource, int line, int position)
+        {
+            return new StyleInclude((Uri)null) { Source = new Uri(absoluteSource) }.Loaded;
+        }
+
+        public static IResourceDictionary ResolveResourceInclude(string absoluteSource, int line, int position)
+        {
+            return new ResourceInclude((Uri)null) { Source = new Uri(absoluteSource) }.Loaded;
+        }
+
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV1(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
