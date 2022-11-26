@@ -292,6 +292,7 @@ namespace Avalonia
         protected IRenderRoot? VisualRoot => _visualRoot ?? (this as IRenderRoot);
 
         internal CompositionDrawListVisual? CompositionVisual { get; private set; }
+        internal CompositionVisual? ChildCompositionVisual { get; set; }
         
         public bool HasNonUniformZIndexChildren { get; private set; }
 
