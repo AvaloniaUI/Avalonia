@@ -68,7 +68,7 @@ namespace Avalonia.Threading
         public static readonly DispatcherPriority Composition = new(Render + 1);
 
         /// <summary>
-        /// The job will be processed with the same priority as composition updates.
+        /// The job will be processed with before composition updates.
         /// </summary>
         public static readonly DispatcherPriority PreComposition = new(Composition + 1);
 
