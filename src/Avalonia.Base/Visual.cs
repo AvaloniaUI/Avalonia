@@ -292,6 +292,7 @@ namespace Avalonia
         protected IRenderRoot? VisualRoot => _visualRoot ?? (this as IRenderRoot);
 
         internal CompositionDrawListVisual? CompositionVisual { get; private set; }
+        internal CompositionVisual? ChildCompositionVisual { get; set; }
         
         public bool HasNonUniformZIndexChildren { get; private set; }
 
@@ -452,12 +453,15 @@ namespace Avalonia
             }
         }
 
+        private protected virtual CompositionDrawListVisual CreateCompositionVisual(Compositor compositor)
+            => new CompositionDrawListVisual(compositor,
+                new ServerCompositionDrawListVisual(compositor.Server, this), this);
+        
         internal CompositionVisual AttachToCompositor(Compositor compositor)
         {
             if (CompositionVisual == null || CompositionVisual.Compositor != compositor)
             {
-                CompositionVisual = new CompositionDrawListVisual(compositor,
-                    new ServerCompositionDrawListVisual(compositor.Server, this), this);
+                CompositionVisual = CreateCompositionVisual(compositor);
             }
 
             return CompositionVisual;
