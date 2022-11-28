@@ -295,17 +295,10 @@ public class CompositingRenderer : IRendererWithCompositor
             CompositionTarget.ImmediateUIThreadRender();
     }
 
-    public void Start()
-    {
-        if (!CompositionTarget.IsEnabled)
-            Compositor.Server.Start();
-        CompositionTarget.IsEnabled = true;
-    }
+    public void Start() => CompositionTarget.IsEnabled = true;
 
     public void Stop()
     {
-        if (CompositionTarget.IsEnabled)
-            Compositor.Server.Stop();
         CompositionTarget.IsEnabled = false;
     }
     
