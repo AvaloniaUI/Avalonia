@@ -50,7 +50,7 @@ namespace Avalonia.Animation
         {
         }
 
-        public IDisposable Subscribe(IObserver<TimeSpan> observer)
+        public virtual IDisposable Subscribe(IObserver<TimeSpan> observer)
         {
             return _observable.Subscribe(observer);
         }

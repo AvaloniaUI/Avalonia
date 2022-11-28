@@ -38,7 +38,6 @@ namespace Avalonia.Rendering.Composition.Server
             _renderLoop = renderLoop;
             BatchObjectPool = batchObjectPool;
             BatchMemoryPool = batchMemoryPool;
-            _renderLoop.Add(this);
         }
 
         public void EnqueueBatch(Batch batch)
@@ -50,6 +49,8 @@ namespace Avalonia.Rendering.Composition.Server
         internal void UpdateServerTime() => ServerNow = Clock.Elapsed;
 
         List<Batch> _reusableToCompleteList = new();
+        private int _subscriberCount;
+
         void ApplyPendingBatches()
         {
             while (true)
@@ -137,5 +138,21 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void RemoveFromClock(IAnimationInstance animationInstance) =>
             _activeAnimations.Remove(animationInstance);
+        
+        public void Start()
+        {
+            if (_subscriberCount++ == 0)
+            {
+                _renderLoop.Add(this);
+            }
+        }
+
+        public void Stop()
+        {
+            if (--_subscriberCount == 0)
+            {
+                _renderLoop.Remove(this);
+            }
+        }
     }
 }

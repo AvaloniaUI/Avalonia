@@ -31,6 +31,10 @@ namespace Avalonia.Win32.WinRT.Composition
         private ICompositorDesktopInterop _compositorDesktopInterop;
         private ICompositionBrush _blurBrush;
         private object _pumpLock = new object();
+        private Action<TimeSpan>? _tick;
+        private int _subscriberCount;
+        private CancellationTokenSource _cts;
+        private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         public WinUICompositorConnection(EglPlatformOpenGlInterface gl, object pumpLock, float? backdropCornerRadius)
         {
@@ -104,7 +108,7 @@ namespace Avalonia.Win32.WinRT.Composition
 
             public void Invoke(IAsyncAction asyncInfo, AsyncStatus asyncStatus)
             {
-                _parent.Tick?.Invoke(_st.Elapsed);
+                _parent._tick?.Invoke(_st.Elapsed);
                 using var act = _parent._compositor5.RequestCommitAsync();
                 act.SetCompleted(this);
             }
@@ -121,18 +125,28 @@ namespace Avalonia.Win32.WinRT.Composition
 
         private void RunLoop()
         {
-            var cts = new CancellationTokenSource();
+            _cts = new CancellationTokenSource();
             AppDomain.CurrentDomain.ProcessExit += (sender, args) =>
-                cts.Cancel();
-                
+                _cts.Cancel();
+            var asyncActionCompletedHandler = new RunLoopHandler(this);
             using (var act = _compositor5.RequestCommitAsync())
-                act.SetCompleted(new RunLoopHandler(this));
-
-            while (!cts.IsCancellationRequested)
             {
-                UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
-                lock (_pumpLock)
-                    UnmanagedMethods.DispatchMessage(ref msg);
+                act.SetCompleted(asyncActionCompletedHandler);
+            }
+            _semaphore.Wait();
+
+            while (true)
+            {
+                _semaphore.Wait();
+                _cts = new CancellationTokenSource();
+                RunsInBackground = true;
+                while (!_cts.IsCancellationRequested)
+                {
+                    UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
+                    lock (_pumpLock)
+                        UnmanagedMethods.DispatchMessage(ref msg);
+                }
+                RunsInBackground = false;
             }
         }
 
@@ -305,7 +319,40 @@ namespace Avalonia.Win32.WinRT.Composition
             }
         }
 
-        public event Action<TimeSpan> Tick;
-        public bool RunsInBackground => true;
+        public event Action<TimeSpan> Tick
+        {
+            add
+            {
+                _tick += value;
+
+                if (_subscriberCount++ == 0)
+                {
+                    Start();
+                }
+            }
+
+            remove
+            {
+                if (--_subscriberCount == 0)
+                {
+                    Stop();
+                }
+
+                _tick -= value;
+            }
+        }
+        
+        private void Start()
+        {
+            _semaphore.Release();
+        }
+        
+        private void Stop()
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+        }
+        
+        public bool RunsInBackground { get; set; } 
     }
 }
