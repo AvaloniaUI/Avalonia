@@ -303,8 +303,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public override bool SetComposingRegion(int start, int end)
         {
-            var currentSelection = SurroundingText.CursorOffset;
-
             if (ComposingText != null)
             {
                 FinishComposingText();
