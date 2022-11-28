@@ -81,7 +81,6 @@ namespace Avalonia.Win32
         private readonly FramebufferManager _framebuffer;
         private readonly IGlPlatformSurface _gl;
         private readonly bool _wmPointerEnabled;
-        private readonly DxgiConnection _dxgiConnection;
 
         private Win32NativeControlHost _nativeControlHost;
         private WndProc _wndProcDelegate;
@@ -146,11 +145,11 @@ namespace Avalonia.Win32
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
-            _dxgiConnection = null;
+            DxgiConnection dxgiConnection = null;
             if (!_isUsingComposition)
             {
-                _dxgiConnection = AvaloniaLocator.Current.GetService<DxgiConnection>();
-                _isUsingDxgiSwapchain = _dxgiConnection is { } &&
+                dxgiConnection = AvaloniaLocator.Current.GetService<DxgiConnection>();
+                _isUsingDxgiSwapchain = dxgiConnection is { } &&
                     glPlatform is EglPlatformOpenGlInterface eglDxgi &&
                         eglDxgi.Display is AngleWin32EglDisplay angleDisplayDxgi &&
                         angleDisplayDxgi.PlatformApi == AngleOptions.PlatformApi.DirectX11;
@@ -174,7 +173,7 @@ namespace Avalonia.Win32
                 }
                 else if (_isUsingDxgiSwapchain)
                 {
-                    var dxgigl = new DxgiSwapchainWindow(_dxgiConnection, this);
+                    var dxgigl = new DxgiSwapchainWindow(dxgiConnection, this);
                     _gl = dxgigl;
                 }
                 else
