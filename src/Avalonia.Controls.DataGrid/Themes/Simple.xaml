@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:collections="using:Avalonia.Collections">
   <Styles.Resources>
     <Thickness x:Key="DataGridTextColumnCellTextBlockMargin">4</Thickness>
     <ControlTheme x:Key="DataGridCellTextBlockTheme"
@@ -199,10 +200,6 @@
         </ControlTemplate>
       </Setter>
 
-      <Style Selector="^:nth-child(even)">
-        <Setter Property="Background" Value="{Binding $parent[DataGrid].AlternatingRowBackground}" />
-      </Style>
-
       <Style Selector="^ /template/ Rectangle#BackgroundRectangle">
         <Setter Property="IsVisible" Value="False" />
         <Setter Property="Fill" Value="{DynamicResource HighlightBrush}" />
@@ -253,7 +250,7 @@
       <Setter Property="Background" Value="{DynamicResource ThemeControlMidHighBrush}" />
       <Setter Property="Height" Value="20" />
       <Setter Property="Template">
-        <ControlTemplate>
+        <ControlTemplate x:DataType="collections:DataGridCollectionViewGroup">
           <DataGridFrozenGrid Name="Root"
                               ColumnDefinitions="Auto,Auto,Auto,Auto"
                               RowDefinitions="Auto,*,Auto">
@@ -299,7 +296,6 @@
     <ControlTheme x:Key="{x:Type DataGrid}"
                   TargetType="DataGrid">
       <Setter Property="RowBackground" Value="{DynamicResource ThemeAccentBrush4}" />
-      <Setter Property="AlternatingRowBackground" Value="#00FFFFFF" />
       <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
       <Setter Property="HeadersVisibility" Value="Column" />
       <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />

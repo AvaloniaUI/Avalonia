@@ -35,7 +35,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            target.SetValue(Class1.FooProperty, "newvalue");
+            target.SetValue(Class1.FooProperty, "newvalue", BindingPriority.Animation);
             target.SetValue(Class1.FooProperty, "styled", BindingPriority.Style);
 
             Assert.Equal(2, target.CoreChanges.Count);
@@ -49,38 +49,23 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void OnPropertyChangedCore_Is_Called_On_All_Binding_Property_Changes()
+        public void OnPropertyChangedCore_Is_Called_On_Non_Effective_Property_Binding_Value_Change()
         {
             var target = new Class1();
-            var style = new Subject<BindingValue<string>>();
-            var animation = new Subject<BindingValue<string>>();
-            var templatedParent = new Subject<BindingValue<string>>();
+            var source = new BehaviorSubject<BindingValue<string>>("styled1");
 
-            target.Bind(Class1.FooProperty, style, BindingPriority.Style);
-            target.Bind(Class1.FooProperty, animation, BindingPriority.Animation);
-            target.Bind(Class1.FooProperty, templatedParent, BindingPriority.TemplatedParent);
+            target.Bind(Class1.FooProperty, source, BindingPriority.Style);
+            target.SetValue(Class1.FooProperty, "newvalue", BindingPriority.Animation);
+            source.OnNext("styled2");
 
-            style.OnNext("style1");
-            templatedParent.OnNext("tp1");
-            animation.OnNext("a1");
-            templatedParent.OnNext("tp2");
-            templatedParent.OnCompleted();
-            animation.OnNext("a2");
-            style.OnNext("style2");
-            style.OnCompleted();
-            animation.OnCompleted();
+            Assert.Equal(3, target.CoreChanges.Count);
 
-            var changes = target.CoreChanges.Cast<AvaloniaPropertyChangedEventArgs<string>>();
-
-            Assert.Equal(
-                new[] { true, true, true, false, false, true, false, false, true },
-                changes.Select(x => x.IsEffectiveValueChange).ToList());
-            Assert.Equal(
-                new[] { "style1", "tp1", "a1", "tp2", "$unset", "a2", "style2", "$unset", "foodefault" },
-                changes.Select(x => x.NewValue.GetValueOrDefault("$unset")).ToList());
-            Assert.Equal(
-                new[] { "foodefault", "style1", "tp1", "$unset", "$unset", "a1", "$unset", "$unset", "a2" },
-                changes.Select(x => x.OldValue.GetValueOrDefault("$unset")).ToList());
+            var change = (AvaloniaPropertyChangedEventArgs<string>)target.CoreChanges[2];
+            
+            Assert.Equal("styled2", change.NewValue.Value);
+            Assert.False(change.OldValue.HasValue);
+            Assert.Equal(BindingPriority.Style, change.Priority);
+            Assert.False(change.IsEffectiveValueChange);
         }
 
         [Fact]
@@ -88,7 +73,7 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Class1();
 
-            target.SetValue(Class1.FooProperty, "newvalue");
+            target.SetValue(Class1.FooProperty, "newvalue", BindingPriority.Animation);
             target.SetValue(Class1.FooProperty, "styled", BindingPriority.Style);
 
             Assert.Equal(1, target.Changes.Count);
@@ -124,19 +109,13 @@ namespace Avalonia.Base.UnitTests
             private static AvaloniaPropertyChangedEventArgs Clone(AvaloniaPropertyChangedEventArgs change)
             {
                 var e = (AvaloniaPropertyChangedEventArgs<string>)change;
-                var result = new AvaloniaPropertyChangedEventArgs<string>(
+                return new AvaloniaPropertyChangedEventArgs<string>(
                     change.Sender,
                     e.Property,
                     e.OldValue,
                     e.NewValue,
-                    change.Priority);
-
-                if (!change.IsEffectiveValueChange)
-                {
-                    result.MarkNonEffectiveValue();
-                }
-
-                return result;
+                    change.Priority,
+                    change.IsEffectiveValueChange);
             }
         }
     }

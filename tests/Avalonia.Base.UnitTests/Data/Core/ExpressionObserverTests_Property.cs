@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using Microsoft.Reactive.Testing;
+using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Core;
-using Avalonia.UnitTests;
-using Xunit;
-using System.Threading.Tasks;
-using Avalonia.Markup.Parsers;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
+using Microsoft.Reactive.Testing;
+using Xunit;
 
 namespace Avalonia.Base.UnitTests.Data.Core
 {
@@ -636,7 +635,25 @@ namespace Avalonia.Base.UnitTests.Data.Core
             
             target.Subscribe(x => result.Add(x));
         }
-        
+
+        [Fact]
+        public void RootGetter_Is_Reevaluated_On_Subscribe()
+        {
+            var data = "foo";
+            var target = new ExpressionObserver(() => data, new EmptyExpressionNode(), new Subject<Unit>(), null);
+            var result = new List<object>();
+            var sub = target.Subscribe(x => result.Add(x));
+
+            Assert.Equal(new object[] { "foo" }, result);
+
+            sub.Dispose();
+            data = "bar";
+
+            target.Subscribe(x => result.Add(x));
+
+            Assert.Equal(new object[] { "foo", "bar" }, result);
+        }
+
         public class MyViewModelBase { public object Name => "Name"; }
         
         public class MyViewModel : MyViewModelBase { public new string Name => "NewName"; }

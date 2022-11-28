@@ -2,10 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:integrationTestApp="using:IntegrationTestApp"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="IntegrationTestApp.MainWindow"
         Name="MainWindow"
-        Title="IntegrationTestApp">
+        Title="IntegrationTestApp"
+        x:DataType="integrationTestApp:MainWindow">
   <NativeMenu.Menu>
     <NativeMenu>
       <NativeMenuItem Header="File">
@@ -125,6 +127,12 @@
             <ComboBoxItem>Manual</ComboBoxItem>
             <ComboBoxItem>CenterScreen</ComboBoxItem>
             <ComboBoxItem>CenterOwner</ComboBoxItem>
+          </ComboBox>
+          <ComboBox Name="ShowWindowState" SelectedIndex="0">
+            <ComboBoxItem>Normal</ComboBoxItem>
+            <ComboBoxItem>Minimized</ComboBoxItem>
+            <ComboBoxItem>Maximized</ComboBoxItem>
+            <ComboBoxItem>FullScreen</ComboBoxItem>
           </ComboBox>
           <Button Name="ShowWindow">Show Window</Button>
           <Button Name="SendToBack">Send to Back</Button>

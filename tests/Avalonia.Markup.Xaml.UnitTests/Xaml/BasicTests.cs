@@ -473,13 +473,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 Assert.True(styles.Count == 1);
 
-                var styleInclude = styles.First() as StyleInclude;
+                var styleInclude = styles.First() as IStyle;
 
                 Assert.NotNull(styleInclude);
-
-                var style = styleInclude.Loaded;
-
-                Assert.NotNull(style);
             }
         }
 
@@ -724,7 +720,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 //ensure binding is set and operational first
                 Assert.Equal(100.0, tracker.Tag);
 
-                Assert.Equal("EndInit 0", tracker.Order.Last());
+                // EndInit should be second-to-last operation, as last operation will be
+                // caused by styling being applied on EndInit.
+                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 2]);
+
+                // Caused by styling.
+                Assert.Equal("Property Foreground Changed", tracker.Order[tracker.Order.Count - 1]);
             }
         }
 

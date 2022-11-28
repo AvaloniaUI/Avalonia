@@ -1,8 +1,5 @@
 using System;
 using System.IO;
-using System.Reflection;
-using System.Text;
-using Avalonia.Markup.Xaml.XamlIl;
 using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml
@@ -14,7 +11,7 @@ namespace Avalonia.Markup.Xaml
     {
         public interface IRuntimeXamlLoader
         {
-            object Load(Stream stream, Assembly localAsm, object o, Uri baseUri, bool designMode);
+            object Load(Stream stream, RuntimeXamlLoaderConfiguration configuration);
         }
         
         /// <summary>
@@ -67,7 +64,11 @@ namespace Avalonia.Markup.Xaml
                 using (var stream = asset.stream)
                 {
                     var absoluteUri = uri.IsAbsoluteUri ? uri : new Uri(baseUri, uri);
-                    return runtimeLoader.Load(stream, asset.assembly, null, absoluteUri, false);
+                    return runtimeLoader.Load(stream, new RuntimeXamlLoaderConfiguration
+                    {
+                        LocalAssembly = asset.assembly,
+                        BaseUri = absoluteUri
+                    });
                 }
             }
 

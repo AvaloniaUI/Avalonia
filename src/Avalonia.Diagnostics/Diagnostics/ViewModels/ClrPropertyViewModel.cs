@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using Avalonia.Media;
 
 namespace Avalonia.Diagnostics.ViewModels
 {

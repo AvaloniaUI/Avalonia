@@ -647,6 +647,7 @@ namespace Avalonia.Controls
             RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
             EnsureInitialized();
+            ApplyStyling();
             IsVisible = true;
 
             var initialSize = new Size(
@@ -726,6 +727,7 @@ namespace Avalonia.Controls
             RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
             EnsureInitialized();
+            ApplyStyling();
             IsVisible = true;
 
             var initialSize = new Size(

@@ -23,11 +23,8 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
-
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
 
                 var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
                 var gesture2 = new KeyGesture(Key.B, KeyModifiers.Control);
@@ -67,13 +64,11 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
                 var target = new KeyboardDevice();
                 var commandResult = 0;
                 var expectedParameter = 1;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -112,12 +107,10 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
                 var target = new KeyboardDevice();
                 var isExecuted = false;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -154,12 +147,10 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
                 var target = new KeyboardDevice();
                 var clickExecutedCount = 0;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -208,13 +199,11 @@ namespace Avalonia.Controls.UnitTests.Utils
         {
             using (AvaloniaLocator.EnterScope())
             {
-                var styler = new Mock<Styler>();
                 var target = new KeyboardDevice();
                 var clickExecutedCount = 0;
                 var commandExecutedCount = 0;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock())
-                    .Bind<IStyler>().ToConstant(styler.Object);
+                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
