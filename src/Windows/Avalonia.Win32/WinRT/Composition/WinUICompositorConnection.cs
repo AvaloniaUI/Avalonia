@@ -33,7 +33,7 @@ namespace Avalonia.Win32.WinRT.Composition
         private object _pumpLock = new object();
         private Action<TimeSpan>? _tick;
         private int _subscriberCount;
-        private CancellationTokenSource _cts;
+        private CancellationTokenSource _renderCts;
         private readonly SemaphoreSlim _semaphore = new(1, 1);
 
         public WinUICompositorConnection(EglPlatformOpenGlInterface gl, object pumpLock, float? backdropCornerRadius)
@@ -125,9 +125,9 @@ namespace Avalonia.Win32.WinRT.Composition
 
         private void RunLoop()
         {
-            _cts = new CancellationTokenSource();
+            var cts = new CancellationTokenSource();
             AppDomain.CurrentDomain.ProcessExit += (sender, args) =>
-                _cts.Cancel();
+                cts.Cancel();
             var asyncActionCompletedHandler = new RunLoopHandler(this);
             using (var act = _compositor5.RequestCommitAsync())
             {
@@ -135,12 +135,12 @@ namespace Avalonia.Win32.WinRT.Composition
             }
             _semaphore.Wait();
 
-            while (true)
+            while (!cts.IsCancellationRequested)
             {
                 _semaphore.Wait();
-                _cts = new CancellationTokenSource();
+                _renderCts = new CancellationTokenSource();
                 RunsInBackground = true;
-                while (!_cts.IsCancellationRequested)
+                while (!_renderCts.IsCancellationRequested && !cts.IsCancellationRequested)
                 {
                     UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
                     lock (_pumpLock)
@@ -349,8 +349,8 @@ namespace Avalonia.Win32.WinRT.Composition
         
         private void Stop()
         {
-            _cts.Cancel();
-            _cts.Dispose();
+            _renderCts.Cancel();
+            _renderCts.Dispose();
         }
         
         public bool RunsInBackground { get; set; } 
