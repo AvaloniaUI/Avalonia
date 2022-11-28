@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Xml.Linq;
 using Avalonia.Controls.Utils;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -169,19 +169,79 @@ namespace Avalonia.Controls
             InvalidateMeasure();
         }
 
+        protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
+        {
+            var count = (ItemsControl?.Items as IList)?.Count ?? 0;
+
+            if (count == 0)
+                return null;
+
+            var horiz = Orientation == Orientation.Horizontal;
+            var fromIndex = from != null ? Children.IndexOf(from) : -1;
+            var toIndex = fromIndex;
+
+            switch (direction)
+            {
+                case NavigationDirection.First:
+                    toIndex = 0;
+                    break;
+                case NavigationDirection.Last:
+                    toIndex = count - 1;
+                    break;
+                case NavigationDirection.Next:
+                    ++toIndex;
+                    break;
+                case NavigationDirection.Previous:
+                    --toIndex;
+                    break;
+                case NavigationDirection.Left:
+                    if (horiz)
+                        --toIndex;
+                    break;
+                case NavigationDirection.Right:
+                    if (horiz)
+                        ++toIndex;
+                    break;
+                case NavigationDirection.Up:
+                    if (!horiz)
+                        --toIndex;
+                    break;
+                case NavigationDirection.Down:
+                    if (!horiz)
+                        ++toIndex;
+                    break;
+                default:
+                    return null;
+            }
+
+            if (fromIndex == toIndex)
+                return from;
+
+            if (wrap)
+            {
+                if (toIndex < 0)
+                    toIndex = count - 1;
+                else if (toIndex >= count - 1)
+                    toIndex = 0;
+            }
+
+            return ScrollIntoView(toIndex);
+        }
+
         protected internal override Control? ContainerFromIndex(int index) => _realizedElements?.GetElement(index);
         protected internal override int IndexFromContainer(Control container) => _realizedElements?.GetIndex(container) ?? -1;
 
-        protected internal override void ScrollIntoView(int index)
+        protected internal override Control? ScrollIntoView(int index)
         {
             var items = ItemsControl?.Items as IList;
 
             if (_isInLayout || items is null || index < 0 || index >= items.Count)
-                return;
+                return null;
 
             if (GetRealizedElement(index) is Control element)
             {
                 element.BringIntoView();
+                return element;
             }
             else if (this.GetVisualRoot() is ILayoutRoot root)
             {
@@ -216,9 +276,13 @@ namespace Avalonia.Controls
                 root.LayoutManager.ExecuteLayoutPass();
                 _isWaitingForViewportUpdate = false;
 
+                var result = _anchorElement;
                 _anchorElement = null;
                 _anchorIndex = -1;
+                return result;
             }
+
+            return null;
         }
 
         internal IReadOnlyList<Control?> GetRealizedElements()

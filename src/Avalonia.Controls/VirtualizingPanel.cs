@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Utils;
+using Avalonia.Input;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Base class for panels that can be used to virtualize items.
     /// </summary>
-    public abstract class VirtualizingPanel : Panel
+    public abstract class VirtualizingPanel : Panel, INavigableContainer
     {
         private ItemsControl? _itemsControl;
 
@@ -27,11 +28,19 @@ namespace Avalonia.Controls
             }
         }
 
+        IInputElement? INavigableContainer.GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
+        {
+            return GetControl(direction, from, wrap);
+        }
+
         /// <summary>
         /// Scrolls the specified item into view.
         /// </summary>
         /// <param name="index">The index of the item.</param>
-        protected internal abstract void ScrollIntoView(int index);
+        /// <returns>
+        /// The element with the specified index, or null if the element could not be brought into view.
+        /// </returns>
+        protected internal abstract Control? ScrollIntoView(int index);
 
         /// <summary>
         /// Returns the container for the item at the specified index.
@@ -52,6 +61,15 @@ namespace Avalonia.Controls
         /// <paramref name="container"/> is not found.
         /// </returns>
         protected internal abstract int IndexFromContainer(Control container);
+
+        /// <summary>
+        /// Gets the next control in the specified direction.
+        /// </summary>
+        /// <param name="direction">The movement direction.</param>
+        /// <param name="from">The control from which movement begins.</param>
+        /// <param name="wrap">Whether to wrap around when the first or last item is reached.</param>
+        /// <returns>The control.</returns>
+        protected abstract IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap);
 
         /// <summary>
         /// Called when the <see cref="ItemsControl"/> that owns the panel changes.
