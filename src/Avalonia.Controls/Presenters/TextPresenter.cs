@@ -46,14 +46,14 @@ namespace Avalonia.Controls.Presenters
                 (o, v) => o.SelectionEnd = v);
 
         public static readonly DirectProperty<TextPresenter, int> PreeditStartProperty =
-            TextBox.SelectionStartProperty.AddOwner<TextPresenter>(
-                o => o.SelectionStart,
-                (o, v) => o.SelectionStart = v);
+            AvaloniaProperty.RegisterDirect<TextPresenter, int>(nameof(PreeditStart),
+                o => o.PreeditStart,
+                (o, v) => o.PreeditStart = v);
 
         public static readonly DirectProperty<TextPresenter, int> PreeditEndProperty =
-            TextBox.SelectionEndProperty.AddOwner<TextPresenter>(
-                o => o.SelectionEnd,
-                (o, v) => o.SelectionEnd = v);
+            AvaloniaProperty.RegisterDirect<TextPresenter, int>(nameof(PreeditEnd),
+                o => o.PreeditEnd,
+                (o, v) => o.PreeditEnd = v);
 
         /// <summary>
         /// Defines the <see cref="Text"/> property.
