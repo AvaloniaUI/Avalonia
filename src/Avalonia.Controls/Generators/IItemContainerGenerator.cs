@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Generators
@@ -24,6 +25,11 @@ namespace Avalonia.Controls.Generators
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
         IDataTemplate? ItemTemplate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the binding to use to bind to the member of an item used for displaying
+        /// </summary>
+        IBinding? DisplayMemberBinding { get; set; }
 
         /// <summary>
         /// Gets the ContainerType, or null if its an untyped ContainerGenerator.

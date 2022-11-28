@@ -29,4 +29,7 @@ public partial class Compositor
     public ImplicitAnimationCollection CreateImplicitAnimationCollection() => new ImplicitAnimationCollection(this);
 
     public CompositionAnimationGroup CreateAnimationGroup() => new CompositionAnimationGroup(this);
+
+    public CompositionSolidColorVisual CreateSolidColorVisual() =>
+        new(this, new ServerCompositionSolidColorVisual(Server));
 }

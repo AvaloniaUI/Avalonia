@@ -53,8 +53,16 @@ namespace Avalonia.Controls.Generators
                     container.SetValue(ContentTemplateProperty, ItemTemplate, BindingPriority.Style);
                 }
 
-                container.SetValue(ContentProperty, item, BindingPriority.Style);
-
+                if (DisplayMemberBinding is not null)
+                {
+                    container.SetValue(StyledElement.DataContextProperty, item, BindingPriority.Style);
+                    container.Bind(ContentProperty, DisplayMemberBinding, BindingPriority.Style);
+                }
+                else
+                {
+                    container.SetValue(ContentProperty, item, BindingPriority.Style);
+                }
+                
                 if (!(item is IControl))
                 {
                     container.DataContext = item;
