@@ -986,7 +986,46 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
                 }
             }
+            
+            [Fact]
+            public void IsVisible_Should_Open_Window()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var target = new Window();
+                    var raised = false;
+                    
+                    target.Opened += (s, e) => raised = true;
+                    target.IsVisible = true;
 
+                    Assert.True(raised);
+                }
+            }
+            
+            [Fact]
+            public void IsVisible_Should_Close_DialogWindow()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var parent = new Window();
+                    parent.Show();
+                    
+                    var target = new Window();
+                    
+                    var raised = false;
+
+                    var task = target.ShowDialog<bool>(parent);
+                    
+                    target.Closed += (sender, args) => raised = true;
+
+                    target.IsVisible = false;
+
+                    Assert.True(raised);
+                    
+                    Assert.False(task.Result);
+                }
+            }
+            
             protected virtual void Show(Window window)
             {
                 window.Show();
