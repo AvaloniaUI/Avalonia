@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -367,12 +368,13 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.Equal(2, target.ItemContainerGenerator.Containers.Count());
+            var panel = target.Presenter.Panel;
+            Assert.Equal(2, panel.Children.Count());
 
             target.Template = GetTemplate();
             target.ApplyTemplate();
 
-            Assert.Empty(target.ItemContainerGenerator.Containers);
+            Assert.Empty(panel.Children);
         }
 
         [Fact]
@@ -536,26 +538,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Setting_Presenter_Explicitly_Should_Set_Item_Parent()
-        {
-            var target = new TestItemsControl();
-            var child = new Control();
-
-            var presenter = new ItemsPresenter
-            {
-                [StyledElement.TemplatedParentProperty] = target,
-            };
-
-            presenter.ApplyTemplate();
-            target.Presenter = presenter;
-            target.Items = new[] { child };
-            target.ApplyTemplate();
-
-            Assert.Equal(target, child.Parent);
-            Assert.Equal(target, ((ILogical)child).LogicalParent);
-        }
-
-        [Fact]
         public void DataContexts_Should_Be_Correctly_Set()
         {
             var items = new object[]
@@ -684,36 +666,6 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Presenter_Items_Should_Be_In_Sync()
-        {
-            var target = new ItemsControl
-            {
-                Template = GetTemplate(),
-                Items = new object[]
-                {
-                    new Button(),
-                    new Button(),
-                },
-            };
-
-            var root = new TestRoot { Child = target };
-            var otherPanel = new StackPanel();
-
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
-            
-            target.ItemContainerGenerator.Materialized += (s, e) =>
-            {
-                Assert.IsType<Canvas>(e.Containers[0].Item);
-            };
-
-            target.Items = new[]
-            {
-                new Canvas()
-            };
-        }
-
-        [Fact]
         public void Detaching_Then_Reattaching_To_Logical_Tree_Twice_Does_Not_Throw()
         {
             // # Issue 3487
@@ -779,15 +731,6 @@ namespace Avalonia.Controls.UnitTests
                     }.RegisterInNameScope(scope)
                 };
             });
-        }
-
-        private class TestItemsControl : ItemsControl
-        {
-            public new ItemsPresenter Presenter
-            {
-                get { return base.Presenter; }
-                set { base.Presenter = value; }
-            }
         }
     }
 }

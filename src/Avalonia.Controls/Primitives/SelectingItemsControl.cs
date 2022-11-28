@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Xml.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
@@ -391,7 +392,7 @@ namespace Avalonia.Controls.Primitives
             for (var current = eventSource as Visual; current != null; current = current.VisualParent)
             {
                 if (current is Control control && control.Parent == this &&
-                    ItemContainerGenerator?.IndexFromContainer(control) != -1)
+                    IndexFromContainer(control) != -1)
                 {
                     return control;
                 }
@@ -432,54 +433,34 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
         {
-            base.OnContainersMaterialized(e);
+            base.PrepareContainerForItemOverride(element, item, index);
 
-            foreach (var container in e.Containers)
+            if ((element as ISelectable)?.IsSelected == true)
             {
-                if ((container.ContainerControl as ISelectable)?.IsSelected == true)
-                {
-                    Selection.Select(container.Index);
-                    MarkContainerSelected(container.ContainerControl, true);
-                }
-                else
-                {
-                    var selected = Selection.IsSelected(container.Index);
-                    MarkContainerSelected(container.ContainerControl, selected);
-                }
+                Selection.Select(index);
+                MarkContainerSelected(element, true);
+            }
+            else
+            {
+                var selected = Selection.IsSelected(index);
+                MarkContainerSelected(element, selected);
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnContainersDematerialized(ItemContainerEventArgs e)
+        protected internal override void ClearContainerForItemOverride(Control element)
         {
-            base.OnContainersDematerialized(e);
+            base.ClearContainerForItemOverride(element);
 
-            if (Presenter?.Panel is InputElement panel)
+            if (Presenter?.Panel is InputElement panel && 
+                KeyboardNavigation.GetTabOnceActiveElement(panel) == element)
             {
-                foreach (var container in e.Containers)
-                {
-                    if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
-                    {
-                        KeyboardNavigation.SetTabOnceActiveElement(panel, null);
-                        break;
-                    }
-                }
+                KeyboardNavigation.SetTabOnceActiveElement(panel, null);
             }
-        }
 
-        protected override void OnContainersRecycled(ItemContainerEventArgs e)
-        {
-            foreach (var i in e.Containers)
-            {
-                if (i.ContainerControl != null && i.Item != null)
-                {
-                    bool selected = Selection.IsSelected(i.Index);
-                    MarkContainerSelected(i.ContainerControl, selected);
-                }
-            }
+            if (element is ISelectable selectable)
+                MarkContainerSelected(element, false);
         }
 
         /// <inheritdoc/>
@@ -526,44 +507,45 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnTextInput(TextInputEventArgs e)
         {
-            if (!e.Handled)
-            {
-                if (!IsTextSearchEnabled)
-                    return;
+            throw new NotImplementedException();
+            ////if (!e.Handled)
+            ////{
+            ////    if (!IsTextSearchEnabled)
+            ////        return;
 
-                StopTextSearchTimer();
+            ////    StopTextSearchTimer();
 
-                _textSearchTerm += e.Text;
+            ////    _textSearchTerm += e.Text;
 
-                bool Match(ItemContainerInfo info)
-                {
-                    if (info.ContainerControl is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
-                    {
-                        var searchText = ao.GetValue(TextSearch.TextProperty);
+            ////    bool Match(ItemContainerInfo info)
+            ////    {
+            ////        if (info.ContainerControl is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
+            ////        {
+            ////            var searchText = ao.GetValue(TextSearch.TextProperty);
 
-                        if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
-                        {
-                            return true;
-                        }
-                    }
+            ////            if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
+            ////            {
+            ////                return true;
+            ////            }
+            ////        }
 
-                    return info.ContainerControl is IContentControl control &&
-                           control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
-                }
+            ////        return info.ContainerControl is IContentControl control &&
+            ////               control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+            ////    }
                 
-                var info = ItemContainerGenerator?.Containers.FirstOrDefault(Match);
+            ////    var info = ItemContainerGenerator?.Containers.FirstOrDefault(Match);
 
-                if (info != null)
-                {
-                    SelectedIndex = info.Index;
-                }
+            ////    if (info != null)
+            ////    {
+            ////        SelectedIndex = info.Index;
+            ////    }
 
-                StartTextSearchTimer();
+            ////    StartTextSearchTimer();
 
-                e.Handled = true;
-            }
+            ////    e.Handled = true;
+            ////}
 
-            base.OnTextInput(e);
+            ////base.OnTextInput(e);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -634,7 +616,7 @@ namespace Avalonia.Controls.Primitives
         /// <returns>True if the selection was moved; otherwise false.</returns>
         protected bool MoveSelection(NavigationDirection direction, bool wrap)
         {
-            var from = SelectedIndex != -1 ? ItemContainerGenerator?.ContainerFromIndex(SelectedIndex) : null;
+            var from = SelectedIndex != -1 ? ContainerFromIndex(SelectedIndex) : null;
             return MoveSelection(from, direction, wrap);
         }
 
@@ -650,7 +632,7 @@ namespace Avalonia.Controls.Primitives
             if (Presenter?.Panel is INavigableContainer container &&
                 GetNextControl(container, direction, from, wrap) is Control next)
             {
-                var index = ItemContainerGenerator?.IndexFromContainer(next) ?? -1;
+                var index = IndexFromContainer(next);
 
                 if (index != -1)
                 {
@@ -733,7 +715,7 @@ namespace Avalonia.Controls.Primitives
 
             if (Presenter?.Panel != null)
             {
-                var container = ItemContainerGenerator?.ContainerFromIndex(index);
+                var container = ContainerFromIndex(index);
                 KeyboardNavigation.SetTabOnceActiveElement(
                     (InputElement)Presenter.Panel,
                     container);
@@ -757,7 +739,7 @@ namespace Avalonia.Controls.Primitives
             bool rightButton = false,
             bool fromFocus = false)
         {
-            var index = ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
+            var index = IndexFromContainer(container);
 
             if (index != -1)
             {
@@ -842,7 +824,7 @@ namespace Avalonia.Controls.Primitives
         {
             void Mark(int index, bool selected)
             {
-                var container = ItemContainerGenerator?.ContainerFromIndex(index);
+                var container = ContainerFromIndex(index);
 
                 if (container != null)
                 {
@@ -909,7 +891,7 @@ namespace Avalonia.Controls.Primitives
                 e.Source is Control control &&
                 e.Source is ISelectable selectable &&
                 control.Parent == this &&
-                ItemContainerGenerator?.IndexFromContainer(control) != -1)
+                IndexFromContainer(control) != -1)
             {
                 UpdateSelection(control, selectable.IsSelected);
             }
@@ -961,7 +943,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     MarkContainerSelected(
                         container,
-                        Selection.IsSelected(ItemContainerGenerator.IndexFromContainer(container)));
+                        Selection.IsSelected(IndexFromContainer(container)));
                 }
             }
         }

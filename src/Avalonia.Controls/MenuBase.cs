@@ -99,9 +99,10 @@ namespace Avalonia.Controls
         {
             get
             {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
+                throw new NotImplementedException();
+                ////return ItemContainerGenerator.Containers
+                ////    .Select(x => x.ContainerControl)
+                ////    .OfType<IMenuItem>();
             }
         }
 
@@ -140,12 +141,6 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
-
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator<MenuItem>(this, MenuItem.HeaderProperty, null);
-        }
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)

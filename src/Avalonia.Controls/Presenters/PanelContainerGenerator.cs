@@ -9,11 +9,11 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Generates containers for <see cref="ItemsPresenter"/>s that have non-virtualizing panels.
     /// </summary>
-    internal class ItemsPresenterContainerGenerator : IDisposable
+    internal class PanelContainerGenerator : IDisposable
     {
         private readonly ItemsPresenter _presenter;
 
-        public ItemsPresenterContainerGenerator(ItemsPresenter presenter)
+        public PanelContainerGenerator(ItemsPresenter presenter)
         {
             Debug.Assert(presenter.ItemsControl is not null);
             Debug.Assert(presenter.Panel is not null or VirtualizingPanel);
@@ -29,12 +29,17 @@ namespace Avalonia.Controls.Presenters
 
         public void Dispose()
         {
-            _presenter.ItemsControl!.PropertyChanged -= OnItemsControlPropertyChanged;
+            if (_presenter.ItemsControl is { } itemsControl)
+            {
+                itemsControl.PropertyChanged -= OnItemsControlPropertyChanged;
 
-            if (_presenter.ItemsControl.Items is INotifyCollectionChanged incc)
-                incc.CollectionChanged -= OnItemsChanged;
+                if (itemsControl.Items is INotifyCollectionChanged incc)
+                    incc.CollectionChanged -= OnItemsChanged;
 
-            _presenter.Panel!.Children.Clear();
+                itemsControl.ClearLogicalChildren();
+            }
+
+            _presenter.Panel?.Children.Clear();
         }
 
         private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -51,57 +56,67 @@ namespace Avalonia.Controls.Presenters
 
         private void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (_presenter.ItemsControl?.Items is null || _presenter.Panel is null)
+            if (_presenter.Panel is null || _presenter.ItemsControl is null)
                 return;
 
-            var generator = _presenter.ItemsControl.ItemContainerGenerator;
+            var itemsControl = _presenter.ItemsControl;
             var panel = _presenter.Panel;
 
             void Add(int index, IEnumerable items)
             {
                 var i = index;
-
                 foreach (var item in items)
-                {
-                    var c = generator.Materialize(i, item);
-                    panel.Children.Insert(i++, c.ContainerControl);
-                }
+                    panel.Children.Insert(i++, CreateContainer(itemsControl, item, i));
             }
             
             void Remove(int index, int count)
             {
                 for (var i = 0; i < count; ++i)
+                {
+                    itemsControl.RemoveLogicalChild(panel.Children[i + index]);
                     panel.Children.RemoveAt(i + index);
+                }
             }
 
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    generator.InsertSpace(e.NewStartingIndex, e.NewItems!.Count);
                     Add(e.NewStartingIndex, e.NewItems!);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    generator.RemoveRange(e.OldStartingIndex, e.OldItems!.Count);
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    generator.RemoveRange(e.OldStartingIndex, e.OldItems!.Count);
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
-                    generator.InsertSpace(e.NewStartingIndex, e.NewItems!.Count);
                     Add(e.NewStartingIndex, e.NewItems!);
                     break;
                 case NotifyCollectionChangedAction.Move:
-                    generator.RemoveRange(e.OldStartingIndex, e.OldItems!.Count);
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
-                    generator.InsertSpace(e.NewStartingIndex, e.NewItems!.Count);
                     Add(e.NewStartingIndex, e.NewItems!);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    generator.Clear();
+                    itemsControl.ClearLogicalChildren();
                     panel.Children.Clear();
-                    if (_presenter.ItemsControl.Items is { } items)
+                    if (_presenter.ItemsControl?.Items is { } items)
                         Add(0, items);
                     break;
+            }
+        }
+
+        private static Control CreateContainer(ItemsControl itemsControl, object? item, int index)
+        {
+            var generator = itemsControl.ItemContainerGenerator;
+
+            if (item is Control c && generator.IsItemItsOwnContainer(c))
+            {
+                return c;
+            }
+            else
+            {
+                c = generator.CreateContainer();
+                itemsControl.AddLogicalChild(c);
+                generator.PrepareItemContainer(c, item, index);
+                return c;
             }
         }
     }

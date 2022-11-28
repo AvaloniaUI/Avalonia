@@ -1,262 +1,68 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Templates;
-using Avalonia.Data;
-using Avalonia.Styling;
 
 namespace Avalonia.Controls.Generators
 {
     /// <summary>
-    /// Creates containers for items and maintains a list of created containers.
+    /// Generates containers for an <see cref="ItemsControl"/>.
     /// </summary>
-    public class ItemContainerGenerator : IItemContainerGenerator
+    /// <remarks>
+    /// Although this class is similar to that found in WPF/UWP, in Avalonia this class only
+    /// concerns itself with generating and clearing item containers; it does not maintain a
+    /// record of the currently realized containers, that responsibility is delegated to the
+    /// items panel.
+    /// </remarks>
+    public class ItemContainerGenerator
     {
-        private SortedDictionary<int, ItemContainerInfo> _containers = new SortedDictionary<int, ItemContainerInfo>();
+        private ItemsControl _owner;
+
+        internal ItemContainerGenerator(ItemsControl owner) => _owner = owner;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ItemContainerGenerator"/> class.
+        /// Creates a new container control.
         /// </summary>
-        /// <param name="owner">The owner control.</param>
-        public ItemContainerGenerator(Control owner)
-        {
-            Owner = owner ?? throw new ArgumentNullException(nameof(owner));
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<ItemContainerInfo> Containers => _containers.Values;
-
-        /// <inheritdoc/>
-        public event EventHandler<ItemContainerEventArgs>? Materialized;
-
-        /// <inheritdoc/>
-        public event EventHandler<ItemContainerEventArgs>? Dematerialized;
-
-        /// <inheritdoc/>
-        public event EventHandler<ItemContainerEventArgs>? Recycled;
+        /// <returns>The newly created container control.</returns>
+        /// <remarks>
+        /// Before calling this method, <see cref="IsItemItsOwnContainer(Control)"/> should be
+        /// called to determine whether the item itself should be used as a container. After
+        /// calling this method, <see cref="PrepareItemContainer(Control, object, int)"/> should
+        /// be called to prepare the container to display the specified item.
+        /// </remarks>
+        public Control CreateContainer() => _owner.CreateContainerOverride();
 
         /// <summary>
-        /// Gets or sets the theme to be applied to the items in the control.
+        /// Determines whether the specified item is (or is eligible to be) its own container.
         /// </summary>
-        public ControlTheme? ItemContainerTheme { get; set; }
+        /// <param name="container">The item.</param>
+        /// <returns>true if the item is its own container, otherwise false.</returns>
+        /// <remarks>
+        /// Whereas in WPF/UWP, non-control items can be their own container, in Avalonia only
+        /// control items may be; the caller is responsible for checking if each item is a control
+        /// and calling this method before creating a new container.
+        /// </remarks>
+        public bool IsItemItsOwnContainer(Control container) => _owner.IsItemItsOwnContainerOverride(container);
 
         /// <summary>
-        /// Gets or sets the data template used to display the items in the control.
+        /// Prepares the specified element as the container for the corresponding item.
         /// </summary>
-        public IDataTemplate? ItemTemplate { get; set; }
-        
-        /// <inheritdoc />
-        public IBinding? DisplayMemberBinding { get; set; }
+        /// <param name="container">The element that's used to display the specified item.</param>
+        /// <param name="item">The item to display.</param>
+        /// <param name="index">The index of the item to display.</param>
+        /// <remarks>
+        /// If <see cref="IsItemItsOwnContainer(Control)"/> is true for an item, then this method
+        /// only needs to be called a single time, otherwise this method should be called after the
+        /// container is created, and each subsequent time the container is recycled to display a
+        /// new item.
+        /// </remarks>
+        public void PrepareItemContainer(Control container, object? item, int index) => 
+            _owner.PrepareItemContainer(container, item, index);
 
         /// <summary>
-        /// Gets the owner control.
+        /// Undoes the effects of the <see cref="PrepareItemContainer(Control, object, int)"/> method.
         /// </summary>
-        public Control Owner { get; }
+        /// <param name="container">The element that's used to display the specified item.</param>
+        public void ClearItemContainer(Control container) => _owner.ClearContainerForItemOverride(container);
 
-        /// <inheritdoc/>
-        public virtual Type? ContainerType => null;
-
-        /// <inheritdoc/>
-        public ItemContainerInfo Materialize(int index, object item)
-        {
-            var container = new ItemContainerInfo(CreateContainer(item)!, item, index);
-
-            _containers.Add(container.Index, container);
-            Materialized?.Invoke(this, new ItemContainerEventArgs(container));
-
-            return container;
-        }
-
-        /// <inheritdoc/>
-        public virtual IEnumerable<ItemContainerInfo> Dematerialize(int startingIndex, int count)
-        {
-            var result = new List<ItemContainerInfo>();
-
-            for (int i = startingIndex; i < startingIndex + count; ++i)
-            {
-                result.Add(_containers[i]);
-                _containers.Remove(i);
-            }
-
-            Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
-
-            return result;
-        }
-
-        /// <inheritdoc/>
-        public virtual void InsertSpace(int index, int count)
-        {
-            if (count > 0)
-            {
-                var toMove = _containers.Where(x => x.Key >= index)
-                    .OrderByDescending(x => x.Key)
-                    .ToArray();
-
-                foreach (var i in toMove)
-                {
-                    _containers.Remove(i.Key);
-                    i.Value.Index += count;
-                    _containers.Add(i.Value.Index, i.Value);
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        public virtual IEnumerable<ItemContainerInfo> RemoveRange(int startingIndex, int count)
-        {
-            var result = new List<ItemContainerInfo>();
-
-            if (count > 0)
-            {
-                for (var i = startingIndex; i < startingIndex + count; ++i)
-                {
-                    if (_containers.TryGetValue(i, out var found))
-                    {
-                        result.Add(found);
-                    }
-
-                    _containers.Remove(i);
-                }
-
-                var toMove = _containers.Where(x => x.Key >= startingIndex)
-                                        .OrderBy(x => x.Key).ToArray();
-
-                foreach (var i in toMove)
-                {
-                    _containers.Remove(i.Key);
-                    i.Value.Index -= count;
-                    _containers.Add(i.Value.Index, i.Value);
-                }
-
-                Dematerialized?.Invoke(this, new ItemContainerEventArgs(startingIndex, result));
-
-                if (toMove.Length > 0)
-                {
-                    var containers = toMove.Select(x => x.Value).ToArray();
-                    Recycled?.Invoke(this, new ItemContainerEventArgs(containers[0].Index, containers));
-                }
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc/>
-        public virtual bool TryRecycle(int oldIndex, int newIndex, object item) => false;
-
-        /// <inheritdoc/>
-        public virtual IEnumerable<ItemContainerInfo> Clear()
-        {
-            var result = Containers.ToArray();
-            _containers.Clear();
-
-            if (result.Length > 0)
-            {
-                Dematerialized?.Invoke(this, new ItemContainerEventArgs(0, result));
-            }
-
-            return result;
-        }
-
-        /// <inheritdoc/>
-        public Control? ContainerFromIndex(int index)
-        {
-            ItemContainerInfo? result;
-            _containers.TryGetValue(index, out result);
-            return result?.ContainerControl;
-        }
-
-        /// <inheritdoc/>
-        public int IndexFromContainer(Control? container)
-        {
-            foreach (var i in _containers)
-            {
-                if (i.Value.ContainerControl == container)
-                {
-                    return i.Key;
-                }
-            }
-
-            return -1;
-        }
-
-        /// <summary>
-        /// Creates the container for an item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns>The created container control.</returns>
-        protected virtual Control? CreateContainer(object item)
-        {
-            var result = item as Control;
-
-            if (result == null)
-            {
-                result = new ContentPresenter();
-                if (DisplayMemberBinding is not null)
-                {
-                    result.SetValue(StyledElement.DataContextProperty, item, BindingPriority.Style);
-                    result.Bind(ContentPresenter.ContentProperty, DisplayMemberBinding, BindingPriority.Style);
-                }
-                else
-                {
-                    result.SetValue(ContentPresenter.ContentProperty, item, BindingPriority.Style);
-                }
-
-                if (ItemTemplate != null)
-                {
-                    result.SetValue(
-                        ContentPresenter.ContentTemplateProperty,
-                        ItemTemplate,
-                        BindingPriority.Style);
-                }
-            }
-
-            if (ItemContainerTheme != null)
-            {
-                result.SetValue(
-                    StyledElement.ThemeProperty,
-                    ItemContainerTheme,
-                    BindingPriority.Template);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Moves a container.
-        /// </summary>
-        /// <param name="oldIndex">The old index.</param>
-        /// <param name="newIndex">The new index.</param>
-        /// <param name="item">The new item.</param>
-        /// <returns>The container info.</returns>
-        protected ItemContainerInfo MoveContainer(int oldIndex, int newIndex, object item)
-        {
-            var container = _containers[oldIndex];
-            container.Index = newIndex;
-            container.Item = item;
-            _containers.Remove(oldIndex);
-            _containers.Add(newIndex, container);
-            return container;
-        }
-
-        /// <summary>
-        /// Gets all containers with an index that fall within a range.
-        /// </summary>
-        /// <param name="index">The first index.</param>
-        /// <param name="count">The number of elements in the range.</param>
-        /// <returns>The containers.</returns>
-        protected IEnumerable<ItemContainerInfo> GetContainerRange(int index, int count)
-        {
-            return _containers.Where(x => x.Key >= index && x.Key < index + count).Select(x => x.Value);
-        }
-
-        /// <summary>
-        /// Raises the <see cref="Recycled"/> event.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        protected void RaiseRecycled(ItemContainerEventArgs e)
-        {
-            Recycled?.Invoke(this, e);
-        }
+        public Control? ContainerFromIndex(int index) => _owner.ContainerFromIndex(index);
+        public int IndexFromContainer(Control container) => _owner.IndexFromContainer(container);
     }
 }

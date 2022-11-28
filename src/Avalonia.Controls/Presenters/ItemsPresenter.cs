@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 
 namespace Avalonia.Controls.Presenters
@@ -13,7 +14,7 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<ITemplate<Panel>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
-        private ItemsPresenterContainerGenerator? _generator;
+        private PanelContainerGenerator? _generator;
 
         /// <summary>
         /// Gets or sets a template which creates the <see cref="Panel"/> used to display the items.
@@ -52,7 +53,10 @@ namespace Avalonia.Controls.Presenters
 
         internal void ScrollIntoView(int index)
         {
-
+            if (Panel is VirtualizingPanel v)
+                v.ScrollIntoView(index);
+            else if (index >= 0 && index < Panel?.Children.Count)
+                Panel.Children[index].BringIntoView();
         }
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -97,5 +101,20 @@ namespace Avalonia.Controls.Presenters
             _generator?.Dispose();
             _generator = new(this);
         }
+
+        internal Control? ContainerFromIndex(int index)
+        {
+            if (Panel is VirtualizingPanel v)
+                return v.ContainerFromIndex(index);
+            return index >= 0 && index < Panel?.Children.Count ? Panel.Children[index] : null;
+        }
+
+        internal int IndexFromContainer(Control container)
+        {
+            if (Panel is VirtualizingPanel v)
+                return v.IndexFromContainer(container);
+            return Panel?.Children.IndexOf(container) ?? -1;
+        }
+
     }
 }

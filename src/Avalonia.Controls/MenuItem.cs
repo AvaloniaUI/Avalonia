@@ -332,9 +332,10 @@ namespace Avalonia.Controls
         {
             get
             {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
+                throw new NotImplementedException();
+                ////return ItemContainerGenerator.Containers
+                ////    .Select(x => x.ContainerControl)
+                ////    .OfType<IMenuItem>();
             }
         }
 
@@ -356,12 +357,6 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
-
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
-        }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {

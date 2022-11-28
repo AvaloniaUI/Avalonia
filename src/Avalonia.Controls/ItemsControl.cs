@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using Avalonia.Collections;
 using Avalonia.Automation.Peers;
+using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
@@ -15,7 +15,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls
@@ -81,7 +80,7 @@ namespace Avalonia.Controls
         
         private IEnumerable? _items = new AvaloniaList<object>();
         private int _itemCount;
-        private IItemContainerGenerator? _itemContainerGenerator;
+        private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
 
         /// <summary>
@@ -103,27 +102,9 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets the <see cref="IItemContainerGenerator"/> for the control.
+        /// Gets the <see cref="ItemContainerGenerator"/> for the control.
         /// </summary>
-        public IItemContainerGenerator ItemContainerGenerator
-        {
-            get
-            {
-                if (_itemContainerGenerator == null)
-                {
-                    _itemContainerGenerator = CreateItemContainerGenerator();
-
-                    _itemContainerGenerator.ItemContainerTheme = ItemContainerTheme;
-                    _itemContainerGenerator.ItemTemplate = ItemTemplate;
-                    _itemContainerGenerator.DisplayMemberBinding = DisplayMemberBinding;
-                    _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
-                    _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
-                    _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);
-                }
-
-                return _itemContainerGenerator;
-            }
-        }
+        public ItemContainerGenerator ItemContainerGenerator => _itemContainerGenerator ??= new(this);
 
         /// <summary>
         /// Gets or sets the items to display.
@@ -174,11 +155,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the items presenter control.
         /// </summary>
-        public ItemsPresenter? Presenter
-        {
-            get;
-            protected set;
-        }
+        public ItemsPresenter? Presenter { get; private set; }
 
         private protected bool WrapFocus { get; set; }
 
@@ -186,6 +163,52 @@ namespace Avalonia.Controls
         {
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
+        }
+
+        /// <summary>
+        /// Returns the container for the item at the specified index.
+        /// </summary>
+        /// <param name="index">The index of the item to retrieve.</param>
+        /// <returns>
+        /// The container for the item at the specified index within the item collection, if the
+        /// item has a container; otherwise, null.
+        /// </returns>
+        public Control? ContainerFromIndex(int index) => Presenter?.ContainerFromIndex(index);
+
+        /// <summary>
+        /// Returns the container corresponding to the specified item.
+        /// </summary>
+        /// <param name="item">The item to retrieve the container for.</param>
+        /// <returns>
+        /// A container that corresponds to the specified item, if the item has a container and
+        /// exists in the collection; otherwise, null.
+        /// </returns>
+        public Control? ContainerFromItem(object item)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Returns the index to the item that has the specified, generated container.
+        /// </summary>
+        /// <param name="container">The generated container to retrieve the item index for.</param>
+        /// <returns>
+        /// The index to the item that corresponds to the specified generated container, or -1 if 
+        /// <paramref name="container"/> is not found.
+        /// </returns>
+        public int IndexFromContainer(Control container) => Presenter?.IndexFromContainer(container) ?? -1;
+
+        /// <summary>
+        /// Returns the item that corresponds to the specified, generated container.
+        /// </summary>
+        /// <param name="container">The control that corresponds to the item to be returned.</param>
+        /// <returns>
+        /// The contained item, or the container if it does not contain an item.
+        /// </returns>
+        public object? ItemFromContainer(Control container)
+        {
+            // TODO: Should this throw or return null of container isn't a container?
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>
@@ -197,7 +220,7 @@ namespace Avalonia.Controls
             }
 
             Presenter = presenter;
-            ItemContainerGenerator?.Clear();
+            ////ItemContainerGenerator?.Clear();
 
             if (Presenter is IChildIndexProvider innerProvider)
             {
@@ -238,6 +261,47 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Creates or a container that can be used to display an item.
+        /// </summary>
+        protected internal virtual Control CreateContainerOverride() => new ContentPresenter();
+
+        /// <summary>
+        /// Prepares the specified element to display the specified item.
+        /// </summary>
+        /// <param name="container">The element that's used to display the specified item.</param>
+        /// <param name="item">The item to display.</param>
+        /// <param name="index">The index of the item to display.</param>
+        protected internal virtual void PrepareContainerForItemOverride(Control container, object? item, int index)
+        {
+            if (container == item)
+                return;
+
+            if (container is ContentControl cc)
+            {
+                cc.SetValue(ContentControl.ContentProperty, item, BindingPriority.Template);
+                if (ItemTemplate is { } it)
+                    cc.SetValue(ContentControl.ContentTemplateProperty, it, BindingPriority.Template);
+            }
+            else if (container is ContentPresenter p)
+            {
+                p.SetValue(ContentPresenter.ContentProperty, item, BindingPriority.Template);
+                if (ItemTemplate is { } it)
+                    p.SetValue(ContentPresenter.ContentTemplateProperty, it, BindingPriority.Template);
+            }
+
+            if (ItemContainerTheme is not null)
+                container.SetValue(ThemeProperty, ItemContainerTheme, BindingPriority.Template);
+        }
+
+        /// <summary>
+        /// Undoes the effects of the <see cref="PrepareContainerForItemOverride(Control, object?, int)"/> method.
+        /// </summary>
+        /// <param name="container">The container element.</param>
+        protected internal virtual void ClearContainerForItemOverride(Control container)
+        {
+        }
+
+        /// <summary>
         /// Gets the index of an item in a collection.
         /// </summary>
         /// <param name="items">The collection.</param>
@@ -273,60 +337,11 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Creates the <see cref="ItemContainerGenerator"/> for the control.
+        /// Determines whether the specified item is (or is eligible to be) its own container.
         /// </summary>
-        /// <returns>
-        /// An <see cref="IItemContainerGenerator"/>.
-        /// </returns>
-        protected virtual IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator(this);
-        }
-
-        /// <summary>
-        /// Called when new containers are materialized for the <see cref="ItemsControl"/> by its
-        /// <see cref="ItemContainerGenerator"/>.
-        /// </summary>
-        /// <param name="e">The details of the containers.</param>
-        protected virtual void OnContainersMaterialized(ItemContainerEventArgs e)
-        {
-            foreach (var container in e.Containers)
-            {
-                // If the item is its own container, then it will be added to the logical tree when
-                // it was added to the Items collection.
-                if (container.ContainerControl != null && container.ContainerControl != container.Item)
-                {
-                    LogicalChildren.Add(container.ContainerControl);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Called when containers are dematerialized for the <see cref="ItemsControl"/> by its
-        /// <see cref="ItemContainerGenerator"/>.
-        /// </summary>
-        /// <param name="e">The details of the containers.</param>
-        protected virtual void OnContainersDematerialized(ItemContainerEventArgs e)
-        {
-            foreach (var container in e.Containers)
-            {
-                // If the item is its own container, then it will be removed from the logical tree
-                // when it is removed from the Items collection.
-                if (container.ContainerControl != container.Item)
-                {
-                    LogicalChildren.Remove(container.ContainerControl);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Called when containers are recycled for the <see cref="ItemsControl"/> by its
-        /// <see cref="ItemContainerGenerator"/>.
-        /// </summary>
-        /// <param name="e">The details of the containers.</param>
-        protected virtual void OnContainersRecycled(ItemContainerEventArgs e)
-        {
-        }
+        /// <param name="item">The item to check.</param>
+        /// <returns>true if the item is (or is eligible to be) its own container; otherwise, false.</returns>
+        protected internal virtual bool IsItemItsOwnContainerOverride(Control item) => true;
 
         /// <summary>
         /// Handles directional navigation within the <see cref="ItemsControl"/>.
@@ -387,7 +402,8 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ItemContainerThemeProperty && _itemContainerGenerator is not null)
             {
-                _itemContainerGenerator.ItemContainerTheme = change.GetNewValue<ControlTheme?>();
+                throw new NotImplementedException();
+                ////_itemContainerGenerator.ItemContainerTheme = change.GetNewValue<ControlTheme?>();
             }
         }
 
@@ -431,6 +447,27 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
+        }
+
+        internal void AddLogicalChild(Control c) => LogicalChildren.Add(c);
+        internal void RemoveLogicalChild(Control c) => LogicalChildren.Remove(c);
+        internal void ClearLogicalChildren() => LogicalChildren.Clear();
+
+        internal void PrepareItemContainer(Control container, object? item, int index)
+        {
+            var itemContainerTheme = ItemContainerTheme;
+
+            if (itemContainerTheme is not null && 
+                !container.IsSet(ThemeProperty) &&
+                ((IStyleable)container).StyleKey == itemContainerTheme.TargetType)
+            {
+                container.Theme = itemContainerTheme;
+            }
+
+            if (item is not Control)
+                container.DataContext = item;
+
+            PrepareContainerForItemOverride(container, item, index);
         }
 
         /// <summary>
@@ -501,7 +538,7 @@ namespace Avalonia.Controls
         {
             if (_itemContainerGenerator != null)
             {
-                _itemContainerGenerator.ItemTemplate = (IDataTemplate?)e.NewValue;
+                ////_itemContainerGenerator.ItemTemplate = (IDataTemplate?)e.NewValue;
                 // TODO: Rebuild the item containers.
             }
         }

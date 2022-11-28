@@ -361,7 +361,8 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TreeViewItems get realized.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.Single(target.ItemContainerGenerator.Containers);
+                    throw new NotImplementedException();
+                    ////Assert.Single(target.ItemContainerGenerator.Containers);
 
                     // Clear the content and ensure the TreeView is removed.
                     window.Content = null;
@@ -756,20 +757,22 @@ namespace Avalonia.LeakTests
                 window.Show();
                 window.LayoutManager.ExecuteInitialLayoutPass();
 
-                void AssertInitialItemState()
-                {
-                    var item0 = (ListBoxItem)lb.ItemContainerGenerator.Containers.First().ContainerControl;
-                    var canvas0 = (Canvas)item0.Presenter.Child;
-                    Assert.Equal("foo", canvas0.Tag);
-                }
+                throw new NotImplementedException();
+
+                ////void AssertInitialItemState()
+                ////{
+                ////    var item0 = (ListBoxItem)lb.ItemContainerGenerator.Containers.First().ContainerControl;
+                ////    var canvas0 = (Canvas)item0.Presenter.Child;
+                ////    Assert.Equal("foo", canvas0.Tag);
+                ////}
                
-                Assert.Equal(10, lb.ItemContainerGenerator.Containers.Count());
-                AssertInitialItemState();
+                ////Assert.Equal(10, lb.ItemContainerGenerator.Containers.Count());
+                ////AssertInitialItemState();
 
-                items.Clear();
-                window.LayoutManager.ExecuteLayoutPass();
+                ////items.Clear();
+                ////window.LayoutManager.ExecuteLayoutPass();
 
-                Assert.Empty(lb.ItemContainerGenerator.Containers);
+                ////Assert.Empty(lb.ItemContainerGenerator.Containers);
 
                 // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);

@@ -8,6 +8,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
@@ -218,6 +219,7 @@ namespace Avalonia.Controls.UnitTests
 
                 // Scroll down a page.
                 target.Scroll.Offset = new Vector(0, 10);
+                Layout(target);
 
                 // Make sure recycled item isn't now selected.
                 Assert.False(((ListBoxItem)target.Presenter.Panel.Children[0]).IsSelected);
@@ -239,8 +241,8 @@ namespace Avalonia.Controls.UnitTests
 
                 Prepare(target);
 
-                Assert.Equal(new Size(20, 20), target.Scroll.Extent);
-                Assert.Equal(new Size(100, 10), target.Scroll.Viewport);
+                Assert.Equal(new Size(100, 200), target.Scroll.Extent);
+                Assert.Equal(new Size(100, 100), target.Scroll.Viewport);
             }
         }
 
@@ -263,11 +265,13 @@ namespace Avalonia.Controls.UnitTests
 
                 items.Clear();
                 items.AddRange(Enumerable.Range(0, 11).Select(x => $"Item {x}"));
-                items.Remove("Item 2");
+                Layout(target);
 
-                Assert.Equal(
-                    items,
-                    target.Presenter.Panel.Children.Cast<ListBoxItem>().Select(x => (string)x.Content));
+                items.Remove("Item 2");
+                Layout(target);
+
+                var actual = target.Presenter.Panel.Children.Cast<ListBoxItem>().Select(x => (string)x.Content).ToList();
+                Assert.Equal(items.OrderBy(x => x), actual.OrderBy(x => x));
             }
         }
 
@@ -326,44 +330,6 @@ namespace Avalonia.Controls.UnitTests
         private void RaisePressedEvent(ListBox listBox, ListBoxItem item, MouseButton mouseButton)
         {
             _mouse.Click(listBox, item, mouseButton);
-        }
-
-        [Fact]
-        public void ListBox_After_Scroll_IndexOutOfRangeException_Shouldnt_Be_Thrown()
-        {
-            throw new NotImplementedException();
-            ////using (UnitTestApplication.Start(TestServices.StyledWindow))
-            ////{
-            ////    var items = Enumerable.Range(0, 11).Select(x => $"{x}").ToArray();
-
-            ////    var target = new ListBox
-            ////    {
-            ////        Template = ListBoxTemplate(),
-            ////        Items = items,
-            ////        ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Height = 11 })
-            ////    };
-
-            ////    Prepare(target);
-
-            ////    var panel = target.Presenter.Panel as IVirtualizingPanel;
-
-            ////    var listBoxItems = panel.Children.OfType<ListBoxItem>();
-
-            ////    //virtualization should have created exactly 10 items
-            ////    Assert.Equal(10, listBoxItems.Count());
-            ////    Assert.Equal("0", listBoxItems.First().DataContext);
-            ////    Assert.Equal("9", listBoxItems.Last().DataContext);
-
-            ////    //instead pixeloffset > 0 there could be pretty complex sequence for repro
-            ////    //it involves add/remove/scroll to end multiple actions
-            ////    //which i can't find so far :(, but this is the simplest way to add it to unit test
-            ////    panel.PixelOffset = 1;
-
-            ////    //here scroll to end -> IndexOutOfRangeException is thrown
-            ////    target.Scroll.Offset = new Vector(0, 2);
-
-            ////    Assert.True(true);
-            ////}
         }
 
         [Fact]
@@ -464,11 +430,11 @@ namespace Avalonia.Controls.UnitTests
                 items.Remove("1");
                 lm.ExecuteLayoutPass();
 
-                Assert.Equal("30", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 1).DataContext);
-                Assert.Equal("29", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 2).DataContext);
-                Assert.Equal("28", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 3).DataContext);
-                Assert.Equal("27", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 4).DataContext);
-                Assert.Equal("26", target.ItemContainerGenerator.ContainerFromIndex(items.Count - 5).DataContext);
+                Assert.Equal("30", target.ContainerFromIndex(items.Count - 1).DataContext);
+                Assert.Equal("29", target.ContainerFromIndex(items.Count - 2).DataContext);
+                Assert.Equal("28", target.ContainerFromIndex(items.Count - 3).DataContext);
+                Assert.Equal("27", target.ContainerFromIndex(items.Count - 4).DataContext);
+                Assert.Equal("26", target.ContainerFromIndex(items.Count - 5).DataContext);
             }
         }
 
@@ -525,7 +491,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var target = new ListBox()
                 {
-                    VerticalAlignment = Layout.VerticalAlignment.Top,
+                    VerticalAlignment = VerticalAlignment.Top,
                     AutoScrollToSelectedItem = true,
                     Width = 50,
                     ItemTemplate = new FuncDataTemplate<object>((c, _) => new Border() { Height = 10 }),
@@ -627,6 +593,8 @@ namespace Avalonia.Controls.UnitTests
                             [~~ScrollContentPresenter.ExtentProperty] = parent[~~ScrollViewer.ExtentProperty],
                             [~~ScrollContentPresenter.OffsetProperty] = parent[~~ScrollViewer.OffsetProperty],
                             [~~ScrollContentPresenter.ViewportProperty] = parent[~~ScrollViewer.ViewportProperty],
+                            [~ScrollContentPresenter.CanHorizontallyScrollProperty] = parent[~ScrollViewer.CanHorizontallyScrollProperty],
+                            [~ScrollContentPresenter.CanVerticallyScrollProperty] = parent[~ScrollViewer.CanVerticallyScrollProperty],
                         }.RegisterInNameScope(scope),
                         new ScrollBar
                         {
@@ -640,45 +608,28 @@ namespace Avalonia.Controls.UnitTests
 
         private static void Prepare(ListBox target)
         {
-            // The ListBox needs to be part of a rooted visual tree.
-            var root = new TestRoot();
-            root.Child = target;
+            target.Width = target.Height = 100;
 
-            // Apply the template to the ListBox itself.
-            target.ApplyTemplate();
-
-            // Then to its inner ScrollViewer.
-            var scrollViewer = (ScrollViewer)target.GetVisualChildren().Single();
-            scrollViewer.ApplyTemplate();
-
-            // Then make the ScrollViewer create its child.
-            ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
-
-            // Now the ItemsPresenter should be reigstered, so apply its template.
-            target.Presenter.ApplyTemplate();
-
-            // Because ListBox items are virtualized we need to do a layout to make them appear.
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
-
-            // Now set and apply the item templates.
-            foreach (ListBoxItem item in target.Presenter.Panel.Children)
+            var root = new TestRoot(target)
             {
-                item.Template = ListBoxItemTemplate();
-                item.ApplyTemplate();
-                item.Presenter.ApplyTemplate();
-                ((ContentPresenter)item.Presenter).UpdateChild();
-            }
+                Resources =
+                {
+                    { 
+                        typeof(ListBoxItem),
+                        new ControlTheme(typeof(ListBoxItem))
+                        {
+                            Setters = { new Setter(ListBoxItem.TemplateProperty, ListBoxItemTemplate()) }
+                        }
+                    }
+                }
+            };
 
-            // The items were created before the template was applied, so now we need to go back
-            // and re-arrange everything.
-            foreach (Control i in target.GetSelfAndVisualDescendants())
-            {
-                i.InvalidateMeasure();
-            }
+            root.LayoutManager.ExecuteInitialLayoutPass();
+        }
 
-            target.Measure(new Size(100, 100));
-            target.Arrange(new Rect(0, 0, 100, 100));
+        private static void Layout(Control c)
+        {
+            ((ILayoutRoot)c.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
         }
 
         private class Item

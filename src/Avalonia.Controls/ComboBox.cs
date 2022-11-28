@@ -158,15 +158,6 @@ namespace Avalonia.Controls
             set { SetValue(VerticalContentAlignmentProperty, value); }
         }
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator<ComboBoxItem>(
-                this,
-                ComboBoxItem.ContentProperty,
-                ComboBoxItem.ContentTemplateProperty);
-        }
-
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -449,14 +440,15 @@ namespace Avalonia.Controls
 
         private void SelectFocusedItem()
         {
-            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
-            {
-                if (dropdownItem.ContainerControl.IsFocused)
-                {
-                    SelectedIndex = dropdownItem.Index;
-                    break;
-                }
-            }
+            throw new NotImplementedException();
+            ////foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
+            ////{
+            ////    if (dropdownItem.ContainerControl.IsFocused)
+            ////    {
+            ////        SelectedIndex = dropdownItem.Index;
+            ////        break;
+            ////    }
+            ////}
         }
 
         private void SelectNext()

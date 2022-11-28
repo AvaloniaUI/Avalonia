@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Xml.Linq;
 using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Utilities;
@@ -18,16 +19,21 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Orientation> OrientationProperty =
             StackLayout.OrientationProperty.AddOwner<VirtualizingStackPanel>();
 
+        private static readonly AttachedProperty<bool> ItemIsOwnContainerProperty =
+            AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, bool>("ItemIsOwnContainer");
+
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
         private readonly Action<Control> _recycleElement;
         private readonly Action<Control, int> _updateElementIndex;
         private int _anchorIndex = -1;
         private Control? _anchorElement;
+        private bool _isInLayout;
         private bool _isWaitingForViewportUpdate;
         private double _lastEstimatedElementSizeU = 25;
         private RealizedElementList? _measureElements;
         private RealizedElementList? _realizedElements;
         private Rect _viewport = s_invalidViewport;
+        private Stack<Control>? _recyclePool;
 
         public VirtualizingStackPanel()
         {
@@ -54,73 +60,92 @@ namespace Avalonia.Controls
             if (!IsEffectivelyVisible)
                 return default;
 
-            var items = ItemsControl?.Items as IList;
+            _isInLayout = true;
 
-            if (items is null || items.Count == 0)
+            try
             {
-                Children.Clear();
-                return default;
+                var items = ItemsControl?.Items as IList;
+
+                if (items is null || items.Count == 0)
+                {
+                    RemoveInternalChildRange(0, Children.Count);
+                    return default;
+                }
+
+                var orientation = Orientation;
+
+                _realizedElements ??= new();
+                _measureElements ??= new();
+
+                // If we're bringing an item into view, ignore any layout passes until we receive a new
+                // effective viewport.
+                if (_isWaitingForViewportUpdate)
+                {
+                    var sizeV = orientation == Orientation.Horizontal ? DesiredSize.Height : DesiredSize.Width;
+                    return CalculateDesiredSize(orientation, items, sizeV);
+                }
+
+                // We handle horizontal and vertical layouts here so X and Y are abstracted to:
+                // - Horizontal layouts: U = horizontal, V = vertical
+                // - Vertical layouts: U = vertical, V = horizontal
+                var viewport = CalculateMeasureViewport(items);
+
+                // Recycle elements outside of the expected range.
+                _realizedElements.RecycleElementsBefore(viewport.firstIndex, _recycleElement);
+                _realizedElements.RecycleElementsAfter(viewport.estimatedLastIndex, _recycleElement);
+
+                // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
+                // write to _realizedElements yet, only _measureElements.
+                GenerateElements(availableSize, ref viewport);
+
+                // Now we know what definitely fits, recycle anything left over.
+                _realizedElements.RecycleElementsAfter(_measureElements.LastModelIndex, _recycleElement);
+
+                // And swap the measureElements and realizedElements collection.
+                (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
+                _measureElements.ResetForReuse();
+
+                return CalculateDesiredSize(orientation, items, viewport.measuredV);
             }
-
-            var orientation = Orientation;
-
-            _realizedElements ??= new();
-            _measureElements ??= new();
-
-            // If we're bringing an item into view, ignore any layout passes until we receive a new
-            // effective viewport.
-            if (_isWaitingForViewportUpdate)
+            finally
             {
-                var sizeV = orientation == Orientation.Horizontal ? DesiredSize.Height : DesiredSize.Width;
-                return CalculateDesiredSize(orientation, items, sizeV);
+                _isInLayout = false;
             }
-
-            // We handle horizontal and vertical layouts here so X and Y are abstracted to:
-            // - Horizontal layouts: U = horizontal, V = vertical
-            // - Vertical layouts: U = vertical, V = horizontal
-            var viewport = CalculateMeasureViewport(items);
-
-            // Recycle elements outside of the expected range.
-            _realizedElements.RecycleElementsBefore(viewport.firstIndex, _recycleElement);
-            _realizedElements.RecycleElementsAfter(viewport.estimatedLastIndex, _recycleElement);
-
-            // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
-            // write to _realizedElements yet, only _measureElements.
-            GenerateElements(availableSize, ref viewport);
-
-            // Now we know what definitely fits, recycle anything left over.
-            _realizedElements.RecycleElementsAfter(_measureElements.LastModelIndex, _recycleElement);
-
-            // And swap the measureElements and realizedElements collection.
-            (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
-            _measureElements.ResetForReuse();
-
-            return CalculateDesiredSize(orientation, items, viewport.measuredV);
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            Debug.Assert(_realizedElements is not null);
+            if (_realizedElements is null)
+                return default;
 
-            var orientation = Orientation;
-            var u = _realizedElements!.StartU;
+            _isInLayout = true;
 
-            for (var i = 0; i < _realizedElements.Count; ++i)
+            try
             {
-                var e = _realizedElements.Elements[i];
+                var orientation = Orientation;
+                var u = _realizedElements!.StartU;
 
-                if (e is object)
+                for (var i = 0; i < _realizedElements.Count; ++i)
                 {
-                    var sizeU = _realizedElements.SizeU[i];
-                    var rect = orientation == Orientation.Horizontal ?
-                        new Rect(u, 0, sizeU, finalSize.Height) :
-                        new Rect(0, u, finalSize.Width, sizeU);
-                    e.Arrange(rect);
-                    u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
-                }
-            }
+                    var e = _realizedElements.Elements[i];
 
-            return finalSize;
+                    if (e is object)
+                    {
+                        var sizeU = _realizedElements.SizeU[i];
+                        var rect = orientation == Orientation.Horizontal ?
+                            new Rect(u, 0, sizeU, finalSize.Height) :
+                            new Rect(0, u, finalSize.Width, sizeU);
+                        e.Arrange(rect);
+                        u += orientation == Orientation.Horizontal ? rect.Width : rect.Height;
+                    }
+                }
+
+                return finalSize;
+            }
+            finally
+            {
+                _isInLayout = false;
+            }
         }
 
         protected override void OnItemsChanged(IList items, NotifyCollectionChangedEventArgs e)
@@ -132,18 +157,68 @@ namespace Avalonia.Controls
             {
                 case NotifyCollectionChangedAction.Add:
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
-                    ItemsControl!.ItemContainerGenerator.InsertSpace(e.NewStartingIndex, e.NewItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElement);
-                    ItemsControl!.ItemContainerGenerator.RemoveRange(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    ////RecycleAllElements();
+                    _realizedElements.RecycleAllElements(_recycleElement);
                     break;
             }
 
             InvalidateMeasure();
+        }
+
+        protected internal override Control? ContainerFromIndex(int index) => _realizedElements?.GetElement(index);
+        protected internal override int IndexFromContainer(Control container) => _realizedElements?.GetIndex(container) ?? -1;
+
+        protected internal override void ScrollIntoView(int index)
+        {
+            var items = ItemsControl?.Items as IList;
+
+            if (_isInLayout || items is null || index < 0 || index >= items.Count)
+                return;
+
+            if (GetRealizedElement(index) is Control element)
+            {
+                element.BringIntoView();
+            }
+            else if (this.GetVisualRoot() is ILayoutRoot root)
+            {
+                // Create and measure the element to be brought into view. Store it in a field so that
+                // it can be re-used in the layout pass.
+                _anchorElement = GetOrCreateElement(items, index);
+                _anchorElement.Measure(Size.Infinity);
+                _anchorIndex = index;
+
+                // Get the expected position of the elment and put it in place.
+                var anchorU = GetOrEstimateElementPosition(index);
+                var rect = Orientation == Orientation.Horizontal ?
+                    new Rect(anchorU, 0, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height) :
+                    new Rect(0, anchorU, _anchorElement.DesiredSize.Width, _anchorElement.DesiredSize.Height);
+                _anchorElement.Arrange(rect);
+
+                // If the item being brought into view was added since the last layout pass then
+                // our bounds won't be updated, so any containing scroll viewers will not have an
+                // updated extent. Do a layout pass to ensure that the containing scroll viewers
+                // will be able to scroll the new item into view.
+                if (!Bounds.Contains(rect) && !_viewport.Contains(rect))
+                {
+                    _isWaitingForViewportUpdate = true;
+                    root.LayoutManager.ExecuteLayoutPass();
+                    _isWaitingForViewportUpdate = false;
+                }
+
+                // Try to bring the item into view and do a layout pass.
+                _anchorElement.BringIntoView();
+
+                _isWaitingForViewportUpdate = !_viewport.Contains(rect);
+                root.LayoutManager.ExecuteLayoutPass();
+                _isWaitingForViewportUpdate = false;
+
+                _anchorElement = null;
+                _anchorIndex = -1;
+            }
         }
 
         internal IReadOnlyList<Control?> GetRealizedElements()
@@ -206,7 +281,10 @@ namespace Avalonia.Controls
 
         private double EstimateElementSizeU()
         {
-            var count = _realizedElements!.Count;
+            if (_realizedElements is null)
+                return _lastEstimatedElementSizeU;
+
+            var count = _realizedElements.Count;
             var divisor = 0.0;
             var total = 0.0;
 
@@ -280,36 +358,89 @@ namespace Avalonia.Controls
 
         private Control GetOrCreateElement(IList items, int index)
         {
-            var e = GetRealizedElement(index) ?? GetRecycledOrCreateElement(items, index);
+            var e = GetRealizedElement(index) ?? 
+                GetRecycledElement(items, index) ??
+                CreateElement(items, index);
             InvalidateHack(e);
             return e;
         }
 
         private Control? GetRealizedElement(int index)
         {
-            Debug.Assert(_realizedElements is not null);
-
             if (_anchorIndex == index)
                 return _anchorElement;
-            return _realizedElements!.GetElement(index);
+            return _realizedElements?.GetElement(index);
         }
 
-        private Control GetRecycledOrCreateElement(IList items, int index)
+        private Control? GetRecycledElement(IList items, int index)
         {
             Debug.Assert(ItemsControl is not null);
 
-            var c = ItemsControl!.ItemContainerGenerator.Materialize(index, items[index]!).ContainerControl;
-            Children.Add(c);
-            return c;
+            var generator = ItemsControl!.ItemContainerGenerator;
+            var item = items[index];
+
+            if (item is Control controlItem)
+            {
+                if (controlItem.IsSet(ItemIsOwnContainerProperty))
+                {
+                    controlItem.IsVisible = true;
+                    return controlItem;
+                }
+                else if (generator.IsItemItsOwnContainer(controlItem))
+                {
+                    generator.PrepareItemContainer(controlItem, item, index);
+                    controlItem.SetValue(ItemIsOwnContainerProperty, true);
+                    AddInternalChild(controlItem);
+                    return controlItem;
+                }
+            }
+
+            if (_recyclePool?.Count > 0)
+            {
+                var recycled = _recyclePool.Pop();
+                recycled.IsVisible = true;
+                generator.PrepareItemContainer(recycled, item, index);
+                return recycled;
+            }
+
+            return null;
+        }
+
+        private Control CreateElement(IList items, int index)
+        {
+            Debug.Assert(ItemsControl is not null);
+
+            var generator = ItemsControl!.ItemContainerGenerator;
+            var item = items[index];
+            var container = generator.CreateContainer();
+
+            AddInternalChild(container);
+            generator.PrepareItemContainer(container, item, index);
+
+            return container;
+        }
+
+        private double GetOrEstimateElementPosition(int index)
+        {
+            var estimatedElementSize = EstimateElementSizeU();
+            return index * estimatedElementSize;
         }
 
         private void RecycleElement(Control element)
         {
             Debug.Assert(ItemsControl is not null);
-
-            var index = ItemsControl.ItemContainerGenerator!.IndexFromContainer(element);
-            ItemsControl!.ItemContainerGenerator.Dematerialize(index, 1);
-            Children.Remove(element);
+            
+            if (element.IsSet(ItemIsOwnContainerProperty))
+            {
+                element.IsVisible = false;
+            }
+            else
+            {
+                ItemsControl!.ItemContainerGenerator.ClearItemContainer(element);
+                _recyclePool ??= new();
+                _recyclePool.Push(element);
+                element.IsVisible = false;
+            }
         }
 
         private void UpdateElementIndex(Control element, int index)
@@ -477,6 +608,43 @@ namespace Avalonia.Controls
 
                 return (-1, 0);
             }
+
+            /// <summary>
+            /// Gets the position of an element on the primary axis, if realized.
+            /// </summary>
+            /// <param name="modelIndex">The index in the source collection of the element.</param>
+            /// <param name="position">
+            /// When the method exits, contains the element's position on the primary axis, if 
+            /// the element is realized.
+            /// </param>
+            /// <returns>
+            /// True if the requested element was found, otherwise false.
+            /// </returns>
+            public bool TryGetElementU(int modelIndex, out double position)
+            {
+                if (_sizes is null || modelIndex < FirstModelIndex || modelIndex > LastModelIndex)
+                {
+                    position = double.NaN;
+                    return false;
+                }
+
+                var index = modelIndex - FirstModelIndex;
+                position = StartU;
+
+                for (var i = 0; i < index; ++i)
+                {
+                    position += _sizes[i];
+                }
+
+                return true;
+            }
+
+            /// <summary>
+            /// Gets the model index of the specified element.
+            /// </summary>
+            /// <param name="element">The element.</param>
+            /// <returns>The model index or -1 if the element is not present in the collection.</returns>
+            public int GetIndex(Control element) => _elements?.IndexOf(element) is int index && index >= 0 ? index : -1;
 
             /// <summary>
             /// Updates the elements in response to items being inserted into the source collection.
