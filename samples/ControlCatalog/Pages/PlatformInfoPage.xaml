@@ -1,0 +1,53 @@
+﻿<UserControl x:Class="ControlCatalog.Pages.PlatformInfoPage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             d:DesignHeight="800"
+             d:DesignWidth="400"
+             mc:Ignorable="d"
+             x:DataType="viewModels:PlatformInformationViewModel">
+  <StackPanel Spacing="20">
+    <TextBlock Text="{Binding PlatformInfo}" />
+
+    <StackPanel TextElement.Foreground="White">
+      <StackPanel Orientation="Horizontal">
+        <Border Height="100" Width="100" Background="{OnFormFactor Gray, Desktop=Green}">
+          <TextBlock Text="Desktop" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnFormFactor Gray, Mobile=Green}">
+          <TextBlock Text="Mobile" />
+        </Border>
+      </StackPanel>
+      <WrapPanel>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, Windows=Green}">
+          <TextBlock Text="Windows" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, macOS=Green}">
+          <TextBlock Text="macOS" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, Linux=Green}">
+          <TextBlock Text="Linux" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, Browser=Green}">
+          <TextBlock Text="Browser" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, iOS=Green}">
+          <TextBlock Text="iOS" />
+        </Border>
+        <Border Height="100" Width="100" Background="{OnPlatform Gray, Android=Green}">
+          <TextBlock Text="Android" />
+        </Border>
+        <Border Height="100" Width="100">
+          <Border.Background>
+            <OnPlatform Default="Gray" >
+              <On Options="macOS, Linux, Windows" Content="Green" />
+            </OnPlatform>
+          </Border.Background>
+          <TextBlock Text="Win, Lin or Mac" />
+        </Border>
+      </WrapPanel>
+    </StackPanel>
+  </StackPanel>
+</UserControl>

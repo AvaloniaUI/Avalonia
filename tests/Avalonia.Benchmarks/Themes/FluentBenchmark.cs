@@ -46,7 +46,6 @@ namespace Avalonia.Benchmarks.Themes
                 platform: new AppBuilder().RuntimePlatform,
                 renderInterface: new MockPlatformRenderInterface(),
                 standardCursorFactory: Mock.Of<ICursorFactory>(),
-                styler: new Styler(),
                 theme: () => LoadFluentTheme(),
                 threadingInterface: new NullThreadingPlatform(),
                 fontManagerImpl: new MockFontManagerImpl(),
@@ -61,7 +60,7 @@ namespace Avalonia.Benchmarks.Themes
             AssetLoader.RegisterResUriParsers();
             return new Styles
             {
-                new Avalonia.Themes.Fluent.FluentTheme(new Uri("avares://Avalonia.Benchmarks"))
+                new Avalonia.Themes.Fluent.FluentTheme()
                 {
 
                 }

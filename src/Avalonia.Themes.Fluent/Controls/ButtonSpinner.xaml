@@ -1,8 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="clr-namespace:System;assembly=netstandard"
-                    xmlns:converters="clr-namespace:Avalonia.Controls.Converters;assembly=Avalonia.Controls"
-                    x:CompileBindings="True">
+                    xmlns:sys="using:System"
+                    xmlns:converters="using:Avalonia.Controls.Converters">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="20">
@@ -71,7 +70,6 @@
   </ControlTheme>
 
   <ControlTheme x:Key="{x:Type ButtonSpinner}" TargetType="ButtonSpinner">
-    <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource TextControlForeground}" />
     <Setter Property="Padding" Value="10, 0" />
     <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />

@@ -251,7 +251,7 @@ namespace Avalonia.Base.UnitTests
         {
             Class1 target = new Class1();
 
-            target.SetValue(Class1.FooProperty, "one", BindingPriority.TemplatedParent);
+            target.SetValue(Class1.FooProperty, "one", BindingPriority.Template);
             Assert.Equal("one", target.GetValue(Class1.FooProperty));
             target.SetValue(Class1.FooProperty, "two", BindingPriority.Style);
             Assert.Equal("one", target.GetValue(Class1.FooProperty));

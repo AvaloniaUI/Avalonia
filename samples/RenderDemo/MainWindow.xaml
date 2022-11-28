@@ -1,9 +1,11 @@
 <Window x:Class="RenderDemo.MainWindow"
         xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
-        xmlns:pages="clr-namespace:RenderDemo.Pages"
+        xmlns:controls="using:ControlSamples"
+        xmlns:pages="using:RenderDemo.Pages"
+        xmlns:viewModels="using:RenderDemo.ViewModels"
         Title="AvaloniaUI Rendering Test"
+        x:DataType="viewModels:MainWindowViewModel"
         Width="{Binding Width, Mode=TwoWay}"
         Height="{Binding Height, Mode=TwoWay}">
   <controls:HamburgerMenu ExpandedModeThresholdWidth="760">

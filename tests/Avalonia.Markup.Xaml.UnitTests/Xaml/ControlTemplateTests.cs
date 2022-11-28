@@ -77,7 +77,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -142,7 +142,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Dock.Top, DockPanel.GetDock(presenter));
 
                 var diagnostic = presenter.GetDiagnostic(DockPanel.DockProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -176,7 +176,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -210,7 +210,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -241,7 +241,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal("Foo", presenter.Content);
 
                 var diagnostic = presenter.GetDiagnostic(ContentPresenter.ContentProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 

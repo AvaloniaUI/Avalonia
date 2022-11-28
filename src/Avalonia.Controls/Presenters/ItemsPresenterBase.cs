@@ -5,6 +5,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 
@@ -33,6 +34,12 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
             ItemsControl.ItemTemplateProperty.AddOwner<ItemsPresenterBase>();
 
+        /// <summary>
+        /// Defines the <see cref="DisplayMemberBinding" /> property
+        /// </summary>
+        public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
+            ItemsControl.DisplayMemberBindingProperty.AddOwner<ItemsPresenterBase>();
+        
         private IEnumerable? _items;
         private IDisposable? _itemsSubscription;
         private bool _createdPanel;
@@ -121,6 +128,15 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
+        /// </summary>
+        public IBinding? DisplayMemberBinding
+        {
+            get { return GetValue(DisplayMemberBindingProperty); }
+            set { SetValue(DisplayMemberBindingProperty, value); }
+        }
+
+        /// <summary>
         /// Gets the panel used to display the items.
         /// </summary>
         public IPanel? Panel
@@ -177,6 +193,7 @@ namespace Avalonia.Controls.Presenters
             {
                 result = new ItemContainerGenerator(this);
                 result.ItemTemplate = ItemTemplate;
+                result.DisplayMemberBinding = DisplayMemberBinding;
             }
 
             result.Materialized += ContainerActionHandler;

@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Input;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -6,18 +7,25 @@ namespace Avalonia.Platform
     [Unstable]
     public interface IPlatformSettings
     {
-        Size DoubleClickSize { get; }
-
-        TimeSpan DoubleClickTime { get; }
+        /// <summary>
+        /// The size of the rectangle around the location of a pointer down that a pointer up
+        /// must occur within in order to register a tap gesture, in device-independent pixels.
+        /// </summary>
+        /// <param name="type">The pointer type.</param>
+        Size GetTapSize(PointerType type);
 
         /// <summary>
-        /// Determines the size of the area within that you should click twice in order for a double click to be counted.
+        /// The size of the rectangle around the location of a pointer down that a pointer up
+        /// must occur within in order to register a double-tap gesture, in device-independent
+        /// pixels.
         /// </summary>
-        Size TouchDoubleClickSize { get; }
+        /// <param name="type">The pointer type.</param>
+        Size GetDoubleTapSize(PointerType type);
 
         /// <summary>
-        /// Determines the time span that what will be used to determine the double-click.
+        /// Gets the maximum time that may occur between the first and second click of a double-
+        /// tap gesture.
         /// </summary>
-        TimeSpan TouchDoubleClickTime { get; }
+        TimeSpan GetDoubleTapTime(PointerType type);
     }
 }

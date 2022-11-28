@@ -22,14 +22,19 @@
     <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Xaml\Style1.xaml">
+    <AvaloniaResource Include="Xaml\Style1.xaml">
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Xaml\Style2.xaml">
+    </AvaloniaResource>
+    <AvaloniaResource Include="Xaml\Style2.xaml">
       <SubType>Designer</SubType>
-    </EmbeddedResource>
+    </AvaloniaResource>
     <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml" />
     <AvaloniaResource Include="Xaml\XamlIlClassWithCustomProperty.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">
+      <Link>PlatformFactAttribute.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

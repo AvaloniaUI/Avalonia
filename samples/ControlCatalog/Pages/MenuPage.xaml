@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.MenuPage">
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.MenuPage"
+             x:DataType="viewModels:MenuPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">Exported menu fallback</TextBlock>
     <TextBlock>(Should be only visible on platforms without desktop-global menu bar)</TextBlock>
@@ -45,7 +47,7 @@
                 <TextBlock Classes="h3" Margin="4 8">Dyanamically generated</TextBlock>
                 <Menu Items="{Binding MenuItems}">
                     <Menu.Styles>
-                        <Style Selector="MenuItem">
+                        <Style Selector="MenuItem" x:DataType="viewModels:MenuItemViewModel">
                             <Setter Property="Header" Value="{Binding Header}"/>
                             <Setter Property="Items" Value="{Binding Items}"/>
                             <Setter Property="Command" Value="{Binding Command}"/>
@@ -68,7 +70,7 @@
                         <Separator/>
                         <MenuItem Header="_Recent" Items="{Binding RecentItems}">
                             <MenuItem.Styles>
-                                <Style Selector="MenuItem">
+                                <Style Selector="MenuItem" x:DataType="viewModels:MenuItemViewModel">
                                     <Setter Property="Header" Value="{Binding Header}"/>
                                 </Style>
                             </MenuItem.Styles>

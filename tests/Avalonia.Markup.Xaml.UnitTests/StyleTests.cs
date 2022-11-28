@@ -2,7 +2,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data;
-using Avalonia.Markup.Data;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Xunit;
@@ -21,7 +21,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
                 var setter = (Setter)(style.Setters.First());
 
                 Assert.IsType<Binding>(setter.Value);
-            }                
+            }
         }
 
         [Fact]
@@ -39,17 +39,23 @@ namespace Avalonia.Markup.Xaml.UnitTests
                     DataContext = data,
                 };
 
-                var setter = new Setter
+                var style = new Style()
                 {
-                    Property = TextBox.TextProperty,
-                    Value = new Binding
+                    Setters =
                     {
-                        Path = "Foo",
-                        Mode = BindingMode.TwoWay
+                        new Setter
+                        {
+                            Property = TextBox.TextProperty,
+                            Value = new Binding
+                            {
+                                Path = "Foo",
+                                Mode = BindingMode.TwoWay
+                            }
+                        }
                     }
                 };
 
-                setter.Instance(control).Start(false);
+                StyleHelpers.TryAttach(style, control);
                 Assert.Equal("foo", control.Text);
 
                 control.Text = "bar";

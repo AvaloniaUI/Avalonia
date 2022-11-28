@@ -128,13 +128,13 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                 break;
                             }
                         case SelectorGrammar.ChildSyntax child:
-                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Child);
+                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.CombinatorSelectorType.Child);
                             break;
                         case SelectorGrammar.DescendantSyntax descendant:
-                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Descendant);
+                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.CombinatorSelectorType.Descendant);
                             break;
                         case SelectorGrammar.TemplateSyntax template:
-                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Template);
+                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.CombinatorSelectorType.Template);
                             break;
                         case SelectorGrammar.NotSyntax not:
                             result = new XamlIlNotSelector(result, Create(not.Argument, typeResolver));
@@ -186,18 +186,42 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
             pn.Values[0] = selector;
 
-            return new AvaloniaXamlIlTargetTypeMetadataNode(on,
+            var templateType = GetLastTemplateTypeFromSelector(selector);
+            
+            var styleNode = new AvaloniaXamlIlTargetTypeMetadataNode(on,
                 new XamlAstClrTypeReference(selector, selector.TargetType, false),
                 AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
+
+            return templateType switch
+            {
+                null => styleNode,
+                _ => new AvaloniaXamlIlTargetTypeMetadataNode(styleNode,
+                    new XamlAstClrTypeReference(styleNode, templateType, false),
+                    AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate)
+            };
         }
 
+        private static IXamlType GetLastTemplateTypeFromSelector(XamlIlSelectorNode node)
+        {
+            while (node is not null)
+            {
+                if (node is XamlIlCombinatorSelector
+                    {
+                        SelectorType: XamlIlCombinatorSelector.CombinatorSelectorType.Template
+                    })
+                {
+                    return node.Previous.TargetType;
+                }
+                node = node.Previous;
+            }
+
+            return null;
+        }
     }
 
-
-    
     abstract class XamlIlSelectorNode : XamlAstNode, IXamlAstValueNode, IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
     {
-        protected XamlIlSelectorNode Previous { get; }
+        internal XamlIlSelectorNode Previous { get; }
         public abstract IXamlType TargetType { get; }
 
         public XamlIlSelectorNode(XamlIlSelectorNode previous,
@@ -289,19 +313,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
     class XamlIlCombinatorSelector : XamlIlSelectorNode
     {
-        private readonly SelectorType _type;
+        private readonly CombinatorSelectorType _type;
 
-        public enum SelectorType
+        public enum CombinatorSelectorType
         {
             Child,
             Descendant,
             Template
         }
-        public XamlIlCombinatorSelector(XamlIlSelectorNode previous, SelectorType type) : base(previous)
+        public XamlIlCombinatorSelector(XamlIlSelectorNode previous, CombinatorSelectorType type) : base(previous)
         {
             _type = type;
         }
 
+        public CombinatorSelectorType SelectorType => _type;
         public override IXamlType TargetType => null;
         protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {

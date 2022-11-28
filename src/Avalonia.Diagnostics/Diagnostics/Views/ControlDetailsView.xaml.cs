@@ -30,7 +30,7 @@ namespace Avalonia.Diagnostics.Views
             
         }
 
-        private void PropertyNamePressed(object sender, PointerPressedEventArgs e)
+        public void PropertyNamePressed(object sender, PointerPressedEventArgs e)
         {
             var mainVm = (ControlDetailsViewModel?) DataContext;
 
