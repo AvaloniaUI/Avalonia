@@ -11,6 +11,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
@@ -61,6 +62,23 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
             AvaloniaProperty.Register<ItemsControl, IDataTemplate?>(nameof(ItemTemplate));
 
+
+        /// <summary>
+        /// Defines the <see cref="DisplayMemberBinding" /> property
+        /// </summary>
+        public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
+            AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
+
+        /// <summary>
+        /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
+        /// </summary>
+        [AssignBinding]
+        public IBinding? DisplayMemberBinding
+        {
+            get { return GetValue(DisplayMemberBindingProperty); }
+            set { SetValue(DisplayMemberBindingProperty, value); }
+        }
+        
         private IEnumerable? _items = new AvaloniaList<object>();
         private int _itemCount;
         private IItemContainerGenerator? _itemContainerGenerator;
@@ -97,6 +115,7 @@ namespace Avalonia.Controls
 
                     _itemContainerGenerator.ItemContainerTheme = ItemContainerTheme;
                     _itemContainerGenerator.ItemTemplate = ItemTemplate;
+                    _itemContainerGenerator.DisplayMemberBinding = DisplayMemberBinding;
                     _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
                     _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
                     _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);

@@ -24,6 +24,7 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
 using Math = System.Math;
+using AndroidRect = Android.Graphics.Rect;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -64,7 +65,21 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IInputRoot InputRoot { get; private set; }
 
-        public virtual Size ClientSize => Size.ToSize(RenderScaling);
+        public virtual Size ClientSize
+        {
+            get
+            {
+                AndroidRect rect = new AndroidRect();
+                AndroidRect intersection = new AndroidRect();
+
+                _view.GetWindowVisibleDisplayFrame(intersection);
+                _view.GetGlobalVisibleRect(rect);
+
+                intersection.Intersect(rect);
+
+                return new PixelSize(intersection.Right - intersection.Left, intersection.Bottom - intersection.Top).ToSize(RenderScaling);
+            }
+        }
 
         public Size? FrameSize => null;
 
@@ -148,6 +163,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         protected virtual void OnResized(Size size)
         {
             Resized?.Invoke(size, PlatformResizeReason.Unspecified);
+        }
+
+        internal void Resize(Size size)
+        {
+            Resized?.Invoke(size, PlatformResizeReason.Layout);
         }
 
         class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback, IInitEditorInfo

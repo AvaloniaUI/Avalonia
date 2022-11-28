@@ -76,7 +76,15 @@ namespace Avalonia.Controls.Generators
                     result.SetValue(Control.ThemeProperty, ItemContainerTheme, BindingPriority.Style);
                 }
 
-                result.SetValue(ContentProperty, template.Build(item), BindingPriority.Style);
+                if (DisplayMemberBinding is not null)
+                {
+                    result.SetValue(StyledElement.DataContextProperty, item, BindingPriority.Style);
+                    result.Bind(ContentProperty, DisplayMemberBinding, BindingPriority.Style);
+                }
+                else
+                {
+                    result.SetValue(ContentProperty, template.Build(item), BindingPriority.Style);
+                }
 
                 var itemsSelector = template.ItemsSelector(item);
 

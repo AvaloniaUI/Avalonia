@@ -177,7 +177,7 @@ namespace Avalonia
         {
             return new IndexerDescriptor
             {
-                Priority = BindingPriority.TemplatedParent,
+                Priority = BindingPriority.Template,
                 Property = property,
             };
         }
