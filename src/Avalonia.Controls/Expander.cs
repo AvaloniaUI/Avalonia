@@ -1,7 +1,10 @@
+using System;
 using System.Threading;
 using Avalonia.Animation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -37,12 +40,24 @@ namespace Avalonia.Controls
     [PseudoClasses(":expanded", ":up", ":down", ":left", ":right")]
     public class Expander : HeaderedContentControl
     {
+        /// <summary>
+        /// Defines the <see cref="ContentTransition"/> property.
+        /// </summary>
         public static readonly StyledProperty<IPageTransition?> ContentTransitionProperty =
-            AvaloniaProperty.Register<Expander, IPageTransition?>(nameof(ContentTransition));
+            AvaloniaProperty.Register<Expander, IPageTransition?>(
+                nameof(ContentTransition));
 
+        /// <summary>
+        /// Defines the <see cref="ExpandDirection"/> property.
+        /// </summary>
         public static readonly StyledProperty<ExpandDirection> ExpandDirectionProperty =
-            AvaloniaProperty.Register<Expander, ExpandDirection>(nameof(ExpandDirection), ExpandDirection.Down);
+            AvaloniaProperty.Register<Expander, ExpandDirection>(
+                nameof(ExpandDirection),
+                ExpandDirection.Down);
 
+        /// <summary>
+        /// Defines the <see cref="IsExpanded"/> property.
+        /// </summary>
         public static readonly DirectProperty<Expander, bool> IsExpandedProperty =
             AvaloniaProperty.RegisterDirect<Expander, bool>(
                 nameof(IsExpanded),
@@ -50,47 +65,155 @@ namespace Avalonia.Controls
                 (o, v) => o.IsExpanded = v,
                 defaultBindingMode: Data.BindingMode.TwoWay);
 
+        /// <summary>
+        /// Defines the <see cref="Collapsed"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> CollapsedEvent =
+            RoutedEvent.Register<Expander, RoutedEventArgs>(
+                nameof(Collapsed),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Collapsing"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> CollapsingEvent =
+            RoutedEvent.Register<Expander, RoutedEventArgs>(
+                nameof(Collapsing),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Expanded"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> ExpandedEvent =
+            RoutedEvent.Register<Expander, RoutedEventArgs>(
+                nameof(Expanded),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="Expanding"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> ExpandingEvent =
+            RoutedEvent.Register<Expander, RoutedEventArgs>(
+                nameof(Expanding),
+                RoutingStrategies.Bubble);
+
         private bool _isExpanded;
         private CancellationTokenSource? _lastTransitionCts;
 
-        static Expander()
-        {
-            IsExpandedProperty.Changed.AddClassHandler<Expander>((x, e) => x.OnIsExpandedChanged(e));
-        }
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Expander"/> class.
+        /// </summary>
         public Expander()
         {
-            UpdatePseudoClasses(ExpandDirection);
+            UpdatePseudoClasses();
         }
 
+        /// <summary>
+        /// Gets or sets the transition used when expanding or collapsing the content.
+        /// </summary>
         public IPageTransition? ContentTransition
         {
             get => GetValue(ContentTransitionProperty);
             set => SetValue(ContentTransitionProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the direction in which the <see cref="Expander"/> opens.
+        /// </summary>
         public ExpandDirection ExpandDirection
         {
             get => GetValue(ExpandDirectionProperty);
             set => SetValue(ExpandDirectionProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="Expander"/>
+        /// content area is open and visible.
+        /// </summary>
         public bool IsExpanded
         {
-            get { return _isExpanded; }
-            set 
-            { 
-                SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
-                PseudoClasses.Set(":expanded", value);
-            }
+            get => _isExpanded;
+            set => SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
         }
 
-        protected virtual async void OnIsExpandedChanged(AvaloniaPropertyChangedEventArgs e)
+        /// <summary>
+        /// Occurs after the content area has closed and only the header is visible.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? Collapsed
+        {
+            add => AddHandler(CollapsedEvent, value);
+            remove => RemoveHandler(CollapsedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs as the content area is closing.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? Collapsing
+        {
+            add => AddHandler(CollapsingEvent, value);
+            remove => RemoveHandler(CollapsingEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs after the <see cref="Expander"/> has opened to display both its header and content.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? Expanded
+        {
+            add => AddHandler(ExpandedEvent, value);
+            remove => RemoveHandler(ExpandedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs as the content area is opening.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? Expanding
+        {
+            add => AddHandler(ExpandingEvent, value);
+            remove => RemoveHandler(ExpandingEvent, value);
+        }
+
+        /// <summary>
+        /// Invoked just before the <see cref="Collapsed"/> event.
+        /// </summary>
+        protected virtual void OnCollapsed(RoutedEventArgs eventArgs)
+        {
+            RaiseEvent(eventArgs);
+        }
+
+        /// <summary>
+        /// Invoked just before the <see cref="Collapsing"/> event.
+        /// </summary>
+        protected virtual void OnCollapsing(RoutedEventArgs eventArgs)
+        {
+            RaiseEvent(eventArgs);
+        }
+
+        /// <summary>
+        /// Invoked just before the <see cref="Expanded"/> event.
+        /// </summary>
+        protected virtual void OnExpanded(RoutedEventArgs eventArgs)
+        {
+            RaiseEvent(eventArgs);
+        }
+
+        /// <summary>
+        /// Invoked just before the <see cref="Expanding"/> event.
+        /// </summary>
+        protected virtual void OnExpanding(RoutedEventArgs eventArgs)
+        {
+            RaiseEvent(eventArgs);
+        }
+
+        /// <summary>
+        /// Starts the content transition (if set) and invokes the <see cref="Expanded"/>
+        /// and <see cref="Collapsed"/> events when completed.
+        /// </summary>
+        private async void StartContentTransition()
         {
             if (Content != null && ContentTransition != null && Presenter is Visual visualContent)
             {
                 bool forward = ExpandDirection == ExpandDirection.Left ||
-                                ExpandDirection == ExpandDirection.Up;
+                               ExpandDirection == ExpandDirection.Up;
 
                 _lastTransitionCts?.Cancel();
                 _lastTransitionCts = new CancellationTokenSource();
@@ -104,24 +227,62 @@ namespace Avalonia.Controls
                     await ContentTransition.Start(visualContent, null, forward, _lastTransitionCts.Token);
                 }
             }
+
+            // Expanded/Collapsed events are invoked asynchronously to ensure other events,
+            // such as Click, have time to complete first.
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (IsExpanded)
+                {
+                    OnExpanded(new RoutedEventArgs(ExpandedEvent, this));
+                }
+                else
+                {
+                    OnCollapsed(new RoutedEventArgs(CollapsedEvent, this));
+                }
+            });
         }
 
+        /// <inheritdoc/>
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == ExpandDirectionProperty)
             {
-                UpdatePseudoClasses(change.GetNewValue<ExpandDirection>());
+                UpdatePseudoClasses();
+            }
+            else if (change.Property == IsExpandedProperty)
+            {
+                if (IsExpanded)
+                {
+                    OnExpanding(new RoutedEventArgs(ExpandingEvent, this));
+                }
+                else
+                {
+                    OnCollapsing(new RoutedEventArgs(CollapsingEvent, this));
+                }
+
+                // Expanded/Collapsed will be raised once transitions are complete
+                StartContentTransition();
+
+                UpdatePseudoClasses();
             }
         }
 
-        private void UpdatePseudoClasses(ExpandDirection d)
+        /// <summary>
+        /// Updates the visual state of the control by applying latest PseudoClasses.
+        /// </summary>
+        private void UpdatePseudoClasses()
         {
-            PseudoClasses.Set(":up", d == ExpandDirection.Up);
-            PseudoClasses.Set(":down", d == ExpandDirection.Down);
-            PseudoClasses.Set(":left", d == ExpandDirection.Left);
-            PseudoClasses.Set(":right", d == ExpandDirection.Right);
+            var expandDirection = ExpandDirection;
+
+            PseudoClasses.Set(":up", expandDirection == ExpandDirection.Up);
+            PseudoClasses.Set(":down", expandDirection == ExpandDirection.Down);
+            PseudoClasses.Set(":left", expandDirection == ExpandDirection.Left);
+            PseudoClasses.Set(":right", expandDirection == ExpandDirection.Right);
+
+            PseudoClasses.Set(":expanded", IsExpanded);
         }
     }
 }
