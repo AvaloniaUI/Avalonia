@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
@@ -31,6 +32,12 @@ namespace Avalonia.Controls.Generators
                 tabItem.Bind(TabItem.HeaderTemplateProperty, new OwnerBinding<IDataTemplate?>(
                     tabItem,
                     TabControl.ItemTemplateProperty));
+            }
+
+            if (Owner.HeaderDisplayMemberBinding is not null)
+            {
+                tabItem.Bind(HeaderedContentControl.HeaderProperty, Owner.HeaderDisplayMemberBinding,
+                    BindingPriority.Style);
             }
 
             if (tabItem.Header == null)
