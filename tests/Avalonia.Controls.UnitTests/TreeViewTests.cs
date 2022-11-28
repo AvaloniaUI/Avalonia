@@ -77,7 +77,7 @@ namespace Avalonia.Controls.UnitTests
         public void Items_Should_Be_Created_Using_ItemConatinerTheme_If_Present()
         {
             TreeView target;
-            var theme = new ControlTheme();
+            var theme = new ControlTheme(typeof(TreeViewItem));
 
             var root = new TestRoot
             {

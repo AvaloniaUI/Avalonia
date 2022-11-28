@@ -31,7 +31,7 @@ namespace Avalonia.Benchmarks.Themes
         [Arguments(FluentThemeMode.Light)]
         public bool InitFluentTheme(FluentThemeMode mode)
         {
-            UnitTestApplication.Current.Styles[0] = new FluentTheme(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
+            UnitTestApplication.Current.Styles[0] = new FluentTheme()
             {
                 Mode = mode
             };
@@ -43,7 +43,7 @@ namespace Avalonia.Benchmarks.Themes
         [Arguments(SimpleThemeMode.Light)]
         public bool InitSimpleTheme(SimpleThemeMode mode)
         {
-            UnitTestApplication.Current.Styles[0] = new SimpleTheme(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
+            UnitTestApplication.Current.Styles[0] = new SimpleTheme()
             {
                 Mode = mode
             };

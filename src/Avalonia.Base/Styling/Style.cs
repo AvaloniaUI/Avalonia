@@ -1,4 +1,5 @@
 using System;
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -34,48 +35,11 @@ namespace Avalonia.Styling
             set => _selector = ValidateSelector(value);
         }
 
-        public override SelectorMatchResult TryAttach(IStyleable target, object? host)
-        {
-            _ = target ?? throw new ArgumentNullException(nameof(target));
-
-            var result = SelectorMatchResult.NeverThisType;
-
-            if (HasSettersOrAnimations)
-            {
-                var match = Selector?.Match(target, Parent, true) ??
-                    (target == host ?
-                        SelectorMatch.AlwaysThisInstance :
-                        SelectorMatch.NeverThisInstance);
-
-                if (match.IsMatch)
-                    Attach(target, match.Activator);
-
-                result = match.Result;
-            }
-
-            var childResult = TryAttachChildren(target, host);
-
-            if (childResult > result)
-                result = childResult;
-
-            return result;
-        }
-
         /// <summary>
         /// Returns a string representation of the style.
         /// </summary>
         /// <returns>A string representation of the style.</returns>
-        public override string ToString()
-        {
-            if (Selector != null)
-            {
-                return "Style: " + Selector.ToString();
-            }
-            else
-            {
-                return "Style";
-            }
-        }
+        public override string ToString() => Selector?.ToString(this) ?? "Style";
 
         internal override void SetParent(StyleBase? parent)
         {
@@ -93,6 +57,30 @@ namespace Avalonia.Styling
             }
 
             base.SetParent(parent);
+        }
+
+        internal SelectorMatchResult TryAttach(IStyleable target, object? host, FrameType type)
+        {
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
+            var result = SelectorMatchResult.NeverThisType;
+
+            if (HasSettersOrAnimations)
+            {
+                var match = Selector?.Match(target, Parent, true) ??
+                    (target == host ?
+                        SelectorMatch.AlwaysThisInstance :
+                        SelectorMatch.NeverThisInstance);
+
+                if (match.IsMatch)
+                {
+                    Attach(target, match.Activator, type);
+                }
+
+                result = match.Result;
+            }
+
+            return result;
         }
 
         private static Selector? ValidateSelector(Selector? selector)

@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 
 #nullable enable
@@ -32,12 +34,12 @@ namespace Avalonia.Benchmarks.Styling
         {
             var target = new TestClass();
 
-            target.BeginBatchUpdate();
+            target.GetValueStore().BeginStyling();
 
             for (var i = 0; i < 50; ++i)
-                _style.TryAttach(target, null);
+                StyleHelpers.TryAttach(_style, target);
 
-            target.EndBatchUpdate();
+            target.GetValueStore().EndStyling();
         }
 
         [Benchmark(OperationsPerInvoke = 50)]
@@ -45,12 +47,12 @@ namespace Avalonia.Benchmarks.Styling
         {
             var target = new TestClass();
 
-            target.BeginBatchUpdate();
+            target.GetValueStore().BeginStyling();
 
             for (var i = 0; i < 50; ++i)
-                _style.TryAttach(target, null);
+                StyleHelpers.TryAttach(_style, target);
 
-            target.EndBatchUpdate();
+            target.GetValueStore().EndStyling();
 
             target.Classes.Add("foo");
             target.Classes.Remove("foo");
@@ -61,12 +63,12 @@ namespace Avalonia.Benchmarks.Styling
         {
             var target = new TestClass();
 
-            target.BeginBatchUpdate();
+            target.GetValueStore().BeginStyling();
 
             for (var i = 0; i < 50; ++i)
-                _style.TryAttach(target, null);
+                StyleHelpers.TryAttach(_style, target);
 
-            target.EndBatchUpdate();
+            target.GetValueStore().EndStyling();
 
             target.DetachStyles();
         }
@@ -75,7 +77,7 @@ namespace Avalonia.Benchmarks.Styling
         {
             public static readonly StyledProperty<string?> StringProperty =
                 AvaloniaProperty.Register<TestClass, string?>("String");
-            public void DetachStyles() => InvalidateStyles();
+            public void DetachStyles() => InvalidateStyles(recurse: true);
         }
 
         private class TestClass2 : Control

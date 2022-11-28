@@ -43,7 +43,7 @@ namespace Avalonia.Benchmarks.Base
 
             for (var i = 0; i < 100; ++i)
             {
-                obj.SetValue(StyledClass.IntValueProperty, obj.IntValue + 1, BindingPriority.TemplatedParent);
+                obj.SetValue(StyledClass.IntValueProperty, obj.IntValue + 1, BindingPriority.Template);
             }
         }
 

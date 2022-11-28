@@ -5,7 +5,9 @@ using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -364,17 +366,6 @@ namespace Avalonia.Controls.Primitives
         {
         }
 
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-        {
-            base.OnPropertyChanged(change);
-
-            if (change.Property == ThemeProperty)
-            {
-                foreach (var child in this.GetTemplateChildren())
-                    child.InvalidateStyles();
-            }
-        }
-
         /// <summary>
         /// Called when the <see cref="Template"/> property changes.
         /// </summary>
@@ -401,6 +392,38 @@ namespace Avalonia.Controls.Primitives
                 if (children[i] is IStyledElement child && child.TemplatedParent is null)
                 {
                     ApplyTemplatedParent(child, templatedParent);
+                }
+            }
+        }
+
+        private protected override void OnControlThemeChanged()
+        {
+            base.OnControlThemeChanged();
+
+            var count = VisualChildren.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is StyledElement child &&
+                    child.TemplatedParent == this)
+                {
+                    child.OnTemplatedParentControlThemeChanged();
+                }
+            }
+        }
+
+        internal override void OnTemplatedParentControlThemeChanged()
+        {
+            base.OnTemplatedParentControlThemeChanged();
+
+            var count = VisualChildren.Count;
+            var templatedParent = TemplatedParent;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is TemplatedControl child &&
+                    child.TemplatedParent == templatedParent)
+                {
+                    child.OnTemplatedParentControlThemeChanged();
                 }
             }
         }

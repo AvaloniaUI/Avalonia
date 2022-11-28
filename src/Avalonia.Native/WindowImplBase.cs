@@ -501,19 +501,17 @@ namespace Avalonia.Native
         {
             if (TransparencyLevel != transparencyLevel)
             {
-                if (transparencyLevel >= WindowTransparencyLevel.Blur)
-                {
+                if (transparencyLevel > WindowTransparencyLevel.Transparent)
                     transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
-                }
-
-                if(transparencyLevel == WindowTransparencyLevel.None)
-                {
-                    transparencyLevel = WindowTransparencyLevel.Transparent;
-                }
 
                 TransparencyLevel = transparencyLevel;
 
-                _native?.SetBlurEnabled((TransparencyLevel >= WindowTransparencyLevel.Blur).AsComBool());
+                _native.SetTransparencyMode(transparencyLevel == WindowTransparencyLevel.None
+                    ? AvnWindowTransparencyMode.Opaque 
+                    : transparencyLevel == WindowTransparencyLevel.Transparent 
+                        ? AvnWindowTransparencyMode.Transparent
+                        : AvnWindowTransparencyMode.Blur);
+
                 TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }

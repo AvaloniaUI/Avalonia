@@ -2,8 +2,7 @@ using System;
 using Avalonia.Animation;
 using Avalonia.Data;
 using Avalonia.Metadata;
-
-#nullable enable
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -14,9 +13,10 @@ namespace Avalonia.Styling
     /// A <see cref="Setter"/> is used to set a <see cref="AvaloniaProperty"/> value on a
     /// <see cref="AvaloniaObject"/> depending on a condition.
     /// </remarks>
-    public class Setter : ISetter, IAnimationSetter
+    public class Setter : ISetter, IValueEntry, ISetterInstance, IAnimationSetter
     {
         private object? _value;
+        private DirectPropertySetterInstance? _direct;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Setter"/> class.
@@ -30,7 +30,7 @@ namespace Avalonia.Styling
         /// </summary>
         /// <param name="property">The property to set.</param>
         /// <param name="value">The property value.</param>
-        public Setter(AvaloniaProperty property, object value)
+        public Setter(AvaloniaProperty property, object? value)
         {
             Property = property;
             Value = value;
@@ -57,16 +57,72 @@ namespace Avalonia.Styling
             }
         }
 
-        public ISetterInstance Instance(IStyleable target)
+        bool IValueEntry.HasValue => true;
+        AvaloniaProperty IValueEntry.Property => EnsureProperty();
+
+        public override string ToString() => $"Setter: {Property} = {Value}";
+
+        void IValueEntry.Unsubscribe() { }
+
+        ISetterInstance ISetter.Instance(IStyleInstance instance, IStyleable target)
         {
-            target = target ?? throw new ArgumentNullException(nameof(target));
-
+            if (target is not AvaloniaObject ao)
+                throw new InvalidOperationException("Don't know how to instance a style on this type.");
             if (Property is null)
-            {
                 throw new InvalidOperationException("Setter.Property must be set.");
-            }
+            if (Property.IsDirect && instance.HasActivator)
+                throw new InvalidOperationException(
+                    $"Cannot set direct property '{Property}' in '{instance.Source}' because the style has an activator.");
 
-            return Property.CreateSetterInstance(target, Value);
+            if (Value is IBinding binding)
+                return SetBinding((StyleInstance)instance, ao, binding);
+            else if (Value is ITemplate template && !typeof(ITemplate).IsAssignableFrom(Property.PropertyType))
+                return new PropertySetterTemplateInstance(Property, template);
+            else if (!Property.IsValidValue(Value))
+                throw new InvalidCastException($"Setter value '{Value}' is not a valid value for property '{Property}'.");
+            else if (Property.IsDirect)
+                return SetDirectValue(target);
+            else
+                return this;
+        }
+
+        object? IValueEntry.GetValue() => Value;
+
+        private AvaloniaProperty EnsureProperty()
+        {
+            return Property ?? throw new InvalidOperationException("Setter.Property must be set.");
+        }
+
+        private ISetterInstance SetBinding(StyleInstance instance, AvaloniaObject target, IBinding binding)
+        {
+            if (!Property!.IsDirect)
+            {
+                var i = binding.Initiate(target, Property)!;
+                var mode = i.Mode;
+
+                if (mode == BindingMode.Default)
+                {
+                    mode = Property!.GetMetadata(target.GetType()).DefaultBindingMode;
+                }
+
+                if (mode == BindingMode.OneWay || mode == BindingMode.TwoWay)
+                {
+                    return new PropertySetterBindingInstance(target, instance, Property, mode, i.Observable!);
+                }
+
+                throw new NotSupportedException();
+            }
+            else
+            {
+                target.Bind(Property, binding);
+                return new DirectPropertySetterBindingInstance();
+            }
+        }
+
+        private ISetterInstance SetDirectValue(IStyleable target)
+        {
+            target.SetValue(Property!, Value);
+            return _direct ??= new DirectPropertySetterInstance();
         }
     }
 }

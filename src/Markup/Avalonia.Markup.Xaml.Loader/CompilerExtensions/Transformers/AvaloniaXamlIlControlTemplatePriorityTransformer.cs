@@ -42,7 +42,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 if (priorityValueSetters.Count > 0)
                 {
                     prop.PossibleSetters = priorityValueSetters;
-                    prop.Values.Insert(0, new XamlConstantNode(node, bindingPriorityType, (int)BindingPriority.TemplatedParent));
+                    prop.Values.Insert(0, new XamlConstantNode(node, bindingPriorityType, (int)BindingPriority.Template));
                 }
             }
 
