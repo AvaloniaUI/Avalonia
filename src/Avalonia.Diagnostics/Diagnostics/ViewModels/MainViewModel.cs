@@ -147,7 +147,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 if (_content is TreePageViewModel oldTree &&
                     value is TreePageViewModel newTree &&
-                    oldTree?.SelectedNode?.Visual is IControl control)
+                    oldTree?.SelectedNode?.Visual is Control control)
                 {
                     // HACK: We want to select the currently selected control in the new tree, but
                     // to select nested nodes in TreeView, currently the TreeView has to be able to
@@ -232,7 +232,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void SelectControl(IControl control)
+        public void SelectControl(Control control)
         {
             var tree = Content as TreePageViewModel;
 
@@ -274,7 +274,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        public void RequestTreeNavigateTo(IControl control, bool isVisualTree)
+        public void RequestTreeNavigateTo(Control control, bool isVisualTree)
         {
             var tree = isVisualTree ? _visualTree : _logicalTree;
 
@@ -296,13 +296,13 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             return Content is TreePageViewModel tree
                 && tree.SelectedNode != null
-                && tree.SelectedNode.Visual is VisualTree.IVisual visual
+                && tree.SelectedNode.Visual is Visual visual
                 && visual.VisualRoot != null;
         }
 
         public async void Shot(object? parameter)
         {
-            if ((Content as TreePageViewModel)?.SelectedNode?.Visual is IControl control
+            if ((Content as TreePageViewModel)?.SelectedNode?.Visual is Control control
                 && _screenshotHandler is { }
                 )
             {

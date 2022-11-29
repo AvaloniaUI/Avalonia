@@ -30,7 +30,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV1(Func<IServiceProvider, object> builder,
             IServiceProvider provider)
         {
-            return DeferredTransformationFactoryV2<IControl>(builder, provider);
+            return DeferredTransformationFactoryV2<Control>(builder, provider);
         }
 
         public static Func<IServiceProvider, object> DeferredTransformationFactoryV2<T>(Func<IServiceProvider, object> builder,
@@ -46,8 +46,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 var obj = builder(new DeferredParentServiceProvider(sp, resourceNodes, rootObject, scope));
                 scope.Complete();
 
-                if(typeof(T) == typeof(IControl))
-                    return new ControlTemplateResult((IControl)obj, scope);
+                if(typeof(T) == typeof(Control))
+                    return new ControlTemplateResult((Control)obj, scope);
 
                 return new TemplateResult<T>((T)obj, scope);
             };

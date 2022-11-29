@@ -116,7 +116,7 @@ namespace Avalonia.Layout
         /// This method calls <see cref="GetOrCreateElementAtCore(int, ElementRealizationOptions)"/>
         /// with options set to None. GetElementAtCore must be implemented in a derived class.
         /// </remarks>
-        public ILayoutable GetOrCreateElementAt(int index)
+        public Layoutable GetOrCreateElementAt(int index)
             => GetOrCreateElementAtCore(index, ElementRealizationOptions.None);
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Avalonia.Layout
         /// advanced layouts that choose to explicitly manage the realization and recycling of
         /// elements as a performance optimization.
         /// </remarks>
-        public ILayoutable GetOrCreateElementAt(int index, ElementRealizationOptions options)
+        public Layoutable GetOrCreateElementAt(int index, ElementRealizationOptions options)
             => GetOrCreateElementAtCore(index, options);
 
         /// <summary>
@@ -148,10 +148,10 @@ namespace Avalonia.Layout
         /// </summary>
         /// <param name="element">The element to clear.</param>
         /// <remarks>
-        /// This method calls <see cref="RecycleElementCore(ILayoutable)"/>, which must be implemented
+        /// This method calls <see cref="RecycleElementCore(Layoutable)"/>, which must be implemented
         /// in a derived class.
         /// </remarks>
-        public void RecycleElement(ILayoutable element) => RecycleElementCore(element);
+        public void RecycleElement(Layoutable element) => RecycleElementCore(element);
 
         /// <summary>
         /// When implemented in a derived class, retrieves the number of items in the data.
@@ -180,14 +180,14 @@ namespace Avalonia.Layout
         /// A value of <see cref="ElementRealizationOptions"/> that specifies whether to suppress
         /// automatic recycling of the retrieved element or force creation of a new element.
         /// </param>
-        protected abstract ILayoutable GetOrCreateElementAtCore(int index, ElementRealizationOptions options);
+        protected abstract Layoutable GetOrCreateElementAtCore(int index, ElementRealizationOptions options);
 
         /// <summary>
         /// When implemented in a derived class, clears the specified UIElement and allows it to be
         /// either re-used or released.
         /// </summary>
         /// <param name="element">The element to clear.</param>
-        protected abstract void RecycleElementCore(ILayoutable element);
+        protected abstract void RecycleElementCore(Layoutable element);
 
         internal NonVirtualizingLayoutContext GetNonVirtualizingContextAdapter() =>
             _contextAdapter ?? (_contextAdapter = new VirtualLayoutContextAdapter(this));

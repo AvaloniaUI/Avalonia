@@ -37,7 +37,7 @@ namespace Avalonia.Styling
             throw new InvalidOperationException("ControlThemes cannot be added as a nested style.");
         }
 
-        internal SelectorMatchResult TryAttach(IStyleable target, FrameType type)
+        internal SelectorMatchResult TryAttach(StyledElement target, FrameType type)
         {
             Debug.Assert(type is FrameType.Theme or FrameType.TemplatedParentTheme);
 
@@ -46,7 +46,7 @@ namespace Avalonia.Styling
             if (TargetType is null)
                 throw new InvalidOperationException("ControlTheme has no TargetType.");
 
-            if (HasSettersOrAnimations && TargetType.IsAssignableFrom(target.StyleKey))
+            if (HasSettersOrAnimations && TargetType.IsAssignableFrom(((IStyleable)target).StyleKey))
             {
                 Attach(target, null, type);
                 return SelectorMatchResult.AlwaysThisType;

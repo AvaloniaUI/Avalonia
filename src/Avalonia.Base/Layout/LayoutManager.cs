@@ -16,9 +16,9 @@ namespace Avalonia.Layout
     public class LayoutManager : ILayoutManager, IDisposable
     {
         private const int MaxPasses = 3;
-        private readonly ILayoutRoot _owner;
-        private readonly LayoutQueue<ILayoutable> _toMeasure = new LayoutQueue<ILayoutable>(v => !v.IsMeasureValid);
-        private readonly LayoutQueue<ILayoutable> _toArrange = new LayoutQueue<ILayoutable>(v => !v.IsArrangeValid);
+        private readonly Layoutable _owner;
+        private readonly LayoutQueue<Layoutable> _toMeasure = new LayoutQueue<Layoutable>(v => !v.IsMeasureValid);
+        private readonly LayoutQueue<Layoutable> _toArrange = new LayoutQueue<Layoutable>(v => !v.IsArrangeValid);
         private readonly Action _executeLayoutPass;
         private List<EffectiveViewportChangedListener>? _effectiveViewportChangedListeners;
         private bool _disposed;
@@ -27,14 +27,14 @@ namespace Avalonia.Layout
 
         public LayoutManager(ILayoutRoot owner)
         {
-            _owner = owner ?? throw new ArgumentNullException(nameof(owner));
+            _owner = owner as Layoutable ?? throw new ArgumentNullException(nameof(owner));
             _executeLayoutPass = ExecuteQueuedLayoutPass;
         }
 
         public virtual event EventHandler? LayoutUpdated;
 
         /// <inheritdoc/>
-        public virtual void InvalidateMeasure(ILayoutable control)
+        public virtual void InvalidateMeasure(Layoutable control)
         {
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
@@ -65,7 +65,7 @@ namespace Avalonia.Layout
         }
 
         /// <inheritdoc/>
-        public virtual void InvalidateArrange(ILayoutable control)
+        public virtual void InvalidateArrange(Layoutable control)
         {
             control = control ?? throw new ArgumentNullException(nameof(control));
             Dispatcher.UIThread.VerifyAccess();
@@ -203,7 +203,7 @@ namespace Avalonia.Layout
             _toArrange.Dispose();
         }
 
-        void ILayoutManager.RegisterEffectiveViewportListener(ILayoutable control)
+        void ILayoutManager.RegisterEffectiveViewportListener(Layoutable control)
         {
             _effectiveViewportChangedListeners ??= new List<EffectiveViewportChangedListener>();
             _effectiveViewportChangedListeners.Add(new EffectiveViewportChangedListener(
@@ -211,7 +211,7 @@ namespace Avalonia.Layout
                 CalculateEffectiveViewport(control)));
         }
 
-        void ILayoutManager.UnregisterEffectiveViewportListener(ILayoutable control)
+        void ILayoutManager.UnregisterEffectiveViewportListener(Layoutable control)
         {
             if (_effectiveViewportChangedListeners is object)
             {
@@ -265,13 +265,13 @@ namespace Avalonia.Layout
             }
         }
 
-        private void Measure(ILayoutable control)
+        private void Measure(Layoutable control)
         {
             // Controls closest to the visual root need to be arranged first. We don't try to store
             // ordered invalidation lists, instead we traverse the tree upwards, measuring the
             // controls closest to the root first. This has been shown by benchmarks to be the
             // fastest and most memory-efficient algorithm.
-            if (control.VisualParent is ILayoutable parent)
+            if (control.VisualParent is Layoutable parent)
             {
                 Measure(parent);
             }
@@ -283,7 +283,7 @@ namespace Avalonia.Layout
             {
                 if (control is ILayoutRoot root)
                 {
-                    root.Measure(Size.Infinity);
+                    control.Measure(Size.Infinity);
                 }
                 else if (control.PreviousMeasure.HasValue)
                 {
@@ -292,9 +292,9 @@ namespace Avalonia.Layout
             }
         }
 
-        private void Arrange(ILayoutable control)
+        private void Arrange(Layoutable control)
         {
-            if (control.VisualParent is ILayoutable parent)
+            if (control.VisualParent is Layoutable parent)
             {
                 Arrange(parent);
             }
@@ -304,7 +304,7 @@ namespace Avalonia.Layout
                 if (control is IEmbeddedLayoutRoot embeddedRoot)
                     control.Arrange(new Rect(embeddedRoot.AllocatedSize));
                 else if (control is ILayoutRoot root)
-                    control.Arrange(new Rect(root.DesiredSize));
+                    control.Arrange(new Rect(control.DesiredSize));
                 else if (control.PreviousArrange != null)
                 {
                     // Has been observed that PreviousArrange sometimes is null, probably a bug somewhere else.
@@ -350,7 +350,7 @@ namespace Avalonia.Layout
 
                         if (viewport != l.Viewport)
                         {
-                            l.Listener.EffectiveViewportChanged(new EffectiveViewportChangedEventArgs(viewport));
+                            l.Listener.RaiseEffectiveViewportChanged(new EffectiveViewportChangedEventArgs(viewport));
                             l.Viewport = viewport;
                         }
                     }
@@ -364,14 +364,14 @@ namespace Avalonia.Layout
             return startCount != _toMeasure.Count + _toArrange.Count;
         }
 
-        private Rect CalculateEffectiveViewport(IVisual control)
+        private Rect CalculateEffectiveViewport(Visual control)
         {
             var viewport = new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity);
             CalculateEffectiveViewport(control, control, ref viewport);
             return viewport;
         }
 
-        private void CalculateEffectiveViewport(IVisual target, IVisual control, ref Rect viewport)
+        private void CalculateEffectiveViewport(Visual target, Visual control, ref Rect viewport)
         {
             // Recurse until the top level control.
             if (control.VisualParent is object)
@@ -405,13 +405,13 @@ namespace Avalonia.Layout
 
         private class EffectiveViewportChangedListener
         {
-            public EffectiveViewportChangedListener(ILayoutable listener, Rect viewport)
+            public EffectiveViewportChangedListener(Layoutable listener, Rect viewport)
             {
                 Listener = listener;
                 Viewport = viewport;
             }
 
-            public ILayoutable Listener { get; }
+            public Layoutable Listener { get; }
             public Rect Viewport { get; set; }
         }
     }

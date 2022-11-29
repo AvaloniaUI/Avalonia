@@ -6,7 +6,7 @@ namespace Avalonia.Controls.Primitives
 {
     public class ChromeOverlayLayer : Panel, ICustomSimpleHitTest
     {
-        public static Panel? GetOverlayLayer(IVisual visual)
+        public static Panel? GetOverlayLayer(Visual visual)
         {
             foreach (var v in visual.GetVisualAncestors())
                 if (v is VisualLayerManager vlm)

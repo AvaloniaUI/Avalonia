@@ -28,7 +28,7 @@ namespace Avalonia.Interactivity
         /// </summary>
         /// <param name="routedEvent">The routed event associated with these event args.</param>
         /// <param name="source">The source object that raised the routed event.</param>
-        public RoutedEventArgs(RoutedEvent? routedEvent, IInteractive? source)
+        public RoutedEventArgs(RoutedEvent? routedEvent, object? source)
         {
             RoutedEvent = routedEvent;
             Source = source;
@@ -55,6 +55,6 @@ namespace Avalonia.Interactivity
         /// <summary>
         /// Gets or sets the source object that raised the routed event.
         /// </summary>
-        public IInteractive? Source { get; set; }
+        public object? Source { get; set; }
     }
 }

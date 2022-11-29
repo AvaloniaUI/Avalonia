@@ -7,7 +7,7 @@ using Avalonia.Styling;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Adds common functionality to <see cref="IControl"/>.
+    /// Adds common functionality to <see cref="Control"/>.
     /// </summary>
     public static class ControlExtensions
     {
@@ -15,7 +15,7 @@ namespace Avalonia.Controls
         /// Tries to bring the control into view.
         /// </summary>
         /// <param name="control">The control.</param>
-        public static void BringIntoView(this IControl control)
+        public static void BringIntoView(this Control control)
         {
             _ = control ?? throw new ArgumentNullException(nameof(control));
 
@@ -27,7 +27,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="rect">The area of the control to being into view.</param>
-        public static void BringIntoView(this IControl control, Rect rect)
+        public static void BringIntoView(this Control control, Rect rect)
         {
             _ = control ?? throw new ArgumentNullException(nameof(control));
 
@@ -51,7 +51,7 @@ namespace Avalonia.Controls
         /// <param name="control">The control to look in.</param>
         /// <param name="name">The name of the control to find.</param>
         /// <returns>The control or null if not found.</returns>
-        public static T? FindControl<T>(this IControl control, string name) where T : class, IControl
+        public static T? FindControl<T>(this Control control, string name) where T : Control
         {
             _ = control ?? throw new ArgumentNullException(nameof(control));
             _ = name ?? throw new ArgumentNullException(nameof(name));
@@ -73,7 +73,7 @@ namespace Avalonia.Controls
         /// <param name="control">The control to look in.</param>
         /// <param name="name">The name of the control to find.</param>
         /// <returns>The control.</returns>
-        public static T GetControl<T>(this IControl control, string name) where T : class, IControl
+        public static T GetControl<T>(this Control control, string name) where T : Control
         {
             _ = control ?? throw new ArgumentNullException(nameof(control));
             _ = name ?? throw new ArgumentNullException(nameof(name));

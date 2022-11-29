@@ -1437,7 +1437,7 @@ namespace Avalonia.Controls
 
             DataGridCell dataGridCell = dataGridRow.Cells[dataGridColumn.Index];
             Debug.Assert(dataGridCell != null);
-            if (dataGridCell.Content is IControl element)
+            if (dataGridCell.Content is Control element)
             {
                 dataGridColumn.RefreshCellContent(element, propertyName);
             }

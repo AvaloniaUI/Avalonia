@@ -15,9 +15,9 @@ namespace Avalonia.Controls.Generators
     /// </remarks>
     public class TreeContainerIndex
     {
-        private readonly Dictionary<object, HashSet<IControl>> _itemToContainerSet = new Dictionary<object, HashSet<IControl>>();
-        private readonly Dictionary<object, IControl> _itemToContainer = new Dictionary<object, IControl>();
-        private readonly Dictionary<IControl, object> _containerToItem = new Dictionary<IControl, object>();
+        private readonly Dictionary<object, HashSet<Control>> _itemToContainerSet = new Dictionary<object, HashSet<Control>>();
+        private readonly Dictionary<object, Control> _itemToContainer = new Dictionary<object, Control>();
+        private readonly Dictionary<Control, object> _containerToItem = new Dictionary<Control, object>();
 
         /// <summary>
         /// Signaled whenever new containers are materialized.
@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Gets the currently materialized containers.
         /// </summary>
-        public IEnumerable<IControl> Containers => _containerToItem.Keys;
+        public IEnumerable<Control> Containers => _containerToItem.Keys;
 
         /// <summary>
         /// Gets the items of currently materialized containers.
@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="container">The item container.</param>
-        public void Add(object item, IControl container)
+        public void Add(object item, Control container)
         {
             _itemToContainer[item] = container;
             if (_itemToContainerSet.TryGetValue(item, out var set))
@@ -53,7 +53,7 @@ namespace Avalonia.Controls.Generators
             }
             else
             {
-                _itemToContainerSet.Add(item, new HashSet<IControl> { container });
+                _itemToContainerSet.Add(item, new HashSet<Control> { container });
             }
 
             _containerToItem.Add(container, item);
@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="container">The item container.</param>
         /// <param name="item">The DataContext object</param>
-        private void RemoveContainer(IControl container, object item)
+        private void RemoveContainer(Control container, object item)
         {
             if (_itemToContainerSet.TryGetValue(item, out var set))
             {
@@ -89,7 +89,7 @@ namespace Avalonia.Controls.Generators
         /// Removes a container from the index.
         /// </summary>
         /// <param name="container">The item container.</param>
-        public void Remove(IControl container)
+        public void Remove(Control container)
         {
             var item = _containerToItem[container];
             _containerToItem.Remove(container);
@@ -124,7 +124,7 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>The container, or null of not found.</returns>
-        public IControl? ContainerFromItem(object item)
+        public Control? ContainerFromItem(object item)
         {
             if (item != null)
             {
@@ -148,7 +148,7 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="container">The container.</param>
         /// <returns>The item, or null of not found.</returns>
-        public object? ItemFromContainer(IControl? container)
+        public object? ItemFromContainer(Control? container)
         {
             if (container != null)
             {

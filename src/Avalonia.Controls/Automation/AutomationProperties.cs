@@ -138,8 +138,8 @@ namespace Avalonia.Automation
         /// <summary>
         /// Defines the AutomationProperties.LabeledBy attached property.
         /// </summary>
-        public static readonly AttachedProperty<IControl> LabeledByProperty =
-            AvaloniaProperty.RegisterAttached<StyledElement, IControl>(
+        public static readonly AttachedProperty<Control> LabeledByProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, Control>(
                 "LabeledBy",
                 typeof(AutomationProperties));
 
@@ -503,7 +503,7 @@ namespace Avalonia.Automation
         /// <summary>
         /// Helper for setting LabeledBy property on a StyledElement. 
         /// </summary>
-        public static void SetLabeledBy(StyledElement element, IControl value)
+        public static void SetLabeledBy(StyledElement element, Control value)
         {
             if (element == null)
             {
@@ -516,7 +516,7 @@ namespace Avalonia.Automation
         /// <summary>
         /// Helper for reading LabeledBy property from a StyledElement.
         /// </summary>
-        public static IControl GetLabeledBy(StyledElement element)
+        public static Control GetLabeledBy(StyledElement element)
         {
             if (element == null)
             {
