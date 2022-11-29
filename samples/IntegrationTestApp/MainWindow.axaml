@@ -17,11 +17,15 @@
       </NativeMenuItem>
       <NativeMenuItem Header="View">
         <NativeMenu/>
-      </NativeMenuItem>  
+      </NativeMenuItem>
     </NativeMenu>
   </NativeMenu.Menu>
   <DockPanel>
     <NativeMenuBar DockPanel.Dock="Top"/>
+    <StackPanel DockPanel.Dock="Bottom" Margin="4" Orientation="Horizontal">
+      <TextBlock Margin="0,0,4,0">WindowState:</TextBlock>
+      <TextBlock Name="WindowState" Text="{Binding WindowState}"/>
+    </StackPanel>
     
     <TabControl TabStripPlacement="Left" Name="MainTabs">
       <TabItem Header="Automation">
@@ -136,6 +140,7 @@
           </ComboBox>
           <Button Name="ShowWindow">Show Window</Button>
           <Button Name="SendToBack">Send to Back</Button>
+          <Button Name="EnterFullscreen">Enter Fullscreen</Button>
           <Button Name="ExitFullscreen">Exit Fullscreen</Button>
           <Button Name="RestoreAll">Restore All</Button>
         </StackPanel>
