@@ -448,7 +448,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     {
         public static void ConfigurePosition(ref this PopupPositionerParameters positionerParameters,
             TopLevel topLevel,
-            IVisual target, PlacementMode placement, Point offset,
+            Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor, PopupGravity gravity,
             PopupPositionerConstraintAdjustment constraintAdjustment, Rect? rect,
             FlowDirection flowDirection)

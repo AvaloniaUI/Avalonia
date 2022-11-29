@@ -34,7 +34,7 @@ namespace Avalonia.Base.UnitTests.Logging
                 var panel = window.FindControl<Panel>("panel");
                 var rect = window.FindControl<Rectangle>("rect");
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
                 panel.Children.Remove(rect);
                 Assert.Equal(0, calledTimes);
             }
@@ -63,7 +63,7 @@ namespace Avalonia.Base.UnitTests.Logging
                 });
                 var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
                 Assert.Equal(1, calledTimes);
             }
         }

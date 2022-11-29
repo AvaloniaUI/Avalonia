@@ -19,6 +19,6 @@ namespace Avalonia.Styling
         /// This method should return an <see cref="ISetterInstance"/> which can be used to apply
         /// the setter to the specified control.
         /// </remarks>
-        ISetterInstance Instance(IStyleInstance styleInstance, IStyleable target);
+        ISetterInstance Instance(IStyleInstance styleInstance, StyledElement target);
     }
 }

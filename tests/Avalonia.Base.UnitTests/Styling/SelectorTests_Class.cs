@@ -62,7 +62,7 @@ namespace Avalonia.Base.UnitTests.Styling
             var control = new Control1
             {
                 Classes = { "foo" },
-                TemplatedParent = new Mock<ITemplatedControl>().Object,
+                TemplatedParent = new Button(),
             };
 
             var target = default(Selector).Class("foo");

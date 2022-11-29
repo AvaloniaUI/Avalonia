@@ -9,14 +9,14 @@ namespace Avalonia.Diagnostics
 {
     public static class VisualTreeDebug
     {
-        public static string PrintVisualTree(IVisual visual)
+        public static string PrintVisualTree(Visual visual)
         {
             var result = StringBuilderCache.Acquire();
             PrintVisualTree(visual, result, 0);
             return StringBuilderCache.GetStringAndRelease(result);
         }
 
-        private static void PrintVisualTree(IVisual visual, StringBuilder builder, int indent)
+        private static void PrintVisualTree(Visual visual, StringBuilder builder, int indent)
         {
             Control? control = visual as Control;
 

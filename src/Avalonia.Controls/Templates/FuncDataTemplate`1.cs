@@ -1,5 +1,4 @@
 using System;
-
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Templates
@@ -17,7 +16,7 @@ namespace Avalonia.Controls.Templates
         /// A function which when passed an object of <typeparamref name="T"/> returns a control.
         /// </param>
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
-        public FuncDataTemplate(Func<T, INameScope, IControl?> build, bool supportsRecycling = false)
+        public FuncDataTemplate(Func<T, INameScope, Control?> build, bool supportsRecycling = false)
             : base(o => TypeUtilities.CanCast<T>(o), CastBuild(build), supportsRecycling)
         {
         }
@@ -34,7 +33,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
             Func<T, bool> match,
-            Func<T, INameScope, IControl> build,
+            Func<T, INameScope, Control> build,
             bool supportsRecycling = false)
             : base(CastMatch(match), CastBuild(build), supportsRecycling)
         {
@@ -52,7 +51,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
             Func<T, bool> match,
-            Func<T, IControl> build,
+            Func<T, Control> build,
             bool supportsRecycling = false)
             : this(match, (a, _) => build(a), supportsRecycling)
         {

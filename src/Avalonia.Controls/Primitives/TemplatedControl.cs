@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A lookless control whose visual appearance is defined by its <see cref="Template"/>.
     /// </summary>
-    public class TemplatedControl : Control, ITemplatedControl
+    public class TemplatedControl : Control
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -307,7 +307,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override IControl GetTemplateFocusTarget()
+        protected override Control GetTemplateFocusTarget()
         {
             foreach (Control child in this.GetTemplateChildren())
             {
@@ -380,7 +380,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="templatedParent">The templated parent to apply.</param>
-        internal static void ApplyTemplatedParent(IStyledElement control, ITemplatedControl? templatedParent)
+        internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
         {
             control.SetValue(TemplatedParentProperty, templatedParent);
 
@@ -389,7 +389,7 @@ namespace Avalonia.Controls.Primitives
 
             for (var i = 0; i < count; i++)
             {
-                if (children[i] is IStyledElement child && child.TemplatedParent is null)
+                if (children[i] is StyledElement child && child.TemplatedParent is null)
                 {
                     ApplyTemplatedParent(child, templatedParent);
                 }

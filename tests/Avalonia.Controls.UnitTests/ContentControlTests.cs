@@ -26,7 +26,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            var child = ((IVisual)target).VisualChildren.Single();
+            var child = ((Visual)target).VisualChildren.Single();
             Assert.IsType<Border>(child);
             child = child.VisualChildren.Single();
             Assert.IsType<ContentPresenter>(child);
@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = target;
 
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
 
             foreach (Control child in target.GetTemplateChildren())
                 Assert.Equal("foo", child.Tag);
@@ -233,7 +233,7 @@ namespace Avalonia.Controls.UnitTests
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             target.Content = child2;
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
 
             Assert.True(called);
         }
@@ -285,7 +285,7 @@ namespace Avalonia.Controls.UnitTests
         public void Binding_ContentTemplate_After_Content_Does_Not_Leave_Orpaned_TextBlock()
         {
             // Test for #1271.
-            var children = new List<IControl>();
+            var children = new List<Control>();
             var presenter = new ContentPresenter();
 
             // The content and then the content template property need to be bound with delayed bindings
@@ -358,7 +358,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             target.Presenter.ApplyTemplate();
 
-            Assert.Equal(target, target.Presenter.Child.LogicalParent);
+            Assert.Equal(target, target.Presenter.Child.GetLogicalParent());
 
             root.Child = null;
 
@@ -368,7 +368,7 @@ namespace Avalonia.Controls.UnitTests
             root.Child = target;
             target.Content = "Bar";
 
-            Assert.Equal(target, target.Presenter.Child.LogicalParent);
+            Assert.Equal(target, target.Presenter.Child.GetLogicalParent());
         }
 
         private FuncControlTemplate GetTemplate()

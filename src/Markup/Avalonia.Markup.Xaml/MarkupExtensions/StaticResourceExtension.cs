@@ -66,7 +66,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 previousWasControlTheme = parent is ControlTheme;
             }
 
-            if (provideTarget.TargetObject is IControl target &&
+            if (provideTarget.TargetObject is Control target &&
                 provideTarget.TargetProperty is PropertyInfo property)
             {
                 // This is stored locally to avoid allocating closure in the outer scope.
@@ -80,7 +80,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             throw new KeyNotFoundException($"Static resource '{ResourceKey}' not found.");
         }
 
-        private object GetValue(IStyledElement control, Type targetType)
+        private object GetValue(StyledElement control, Type targetType)
         {
             return ColorToBrushConverter.Convert(control.FindResource(ResourceKey), targetType);
         }

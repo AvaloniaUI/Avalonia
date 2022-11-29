@@ -12,7 +12,7 @@ namespace Avalonia.Controls
         {
         }
 
-        public TextChangingEventArgs(RoutedEvent? routedEvent, IInteractive? source)
+        public TextChangingEventArgs(RoutedEvent? routedEvent, Interactive? source)
             : base(routedEvent, source)
         {
         }
