@@ -97,9 +97,9 @@ namespace Avalonia.Controls
 
         //TODO Rename
         //TODO Validation
-        protected sealed override IControl GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding editBinding)
+        protected sealed override Control GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding editBinding)
         {
-            IControl element = GenerateEditingElementDirect(cell, dataItem);
+            Control element = GenerateEditingElementDirect(cell, dataItem);
             editBinding = null; 
 
             if (Binding != null)
@@ -110,7 +110,7 @@ namespace Avalonia.Controls
             return element;
         } 
 
-        private static ICellEditBinding BindEditingElement(IAvaloniaObject target, AvaloniaProperty property, IBinding binding)
+        private static ICellEditBinding BindEditingElement(AvaloniaObject target, AvaloniaProperty property, IBinding binding)
         {
             var result = binding.Initiate(target, property, enableDataValidation: true); 
 
@@ -131,7 +131,7 @@ namespace Avalonia.Controls
             return null;
         } 
 
-        protected abstract IControl GenerateEditingElementDirect(DataGridCell cell, object dataItem); 
+        protected abstract Control GenerateEditingElementDirect(DataGridCell cell, object dataItem); 
 
         protected AvaloniaProperty BindingTarget { get; set; } 
 

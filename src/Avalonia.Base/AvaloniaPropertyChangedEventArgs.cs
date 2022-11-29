@@ -9,7 +9,7 @@ namespace Avalonia
     public abstract class AvaloniaPropertyChangedEventArgs : EventArgs
     {
         public AvaloniaPropertyChangedEventArgs(
-            IAvaloniaObject sender,
+            AvaloniaObject sender,
             BindingPriority priority)
         {
             Sender = sender;
@@ -18,7 +18,7 @@ namespace Avalonia
         }
 
         internal AvaloniaPropertyChangedEventArgs(
-            IAvaloniaObject sender,
+            AvaloniaObject sender,
             BindingPriority priority,
             bool isEffectiveValueChange)
         {
@@ -31,7 +31,7 @@ namespace Avalonia
         /// Gets the <see cref="AvaloniaObject"/> that the property changed on.
         /// </summary>
         /// <value>The sender object.</value>
-        public IAvaloniaObject Sender { get; }
+        public AvaloniaObject Sender { get; }
 
         /// <summary>
         /// Gets the property that changed.

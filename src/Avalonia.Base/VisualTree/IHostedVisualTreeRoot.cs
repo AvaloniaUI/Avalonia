@@ -11,6 +11,6 @@ namespace Avalonia.VisualTree
         /// <value>
         /// The visual tree host.
         /// </value>
-        IVisual? Host { get; }
+        Visual? Host { get; }
     }
 }

@@ -38,13 +38,13 @@ namespace Avalonia.UnitTests
 
         private MouseButton _pressedButton;
 
-        public void Down(IInteractive target, MouseButton mouseButton = MouseButton.Left, Point position = default,
+        public void Down(Interactive target, MouseButton mouseButton = MouseButton.Left, Point position = default,
             KeyModifiers modifiers = default, int clickCount = 1)
         {
             Down(target, target, mouseButton, position, modifiers, clickCount);
         }
 
-        public void Down(IInteractive target, IInteractive source, MouseButton mouseButton = MouseButton.Left, 
+        public void Down(Interactive target, Interactive source, MouseButton mouseButton = MouseButton.Left, 
             Point position = default, KeyModifiers modifiers = default, int clickCount = 1)
         {
             _pressedButtons |= Convert(mouseButton);
@@ -59,23 +59,23 @@ namespace Avalonia.UnitTests
             {
                 _pressedButton = mouseButton;
                 _pointer.Capture((IInputElement)target);
-                source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (IVisual)source, position, Timestamp(), props,
+                source.RaiseEvent(new PointerPressedEventArgs(source, _pointer, (Visual)source, position, Timestamp(), props,
                     modifiers, clickCount));
             }
         }
 
-        public void Move(IInteractive target, in Point position, KeyModifiers modifiers = default) => Move(target, target, position, modifiers);
-        public void Move(IInteractive target, IInteractive source, in Point position, KeyModifiers modifiers = default)
+        public void Move(Interactive target, in Point position, KeyModifiers modifiers = default) => Move(target, target, position, modifiers);
+        public void Move(Interactive target, Interactive source, in Point position, KeyModifiers modifiers = default)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (IVisual)target, position,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)target, position,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), modifiers));
         }
 
-        public void Up(IInteractive target, MouseButton mouseButton = MouseButton.Left, Point position = default,
+        public void Up(Interactive target, MouseButton mouseButton = MouseButton.Left, Point position = default,
             KeyModifiers modifiers = default)
             => Up(target, target, mouseButton, position, modifiers);
         
-        public void Up(IInteractive target, IInteractive source, MouseButton mouseButton = MouseButton.Left,
+        public void Up(Interactive target, Interactive source, MouseButton mouseButton = MouseButton.Left,
             Point position = default, KeyModifiers modifiers = default)
         {
             var conv = Convert(mouseButton);
@@ -87,7 +87,7 @@ namespace Avalonia.UnitTests
             );
             if (ButtonCount(props) == 0)
             {
-                target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (IVisual)target, position,
+                target.RaiseEvent(new PointerReleasedEventArgs(source, _pointer, (Visual)target, position,
                     Timestamp(), props, modifiers, _pressedButton));
                 _pointer.Capture(null);
             }
@@ -95,25 +95,25 @@ namespace Avalonia.UnitTests
                 Move(target, source, position);
         }
 
-        public void Click(IInteractive target, MouseButton button = MouseButton.Left, Point position = default,
+        public void Click(Interactive target, MouseButton button = MouseButton.Left, Point position = default,
             KeyModifiers modifiers = default)
             => Click(target, target, button, position, modifiers);
-        public void Click(IInteractive target, IInteractive source, MouseButton button = MouseButton.Left, 
+        public void Click(Interactive target, Interactive source, MouseButton button = MouseButton.Left, 
             Point position = default, KeyModifiers modifiers = default)
         {
             Down(target, source, button, position, modifiers);
             Up(target, source, button, position, modifiers);
         }
         
-        public void Enter(IInteractive target)
+        public void Enter(Interactive target)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnteredEvent, target, _pointer, (IVisual)target, default,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnteredEvent, target, _pointer, (Visual)target, default,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 
-        public void Leave(IInteractive target)
+        public void Leave(Interactive target)
         {
-            target.RaiseEvent(new PointerEventArgs(InputElement.PointerExitedEvent, target, _pointer, (IVisual)target, default,
+            target.RaiseEvent(new PointerEventArgs(InputElement.PointerExitedEvent, target, _pointer, (Visual)target, default,
                 Timestamp(), new PointerPointProperties((RawInputModifiers)_pressedButtons, PointerUpdateKind.Other), KeyModifiers.None));
         }
 

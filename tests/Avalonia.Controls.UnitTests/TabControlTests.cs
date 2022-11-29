@@ -297,7 +297,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedIndex = 4;
             ((ContentPresenter)target.ContentPart).UpdateChild();
-            dataContext = target.ContentPart.DataContext;
+            dataContext = ((Control)target.ContentPart).DataContext;
             Assert.Equal("Base", dataContext);
         }
 

@@ -9,7 +9,7 @@ namespace Avalonia.Controls.Presenters
     {
         IEnumerable? Items { get; set; }
 
-        IPanel? Panel { get; }
+        Panel? Panel { get; }
 
         void ItemsChanged(NotifyCollectionChangedEventArgs e);
 

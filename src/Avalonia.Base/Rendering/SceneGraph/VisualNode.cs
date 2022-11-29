@@ -30,7 +30,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="visual">The visual that this node represents.</param>
         /// <param name="parent">The parent scene graph node, if any.</param>
-        public VisualNode(IVisual visual, IVisualNode? parent)
+        public VisualNode(Visual visual, IVisualNode? parent)
         {
             Visual = visual ?? throw new ArgumentNullException(nameof(visual));
             Parent = parent;
@@ -39,7 +39,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public IVisual Visual { get; }
+        public Visual Visual { get; }
 
         /// <inheritdoc/>
         public IVisualNode? Parent { get; }
@@ -98,7 +98,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         public bool OpacityChanged { get; private set; }
 
-        public IVisual? LayerRoot { get; set; }
+        public Visual? LayerRoot { get; set; }
 
         /// <inheritdoc/>
         public IReadOnlyList<IVisualNode> Children => _children ?? EmptyChildren;

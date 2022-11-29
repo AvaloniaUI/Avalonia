@@ -10,14 +10,14 @@ using System.Text;
 
 namespace Avalonia.Controls
 {
-    internal class UniqueIdElementPool : IEnumerable<KeyValuePair<string, IControl>>
+    internal class UniqueIdElementPool : IEnumerable<KeyValuePair<string, Control>>
     {
-        private readonly Dictionary<string, IControl> _elementMap = new Dictionary<string, IControl>();
+        private readonly Dictionary<string, Control> _elementMap = new Dictionary<string, Control>();
         private readonly ItemsRepeater _owner;
 
         public UniqueIdElementPool(ItemsRepeater owner) => _owner = owner;
 
-        public void Add(IControl element)
+        public void Add(Control element)
         {
             var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
             var key = virtInfo.UniqueId!;
@@ -30,7 +30,7 @@ namespace Avalonia.Controls
             _elementMap.Add(key, element);
         }
 
-        public IControl? Remove(int index)
+        public Control? Remove(int index)
         {
             // Check if there is already a element in the mapping and if so, use it.
             string key = _owner.ItemsSourceView!.KeyFromIndex(index);
@@ -48,7 +48,7 @@ namespace Avalonia.Controls
             _elementMap.Clear();
         }
 
-        public IEnumerator<KeyValuePair<string, IControl>> GetEnumerator() => _elementMap.GetEnumerator();
+        public IEnumerator<KeyValuePair<string, Control>> GetEnumerator() => _elementMap.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

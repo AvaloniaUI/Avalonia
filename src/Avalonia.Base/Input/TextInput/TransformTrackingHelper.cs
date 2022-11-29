@@ -7,7 +7,7 @@ namespace Avalonia.Input.TextInput
 {
     class TransformTrackingHelper : IDisposable
     {
-        private IVisual? _visual;
+        private Visual? _visual;
         private bool _queuedForUpdate;
         private readonly EventHandler<AvaloniaPropertyChangedEventArgs> _propertyChangedHandler;
         private readonly List<Visual> _propertyChangedSubscriptions = new List<Visual>();
@@ -17,7 +17,7 @@ namespace Avalonia.Input.TextInput
             _propertyChangedHandler = PropertyChangedHandler;
         }
 
-        public void SetVisual(IVisual? visual)
+        public void SetVisual(Visual? visual)
         {
             Dispose();
             _visual = visual;
@@ -72,7 +72,7 @@ namespace Avalonia.Input.TextInput
         {
             Matrix? matrix = null;
             if (_visual != null && _visual.VisualRoot != null)
-                matrix = _visual.TransformToVisual(_visual.VisualRoot);
+                matrix = _visual.TransformToVisual((Visual)_visual.VisualRoot);
             if (Matrix != matrix)
             {
                 Matrix = matrix;

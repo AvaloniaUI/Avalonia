@@ -125,7 +125,7 @@ namespace Avalonia.Controls
         {
             StopTimer();
 
-            if ((control as IVisual).IsAttachedToVisualTree)
+            if (control.IsAttachedToVisualTree)
             {
                 ToolTip.SetIsOpen(control, true);
             }

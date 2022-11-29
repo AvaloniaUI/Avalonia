@@ -562,7 +562,7 @@ namespace Avalonia.Win32
                         RenderOnlyOnRenderThread = true
                     }
                     : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock)
-                : new ImmediateRenderer(root);
+                : new ImmediateRenderer((Visual)root);
         }
 
         public void Resize(Size value, PlatformResizeReason reason)

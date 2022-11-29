@@ -29,8 +29,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
+        private static readonly FuncTemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new VirtualizingStackPanel());
 
         /// <summary>
         /// Defines the <see cref="IsDropDownOpen"/> property.
@@ -275,7 +275,7 @@ namespace Avalonia.Controls
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            if(!e.Handled && e.Source is IVisual source)
+            if(!e.Handled && e.Source is Visual source)
             {
                 if (_popup?.IsInsidePopup(source) == true)
                 {
@@ -288,7 +288,7 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
-            if (!e.Handled && e.Source is IVisual source)
+            if (!e.Handled && e.Source is Visual source)
             {
                 if (_popup?.IsInsidePopup(source) == true)
                 {
@@ -359,7 +359,7 @@ namespace Avalonia.Controls
                 toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
                 {
                     //eat wheel scroll event outside dropdown popup while it's open
-                    if (IsDropDownOpen && (ev.Source as IVisual)?.GetVisualRoot() == toplevel)
+                    if (IsDropDownOpen && (ev.Source as Visual)?.GetVisualRoot() == toplevel)
                     {
                         ev.Handled = true;
                     }
@@ -368,7 +368,7 @@ namespace Avalonia.Controls
 
             this.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
 
-            foreach (var parent in this.GetVisualAncestors().OfType<IControl>())
+            foreach (var parent in this.GetVisualAncestors().OfType<Control>())
             {
                 parent.GetObservable(IsVisibleProperty).Subscribe(IsVisibleChanged).DisposeWith(_subscriptionsOnOpen);
             }
@@ -410,7 +410,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private bool CanFocus(IControl control) => control.Focusable && control.IsEffectivelyEnabled && control.IsVisible;
+        private bool CanFocus(Control control) => control.Focusable && control.IsEffectivelyEnabled && control.IsVisible;
 
         private void UpdateSelectionBoxItem(object? item)
         {
@@ -421,7 +421,7 @@ namespace Avalonia.Controls
                 item = contentControl.Content;
             }
 
-            var control = item as IControl;
+            var control = item as Control;
 
             if (control != null)
             {
@@ -456,7 +456,7 @@ namespace Avalonia.Controls
             {
                 if ((rectangle.Fill as VisualBrush)?.Visual is Control content)
                 {
-                    var flowDirection = (((IVisual)content!).VisualParent as Control)?.FlowDirection ?? 
+                    var flowDirection = (((Visual)content!).VisualParent as Control)?.FlowDirection ?? 
                         FlowDirection.LeftToRight;
                     rectangle.FlowDirection = flowDirection;
                 }

@@ -138,7 +138,7 @@ namespace Avalonia.Benchmarks.Base
                 return arg < 1000;
             }
 
-            private static int CoerceIntValue(IAvaloniaObject arg1, int arg2)
+            private static int CoerceIntValue(AvaloniaObject arg1, int arg2)
             {
                 return Math.Min(1000, arg2);
             }

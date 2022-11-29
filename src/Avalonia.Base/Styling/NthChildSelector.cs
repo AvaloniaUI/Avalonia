@@ -48,7 +48,7 @@ namespace Avalonia.Styling
         public int Step { get; }
         public int Offset { get; }
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is ILogical logical))
             {
