@@ -211,6 +211,11 @@ namespace Avalonia.Controls
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Gets the currently realized containers.
+        /// </summary>
+        public IEnumerable<Control> GetRealizedContainers() => Presenter?.GetRealizedContainers() ?? Array.Empty<Control>();
+
         /// <inheritdoc/>
         void IItemsPresenterHost.RegisterItemsPresenter(ItemsPresenter presenter)
         {

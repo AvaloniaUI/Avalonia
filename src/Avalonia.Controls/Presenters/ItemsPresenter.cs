@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -107,6 +110,13 @@ namespace Avalonia.Controls.Presenters
             if (Panel is VirtualizingPanel v)
                 return v.ContainerFromIndex(index);
             return index >= 0 && index < Panel?.Children.Count ? Panel.Children[index] : null;
+        }
+
+        internal IEnumerable<Control>? GetRealizedContainers()
+        {
+            if (Panel is VirtualizingPanel v)
+                return v.GetRealizedContainers();
+            return Panel?.Children;
         }
 
         internal int IndexFromContainer(Control container)

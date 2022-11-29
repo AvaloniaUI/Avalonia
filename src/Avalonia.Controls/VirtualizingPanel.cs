@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Utils;
@@ -61,6 +62,11 @@ namespace Avalonia.Controls
         /// <paramref name="container"/> is not found.
         /// </returns>
         protected internal abstract int IndexFromContainer(Control container);
+
+        /// <summary>
+        /// Gets the currently realized containers.
+        /// </summary>
+        protected internal abstract IEnumerable<Control>? GetRealizedContainers();
 
         /// <summary>
         /// Gets the next control in the specified direction.

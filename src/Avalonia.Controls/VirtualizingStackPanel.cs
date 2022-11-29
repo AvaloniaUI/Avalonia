@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -226,6 +227,11 @@ namespace Avalonia.Controls
             }
 
             return ScrollIntoView(toIndex);
+        }
+
+        protected internal override IEnumerable<Control>? GetRealizedContainers()
+        {
+            return _realizedElements?.Elements.Where(x => x is not null)!;
         }
 
         protected internal override Control? ContainerFromIndex(int index) => _realizedElements?.GetElement(index);

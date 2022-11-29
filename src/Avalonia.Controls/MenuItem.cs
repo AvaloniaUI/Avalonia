@@ -328,16 +328,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems
-        {
-            get
-            {
-                throw new NotImplementedException();
-                ////return ItemContainerGenerator.Containers
-                ////    .Select(x => x.ContainerControl)
-                ////    .OfType<IMenuItem>();
-            }
-        }
+        IEnumerable<IMenuItem> IMenuElement.SubItems => GetRealizedContainers().OfType<IMenuItem>();
 
         /// <summary>
         /// Opens the submenu.

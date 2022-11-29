@@ -507,45 +507,44 @@ namespace Avalonia.Controls.Primitives
 
         protected override void OnTextInput(TextInputEventArgs e)
         {
-            throw new NotImplementedException();
-            ////if (!e.Handled)
-            ////{
-            ////    if (!IsTextSearchEnabled)
-            ////        return;
+            if (!e.Handled)
+            {
+                if (!IsTextSearchEnabled)
+                    return;
 
-            ////    StopTextSearchTimer();
+                StopTextSearchTimer();
 
-            ////    _textSearchTerm += e.Text;
+                _textSearchTerm += e.Text;
 
-            ////    bool Match(ItemContainerInfo info)
-            ////    {
-            ////        if (info.ContainerControl is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
-            ////        {
-            ////            var searchText = ao.GetValue(TextSearch.TextProperty);
+                bool Match(Control container)
+                {
+                    if (container is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
+                    {
+                        var searchText = ao.GetValue(TextSearch.TextProperty);
 
-            ////            if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
-            ////            {
-            ////                return true;
-            ////            }
-            ////        }
+                        if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            return true;
+                        }
+                    }
 
-            ////        return info.ContainerControl is IContentControl control &&
-            ////               control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
-            ////    }
-                
-            ////    var info = ItemContainerGenerator?.Containers.FirstOrDefault(Match);
+                    return container is IContentControl control &&
+                           control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                }
 
-            ////    if (info != null)
-            ////    {
-            ////        SelectedIndex = info.Index;
-            ////    }
+                var container = GetRealizedContainers().FirstOrDefault(Match);
 
-            ////    StartTextSearchTimer();
+                if (container != null)
+                {
+                    SelectedIndex = IndexFromContainer(container);
+                }
 
-            ////    e.Handled = true;
-            ////}
+                StartTextSearchTimer();
 
-            ////base.OnTextInput(e);
+                e.Handled = true;
+            }
+
+            base.OnTextInput(e);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

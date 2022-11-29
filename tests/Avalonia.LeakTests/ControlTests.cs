@@ -361,8 +361,7 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TreeViewItems get realized.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    throw new NotImplementedException();
-                    ////Assert.Single(target.ItemContainerGenerator.Containers);
+                    Assert.Single(target.GetRealizedContainers());
 
                     // Clear the content and ensure the TreeView is removed.
                     window.Content = null;
@@ -757,22 +756,20 @@ namespace Avalonia.LeakTests
                 window.Show();
                 window.LayoutManager.ExecuteInitialLayoutPass();
 
-                throw new NotImplementedException();
+                void AssertInitialItemState()
+                {
+                    var item0 = (ListBoxItem)lb.GetRealizedContainers().First();
+                    var canvas0 = (Canvas)item0.Presenter.Child;
+                    Assert.Equal("foo", canvas0.Tag);
+                }
 
-                ////void AssertInitialItemState()
-                ////{
-                ////    var item0 = (ListBoxItem)lb.ItemContainerGenerator.Containers.First().ContainerControl;
-                ////    var canvas0 = (Canvas)item0.Presenter.Child;
-                ////    Assert.Equal("foo", canvas0.Tag);
-                ////}
-               
-                ////Assert.Equal(10, lb.ItemContainerGenerator.Containers.Count());
-                ////AssertInitialItemState();
+                Assert.Equal(10, lb.GetRealizedContainers().Count());
+                AssertInitialItemState();
 
-                ////items.Clear();
-                ////window.LayoutManager.ExecuteLayoutPass();
+                items.Clear();
+                window.LayoutManager.ExecuteLayoutPass();
 
-                ////Assert.Empty(lb.ItemContainerGenerator.Containers);
+                Assert.Empty(lb.GetRealizedContainers());
 
                 // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
