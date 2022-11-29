@@ -72,6 +72,9 @@ namespace Avalonia.Controls
         private bool _isExtendedIntoWindowDecorations;
         private Thickness _windowDecorationMargin;
         private Thickness _offScreenMargin;
+        private bool _shown;
+        private bool _showingAsDialog;
+        private bool _inShowHideMethods;
 
         /// <summary>
         /// Defines the <see cref="SizeToContent"/> property.
@@ -506,8 +509,14 @@ namespace Avalonia.Controls
             }
 
             Owner = null;
+            _showingAsDialog = false;
+            _shown = false;
+            _inShowHideMethods = true;
 
             PlatformImpl?.Dispose();
+            
+            _inShowHideMethods = false;
+            
         }
 
         private bool ShouldCancelClose(CancelEventArgs? args = null)
@@ -563,7 +572,7 @@ namespace Avalonia.Controls
         /// </summary>
         public override void Hide()
         {
-            if (!IsVisible)
+            if (!_shown)
             {
                 return;
             }
@@ -585,7 +594,10 @@ namespace Avalonia.Controls
 
             Owner = null;
             PlatformImpl?.Hide();
+            _shown = false;
+            _inShowHideMethods = true;
             IsVisible = false;
+            _inShowHideMethods = false;
         }
 
         /// <summary>
@@ -639,7 +651,7 @@ namespace Avalonia.Controls
                 }
             }
 
-            if (IsVisible)
+            if (_shown)
             {
                 return;
             }
@@ -648,7 +660,10 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             ApplyStyling();
+            _inShowHideMethods = true;
+            _shown = true;
             IsVisible = true;
+            _inShowHideMethods = false;
 
             var initialSize = new Size(
                 double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
@@ -728,7 +743,11 @@ namespace Avalonia.Controls
 
             EnsureInitialized();
             ApplyStyling();
+            _shown = true;
+            _showingAsDialog = true;
+            _inShowHideMethods = true;
             IsVisible = true;
+            _inShowHideMethods = false;
 
             var initialSize = new Size(
                 double.IsNaN(Width) ? ClientSize.Width : Width,
@@ -998,6 +1017,33 @@ namespace Avalonia.Controls
                 var (_, typedNewValue) = change.GetOldAndNewValue<SystemDecorations>();
 
                 PlatformImpl?.SetSystemDecorations(typedNewValue);
+            }
+
+            if (change.Property == IsVisibleProperty)
+            {
+                if (!_inShowHideMethods)
+                {
+                    var isVisible = change.GetNewValue<bool>();
+
+                    if (_shown != isVisible)
+                    {
+                        if (!_shown)
+                        {
+                            ShowCore(null);
+                        }
+                        else
+                        {
+                            if (_showingAsDialog)
+                            {
+                                Close(false);
+                            }
+                            else
+                            {
+                                Hide();
+                            }
+                        }
+                    }
+                }
             }
         }
 
