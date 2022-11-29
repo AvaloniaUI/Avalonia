@@ -4,27 +4,16 @@ using Avalonia.UnitTests;
 
 namespace Avalonia.Base.UnitTests.Layout
 {
-    internal class LayoutTestRoot : TestRoot, ILayoutable
+    internal class LayoutTestRoot : TestRoot
     {
         public bool Measured { get; set; }
         public bool Arranged { get; set; }
-        public Func<ILayoutable, Size, Size> DoMeasureOverride { get; set; }
-        public Func<ILayoutable, Size, Size> DoArrangeOverride { get; set; }
-
-        void ILayoutable.Measure(Size availableSize)
-        {
-            Measured = true;
-            Measure(availableSize);
-        }
-
-        void ILayoutable.Arrange(Rect rect)
-        {
-            Arranged = true;
-            Arrange(rect);
-        }
+        public Func<Layoutable, Size, Size> DoMeasureOverride { get; set; }
+        public Func<Layoutable, Size, Size> DoArrangeOverride { get; set; }
 
         protected override Size MeasureOverride(Size availableSize)
         {
+            Measured = true;
             return DoMeasureOverride != null ?
                 DoMeasureOverride(this, availableSize) :
                 base.MeasureOverride(availableSize);

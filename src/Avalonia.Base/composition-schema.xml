@@ -27,6 +27,9 @@
         <Property Name="OpacityMaskBrush" Type="Avalonia.Media.IBrush?" Internal="true" />
     </Object>
     <Object Name="CompositionContainerVisual" Inherits="CompositionVisual"/>
+    <Object Name="CompositionSolidColorVisual" Inherits="CompositionContainerVisual">
+        <Property Name="Color" Type="Avalonia.Media.Color" Animated="true" />
+    </Object>
     <List Name="CompositionVisualCollection" ItemType="CompositionVisual" CustomCtor="true"/>
     <Object Name="CompositionTarget" CustomServerCtor="true">
         <Property Name="Root" Type="CompositionVisual?"/>

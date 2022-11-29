@@ -21,14 +21,14 @@ namespace Avalonia.Layout
         Rect Algorithm_GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            ILayoutable? firstRealized,
+            Layoutable? firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            ILayoutable? lastRealized,
+            Layoutable? lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds);
         void Algorithm_OnElementMeasured(
-            ILayoutable element,
+            Layoutable element,
             int index,
             Size availableSize,
             Size measureSize,

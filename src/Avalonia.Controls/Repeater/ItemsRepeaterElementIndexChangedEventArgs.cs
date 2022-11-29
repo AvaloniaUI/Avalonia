@@ -12,7 +12,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class ItemsRepeaterElementIndexChangedEventArgs : EventArgs
     {
-        internal ItemsRepeaterElementIndexChangedEventArgs(IControl element, int oldIndex, int newIndex)
+        internal ItemsRepeaterElementIndexChangedEventArgs(Control element, int oldIndex, int newIndex)
         {
             Element = element;
             OldIndex = oldIndex;
@@ -22,7 +22,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Get the element for which the index changed.
         /// </summary>
-        public IControl Element { get; private set; }
+        public Control Element { get; private set; }
 
         /// <summary>
         /// Gets the index of the element after the change.
@@ -34,7 +34,7 @@ namespace Avalonia.Controls
         /// </summary>
         public int OldIndex { get; private set; }
 
-        internal void Update(IControl element, int oldIndex, int newIndex)
+        internal void Update(Control element, int oldIndex, int newIndex)
         {
             Element = element;
             NewIndex = newIndex;

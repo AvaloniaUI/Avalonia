@@ -1,18 +1,14 @@
 using System;
-using System.Collections.Generic;
-using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
 using Xunit;
-using Avalonia.Input.Raw;
 using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
-using Avalonia.Threading;
 
 namespace Avalonia.Controls.UnitTests.Utils
 {

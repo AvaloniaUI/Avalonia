@@ -52,7 +52,7 @@ namespace Avalonia.Benchmarks.Traversal
         [Benchmark]
         public void FindCommonVisualAncestor()
         {
-            foreach (IVisual first in _controls)
+            foreach (Visual first in _controls)
             {
                 foreach (Control second in _shuffledControls)
                 {

@@ -9,7 +9,7 @@ namespace Avalonia.Controls
     {
         public string? TemplateKey { get; set; }
         public object? DataContext { get; internal set; }
-        public IControl? Owner { get; internal set; }
+        public Control? Owner { get; internal set; }
     }
 
     public class RecyclingElementFactory : ElementFactory
@@ -37,7 +37,7 @@ namespace Avalonia.Controls
 
         public event EventHandler<SelectTemplateEventArgs>? SelectTemplateKey;
 
-        protected override IControl GetElementCore(ElementFactoryGetArgs args)
+        protected override Control GetElementCore(ElementFactoryGetArgs args)
         {
             if (_templates == null || _templates.Count == 0)
             {
@@ -85,7 +85,7 @@ namespace Avalonia.Controls
             RecyclePool.PutElement(element, key, args.Parent);
         }
 
-        protected virtual string OnSelectTemplateKeyCore(object? dataContext, IControl? owner)
+        protected virtual string OnSelectTemplateKeyCore(object? dataContext, Control? owner)
         {
             if (SelectTemplateKey is object)
             {

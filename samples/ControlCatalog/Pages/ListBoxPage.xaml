@@ -32,6 +32,7 @@
     </StackPanel>
     <ListBox Items="{Binding Items}"
              Selection="{Binding Selection}"
+             DisplayMemberBinding="{Binding (viewModels:ItemModel).ID, StringFormat='{}Item {0:N0}'}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
              SelectionMode="{Binding SelectionMode^}"
              WrapSelection="{Binding WrapSelection}"/>

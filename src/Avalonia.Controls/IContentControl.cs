@@ -9,7 +9,7 @@ namespace Avalonia.Controls
     /// <see cref="Avalonia.Controls.Templates.FuncDataTemplate"/>.
     /// </summary>
     [NotClientImplementable]
-    public interface IContentControl : IControl
+    public interface IContentControl
     {
         /// <summary>
         /// Gets or sets the content to display.

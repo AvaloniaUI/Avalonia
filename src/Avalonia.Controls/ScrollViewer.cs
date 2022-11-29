@@ -344,7 +344,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public IControl? CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
+        public Control? CurrentAnchor => (Presenter as IScrollAnchorProvider)?.CurrentAnchor;
 
         /// <summary>
         /// Gets the maximum horizontal scrollbar value.
@@ -615,13 +615,13 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        public void RegisterAnchorCandidate(IControl element)
+        public void RegisterAnchorCandidate(Control element)
         {
             (Presenter as IScrollAnchorProvider)?.RegisterAnchorCandidate(element);
         }
 
         /// <inheritdoc/>
-        public void UnregisterAnchorCandidate(IControl element)
+        public void UnregisterAnchorCandidate(Control element)
         {
             (Presenter as IScrollAnchorProvider)?.UnregisterAnchorCandidate(element);
         }
@@ -633,7 +633,7 @@ namespace Avalonia.Controls
 
             if (base.RegisterContentPresenter(presenter))
             {
-                _childSubscription = Presenter?
+                _childSubscription = ((Control?)Presenter)?
                     .GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(ChildChanged);
                 return true;
@@ -660,7 +660,7 @@ namespace Avalonia.Controls
             return double.IsNaN(result) ? 0 : result;
         }
 
-        private void ChildChanged(IControl? child)
+        private void ChildChanged(Control? child)
         {
             if (_logicalScrollable is object)
             {

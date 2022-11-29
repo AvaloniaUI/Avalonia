@@ -128,8 +128,11 @@ namespace Avalonia.Rendering.Composition.Animations
 
                     left = kf;
                     right = _keyFrames[c + 1];
-                    break;
                 }
+                else if (c == 0)
+                    return ExpressionVariant.Create(GetKeyFrame(ref ctx, kf));
+                else
+                    break;
             }
 
             var keyProgress = Math.Max(0, Math.Min(1, (iterationProgress - left.Key) / (right.Key - left.Key)));

@@ -1089,7 +1089,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             var root = new SelectingItemsControl
             {
                 Template = Template(),
-                Items = new IControl[]
+                Items = new Control[]
                 {
                     new Border(),
                     nested = new ListBox

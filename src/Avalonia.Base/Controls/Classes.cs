@@ -6,7 +6,7 @@ using Avalonia.Utilities;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Holds a collection of style classes for an <see cref="IStyledElement"/>.
+    /// Holds a collection of style classes for an <see cref="StyledElement"/>.
     /// </summary>
     /// <remarks>
     /// Similar to CSS, each control may have any number of styling classes applied.

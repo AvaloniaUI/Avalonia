@@ -25,7 +25,7 @@ namespace Avalonia.Media.Immutable
         /// <param name="tileMode">The tile mode.</param>
         /// <param name="bitmapInterpolationMode">Controls the quality of interpolation.</param>
         public ImmutableVisualBrush(
-            IVisual visual,
+            Visual visual,
             AlignmentX alignmentX = AlignmentX.Center,
             AlignmentY alignmentY = AlignmentY.Center,
             RelativeRect? destinationRect = null,
@@ -62,6 +62,6 @@ namespace Avalonia.Media.Immutable
         }
 
         /// <inheritdoc/>
-        public IVisual Visual { get; }
+        public Visual Visual { get; }
     }
 }
