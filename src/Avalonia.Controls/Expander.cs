@@ -3,6 +3,7 @@ using System.Threading;
 using Avalonia.Animation;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 
@@ -97,6 +98,7 @@ namespace Avalonia.Controls
                 nameof(Expanding),
                 RoutingStrategies.Bubble);
 
+        private bool _ignorePropertyChanged = false;
         private bool _isExpanded;
         private CancellationTokenSource? _lastTransitionCts;
 
@@ -133,7 +135,49 @@ namespace Avalonia.Controls
         public bool IsExpanded
         {
             get => _isExpanded;
-            set => SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
+            set
+            {
+                // It is important here that IsExpanded is a direct property so events can be invoked
+                // BEFORE the property system gets notified of updated values. This is because events
+                // may be canceled by external code.
+                if (_isExpanded != value)
+                {
+                    RoutedEventArgs eventArgs;
+
+                    if (value)
+                    {
+                        eventArgs = new RoutedEventArgs(ExpandingEvent, this);
+                        OnExpanding(eventArgs);
+                    }
+                    else
+                    {
+                        eventArgs = new RoutedEventArgs(CollapsingEvent, this);
+                        OnCollapsing(eventArgs);
+                    }
+
+                    if (eventArgs.Handled)
+                    {
+                        // If the event was externally handled (canceled) we must still notify the value has changed.
+                        // This property changed notification will update any external code observing this property that itself may have set the new value.
+                        // We are essentially reverted any external state change along with ignoring the IsExpanded property set.
+                        // Remember IsExpanded is usually controlled by a ToggleButton in the control theme.
+                        _ignorePropertyChanged = true;
+
+                        RaisePropertyChanged(
+                            IsExpandedProperty,
+                            oldValue: value,
+                            newValue: _isExpanded,
+                            BindingPriority.LocalValue,
+                            isEffectiveValue: true);
+
+                        _ignorePropertyChanged = false;
+                    }
+                    else
+                    {
+                        SetAndRaise(IsExpandedProperty, ref _isExpanded, value);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -148,6 +192,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs as the content area is closing.
         /// </summary>
+        /// <remarks>
+        /// The event args <see cref="RoutedEventArgs.Handled"/> property may be set to true to cancel the event
+        /// and keep the control open (expanded).
+        /// </remarks>
         public event EventHandler<RoutedEventArgs>? Collapsing
         {
             add => AddHandler(CollapsingEvent, value);
@@ -166,6 +214,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs as the content area is opening.
         /// </summary>
+        /// <remarks>
+        /// The event args <see cref="RoutedEventArgs.Handled"/> property may be set to true to cancel the event
+        /// and keep the control closed (collapsed).
+        /// </remarks>
         public event EventHandler<RoutedEventArgs>? Expanding
         {
             add => AddHandler(ExpandingEvent, value);
@@ -248,21 +300,17 @@ namespace Avalonia.Controls
         {
             base.OnPropertyChanged(change);
 
+            if (_ignorePropertyChanged)
+            {
+                return;
+            }
+
             if (change.Property == ExpandDirectionProperty)
             {
                 UpdatePseudoClasses();
             }
             else if (change.Property == IsExpandedProperty)
             {
-                if (IsExpanded)
-                {
-                    OnExpanding(new RoutedEventArgs(ExpandingEvent, this));
-                }
-                else
-                {
-                    OnCollapsing(new RoutedEventArgs(CollapsingEvent, this));
-                }
-
                 // Expanded/Collapsed will be raised once transitions are complete
                 StartContentTransition();
 
