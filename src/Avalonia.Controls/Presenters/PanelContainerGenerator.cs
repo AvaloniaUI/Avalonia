@@ -66,7 +66,10 @@ namespace Avalonia.Controls.Presenters
             {
                 var i = index;
                 foreach (var item in items)
-                    panel.Children.Insert(i++, CreateContainer(itemsControl, item, i));
+                {
+                    panel.Children.Insert(i, CreateContainer(itemsControl, item, i));
+                    ++i;
+                }
             }
             
             void Remove(int index, int count)
@@ -106,18 +109,12 @@ namespace Avalonia.Controls.Presenters
         private static Control CreateContainer(ItemsControl itemsControl, object? item, int index)
         {
             var generator = itemsControl.ItemContainerGenerator;
+            var container = item is Control c && generator.IsItemItsOwnContainer(c) ?
+                c : generator.CreateContainer();
 
-            if (item is Control c && generator.IsItemItsOwnContainer(c))
-            {
-                return c;
-            }
-            else
-            {
-                c = generator.CreateContainer();
-                itemsControl.AddLogicalChild(c);
-                generator.PrepareItemContainer(c, item, index);
-                return c;
-            }
+            itemsControl.AddLogicalChild(container);
+            generator.PrepareItemContainer(container, item, index);
+            return container;
         }
     }
 }
