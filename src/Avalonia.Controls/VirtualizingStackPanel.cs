@@ -173,11 +173,11 @@ namespace Avalonia.Controls
         {
             var count = (ItemsControl?.Items as IList)?.Count ?? 0;
 
-            if (count == 0)
+            if (count == 0 || from is not Control fromControl)
                 return null;
 
             var horiz = Orientation == Orientation.Horizontal;
-            var fromIndex = from != null ? Children.IndexOf(from) : -1;
+            var fromIndex = from != null ? IndexFromContainer(fromControl) : -1;
             var toIndex = fromIndex;
 
             switch (direction)
@@ -708,7 +708,10 @@ namespace Avalonia.Controls
             /// </summary>
             /// <param name="element">The element.</param>
             /// <returns>The model index or -1 if the element is not present in the collection.</returns>
-            public int GetIndex(Control element) => _elements?.IndexOf(element) is int index && index >= 0 ? index : -1;
+            public int GetIndex(Control element)
+            {
+                return _elements?.IndexOf(element) is int index && index >= 0 ? index + FirstModelIndex : -1;
+            }
 
             /// <summary>
             /// Updates the elements in response to items being inserted into the source collection.
