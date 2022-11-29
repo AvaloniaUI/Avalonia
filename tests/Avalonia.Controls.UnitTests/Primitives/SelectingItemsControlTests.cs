@@ -16,11 +16,13 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Markup.Data;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -1488,9 +1490,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 // #3148 triggered here.
                 items.Reset(new[] { "Item99" });
+                Layout(target);
 
                 Assert.Equal(0, target.SelectedIndex);
-                Assert.Equal(1, target.Presenter.Panel.Children.Count);
+                Assert.Equal(1, target.Presenter.Panel.Children.Where(x => x.IsVisible).Count());
             }
         }
 
@@ -2081,6 +2084,11 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             root.LayoutManager.ExecuteInitialLayoutPass();
+        }
+
+        private static void Layout(Control c)
+        {
+            ((ILayoutRoot)c.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
         }
 
         private static FuncControlTemplate Template()
