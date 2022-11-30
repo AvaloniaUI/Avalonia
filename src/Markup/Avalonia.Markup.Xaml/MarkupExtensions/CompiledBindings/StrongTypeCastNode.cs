@@ -3,7 +3,7 @@ using Avalonia.Data.Core;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
-    public class StrongTypeCastNode : TypeCastNode
+    internal class StrongTypeCastNode : TypeCastNode
     {
         private Func<object, object> _cast;
 
