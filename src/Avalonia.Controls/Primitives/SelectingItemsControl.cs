@@ -449,6 +449,12 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
+        {
+            base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
+            MarkContainerSelected(container, Selection.IsSelected(newIndex));
+        }
+
         protected internal override void ClearContainerForItemOverride(Control element)
         {
             base.ClearContainerForItemOverride(element);

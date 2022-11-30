@@ -299,6 +299,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Called when the index for a container changes due to an insertion or removal in the
+        /// items collection.
+        /// </summary>
+        /// <param name="container">The container whose index changed.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        protected virtual void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
+        {
+        }
+
+        /// <summary>
         /// Undoes the effects of the <see cref="PrepareContainerForItemOverride(Control, object?, int)"/> method.
         /// </summary>
         /// <param name="container">The container element.</param>
@@ -472,6 +483,11 @@ namespace Avalonia.Controls
                 container.DataContext = item;
 
             PrepareContainerForItemOverride(container, item, index);
+        }
+
+        internal void ItemContainerIndexChanged(Control container, int oldIndex, int newIndex)
+        {
+            ContainerIndexChangedOverride(container, oldIndex, newIndex);
         }
 
         /// <summary>

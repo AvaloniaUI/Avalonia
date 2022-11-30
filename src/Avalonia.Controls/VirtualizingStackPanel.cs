@@ -25,7 +25,7 @@ namespace Avalonia.Controls
 
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
         private readonly Action<Control> _recycleElement;
-        private readonly Action<Control, int> _updateElementIndex;
+        private readonly Action<Control, int, int> _updateElementIndex;
         private int _anchorIndex = -1;
         private Control? _anchorElement;
         private bool _isInLayout;
@@ -513,9 +513,9 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdateElementIndex(Control element, int index)
+        private void UpdateElementIndex(Control element, int oldIndex, int newIndex)
         {
-            // TODO: Implement this after we refactor ItemContainerGenerator.
+            ItemsControl!.ItemContainerGenerator.ItemContainerIndexChanged(element, oldIndex, newIndex);
         }
 
         private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
@@ -725,7 +725,7 @@ namespace Avalonia.Controls
             /// <param name="modelIndex">The index in the source collection of the insert.</param>
             /// <param name="count">The number of items inserted.</param>
             /// <param name="updateElementIndex">A method used to update the element indexes.</param>
-            public void ItemsInserted(int modelIndex, int count, Action<Control, int> updateElementIndex)
+            public void ItemsInserted(int modelIndex, int count, Action<Control, int, int> updateElementIndex)
             {
                 if (modelIndex < 0)
                     throw new ArgumentOutOfRangeException(nameof(modelIndex));
@@ -742,11 +742,13 @@ namespace Avalonia.Controls
                     // elements after the insertion point.
                     var elementCount = _elements.Count;
                     var start = Math.Max(index, 0);
+                    var newIndex = first + count;
 
                     for (var i = start; i < elementCount; ++i)
                     {
                         if (_elements[i] is Control element)
-                            updateElementIndex(element, first + i + count);
+                            updateElementIndex(element, newIndex - count, newIndex);
+                        ++newIndex;
                     }
 
                     if (index <= 0)
@@ -774,7 +776,7 @@ namespace Avalonia.Controls
             public void ItemsRemoved(
                 int modelIndex,
                 int count,
-                Action<Control, int> updateElementIndex,
+                Action<Control, int, int> updateElementIndex,
                 Action<Control> recycleElement)
             {
                 if (modelIndex < 0)
@@ -794,10 +796,12 @@ namespace Avalonia.Controls
                     // the indexes of the realized elements.
                     _firstIndex -= count;
 
+                    var newIndex = _firstIndex;
                     for (var i = 0; i < _elements.Count; ++i)
                     {
                         if (_elements[i] is Control element)
-                            updateElementIndex(element, _firstIndex + i);
+                            updateElementIndex(element, newIndex - count, newIndex);
+                        ++newIndex;
                     }
                 }
                 else if (startIndex < _elements.Count)
@@ -822,10 +826,12 @@ namespace Avalonia.Controls
 
                     // Update the indexes of the elements after the removed range.
                     end = _elements.Count;
+                    var newIndex = first;
                     for (var i = start; i < end; ++i)
                     {
                         if (_elements[i] is Control element)
-                            updateElementIndex(element, first + i);
+                            updateElementIndex(element, newIndex - count, newIndex);
+                        ++newIndex;
                     }
                 }
             }

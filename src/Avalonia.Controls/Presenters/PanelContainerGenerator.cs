@@ -63,25 +63,40 @@ namespace Avalonia.Controls.Presenters
                 return;
 
             var itemsControl = _presenter.ItemsControl;
-            var panel = _presenter.Panel;
+            var generator = itemsControl.ItemContainerGenerator;
+            var children = _presenter.Panel.Children;
 
             void Add(int index, IEnumerable items)
             {
                 var i = index;
                 foreach (var item in items)
                 {
-                    panel.Children.Insert(i, CreateContainer(itemsControl, item, i));
+                    children.Insert(i, CreateContainer(itemsControl, item, i));
                     ++i;
                 }
+
+                var childCount = children.Count;
+                var delta = i - index;
+
+                for (; i < childCount; ++i)
+                    generator.ItemContainerIndexChanged(children[i], i - delta, i);
             }
-            
+
             void Remove(int index, int count)
             {
                 for (var i = 0; i < count; ++i)
                 {
-                    itemsControl.RemoveLogicalChild(panel.Children[i + index]);
-                    panel.Children.RemoveAt(i + index);
+                    var c = children[i];
+                    if (!c.IsSet(ItemIsOwnContainerProperty))
+                        itemsControl.RemoveLogicalChild(children[i + index]);
                 }
+
+                children.RemoveRange(index, count);
+
+                var childCount = children.Count;
+
+                for (var i = index; i < childCount; ++i)
+                    generator.ItemContainerIndexChanged(children[i], i - count, i);
             }
 
             switch (e.Action)
@@ -102,7 +117,7 @@ namespace Avalonia.Controls.Presenters
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     ClearItemsControlLogicalChildren();
-                    panel.Children.Clear();
+                    children.Clear();
                     if (_presenter.ItemsControl?.Items is { } items)
                         Add(0, items);
                     break;

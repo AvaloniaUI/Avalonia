@@ -57,6 +57,16 @@ namespace Avalonia.Controls.Generators
             _owner.PrepareItemContainer(container, item, index);
 
         /// <summary>
+        /// Called when the index for a container changes due to an insertion or removal in the
+        /// items collection.
+        /// </summary>
+        /// <param name="container">The container whose index changed.</param>
+        /// <param name="oldIndex">The old index.</param>
+        /// <param name="newIndex">The new index.</param>
+        public void ItemContainerIndexChanged(Control container, int oldIndex, int newIndex) =>
+            _owner.ItemContainerIndexChanged(container, oldIndex, newIndex);
+
+        /// <summary>
         /// Undoes the effects of the <see cref="PrepareItemContainer(Control, object, int)"/> method.
         /// </summary>
         /// <param name="container">The element that's used to display the specified item.</param>
