@@ -710,13 +710,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     Items = new[] { "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
-                _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
 
-                var panel = target.Presenter.Panel;
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
+                _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Shift);
 
                 Assert.Equal(new[] { "Foo", "Bar", "Baz" }, target.SelectedItems);
                 Assert.Equal(new[] { 0, 1, 2 }, SelectedContainers(target));
@@ -733,10 +735,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     Items = new[] { "Foo", "Bar", "Baz", "Qux" },
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
 
                 SelectionChangedEventArgs receivedArgs = null;
 
@@ -787,10 +793,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     Items = new[] { "Foo", "Bar", "Baz", "Qux" },
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
                 _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[3], modifiers: KeyModifiers.Control);
@@ -817,11 +827,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     Items = new[] { "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
 
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[1]);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[2], modifiers: KeyModifiers.Control);
 
@@ -845,10 +858,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
                 _helper.Click((Interactive)target.Presenter.Panel.Children[3]);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[4], modifiers: KeyModifiers.Control);
 
@@ -869,10 +886,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
                 _helper.Click((Interactive)target.Presenter.Panel.Children[3]);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
 
@@ -893,10 +914,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
                 _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[5], modifiers: KeyModifiers.Shift);
 
@@ -917,10 +942,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     Items = new[] { "Foo", "Bar", "Baz", "Qux" },
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
 
                 SelectionChangedEventArgs receivedArgs = null;
 
@@ -966,11 +994,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Template = Template(),
                     Items = new[] { "Foo", "Bar", "Baz", "Foo", "Bar", "Baz" },
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
 
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
                 _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
 
                 Assert.Equal(new[] { "Foo" }, target.SelectedItems);
@@ -1084,13 +1115,16 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
                 Items = items,
                 SelectionMode = SelectionMode.Multiple,
+                Width = 100,
+                Height = 100,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             target.SelectAll();
             items.Insert(0, "Qux");
+            root.LayoutManager.ExecuteLayoutPass();
 
             Assert.Equal(1, target.SelectedIndex);
             Assert.Equal("Foo", target.SelectedItem);
@@ -1146,10 +1180,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
                 Items = items,
                 SelectionMode = SelectionMode.Multiple,
+                Width = 100,
+                Height = 100,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             target.SelectAll();
             items.RemoveAt(0);
@@ -1175,10 +1211,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Template = Template(),
                 Items = items,
                 SelectionMode = SelectionMode.Multiple,
+                Width = 100,
+                Height = 100,
             };
 
-            target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            var root = new TestRoot(target);
+            root.LayoutManager.ExecuteInitialLayoutPass();
 
             target.SelectAll();
             items[1] = "Qux";
@@ -1197,10 +1235,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Items = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 target.SelectAll();
 
                 Assert.Equal(3, target.SelectedItems.Count);
@@ -1224,10 +1265,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Items = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
-                AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 target.SelectAll();
 
                 Assert.Equal(3, target.SelectedItems.Count);
@@ -1249,10 +1293,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Items = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
                 _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[1], modifiers: KeyModifiers.Shift);
 
@@ -1301,10 +1349,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Items = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
 
                 _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Shift);
@@ -1324,10 +1376,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
                     Items = new[] { "Foo", "Bar", "Baz" },
                     ItemTemplate = new FuncDataTemplate<string>((x, _) => new TextBlock { Width = 20, Height = 10 }),
                     SelectionMode = SelectionMode.Multiple,
+                    Width = 100,
+                    Height = 100,
                 };
+
+                var root = new TestRoot(target);
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
                 AvaloniaLocator.CurrentMutable.Bind<PlatformHotkeyConfiguration>().ToConstant(new Mock<PlatformHotkeyConfiguration>().Object);
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
 
                 _helper.Click((Interactive)target.Presenter.Panel.Children[0]);
                 _helper.Click((Interactive)target.Presenter.Panel.Children[2], MouseButton.Right, modifiers: KeyModifiers.Control);
@@ -1526,7 +1582,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         private static IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
             return target.Presenter.Panel.Children
-                .Select((x, i) => x.Classes.Contains(":selected") ? i : -1)
+                .Select(x => x.Classes.Contains(":selected") ? target.IndexFromContainer(x) : -1)
                 .Where(x => x != -1);
         }
 
