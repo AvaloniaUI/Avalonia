@@ -74,7 +74,7 @@
       ReportImportance="$(AvaloniaXamlReportImportance)"/>
     <Exec 
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:BuildProjectReferences=false"/>
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>
 
   </Target>
 
@@ -112,7 +112,7 @@
     />
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:BuildProjectReferences=false"/>
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>
   </Target>
 
   

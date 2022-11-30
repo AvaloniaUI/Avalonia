@@ -461,7 +461,7 @@ namespace Avalonia.Controls.Platform
         {
             if (Menu?.IsOpen == true)
             {
-                if (e.Source is ILogical control && Menu.IsLogicalAncestorOf(control))
+                if (e.Source is ILogical control && !Menu.IsLogicalAncestorOf(control))
                 {
                     Menu.Close();
                 }
