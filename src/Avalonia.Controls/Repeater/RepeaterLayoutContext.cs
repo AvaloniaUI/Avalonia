@@ -49,7 +49,7 @@ namespace Avalonia.Controls
 
         protected override int ItemCountCore() => _owner.ItemsSourceView?.Count ?? 0;
 
-        protected override ILayoutable GetOrCreateElementAtCore(int index, ElementRealizationOptions options)
+        protected override Layoutable GetOrCreateElementAtCore(int index, ElementRealizationOptions options)
         {
             return _owner.GetElementImpl(
                 index,
@@ -59,10 +59,10 @@ namespace Avalonia.Controls
 
         protected override object GetItemAtCore(int index) => _owner.ItemsSourceView!.GetAt(index)!;
 
-        protected override void RecycleElementCore(ILayoutable element)
+        protected override void RecycleElementCore(Layoutable element)
         {
-            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "RepeaterLayout - RecycleElement: {Index}", _owner.GetElementIndex((IControl)element));
-            _owner.ClearElementImpl((IControl)element);
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "RepeaterLayout - RecycleElement: {Index}", _owner.GetElementIndex((Control)element));
+            _owner.ClearElementImpl((Control)element);
         }
 
         protected override Rect RealizationRectCore() => _owner.RealizationWindow;

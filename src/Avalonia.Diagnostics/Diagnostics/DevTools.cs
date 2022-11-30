@@ -105,7 +105,7 @@ namespace Avalonia.Diagnostics
 
         private static IDisposable Open(Application? application, DevToolsOptions options, Window? owner = default)
         {
-            var focussedControl = KeyboardDevice.Instance?.FocusedElement as IControl;
+            var focussedControl = KeyboardDevice.Instance?.FocusedElement as Control;
             if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));

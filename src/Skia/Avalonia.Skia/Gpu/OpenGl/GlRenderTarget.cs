@@ -91,7 +91,7 @@ namespace Avalonia.Skia
                     var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, samples, disp.StencilSize, glInfo);
                     var surface = SKSurface.Create(_grContext, renderTarget,
                         glSession.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
-                        colorType);
+                        colorType, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
 
                     success = true;
 

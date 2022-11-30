@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the parent <see cref="IMenuElement"/>.
         /// </summary>
-        new IMenuElement? Parent { get; }
+        IMenuElement? Parent { get; }
 
         /// <summary>
         /// Raises a click event on the menu item.

@@ -13,7 +13,7 @@ namespace Avalonia.Controls
         private TextBox? _parent;
         private TextPresenter? _presenter;
 
-        public IVisual TextViewVisual => _presenter!;
+        public Visual TextViewVisual => _presenter!;
 
         public bool SupportsPreedit => true;
 

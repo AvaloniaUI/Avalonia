@@ -226,7 +226,7 @@ namespace Avalonia.Styling
             }
         }
 
-        internal SelectorMatchResult TryAttach(IStyleable target, object? host)
+        internal SelectorMatchResult TryAttach(StyledElement target, object? host)
         {
             var result = SelectorMatchResult.NeverThisType;
 

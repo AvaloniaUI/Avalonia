@@ -41,7 +41,7 @@ namespace Avalonia.Controls.Primitives
         private Button? _headerButton;
         private Button? _nextButton;
         private Button? _previousButton;
-        private ITemplate<IControl>? _dayTitleTemplate;
+        private ITemplate<Control>? _dayTitleTemplate;
         
         private DateTime _currentMonth;
         private bool _isMouseLeftButtonDown = false;
@@ -62,13 +62,13 @@ namespace Avalonia.Controls.Primitives
             get { return GetValue(HeaderBackgroundProperty); }
             set { SetValue(HeaderBackgroundProperty, value); }
         }
-        public static readonly DirectProperty<CalendarItem, ITemplate<IControl>?> DayTitleTemplateProperty =
-                AvaloniaProperty.RegisterDirect<CalendarItem, ITemplate<IControl>?>(
+        public static readonly DirectProperty<CalendarItem, ITemplate<Control>?> DayTitleTemplateProperty =
+                AvaloniaProperty.RegisterDirect<CalendarItem, ITemplate<Control>?>(
                     nameof(DayTitleTemplate),
                     o => o.DayTitleTemplate,
                     (o,v) => o.DayTitleTemplate = v,
                     defaultBindingMode: BindingMode.OneTime);
-        public ITemplate<IControl>? DayTitleTemplate
+        public ITemplate<Control>? DayTitleTemplate
         {
             get { return _dayTitleTemplate; }
             set { SetAndRaise(DayTitleTemplateProperty, ref _dayTitleTemplate, value); }
@@ -172,7 +172,7 @@ namespace Avalonia.Controls.Primitives
             if (MonthView != null)
             {
                 var childCount = Calendar.RowsPerMonth + Calendar.RowsPerMonth * Calendar.ColumnsPerMonth;
-                using var children = new PooledList<IControl>(childCount);
+                using var children = new PooledList<Control>(childCount);
 
                 for (int i = 0; i < Calendar.RowsPerMonth; i++)
                 {
@@ -217,7 +217,7 @@ namespace Avalonia.Controls.Primitives
             if (YearView != null)
             {
                 var childCount = Calendar.RowsPerYear * Calendar.ColumnsPerYear;
-                using var children = new PooledList<IControl>(childCount);
+                using var children = new PooledList<Control>(childCount);
 
                 EventHandler<PointerPressedEventArgs> monthCalendarButtonMouseDown = Month_CalendarButtonMouseDown;
                 EventHandler<PointerReleasedEventArgs> monthCalendarButtonMouseUp = Month_CalendarButtonMouseUp;

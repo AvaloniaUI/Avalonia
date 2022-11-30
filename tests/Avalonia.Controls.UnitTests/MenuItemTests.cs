@@ -336,7 +336,7 @@ namespace Avalonia.Controls.UnitTests
 
                 topLevelMenu.IsSubMenuOpen = true;
 
-                Assert.True(((IVisual)childMenu1).IsAttachedToVisualTree);
+                Assert.True(childMenu1.IsAttachedToVisualTree);
                 Assert.Null(childMenu1.TemplatedParent);
                 Assert.Null(childMenu2.TemplatedParent);
 

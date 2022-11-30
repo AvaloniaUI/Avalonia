@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Templates
     /// Creates a control from a <see cref="Func{TControl}"/>.
     /// </summary>
     /// <typeparam name="TControl">The type of control.</typeparam>
-    public class FuncTemplate<TControl> : ITemplate<TControl> where TControl : IControl
+    public class FuncTemplate<TControl> : ITemplate<TControl> where TControl : Control
     {
         private readonly Func<TControl> _func;
 

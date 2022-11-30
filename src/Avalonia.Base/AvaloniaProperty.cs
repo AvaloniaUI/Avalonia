@@ -38,7 +38,7 @@ namespace Avalonia
             Type valueType,
             Type ownerType,
             AvaloniaPropertyMetadata metadata,
-            Action<IAvaloniaObject, bool>? notifying = null)
+            Action<AvaloniaObject, bool>? notifying = null)
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
@@ -145,7 +145,7 @@ namespace Avalonia
         /// will be true before the property change notifications are sent and false afterwards. This
         /// callback is intended to support Control.IsDataContextChanging.
         /// </remarks>
-        public Action<IAvaloniaObject, bool>? Notifying { get; }
+        public Action<AvaloniaObject, bool>? Notifying { get; }
 
         /// <summary>
         /// Gets the integer ID that represents this property.
@@ -238,9 +238,9 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null,
-            Action<IAvaloniaObject, bool>? notifying = null)
-                where TOwner : IAvaloniaObject
+            Func<AvaloniaObject, TValue, TValue>? coerce = null,
+            Action<AvaloniaObject, bool>? notifying = null)
+                where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
@@ -279,8 +279,8 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
-                where THost : IAvaloniaObject
+            Func<AvaloniaObject, TValue, TValue>? coerce = null)
+                where THost : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
@@ -316,8 +316,8 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
-                where THost : IAvaloniaObject
+            Func<AvaloniaObject, TValue, TValue>? coerce = null)
+                where THost : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
@@ -354,7 +354,7 @@ namespace Avalonia
             TValue unsetValue = default!,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             bool enableDataValidation = false)
-                where TOwner : IAvaloniaObject
+                where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
             _ = getter ?? throw new ArgumentNullException(nameof(getter));
@@ -415,7 +415,7 @@ namespace Avalonia
         /// <returns>
         /// The property metadata.
         /// </returns>
-        public AvaloniaPropertyMetadata GetMetadata<T>() where T : IAvaloniaObject
+        public AvaloniaPropertyMetadata GetMetadata<T>() where T : AvaloniaObject
         {
             return GetMetadata(typeof(T));
         }

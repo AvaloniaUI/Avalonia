@@ -80,7 +80,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var root = new TestRoot(target);
                 target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                ((Control)target.Presenter).ApplyTemplate();
                 target.Focus();
                 Assert.Equal(target.SelectedIndex, -1);
                 Assert.True(target.IsFocused);
@@ -117,7 +117,7 @@ namespace Avalonia.Controls.UnitTests
                 };
                 var root = new TestRoot(target);
                 target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+                ((Control)target.Presenter).ApplyTemplate();
                 target.Focus();
                 Assert.Equal(target.SelectedIndex, -1);
                 Assert.True(target.IsFocused);
@@ -167,7 +167,7 @@ namespace Avalonia.Controls.UnitTests
 
             var root = new TestRoot { Child = target };
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
             Assert.True(((ILogical)target).IsAttachedToLogicalTree);

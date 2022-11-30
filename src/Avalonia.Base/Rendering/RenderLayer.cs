@@ -11,7 +11,7 @@ namespace Avalonia.Rendering
             IDrawingContextImpl drawingContext,
             Size size,
             double scaling,
-            IVisual layerRoot)
+            Visual layerRoot)
         {
             Bitmap = RefCountable.Create(drawingContext.CreateLayer(size));
             Size = size;
@@ -24,7 +24,7 @@ namespace Avalonia.Rendering
         public bool IsEmpty { get; set; }
         public double Scaling { get; private set; }
         public Size Size { get; private set; }
-        public IVisual LayerRoot { get; }
+        public Visual LayerRoot { get; }
 
         public void RecreateBitmap(IDrawingContextImpl drawingContext, Size size, double scaling)
         {

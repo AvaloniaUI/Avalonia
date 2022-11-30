@@ -21,7 +21,7 @@ namespace Avalonia.Controls
 
             if (dependency is Layoutable layoutable)
             {
-                if (Children.Contains((ILayoutable)layoutable))
+                if (Children.Contains(layoutable))
                     return layoutable;
 
                 throw new ArgumentException($"RelativePanel error: Element does not exist in the current context: {property.Name}");

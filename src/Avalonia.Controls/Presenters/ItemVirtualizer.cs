@@ -32,7 +32,7 @@ namespace Avalonia.Controls.Presenters
 
             if (panel != null)
             {
-                _subscriptions = panel.GetObservable(Panel.BoundsProperty)
+                _subscriptions = ((AvaloniaObject)panel).GetObservable(Panel.BoundsProperty)
                     .Skip(1)
                     .Subscribe(_ => InvalidateScroll());
             }
@@ -254,7 +254,7 @@ namespace Avalonia.Controls.Presenters
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        public virtual IControl? GetControlInDirection(NavigationDirection direction, IControl? from)
+        public virtual Control? GetControlInDirection(NavigationDirection direction, Control? from)
         {
             return null;
         }

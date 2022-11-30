@@ -8,7 +8,7 @@ namespace Avalonia.Diagnostics
     public interface IAvaloniaObjectDebug
     {
         /// <summary>
-        /// Gets the subscriber list for the <see cref="IAvaloniaObject.PropertyChanged"/>
+        /// Gets the subscriber list for the <see cref="AvaloniaObject.PropertyChanged"/>
         /// event.
         /// </summary>
         /// <returns>

@@ -176,16 +176,16 @@ public class CompositorTestsBase
             Events.Rects.Clear();
         }
 
-        public void AssertHitTest(double x, double y, Func<IVisual, bool> filter, params object[] expected)
+        public void AssertHitTest(double x, double y, Func<Visual, bool> filter, params object[] expected)
             => AssertHitTest(new Point(x, y), filter, expected);
-        public void AssertHitTest(Point pt, Func<IVisual, bool> filter, params object[] expected)
+        public void AssertHitTest(Point pt, Func<Visual, bool> filter, params object[] expected)
         {
             RunJobs();
             var tested = Renderer.HitTest(pt, TopLevel, filter);
             Assert.Equal(expected, tested);
         }
         
-        public void AssertHitTestFirst(Point pt, Func<IVisual, bool> filter, object expected)
+        public void AssertHitTestFirst(Point pt, Func<Visual, bool> filter, object expected)
         {
             RunJobs();
             var tested = Renderer.HitTest(pt, TopLevel, filter).First();

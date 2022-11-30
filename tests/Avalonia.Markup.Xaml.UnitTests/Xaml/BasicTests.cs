@@ -18,6 +18,7 @@ using System.Xml;
 using Xunit;
 using Avalonia.Controls.Documents;
 using Avalonia.Metadata;
+using Avalonia.Themes.Simple;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -456,27 +457,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             style.TryGetResource("Double", out var d);
 
             Assert.Equal(10.0, d);
-        }
-
-        [Fact]
-        public void StyleInclude_Is_Built()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
-<Styles xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <StyleInclude Source='avares://Avalonia.Themes.Simple/Controls/UserControl.xaml'/>
-</Styles>";
-
-                var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
-
-                Assert.True(styles.Count == 1);
-
-                var styleInclude = styles.First() as IStyle;
-
-                Assert.NotNull(styleInclude);
-            }
         }
 
         [Fact]

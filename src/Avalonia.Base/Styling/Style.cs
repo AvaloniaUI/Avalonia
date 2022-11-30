@@ -59,7 +59,7 @@ namespace Avalonia.Styling
             base.SetParent(parent);
         }
 
-        internal SelectorMatchResult TryAttach(IStyleable target, object? host, FrameType type)
+        internal SelectorMatchResult TryAttach(StyledElement target, object? host, FrameType type)
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 

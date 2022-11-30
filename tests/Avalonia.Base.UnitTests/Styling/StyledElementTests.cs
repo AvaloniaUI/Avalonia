@@ -595,7 +595,7 @@ namespace Avalonia.Base.UnitTests.Styling
                             {
                                 new Setter(
                                     ContentControl.ContentProperty,
-                                    new FuncTemplate<IControl>(() => new TextBlock { Text = "Enabled" })),
+                                    new FuncTemplate<Control>(() => new TextBlock { Text = "Enabled" })),
                             },
                         },
                         new Style(x => x.OfType<ContentControl>().Class(":disabled"))
@@ -604,7 +604,7 @@ namespace Avalonia.Base.UnitTests.Styling
                             {
                                 new Setter(
                                     ContentControl.ContentProperty,
-                                    new FuncTemplate<IControl>(() => new TextBlock { Text = "Disabled" })),
+                                    new FuncTemplate<Control>(() => new TextBlock { Text = "Disabled" })),
                             },
                         },
                     },
@@ -634,7 +634,7 @@ namespace Avalonia.Base.UnitTests.Styling
             public event EventHandler DataContextBeginUpdate;
             public event EventHandler DataContextEndUpdate;
 
-            public new IAvaloniaObject InheritanceParent => base.InheritanceParent;
+            public new AvaloniaObject InheritanceParent => base.InheritanceParent;
 
             protected override void OnDataContextBeginUpdate()
             {
