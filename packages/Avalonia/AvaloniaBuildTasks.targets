@@ -80,7 +80,7 @@
 
   <Target
     Name="CompileAvaloniaXaml"
-    AfterTargets="CoreCompile"
+    AfterTargets="AfterCompile"
     Condition="Exists('@(IntermediateAssembly)') And $(DesignTimeBuild) != true And $(EnableAvaloniaXamlCompilation) != false"
     >
     <PropertyGroup>
