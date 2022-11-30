@@ -567,30 +567,39 @@ namespace Avalonia.Controls
         /// </summary>
         public override void Hide()
         {
-            if (!_shown)
+            try
             {
-                return;
-            }
-
-            Renderer?.Stop();
-
-            if (Owner is Window owner)
-            {
-                owner.RemoveChild(this);
-            }
-
-            if (_children.Count > 0)
-            {
-                foreach (var child in _children.ToArray())
+                IgnoreVisibilityChange = true;
+                
+                if (!_shown)
                 {
-                    child.child.Hide();
+                    return;
                 }
-            }
 
-            Owner = null;
-            PlatformImpl?.Hide();
-            IsVisible = false;
-            _shown = false;
+                Renderer?.Stop();
+
+                if (Owner is Window owner)
+                {
+                    owner.RemoveChild(this);
+                }
+
+                if (_children.Count > 0)
+                {
+                    foreach (var child in _children.ToArray())
+                    {
+                        child.child.Hide();
+                    }
+                }
+
+                Owner = null;
+                PlatformImpl?.Hide();
+                IsVisible = false;
+                _shown = false;
+            }
+            finally
+            {
+                IgnoreVisibilityChange = false;
+            }
         }
 
         /// <summary>
