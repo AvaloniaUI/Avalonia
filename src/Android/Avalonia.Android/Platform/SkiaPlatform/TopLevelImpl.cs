@@ -109,7 +109,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                 ? new CompositingRenderer(root, AndroidPlatform.Compositor)
                 : AndroidPlatform.Options.UseDeferredRendering
                     ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
-                    : new ImmediateRenderer(root);
+                    : new ImmediateRenderer((Visual)root);
 
         public virtual void Hide()
         {

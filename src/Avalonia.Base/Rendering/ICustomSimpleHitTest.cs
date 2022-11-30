@@ -24,10 +24,10 @@ namespace Avalonia.Rendering
 
     public static class CustomSimpleHitTestExtensions
     {
-        public static bool HitTestCustom(this IVisual visual, Point point)
+        public static bool HitTestCustom(this Visual visual, Point point)
             => (visual as ICustomSimpleHitTest)?.HitTest(point) ?? visual.TransformedBounds?.Contains(point) == true;
 
-        public static bool HitTestCustom(this IEnumerable<IVisual> children, Point point)
+        public static bool HitTestCustom(this IEnumerable<Visual> children, Point point)
             => children.Any(ctrl => ctrl.HitTestCustom(point));
     }
 }

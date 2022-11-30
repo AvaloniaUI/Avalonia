@@ -189,7 +189,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="o">The object.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IReadOnlyList<AvaloniaProperty> GetRegistered(IAvaloniaObject o)
+        public IReadOnlyList<AvaloniaProperty> GetRegistered(AvaloniaObject o)
         {
             _ = o ?? throw new ArgumentNullException(nameof(o));
 
@@ -205,7 +205,7 @@ namespace Avalonia
         /// The registered.
         /// </returns>
         public DirectPropertyBase<T> GetRegisteredDirect<T>(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             DirectPropertyBase<T> property)
         {
             return FindRegisteredDirect(o, property) ??
@@ -260,7 +260,7 @@ namespace Avalonia
         /// <exception cref="InvalidOperationException">
         /// The property name contains a '.'.
         /// </exception>
-        public AvaloniaProperty? FindRegistered(IAvaloniaObject o, string name)
+        public AvaloniaProperty? FindRegistered(AvaloniaObject o, string name)
         {
             _ = o ?? throw new ArgumentNullException(nameof(o));
             _ = name ?? throw new ArgumentNullException(nameof(name));
@@ -277,7 +277,7 @@ namespace Avalonia
         /// The registered property or null if no matching property found.
         /// </returns>
         public DirectPropertyBase<T>? FindRegisteredDirect<T>(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             DirectPropertyBase<T> property)
         {
             if (property.Owner == o.GetType())
@@ -362,7 +362,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <remarks>
         /// You won't usually want to call this method directly, instead use the
-        /// <see cref="AvaloniaProperty.Register{TOwner, TValue}(string, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{IAvaloniaObject, TValue, TValue}, Action{IAvaloniaObject, bool})"/>
+        /// <see cref="AvaloniaProperty.Register{TOwner, TValue}(string, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{AvaloniaObject, TValue, TValue}, Action{AvaloniaObject, bool})"/>
         /// method.
         /// </remarks>
         public void Register(Type type, AvaloniaProperty property)
@@ -413,7 +413,7 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <remarks>
         /// You won't usually want to call this method directly, instead use the
-        /// <see cref="AvaloniaProperty.RegisterAttached{THost, TValue}(string, Type, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{IAvaloniaObject, TValue, TValue})"/>
+        /// <see cref="AvaloniaProperty.RegisterAttached{THost, TValue}(string, Type, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{AvaloniaObject, TValue, TValue})"/>
         /// method.
         /// </remarks>
         public void RegisterAttached(Type type, AvaloniaProperty property)

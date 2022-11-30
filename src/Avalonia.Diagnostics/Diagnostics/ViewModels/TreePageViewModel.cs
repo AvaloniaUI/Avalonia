@@ -69,7 +69,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _details?.Dispose();
         }
 
-        public TreeNode? FindNode(IControl control)
+        public TreeNode? FindNode(Control control)
         {
             foreach (var node in Nodes)
             {
@@ -84,10 +84,10 @@ namespace Avalonia.Diagnostics.ViewModels
             return null;
         }
 
-        public void SelectControl(IControl control)
+        public void SelectControl(Control control)
         {
             var node = default(TreeNode);
-            IControl? c = control;
+            Control? c = control;
 
             while (node == null && c != null)
             {
@@ -95,7 +95,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 if (node == null)
                 {
-                    c = c.GetVisualParent<IControl>();
+                    c = c.GetVisualParent<Control>();
                 }
             }
 
@@ -115,7 +115,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private TreeNode? FindNode(TreeNode node, IControl control)
+        private TreeNode? FindNode(TreeNode node, Control control)
         {
             if (node.Visual == control)
             {

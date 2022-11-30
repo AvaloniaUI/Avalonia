@@ -16,12 +16,14 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Should_Register_With_Host_When_TemplatedParent_Set()
         {
-            var host = new Mock<IItemsPresenterHost>();
+            var host = new ItemsControl();
             var target = new ItemsPresenter();
 
-            target.SetValue(Control.TemplatedParentProperty, host.Object);
+            Assert.Null(host.Presenter);
 
-            host.Verify(x => x.RegisterItemsPresenter(target));
+            target.SetValue(Control.TemplatedParentProperty, host);
+
+            Assert.Same(target, host.Presenter);
         }
 
         [Fact]
@@ -284,7 +286,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             var panel = new Panel();
             var target = new ItemsPresenter
             {
-                ItemsPanel = new FuncTemplate<IPanel>(() => panel),
+                ItemsPanel = new FuncTemplate<Panel>(() => panel),
             };
 
             target.ApplyTemplate();

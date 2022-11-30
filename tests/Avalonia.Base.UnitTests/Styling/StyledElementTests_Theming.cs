@@ -312,7 +312,7 @@ public class StyledElementTests_Theming
         }
 
         private static TestRoot CreateRoot(
-            IControl child,
+            Control child,
             bool createAdditionalStyles = false)
         {
             var result = new TestRoot();
@@ -381,14 +381,14 @@ public class StyledElementTests_Theming
                     Setters =
                     {
                         new Setter(
-                            TemplatedControl.TemplateProperty,
+                            Controls.Primitives.TemplatedControl.TemplateProperty,
                             new FuncControlTemplate<ThemedControl2>((o, n) => new ThemedControl())),
                     },
                     Children =
                     {
                         new Style(x => x.Nesting().Template().OfType<ThemedControl>())
                         {
-                            Setters = { new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(7)), }
+                            Setters = { new Setter(Controls.Primitives.TemplatedControl.CornerRadiusProperty, new CornerRadius(7)), }
                         },
                     }
                 },
@@ -402,7 +402,7 @@ public class StyledElementTests_Theming
 
         private static ThemedControl CreateTarget() => new ThemedControl();
 
-        private static TestRoot CreateRoot(IControl child)
+        private static TestRoot CreateRoot(Control child)
         {
             var result = new TestRoot();
             result.Resources.Add(typeof(ThemedControl), CreateTheme());
@@ -511,7 +511,7 @@ public class StyledElementTests_Theming
             return new ThemedControl();
         }
 
-        private static TestRoot CreateRoot(IControl child)
+        private static TestRoot CreateRoot(Control child)
         {
             var result = new TestRoot()
             {
@@ -585,14 +585,14 @@ public class StyledElementTests_Theming
         };
     }
 
-    private class ThemedControl : TemplatedControl
+    private class ThemedControl : Controls.Primitives.TemplatedControl
     {
-        public IVisual? VisualChild => VisualChildren?.SingleOrDefault();
+        public Visual? VisualChild => VisualChildren?.SingleOrDefault();
     }
 
-    private class ThemedControl2 : TemplatedControl
+    private class ThemedControl2 : Controls.Primitives.TemplatedControl
     {
-        public IVisual? VisualChild => VisualChildren?.SingleOrDefault();
+        public Visual? VisualChild => VisualChildren?.SingleOrDefault();
     }
 
     private class DerivedThemedControl : ThemedControl

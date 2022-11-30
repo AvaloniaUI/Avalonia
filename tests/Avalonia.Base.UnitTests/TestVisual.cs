@@ -17,11 +17,11 @@ namespace Avalonia.Base.UnitTests
 
     public class TestVisual : Visual
     {
-        public IVisual Child
+        public Visual Child
         {
             get
             {
-                return ((IVisual)this).VisualChildren.FirstOrDefault();
+                return ((Visual)this).VisualChildren.FirstOrDefault();
             }
 
             set

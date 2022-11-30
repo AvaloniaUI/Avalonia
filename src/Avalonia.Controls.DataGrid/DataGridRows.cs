@@ -2966,13 +2966,13 @@ namespace Avalonia.Controls
         }
 
         // detailsElement is the FrameworkElement created by the DetailsTemplate
-        internal void OnUnloadingRowDetails(DataGridRow row, IControl detailsElement)
+        internal void OnUnloadingRowDetails(DataGridRow row, Control detailsElement)
         {
             OnUnloadingRowDetails(new DataGridRowDetailsEventArgs(row, detailsElement));
         }
 
         // detailsElement is the FrameworkElement created by the DetailsTemplate
-        internal void OnLoadingRowDetails(DataGridRow row, IControl detailsElement)
+        internal void OnLoadingRowDetails(DataGridRow row, Control detailsElement)
         {
             OnLoadingRowDetails(new DataGridRowDetailsEventArgs(row, detailsElement));
         }

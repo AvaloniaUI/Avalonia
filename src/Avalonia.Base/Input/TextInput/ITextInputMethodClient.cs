@@ -16,7 +16,7 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// The visual that's showing the text
         /// </summary>
-        IVisual TextViewVisual { get; }
+        Visual TextViewVisual { get; }
         /// <summary>
         /// Should be fired when text-hosting visual is changed
         /// </summary>
