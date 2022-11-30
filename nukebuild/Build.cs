@@ -16,7 +16,6 @@ using Nuke.Common.Tools.MSBuild;
 using Nuke.Common.Tools.Npm;
 using Nuke.Common.Utilities;
 using Nuke.Common.Utilities.Collections;
-using Pharmacist.Core;
 using static Nuke.Common.EnvironmentInfo;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -24,6 +23,7 @@ using static Nuke.Common.Tools.MSBuild.MSBuildTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using static Nuke.Common.Tools.Xunit.XunitTasks;
 using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
+using MicroCom.CodeGenerator;
 
 /*
  Before editing this file, install support plugin for your IDE,
@@ -32,29 +32,13 @@ using static Nuke.Common.Tools.VSWhere.VSWhereTasks;
  VSCode - https://marketplace.visualstudio.com/items?itemName=nuke.support
 
  */
+using JetBrains.Annotations;
+using Nuke.Common.Tools.DotNet;
+// ReSharper disable ReturnValueOfPureMethodIsNotUsed
 
 partial class Build : NukeBuild
 {
     [Solution("Avalonia.sln")] readonly Solution Solution;
-
-    static Lazy<string> MsBuildExe = new Lazy<string>(() =>
-    {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            return null;
-
-        var msBuildDirectory = VSWhere("-latest -nologo -property installationPath -format value -prerelease").FirstOrDefault().Text;
-
-        if (!string.IsNullOrWhiteSpace(msBuildDirectory))
-        {
-            string msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\Current\Bin\MSBuild.exe");
-            if (!System.IO.File.Exists(msBuildExe))
-                msBuildExe = Path.Combine(msBuildDirectory, @"MSBuild\15.0\Bin\MSBuild.exe");
-
-            return msBuildExe;
-        }
-
-        return null;
-    }, false);
 
     BuildParameters Parameters { get; set; }
     protected override void OnBuildInitialized()
@@ -88,26 +72,30 @@ partial class Build : NukeBuild
             Console.WriteLine(preamble);
             Process.Start(new ProcessStartInfo(command, args) {UseShellExecute = false}).WaitForExit();
         }
-        ExecWait("dotnet version:", "dotnet", "--version");
+        ExecWait("dotnet version:", "dotnet", "--info");
+        ExecWait("dotnet workloads:", "dotnet", "workload list");
+        Information("Processor count: " + Environment.ProcessorCount);
+        Information("Available RAM: " + GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 0x100000 + "MB");
     }
 
-    IReadOnlyCollection<Output> MsBuildCommon(
-        string projectFile,
-        Configure<MSBuildSettings> configurator = null)
+    DotNetConfigHelper ApplySettingCore(DotNetConfigHelper c)
     {
-        return MSBuild(c => c
-            .SetProjectFile(projectFile)
-            // This is required for VS2019 image on Azure Pipelines
-            .When(Parameters.IsRunningOnWindows &&
-                  Parameters.IsRunningOnAzure, _ => _
-                .AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_8_X64")))
-            .AddProperty("PackageVersion", Parameters.Version)
+        if (Parameters.IsRunningOnAzure)
+            c.AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64"));
+        c.AddProperty("PackageVersion", Parameters.Version)
             .AddProperty("iOSRoslynPathHackRequired", true)
-            .SetProcessToolPath(MsBuildExe.Value)
             .SetConfiguration(Parameters.Configuration)
-            .SetVerbosity(MSBuildVerbosity.Minimal)
-            .Apply(configurator));
+            .SetVerbosity(DotNetVerbosity.Minimal);
+        return c;
     }
+    DotNetBuildSettings ApplySetting(DotNetBuildSettings c, Configure<DotNetBuildSettings> configurator = null) =>
+        ApplySettingCore(c).Build.Apply(configurator);
+
+    DotNetPackSettings ApplySetting(DotNetPackSettings c, Configure<DotNetPackSettings> configurator = null) =>
+        ApplySettingCore(c).Pack.Apply(configurator);
+
+    DotNetTestSettings ApplySetting(DotNetTestSettings c, Configure<DotNetTestSettings> configurator = null) =>
+        ApplySettingCore(c).Test.Apply(configurator);
 
     Target Clean => _ => _.Executes(() =>
     {
@@ -149,75 +137,36 @@ partial class Build : NukeBuild
     Target Compile => _ => _
         .DependsOn(Clean, CompileNative)
         .DependsOn(CompileHtmlPreviewer)
-        .Executes(async () =>
+        .Executes(() =>
         {
-            if (Parameters.IsRunningOnWindows)
-                MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .SetProcessArgumentConfigurator(a => a.Add("/r"))
-                    .AddTargets("Build")
-                );
-
-            else
-                DotNetBuild(c => c
-                    .SetProjectFile(Parameters.MSBuildSolution)
-                    .AddProperty("PackageVersion", Parameters.Version)
-                    .SetConfiguration(Parameters.Configuration)
-                );
-
-            await CompileReactiveEvents();
+            DotNetBuild(c => ApplySetting(c)
+                .SetProjectFile(Parameters.MSBuildSolution)
+            );
         });
-
-    async Task CompileReactiveEvents()
-    {
-        var avaloniaBuildOutput = Path.Combine(RootDirectory, "packages", "Avalonia", "bin", Parameters.Configuration);
-        var avaloniaAssemblies = GlobFiles(avaloniaBuildOutput, "**/Avalonia*.dll")
-            .Where(file => !file.Contains("Avalonia.Build.Tasks") &&
-                            !file.Contains("Avalonia.Remote.Protocol"));
-
-        var eventsDirectory = GlobDirectories($"{RootDirectory}/src/**/Avalonia.ReactiveUI.Events").First();
-        var eventsBuildFile = Path.Combine(eventsDirectory, "Events_Avalonia.cs");
-        if (File.Exists(eventsBuildFile))
-            File.Delete(eventsBuildFile);
-
-        using (var stream = File.Create(eventsBuildFile))
-        using (var writer = new StreamWriter(stream))
-        {
-            await ObservablesForEventGenerator.ExtractEventsFromAssemblies(
-                writer, avaloniaAssemblies, new string[0], "netstandard2.0"
-            );
-        }
-
-        var eventsProject = Path.Combine(eventsDirectory, "Avalonia.ReactiveUI.Events.csproj");
-        if (Parameters.IsRunningOnWindows)
-            MsBuildCommon(eventsProject, c => c
-                .SetProcessArgumentConfigurator(a => a.Add("/r"))
-                .AddTargets("Build")
-            );
-        else
-            DotNetBuild(c => c
-                .SetProjectFile(eventsProject)
-                .AddProperty("PackageVersion", Parameters.Version)
-                .SetConfiguration(Parameters.Configuration)
-            );
-    }
 
     void RunCoreTest(string projectName)
     {
-        if(!projectName.EndsWith(".csproj"))
-            projectName = Path.Combine("tests", projectName, System.IO.Path.GetFileName(projectName)+".csproj");
-        Information("Running tests from " + projectName);
-        XDocument xdoc;
-        using (var s = File.OpenRead(projectName))
-            xdoc = XDocument.Load(s);
+        Information($"Running tests from {projectName}");
+        var project = Solution.GetProject(projectName).NotNull("project != null");
+        // Nuke and MSBuild tools have build-in helpers to get target frameworks from the project.
+        // Unfortunately, it gets broken with every second SDK update, so we had to do it manually.
+        var fileXml = XDocument.Parse(File.ReadAllText(project.Path));
+        var targetFrameworks = fileXml.Descendants("TargetFrameworks")
+            .FirstOrDefault()?.Value.Split(';').Select(f => f.Trim());
+        if (targetFrameworks is null)
+        {
+            var targetFramework = fileXml.Descendants("TargetFramework").FirstOrDefault()?.Value;
+            if (targetFramework is not null)
+            {
+                targetFrameworks = new[] { targetFramework };
+            }
+        }
+        if (targetFrameworks is null)
+        {
+            throw new InvalidOperationException("No target frameworks were found in the test project");
+        }
 
-        List<string> frameworks = null;
-        var targets = xdoc.Root.Descendants("TargetFrameworks").FirstOrDefault();
-        if (targets != null)
-            frameworks = targets.Value.Split(';').Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
-        else
-            frameworks = new List<string> {xdoc.Root.Descendants("TargetFramework").First().Value};
-
-        foreach(var fw in frameworks)
+        foreach (var fw in targetFrameworks)
         {
             if (fw.StartsWith("net4")
                 && RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
@@ -229,14 +178,13 @@ partial class Build : NukeBuild
 
             Information($"Running for {projectName} ({fw}) ...");
 
-            DotNetTest(c => c
-                .SetProjectFile(projectName)
-                .SetConfiguration(Parameters.Configuration)
+            DotNetTest(c => ApplySetting(c)
+                .SetProjectFile(project)
                 .SetFramework(fw)
                 .EnableNoBuild()
                 .EnableNoRestore()
                 .When(Parameters.PublishTestResults, _ => _
-                    .SetLogger("trx")
+                    .SetLoggers("trx")
                     .SetResultsDirectory(Parameters.TestResultsRoot)));
         }
     }
@@ -261,17 +209,11 @@ partial class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("Avalonia.Animation.UnitTests");
             RunCoreTest("Avalonia.Base.UnitTests");
             RunCoreTest("Avalonia.Controls.UnitTests");
             RunCoreTest("Avalonia.Controls.DataGrid.UnitTests");
-            RunCoreTest("Avalonia.Input.UnitTests");
-            RunCoreTest("Avalonia.Interactivity.UnitTests");
-            RunCoreTest("Avalonia.Layout.UnitTests");
             RunCoreTest("Avalonia.Markup.UnitTests");
             RunCoreTest("Avalonia.Markup.Xaml.UnitTests");
-            RunCoreTest("Avalonia.Styling.UnitTests");
-            RunCoreTest("Avalonia.Visuals.UnitTests");
             RunCoreTest("Avalonia.Skia.UnitTests");
             RunCoreTest("Avalonia.ReactiveUI.UnitTests");
         });
@@ -294,17 +236,16 @@ partial class Build : NukeBuild
             RunCoreTest("Avalonia.DesignerSupport.Tests");
         });
 
-    [PackageExecutable("JetBrains.dotMemoryUnit", "dotMemoryUnit.exe")] readonly Tool DotMemoryUnit;
-
     Target RunLeakTests => _ => _
         .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
         .DependsOn(Compile)
         .Executes(() =>
         {
-            var testAssembly = "tests\\Avalonia.LeakTests\\bin\\Release\\net461\\Avalonia.LeakTests.dll";
-            DotMemoryUnit(
-                $"{XunitPath.DoubleQuoteIfNeeded()} --propagate-exit-code -- {testAssembly}",
-                timeout: 120_000);
+            void DoMemoryTest()
+            {
+                RunCoreTest("Avalonia.LeakTests");
+            }
+            ControlFlow.ExecuteWithRetry(DoMemoryTest, delay: TimeSpan.FromMilliseconds(3));
         });
 
     Target ZipFiles => _ => _
@@ -312,19 +253,7 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             var data = Parameters;
-            var pathToProjectSource = RootDirectory / "samples" / "ControlCatalog.NetCore";
-            var pathToPublish = pathToProjectSource / "bin" / data.Configuration / "publish";
-
-            DotNetPublish(c => c
-                .SetProject(pathToProjectSource / "ControlCatalog.NetCore.csproj")
-                .EnableNoBuild()
-                .SetConfiguration(data.Configuration)
-                .AddProperty("PackageVersion", data.Version)
-                .AddProperty("PublishDir", pathToPublish));
-
-            Zip(data.ZipCoreArtifacts, data.BinRoot);
             Zip(data.ZipNuGetArtifacts, data.NugetRoot);
-            Zip(data.ZipTargetControlCatalogNetCoreDir, pathToPublish);
         });
 
     Target CreateIntermediateNugetPackages => _ => _
@@ -332,15 +261,7 @@ partial class Build : NukeBuild
         .After(RunTests)
         .Executes(() =>
         {
-            if (Parameters.IsRunningOnWindows)
-
-                MsBuildCommon(Parameters.MSBuildSolution, c => c
-                    .AddTargets("Pack"));
-            else
-                DotNetPack(c => c
-                    .SetProject(Parameters.MSBuildSolution)
-                    .SetConfiguration(Parameters.Configuration)
-                    .AddProperty("PackageVersion", Parameters.Version));
+            DotNetPack(c => ApplySetting(c).SetProject(Parameters.MSBuildSolution));
         });
 
     Target CreateNugetPackages => _ => _
@@ -377,6 +298,14 @@ partial class Build : NukeBuild
     Target CiAzureWindows => _ => _
         .DependsOn(Package)
         .DependsOn(ZipFiles);
+
+    Target GenerateCppHeaders => _ => _.Executes(() =>
+    {
+        var file = MicroComCodeGenerator.Parse(
+            File.ReadAllText(RootDirectory / "src" / "Avalonia.Native" / "avn.idl"));
+        File.WriteAllText(RootDirectory / "native" / "Avalonia.Native" / "inc" / "avalonia-native.h",
+            file.GenerateCppHeader());
+    });
 
 
     public static int Main() =>
