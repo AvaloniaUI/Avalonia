@@ -13,6 +13,8 @@ namespace Avalonia.Win32.DxgiSwapchain
         // some of this code looks ugly. It can look less ugly when we all leave NetFX in the past. 
         internal void** lpVtbl;
 
+        public static Guid Guid = Guid.Parse("7B7166EC-21C7-44AE-B21A-C9AE321AE369");
+
         internal HRESULT QueryInterface(Guid* riid, void** ppvObject)
         {
 #if NET6_0_OR_GREATER

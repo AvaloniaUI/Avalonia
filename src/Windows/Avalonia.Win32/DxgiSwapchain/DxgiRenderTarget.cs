@@ -100,7 +100,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                         &dxgiSwapChainDesc,
                         null,
                         null,
-                        (IDXGISwapChain1**)&pSwapChain
+                        &pSwapChain
                 );
 
                 if (retval.FAILED)
@@ -128,6 +128,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                 GetClientRect(_window.Handle, out pClientRect);
                 if (!RectsEqual(pClientRect, _clientRect))
                 {
+                    // we gotta resize 
                     _clientRect = pClientRect;
 
                     _renderTexture->Release();
@@ -145,7 +146,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                     }
                 }
 
-                var size = ((IEglWindowGlPlatformSurfaceInfo)_window).Size;
+                var size = _window.Size;
 
                 // Get swapchain texture here 
                 var texture = _renderTexture;
@@ -155,6 +156,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                     retval = _swapChain->GetBuffer(0, &textureGuid, (void**)&texture);
                     if (retval.FAILED)
                     {
+                        // this hasn't happened yet in my testing, but theoretically things can go wrong. 
                         throw new Win32Exception((int)retval);
                     }
                 }

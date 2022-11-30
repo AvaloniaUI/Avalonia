@@ -29,12 +29,9 @@ namespace Avalonia.Win32.DxgiSwapchain
         private EglPlatformOpenGlInterface _gl;
         private object _syncLock;
 
-        public HANDLE AwaitableHandle = HANDLE.NULL;
-
         private IDXGIOutput* _output = null;
 
         private Stopwatch? _stopwatch = null;
-        private bool _skip = false;
 
         public DxgiConnection(EglPlatformOpenGlInterface gl, object syncLock)
         {
@@ -44,10 +41,7 @@ namespace Avalonia.Win32.DxgiSwapchain
             _gl = gl;
         }
 
-        public EglPlatformOpenGlInterface Egl
-        {
-            get => _gl;
-        }
+        public EglPlatformOpenGlInterface Egl => _gl;
 
         public static void TryCreateAndRegister(EglPlatformOpenGlInterface angle)
         {
@@ -57,71 +51,71 @@ namespace Avalonia.Win32.DxgiSwapchain
             }
             catch (Exception ex)
             {
-                Logger.TryGet(LogEventLevel.Error, "DxgiSwapchain")
+                Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
                     ?.Log(null, "Unable to establish Dxgi: {0}", ex);
-            }
-        }
-
-        public void TickNow()
-        {
-            if (_stopwatch is not null)
-            {
-                lock (_syncLock)
-                {
-                    // note: No need to retest _stopwatch as we never set it back to null here 
-                    Tick?.Invoke(_stopwatch.Elapsed);
-                    _skip = true;
-                }
             }
         }
 
         private unsafe void RunLoop()
         {
             _stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-            GetBestOutputToVWaitOn();
+            try
+            {
+                GetBestOutputToVWaitOn();
+            }
+            catch (Exception ex)
+            {
+                Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
+                                    ?.Log(this, $"Failed to wait for vblank, Exception: {ex.Message}, HRESULT = {ex.HResult}");
+            }
 
             while (true)
             {
-                lock (_syncLock)
+                try
                 {
-                    if (_output is not null)
+                    lock (_syncLock)
                     {
-                        HRESULT res = _output->WaitForVBlank();
-                        if (res.FAILED)
+                        if (_output is not null)
                         {
-                            // be sad about it 
-                            var w32ex = new Win32Exception((int)res);
-                            Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
-                                ?.Log(this, $"Failed to wait for vblank, Exception: {w32ex.Message}, HRESULT = {w32ex.HResult}");
+                            HRESULT res = _output->WaitForVBlank();
+                            if (res.FAILED)
+                            {
+                                // be sad about it 
+                                var w32ex = new Win32Exception((int)res);
+                                Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
+                                    ?.Log(this, $"Failed to wait for vblank, Exception: {w32ex.Message}, HRESULT = {w32ex.HResult}");
 
-                            _output->Release();
-                            _output = null;
-                            GetBestOutputToVWaitOn();
+                                _output->Release();
+                                _output = null;
+                                GetBestOutputToVWaitOn();
+                            }
                         }
+                        else
+                        {
+                            // well since that obviously didn't work, then let's use the lowest-common-denominator instead 
+                            // for reference, this has never happened on my machine,
+                            // but theoretically someone could have a weirder setup out there 
+                            DwmFlush();
+                        }
+                        Tick?.Invoke(_stopwatch.Elapsed);
                     }
-                    else
-                    {
-                        // well, then let's use the lowest-common-denominator instead 
-                        DwmFlush();
-                    }
-                    if (_skip)
-                    {
-                        _skip = false;
-                        continue;
-                    }
-                    Tick?.Invoke(_stopwatch.Elapsed);
+                }
+                catch(Exception ex)
+                {
+                    Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
+                                    ?.Log(this, $"Failed to wait for vblank, Exception: {ex.Message}, HRESULT = {ex.HResult}");
                 }
             }
         }
 
+        // Note: Defining best as display with highest refresh rate on 
         private void GetBestOutputToVWaitOn()
         {
             double highestRefreshRate = 0.0d;
             HRESULT retval = default;
             IDXGIFactory* fact = null;
             // IDXGIFactory Guid: [Guid("7B7166EC-21C7-44AE-B21A-C9AE321AE369")]
-            Guid factoryGuid = Guids.IDXGIFactoryGuid;
+            Guid factoryGuid = IDXGIFactory.Guid;
             retval = CreateDXGIFactory(&factoryGuid, (void**)&fact);
             if (retval.FAILED)
             {
@@ -135,6 +129,7 @@ namespace Avalonia.Win32.DxgiSwapchain
             uint adapterIndex = 0;
             try
             {
+                // this looks odd, but that's just how one enumerates adapters in DXGI 
                 while (fact->EnumAdapters(adapterIndex, &adapter) == 0)
                 {
                     IDXGIOutput* output = null;
@@ -146,6 +141,7 @@ namespace Avalonia.Win32.DxgiSwapchain
 
                         if (retval.SUCCEEDED)
                         {
+                            // this handle need not closing, by the way. 
                             HANDLE monitorH = outputDesc.Monitor;
                             MONITORINFOEXW monInfo = default;
                             // by setting cbSize we tell Windows to fully populate the extended info 
@@ -174,13 +170,13 @@ namespace Avalonia.Win32.DxgiSwapchain
                             output->Release();
                             output = null;
                         }
-                        // and then increment index
+                        // and then increment index to move onto the next monitor 
                         outputIndex++;
                     }
                     // clean up adapter 
                     adapter->Release();
                     adapter = null;
-                    // and then increment index 
+                    // and then increment index to move onto the next display adapater
                     adapterIndex++;
                 }
             }
@@ -194,7 +190,7 @@ namespace Avalonia.Win32.DxgiSwapchain
             }
         }
 
-
+        // Used the windows composition as a blueprint for this startup/creation 
         static private bool TryCreateAndRegisterCore(EglPlatformOpenGlInterface gl)
         {
             var tcs = new TaskCompletionSource<bool>();
