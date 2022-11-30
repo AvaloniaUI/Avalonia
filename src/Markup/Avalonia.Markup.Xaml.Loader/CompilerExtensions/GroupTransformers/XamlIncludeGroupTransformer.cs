@@ -36,34 +36,37 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
             return context.ParseError($"Source property must be set on the \"{nodeTypeName}\" node.", node);
         }
 
+        // We expect that AvaloniaXamlIlLanguageParseIntrinsics has already parsed the Uri and created node like: `new Uri(assetPath, uriKind)`.
         if (sourceProperty.Values.OfType<XamlAstNewClrObjectNode>().FirstOrDefault() is not { } sourceUriNode
             || sourceUriNode.Type.GetClrType() != context.GetAvaloniaTypes().Uri
-            || sourceUriNode.Arguments.FirstOrDefault() is not XamlConstantNode { Constant: string originalAssetPath })
+            || sourceUriNode.Arguments.FirstOrDefault() is not XamlConstantNode { Constant: string originalAssetPath }
+            || sourceUriNode.Arguments.Skip(1).FirstOrDefault() is not XamlConstantNode { Constant: int uriKind })
         {
             // TODO: make it a compiler warning
             // Source value can be set with markup extension instead of the Uri object node, we don't support it here yet.
             return node;
         }
 
-        if (originalAssetPath.StartsWith("/"))
+        var uriPath = new Uri(originalAssetPath, (UriKind)uriKind);
+        if (!uriPath.IsAbsoluteUri)
         {
             var baseUrl = context.CurrentDocument.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
-            originalAssetPath = baseUrl.Substring(0, baseUrl.LastIndexOf('/')) + originalAssetPath;
+            uriPath = new Uri(new Uri(baseUrl, UriKind.Absolute), uriPath);
         }
-        else if (!originalAssetPath.StartsWith("avares://"))
+        else if (!uriPath.Scheme.Equals("avares", StringComparison.CurrentCultureIgnoreCase))
         {
             return context.ParseError(
                 $"Avalonia supports only \"avares://\" sources or relative sources starting with \"/\" on the \"{nodeTypeName}\" node.",
                 node);
         }
 
-        originalAssetPath = Uri.UnescapeDataString(new Uri(originalAssetPath).AbsoluteUri);
-        var assetPath = originalAssetPath.Replace("avares://", "");
+        var assetPathUri = Uri.UnescapeDataString(uriPath.AbsoluteUri);
+        var assetPath = assetPathUri.Replace("avares://", "");
         var assemblyNameSeparator = assetPath.IndexOf('/');
         var assembly = assetPath.Substring(0, assemblyNameSeparator);
         var fullTypeName = Path.GetFileNameWithoutExtension(assetPath.Replace('/', '.'));
 
-        if (context.Documents.FirstOrDefault(d => string.Equals(d.Uri, originalAssetPath, StringComparison.InvariantCultureIgnoreCase)) is {} targetDocument)
+        if (context.Documents.FirstOrDefault(d => string.Equals(d.Uri, assetPathUri, StringComparison.InvariantCultureIgnoreCase)) is {} targetDocument)
         {
             if (targetDocument.ClassType is not null)
             {
@@ -72,7 +75,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
 
             if (targetDocument.BuildMethod is null)
             {
-                return context.ParseError($"\"{originalAssetPath}\" cannot be instantiated.", node);
+                return context.ParseError($"\"{assetPathUri}\" cannot be instantiated.", node);
             }
 
             return FromMethod(context, targetDocument.BuildMethod, node);
@@ -81,7 +84,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
 
         if (context.Configuration.TypeSystem.FindAssembly(assembly) is not { } assetAssembly)
         {
-            return context.ParseError($"Assembly \"{assembly}\" was not found from the \"{originalAssetPath}\" source.", node);
+            return context.ParseError($"Assembly \"{assembly}\" was not found from the \"{assetPathUri}\" source.", node);
         }
 
         if (assetAssembly.FindType(fullTypeName) is { } type
