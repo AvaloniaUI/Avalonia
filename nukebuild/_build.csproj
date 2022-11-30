@@ -31,4 +31,8 @@
     <Compile Include="Numerge/Numerge/**/*.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="il-repack\ILRepack\Application.cs" />
+  </ItemGroup>
+
 </Project>
