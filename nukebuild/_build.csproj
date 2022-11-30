@@ -2,42 +2,44 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace></RootNamespace>
     <IsPackable>False</IsPackable>
     <NoWarn>CS0649;CS0169</NoWarn>
+    <NukeTelemetryVersion>1</NukeTelemetryVersion>
   </PropertyGroup>
 
+  <Import Project="..\build\JetBrains.dotMemoryUnit.props" />
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="5.0.0" />
-    <PackageReference Include="xunit.runner.console" Version="2.3.1" />
-    <PackageReference Include="JetBrains.dotMemoryUnit" Version="3.0.20171219.105559" />
+    <PackageReference Include="Nuke.Common" Version="6.2.1" />
     <PackageReference Include="vswhere" Version="2.6.7" Condition=" '$(OS)' == 'Windows_NT' " />
-    <PackageReference Include="ILRepack.NETStandard" Version="2.0.4" />
-    <PackageReference Include="MicroCom.CodeGenerator" Version="0.10.4" />
+    <PackageReference Include="MicroCom.CodeGenerator" Version="0.11.0" />
     <!-- Keep in sync with Avalonia.Build.Tasks -->
-    <PackageReference Include="Mono.Cecil" Version="0.11.2" />
-    <PackageReference Include="Pharmacist.Core" Version="1.8.1" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
+    <PackageReference Include="SourceLink" Version="1.1.0" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="17.3.2" PrivateAssets="All" />
+    <PackageReference Include="xunit.runner.console" Version="2.4.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <NukeMetadata Include="**\*.json" Exclude="bin\**;obj\**" />
     <NukeExternalFiles Include="**\*.*.ext" Exclude="bin\**;obj\**" />
-    <None Remove="*.csproj.DotSettings;*.ref.*.txt" />
 
     <!-- Common build related files -->
-    <None Include="..\build.ps1" />
-    <None Include="..\build.sh" />
-    <None Include="..\.nuke" />
-    <None Include="..\global.json" Condition="Exists('..\global.json')" />
-    <None Include="..\nuget.config" Condition="Exists('..\nuget.config')" />
-    <None Include="..\Jenkinsfile" Condition="Exists('..\Jenkinsfile')" />
-    <None Include="..\appveyor.yml" Condition="Exists('..\appveyor.yml')" />
-    <None Include="..\.travis.yml" Condition="Exists('..\.travis.yml')" />
-    <None Include="..\GitVersion.yml" Condition="Exists('..\GitVersion.yml')" />
     <Compile Remove="Numerge/**/*.*" />
     <Compile Include="Numerge/Numerge/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="$(NuGetPackageRoot)sourcelink/1.1.0/tools/pdbstr.exe"></EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="il-repack\ILRepack\Application.cs" />
   </ItemGroup>
 
 </Project>

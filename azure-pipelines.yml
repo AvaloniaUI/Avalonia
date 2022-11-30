@@ -12,9 +12,9 @@ jobs:
       version: 3.1.414
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.100'
+    displayName: 'Use .NET Core SDK 6.0.200'
     inputs:
-      version: 6.0.100
+      version: 6.0.200
 
   - task: CmdLine@2
     displayName: 'Run Build'
@@ -43,9 +43,9 @@ jobs:
       version: 3.1.414
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.100'
+    displayName: 'Use .NET Core SDK 6.0.200'
     inputs:
-      version: 6.0.100
+      version: 6.0.200
       
   - task: CmdLine@2
     displayName: 'Install Mono 5.18'
@@ -115,15 +115,15 @@ jobs:
       version: 3.1.414
 
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.100'
+    displayName: 'Use .NET Core SDK 6.0.200'
     inputs:
-      version: 6.0.100
+      version: 6.0.200
 
   - task: CmdLine@2
     displayName: 'Install Nuke'
     inputs:
       script: |
-       dotnet tool install --global Nuke.GlobalTool --version 0.24.0 
+       dotnet tool install --global Nuke.GlobalTool --version 6.2.1 
 
   - task: CmdLine@2
     displayName: 'Run Nuke'

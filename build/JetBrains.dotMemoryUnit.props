@@ -1,5 +1,5 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Include="JetBrains.dotMemoryUnit" Version="3.0.20171219.105559" />
+    <PackageReference Include="JetBrains.DotMemoryUnit" Version="3.2.20220510" />
   </ItemGroup>
 </Project>
