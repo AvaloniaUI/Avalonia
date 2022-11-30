@@ -128,6 +128,26 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
     {
         var sp = context.Configuration.TypeMappings.ServiceProvider;
         return new XamlStaticOrTargetedReturnMethodCallNode(li, method,
-            new[] { new AvaloniaXamlIlConstructorServiceProviderTransformer.InjectServiceProviderNode(sp, li, false) });
+            new[] { new NewServiceProviderNode(sp, li) });
+    }
+    
+    internal class NewServiceProviderNode : XamlAstNode, IXamlAstValueNode,IXamlAstNodeNeedsParentStack,
+        IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
+    {
+        public NewServiceProviderNode(IXamlType type, IXamlLineInfo lineInfo) : base(lineInfo)
+        {
+            Type = new XamlAstClrTypeReference(lineInfo, type, false);
+        }
+
+        public IXamlAstTypeReference Type { get; }
+        public bool NeedsParentStack => true;
+        public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
+        {
+            var method = context.GetAvaloniaTypes().RuntimeHelpers
+                .FindMethod(m => m.Name == "CreateRootServiceProviderV2");
+            codeGen.EmitCall(method);
+
+            return XamlILNodeEmitResult.Type(0, Type.GetClrType());
+        }
     }
 }
