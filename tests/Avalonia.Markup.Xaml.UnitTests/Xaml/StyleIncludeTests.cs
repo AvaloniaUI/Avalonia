@@ -79,7 +79,35 @@ public class StyleIncludeTests
     }
     
     [Fact]
-    public void Relative_StyleInclude_Is_Resolved_With_Two_Files()
+    public void Relative_Back_StyleInclude_Is_Resolved_With_Two_Files()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Subfolder/Style.xaml"), @"
+<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Style.Resources>
+        <Color x:Key='Red'>Red</Color>
+    </Style.Resources>
+</Style>"),
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Subfolder/Folder/Root.xaml"), @"
+<ContentControl xmlns='https://github.com/avaloniaui'
+                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ContentControl.Resources>
+        <StyleInclude x:Key='Include' Source='../Style.xaml'/>
+    </ContentControl.Resources>
+</ContentControl>")
+        };
+        
+        var objects = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+        var style = Assert.IsType<Style>(objects[0]);
+        var contentControl = Assert.IsType<ContentControl>(objects[1]);
+
+        Assert.IsType<Style>(contentControl.Resources["Include"]);
+    }
+    
+    [Fact]
+    public void Relative_Root_StyleInclude_Is_Resolved_With_Two_Files()
     {
         var documents = new[]
         {
@@ -94,7 +122,63 @@ public class StyleIncludeTests
 <ContentControl xmlns='https://github.com/avaloniaui'
                 xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <ContentControl.Resources>
-        <StyleInclude x:Key='Include' Source='/../Style.xaml'/>
+        <StyleInclude x:Key='Include' Source='/Style.xaml'/>
+    </ContentControl.Resources>
+</ContentControl>")
+        };
+        
+        var objects = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+        var style = Assert.IsType<Style>(objects[0]);
+        var contentControl = Assert.IsType<ContentControl>(objects[1]);
+
+        Assert.IsType<Style>(contentControl.Resources["Include"]);
+    }
+    
+    [Fact]
+    public void Relative_StyleInclude_Is_Resolved_With_Two_Files()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Folder/Style.xaml"), @"
+<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Style.Resources>
+        <Color x:Key='Red'>Red</Color>
+    </Style.Resources>
+</Style>"),
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Folder/Root.xaml"), @"
+<ContentControl xmlns='https://github.com/avaloniaui'
+                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ContentControl.Resources>
+        <StyleInclude x:Key='Include' Source='Style.xaml'/>
+    </ContentControl.Resources>
+</ContentControl>")
+        };
+        
+        var objects = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+        var style = Assert.IsType<Style>(objects[0]);
+        var contentControl = Assert.IsType<ContentControl>(objects[1]);
+
+        Assert.IsType<Style>(contentControl.Resources["Include"]);
+    }
+    
+    [Fact]
+    public void Relative_Dot_Syntax__StyleInclude_Is_Resolved_With_Two_Files()
+    {
+        var documents = new[]
+        {
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Folder/Style.xaml"), @"
+<Style xmlns='https://github.com/avaloniaui'
+       xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Style.Resources>
+        <Color x:Key='Red'>Red</Color>
+    </Style.Resources>
+</Style>"),
+            new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Folder/Root.xaml"), @"
+<ContentControl xmlns='https://github.com/avaloniaui'
+                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <ContentControl.Resources>
+        <StyleInclude x:Key='Include' Source='./Style.xaml'/>
     </ContentControl.Resources>
 </ContentControl>")
         };
