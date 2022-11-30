@@ -45,22 +45,17 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
             return node;
         }
 
-        if (originalAssetPath.StartsWith("avares://"))
-        {
-        }
-        else if (originalAssetPath.StartsWith("/"))
+        if (originalAssetPath.StartsWith("/"))
         {
             var baseUrl = context.CurrentDocument.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
             originalAssetPath = baseUrl.Substring(0, baseUrl.LastIndexOf('/')) + originalAssetPath;
         }
-        else
+        else if (!originalAssetPath.StartsWith("avares://"))
         {
             return context.ParseError(
                 $"Avalonia supports only \"avares://\" sources or relative sources starting with \"/\" on the \"{nodeTypeName}\" node.",
                 node);
         }
-        
-        AssetLoader.RegisterResUriParsers();
 
         originalAssetPath = Uri.UnescapeDataString(new Uri(originalAssetPath).AbsoluteUri);
         var assetPath = originalAssetPath.Replace("avares://", "");

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
+using Avalonia.Platform;
 using Microsoft.Build.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -134,6 +135,10 @@ namespace Avalonia.Build.Tasks
                     engine.LogMessage("Debugging cancelled.", MessageImportance.Normal);
                 }
             }
+            
+            // Some transformers might need to parse "avares://" Uri.
+            AssetLoader.RegisterResUriParsers();
+
             var asm = typeSystem.TargetAssemblyDefinition;
             var avares = new AvaloniaResources(asm, projectDirectory);
             if (avares.Resources.Count(CheckXamlName) == 0)
