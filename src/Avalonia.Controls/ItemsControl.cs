@@ -456,7 +456,6 @@ namespace Avalonia.Controls
 
         internal void AddLogicalChild(Control c) => LogicalChildren.Add(c);
         internal void RemoveLogicalChild(Control c) => LogicalChildren.Remove(c);
-        internal void ClearLogicalChildren() => LogicalChildren.Clear();
 
         internal void PrepareItemContainer(Control container, object? item, int index)
         {

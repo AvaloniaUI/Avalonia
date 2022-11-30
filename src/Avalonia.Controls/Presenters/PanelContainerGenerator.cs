@@ -11,6 +11,9 @@ namespace Avalonia.Controls.Presenters
     /// </summary>
     internal class PanelContainerGenerator : IDisposable
     {
+        private static readonly AttachedProperty<bool> ItemIsOwnContainerProperty =
+            AvaloniaProperty.RegisterAttached<PanelContainerGenerator, Control, bool>("ItemIsOwnContainer");
+
         private readonly ItemsPresenter _presenter;
 
         public PanelContainerGenerator(ItemsPresenter presenter)
@@ -36,7 +39,7 @@ namespace Avalonia.Controls.Presenters
                 if (itemsControl.Items is INotifyCollectionChanged incc)
                     incc.CollectionChanged -= OnItemsChanged;
 
-                itemsControl.ClearLogicalChildren();
+                ClearItemsControlLogicalChildren();
             }
 
             _presenter.Panel?.Children.Clear();
@@ -98,7 +101,7 @@ namespace Avalonia.Controls.Presenters
                     Add(e.NewStartingIndex, e.NewItems!);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    itemsControl.ClearLogicalChildren();
+                    ClearItemsControlLogicalChildren();
                     panel.Children.Clear();
                     if (_presenter.ItemsControl?.Items is { } items)
                         Add(0, items);
@@ -109,12 +112,36 @@ namespace Avalonia.Controls.Presenters
         private static Control CreateContainer(ItemsControl itemsControl, object? item, int index)
         {
             var generator = itemsControl.ItemContainerGenerator;
-            var container = item is Control c && generator.IsItemItsOwnContainer(c) ?
-                c : generator.CreateContainer();
+            Control container;
+            
+            if (item is Control c && generator.IsItemItsOwnContainer(c))
+            {
+                container = c;
+                container.SetValue(ItemIsOwnContainerProperty, true);
+            }
+            else
+            {
+                container = generator.CreateContainer();
+            }
 
             itemsControl.AddLogicalChild(container);
             generator.PrepareItemContainer(container, item, index);
             return container;
+        }
+
+        private void ClearItemsControlLogicalChildren()
+        {
+            if (_presenter.Panel is null || _presenter.ItemsControl is null)
+                return;
+
+            var itemsControl = _presenter.ItemsControl;
+            var panel = _presenter.Panel;
+
+            foreach (var c in panel.Children)
+            {
+                if (!c.IsSet(ItemIsOwnContainerProperty))
+                    itemsControl.RemoveLogicalChild(c);
+            }
         }
     }
 }
