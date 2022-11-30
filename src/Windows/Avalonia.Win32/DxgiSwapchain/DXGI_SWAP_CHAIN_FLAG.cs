@@ -3,7 +3,7 @@
 namespace Avalonia.Win32.DxgiSwapchain
 {
     [Flags]
-    public enum DXGI_SWAP_CHAIN_FLAG
+    internal enum DXGI_SWAP_CHAIN_FLAG
     {
         DXGI_SWAP_CHAIN_FLAG_NONPREROTATED = 1,
 
