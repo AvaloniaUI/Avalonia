@@ -10,6 +10,12 @@ namespace ControlCatalog.Pages
         {
             this.InitializeComponent();
             DataContext = new ExpanderPageViewModel();
+
+            var CollapsingDisabledExpander = this.Get<Expander>("CollapsingDisabledExpander");
+            var ExpandingDisabledExpander = this.Get<Expander>("ExpandingDisabledExpander");
+
+            CollapsingDisabledExpander.Collapsing += (s, e) => { e.Handled = true; };
+            ExpandingDisabledExpander.Expanding += (s, e) => { e.Handled = true; };
         }
 
         private void InitializeComponent()
