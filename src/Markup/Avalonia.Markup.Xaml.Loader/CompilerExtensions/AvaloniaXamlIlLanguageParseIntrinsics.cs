@@ -274,7 +274,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             {
                 var uriText = text.Trim();
 
-                var kind = ((!uriText?.StartsWith("/") == true) ? UriKind.Absolute : UriKind.Relative);
+                var kind = ((!uriText?.StartsWith("/") == true) ? UriKind.RelativeOrAbsolute : UriKind.Relative);
 
                 if (string.IsNullOrWhiteSpace(uriText) || !Uri.TryCreate(uriText, kind, out var _))
                 {
