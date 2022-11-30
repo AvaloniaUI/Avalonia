@@ -11,8 +11,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="DisplayDate"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, DateTime> DisplayDateProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime>(
+        public static readonly DirectProperty<CalendarDatePicker, DateTimeOffset> DisplayDateProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTimeOffset>(
                 nameof(DisplayDate),
                 o => o.DisplayDate,
                 (o, v) => o.DisplayDate = v);
@@ -20,8 +20,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="DisplayDateStart"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, DateTime?> DisplayDateStartProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
+        public static readonly DirectProperty<CalendarDatePicker, DateTimeOffset?> DisplayDateStartProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTimeOffset?>(
                 nameof(DisplayDateStart),
                 o => o.DisplayDateStart,
                 (o, v) => o.DisplayDateStart = v);
@@ -29,8 +29,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="DisplayDateEnd"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, DateTime?> DisplayDateEndProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
+        public static readonly DirectProperty<CalendarDatePicker, DateTimeOffset?> DisplayDateEndProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTimeOffset?>(
                 nameof(DisplayDateEnd),
                 o => o.DisplayDateEnd,
                 (o, v) => o.DisplayDateEnd = v);
@@ -59,8 +59,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="SelectedDate"/> property.
         /// </summary>
-        public static readonly DirectProperty<CalendarDatePicker, DateTime?> SelectedDateProperty =
-            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTime?>(
+        public static readonly DirectProperty<CalendarDatePicker, DateTimeOffset?> SelectedDateProperty =
+            AvaloniaProperty.RegisterDirect<CalendarDatePicker, DateTimeOffset?>(
                 nameof(SelectedDate),
                 o => o.SelectedDate,
                 (o, v) => o.SelectedDate = v,
@@ -139,7 +139,7 @@ namespace Avalonia.Controls
         /// and
         /// <see cref="CalendarDatePicker.DisplayDateEnd" />.
         /// </exception>
-        public DateTime DisplayDate
+        public DateTimeOffset DisplayDate
         {
             get => _displayDate;
             set => SetAndRaise(DisplayDateProperty, ref _displayDate, value);
@@ -149,7 +149,7 @@ namespace Avalonia.Controls
         /// Gets or sets the first date to be displayed.
         /// </summary>
         /// <value>The first date to display.</value>
-        public DateTime? DisplayDateStart
+        public DateTimeOffset? DisplayDateStart
         {
             get => _displayDateStart;
             set => SetAndRaise(DisplayDateStartProperty, ref _displayDateStart, value);
@@ -159,7 +159,7 @@ namespace Avalonia.Controls
         /// Gets or sets the last date to be displayed.
         /// </summary>
         /// <value>The last date to display.</value>
-        public DateTime? DisplayDateEnd
+        public DateTimeOffset? DisplayDateEnd
         {
             get => _displayDateEnd;
             set => SetAndRaise(DisplayDateEndProperty, ref _displayDateEnd, value);
@@ -221,7 +221,7 @@ namespace Avalonia.Controls
         /// <see cref="CalendarDatePicker.BlackoutDates" />
         /// collection.
         /// </exception>
-        public DateTime? SelectedDate
+        public DateTimeOffset? SelectedDate
         {
             get => _selectedDate;
             set => SetAndRaise(SelectedDateProperty, ref _selectedDate, value);

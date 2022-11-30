@@ -127,10 +127,10 @@
                 <Calendar Name="PART_Calendar"
                           FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
                           IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
-                          SelectedDate="{TemplateBinding SelectedDate, Mode=TwoWay}"
-                          DisplayDate="{TemplateBinding DisplayDate}"
-                          DisplayDateStart="{TemplateBinding DisplayDateStart}"
-                          DisplayDateEnd="{TemplateBinding DisplayDateEnd}" />
+                          SelectedDate="{TemplateBinding SelectedDate, Mode=TwoWay, Converter={StaticResource DateTimeToDateTimeOffsetConverter}}"
+                          DisplayDate="{TemplateBinding DisplayDate, Converter={StaticResource DateTimeToDateTimeOffsetConverter}}"
+                          DisplayDateStart="{TemplateBinding DisplayDateStart, Converter={StaticResource DateTimeToDateTimeOffsetConverter}}"
+                          DisplayDateEnd="{TemplateBinding DisplayDateEnd, Converter={StaticResource DateTimeToDateTimeOffsetConverter}}" />
               </Popup>
             </Grid>
           </Panel>

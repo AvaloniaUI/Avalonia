@@ -42,14 +42,14 @@ namespace Avalonia.Controls
         private IDisposable? _textBoxTextChangedSubscription;
         private IDisposable? _buttonPointerPressedSubscription;
 
-        private DateTime? _onOpenSelectedDate;
+        private DateTimeOffset? _onOpenSelectedDate;
         private bool _settingSelectedDate;
 
-        private DateTime _displayDate;
-        private DateTime? _displayDateStart;
-        private DateTime? _displayDateEnd;
+        private DateTimeOffset _displayDate;
+        private DateTimeOffset? _displayDateStart;
+        private DateTimeOffset? _displayDateEnd;
         private bool _isDropDownOpen;
-        private DateTime? _selectedDate;
+        private DateTimeOffset? _selectedDate;
         private string? _text;
         private bool _suspendTextChangeHandler = false;
         private bool _isPopupClosing = false;
@@ -94,7 +94,7 @@ namespace Avalonia.Controls
         {
             FirstDayOfWeek = DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
             _defaultText = string.Empty;
-            DisplayDate = DateTime.Today;
+            DisplayDate = DateTime.Today; // Use instead of DateTimeOffset.Now for zeroed time
         }
 
         /// <summary>
@@ -245,11 +245,11 @@ namespace Avalonia.Controls
             // SelectedDate
             else if (change.Property == SelectedDateProperty)
             {
-                var (removedDate, addedDate) = change.GetOldAndNewValue<DateTime?>();
+                var (removedDate, addedDate) = change.GetOldAndNewValue<DateTimeOffset?>();
 
                 if (SelectedDate != null)
                 {
-                    DateTime day = SelectedDate.Value;
+                    var day = SelectedDate.Value;
 
                     // When the SelectedDateProperty change is done from
                     // OnTextPropertyChanged method, two-way binding breaks if
@@ -394,11 +394,17 @@ namespace Avalonia.Controls
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
         {
             base.OnPointerWheelChanged(e);
-            if (!e.Handled && SelectedDate.HasValue && _calendar != null)
+
+            if (!e.Handled &&
+                SelectedDate.HasValue &&
+                _calendar != null)
             {
-                DateTime selectedDate = this.SelectedDate.Value;
+                // Keep using DateTime here for Calendar operations that require it
+                DateTime selectedDate = this.SelectedDate.Value.DateTime;
                 DateTime? newDate = DateTimeHelper.AddDays(selectedDate, e.Delta.Y > 0 ? -1 : 1);
-                if (newDate.HasValue && Calendar.IsValidDateSelection(_calendar, newDate.Value))
+
+                if (newDate.HasValue &&
+                    Calendar.IsValidDateSelection(_calendar, newDate.Value))
                 {
                     SelectedDate = newDate;
                     e.Handled = true;
@@ -486,11 +492,11 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    DateTime? date = ParseText(_textBox.Text);
+                    DateTimeOffset? date = ParseText(_textBox.Text);
 
                     if (date != null)
                     {
-                        string? s = DateTimeToString((DateTime)date);
+                        string? s = DateTimeToString((DateTimeOffset)date);
                         Text = s;
                     }
                 }
@@ -512,13 +518,13 @@ namespace Avalonia.Controls
             DateValidationError?.Invoke(this, e);
         }
 
-        private void OnDateSelected(DateTime? addedDate, DateTime? removedDate)
+        private void OnDateSelected(DateTimeOffset? addedDate, DateTimeOffset? removedDate)
         {
             EventHandler<SelectionChangedEventArgs>? handler = this.SelectedDateChanged;
             if (null != handler)
             {
-                Collection<DateTime> addedItems = new Collection<DateTime>();
-                Collection<DateTime> removedItems = new Collection<DateTime>();
+                var addedItems = new Collection<DateTimeOffset>();
+                var removedItems = new Collection<DateTimeOffset>();
 
                 if (addedDate.HasValue)
                 {
@@ -554,7 +560,7 @@ namespace Avalonia.Controls
         {
             if (e.AddedDate != this.DisplayDate)
             {
-                SetValue(DisplayDateProperty, (DateTime) e.AddedDate!);
+                SetValue(DisplayDateProperty, (DateTimeOffset)e.AddedDate!);
             }
         }
 
@@ -562,9 +568,11 @@ namespace Avalonia.Controls
         {
             Debug.Assert(e.AddedItems.Count < 2, "There should be less than 2 AddedItems!");
 
-            if (e.AddedItems.Count > 0 && SelectedDate.HasValue && DateTime.Compare((DateTime)e.AddedItems[0]!, SelectedDate.Value) != 0)
+            if (e.AddedItems.Count > 0 &&
+                SelectedDate.HasValue &&
+                DateTime.Compare(((DateTime)e.AddedItems[0]!).Date, SelectedDate.Value.DateTime.Date) != 0)
             {
-                SelectedDate = (DateTime?)e.AddedItems[0];
+                SelectedDate = ((DateTime?)e.AddedItems[0])?.Date;
             }
             else
             {
@@ -578,7 +586,7 @@ namespace Avalonia.Controls
                 {
                     if (e.AddedItems.Count > 0)
                     {
-                        SelectedDate = (DateTime?)e.AddedItems[0];
+                        SelectedDate = ((DateTime?)e.AddedItems[0])?.Date;
                     }
                 }
             }
@@ -707,25 +715,25 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Input text is parsed in the correct format and changed into a
-        /// DateTime object.  If the text can not be parsed TextParseError Event
+        /// <see cref="DateTimeOffset"/> object.  If the text can not be parsed TextParseError Event
         /// is thrown.
         /// </summary>
         /// <param name="text">Inherited code: Requires comment.</param>
         /// <returns>
         /// IT SHOULD RETURN NULL IF THE STRING IS NOT VALID, RETURN THE
-        /// DATETIME VALUE IF IT IS VALID.
+        /// DATETIMEOFFSET VALUE IF IT IS VALID.
         /// </returns>
-        private DateTime? ParseText(string text)
+        private DateTimeOffset? ParseText(string text)
         {
-            DateTime newSelectedDate;
+            DateTimeOffset newSelectedDate;
 
             // TryParse is not used in order to be able to pass the exception to
             // the TextParseError event
             try
             {
-                newSelectedDate = DateTime.Parse(text, DateTimeHelper.GetCurrentDateFormat());
+                newSelectedDate = DateTimeOffset.Parse(text, DateTimeHelper.GetCurrentDateFormat());
 
-                if (Calendar.IsValidDateSelection(this._calendar!, newSelectedDate))
+                if (Calendar.IsValidDateSelection(this._calendar!, newSelectedDate.DateTime))
                 {
                     return newSelectedDate;
                 }
@@ -754,7 +762,7 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private string? DateTimeToString(DateTime d)
+        private string? DateTimeToString(DateTimeOffset d)
         {
             DateTimeFormatInfo dtfi = DateTimeHelper.GetCurrentDateFormat();
 
@@ -817,8 +825,8 @@ namespace Avalonia.Controls
                             return;
                         }
                     }
-                    DateTime? d = SetTextBoxValue(s);
-                    
+                    DateTimeOffset? d = SetTextBoxValue(s);
+
                     if (SelectedDate != d)
                     {
                         SelectedDate = d;
@@ -834,7 +842,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                DateTime? d = SetTextBoxValue(_defaultText);
+                DateTimeOffset? d = SetTextBoxValue(_defaultText);
 
                 if (SelectedDate != d)
                 {
@@ -843,7 +851,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private DateTime? SetTextBoxValue(string s)
+        private DateTimeOffset? SetTextBoxValue(string s)
         {
             if (string.IsNullOrEmpty(s))
             {
@@ -852,7 +860,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                DateTime? d = ParseText(s);
+                DateTimeOffset? d = ParseText(s);
                 if (d != null)
                 {
                     SetValue(TextProperty, s);
