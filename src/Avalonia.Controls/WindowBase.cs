@@ -42,7 +42,7 @@ namespace Avalonia.Controls
 
         private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
-        private bool _ignoreVisibilityChange;
+        protected bool IgnoreVisibilityChange { get; set; }
         private WindowBase? _owner;
 
         static WindowBase()
@@ -125,7 +125,7 @@ namespace Avalonia.Controls
         /// </summary>
         public virtual void Hide()
         {
-            _ignoreVisibilityChange = true;
+            IgnoreVisibilityChange = true;
 
             try
             {
@@ -135,7 +135,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _ignoreVisibilityChange = false;
+                IgnoreVisibilityChange = false;
             }
         }
 
@@ -144,7 +144,7 @@ namespace Avalonia.Controls
         /// </summary>
         public virtual void Show()
         {
-            _ignoreVisibilityChange = true;
+            IgnoreVisibilityChange = true;
 
             try
             {
@@ -163,7 +163,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _ignoreVisibilityChange = false;
+                IgnoreVisibilityChange = false;
             }
         }
 
@@ -202,7 +202,7 @@ namespace Avalonia.Controls
 
         protected override void HandleClosed()
         {
-            _ignoreVisibilityChange = true;
+            IgnoreVisibilityChange = true;
 
             try
             {
@@ -217,7 +217,7 @@ namespace Avalonia.Controls
             }
             finally
             {
-                _ignoreVisibilityChange = false;
+                IgnoreVisibilityChange = false;
             }
         }
 
@@ -318,9 +318,9 @@ namespace Avalonia.Controls
             Deactivated?.Invoke(this, EventArgs.Empty);
         }
 
-        private void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
+        protected virtual void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (!_ignoreVisibilityChange)
+            if (!IgnoreVisibilityChange)
             {
                 if ((bool)e.NewValue!)
                 {

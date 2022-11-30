@@ -177,6 +177,7 @@ namespace Avalonia.Controls
         private readonly Size _maxPlatformClientSize;
         private WindowStartupLocation _windowStartupLocation;
         private bool _shown;
+        private bool _showingAsDialog;
 
         /// <summary>
         /// Initializes static members of the <see cref="Window"/> class.
@@ -509,6 +510,8 @@ namespace Avalonia.Controls
             Owner = null;
 
             PlatformImpl?.Dispose();
+
+            _showingAsDialog = false;
         }
 
         private bool ShouldCancelClose(CancelEventArgs? args = null)
@@ -601,6 +604,33 @@ namespace Avalonia.Controls
             ShowCore(null);
         }
 
+        protected override void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
+        {
+            if (!IgnoreVisibilityChange)
+            {
+                var isVisible = e.GetNewValue<bool>();
+
+                if (_shown != isVisible)
+                {
+                    if(!_shown)
+                    {
+                        Show();
+                    }
+                    else
+                    {
+                        if (_showingAsDialog)
+                        {
+                            Close(false);
+                        }
+                        else
+                        {
+                            Hide();
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Shows the window as a child of <paramref name="parent"/>.
         /// </summary>
@@ -620,63 +650,72 @@ namespace Avalonia.Controls
 
         private void ShowCore(Window? parent)
         {
-            if (PlatformImpl == null)
+            try
             {
-                throw new InvalidOperationException("Cannot re-show a closed window.");
-            }
-
-            if (parent != null)
-            {
-                if (parent.PlatformImpl == null)
+                IgnoreVisibilityChange = true;
+                
+                if (PlatformImpl == null)
                 {
-                    throw new InvalidOperationException("Cannot show a window with a closed parent.");
+                    throw new InvalidOperationException("Cannot re-show a closed window.");
                 }
-                else if (parent == this)
+
+                if (parent != null)
                 {
-                    throw new InvalidOperationException("A Window cannot be its own parent.");
+                    if (parent.PlatformImpl == null)
+                    {
+                        throw new InvalidOperationException("Cannot show a window with a closed parent.");
+                    }
+                    else if (parent == this)
+                    {
+                        throw new InvalidOperationException("A Window cannot be its own parent.");
+                    }
+                    else if (!parent.IsVisible)
+                    {
+                        throw new InvalidOperationException("Cannot show window with non-visible parent.");
+                    }
                 }
-                else if (!parent.IsVisible)
+
+                if (_shown)
                 {
-                    throw new InvalidOperationException("Cannot show window with non-visible parent.");
+                    return;
                 }
-            }
 
-            if (_shown)
+                RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+
+                EnsureInitialized();
+                ApplyStyling();
+                _shown = true;
+                IsVisible = true;
+
+                var initialSize = new Size(
+                    double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
+                    double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
+
+                if (initialSize != ClientSize)
+                {
+                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
+                }
+
+                LayoutManager.ExecuteInitialLayoutPass();
+
+                if (PlatformImpl != null && parent?.PlatformImpl is not null)
+                {
+                    PlatformImpl.SetParent(parent.PlatformImpl);
+                }
+
+                Owner = parent;
+                parent?.AddChild(this, false);
+
+                SetWindowStartupLocation(parent?.PlatformImpl);
+
+                PlatformImpl?.Show(ShowActivated, false);
+                Renderer?.Start();
+                OnOpened(EventArgs.Empty);
+            }
+            finally
             {
-                return;
+                IgnoreVisibilityChange = false;
             }
-
-            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
-
-            EnsureInitialized();
-            ApplyStyling();
-            _shown = true;
-            IsVisible = true;
-
-            var initialSize = new Size(
-                double.IsNaN(Width) ? Math.Max(MinWidth, ClientSize.Width) : Width,
-                double.IsNaN(Height) ? Math.Max(MinHeight, ClientSize.Height) : Height);
-
-            if (initialSize != ClientSize)
-            {
-                PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
-            }
-
-            LayoutManager.ExecuteInitialLayoutPass();
-
-            if (PlatformImpl != null && parent?.PlatformImpl is not null)
-            {
-                PlatformImpl.SetParent(parent.PlatformImpl);
-            }
-
-            Owner = parent;
-            parent?.AddChild(this, false);
-
-            SetWindowStartupLocation(parent?.PlatformImpl);
-
-            PlatformImpl?.Show(ShowActivated, false);
-            Renderer?.Start();
-            OnOpened(EventArgs.Empty);
         }
 
         /// <summary>
@@ -706,68 +745,79 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>(Window owner)
         {
-            if (owner == null)
+            try
             {
-                throw new ArgumentNullException(nameof(owner));
-            }
-            else if (owner.PlatformImpl == null)
-            {
-                throw new InvalidOperationException("Cannot show a window with a closed owner.");
-            }
-            else if (owner == this)
-            {
-                throw new InvalidOperationException("A Window cannot be its own owner.");
-            }
-            else if (IsVisible)
-            {
-                throw new InvalidOperationException("The window is already being shown.");
-            }
-            else if (!owner.IsVisible)
-            {
-                throw new InvalidOperationException("Cannot show window with non-visible parent.");
-            }
-
-            RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
-
-            EnsureInitialized();
-            ApplyStyling();
-            IsVisible = true;
-
-            var initialSize = new Size(
-                double.IsNaN(Width) ? ClientSize.Width : Width,
-                double.IsNaN(Height) ? ClientSize.Height : Height);
-
-            if (initialSize != ClientSize)
-            {
-                PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
-            }
-
-            LayoutManager.ExecuteInitialLayoutPass();
-
-            var result = new TaskCompletionSource<TResult>();
-
-            PlatformImpl?.SetParent(owner.PlatformImpl);
-            Owner = owner;
-            owner.AddChild(this, true);
-
-            SetWindowStartupLocation(owner.PlatformImpl);
-
-            PlatformImpl?.Show(ShowActivated, true);
-
-            Renderer?.Start();
-
-            Observable.FromEventPattern<EventHandler, EventArgs>(
-                    x => Closed += x,
-                    x => Closed -= x)
-                .Take(1)
-                .Subscribe(_ =>
+                IgnoreVisibilityChange = true;
+                
+                if (owner == null)
                 {
-                    owner.Activate();
-                    result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
-                });
+                    throw new ArgumentNullException(nameof(owner));
+                }
+                else if (owner.PlatformImpl == null)
+                {
+                    throw new InvalidOperationException("Cannot show a window with a closed owner.");
+                }
+                else if (owner == this)
+                {
+                    throw new InvalidOperationException("A Window cannot be its own owner.");
+                }
+                else if (IsVisible)
+                {
+                    throw new InvalidOperationException("The window is already being shown.");
+                }
+                else if (!owner.IsVisible)
+                {
+                    throw new InvalidOperationException("Cannot show window with non-visible parent.");
+                }
 
-            OnOpened(EventArgs.Empty);
-            return result.Task;
+                RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
+
+                EnsureInitialized();
+                ApplyStyling();
+                _shown = true;
+                _showingAsDialog = true;
+                IsVisible = true;
+
+                var initialSize = new Size(
+                    double.IsNaN(Width) ? ClientSize.Width : Width,
+                    double.IsNaN(Height) ? ClientSize.Height : Height);
+
+                if (initialSize != ClientSize)
+                {
+                    PlatformImpl?.Resize(initialSize, PlatformResizeReason.Layout);
+                }
+
+                LayoutManager.ExecuteInitialLayoutPass();
+
+                var result = new TaskCompletionSource<TResult>();
+
+                PlatformImpl?.SetParent(owner.PlatformImpl);
+                Owner = owner;
+                owner.AddChild(this, true);
+
+                SetWindowStartupLocation(owner.PlatformImpl);
+
+                PlatformImpl?.Show(ShowActivated, true);
+
+                Renderer?.Start();
+
+                Observable.FromEventPattern<EventHandler, EventArgs>(
+                        x => Closed += x,
+                        x => Closed -= x)
+                    .Take(1)
+                    .Subscribe(_ =>
+                    {
+                        owner.Activate();
+                        result.SetResult((TResult)(_dialogResult ?? default(TResult)!));
+                    });
+
+                OnOpened(EventArgs.Empty);
+                return result.Task;
+            }
+            finally
+            {
+                IgnoreVisibilityChange = false;
+            }
         }
 
         private void UpdateEnabled()
