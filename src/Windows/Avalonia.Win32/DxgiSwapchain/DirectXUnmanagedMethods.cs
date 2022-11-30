@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Avalonia.Win32.DxgiSwapchain
 {
-    public unsafe class DirectXUnmanagedMethods
+    internal unsafe class DirectXUnmanagedMethods
     {
         
         [DllImport("dxgi", ExactSpelling = true)]

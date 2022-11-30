@@ -25,14 +25,16 @@ namespace Avalonia.Win32.DxgiSwapchain
         private IEglWindowGlPlatformSurfaceInfo _window;
         private EglPlatformOpenGlInterface _egl;
         private DxgiConnection _connection;
-        private IDXGIDevice* _dxgiDevice = null;
-        private IDXGIFactory2* _dxgiFactory = null;
-        private IDXGISwapChain1* _swapChain = null;
-        private ID3D11Texture2D* _renderTexture = null;
+        private IDXGIDevice? _dxgiDevice = null;
+        private IDXGIFactory2? _dxgiFactory = null;
+        private IDXGISwapChain1? _swapChain = null;
+        private IUnknown? _renderTexture = null;
 
         private Interop.UnmanagedMethods.RECT _clientRect = default;
 
         private uint _flagsUsed;
+
+        private Guid ID3D11Texture2DGuid = Guid.Parse("6F15AAF2-D208-4E89-9AB4-489535D34F9C");
 
         public DxgiRenderTarget(IEglWindowGlPlatformSurfaceInfo window, EglPlatformOpenGlInterface egl, DxgiConnection connection) : base(egl)
         {
@@ -41,82 +43,63 @@ namespace Avalonia.Win32.DxgiSwapchain
             _connection = connection;
 
             // the D3D device is expected to at least be an ID3D11Device 
-            ID3D11Device* pdevice = (ID3D11Device*)((AngleWin32EglDisplay)_egl.Display).GetDirect3DDevice();
+            // but how do I wrap an IntPtr as a managed IUnknown now? Like this. 
+            IUnknown pdevice = MicroComRuntime.CreateProxyFor<IUnknown>(((AngleWin32EglDisplay)_egl.Display).GetDirect3DDevice(), false);
 
-            IDXGIDevice* testDevice = null;
-            var deviceGuid = IDXGIDevice.Guid;
-            HRESULT retval = pdevice->QueryInterface(&deviceGuid, (void**)&testDevice);
-            if (retval.FAILED)
-            {
-                // quite possibly error-not-implemented or error-not-supported 
-                throw new Win32Exception((int)retval);
-            }
-            else
-            {
-                _dxgiDevice = testDevice;
+            IDXGIDevice testDevice = pdevice.QueryInterface<IDXGIDevice>();
 
-                IDXGIAdapter* adapterPointer = null;
-                IDXGIFactory2* factoryPointer = null;
+            _dxgiDevice = testDevice;
 
-                retval = _dxgiDevice->GetAdapter(&adapterPointer);
-                if (retval.FAILED)
-                {
-                    throw new Win32Exception((int)retval);
-                }
-                Guid factoryGuid = IDXGIFactory2.Guid;
-                retval = adapterPointer->GetParent(&factoryGuid, (void**)&factoryPointer);
-                if (retval.FAILED)
-                {
-                    throw new Win32Exception((int)retval);
-                }
-                adapterPointer->Release();
-
-                _dxgiFactory = factoryPointer;
-
-                DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc = new DXGI_SWAP_CHAIN_DESC1();
-
-                // standard swap chain really. 
-                dxgiSwapChainDesc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
-                dxgiSwapChainDesc.SampleDesc.Count = 1U;
-                dxgiSwapChainDesc.SampleDesc.Quality = 0U;
-                dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-                dxgiSwapChainDesc.AlphaMode = DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_IGNORE;
-                dxgiSwapChainDesc.Width = (uint)_window.Size.Width;
-                dxgiSwapChainDesc.Height = (uint)_window.Size.Height;
-                dxgiSwapChainDesc.BufferCount = 2U;
-                dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_FLIP_DISCARD;
-
-                // okay I know this looks bad, but we're hitting our render-calls by awaiting via dxgi 
-                // this is done in the DxgiConnection itself 
-                _flagsUsed = dxgiSwapChainDesc.Flags = (uint)(DXGI_SWAP_CHAIN_FLAG.DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
-
-                IDXGISwapChain1* pSwapChain = null;
+            IDXGIAdapter? adapterPointer = _dxgiDevice.Adapter;
 
 
-                retval = _dxgiFactory->CreateSwapChainForHwnd
-                (
-                        _dxgiDevice,
-                        window.Handle,
-                        &dxgiSwapChainDesc,
-                        null,
-                        null,
-                        &pSwapChain
-                );
+            Guid factoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory2));
+            _dxgiFactory = MicroComRuntime.CreateProxyFor<IDXGIFactory2>(adapterPointer.GetParent(&factoryGuid), true);
 
-                if (retval.FAILED)
-                {
-                    throw new Win32Exception(retval);
-                }
+            adapterPointer.Dispose();
+            adapterPointer = null; // so don't use it 
 
-                _swapChain = pSwapChain;
-                Interop.UnmanagedMethods.RECT pClientRect;
-                GetClientRect(_window.Handle, out pClientRect);
-                _clientRect = pClientRect;
-            }
+            DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc = new DXGI_SWAP_CHAIN_DESC1();
+
+            // standard swap chain really. 
+            dxgiSwapChainDesc.Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+            dxgiSwapChainDesc.SampleDesc.Count = 1U;
+            dxgiSwapChainDesc.SampleDesc.Quality = 0U;
+            dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+            dxgiSwapChainDesc.AlphaMode = DXGI_ALPHA_MODE.DXGI_ALPHA_MODE_IGNORE;
+            dxgiSwapChainDesc.Width = (uint)_window.Size.Width;
+            dxgiSwapChainDesc.Height = (uint)_window.Size.Height;
+            dxgiSwapChainDesc.BufferCount = 2U;
+            dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
+            // okay I know this looks bad, but we're hitting our render-calls by awaiting via dxgi 
+            // this is done in the DxgiConnection itself 
+            _flagsUsed = dxgiSwapChainDesc.Flags = (uint)(DXGI_SWAP_CHAIN_FLAG.DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
+
+
+
+            IDXGISwapChain1 pSwapChain = _dxgiFactory.CreateSwapChainForHwnd
+            (
+                    _dxgiDevice,
+                    window.Handle,
+                    &dxgiSwapChainDesc,
+                    null,
+                    null
+            );
+
+            _swapChain = pSwapChain;
+            Interop.UnmanagedMethods.RECT pClientRect;
+            GetClientRect(_window.Handle, out pClientRect);
+            _clientRect = pClientRect;
         }
 
         public override IGlPlatformSurfaceRenderingSession BeginDraw()
         {
+            if (_swapChain is null)
+            {
+                throw new InvalidOperationException("No chain to draw on");
+            }
+
             var contextLock = _egl.PrimaryContext.EnsureCurrent();
             EglSurface? surface = null;
             IDisposable? transaction = null;
@@ -131,19 +114,18 @@ namespace Avalonia.Win32.DxgiSwapchain
                     // we gotta resize 
                     _clientRect = pClientRect;
 
-                    _renderTexture->Release();
-                    _renderTexture = null;
-
-                    retval = _swapChain->ResizeBuffers(2U,
-                        (uint)(pClientRect.right - pClientRect.left),
-                        (uint)(pClientRect.bottom - pClientRect.top),
-                        DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
-                        _flagsUsed
-                        );
-                    if (retval.FAILED)
+                    if (_renderTexture is not null)
                     {
-                        throw new Win32Exception(retval);
+                        _renderTexture.Dispose();
+                        _renderTexture = null;
                     }
+
+                    _swapChain.ResizeBuffers(2,
+                        (ushort)(pClientRect.right - pClientRect.left),
+                        (ushort)(pClientRect.bottom - pClientRect.top),
+                        DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
+                        (ushort)_flagsUsed
+                        );
                 }
 
                 var size = _window.Size;
@@ -152,22 +134,18 @@ namespace Avalonia.Win32.DxgiSwapchain
                 var texture = _renderTexture;
                 if (texture is null)
                 {
-                    Guid textureGuid = ID3D11Texture2D.Guid;
-                    retval = _swapChain->GetBuffer(0, &textureGuid, (void**)&texture);
-                    if (retval.FAILED)
-                    {
-                        // this hasn't happened yet in my testing, but theoretically things can go wrong. 
-                        throw new Win32Exception((int)retval);
-                    }
+                    Guid textureGuid = ID3D11Texture2DGuid;
+                    texture = MicroComRuntime.CreateProxyFor<IUnknown>(_swapChain.GetBuffer(0, &textureGuid), true);
                 }
                 _renderTexture = texture;
 
-                surface = ((AngleWin32EglDisplay)_egl.Display).WrapDirect3D11Texture(_egl, (IntPtr)texture,
+                // I also have to get the pointer to this texture directly 
+                surface = ((AngleWin32EglDisplay)_egl.Display).WrapDirect3D11Texture(_egl, MicroComRuntime.GetNativeIntPtr<IUnknown>(_renderTexture),
                     0, 0, size.Width, size.Height);
 
                 var res = base.BeginDraw(surface, _window, () =>
                 {
-                    _swapChain->Present(0U, 0U);
+                    _swapChain.Present((ushort)0U, (ushort)0U);
                     surface?.Dispose();
                     transaction?.Dispose();
                     contextLock?.Dispose();
@@ -182,7 +160,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                     surface?.Dispose();
                     if (_renderTexture is not null)
                     {
-                        _renderTexture->Release();
+                        _renderTexture.Dispose();
                         _renderTexture = null;
                     }
                     transaction?.Dispose();
@@ -194,31 +172,6 @@ namespace Avalonia.Win32.DxgiSwapchain
         public override void Dispose()
         {
             base.Dispose();
-        }
-
-        ~DxgiRenderTarget()
-        {
-            // unsafe (native) references only, release them if they're not null. 
-            if (_dxgiDevice is not null)
-            {
-                _dxgiDevice->Release();
-                _dxgiDevice = null;
-            }
-            if (_dxgiFactory is not null)
-            {
-                _dxgiFactory->Release();
-                _dxgiFactory = null;
-            }
-            if (_swapChain is not null)
-            {
-                _swapChain->Release();
-                _swapChain = null;
-            }
-            if (_renderTexture is not null)
-            {
-                _renderTexture->Release();
-                _renderTexture = null;
-            }
         }
 
         internal static bool RectsEqual(in RECT l, in RECT r)

@@ -12,6 +12,7 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.DxgiSwapchain.DirectXUnmanagedMethods;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32.DxgiSwapchain
 {
@@ -29,7 +30,7 @@ namespace Avalonia.Win32.DxgiSwapchain
         private EglPlatformOpenGlInterface _gl;
         private object _syncLock;
 
-        private IDXGIOutput* _output = null;
+        private IDXGIOutput? _output = null;
 
         private Stopwatch? _stopwatch = null;
 
@@ -77,15 +78,15 @@ namespace Avalonia.Win32.DxgiSwapchain
                     {
                         if (_output is not null)
                         {
-                            HRESULT res = _output->WaitForVBlank();
-                            if (res.FAILED)
+                            try
                             {
-                                // be sad about it 
-                                var w32ex = new Win32Exception((int)res);
+                                _output.WaitForVBlank();
+                            }
+                            catch (Exception ex)
+                            {
                                 Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
-                                    ?.Log(this, $"Failed to wait for vblank, Exception: {w32ex.Message}, HRESULT = {w32ex.HResult}");
-
-                                _output->Release();
+                                    ?.Log(this, $"Failed to wait for vblank, Exception: {ex.Message}, HRESULT = {ex.HResult}");
+                                _output.Dispose();
                                 _output = null;
                                 GetBestOutputToVWaitOn();
                             }
@@ -100,7 +101,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                         Tick?.Invoke(_stopwatch.Elapsed);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
                                     ?.Log(this, $"Failed to wait for vblank, Exception: {ex.Message}, HRESULT = {ex.HResult}");
@@ -113,10 +114,12 @@ namespace Avalonia.Win32.DxgiSwapchain
         {
             double highestRefreshRate = 0.0d;
             HRESULT retval = default;
-            IDXGIFactory* fact = null;
+            IDXGIFactory? fact = null;
+            void* factPointer = null;
+
             // IDXGIFactory Guid: [Guid("7B7166EC-21C7-44AE-B21A-C9AE321AE369")]
-            Guid factoryGuid = IDXGIFactory.Guid;
-            retval = CreateDXGIFactory(&factoryGuid, (void**)&fact);
+            Guid factoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory));
+            retval = CreateDXGIFactory(&factoryGuid, (void**)&factPointer);
             if (retval.FAILED)
             {
                 // To be clear, if this fails then it means we've tried to use dxgi methods on a system that does not support any of them 
@@ -124,57 +127,61 @@ namespace Avalonia.Win32.DxgiSwapchain
                 throw new Win32Exception((int)retval);
             }
 
-            IDXGIAdapter* adapter = null;
+            fact = MicroComRuntime.CreateProxyFor<IDXGIFactory>(factPointer, true);
 
-            uint adapterIndex = 0;
+            IDXGIAdapter? adapter = null;
+            void* adapterPointer = null;
+
+            ushort adapterIndex = 0;
             try
             {
                 // this looks odd, but that's just how one enumerates adapters in DXGI 
-                while (fact->EnumAdapters(adapterIndex, &adapter) == 0)
+                while (fact.EnumAdapters(adapterIndex, &adapterPointer) == 0)
                 {
-                    IDXGIOutput* output = null;
-                    uint outputIndex = 0;
-                    while (adapter->EnumOutputs(outputIndex, &output) == 0)
+                    adapter = MicroComRuntime.CreateProxyFor<IDXGIAdapter>(adapterPointer, true);
+                    IDXGIOutput? output = null;
+                    void* outputPointer = null;
+                    ushort outputIndex = 0;
+                    while (adapter.EnumOutputs(outputIndex, &outputPointer) == 0)
                     {
-                        DXGI_OUTPUT_DESC outputDesc = default;
-                        retval = output->GetDesc(&outputDesc);
+                        output = MicroComRuntime.CreateProxyFor<IDXGIOutput>(outputPointer, true);
+                        DXGI_OUTPUT_DESC outputDesc = output.Desc;
 
-                        if (retval.SUCCEEDED)
+
+                        // this handle need not closing, by the way. 
+                        HANDLE monitorH = outputDesc.Monitor;
+                        MONITORINFOEXW monInfo = default;
+                        // by setting cbSize we tell Windows to fully populate the extended info 
+
+                        monInfo.Base.cbSize = sizeof(MONITORINFOEXW);
+                        GetMonitorInfoW(monitorH, (IntPtr)(&monInfo));
+
+                        DEVMODEW devMode = default;
+                        EnumDisplaySettingsW(outputDesc.DeviceName, ENUM_CURRENT_SETTINGS, &devMode);
+
+                        //Trace.WriteLine($"Adapter[{adapterIndex}] Output[{outputIndex}]: " +
+                        //    $"{new string((char*)outputDesc.DeviceName)}, {new string((char*)monInfo.szDevice)}, " +
+                        //    $"devModeHz: {devMode.dmDisplayFrequency} Hz");
+
+                        if (highestRefreshRate < devMode.dmDisplayFrequency)
                         {
-                            // this handle need not closing, by the way. 
-                            HANDLE monitorH = outputDesc.Monitor;
-                            MONITORINFOEXW monInfo = default;
-                            // by setting cbSize we tell Windows to fully populate the extended info 
-
-                            monInfo.Base.cbSize = sizeof(MONITORINFOEXW);
-                            GetMonitorInfoW(monitorH, (IntPtr)(&monInfo));
-
-                            DEVMODEW devMode = default;
-                            EnumDisplaySettingsW(outputDesc.DeviceName, ENUM_CURRENT_SETTINGS, &devMode);
-
-                            //Trace.WriteLine($"Adapter[{adapterIndex}] Output[{outputIndex}]: " +
-                            //    $"{new string((char*)outputDesc.DeviceName)}, {new string((char*)monInfo.szDevice)}, " +
-                            //    $"devModeHz: {devMode.dmDisplayFrequency} Hz");
-
-                            if (highestRefreshRate < devMode.dmDisplayFrequency)
-                            {
-                                // ooh I like this output! 
-                                _output = output;
-                                highestRefreshRate = devMode.dmDisplayFrequency;
-                            }
+                            // ooh I like this output! 
+                            _output = output;
+                            highestRefreshRate = devMode.dmDisplayFrequency;
                         }
+
 
                         // clean up output, but only if it's not the one we selected 
                         if (output != _output)
                         {
-                            output->Release();
+                            output.Dispose();
                             output = null;
                         }
                         // and then increment index to move onto the next monitor 
                         outputIndex++;
                     }
                     // clean up adapter 
-                    adapter->Release();
+                    adapter.Dispose();
                     adapter = null;
                     // and then increment index to move onto the next display adapater
                     adapterIndex++;
@@ -184,7 +191,7 @@ namespace Avalonia.Win32.DxgiSwapchain
             {
                 if (fact is not null)
                 {
-                    fact->Release();
+                    fact.Dispose();
                     fact = null;
                 }
             }
