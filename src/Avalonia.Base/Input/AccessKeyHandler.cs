@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -113,7 +114,7 @@ namespace Avalonia.Input
                 _registered.Remove(existing);
             }
 
-            _registered.Add(Tuple.Create(accessKey.ToString().ToUpper(), element));
+            _registered.Add(Tuple.Create(accessKey.ToString(CultureInfo.InvariantCulture).ToUpperInvariant(), element));
         }
 
         /// <summary>
@@ -180,9 +181,9 @@ namespace Avalonia.Input
             {
                 // If any other key is pressed with the Alt key held down, or the main menu is open,
                 // find all controls who have registered that access key.
-                var text = e.Key.ToString().ToUpper();
+                var text = e.Key.ToString();
                 var matches = _registered
-                    .Where(x => x.Item1 == text && ((Visual)x.Item2).IsEffectivelyVisible)
+                    .Where(x => string.Equals( x.Item1 , text, StringComparison.OrdinalIgnoreCase) && ((Visual)x.Item2).IsEffectivelyVisible)
                     .Select(x => x.Item2);
 
                 // If the menu is open, only match controls in the menu's visual tree.
