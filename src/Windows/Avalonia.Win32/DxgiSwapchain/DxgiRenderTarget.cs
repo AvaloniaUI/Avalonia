@@ -104,7 +104,6 @@ namespace Avalonia.Win32.DxgiSwapchain
             EglSurface? surface = null;
             IDisposable? transaction = null;
             var success = false;
-            HRESULT retval = default;
             try
             {
                 Interop.UnmanagedMethods.RECT pClientRect;
@@ -140,7 +139,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                 _renderTexture = texture;
 
                 // I also have to get the pointer to this texture directly 
-                surface = ((AngleWin32EglDisplay)_egl.Display).WrapDirect3D11Texture(_egl, MicroComRuntime.GetNativeIntPtr<IUnknown>(_renderTexture),
+                surface = ((AngleWin32EglDisplay)_egl.Display).WrapDirect3D11Texture(_egl, MicroComRuntime.GetNativeIntPtr(_renderTexture),
                     0, 0, size.Width, size.Height);
 
                 var res = base.BeginDraw(surface, _window, () =>
@@ -172,6 +171,10 @@ namespace Avalonia.Win32.DxgiSwapchain
         public override void Dispose()
         {
             base.Dispose();
+            _dxgiDevice?.Dispose();
+            _dxgiFactory?.Dispose();
+            _swapChain?.Dispose();
+            _renderTexture?.Dispose();
         }
 
         internal static bool RectsEqual(in RECT l, in RECT r)

@@ -113,88 +113,72 @@ namespace Avalonia.Win32.DxgiSwapchain
         private void GetBestOutputToVWaitOn()
         {
             double highestRefreshRate = 0.0d;
-            HRESULT retval = default;
-            IDXGIFactory? fact = null;
             void* factPointer = null;
 
             // IDXGIFactory Guid: [Guid("7B7166EC-21C7-44AE-B21A-C9AE321AE369")]
             Guid factoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory));
-            retval = CreateDXGIFactory(&factoryGuid, (void**)&factPointer);
-            if (retval.FAILED)
-            {
-                // To be clear, if this fails then it means we've tried to use dxgi methods on a system that does not support any of them 
-                // I fully expect that if we hit this, then the application is done for. I don't think ANGLE would work either, frankly. 
-                throw new Win32Exception((int)retval);
-            }
+            CreateDXGIFactory(&factoryGuid, (void**)&factPointer);
 
-            fact = MicroComRuntime.CreateProxyFor<IDXGIFactory>(factPointer, true);
+            using var fact = MicroComRuntime.CreateProxyFor<IDXGIFactory>(factPointer, true);
 
             IDXGIAdapter? adapter = null;
             void* adapterPointer = null;
 
             ushort adapterIndex = 0;
-            try
+
+            // this looks odd, but that's just how one enumerates adapters in DXGI 
+            while (fact.EnumAdapters(adapterIndex, &adapterPointer) == 0)
             {
-                // this looks odd, but that's just how one enumerates adapters in DXGI 
-                while (fact.EnumAdapters(adapterIndex, &adapterPointer) == 0)
+                adapter = MicroComRuntime.CreateProxyFor<IDXGIAdapter>(adapterPointer, true);
+                void* outputPointer = null;
+                ushort outputIndex = 0;
+                while (adapter.EnumOutputs(outputIndex, &outputPointer) == 0)
                 {
-                    adapter = MicroComRuntime.CreateProxyFor<IDXGIAdapter>(adapterPointer, true);
-                    IDXGIOutput? output = null;
-                    void* outputPointer = null;
-                    ushort outputIndex = 0;
-                    while (adapter.EnumOutputs(outputIndex, &outputPointer) == 0)
+                    using var output = MicroComRuntime.CreateProxyFor<IDXGIOutput>(outputPointer, true);
+                    DXGI_OUTPUT_DESC outputDesc = output.Desc;
+
+
+                    // this handle need not closing, by the way. 
+                    HANDLE monitorH = outputDesc.Monitor;
+                    MONITORINFOEXW monInfo = default;
+                    // by setting cbSize we tell Windows to fully populate the extended info 
+
+                    monInfo.Base.cbSize = sizeof(MONITORINFOEXW);
+                    GetMonitorInfoW(monitorH, (IntPtr)(&monInfo));
+
+                    DEVMODEW devMode = default;
+                    EnumDisplaySettingsW(outputDesc.DeviceName, ENUM_CURRENT_SETTINGS, &devMode);
+
+                    Trace.WriteLine($"Adapter[{adapterIndex}] Output[{outputIndex}]: " +
+                        $"{new string((char*)outputDesc.DeviceName)}, {new string((char*)monInfo.szDevice)}, " +
+                        $"devModeHz: {devMode.dmDisplayFrequency} Hz");
+
+                    if (highestRefreshRate < devMode.dmDisplayFrequency)
                     {
-                        output = MicroComRuntime.CreateProxyFor<IDXGIOutput>(outputPointer, true);
-                        DXGI_OUTPUT_DESC outputDesc = output.Desc;
-
-
-                        // this handle need not closing, by the way. 
-                        HANDLE monitorH = outputDesc.Monitor;
-                        MONITORINFOEXW monInfo = default;
-                        // by setting cbSize we tell Windows to fully populate the extended info 
-
-                        monInfo.Base.cbSize = sizeof(MONITORINFOEXW);
-                        GetMonitorInfoW(monitorH, (IntPtr)(&monInfo));
-
-                        DEVMODEW devMode = default;
-                        EnumDisplaySettingsW(outputDesc.DeviceName, ENUM_CURRENT_SETTINGS, &devMode);
-
-                        //Trace.WriteLine($"Adapter[{adapterIndex}] Output[{outputIndex}]: " +
-                        //    $"{new string((char*)outputDesc.DeviceName)}, {new string((char*)monInfo.szDevice)}, " +
-                        //    $"devModeHz: {devMode.dmDisplayFrequency} Hz");
-
-                        if (highestRefreshRate < devMode.dmDisplayFrequency)
+                        // ooh I like this output! 
+                        if (_output is not null)
                         {
-                            // ooh I like this output! 
-                            _output = output;
-                            highestRefreshRate = devMode.dmDisplayFrequency;
+                            _output.Dispose();
+                            _output = null;
                         }
-
-
-                        // clean up output, but only if it's not the one we selected 
-                        if (output != _output)
-                        {
-                            output.Dispose();
-                            output = null;
-                        }
-                        // and then increment index to move onto the next monitor 
-                        outputIndex++;
+                        _output = MicroComRuntime.CloneReference(output);
+                        highestRefreshRate = devMode.dmDisplayFrequency;
                     }
-                    // clean up adapter 
-                    adapter.Dispose();
-                    adapter = null;
-                    // and then increment index to move onto the next display adapater
-                    adapterIndex++;
+
+
+                    // clean up output will be done via the using as above 
+                        
+                    
+                    // and then increment index to move onto the next monitor 
+                    outputIndex++;
                 }
+                // clean up adapter 
+                adapter.Dispose();
+                adapter = null;
+                // and then increment index to move onto the next display adapater
+                adapterIndex++;
             }
-            finally
-            {
-                if (fact is not null)
-                {
-                    fact.Dispose();
-                    fact = null;
-                }
-            }
+
         }
 
         // Used the windows composition as a blueprint for this startup/creation 
@@ -226,13 +210,6 @@ namespace Avalonia.Win32.DxgiSwapchain
             // block until 
             return tcs.Task.Result;
         }
-
-        #region unsafe native methods
-
-        [DllImport("dwmapi", ExactSpelling = true)]
-        public static extern HRESULT DwmFlush();
-
-        #endregion
     }
 #nullable restore
 #pragma warning restore CA1416 // Validate platform compatibility

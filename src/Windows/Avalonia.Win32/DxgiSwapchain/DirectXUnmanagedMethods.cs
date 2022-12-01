@@ -9,13 +9,13 @@ namespace Avalonia.Win32.DxgiSwapchain
 {
     internal unsafe class DirectXUnmanagedMethods
     {
-        
-        [DllImport("dxgi", ExactSpelling = true)]
-        internal static extern HRESULT CreateDXGIFactory(Guid* riid, void** ppFactory);
+        // these return HRESULTs expecting Marshall to throw Win32 exceptions on failures
+        [DllImport("dxgi", ExactSpelling = true, PreserveSig = false)]
+        internal static extern void CreateDXGIFactory(Guid* riid, void** ppFactory);
 
-        
-        [DllImport("dxgi", ExactSpelling = true)]
-        internal static extern HRESULT CreateDXGIFactory1(Guid* riid, void** ppFactory);
+        // these return HRESULTs expecting Marshall to throw Win32 exceptions on failures
+        [DllImport("dxgi", ExactSpelling = true, PreserveSig = false)]
+        internal static extern void CreateDXGIFactory1(Guid* riid, void** ppFactory);
 
         [DllImport("user32", ExactSpelling = true)]
         internal static extern bool GetMonitorInfoW(HANDLE hMonitor, IntPtr lpmi);
