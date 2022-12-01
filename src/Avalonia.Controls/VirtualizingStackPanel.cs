@@ -830,7 +830,7 @@ namespace Avalonia.Controls
                     for (var i = start; i < end; ++i)
                     {
                         if (_elements[i] is Control element)
-                            updateElementIndex(element, newIndex - count, newIndex);
+                            updateElementIndex(element, newIndex + count, newIndex);
                         ++newIndex;
                     }
                 }

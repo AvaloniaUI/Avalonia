@@ -84,6 +84,7 @@ namespace Avalonia.Controls
         private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private IDataTemplate? _displayMemberItemTemplate;
+        private Tuple<int, Control>? _containerBeingPrepared;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -221,19 +222,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void IItemsPresenterHost.RegisterItemsPresenter(ItemsPresenter presenter)
         {
-            if (Presenter is IChildIndexProvider oldInnerProvider)
-            {
-                oldInnerProvider.ChildIndexChanged -= PresenterChildIndexChanged;
-            }
-
             Presenter = presenter;
-            ////ItemContainerGenerator?.Clear();
-
-            if (Presenter is IChildIndexProvider innerProvider)
-            {
-                innerProvider.ChildIndexChanged += PresenterChildIndexChanged;
-                _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
-            }
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
         }
 
         void ICollectionChangedListener.PreChanged(INotifyCollectionChanged sender, NotifyCollectionChangedEventArgs e)
@@ -513,11 +503,16 @@ namespace Avalonia.Controls
                 container.DataContext = item;
 
             PrepareContainerForItemOverride(container, item, index);
+
+            _containerBeingPrepared = new(index, container);
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
+            _containerBeingPrepared = null;
         }
 
         internal void ItemContainerIndexChanged(Control container, int oldIndex, int newIndex)
         {
             ContainerIndexChangedOverride(container, oldIndex, newIndex);
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
         }
 
         /// <summary>
@@ -681,27 +676,17 @@ namespace Avalonia.Controls
             }
         }
 
-        private void PresenterChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)
-        {
-            _childIndexChanged?.Invoke(this, e);
-        }
-
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
-            return Presenter is IChildIndexProvider innerProvider
-                ? innerProvider.GetChildIndex(child) : -1;
+            if (_containerBeingPrepared?.Item2 == child)
+                return _containerBeingPrepared.Item1;
+
+            return child is Control container ? IndexFromContainer(container) : -1;
         }
 
         bool IChildIndexProvider.TryGetTotalCount(out int count)
         {
-            if (Presenter is IChildIndexProvider presenter
-                && presenter.TryGetTotalCount(out count))
-            {
-                return true;
-            }
-
-            count = ItemCount;
-            return true;
+            return Items.TryGetCountFast(out count);
         }
     }
 }
