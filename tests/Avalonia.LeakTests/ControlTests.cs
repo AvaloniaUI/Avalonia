@@ -713,6 +713,10 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
+                // Height of ListBoxItem content + padding.
+                const double ListBoxItemHeight = 12;
+                const double TextBoxHeight = 25;
+
                 var items = new ObservableCollection<int>(Enumerable.Range(0, 10));
                 NameScope ns;
                 TextBox tb;
@@ -721,8 +725,8 @@ namespace Avalonia.LeakTests
                 {
                     [NameScope.NameScopeProperty] = ns = new NameScope(),
                     Width = 100,
-                    Height = 100,
-                    Content = new StackPanel
+                    Height = (items.Count * ListBoxItemHeight) + TextBoxHeight,
+                    Content = new DockPanel
                     {
                         Children =
                         {
@@ -730,6 +734,8 @@ namespace Avalonia.LeakTests
                             {
                                 Name = "tb",
                                 Text = "foo",
+                                Height = TextBoxHeight,
+                                [DockPanel.DockProperty] = Dock.Top,
                             }),
                             (lb = new ListBox
                             {
@@ -745,7 +751,8 @@ namespace Avalonia.LeakTests
                                             Path = "Text",
                                             NameScope = new WeakReference<INameScope>(ns),
                                         }
-                                    })
+                                    }),
+                                Padding = new Thickness(0),
                             }),
                         }
                     }
