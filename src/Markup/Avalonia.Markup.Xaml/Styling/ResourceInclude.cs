@@ -42,7 +42,8 @@ namespace Avalonia.Markup.Xaml.Styling
                 if (_loaded == null)
                 {
                     _isLoading = true;
-                    _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(Source, _baseUri);
+                    var source = Source ?? throw new InvalidOperationException("ResourceInclude.Source must be set.");
+                    _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(source, _baseUri);
                     _isLoading = false;
                 }
 
