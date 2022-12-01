@@ -458,9 +458,9 @@ namespace Avalonia.Controls
                 }
                 else if (generator.IsItemItsOwnContainer(controlItem))
                 {
+                    AddInternalChild(controlItem);
                     generator.PrepareItemContainer(controlItem, item, index);
                     controlItem.SetValue(ItemIsOwnContainerProperty, true);
-                    AddInternalChild(controlItem);
                     return controlItem;
                 }
             }

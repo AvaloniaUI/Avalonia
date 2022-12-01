@@ -70,10 +70,7 @@ namespace Avalonia.Controls.Presenters
             {
                 var i = index;
                 foreach (var item in items)
-                {
-                    children.Insert(i, CreateContainer(itemsControl, item, i));
-                    ++i;
-                }
+                    InsertContainer(itemsControl, children, item, i++);
 
                 var childCount = children.Count;
                 var delta = i - index;
@@ -124,7 +121,11 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private static Control CreateContainer(ItemsControl itemsControl, object? item, int index)
+        private static void InsertContainer(
+            ItemsControl itemsControl,
+            Controls children,
+            object? item, 
+            int index)
         {
             var generator = itemsControl.ItemContainerGenerator;
             Control container;
@@ -140,8 +141,8 @@ namespace Avalonia.Controls.Presenters
             }
 
             itemsControl.AddLogicalChild(container);
+            children.Insert(index, container);
             generator.PrepareItemContainer(container, item, index);
-            return container;
         }
 
         private void ClearItemsControlLogicalChildren()
