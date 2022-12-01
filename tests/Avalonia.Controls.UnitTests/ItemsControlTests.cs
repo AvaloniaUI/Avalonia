@@ -708,6 +708,31 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(container.Child!.GetValue(TextBlock.TextProperty), "3");
         }
 
+        [Fact]
+        public void Cannot_Set_Both_DisplayMemberBinding_And_ItemTemplate_1()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                DisplayMemberBinding = new Binding("Length")
+            };
+
+            Assert.Throws<InvalidOperationException>(() => 
+                target.ItemTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock()));
+        }
+
+        [Fact]
+        public void Cannot_Set_Both_DisplayMemberBinding_And_ItemTemplate_2()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemTemplate = new FuncDataTemplate<string>((_, _) => new TextBlock()),
+            };
+
+            Assert.Throws<InvalidOperationException>(() => target.DisplayMemberBinding = new Binding("Length"));
+        }
+
         private class Item
         {
             public Item(string value)

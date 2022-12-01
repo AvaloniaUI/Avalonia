@@ -83,6 +83,7 @@ namespace Avalonia.Controls
         private int _itemCount;
         private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
+        private IDataTemplate? _displayMemberItemTemplate;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -291,19 +292,19 @@ namespace Avalonia.Controls
                 else if (item is not Visual)
                     hcc.Header = item;
 
-                if (ItemTemplate is { } it)
+                if (GetEffectiveItemTemplate() is { } it)
                     hcc.HeaderTemplate = it;
             }
             else if (container is ContentControl cc)
             {
                 cc.Content = item;
-                if (ItemTemplate is { } it)
+                if (GetEffectiveItemTemplate() is { } it)
                     cc.ContentTemplate = it;
             }
             else if (container is ContentPresenter p)
             {
                 p.Content = item;
-                if (ItemTemplate is { } it)
+                if (GetEffectiveItemTemplate() is { } it)
                     p.ContentTemplate = it;
             }
         }
@@ -430,6 +431,17 @@ namespace Avalonia.Controls
             {
                 throw new NotImplementedException();
                 ////_itemContainerGenerator.ItemContainerTheme = change.GetNewValue<ControlTheme?>();
+            }
+            else if (change.Property == ItemTemplateProperty)
+            {
+                if (change.NewValue is not null && DisplayMemberBinding is not null)
+                    throw new InvalidOperationException("Cannot set both DisplayMemberBinding and ItemTemplate.");
+            }
+            else if (change.Property == DisplayMemberBindingProperty)
+            {
+                if (change.NewValue is not null && ItemTemplate is not null)
+                    throw new InvalidOperationException("Cannot set both DisplayMemberBinding and ItemTemplate.");
+                _displayMemberItemTemplate = null;
             }
         }
 
@@ -566,6 +578,23 @@ namespace Avalonia.Controls
             {
                 CollectionChangedEventManager.Instance.AddListener(incc, this);
             }
+        }
+
+        private IDataTemplate? GetEffectiveItemTemplate()
+        {
+            if (ItemTemplate is { } itemTemplate)
+                return itemTemplate;
+
+            if (_displayMemberItemTemplate is null && DisplayMemberBinding is { } binding)
+            {
+                _displayMemberItemTemplate = new FuncDataTemplate<object?>((_, _) =>
+                    new TextBlock
+                    {
+                        [!TextBlock.TextProperty] = binding,
+                    });
+            }
+
+            return _displayMemberItemTemplate;
         }
 
         /// <summary>
