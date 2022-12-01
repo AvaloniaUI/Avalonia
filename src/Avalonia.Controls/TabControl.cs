@@ -174,6 +174,16 @@ namespace Avalonia.Controls
             UpdateSelectedContent();
         }
 
+        protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
+        {
+            base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
+
+            var selectedIndex = SelectedIndex;
+            
+            if (selectedIndex == oldIndex || selectedIndex == newIndex)
+                UpdateSelectedContent();
+        }
+
         protected internal override void ClearContainerForItemOverride(Control element)
         {
             base.ClearContainerForItemOverride(element);

@@ -96,7 +96,7 @@ namespace Avalonia.Controls.Presenters
                 var childCount = children.Count;
 
                 for (var i = index; i < childCount; ++i)
-                    generator.ItemContainerIndexChanged(children[i], i - count, i);
+                    generator.ItemContainerIndexChanged(children[i], i + count, i);
             }
 
             switch (e.Action)
