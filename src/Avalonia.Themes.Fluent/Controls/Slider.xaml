@@ -302,26 +302,6 @@
       <Setter Property="IsVisible" Value="True" />
     </Style>
 
-    <!--  Disabled State  -->
-
-    <Style Selector="^:disabled">
-      <Style Selector="^ /template/ RepeatButton#PART_DecreaseButton">
-        <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillDisabled}" />
-      </Style>
-
-      <Style Selector="^ /template/ RepeatButton#PART_IncreaseButton">
-        <Setter Property="Background" Value="{DynamicResource SliderTrackFillDisabled}" />
-      </Style>
-
-      <Style Selector="^ /template/ Thumb">
-        <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
-      </Style>
-
-      <Style Selector="^ /template/ TickBar">
-        <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
-      </Style>
-    </Style>
-
     <!--  PointerOver State  -->
     <Style Selector="^:pointerover">
       <Style Selector="^ /template/ Grid#SliderContainer">
@@ -359,6 +339,25 @@
 
       <Style Selector="^ /template/ Thumb">
         <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundPressed}" />
+      </Style>
+    </Style>
+
+    <!--  Disabled State  -->
+    <Style Selector="^:disabled">
+      <Style Selector="^ /template/ RepeatButton#PART_DecreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackValueFillDisabled}" />
+      </Style>
+
+      <Style Selector="^ /template/ RepeatButton#PART_IncreaseButton">
+        <Setter Property="Background" Value="{DynamicResource SliderTrackFillDisabled}" />
+      </Style>
+
+      <Style Selector="^ /template/ Thumb">
+        <Setter Property="Background" Value="{DynamicResource SliderThumbBackgroundDisabled}" />
+      </Style>
+
+      <Style Selector="^ /template/ TickBar">
+        <Setter Property="Fill" Value="{DynamicResource SliderTickBarFillDisabled}" />
       </Style>
     </Style>
 
