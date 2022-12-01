@@ -22,7 +22,7 @@ namespace Avalonia.Controls
         private readonly ItemsRepeater _owner;
         private readonly List<PinnedElementInfo> _pinnedPool = new List<PinnedElementInfo>();
         private readonly UniqueIdElementPool _resetPool;
-        private IControl? _lastFocusedElement;
+        private Control? _lastFocusedElement;
         private bool _isDataSourceStableResetPending;
         private ElementFactoryGetArgs? _elementFactoryGetArgs;
         private ElementFactoryRecycleArgs? _elementFactoryRecycleArgs;
@@ -36,7 +36,7 @@ namespace Avalonia.Controls
             _resetPool = new UniqueIdElementPool(owner);
         }
 
-        public IControl GetElement(int index, bool forceCreate, bool suppressAutoRecycle)
+        public Control GetElement(int index, bool forceCreate, bool suppressAutoRecycle)
         {
             var element = forceCreate ? null : GetElementIfAlreadyHeldByLayout(index);
             if (element == null)
@@ -73,7 +73,7 @@ namespace Avalonia.Controls
             return element;
         }
 
-        public void ClearElement(IControl element, bool isClearedDueToCollectionChange)
+        public void ClearElement(Control element, bool isClearedDueToCollectionChange)
         {
             var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
             var index = virtInfo.Index;
@@ -119,7 +119,7 @@ namespace Avalonia.Controls
         //
         // In all of those three cases, we the ItemTemplateShim is NOT null.
         // Luckily when we create the items, we store whether we were the once setting the DataContext.
-        public void ClearElementToElementFactory(IControl element)
+        public void ClearElementToElementFactory(Control element)
         {
             _owner.OnElementClearing(element);
 
@@ -179,14 +179,14 @@ namespace Avalonia.Controls
             }
         }
 
-        IControl? FindFocusCandidate(int clearedIndex, out IControl? focusedChild)
+        Control? FindFocusCandidate(int clearedIndex, out Control? focusedChild)
         {
             // Walk through all the children and find elements with index before and after the cleared index.
             // Note that during a delete the next element would now have the same index.
             int previousIndex = int.MinValue;
             int nextIndex = int.MaxValue;
-            IControl? nextElement = null;
-            IControl? previousElement = null;
+            Control? nextElement = null;
+            Control? previousElement = null;
 
             foreach (var child in _owner.Children)
             {
@@ -254,16 +254,16 @@ namespace Avalonia.Controls
             }
         }
 
-        public void UpdatePin(IControl element, bool addPin)
+        public void UpdatePin(Control element, bool addPin)
         {
             var parent = element.VisualParent;
-            var child = (IVisual)element;
+            var child = (Visual)element;
 
             while (parent != null)
             {
                 if (parent is ItemsRepeater repeater)
                 {
-                    var virtInfo = ItemsRepeater.GetVirtualizationInfo((IControl)child);
+                    var virtInfo = ItemsRepeater.GetVirtualizationInfo((Control)child);
                     if (virtInfo.IsRealized)
                     {
                         if (addPin)
@@ -482,9 +482,9 @@ namespace Avalonia.Controls
         // If an index that is realized is requested by the layout, we unfortunately have to walk the
         // children. Not ideal, but a reasonable default to provide consistent behavior between virtualizing
         // and non-virtualizing hosts.
-        private IControl? GetElementIfAlreadyHeldByLayout(int index)
+        private Control? GetElementIfAlreadyHeldByLayout(int index)
         {
-            IControl? element = null;
+            Control? element = null;
 
             bool cachedFirstLastIndicesInvalid = _firstRealizedElementIndexHeldByLayout == FirstRealizedElementIndexDefault;
             bool isRequestedIndexInRealizedRange = (_firstRealizedElementIndexHeldByLayout <= index && index <= _lastRealizedElementIndexHeldByLayout);
@@ -518,9 +518,9 @@ namespace Avalonia.Controls
             return element;
         }
 
-        private IControl? GetElementFromUniqueIdResetPool(int index)
+        private Control? GetElementFromUniqueIdResetPool(int index)
         {
-            IControl? element = null;
+            Control? element = null;
             // See if you can get it from the reset pool.
             if (_isDataSourceStableResetPending)
             {
@@ -541,9 +541,9 @@ namespace Avalonia.Controls
             return element;
         }
 
-        private IControl? GetElementFromPinnedElements(int index)
+        private Control? GetElementFromPinnedElements(int index)
         {
-            IControl? element = null;
+            Control? element = null;
 
             // See if you can find something among the pinned elements.
             for (var i = 0; i < _pinnedPool.Count; ++i)
@@ -570,17 +570,17 @@ namespace Avalonia.Controls
         // There are several cases handled here with respect to which element gets returned and when DataContext is modified.
         //
         // 1. If there is no ItemTemplate:
-        //    1.1 If data is an IControl -> the data is returned
-        //    1.2 If data is not an IControl -> a default DataTemplate is used to fetch element and DataContext is set to data
+        //    1.1 If data is an Control -> the data is returned
+        //    1.2 If data is not an Control -> a default DataTemplate is used to fetch element and DataContext is set to data
         //
         // 2. If there is an ItemTemplate:
-        //    2.1 If data is not an IControl -> Element is fetched from ElementFactory and DataContext is set to the data
-        //    2.2 If data is an IControl:
+        //    2.1 If data is not an Control -> Element is fetched from ElementFactory and DataContext is set to the data
+        //    2.2 If data is an Control:
         //        2.2.1 If Element returned by the ElementFactory is the same as the data -> Element (a.k.a. data) is returned as is
         //        2.2.2 If Element returned by the ElementFactory is not the same as the data
         //                 -> Element that is fetched from the ElementFactory is returned and
         //                    DataContext is set to the data's DataContext (if it exists), otherwise it is set to the data itself
-        private IControl GetElementFromElementFactory(int index)
+        private Control GetElementFromElementFactory(int index)
         {
             // The view generator is the provider of last resort.
             var data = _owner.ItemsSourceView!.GetAt(index);
@@ -598,11 +598,11 @@ namespace Avalonia.Controls
                 return providedElementFactory;
             }
 
-            IControl GetElement()
+            Control GetElement()
             {
                 if (providedElementFactory == null)
                 {
-                    if (data is IControl dataAsElement)
+                    if (data is Control dataAsElement)
                     {
                         return dataAsElement;
                     }
@@ -670,7 +670,7 @@ namespace Avalonia.Controls
             return element;
         }
 
-        private bool ClearElementToUniqueIdResetPool(IControl element, VirtualizationInfo virtInfo)
+        private bool ClearElementToUniqueIdResetPool(Control element, VirtualizationInfo virtInfo)
         {
             if (_isDataSourceStableResetPending)
             {
@@ -681,7 +681,7 @@ namespace Avalonia.Controls
             return _isDataSourceStableResetPending;
         }
 
-        private bool ClearElementToPinnedPool(IControl element, VirtualizationInfo virtInfo, bool isClearedDueToCollectionChange)
+        private bool ClearElementToPinnedPool(Control element, VirtualizationInfo virtInfo, bool isClearedDueToCollectionChange)
         {
             bool moveToPinnedPool =
                 !isClearedDueToCollectionChange && virtInfo.IsPinned;
@@ -697,11 +697,9 @@ namespace Avalonia.Controls
 
         private void UpdateFocusedElement()
         {
-            IControl? focusedElement = null;
+            Control? focusedElement = null;
 
-            var child = FocusManager.Instance?.Current;
-
-            if (child != null)
+            if (FocusManager.Instance?.Current is Visual child)
             {
                 var parent = child.VisualParent;
                 var owner = _owner;
@@ -712,7 +710,7 @@ namespace Avalonia.Controls
                 {
                     if (parent is ItemsRepeater repeater)
                     {
-                        var element = child as IControl;
+                        var element = child as Control;
                         if (repeater == owner &&
                             element is not null &&
                             ItemsRepeater.GetVirtualizationInfo(element).IsRealized)
@@ -723,7 +721,7 @@ namespace Avalonia.Controls
                         break;
                     }
 
-                    child = parent as IInputElement;
+                    child = parent;
                     parent = child?.VisualParent;
                 }
             }
@@ -758,7 +756,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdateElementIndex(IControl element, VirtualizationInfo virtInfo, int index)
+        private void UpdateElementIndex(Control element, VirtualizationInfo virtInfo, int index)
         {
             var oldIndex = virtInfo.Index;
             if (oldIndex != index)
@@ -776,13 +774,13 @@ namespace Avalonia.Controls
 
         private struct PinnedElementInfo
         {
-            public PinnedElementInfo(IControl element)
+            public PinnedElementInfo(Control element)
             {
                 PinnedElement = element;
                 VirtualizationInfo = ItemsRepeater.GetVirtualizationInfo(element);
             }
 
-            public IControl PinnedElement { get; }
+            public Control PinnedElement { get; }
             public VirtualizationInfo VirtualizationInfo { get; }
         }
     }

@@ -39,7 +39,7 @@ namespace Avalonia.Diagnostics.Views
                 .Subscribe(RawKeyDown);
             _pointerSubscription = InputManager.Instance?.Process
                 .OfType<RawPointerEventArgs>()
-                .Subscribe(x => _lastPointerPosition = x.Root.PointToScreen(x.Position));
+                .Subscribe(x => _lastPointerPosition = ((Visual)x.Root).PointToScreen(x.Position));
 
 
             _frozenPopupStates = new Dictionary<Popup, IDisposable>();
@@ -118,11 +118,11 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private IControl? GetHoveredControl(TopLevel topLevel)
+        private Control? GetHoveredControl(TopLevel topLevel)
         {
             var point = topLevel.PointToClient(_lastPointerPosition);
 
-            return (IControl?)topLevel.GetVisualsAt(point, x =>
+            return (Control?)topLevel.GetVisualsAt(point, x =>
                 {
                     if (x is AdornerLayer || !x.IsVisible)
                     {
@@ -138,7 +138,7 @@ namespace Avalonia.Diagnostics.Views
         {
             var popupRoots = new List<PopupRoot>();
 
-            void ProcessProperty<T>(IControl control, AvaloniaProperty<T> property)
+            void ProcessProperty<T>(Control control, AvaloniaProperty<T> property)
             {
                 if (control.GetValue(property) is IPopupHostProvider popupProvider
                     && popupProvider.PopupHost is PopupRoot popupRoot)
@@ -147,7 +147,7 @@ namespace Avalonia.Diagnostics.Views
                 }
             }
 
-            foreach (var control in root.GetVisualDescendants().OfType<IControl>())
+            foreach (var control in root.GetVisualDescendants().OfType<Control>())
             {
                 if (control is Popup p && p.Host is PopupRoot popupRoot)
                 {
@@ -190,7 +190,7 @@ namespace Avalonia.Diagnostics.Views
                 case RawInputModifiers.Shift when (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl):
                 case RawInputModifiers.Shift | RawInputModifiers.Control:
                 {
-                    IControl? control = null;
+                    Control? control = null;
 
                     foreach (var popupRoot in GetPopupRoots(root))
                     {
@@ -271,7 +271,7 @@ namespace Avalonia.Diagnostics.Views
             }
         }
 
-        internal void SelectedControl(IControl? control)
+        internal void SelectedControl(Control? control)
         {
             if (control is { })
             {

@@ -27,8 +27,8 @@ namespace Avalonia.Controls
         /// The default value of <see cref="ItemsControl.ItemsPanelProperty"/> for 
         /// <see cref="Carousel"/>.
         /// </summary>
-        private static readonly ITemplate<IPanel> PanelTemplate =
-            new FuncTemplate<IPanel>(() => new Panel());
+        private static readonly ITemplate<Panel> PanelTemplate =
+            new FuncTemplate<Panel>(() => new Panel());
 
         /// <summary>
         /// Initializes static members of the <see cref="Carousel"/> class.

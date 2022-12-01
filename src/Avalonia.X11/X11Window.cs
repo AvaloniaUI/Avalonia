@@ -398,7 +398,7 @@ namespace Avalonia.X11
                     {
                         RenderOnlyOnRenderThread = true
                     }
-                : (IRenderer)new X11ImmediateRendererProxy(root, loop);
+                : (IRenderer)new X11ImmediateRendererProxy((Visual)root, loop);
         }
 
         void OnEvent(ref XEvent ev)

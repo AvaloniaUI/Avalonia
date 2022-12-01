@@ -53,7 +53,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(VerticalCacheLength), 2.0);
 
         private static readonly StyledProperty<VirtualizationInfo> VirtualizationInfoProperty =
-            AvaloniaProperty.RegisterAttached<ItemsRepeater, IControl, VirtualizationInfo>("VirtualizationInfo");
+            AvaloniaProperty.RegisterAttached<ItemsRepeater, Control, VirtualizationInfo>("VirtualizationInfo");
 
         internal static readonly Rect InvalidRect = new Rect(-1, -1, -1, -1);
         internal static readonly Point ClearedElementsArrangePosition = new Point(-10000.0, -10000.0);
@@ -156,9 +156,9 @@ namespace Avalonia.Controls
         internal IElementFactory? ItemTemplateShim { get; set; }
         internal Point LayoutOrigin { get; set; }
         internal object? LayoutState { get; set; }
-        internal IControl? MadeAnchor => _viewportManager.MadeAnchor;
+        internal Control? MadeAnchor => _viewportManager.MadeAnchor;
         internal Rect RealizationWindow => _viewportManager.GetLayoutRealizationWindow();
-        internal IControl? SuggestedAnchor => _viewportManager.SuggestedAnchor;
+        internal Control? SuggestedAnchor => _viewportManager.SuggestedAnchor;
 
         private bool IsProcessingCollectionChange => _processingItemsSourceChange != null;
 
@@ -183,7 +183,7 @@ namespace Avalonia.Controls
 
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
-            return child is IControl control
+            return child is Control control
                 ? GetElementIndex(control)
                 : -1;
         }
@@ -205,7 +205,7 @@ namespace Avalonia.Controls
         public event EventHandler<ItemsRepeaterElementClearingEventArgs>? ElementClearing;
 
         /// <summary>
-        /// Occurs for each realized <see cref="IControl"/> when the index for the item it
+        /// Occurs for each realized <see cref="Control"/> when the index for the item it
         /// represents has changed.
         /// </summary>
         /// <remarks>
@@ -213,7 +213,7 @@ namespace Avalonia.Controls
         /// interactions on the child elements (such as selection or click), it is useful to be
         /// able to keep an up-to-date identifier for the backing data item.
         ///
-        /// This event is raised for each realized IControl where the index for the item it
+        /// This event is raised for each realized Control where the index for the item it
         /// represents has changed. For example, when another item is added or removed in the data
         /// source, the index for items that come after in the ordering will be impacted.
         /// </remarks>
@@ -230,7 +230,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Retrieves the index of the item from the data source that corresponds to the specified
-        /// <see cref="IControl"/>.
+        /// <see cref="Control"/>.
         /// </summary>
         /// <param name="element">
         /// The element that corresponds to the item to get the index of.
@@ -239,7 +239,7 @@ namespace Avalonia.Controls
         /// The index of the item from the data source that corresponds to the specified UIElement,
         /// or -1 if the element is not supported.
         /// </returns>
-        public int GetElementIndex(IControl element) => GetElementIndexImpl(element);
+        public int GetElementIndex(Control element) => GetElementIndexImpl(element);
 
         /// <summary>
         /// Retrieves the realized UIElement that corresponds to the item at the specified index in
@@ -250,7 +250,7 @@ namespace Avalonia.Controls
         /// he UIElement that corresponds to the item at the specified index if the item is
         /// realized, or null if the item is not realized.
         /// </returns>
-        public IControl? TryGetElement(int index) => GetElementFromIndexImpl(index);
+        public Control? TryGetElement(int index) => GetElementFromIndexImpl(index);
 
         /// <summary>
         /// Retrieves the UIElement that corresponds to the item at the specified index in the
@@ -258,21 +258,21 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="index">The index of the item.</param>
         /// <returns>
-        /// An <see cref="IControl"/> that corresponds to the item at the specified index. If the
+        /// An <see cref="Control"/> that corresponds to the item at the specified index. If the
         /// item is not realized, a new UIElement is created.
         /// </returns>
-        public IControl GetOrCreateElement(int index) => GetOrCreateElementImpl(index);
+        public Control GetOrCreateElement(int index) => GetOrCreateElementImpl(index);
 
-        internal void PinElement(IControl element) => _viewManager.UpdatePin(element, true);
+        internal void PinElement(Control element) => _viewManager.UpdatePin(element, true);
 
-        internal void UnpinElement(IControl element) => _viewManager.UpdatePin(element, false);
+        internal void UnpinElement(Control element) => _viewManager.UpdatePin(element, false);
 
-        internal static VirtualizationInfo? TryGetVirtualizationInfo(IControl element)
+        internal static VirtualizationInfo? TryGetVirtualizationInfo(Control element)
         {
             return (element as AvaloniaObject)?.GetValue(VirtualizationInfoProperty);
         }
 
-        internal static VirtualizationInfo CreateAndInitializeVirtualizationInfo(IControl element)
+        internal static VirtualizationInfo CreateAndInitializeVirtualizationInfo(Control element)
         {
             if (TryGetVirtualizationInfo(element) != null)
             {
@@ -284,7 +284,7 @@ namespace Avalonia.Controls
             return result;
         }
 
-        internal static VirtualizationInfo GetVirtualizationInfo(IControl element)
+        internal static VirtualizationInfo GetVirtualizationInfo(Control element)
         {
             if (element is AvaloniaObject ao)
             {
@@ -299,7 +299,7 @@ namespace Avalonia.Controls
                 return result;
             }
 
-            throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.");
+            throw new NotSupportedException("Custom implementations of AvaloniaObject not supported.");
         }
 
         private protected override void InvalidateMeasureOnChildrenChanged()
@@ -470,13 +470,13 @@ namespace Avalonia.Controls
             base.OnPropertyChanged(change);
         }
 
-        internal IControl GetElementImpl(int index, bool forceCreate, bool suppressAutoRecycle)
+        internal Control GetElementImpl(int index, bool forceCreate, bool suppressAutoRecycle)
         {
             var element = _viewManager.GetElement(index, forceCreate, suppressAutoRecycle);
             return element;
         }
 
-        internal void ClearElementImpl(IControl element)
+        internal void ClearElementImpl(Control element)
         {
             // Clearing an element due to a collection change
             // is more strict in that pinned elements will be forcibly
@@ -491,7 +491,7 @@ namespace Avalonia.Controls
             _viewportManager.OnElementCleared(element, GetVirtualizationInfo(element));
         }
 
-        private int GetElementIndexImpl(IControl element)
+        private int GetElementIndexImpl(Control element)
         {
             // Verify that element is actually a child of this ItemsRepeater
             var parent = element.GetVisualParent();
@@ -505,9 +505,9 @@ namespace Avalonia.Controls
             return -1;
         }
 
-        private IControl? GetElementFromIndexImpl(int index)
+        private Control? GetElementFromIndexImpl(int index)
         {
-            IControl? result = null;
+            Control? result = null;
 
             var children = Children;
             for (var i = 0; i < children.Count && result == null; ++i)
@@ -523,7 +523,7 @@ namespace Avalonia.Controls
             return result;
         }
 
-        private IControl GetOrCreateElementImpl(int index)
+        private Control GetOrCreateElementImpl(int index)
         {
             if (index >= 0 && index >= (ItemsSourceView?.Count ?? 0))
             {
@@ -545,7 +545,7 @@ namespace Avalonia.Controls
                     throw new InvalidOperationException("Cannot make an Anchor when there is no attached layout.");
                 }
 
-                element = (IControl)GetLayoutContext().GetOrCreateElementAt(index);
+                element = (Control)GetLayoutContext().GetOrCreateElementAt(index);
                 element.Measure(Size.Infinity);
             }
 
@@ -555,7 +555,7 @@ namespace Avalonia.Controls
             return element!;
         }
 
-        internal void OnElementPrepared(IControl element, VirtualizationInfo virtInfo)
+        internal void OnElementPrepared(Control element, VirtualizationInfo virtInfo)
         {
             _viewportManager.OnElementPrepared(element, virtInfo);
 
@@ -578,7 +578,7 @@ namespace Avalonia.Controls
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        internal void OnElementClearing(IControl element)
+        internal void OnElementClearing(Control element)
         {
             if (ElementClearing != null)
             {
@@ -597,7 +597,7 @@ namespace Avalonia.Controls
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
         }
 
-        internal void OnElementIndexChanged(IControl element, int oldIndex, int newIndex)
+        internal void OnElementIndexChanged(Control element, int oldIndex, int newIndex)
         {
             if (ElementIndexChanged != null)
             {

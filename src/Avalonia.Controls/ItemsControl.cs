@@ -11,6 +11,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
@@ -28,8 +29,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel());
+        private static readonly FuncTemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel());
 
         /// <summary>
         /// Defines the <see cref="Items"/> property.
@@ -52,8 +53,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITemplate<IPanel>> ItemsPanelProperty =
-            AvaloniaProperty.Register<ItemsControl, ITemplate<IPanel>>(nameof(ItemsPanel), DefaultPanel);
+        public static readonly StyledProperty<ITemplate<Panel>> ItemsPanelProperty =
+            AvaloniaProperty.Register<ItemsControl, ITemplate<Panel>>(nameof(ItemsPanel), DefaultPanel);
 
         /// <summary>
         /// Defines the <see cref="ItemTemplate"/> property.
@@ -61,6 +62,23 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
             AvaloniaProperty.Register<ItemsControl, IDataTemplate?>(nameof(ItemTemplate));
 
+
+        /// <summary>
+        /// Defines the <see cref="DisplayMemberBinding" /> property
+        /// </summary>
+        public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
+            AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
+
+        /// <summary>
+        /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
+        /// </summary>
+        [AssignBinding]
+        public IBinding? DisplayMemberBinding
+        {
+            get { return GetValue(DisplayMemberBindingProperty); }
+            set { SetValue(DisplayMemberBindingProperty, value); }
+        }
+        
         private IEnumerable? _items = new AvaloniaList<object>();
         private int _itemCount;
         private IItemContainerGenerator? _itemContainerGenerator;
@@ -97,6 +115,7 @@ namespace Avalonia.Controls
 
                     _itemContainerGenerator.ItemContainerTheme = ItemContainerTheme;
                     _itemContainerGenerator.ItemTemplate = ItemTemplate;
+                    _itemContainerGenerator.DisplayMemberBinding = DisplayMemberBinding;
                     _itemContainerGenerator.Materialized += (_, e) => OnContainersMaterialized(e);
                     _itemContainerGenerator.Dematerialized += (_, e) => OnContainersDematerialized(e);
                     _itemContainerGenerator.Recycled += (_, e) => OnContainersRecycled(e);
@@ -137,7 +156,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the panel used to display the items.
         /// </summary>
-        public ITemplate<IPanel> ItemsPanel
+        public ITemplate<Panel> ItemsPanel
         {
             get { return GetValue(ItemsPanelProperty); }
             set { SetValue(ItemsPanelProperty, value); }
@@ -329,7 +348,7 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                IVisual? current = focus.Current;
+                Visual? current = focus.Current as Visual;
 
                 while (current != null)
                 {
@@ -434,7 +453,7 @@ namespace Avalonia.Controls
             {
                 foreach (var i in items)
                 {
-                    var control = i as IControl;
+                    var control = i as Control;
 
                     if (control != null && !LogicalChildren.Contains(control))
                     {
@@ -458,7 +477,7 @@ namespace Avalonia.Controls
             {
                 foreach (var i in items)
                 {
-                    var control = i as IControl;
+                    var control = i as Control;
 
                     if (control != null)
                     {

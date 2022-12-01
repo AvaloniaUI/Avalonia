@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 namespace Avalonia
 {
     /// <summary>
-    /// Extension methods for <see cref="IVisual"/>.
+    /// Extension methods for <see cref="Visual"/>.
     /// </summary>
     public static class VisualExtensions
     {
@@ -14,12 +14,12 @@ namespace Avalonia
         /// <param name="visual">The visual.</param>
         /// <param name="point">The point in screen coordinates.</param>
         /// <returns>The point in client coordinates.</returns>
-        public static Point PointToClient(this IVisual visual, PixelPoint point)
+        public static Point PointToClient(this Visual visual, PixelPoint point)
         {
             var root = visual.VisualRoot ??
-                throw new ArgumentException("Control does not belong to a visual tree.", nameof(visual));
+                 throw new ArgumentException("Control does not belong to a visual tree.", nameof(visual));
             var rootPoint = root.PointToClient(point);
-            return root.TranslatePoint(rootPoint, visual)!.Value;
+            return ((Visual)root).TranslatePoint(rootPoint, visual)!.Value;
         }
 
         /// <summary>
@@ -28,12 +28,12 @@ namespace Avalonia
         /// <param name="visual">The visual.</param>
         /// <param name="point">The point in client coordinates.</param>
         /// <returns>The point in screen coordinates.</returns>
-        public static PixelPoint PointToScreen(this IVisual visual, Point point)
+        public static PixelPoint PointToScreen(this Visual visual, Point point)
         {
             var root = visual.VisualRoot ??
                 throw new ArgumentException("Control does not belong to a visual tree.", nameof(visual));
-            var p = visual.TranslatePoint(point, root);
-            return visual.VisualRoot.PointToScreen(p!.Value);
+            var p = visual.TranslatePoint(point, (Visual)root);
+            return root.PointToScreen(p!.Value);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Avalonia
         /// A <see cref="Matrix"/> containing the transform or null if the visuals don't share a
         /// common ancestor.
         /// </returns>
-        public static Matrix? TransformToVisual(this IVisual from, IVisual to)
+        public static Matrix? TransformToVisual(this Visual from, Visual to)
         {
             var common = from.FindCommonVisualAncestor(to);
 
@@ -76,7 +76,7 @@ namespace Avalonia
         /// A point value, now relative to the target visual rather than this source element, or null if the
         /// two elements have no common ancestor.
         /// </returns>
-        public static Point? TranslatePoint(this IVisual visual, Point point, IVisual relativeTo)
+        public static Point? TranslatePoint(this Visual visual, Point point, Visual relativeTo)
         {
             var transform = visual.TransformToVisual(relativeTo);
 
@@ -94,10 +94,10 @@ namespace Avalonia
         /// <param name="ancestor">The ancestor visual.</param>
         /// <param name="visual">The visual.</param>
         /// <returns>The transform.</returns>
-        private static Matrix GetOffsetFrom(IVisual ancestor, IVisual visual)
+        private static Matrix GetOffsetFrom(Visual ancestor, Visual visual)
         {
             var result = Matrix.Identity;
-            IVisual? v = visual;
+            Visual? v = visual;
 
             while (v != ancestor)
             {

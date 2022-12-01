@@ -16,7 +16,7 @@ namespace Avalonia
     /// <remarks>
     /// This class is analogous to DependencyObject in WPF.
     /// </remarks>
-    public class AvaloniaObject : IAvaloniaObject, IAvaloniaObjectDebug, INotifyPropertyChanged
+    public class AvaloniaObject : IAvaloniaObjectDebug, INotifyPropertyChanged
     {
         private readonly ValueStore _values;
         private AvaloniaObject? _inheritanceParent;

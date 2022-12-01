@@ -43,6 +43,7 @@
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="RuntimeXamlLoaderConfiguration.cs" />
+        <Compile Include="RuntimeXamlLoaderDocument.cs" />
         <Compile Include="Styling\ResourceInclude.cs" />
         <Compile Include="Styling\StyleInclude.cs" />
         <Compile Include="Templates\ControlTemplate.cs" />

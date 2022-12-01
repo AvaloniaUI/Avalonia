@@ -18,7 +18,7 @@ namespace Avalonia.Controls.Templates
         /// </param>
         /// <returns>The data template or null if no matching data template was found.</returns>
         public static IDataTemplate? FindDataTemplate(
-            this IControl control,
+            this Control control,
             object? data,
             IDataTemplate? primary = null)
         {

@@ -100,7 +100,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Path = "Text",
                         Mode = BindingMode.TwoWay,
-                        Priority = BindingPriority.TemplatedParent,
+                        Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
                 }.RegisterInNameScope(scope));

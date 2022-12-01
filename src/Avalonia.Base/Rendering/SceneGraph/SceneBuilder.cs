@@ -30,7 +30,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public bool Update(Scene scene, IVisual visual)
+        public bool Update(Scene scene, Visual visual)
         {
             _ = scene ?? throw new ArgumentNullException(nameof(scene));
             _ = visual ?? throw new ArgumentNullException(nameof(visual));
@@ -120,7 +120,7 @@ namespace Avalonia.Rendering.SceneGraph
             return false;
         }
 
-        private static VisualNode? FindExistingAncestor(Scene scene, IVisual visual)
+        private static VisualNode? FindExistingAncestor(Scene scene, Visual visual)
         {
             var node = scene.FindNode(visual);
 
@@ -151,7 +151,7 @@ namespace Avalonia.Rendering.SceneGraph
             return (VisualNode)node;
         }
 
-        private static object GetOrCreateChildNode(Scene scene, IVisual child, VisualNode parent)
+        private static object GetOrCreateChildNode(Scene scene, Visual child, VisualNode parent)
         {
             var result = (VisualNode?)scene.FindNode(child);
 
@@ -259,11 +259,11 @@ namespace Avalonia.Rendering.SceneGraph
                     catch { }
 
                     var transformed = new TransformedBounds(new Rect(visual.Bounds.Size), clip, node.Transform);
-                    visual.TransformedBounds = transformed;
+                    visual.SetTransformedBounds(transformed);
 
                     if (forceRecurse)
                     {
-                        var visualChildren = (IList<IVisual>) visual.VisualChildren;
+                        var visualChildren = (IList<Visual>) visual.VisualChildren;
 
                         node.TryPreallocateChildren(visualChildren.Count);
 
@@ -278,7 +278,7 @@ namespace Avalonia.Rendering.SceneGraph
 
                             if (visual.HasNonUniformZIndexChildren)
                             {
-                                var sortedChildren = new (IVisual visual, int index)[count];
+                                var sortedChildren = new (Visual visual, int index)[count];
 
                                 for (var i = 0; i < count; i++)
                                 {
@@ -352,7 +352,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        private static VisualNode CreateNode(Scene scene, IVisual visual, VisualNode parent)
+        private static VisualNode CreateNode(Scene scene, Visual visual, VisualNode parent)
         {
             var node = new VisualNode(visual, parent);
             node.LayerRoot = parent.LayerRoot;
@@ -379,7 +379,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             scene.Layers[node.LayerRoot!].Dirty.Add(node.Bounds);
 
-            node.Visual.TransformedBounds = null;
+            node.Visual.SetTransformedBounds(null);
 
             if (node.LayerRoot == node.Visual && node.Visual != scene.Root.Visual)
             {
@@ -455,7 +455,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         // HACK: Disabled layers because they're broken in current renderer. See #2244.
-        private static bool ShouldStartLayer(IVisual visual) => false;
+        private static bool ShouldStartLayer(Visual visual) => false;
 
         private static IGeometryImpl? CreateLayerGeometryClip(VisualNode node)
         {

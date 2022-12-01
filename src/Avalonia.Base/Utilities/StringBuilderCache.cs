@@ -9,6 +9,7 @@ using System;
 using System.Text;
 
 namespace Avalonia.Utilities;
+#nullable enable
 
 // <summary>Provide a cached reusable instance of stringbuilder per thread.</summary>
 internal static class StringBuilderCache

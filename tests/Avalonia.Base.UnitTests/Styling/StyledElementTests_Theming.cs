@@ -23,7 +23,7 @@ public class StyledElementTests_Theming
 
             Assert.Null(target.Template);
 
-            var root = CreateRoot(target);
+            CreateRoot(target);
             Assert.NotNull(target.Template);
 
             var border = Assert.IsType<Border>(target.VisualChild);
@@ -43,7 +43,7 @@ public class StyledElementTests_Theming
 
             Assert.Null(target.Template);
 
-            var root = CreateRoot(target);
+            CreateRoot(target);
             Assert.NotNull(target.Template);
 
             var border = Assert.IsType<Border>(target.VisualChild);
@@ -57,7 +57,7 @@ public class StyledElementTests_Theming
         public void Theme_Is_Detached_When_Theme_Property_Cleared()
         {
             var target = CreateTarget();
-            var root = CreateRoot(target);
+            CreateRoot(target);
 
             Assert.NotNull(target.Template);
 
@@ -66,7 +66,47 @@ public class StyledElementTests_Theming
         }
 
         [Fact]
-        public void Theme_Is_Detached_From_Template_Controls_When_Theme_Property_Cleared()
+        public void Setting_Explicit_Theme_Detaches_Default_Theme()
+        {
+            var target = new ThemedControl();
+            var root = new TestRoot
+            {
+                Resources = { { typeof(ThemedControl), CreateTheme() } },
+                Child = target,
+            };
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal("theme", target.Tag);
+
+            target.Theme = new ControlTheme(typeof(ThemedControl))
+            {
+                Setters =
+                {
+                    new Setter(ThemedControl.BackgroundProperty, Brushes.Yellow),
+                }
+            };
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Null(target.Tag);
+            Assert.Equal(Brushes.Yellow, target.Background);
+        }
+
+        [Fact]
+        public void Unrelated_Styles_Are_Not_Detached_When_Theme_Property_Cleared()
+        {
+            var target = CreateTarget();
+            CreateRoot(target, createAdditionalStyles: true);
+
+            Assert.Equal("style", target.Tag);
+
+            target.Theme = null;
+            Assert.Equal("style", target.Tag);
+        }
+        
+        [Fact]
+        public void TemplatedParent_Theme_Is_Detached_From_Template_Controls_When_Theme_Property_Cleared()
         {
             var theme = new ControlTheme
             {
@@ -93,8 +133,113 @@ public class StyledElementTests_Theming
 
             target.Theme = null;
 
-            Assert.IsType<Canvas>(target.VisualChild);
+            Assert.Same(canvas, target.VisualChild);
             Assert.Null(canvas.Background);
+        }
+
+        [Fact]
+        public void Primary_Theme_Is_Not_Detached_From_Template_Controls_When_Theme_Property_Cleared()
+        {
+            var templatedParentTheme = new ControlTheme
+            {
+                TargetType = typeof(ThemedControl),
+                Children =
+                {
+                    new Style(x => x.Nesting().Template().OfType<Button>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Panel.BackgroundProperty, Brushes.Red),
+                        }
+                    },
+                }
+            };
+
+            var childTheme = new ControlTheme
+            {
+                TargetType = typeof(Button),
+                Setters =
+                {
+                    new Setter(TemplatedControl.ForegroundProperty, Brushes.Green),
+                }
+            };
+
+            var target = CreateTarget(templatedParentTheme);
+            target.Template = new FuncControlTemplate<ThemedControl>((o, n) => new Button
+            {
+                Theme = childTheme,
+            });
+
+            var root = CreateRoot(target, createAdditionalStyles: true);
+
+            var templateChild = Assert.IsType<Button>(target.VisualChild);
+            Assert.Equal(Brushes.Red, templateChild.Background);
+            Assert.Equal(Brushes.Green, templateChild.Foreground);
+
+            target.Theme = null;
+
+            Assert.Null(templateChild.Background);
+            Assert.Equal(Brushes.Green, templateChild.Foreground);
+        }
+
+        [Fact]
+        public void TemplatedParent_Theme_Is_Not_Detached_From_Template_Controls_When_Primary_Theme_Property_Cleared()
+        {
+            var templatedParentTheme = new ControlTheme
+            {
+                TargetType = typeof(ThemedControl),
+                Children =
+                {
+                    new Style(x => x.Nesting().Template().OfType<Button>())
+                    {
+                        Setters =
+                        {
+                            new Setter(Panel.BackgroundProperty, Brushes.Red),
+                        }
+                    },
+                }
+            };
+
+            var childTheme = new ControlTheme
+            {
+                TargetType = typeof(Button),
+                Setters =
+                {
+                    new Setter(Button.TagProperty, "childTheme"),
+                }
+            };
+
+            var target = CreateTarget(templatedParentTheme);
+            target.Template = new FuncControlTemplate<ThemedControl>((o, n) => new Button
+            {
+                Theme = childTheme,
+            });
+
+            var root = CreateRoot(target, createAdditionalStyles: true);
+
+            var templateChild = Assert.IsType<Button>(target.VisualChild);
+            Assert.Equal(Brushes.Red, templateChild.Background);
+            Assert.Equal("childTheme", templateChild.Tag);
+
+            templateChild.Theme = null;
+
+            Assert.Equal(Brushes.Red, templateChild.Background);
+            Assert.Null(templateChild.Tag);
+        }
+
+        [Fact]
+        public void Unrelated_Styles_Are_Not_Detached_From_Template_Controls_When_Theme_Property_Cleared()
+        {
+            var target = CreateTarget();
+            var root = CreateRoot(target, createAdditionalStyles: true);
+
+            var canvas = Assert.IsType<Border>(target.VisualChild);
+            Assert.Equal("style", canvas.Tag);
+
+            target.Theme = null;
+
+            Assert.Same(canvas, target.VisualChild);
+            Assert.Equal("style", canvas.Tag);
         }
 
         [Fact]
@@ -122,7 +267,7 @@ public class StyledElementTests_Theming
 
             Assert.Null(target.Template);
 
-            var root = CreateRoot(target);
+            CreateRoot(target);
             Assert.NotNull(target.Template);
             Assert.Equal(Brushes.Blue, target.BorderBrush);
 
@@ -135,6 +280,29 @@ public class StyledElementTests_Theming
             Assert.Equal(Brushes.Cyan, border.BorderBrush);
         }
 
+        [Fact]
+        public void Theme_Has_Lower_Priority_Than_Style()
+        {
+            var target = CreateTarget();
+            CreateRoot(target, createAdditionalStyles: true);
+
+            Assert.Equal("style", target.Tag);
+        }
+
+        [Fact]
+        public void Theme_Has_Lower_Priority_Than_Style_After_Change()
+        {
+            var target = CreateTarget();
+            var theme = target.Theme;
+            CreateRoot(target, createAdditionalStyles: true);
+
+            target.Theme = null;
+            target.Theme = theme;
+            target.ApplyStyling();
+
+            Assert.Equal("style", target.Tag);
+        }
+
         private static ThemedControl CreateTarget(ControlTheme? theme = null)
         {
             return new ThemedControl
@@ -143,9 +311,32 @@ public class StyledElementTests_Theming
             };
         }
 
-        private static TestRoot CreateRoot(IControl child)
+        private static TestRoot CreateRoot(
+            Control child,
+            bool createAdditionalStyles = false)
         {
-            var result = new TestRoot(child);
+            var result = new TestRoot();
+
+            if (createAdditionalStyles)
+            {
+                result.Styles.Add(new Style(x => x.OfType<ThemedControl>())
+                {
+                    Setters =
+                    {
+                        new Setter(Control.TagProperty, "style"),
+                    }
+                });
+
+                result.Styles.Add(new Style(x => x.OfType<Border>())
+                {
+                    Setters =
+                    {
+                        new Setter(Control.TagProperty, "style"),
+                    }
+                });
+            }
+
+            result.Child = child;
             result.LayoutManager.ExecuteInitialLayoutPass();
             return result;
         }
@@ -157,7 +348,7 @@ public class StyledElementTests_Theming
         public void Implicit_Theme_Is_Applied_When_Attached_To_Logical_Tree()
         {
             var target = CreateTarget();
-            var root = CreateRoot(target);
+            CreateRoot(target);
             Assert.NotNull(target.Template);
 
             var border = Assert.IsType<Border>(target.VisualChild);
@@ -190,14 +381,14 @@ public class StyledElementTests_Theming
                     Setters =
                     {
                         new Setter(
-                            TemplatedControl.TemplateProperty,
+                            Controls.Primitives.TemplatedControl.TemplateProperty,
                             new FuncControlTemplate<ThemedControl2>((o, n) => new ThemedControl())),
                     },
                     Children =
                     {
                         new Style(x => x.Nesting().Template().OfType<ThemedControl>())
                         {
-                            Setters = { new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(7)), }
+                            Setters = { new Setter(Controls.Primitives.TemplatedControl.CornerRadiusProperty, new CornerRadius(7)), }
                         },
                     }
                 },
@@ -211,7 +402,7 @@ public class StyledElementTests_Theming
 
         private static ThemedControl CreateTarget() => new ThemedControl();
 
-        private static TestRoot CreateRoot(IControl child)
+        private static TestRoot CreateRoot(Control child)
         {
             var result = new TestRoot();
             result.Resources.Add(typeof(ThemedControl), CreateTheme());
@@ -231,7 +422,7 @@ public class StyledElementTests_Theming
             Assert.Null(target.Theme);
             Assert.Null(target.Template);
 
-            var root = CreateRoot(target);
+            CreateRoot(target);
 
             Assert.NotNull(target.Theme);
             Assert.NotNull(target.Template);
@@ -320,7 +511,7 @@ public class StyledElementTests_Theming
             return new ThemedControl();
         }
 
-        private static TestRoot CreateRoot(IControl child)
+        private static TestRoot CreateRoot(Control child)
         {
             var result = new TestRoot()
             {
@@ -348,6 +539,7 @@ public class StyledElementTests_Theming
             TargetType = typeof(ThemedControl),
             Setters =
             {
+                new Setter(Control.TagProperty, "theme"),
                 new Setter(TemplatedControl.TemplateProperty, template),
                 new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(5)),
             },
@@ -355,7 +547,11 @@ public class StyledElementTests_Theming
             {
                 new Style(x => x.Nesting().Template().OfType<Border>())
                 {
-                    Setters = { new Setter(Border.BackgroundProperty, Brushes.Red) }
+                    Setters = 
+                    { 
+                        new Setter(Border.BackgroundProperty, Brushes.Red),
+                        new Setter(Control.TagProperty, "theme"),
+                    }
                 },
                 new Style(x => x.Nesting().Class("foo").Template().OfType<Border>())
                 {
@@ -389,14 +585,14 @@ public class StyledElementTests_Theming
         };
     }
 
-    private class ThemedControl : TemplatedControl
+    private class ThemedControl : Controls.Primitives.TemplatedControl
     {
-        public IVisual? VisualChild => VisualChildren?.SingleOrDefault();
+        public Visual? VisualChild => VisualChildren?.SingleOrDefault();
     }
 
-    private class ThemedControl2 : TemplatedControl
+    private class ThemedControl2 : Controls.Primitives.TemplatedControl
     {
-        public IVisual? VisualChild => VisualChildren?.SingleOrDefault();
+        public Visual? VisualChild => VisualChildren?.SingleOrDefault();
     }
 
     private class DerivedThemedControl : ThemedControl
