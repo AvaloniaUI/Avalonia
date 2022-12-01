@@ -417,7 +417,7 @@ namespace Avalonia
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
-            _visualRoot.Renderer.RecalculateChildren(_visualParent!);
+            _visualRoot.Renderer?.RecalculateChildren(_visualParent!);
 
             if (ZIndex != 0 && VisualParent is Visual parent)
                 parent.HasNonUniformZIndexChildren = true;
