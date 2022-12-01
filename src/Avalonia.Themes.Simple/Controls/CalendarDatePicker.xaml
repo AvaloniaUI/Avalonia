@@ -7,7 +7,11 @@
 
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:converters="using:Avalonia.Controls.Converters"
                     xmlns:sys="using:System">
+
+  <converters:DateTimeToDateTimeOffsetConverter x:Key="DateTimeToDateTimeOffsetConverter" />
+
   <ControlTheme x:Key="{x:Type CalendarDatePicker}"
                 TargetType="CalendarDatePicker">
     <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />

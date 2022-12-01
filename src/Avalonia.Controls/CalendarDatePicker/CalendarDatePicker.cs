@@ -94,7 +94,7 @@ namespace Avalonia.Controls
         {
             FirstDayOfWeek = DateTimeHelper.GetCurrentDateFormat().FirstDayOfWeek;
             _defaultText = string.Empty;
-            DisplayDate = DateTime.Today; // Use instead of DateTimeOffset.Now for zeroed time
+            DisplayDate = new DateTimeOffset(DateTime.Today);
         }
 
         /// <summary>
@@ -249,7 +249,7 @@ namespace Avalonia.Controls
 
                 if (SelectedDate != null)
                 {
-                    var day = SelectedDate.Value;
+                    DateTimeOffset day = SelectedDate.Value;
 
                     // When the SelectedDateProperty change is done from
                     // OnTextPropertyChanged method, two-way binding breaks if
@@ -266,7 +266,8 @@ namespace Avalonia.Controls
                     // change is coming from the Calendar UI itself, so, we
                     // shouldn't change the DisplayDate since it will automatically
                     // be changed by the Calendar
-                    if ((day.Month != DisplayDate.Month || day.Year != DisplayDate.Year) && (_calendar == null || !_calendar.CalendarDatePickerDisplayDateFlag))
+                    if ((day.Month != DisplayDate.Month || day.Year != DisplayDate.Year) &&
+                        (_calendar == null || !_calendar.CalendarDatePickerDisplayDateFlag))
                     {
                         DisplayDate = day;
                     }
@@ -496,7 +497,7 @@ namespace Avalonia.Controls
 
                     if (date != null)
                     {
-                        string? s = DateTimeToString((DateTimeOffset)date);
+                        string? s = DateTimeToString(date.Value);
                         Text = s;
                     }
                 }
@@ -568,11 +569,13 @@ namespace Avalonia.Controls
         {
             Debug.Assert(e.AddedItems.Count < 2, "There should be less than 2 AddedItems!");
 
+            // It is important to ONLY compare the date components between types here
+            // Time zone information should be removed entirely
             if (e.AddedItems.Count > 0 &&
                 SelectedDate.HasValue &&
                 DateTime.Compare(((DateTime)e.AddedItems[0]!).Date, SelectedDate.Value.DateTime.Date) != 0)
             {
-                SelectedDate = ((DateTime?)e.AddedItems[0])?.Date;
+                SelectedDate = (DateTimeOffset?)e.AddedItems[0];
             }
             else
             {
@@ -586,7 +589,7 @@ namespace Avalonia.Controls
                 {
                     if (e.AddedItems.Count > 0)
                     {
-                        SelectedDate = ((DateTime?)e.AddedItems[0])?.Date;
+                        SelectedDate = (DateTimeOffset?)e.AddedItems[0];
                     }
                 }
             }
