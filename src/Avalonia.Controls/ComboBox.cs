@@ -440,15 +440,14 @@ namespace Avalonia.Controls
 
         private void SelectFocusedItem()
         {
-            throw new NotImplementedException();
-            ////foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
-            ////{
-            ////    if (dropdownItem.ContainerControl.IsFocused)
-            ////    {
-            ////        SelectedIndex = dropdownItem.Index;
-            ////        break;
-            ////    }
-            ////}
+            foreach (var dropdownItem in GetRealizedContainers())
+            {
+                if (dropdownItem.IsFocused)
+                {
+                    SelectedIndex = IndexFromContainer(dropdownItem);
+                    break;
+                }
+            }
         }
 
         private void SelectNext()

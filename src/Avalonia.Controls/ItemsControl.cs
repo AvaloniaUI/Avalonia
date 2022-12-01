@@ -419,8 +419,7 @@ namespace Avalonia.Controls
             }
             else if (change.Property == ItemContainerThemeProperty && _itemContainerGenerator is not null)
             {
-                throw new NotImplementedException();
-                ////_itemContainerGenerator.ItemContainerTheme = change.GetNewValue<ControlTheme?>();
+                RefreshContainers();
             }
             else if (change.Property == ItemTemplateProperty)
             {
