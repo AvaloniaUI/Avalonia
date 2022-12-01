@@ -56,13 +56,13 @@ namespace Avalonia.Themes.Simple
         {
             var themeVariantResource = Mode == SimpleThemeMode.Dark ? _simpleDark : _simpleLight;
             var dict = Resources.MergedDictionaries;
-            if (dict.Count == 1)
+            if (dict.Count == 0)
             {
                 dict.Add(themeVariantResource);
             }
             else
             {
-                dict[1] = themeVariantResource;
+                dict[0] = themeVariantResource;
             }
         }
     }

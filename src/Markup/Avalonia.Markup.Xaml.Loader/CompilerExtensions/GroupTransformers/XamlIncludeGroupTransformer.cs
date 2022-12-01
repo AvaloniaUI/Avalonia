@@ -15,6 +15,7 @@ using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 
+#nullable enable
 internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
 {
     public IXamlAstNode Transform(AstGroupTransformationContext context, IXamlAstNode node)
@@ -34,40 +35,26 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         {
             throw new InvalidOperationException($"\"{nodeTypeName}\".Loaded property is expected to be defined");
         }
-        
+
         if (valueNode.Manipulation is not XamlObjectInitializationNode
             {
                 Manipulation: XamlPropertyAssignmentNode { Property: { Name: "Source" } } sourceProperty
             })
         {
-            return context.ParseError($"Source property must be set on the \"{nodeTypeName}\" node.", node);
+            throw new XamlDocumentParseException(context.CurrentDocument,
+                $"Source property must be set on the \"{nodeTypeName}\" node.", valueNode);
         }
 
-        // We expect that AvaloniaXamlIlLanguageParseIntrinsics has already parsed the Uri and created node like: `new Uri(assetPath, uriKind)`.
-        if (sourceProperty.Values.OfType<XamlAstNewClrObjectNode>().FirstOrDefault() is not { } sourceUriNode
-            || sourceUriNode.Type.GetClrType() != context.GetAvaloniaTypes().Uri
-            || sourceUriNode.Arguments.FirstOrDefault() is not XamlConstantNode { Constant: string originalAssetPath }
-            || sourceUriNode.Arguments.Skip(1).FirstOrDefault() is not XamlConstantNode { Constant: int uriKind })
+        var (assetPathUri, sourceUriNode) = ResolveSourceFromXamlInclude(context, nodeTypeName, sourceProperty, false);
+        if (assetPathUri is null)
         {
-            // TODO: make it a compiler warning
-            // Source value can be set with markup extension instead of the Uri object node, we don't support it here yet.
             return node;
         }
-
-        var uriPath = new Uri(originalAssetPath, (UriKind)uriKind);
-        if (!uriPath.IsAbsoluteUri)
+        else
         {
-            var baseUrl = context.CurrentDocument.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
-            uriPath = new Uri(new Uri(baseUrl, UriKind.Absolute), uriPath);
-        }
-        else if (!uriPath.Scheme.Equals("avares", StringComparison.CurrentCultureIgnoreCase))
-        {
-            return context.ParseError(
-                $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri.",
-                sourceUriNode, node);
+            sourceUriNode ??= valueNode;
         }
 
-        var assetPathUri = Uri.UnescapeDataString(uriPath.AbsoluteUri);
         var assetPath = assetPathUri.Replace("avares://", "");
         var assemblyNameSeparator = assetPath.IndexOf('/');
         var assembly = assetPath.Substring(0, assemblyNameSeparator);
@@ -119,7 +106,7 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
             $"Unable to resolve XAML resource \"{assetPathUri}\" in the \"{assembly}\" assembly.",
             sourceUriNode, node);
     }
-    
+
     private static IXamlAstNode FromType(AstTransformationContext context, IXamlType type, IXamlAstNode li,
         IXamlType expectedLoadedType, IXamlAstNode fallbackNode, string assetPathUri, string assembly)
     {
@@ -151,7 +138,49 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
             new[] { new NewServiceProviderNode(sp, li) });
     }
     
-    internal class NewServiceProviderNode : XamlAstNode, IXamlAstValueNode,IXamlAstNodeNeedsParentStack,
+    internal static (string?, IXamlAstNode?) ResolveSourceFromXamlInclude(
+        AstGroupTransformationContext context, string nodeTypeName, XamlPropertyAssignmentNode sourceProperty,
+        bool strictSourceValueType)
+    {
+        // We expect that AvaloniaXamlIlLanguageParseIntrinsics has already parsed the Uri and created node like: `new Uri(assetPath, uriKind)`.
+        if (sourceProperty.Values.OfType<XamlAstNewClrObjectNode>().FirstOrDefault() is not { } sourceUriNode
+            || sourceUriNode.Type.GetClrType() != context.GetAvaloniaTypes().Uri
+            || sourceUriNode.Arguments.FirstOrDefault() is not XamlConstantNode { Constant: string originalAssetPath }
+            || sourceUriNode.Arguments.Skip(1).FirstOrDefault() is not XamlConstantNode { Constant: int uriKind })
+        {
+            // Source value can be set with markup extension instead of the Uri object node, we don't support it here yet.
+            var anyPropValue = sourceProperty.Values.FirstOrDefault();
+            if (strictSourceValueType)
+            {
+                context.Error(anyPropValue,
+                    new XamlDocumentParseException(context.CurrentDocument,
+                        $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri.", anyPropValue));
+            }
+            else
+            {
+                // TODO: make it a compiler warning
+            }
+            return (null, anyPropValue);
+        }
+
+        var uriPath = new Uri(originalAssetPath, (UriKind)uriKind);
+        if (!uriPath.IsAbsoluteUri)
+        {
+            var baseUrl = context.CurrentDocument.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
+            uriPath = new Uri(new Uri(baseUrl, UriKind.Absolute), uriPath);
+        }
+        else if (!uriPath.Scheme.Equals("avares", StringComparison.CurrentCultureIgnoreCase))
+        {
+            context.Error(sourceUriNode,
+                new XamlDocumentParseException(context.CurrentDocument,
+                    $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri.", sourceUriNode));
+            return (null, sourceUriNode);
+        }
+
+        return (Uri.UnescapeDataString(uriPath.AbsoluteUri), sourceUriNode);
+    }
+    
+    private class NewServiceProviderNode : XamlAstNode, IXamlAstValueNode,IXamlAstNodeNeedsParentStack,
         IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
     {
         public NewServiceProviderNode(IXamlType type, IXamlLineInfo lineInfo) : base(lineInfo)
