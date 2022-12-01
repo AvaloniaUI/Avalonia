@@ -57,12 +57,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IDataTemplate?> SelectedContentTemplateProperty =
             AvaloniaProperty.Register<TabControl, IDataTemplate?>(nameof(SelectedContentTemplate));
-
-        /// <summary>
-        /// Defines the <see cref="HeaderDisplayMemberBinding" /> property
-        /// </summary>
-        public static readonly StyledProperty<IBinding?> HeaderDisplayMemberBindingProperty =
-            AvaloniaProperty.Register<HeaderedItemsControl, IBinding?>(nameof(HeaderDisplayMemberBinding));
         
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
@@ -141,16 +135,6 @@ namespace Avalonia.Controls
             get { return GetValue(SelectedContentTemplateProperty); }
             internal set { SetValue(SelectedContentTemplateProperty, value); }
         }
-        
-        /// <summary>
-        /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each tab-items header.
-        /// </summary>
-        [AssignBinding]
-        public IBinding? HeaderDisplayMemberBinding
-        {
-            get { return GetValue(HeaderDisplayMemberBindingProperty); }
-            set { SetValue(HeaderDisplayMemberBindingProperty, value); }
-        }
 
         internal ItemsPresenter? ItemsPresenterPart { get; private set; }
 
@@ -172,8 +156,12 @@ namespace Avalonia.Controls
         {
             base.PrepareContainerForItemOverride(element, item, index);
             
-            if (element is HeaderedContentControl hcc && ContentTemplate is { } ct)
-                hcc.ContentTemplate = ct;
+            if (element is TabItem tabItem)
+            {
+                if (ContentTemplate is { } ct)
+                    tabItem.ContentTemplate = ct;
+                tabItem.SetValue(TabStripPlacementProperty, TabStripPlacement);
+            }
 
             if (index == SelectedIndex && element is ContentControl container)
             {
@@ -267,6 +255,14 @@ namespace Avalonia.Controls
                     e.Handled = UpdateSelectionFromEventSource(e.Source);
                 }
             }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == TabStripPlacementProperty)
+                RefreshContainers();
         }
     }
 }
