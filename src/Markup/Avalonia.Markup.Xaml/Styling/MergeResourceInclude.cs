@@ -30,7 +30,8 @@ public class MergeResourceInclude : IResourceProvider
             if (_loaded == null)
             {
                 _isLoading = true;
-                _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(_serviceProvider, Source, _baseUri);
+                var source = Source ?? throw new InvalidOperationException("MergeResourceInclude.Source must be set.");
+                _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(source, _baseUri);
                 _isLoading = false;
             }
 
