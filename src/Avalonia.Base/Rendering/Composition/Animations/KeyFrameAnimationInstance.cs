@@ -130,7 +130,12 @@ namespace Avalonia.Rendering.Composition.Animations
                     right = _keyFrames[c + 1];
                 }
                 else if (c == 0)
-                    return ExpressionVariant.Create(GetKeyFrame(ref ctx, kf));
+                {
+                    // The current progress is before the first frame, we implicitly use the starting value 
+                    // as the first frame in this case
+                    right = _keyFrames[c];
+                    break;
+                }
                 else
                     break;
             }
