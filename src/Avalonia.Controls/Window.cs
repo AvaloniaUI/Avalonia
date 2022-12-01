@@ -663,11 +663,6 @@ namespace Avalonia.Controls
             {
                 throw new InvalidOperationException("Cannot re-show a closed window.");
             }
-            
-            if (_shown)
-            {
-                throw new InvalidOperationException("The window is already being shown.");
-            }
         }
         
         private void EnsureParentStateBeforeShow(Window owner)
@@ -783,6 +778,11 @@ namespace Avalonia.Controls
                 }
                 
                 EnsureParentStateBeforeShow(owner);
+                
+                if (_shown)
+                {
+                    throw new InvalidOperationException("The window is already being shown.");
+                }
 
                 RaiseEvent(new RoutedEventArgs(WindowOpenedEvent));
 
