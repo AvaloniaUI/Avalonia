@@ -403,7 +403,7 @@ namespace Avalonia.Controls.UnitTests
                 parent.Close();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(parent));
-                Assert.Equal("Cannot show a window with a closed parent.", ex.Message);
+                Assert.Equal("Cannot show a window with a closed owner.", ex.Message);
             }
         }
 
@@ -431,7 +431,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(parent));
-                Assert.Equal("Cannot show window with non-visible parent.", ex.Message);
+                Assert.Equal("Cannot show window with non-visible owner.", ex.Message);
             }
         }
 
@@ -444,7 +444,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window();
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog(parent));
-                Assert.Equal("Cannot show window with non-visible parent.", ex.Message);
+                Assert.Equal("Cannot show window with non-visible owner.", ex.Message);
             }
         }
 
@@ -456,7 +456,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(target));
-                Assert.Equal("A Window cannot be its own parent.", ex.Message);
+                Assert.Equal("A Window cannot be its own owner.", ex.Message);
             }
         }
 
