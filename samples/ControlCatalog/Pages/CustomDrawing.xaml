@@ -1,0 +1,107 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:ControlCatalog.Pages"
+             xmlns:converters="using:ControlCatalog.Converter"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ControlCatalog.Pages.CustomDrawing">
+
+  <UserControl.Resources>
+    <converters:DegToRadConverter x:Key="DegToRadConverter"/>
+  </UserControl.Resources>
+  
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition/>
+    </Grid.RowDefinitions>
+
+    <StackPanel Orientation="Vertical">
+      <TextBlock Text="Translation" HorizontalAlignment="Center"/>
+      <Grid ColumnDefinitions="*,*"
+            RowDefinitions="Auto,Auto"
+            >
+        <TextBlock Text="Horizontal"/>
+        <TextBlock Text="Vertical" Grid.Column="1"/>
+        <TextBox IsEnabled="False" 
+                 Text="{Binding ElementName=CustomDrawingControl,
+                  Path=ViewportCenterX,
+                  Mode=OneWay,
+                  StringFormat=\{0:g4\}}"
+                 Grid.Row="1"
+                 />
+        <TextBox IsEnabled="False"
+                 Text="{Binding ElementName=CustomDrawingControl,
+                  Path=ViewportCenterY, 
+                  Mode=OneWay,
+                  StringFormat=\{0:g4\}}"
+                 Grid.Row="1" Grid.Column="1"
+                 />
+      </Grid>
+    </StackPanel>
+
+    <StackPanel Orientation="Vertical" Grid.Column="1"
+                >
+      <TextBlock Text="Rotation" HorizontalAlignment="Center"/>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                  >
+        <Button Content="➖" Width="40" Height="40"
+                VerticalContentAlignment="Center"
+                VerticalAlignment="Center"
+                Click="RotateMinus"
+                />
+        <TextBox IsEnabled="False"
+                 Text="{Binding ElementName=CustomDrawingControl,
+                  Path=Rotation, 
+                  Converter={StaticResource DegToRadConverter},
+                  Mode=OneWay,
+                  StringFormat=\{0:g4\}}"
+                 Grid.Row="1" Grid.Column="1"
+                 />
+        <Button Content="➕" Width="40" Height="40"
+                VerticalContentAlignment="Center"
+                VerticalAlignment="Center"
+                Click="RotatePlus"
+                />
+      </StackPanel>
+    </StackPanel>
+
+    <StackPanel Orientation="Vertical" Grid.Column="2"
+                >
+      <TextBlock Text="Scale" HorizontalAlignment="Center"/>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                  >
+        <Button Content="➖" Width="40" Height="40"
+                VerticalContentAlignment="Center"
+                VerticalAlignment="Center"
+                Click="ZoomOut"
+                />
+        <TextBox IsEnabled="False"
+                 Text="{Binding ElementName=CustomDrawingControl,
+                  Path=Scale, 
+                  Mode=OneWay,
+                  StringFormat=\{0:g4\}}"
+                 Grid.Row="1" Grid.Column="1"
+                 />
+        <Button Content="➕" Width="40" Height="40"
+                VerticalContentAlignment="Center"
+                VerticalAlignment="Center"
+                Click="ZoomIn"
+                />
+      </StackPanel>
+    </StackPanel>
+    
+    <Grid Grid.Row="1" Grid.ColumnSpan="3" ClipToBounds="True">
+      <local:CustomDrawingExampleControl
+        x:Name="CustomDrawingControl"
+        />
+    </Grid>
+  </Grid>
+  
+</UserControl>
