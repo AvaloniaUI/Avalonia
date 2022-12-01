@@ -6,6 +6,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup Label="Warnings">
+    <NoWarn>CA1416</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
     <SupportedPlatform Remove="@(SupportedPlatform)" />
     <SupportedPlatform Include="browser" />
