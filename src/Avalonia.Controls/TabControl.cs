@@ -171,7 +171,15 @@ namespace Avalonia.Controls
         protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
         {
             base.PrepareContainerForItemOverride(element, item, index);
-            UpdateSelectedContent();
+            
+            if (element is HeaderedContentControl hcc && ContentTemplate is { } ct)
+                hcc.ContentTemplate = ct;
+
+            if (index == SelectedIndex && element is ContentControl container)
+            {
+                SelectedContentTemplate = container.ContentTemplate;
+                SelectedContent = container.Content;
+            }
         }
 
         protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)

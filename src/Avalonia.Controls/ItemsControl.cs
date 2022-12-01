@@ -281,21 +281,30 @@ namespace Avalonia.Controls
             if (container == item)
                 return;
 
-            if (container is ContentControl cc)
+            if (container is HeaderedContentControl hcc)
             {
-                cc.SetValue(ContentControl.ContentProperty, item, BindingPriority.Template);
+                hcc.Content = item;
+
+                if (item is IHeadered headered)
+                    hcc.Header = headered.Header;
+                else if (item is not Visual)
+                    hcc.Header = item;
+
                 if (ItemTemplate is { } it)
-                    cc.SetValue(ContentControl.ContentTemplateProperty, it, BindingPriority.Template);
+                    hcc.HeaderTemplate = it;
+            }
+            else if (container is ContentControl cc)
+            {
+                cc.Content = item;
+                if (ItemTemplate is { } it)
+                    cc.ContentTemplate = it;
             }
             else if (container is ContentPresenter p)
             {
-                p.SetValue(ContentPresenter.ContentProperty, item, BindingPriority.Template);
+                p.Content = item;
                 if (ItemTemplate is { } it)
-                    p.SetValue(ContentPresenter.ContentTemplateProperty, it, BindingPriority.Template);
+                    p.ContentTemplate = it;
             }
-
-            if (ItemContainerTheme is not null)
-                container.SetValue(ThemeProperty, ItemContainerTheme, BindingPriority.Template);
         }
 
         /// <summary>
