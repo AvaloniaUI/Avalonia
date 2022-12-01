@@ -36,6 +36,31 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void ItemTemplate_Can_Be_Changed()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas()),
+            };
+
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.IsType<Canvas>(container.Child);
+
+            target.ItemTemplate = new FuncDataTemplate<string>((_, __) => new Border());
+            container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.IsType<Border>(container.Child);
+        }
+
+        [Fact]
         public void Panel_Should_Have_TemplatedParent_Set_To_ItemsControl()
         {
             var target = new ItemsControl();
@@ -709,6 +734,32 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void DisplayMemberBinding_Can_Be_Changed()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                DisplayMemberBinding = new Binding("Value")
+            };
+
+            target.Items = new[] { new Item("Foo", "Bar") };
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.Equal(container.Child!.GetValue(TextBlock.TextProperty), "Bar");
+
+            target.DisplayMemberBinding = new Binding("Caption");
+            
+            container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.Equal(container.Child!.GetValue(TextBlock.TextProperty), "Foo");
+        }
+
+        [Fact]
         public void Cannot_Set_Both_DisplayMemberBinding_And_ItemTemplate_1()
         {
             var target = new ItemsControl
@@ -740,6 +791,13 @@ namespace Avalonia.Controls.UnitTests
                 Value = value;
             }
 
+            public Item(string caption, string value)
+            {
+                Caption = caption;
+                Value = value;
+            }
+
+            public string Caption { get; }
             public string Value { get; }
         }
 

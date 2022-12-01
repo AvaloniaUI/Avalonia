@@ -45,6 +45,8 @@ namespace Avalonia.Controls.Presenters
             _presenter.Panel?.Children.Clear();
         }
 
+        internal void Refresh() => OnItemsChanged(null, CollectionUtils.ResetEventArgs);
+
         private void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == ItemsControl.ItemsProperty)

@@ -84,6 +84,14 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        internal void Refresh()
+        {
+            if (Panel is VirtualizingPanel v)
+                v.Refresh();
+            else
+                _generator?.Refresh();
+        }
+
         private void ResetState()
         {
             _generator?.Dispose();

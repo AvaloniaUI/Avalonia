@@ -426,12 +426,14 @@ namespace Avalonia.Controls
             {
                 if (change.NewValue is not null && DisplayMemberBinding is not null)
                     throw new InvalidOperationException("Cannot set both DisplayMemberBinding and ItemTemplate.");
+                RefreshContainers();
             }
             else if (change.Property == DisplayMemberBindingProperty)
             {
                 if (change.NewValue is not null && ItemTemplate is not null)
                     throw new InvalidOperationException("Cannot set both DisplayMemberBinding and ItemTemplate.");
                 _displayMemberItemTemplate = null;
+                RefreshContainers();
             }
         }
 
@@ -454,6 +456,14 @@ namespace Avalonia.Controls
             AddControlItemsToLogicalChildren(newValue);
             SubscribeToItems(newValue);
         }
+
+        /// <summary>
+        /// Refreshes the containers displayed by the control.
+        /// </summary>
+        /// <remarks>
+        /// Causes all containers to be unrealized and re-realized.
+        /// </remarks>
+        protected void RefreshContainers() => Presenter?.Refresh();
 
         /// <summary>
         /// Called when the <see cref="INotifyCollectionChanged.CollectionChanged"/> event is

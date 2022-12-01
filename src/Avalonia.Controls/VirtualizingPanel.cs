@@ -176,6 +176,8 @@ namespace Avalonia.Controls
             Children.Clear();
         }
 
+        internal void Refresh() => OnItemsControlItemsChanged(null, CollectionUtils.ResetEventArgs);
+
         private ItemsControl EnsureItemsControl()
         {
             if (ItemsControl is null)
@@ -189,7 +191,7 @@ namespace Avalonia.Controls
             {
                 if (e.OldValue is INotifyCollectionChanged inccOld)
                     inccOld.CollectionChanged -= OnItemsControlItemsChanged;
-                OnItemsControlItemsChanged(null, CollectionUtils.ResetEventArgs);
+                Refresh();
                 if (e.NewValue is INotifyCollectionChanged inccNew)
                     inccNew.CollectionChanged += OnItemsControlItemsChanged;
             }
