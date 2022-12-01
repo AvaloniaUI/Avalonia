@@ -66,7 +66,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Container_Should_Have_Theme_Set_To_ItemContainerTheme()
         {
-            var theme = new ControlTheme();
+            var theme = new ControlTheme { TargetType = typeof(ContentPresenter) };
             var target = new ItemsControl
             {
                 ItemContainerTheme = theme,
