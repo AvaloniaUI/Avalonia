@@ -7,11 +7,11 @@ namespace Avalonia.PropertyStore
     /// Holds values in a <see cref="ValueStore"/> set by one of the SetValue or AddBinding
     /// overloads with non-LocalValue priority.
     /// </summary>
-    internal class ImmediateValueFrame : ValueFrame
+    internal sealed class ImmediateValueFrame : ValueFrame
     {
         public ImmediateValueFrame(BindingPriority priority)
+            : base(priority, FrameType.Style)
         {
-            Priority = priority;
         }
 
         public TypedBindingEntry<T> AddBinding<T>(

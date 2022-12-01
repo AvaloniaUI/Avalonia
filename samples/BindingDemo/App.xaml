@@ -2,8 +2,14 @@
     xmlns="https://github.com/avaloniaui" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="BindingDemo.App">
-    <Application.Styles>
-        <FluentTheme />
-        <StyleInclude Source="avares://Avalonia.Themes.Simple/Accents/BaseLight.xaml"/>
-    </Application.Styles>
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Avalonia.Themes.Simple/Accents/BaseLight.xaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+  <Application.Styles>
+    <FluentTheme />
+   </Application.Styles>
 </Application>

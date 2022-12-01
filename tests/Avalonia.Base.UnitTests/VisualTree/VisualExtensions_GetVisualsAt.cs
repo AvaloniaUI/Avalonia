@@ -44,7 +44,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -86,7 +86,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 

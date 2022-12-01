@@ -62,7 +62,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
             target.SelectedItems = new AvaloniaList<object>("bar");
 
             Assert.Equal(1, target.SelectedIndex);

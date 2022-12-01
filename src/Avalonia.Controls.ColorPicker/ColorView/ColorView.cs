@@ -329,7 +329,7 @@ namespace Avalonia.Controls
         /// <param name="instance">The <see cref="ColorView"/> instance.</param>
         /// <param name="value">The value to coerce.</param>
         /// <returns>The coerced/validated value.</returns>
-        private static Color CoerceColor(IAvaloniaObject instance, Color value)
+        private static Color CoerceColor(AvaloniaObject instance, Color value)
         {
             if (instance is ColorView colorView)
             {
@@ -345,7 +345,7 @@ namespace Avalonia.Controls
         /// <param name="instance">The <see cref="ColorView"/> instance.</param>
         /// <param name="value">The value to coerce.</param>
         /// <returns>The coerced/validated value.</returns>
-        private static HsvColor CoerceHsvColor(IAvaloniaObject instance, HsvColor value)
+        private static HsvColor CoerceHsvColor(AvaloniaObject instance, HsvColor value)
         {
             if (instance is ColorView colorView)
             {

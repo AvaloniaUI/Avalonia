@@ -84,7 +84,7 @@ namespace Avalonia.Controls
             var orientation = Orientation;
             var children = Children;
             bool horiz = orientation == Orientation.Horizontal;
-            int index = from is not null ? Children.IndexOf((IControl)from) : -1;
+            int index = from is not null ? Children.IndexOf((Control)from) : -1;
 
             switch (direction)
             {

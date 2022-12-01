@@ -245,7 +245,7 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_SecondSpacer"
                 }.RegisterInNameScope(scope);
                
-                contentGrid.Children.AddRange(new IControl[] { dayText, monthText, yearText, firstSpacer, secondSpacer });
+                contentGrid.Children.AddRange(new Control[] { dayText, monthText, yearText, firstSpacer, secondSpacer });
                 flyoutButton.Content = contentGrid;
                 layoutRoot.Children.Add(flyoutButton);
                 return layoutRoot;

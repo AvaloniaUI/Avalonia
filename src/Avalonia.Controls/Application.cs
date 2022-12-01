@@ -39,7 +39,6 @@ namespace Avalonia
 
         private readonly Lazy<IClipboard?> _clipboard =
             new Lazy<IClipboard?>(() => (IClipboard?)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
-        private readonly Styler _styler = new Styler();
         private Styles? _styles;
         private IResourceDictionary? _resources;
         private bool _notifyingResourcesChanged;
@@ -232,7 +231,6 @@ namespace Avalonia
                 .Bind<IFocusManager>().ToConstant(FocusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
-                .Bind<IStyler>().ToConstant(_styler)
                 .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
             

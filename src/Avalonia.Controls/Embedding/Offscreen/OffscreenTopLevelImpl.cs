@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
             IsDisposed = true;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
+        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer((Visual)root);
 
         public abstract void Invalidate(Rect rect);
         public abstract IEnumerable<object> Surfaces { get; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
@@ -29,34 +30,29 @@ namespace Avalonia.Styling
         /// </summary>
         public ControlTheme? BasedOn { get; set; }
 
-        public override SelectorMatchResult TryAttach(IStyleable target, object? host)
-        {
-            _ = target ?? throw new ArgumentNullException(nameof(target));
-
-            if (TargetType is null)
-                throw new InvalidOperationException("ControlTheme has no TargetType.");
-
-            var result = BasedOn?.TryAttach(target, host) ?? SelectorMatchResult.NeverThisType;
-
-            if (HasSettersOrAnimations && TargetType.IsAssignableFrom(target.StyleKey))
-            {
-                Attach(target, null);
-                result = SelectorMatchResult.AlwaysThisType;
-            }
-
-            var childResult = TryAttachChildren(target, host);
-
-            if (childResult > result)
-                result = childResult;
-
-            return result;
-        }
-
         public override string ToString() => TargetType?.Name ?? "ControlTheme";
 
         internal override void SetParent(StyleBase? parent)
         {
             throw new InvalidOperationException("ControlThemes cannot be added as a nested style.");
+        }
+
+        internal SelectorMatchResult TryAttach(StyledElement target, FrameType type)
+        {
+            Debug.Assert(type is FrameType.Theme or FrameType.TemplatedParentTheme);
+
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+
+            if (TargetType is null)
+                throw new InvalidOperationException("ControlTheme has no TargetType.");
+
+            if (HasSettersOrAnimations && TargetType.IsAssignableFrom(((IStyleable)target).StyleKey))
+            {
+                Attach(target, null, type);
+                return SelectorMatchResult.AlwaysThisType;
+            }
+
+            return SelectorMatchResult.NeverThisType;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void StaticResource_Works_In_ResourceDictionary()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -33,29 +33,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void DynamicResource_Finds_Resource_In_Parent_Dictionary()
         {
-            var dictionaryXaml = @"
+            using (StyledWindow())
+            {
+                var documents = new[]
+                {
+                    new RuntimeXamlLoaderDocument(new Uri("avares://Avalonia.Markup.Xaml.UnitTests/dict.xaml"), @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
   <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
-</ResourceDictionary>";
-
-            using (ResourceDictionaryTests.StyledWindow(assets: ("test:dict.xaml", dictionaryXaml)))
-            {
-                var xaml = @"
+</ResourceDictionary>"),
+                    new RuntimeXamlLoaderDocument(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source='test:dict.xaml'/>
+                <ResourceInclude Source='avares://Avalonia.Markup.Xaml.UnitTests/dict.xaml'/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
         <Color x:Key='Red'>Red</Color>
     </Window.Resources>
     <Button Name='button' Background='{DynamicResource RedBrush}'/>
-</Window>";
+</Window>")
+                };
 
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var loaded = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var window = Assert.IsType<Window>(loaded[1]);
                 var button = window.FindControl<Button>("button");
 
                 var brush = Assert.IsType<SolidColorBrush>(button.Background);
@@ -70,7 +73,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_ResourceDictionary_As_Deferred()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -86,7 +89,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Added_To_ResourceDictionary_Is_UnDeferred_On_Read()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -106,7 +109,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_Window_Resources_As_Deferred()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -125,7 +128,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_Window_MergedDictionaries_As_Deferred()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -150,7 +153,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_Style_Resources_As_Deferred()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Style xmlns='https://github.com/avaloniaui'
@@ -169,7 +172,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Is_Added_To_Styles_Resources_As_Deferred()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Styles xmlns='https://github.com/avaloniaui'
@@ -188,7 +191,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_Can_Be_StaticReferenced_As_Deferred()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -214,7 +217,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Item_StaticReferenced_Is_UnDeferred_On_Read()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -242,7 +245,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Value_Type_With_Parse_Converter_Should_Not_Be_Deferred()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -259,7 +262,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void Value_Type_With_Ctor_Converter_Should_Not_Be_Deferred()
         {
-            using (ResourceDictionaryTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
@@ -273,19 +276,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-        private static IDisposable StyledWindow(params (string, string)[] assets)
+        private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
-                assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
-                    ResourceDictionaryTests.WindowStyle(),
+                    WindowStyle(),
                 });
 
             return UnitTestApplication.Start(services);
         }
 
-        private static Style WindowStyle()
+        private Style WindowStyle()
         {
             return new Style(x => x.OfType<Window>())
             {

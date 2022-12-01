@@ -143,7 +143,7 @@ namespace ControlCatalog.Pages
                     .OfType<AutoCompleteBox>();
         }
 
-        private bool StringContains(string str, string? query)
+        private static bool StringContains(string str, string? query)
         {
             if (query == null) return false;
             return str.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;

@@ -12,7 +12,7 @@ namespace Avalonia.Input
     /// </summary>
     public static class InputExtensions
     {
-        private static readonly Func<IVisual, bool> s_hitTestDelegate = IsHitTestVisible;
+        private static readonly Func<Visual, bool> s_hitTestDelegate = IsHitTestVisible;
 
         /// <summary>
         /// Returns the active input elements at a point on an <see cref="IInputElement"/>.
@@ -26,7 +26,8 @@ namespace Avalonia.Input
         {
             element = element ?? throw new ArgumentNullException(nameof(element));
 
-            return element.GetVisualsAt(p, s_hitTestDelegate).Cast<IInputElement>();
+            return (element as Visual)?.GetVisualsAt(p, s_hitTestDelegate).Cast<IInputElement>() ??
+                Enumerable.Empty<IInputElement>();
         }
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace Avalonia.Input
         {
             element = element ?? throw new ArgumentNullException(nameof(element));
 
-            return element.GetVisualAt(p, s_hitTestDelegate) as IInputElement;
+            return (element as Visual)?.GetVisualAt(p, s_hitTestDelegate) as IInputElement;
         }
 
         /// <summary>
@@ -55,22 +56,22 @@ namespace Avalonia.Input
         public static IInputElement? InputHitTest(
             this IInputElement element,
             Point p,
-            Func<IVisual, bool> filter)
+            Func<Visual, bool> filter)
         {
             element = element ?? throw new ArgumentNullException(nameof(element));
             filter = filter ?? throw new ArgumentNullException(nameof(filter));
 
-            return element.GetVisualAt(p, x => s_hitTestDelegate(x) && filter(x)) as IInputElement;
+            return (element as Visual)?.GetVisualAt(p, x => s_hitTestDelegate(x) && filter(x)) as IInputElement;
         }
 
-        private static bool IsHitTestVisible(IVisual visual)
+        private static bool IsHitTestVisible(Visual visual)
         {
             var element = visual as IInputElement;
             return element != null &&
-                   element.IsVisible &&
+                   visual.IsVisible &&
                    element.IsHitTestVisible &&
                    element.IsEffectivelyEnabled &&
-                   element.IsAttachedToVisualTree;
+                   visual.IsAttachedToVisualTree;
         }
     }
 }

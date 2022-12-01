@@ -38,9 +38,9 @@ namespace Avalonia.Markup.Xaml
         public static object GetDefaultAnchor(this IServiceProvider provider)
         {
             // If the target is not a control, so we need to find an anchor that will let us look
-            // up named controls and style resources. First look for the closest IControl in
+            // up named controls and style resources. First look for the closest Control in
             // the context.
-            object anchor = provider.GetFirstParent<IControl>();
+            object anchor = provider.GetFirstParent<Control>();
 
             if (anchor is null)
             {

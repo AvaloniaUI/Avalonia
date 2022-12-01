@@ -1,5 +1,6 @@
 using System.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Styling;
@@ -84,7 +85,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "Foo", "Bar" }, target.SelectedItems);
         }
 
-        private Control CreateListBoxTemplate(ITemplatedControl parent, INameScope scope)
+        private Control CreateListBoxTemplate(TemplatedControl parent, INameScope scope)
         {
             return new ScrollViewer
             {
@@ -92,18 +93,18 @@ namespace Avalonia.Controls.UnitTests
                 Content = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
+                    [~ItemsPresenter.ItemsProperty] = ((Control)parent).GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                 }.RegisterInNameScope(scope)
             };
         }
 
-        private Control CreateScrollViewerTemplate(ITemplatedControl parent, INameScope scope)
+        private Control CreateScrollViewerTemplate(TemplatedControl parent, INameScope scope)
         {
             return new ScrollContentPresenter
             {
                 Name = "PART_ContentPresenter",
                 [~ContentPresenter.ContentProperty] =
-                    parent.GetObservable(ContentControl.ContentProperty).ToBinding(),
+                    ((Control)parent).GetObservable(ContentControl.ContentProperty).ToBinding(),
             }.RegisterInNameScope(scope);
         }
 
@@ -120,7 +121,7 @@ namespace Avalonia.Controls.UnitTests
             ((ContentPresenter)scrollViewer.Presenter).UpdateChild();
 
             // Now the ItemsPresenter should be reigstered, so apply its template.
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
         }
     }
 }

@@ -111,13 +111,13 @@ namespace Avalonia.Controls.Presenters
         internal ItemVirtualizer? Virtualizer { get; private set; }
 
         /// <inheritdoc/>
-        bool ILogicalScrollable.BringIntoView(IControl target, Rect targetRect)
+        bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect)
         {
             return false;
         }
 
         /// <inheritdoc/>
-        IControl? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, IControl? from)
+        Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from)
         {
             return Virtualizer?.GetControlInDirection(direction, from);
         }
@@ -145,7 +145,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        protected override void PanelCreated(IPanel panel)
+        protected override void PanelCreated(Panel panel)
         {
             Virtualizer?.Dispose();
             Virtualizer = ItemVirtualizer.Create(this);

@@ -76,7 +76,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Avalonia.Controls.Primitives.DataGridColumnHeader" /> class. 
+        /// Initializes a new instance of the <see cref="T:Avalonia.Controls.Primitives.DataGridColumnHeader" /> class.
         /// </summary>
         //TODO Implement
         public DataGridColumnHeader()
@@ -267,7 +267,7 @@ namespace Avalonia.Controls
                                 else
                                 {
                                     newSort = sort;
-                                } 
+                                }
 
                                 // changing direction should not affect sort order, so we replace this column's
                                 // sort description instead of just adding it to the end of the collection
@@ -603,7 +603,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Returns true if the mouse is 
+        /// Returns true if the mouse is
         /// - to the left of the element, or within the left half of the element
         /// and
         /// - within the vertical range of the element, or ignoreVertical == true
@@ -663,20 +663,23 @@ namespace Avalonia.Controls
             IsMouseOver = false;
         }
 
-        //TODO Styles DragIndicator
         private void OnMouseMove_BeginReorder(Point mousePosition)
         {
-            DataGridColumnHeader dragIndicator = new DataGridColumnHeader
+            var dragIndicator = new DataGridColumnHeader
             {
                 OwningColumn = OwningColumn,
                 IsEnabled = false,
                 Content = Content,
                 ContentTemplate = ContentTemplate
             };
+            if (OwningGrid.ColumnHeaderTheme is {} columnHeaderTheme)
+            {
+                dragIndicator.SetValue(ThemeProperty, columnHeaderTheme, BindingPriority.TemplatedParent);
+            }
 
             dragIndicator.PseudoClasses.Add(":dragIndicator");
 
-            IControl dropLocationIndicator = OwningGrid.DropLocationIndicatorTemplate?.Build();
+            Control dropLocationIndicator = OwningGrid.DropLocationIndicatorTemplate?.Build();
 
             // If the user didn't style the dropLocationIndicator's Height, default to the column header's height
             if (dropLocationIndicator != null && double.IsNaN(dropLocationIndicator.Height) && dropLocationIndicator is Control element)
@@ -720,7 +723,7 @@ namespace Avalonia.Controls
             {
                 return;
             }
-            
+
             //handle entry into reorder mode
             if (_dragMode == DragMode.MouseDown && _dragColumn == null && _lastMousePositionHeaders != null && (distanceFromRight > DATAGRIDCOLUMNHEADER_resizeRegionWidth && distanceFromLeft > DATAGRIDCOLUMNHEADER_resizeRegionWidth))
             {

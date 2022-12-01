@@ -238,7 +238,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Setter_In_Styles_File()
         {
-            var styleXaml = @"
+            var documents = new[]
+            {
+                new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Style.xaml"), @"
 <Styles xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Styles.Resources>
@@ -248,20 +250,21 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     <Style Selector='Border'>
         <Setter Property='Background' Value='{StaticResource brush}'/>
     </Style>
-</Styles>";
-
-            using (StyledWindow(assets: ("test:style.xaml", styleXaml)))
-            {
-                var xaml = @"
+</Styles>"),
+                new RuntimeXamlLoaderDocument(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
-        <StyleInclude Source='test:style.xaml'/>
+        <StyleInclude Source='avares://Tests/Style.xaml'/>
     </Window.Styles>
     <Border Name='border'/>
-</Window>";
+</Window>")
+            };
 
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+            using (StyledWindow())
+            {
+                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var window = Assert.IsType<Window>(compiled[1]);
                 var border = window.FindControl<Border>("border");
                 var brush = (ISolidColorBrush)border.Background;
 
@@ -311,7 +314,9 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Property_In_ControlTemplate_In_Styles_File()
         {
-            var styleXaml = @"
+            var documents = new[]
+            {
+                new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Style.xaml"), @"
 <Styles xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Styles.Resources>
@@ -325,20 +330,21 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             </ControlTemplate>
         </Setter>
     </Style>
-</Styles>";
-
-            using (StyledWindow(assets: ("test:style.xaml", styleXaml)))
-            {
-                var xaml = @"
+</Styles>"),
+                new RuntimeXamlLoaderDocument(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Styles>
-        <StyleInclude Source='test:style.xaml'/>
+        <StyleInclude Source='avares://Tests/Style.xaml'/>
     </Window.Styles>
     <Button Name='button'/>
-</Window>";
-
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+</Window>")
+            };
+            
+            using (StyledWindow())
+            {
+                var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var window = Assert.IsType<Window>(compiled[1]);
                 var button = window.FindControl<Button>("button");
 
                 window.Show();

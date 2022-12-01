@@ -200,10 +200,6 @@
         </ControlTemplate>
       </Setter>
 
-      <Style Selector="^:nth-child(even)">
-        <Setter Property="Background" Value="{Binding $parent[DataGrid].AlternatingRowBackground}" />
-      </Style>
-
       <Style Selector="^ /template/ Rectangle#BackgroundRectangle">
         <Setter Property="IsVisible" Value="False" />
         <Setter Property="Fill" Value="{DynamicResource HighlightBrush}" />
@@ -300,7 +296,6 @@
     <ControlTheme x:Key="{x:Type DataGrid}"
                   TargetType="DataGrid">
       <Setter Property="RowBackground" Value="{DynamicResource ThemeAccentBrush4}" />
-      <Setter Property="AlternatingRowBackground" Value="#00FFFFFF" />
       <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
       <Setter Property="HeadersVisibility" Value="Column" />
       <Setter Property="HorizontalScrollBarVisibility" Value="Auto" />

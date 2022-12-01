@@ -50,7 +50,7 @@ namespace Avalonia.Markup.Xaml.Templates
             return null;
         }
 
-        public IControl Build(object data)
+        public Control Build(object data)
         {
             var visualTreeForItem = TemplateContent.Load(Content)?.Control;
             if (visualTreeForItem != null)

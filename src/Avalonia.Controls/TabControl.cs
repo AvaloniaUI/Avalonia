@@ -12,6 +12,7 @@ using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
+using Avalonia.Data;
 
 namespace Avalonia.Controls
 {
@@ -58,10 +59,16 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<TabControl, IDataTemplate?>(nameof(SelectedContentTemplate));
 
         /// <summary>
+        /// Defines the <see cref="HeaderDisplayMemberBinding" /> property
+        /// </summary>
+        public static readonly StyledProperty<IBinding?> HeaderDisplayMemberBindingProperty =
+            AvaloniaProperty.Register<HeaderedItemsControl, IBinding?>(nameof(HeaderDisplayMemberBinding));
+        
+        /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new WrapPanel());
+        private static readonly FuncTemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new WrapPanel());
 
         /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
@@ -133,6 +140,16 @@ namespace Avalonia.Controls
         {
             get { return GetValue(SelectedContentTemplateProperty); }
             internal set { SetValue(SelectedContentTemplateProperty, value); }
+        }
+        
+        /// <summary>
+        /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each tab-items header.
+        /// </summary>
+        [AssignBinding]
+        public IBinding? HeaderDisplayMemberBinding
+        {
+            get { return GetValue(HeaderDisplayMemberBindingProperty); }
+            set { SetValue(HeaderDisplayMemberBindingProperty, value); }
         }
 
         internal ItemsPresenter? ItemsPresenterPart { get; private set; }

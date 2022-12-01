@@ -4,6 +4,7 @@ using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
@@ -735,6 +736,25 @@ namespace Avalonia.Controls.UnitTests
 
             root.Child = null;
             root.Child = target;
+        }
+        
+        [Fact]
+        public void Should_Use_DisplayMemberBinding()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+                DisplayMemberBinding = new Binding("Length")
+            };
+
+            target.Items = new[] { "Foo" };
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
+
+            var container = (ContentPresenter)target.Presenter.Panel.Children[0];
+            container.UpdateChild();
+
+            Assert.Equal(container.Child!.GetValue(TextBlock.TextProperty), "3");
         }
 
         private class Item

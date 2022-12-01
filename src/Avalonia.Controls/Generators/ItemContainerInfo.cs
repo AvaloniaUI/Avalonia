@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Generators
         /// <param name="index">
         /// The index of the item in the <see cref="ItemsControl.Items"/> collection.
         /// </param>
-        public ItemContainerInfo(IControl container, object item, int index)
+        public ItemContainerInfo(Control container, object item, int index)
         {
             ContainerControl = container;
             Item = item;
@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Generators
         /// <remarks>
         /// This will be null if <see cref="Item"/> is null.
         /// </remarks>
-        public IControl ContainerControl { get; }
+        public Control ContainerControl { get; }
 
         /// <summary>
         /// Gets the item that the container represents.

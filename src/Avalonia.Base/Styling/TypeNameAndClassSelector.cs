@@ -95,11 +95,11 @@ namespace Avalonia.Styling
         }
 
         /// <inheritdoc/>
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (TargetType != null)
             {
-                var controlType = control.StyleKey ?? control.GetType();
+                var controlType = ((IStyleable)control).StyleKey ?? control.GetType();
 
                 if (IsConcreteType)
                 {

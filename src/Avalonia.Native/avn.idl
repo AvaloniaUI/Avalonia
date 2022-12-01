@@ -466,6 +466,13 @@ enum AvnAutomationControlType
     AutomationSeparator,
 }
 
+enum AvnWindowTransparencyMode
+{
+    Opaque,
+    Transparent,
+    Blur
+}
+
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
@@ -527,7 +534,7 @@ interface IAvnWindowBase : IUnknown
      HRESULT CreateNativeControlHost(IAvnNativeControlHost** retOut);
      HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
-     HRESULT SetBlurEnabled(bool enable);
+     HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]

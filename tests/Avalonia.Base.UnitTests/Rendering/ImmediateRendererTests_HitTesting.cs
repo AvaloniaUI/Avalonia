@@ -266,7 +266,7 @@ namespace Avalonia.Base.UnitTests.Rendering
 
                 var result = root.Renderer.HitTest(new Point(120, 120), root, null);
 
-                Assert.Equal(new IVisual[] { target, container }, result);
+                Assert.Equal(new Visual[] { target, container }, result);
             }
         }
 
@@ -315,7 +315,7 @@ namespace Avalonia.Base.UnitTests.Rendering
 
                 var result = root.Renderer.HitTest(new Point(50, 50), root, null);
 
-                Assert.Equal(new IVisual[] { container, root }, result);
+                Assert.Equal(new Visual[] { container, root }, result);
             }
         }
 

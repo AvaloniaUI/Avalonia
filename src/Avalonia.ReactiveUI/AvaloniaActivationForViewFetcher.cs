@@ -17,7 +17,7 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public int GetAffinityForView(Type view)
         {
-            return typeof(IVisual).IsAssignableFrom(view) ? 10 : 0;
+            return typeof(Visual).IsAssignableFrom(view) ? 10 : 0;
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Avalonia.ReactiveUI
         /// </summary>
         public IObservable<bool> GetActivationForView(IActivatableView view)
         {
-            if (!(view is IVisual visual)) return Observable.Return(false);
+            if (!(view is Visual visual)) return Observable.Return(false);
             if (view is Control control) return GetActivationForControl(control);
             return GetActivationForVisual(visual);
         }
@@ -34,7 +34,7 @@ namespace Avalonia.ReactiveUI
         /// Listens to Loaded and Unloaded 
         /// events for Avalonia Control.
         /// </summary>
-        private static IObservable<bool> GetActivationForControl(Control control) 
+        private IObservable<bool> GetActivationForControl(Control control) 
         {
             var controlLoaded = Observable
                 .FromEventPattern<RoutedEventArgs>(
@@ -55,7 +55,7 @@ namespace Avalonia.ReactiveUI
         /// Listens to AttachedToVisualTree and DetachedFromVisualTree 
         /// events for Avalonia IVisuals.
         /// </summary>
-        private static IObservable<bool> GetActivationForVisual(IVisual visual) 
+        private IObservable<bool> GetActivationForVisual(Visual visual) 
         {
             var visualLoaded = Observable
                 .FromEventPattern<VisualTreeAttachmentEventArgs>(

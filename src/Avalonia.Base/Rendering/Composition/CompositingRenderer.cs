@@ -45,7 +45,7 @@ public class CompositingRenderer : IRendererWithCompositor
         _compositor = compositor;
         _recordingContext = new DrawingContext(_recorder);
         CompositionTarget = compositor.CreateCompositionTarget(root.CreateRenderTarget);
-        CompositionTarget.Root = ((Visual)root!.VisualRoot!).AttachToCompositor(compositor);
+        CompositionTarget.Root = ((Visual)root).AttachToCompositor(compositor);
         _update = Update;
     }
 
@@ -75,7 +75,7 @@ public class CompositingRenderer : IRendererWithCompositor
     }
     
     /// <inheritdoc/>
-    public void AddDirty(IVisual visual)
+    public void AddDirty(Visual visual)
     {
         if (_updating)
             throw new InvalidOperationException("Visual was invalidated during the render pass");
@@ -84,7 +84,7 @@ public class CompositingRenderer : IRendererWithCompositor
     }
 
     /// <inheritdoc/>
-    public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
+    public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter)
     {
         Func<CompositionVisual, bool>? f = null;
         if (filter != null)
@@ -109,14 +109,14 @@ public class CompositingRenderer : IRendererWithCompositor
     }
 
     /// <inheritdoc/>
-    public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool>? filter)
+    public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter)
     {
         // TODO: Optimize
         return HitTest(p, root, filter).FirstOrDefault();
     }
 
     /// <inheritdoc/>
-    public void RecalculateChildren(IVisual visual)
+    public void RecalculateChildren(Visual visual)
     {
         if (_updating)
             throw new InvalidOperationException("Visual was invalidated during the render pass");
@@ -130,9 +130,9 @@ public class CompositingRenderer : IRendererWithCompositor
         if(v.CompositionVisual == null)
             return;
         var compositionChildren = v.CompositionVisual.Children;
-        var visualChildren = (AvaloniaList<IVisual>)v.GetVisualChildren();
+        var visualChildren = (AvaloniaList<Visual>)v.GetVisualChildren();
         
-        PooledList<(IVisual visual, int index)>? sortedChildren = null;
+        PooledList<(Visual visual, int index)>? sortedChildren = null;
         if (v.HasNonUniformZIndexChildren && visualChildren.Count > 1)
         {
             sortedChildren = new (visualChildren.Count);
@@ -146,8 +146,18 @@ public class CompositingRenderer : IRendererWithCompositor
                 return result == 0 ? lhs.index.CompareTo(rhs.index) : result;
             });
         }
-
-        if (compositionChildren.Count == visualChildren.Count)
+        
+        var childVisual = v.ChildCompositionVisual;
+        
+        // Check if the current visual somehow got migrated to another compositor
+        if (childVisual != null && childVisual.Compositor != v.CompositionVisual.Compositor)
+            childVisual = null;
+        
+        var expectedCount = visualChildren.Count;
+        if (childVisual != null)
+            expectedCount++;
+        
+        if (compositionChildren.Count == expectedCount)
         {
             bool mismatch = false;
             if (sortedChildren != null)
@@ -167,6 +177,9 @@ public class CompositingRenderer : IRendererWithCompositor
                         break;
                     }
 
+            if (childVisual != null &&
+                !ReferenceEquals(compositionChildren[compositionChildren.Count - 1], childVisual))
+                mismatch = true;
 
             if (!mismatch)
             {
@@ -193,6 +206,9 @@ public class CompositingRenderer : IRendererWithCompositor
                 if (compositionChild != null)
                     compositionChildren.Add(compositionChild);
             }
+
+        if (childVisual != null)
+            compositionChildren.Add(childVisual);
     }
 
     private void UpdateCore()

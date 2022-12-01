@@ -5,6 +5,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -435,7 +436,7 @@ namespace Avalonia.Base.UnitTests.Animation
                 }
             };
 
-            style.TryAttach(control, control);
+            StyleHelpers.TryAttach(style, control);
 
             // Which means that the transition state hasn't been initialized with the new
             // Transitions when the Opacity change notification gets raised here.
@@ -498,7 +499,7 @@ namespace Avalonia.Base.UnitTests.Animation
         private static IDisposable Start()
         {
             var clock = new MockGlobalClock();
-            var services = TestServices.RealStyler.With(globalClock: clock);
+            var services = new TestServices(globalClock: clock);
             return UnitTestApplication.Start(services);
         }
 

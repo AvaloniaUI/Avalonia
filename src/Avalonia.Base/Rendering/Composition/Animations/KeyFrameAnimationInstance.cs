@@ -128,8 +128,16 @@ namespace Avalonia.Rendering.Composition.Animations
 
                     left = kf;
                     right = _keyFrames[c + 1];
+                }
+                else if (c == 0)
+                {
+                    // The current progress is before the first frame, we implicitly use the starting value 
+                    // as the first frame in this case
+                    right = _keyFrames[c];
                     break;
                 }
+                else
+                    break;
             }
 
             var keyProgress = Math.Max(0, Math.Min(1, (iterationProgress - left.Key) / (right.Key - left.Key)));

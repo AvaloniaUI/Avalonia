@@ -3,16 +3,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+#if !BUILDTASK
 using Avalonia.Platform.Internal;
 using Avalonia.Utilities;
+#endif
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Loads assets compiled into the application binary.
     /// </summary>
-    public class AssetLoader : IAssetLoader
+    public class AssetLoader
+#if !BUILDTASK
+        : IAssetLoader
+#endif
     {
+#if !BUILDTASK
         private static IAssemblyDescriptorResolver s_assemblyDescriptorResolver = new AssemblyDescriptorResolver();
 
         private AssemblyDescriptor? _defaultResmAssembly;
@@ -206,7 +212,8 @@ namespace Avalonia.Platform
 
             return null;
         }
-
+#endif
+        
         public static void RegisterResUriParsers()
         {
             if (!UriParser.IsKnownScheme("avares"))

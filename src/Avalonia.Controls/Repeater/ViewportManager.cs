@@ -25,7 +25,7 @@ namespace Avalonia.Controls
         private readonly ItemsRepeater _owner;
         private bool _ensuredScroller;
         private IScrollAnchorProvider? _scroller;
-        private IControl? _makeAnchorElement;
+        private Control? _makeAnchorElement;
         private bool _isAnchorOutsideRealizedRange;
         private Rect _visibleWindow;
         private Rect _layoutExtent;
@@ -57,7 +57,7 @@ namespace Avalonia.Controls
             _owner = owner;
         }
 
-        public IControl? SuggestedAnchor
+        public Control? SuggestedAnchor
         {
             get
             {
@@ -75,7 +75,7 @@ namespace Avalonia.Controls
                         // be a direct child of ours, or even an indirect child. We need to walk up the tree starting
                         // from anchorElement to figure out what child of ours (if any) to use as the suggested element.
                         var child = anchorElement;
-                        var parent = child.VisualParent as IControl;
+                        var parent = child.VisualParent as Control;
 
                         while (parent != null)
                         {
@@ -86,7 +86,7 @@ namespace Avalonia.Controls
                             }
 
                             child = parent;
-                            parent = parent.VisualParent as IControl;
+                            parent = parent.VisualParent as Control;
                         }
                     }
                 }
@@ -97,7 +97,7 @@ namespace Avalonia.Controls
 
         public bool HasScroller => _scroller != null;
 
-        public IControl? MadeAnchor => _makeAnchorElement;
+        public Control? MadeAnchor => _makeAnchorElement;
 
         public double HorizontalCacheLength
         {
@@ -213,7 +213,7 @@ namespace Avalonia.Controls
 
             // We just finished a measure pass and have a new extent.
             // Let's make sure the scrollers will run its arrange so that they track the anchor.
-            ((IControl?)_scroller)?.InvalidateArrange();
+            ((Control?)_scroller)?.InvalidateArrange();
         }
 
         public Point GetOrigin() => _layoutExtent.TopLeft;
@@ -239,7 +239,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public void OnElementPrepared(IControl element, VirtualizationInfo virtInfo)
+        public void OnElementPrepared(Control element, VirtualizationInfo virtInfo)
         {
             // WinUI registers the element as an anchor candidate here, but I feel that's in error:
             // at this point the element has not yet been positioned by the arrange pass so it will
@@ -249,7 +249,7 @@ namespace Avalonia.Controls
             virtInfo.IsRegisteredAsAnchorCandidate = false;
         }
 
-        public void OnElementCleared(IControl element, VirtualizationInfo virtInfo)
+        public void OnElementCleared(Control element, VirtualizationInfo virtInfo)
         {
             _scroller?.UnregisterAnchorCandidate(element);
             virtInfo.IsRegisteredAsAnchorCandidate = false;
@@ -325,7 +325,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public void OnMakeAnchor(IControl? anchor, bool isAnchorOutsideRealizedRange)
+        public void OnMakeAnchor(Control? anchor, bool isAnchorOutsideRealizedRange)
         {
             if (_makeAnchorElement != anchor)
             {
@@ -347,7 +347,7 @@ namespace Avalonia.Controls
 
                 // get the targetChild - i.e the immediate child of this repeater that is being brought into view.
                 // Note that the element being brought into view could be a descendant.
-                var targetChild = GetImmediateChildOfRepeater((IControl)args.TargetObject!);
+                var targetChild = GetImmediateChildOfRepeater((Control)args.TargetObject!);
 
                 if (targetChild is null)
                 {
@@ -381,7 +381,7 @@ namespace Avalonia.Controls
             }
         }
 
-        public void RegisterScrollAnchorCandidate(IControl element, VirtualizationInfo virtInfo)
+        public void RegisterScrollAnchorCandidate(Control element, VirtualizationInfo virtInfo)
         {
             if (!virtInfo.IsRegisteredAsAnchorCandidate)
             {
@@ -390,14 +390,14 @@ namespace Avalonia.Controls
             }
         }
 
-        private IControl? GetImmediateChildOfRepeater(IControl descendant)
+        private Control? GetImmediateChildOfRepeater(Control descendant)
         {
             var targetChild = descendant;
-            var parent = (IControl?)descendant.VisualParent;
+            var parent = (Control?)descendant.VisualParent;
             while (parent != null && parent != _owner)
             {
                 targetChild = parent;
-                parent = (IControl?)parent.VisualParent;
+                parent = (Control?)parent.VisualParent;
             }
 
             if (parent == null)

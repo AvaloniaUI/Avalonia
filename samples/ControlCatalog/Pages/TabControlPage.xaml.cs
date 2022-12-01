@@ -25,13 +25,13 @@ namespace ControlCatalog.Pages
                     {
                         Header = "Arch",
                         Text = "This is the first templated tab page.",
-                        Image = LoadBitmap("avares://ControlCatalog/Assets/delicate-arch-896885_640.jpg"),
+                        Image = TabControlPage.LoadBitmap("avares://ControlCatalog/Assets/delicate-arch-896885_640.jpg"),
                     },
                     new TabControlPageViewModelItem
                     {
                         Header = "Leaf",
                         Text = "This is the second templated tab page.",
-                        Image = LoadBitmap("avares://ControlCatalog/Assets/maple-leaf-888807_640.jpg"),
+                        Image = TabControlPage.LoadBitmap("avares://ControlCatalog/Assets/maple-leaf-888807_640.jpg"),
                     },
                     new TabControlPageViewModelItem
                     {
@@ -49,7 +49,7 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
 
-        private IBitmap LoadBitmap(string uri)
+        private static IBitmap LoadBitmap(string uri)
         {
             var assets = AvaloniaLocator.Current!.GetService<IAssetLoader>()!;
             return new Bitmap(assets.Open(new Uri(uri)));

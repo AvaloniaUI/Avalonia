@@ -350,7 +350,7 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<IControl>();
+            var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<Control>();
 
             if (placementTarget == null)
             {
@@ -544,7 +544,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     if (change.Property == PlacementTargetProperty)
                     {
-                        var newTarget = change.GetNewValue<Control?>() ?? this.FindLogicalAncestorOfType<IControl>();
+                        var newTarget = change.GetNewValue<Control?>() ?? this.FindLogicalAncestorOfType<Control>();
 
                         if (newTarget is null || newTarget.GetVisualRoot() != _openState.TopLevel)
                         {
@@ -564,7 +564,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void UpdateHostPosition(IPopupHost popupHost, IControl placementTarget)
+        private void UpdateHostPosition(IPopupHost popupHost, Control placementTarget)
         {
             popupHost.ConfigurePosition(
                 placementTarget,
@@ -576,7 +576,7 @@ namespace Avalonia.Controls.Primitives
                 PlacementRect ?? new Rect(default, placementTarget.Bounds.Size));
         }
 
-        private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, IControl placementTarget)
+        private void UpdateHostSizing(IPopupHost popupHost, TopLevel topLevel, Control placementTarget)
         {
             var scaleX = 1.0;
             var scaleY = 1.0;
@@ -611,7 +611,7 @@ namespace Avalonia.Controls.Primitives
         {
             if (_openState != null)
             {
-                var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<IControl>();
+                var placementTarget = PlacementTarget ?? this.FindLogicalAncestorOfType<Control>();
                 if (placementTarget == null)
                     return;
                 _openState.PopupHost.ConfigurePosition(
@@ -721,7 +721,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (PlacementTarget != null)
                 {
-                    var e = (IControl?)PlacementTarget;
+                    var e = (Control?)PlacementTarget;
 
                     while (e is object && (!e.Focusable || !e.IsEffectivelyEnabled || !e.IsVisible))
                     {
@@ -735,7 +735,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else
                 {
-                    var anc = this.FindLogicalAncestorOfType<IControl>();
+                    var anc = this.FindLogicalAncestorOfType<Control>();
                     if (anc != null)
                     {
                         FocusManager.Instance?.Focus(anc);
@@ -756,7 +756,7 @@ namespace Avalonia.Controls.Primitives
 
         private void PointerPressedDismissOverlay(object? sender, PointerPressedEventArgs e)
         {
-            if (IsLightDismissEnabled && e.Source is IVisual v && !IsChildOrThis(v))
+            if (IsLightDismissEnabled && e.Source is Visual v && !IsChildOrThis(v))
             {
                 CloseCore();
 
@@ -770,7 +770,7 @@ namespace Avalonia.Controls.Primitives
         private static void PassThroughEvent(PointerPressedEventArgs e)
         {
             if (e.Source is LightDismissOverlayLayer layer &&
-                layer.GetVisualRoot() is IInputElement root)
+                layer.GetVisualRoot() is InputElement root)
             {
                 var p = e.GetCurrentPoint(root);
                 var hit = root.InputHitTest(p.Position, x => x != layer);
@@ -800,18 +800,18 @@ namespace Avalonia.Controls.Primitives
             // If the Popup appears in a control template, then the child controls
             // that appear in the popup host need to have their TemplatedParent
             // properties set.
-            if (TemplatedParent != null && popupHost.Presenter != null)
+            if (TemplatedParent != null && popupHost.Presenter is Control presenter)
             {
-                popupHost.Presenter.ApplyTemplate();
+                presenter.ApplyTemplate();
 
-                var presenterSubscription = popupHost.Presenter.GetObservable(ContentPresenter.ChildProperty)
+                var presenterSubscription = presenter.GetObservable(ContentPresenter.ChildProperty)
                     .Subscribe(SetTemplatedParentAndApplyChildTemplates);
 
                 _openState.SetPresenterSubscription(presenterSubscription);
             }
         }
 
-        private void SetTemplatedParentAndApplyChildTemplates(IControl? control)
+        private void SetTemplatedParentAndApplyChildTemplates(Control? control)
         {
             if (control != null)
             {
@@ -819,7 +819,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private bool IsChildOrThis(IVisual child)
+        private bool IsChildOrThis(Visual child)
         {
             if (_openState is null)
             {
@@ -828,7 +828,7 @@ namespace Avalonia.Controls.Primitives
 
             var popupHost = _openState.PopupHost;
 
-            IVisual? root = child.VisualRoot;
+            Visual? root = child.VisualRoot as Visual;
             
             while (root is IHostedVisualTreeRoot hostedRoot)
             {
@@ -837,13 +837,13 @@ namespace Avalonia.Controls.Primitives
                     return true;
                 }
 
-                root = hostedRoot.Host?.VisualRoot;
+                root = hostedRoot.Host?.VisualRoot as Visual;
             }
 
             return false;
         }
         
-        public bool IsInsidePopup(IVisual visual)
+        public bool IsInsidePopup(Visual visual)
         {
             if (_openState is null)
             {
@@ -852,7 +852,7 @@ namespace Avalonia.Controls.Primitives
 
             var popupHost = _openState.PopupHost;
 
-            return popupHost != null && ((IVisual)popupHost).IsVisualAncestorOf(visual);
+            return popupHost != null && ((Visual)popupHost).IsVisualAncestorOf(visual);
         }
 
         public bool IsPointerOverPopup => ((IInputElement?)_openState?.PopupHost)?.IsPointerOver ?? false;
@@ -919,7 +919,7 @@ namespace Avalonia.Controls.Primitives
             private readonly IDisposable _cleanup;
             private IDisposable? _presenterCleanup;
 
-            public PopupOpenState(IControl placementTarget, TopLevel topLevel, IPopupHost popupHost, IDisposable cleanup)
+            public PopupOpenState(Control placementTarget, TopLevel topLevel, IPopupHost popupHost, IDisposable cleanup)
             {
                 PlacementTarget = placementTarget;
                 TopLevel = topLevel;
@@ -928,7 +928,7 @@ namespace Avalonia.Controls.Primitives
             }
 
             public TopLevel TopLevel { get; }
-            public IControl PlacementTarget { get; set; }
+            public Control PlacementTarget { get; set; }
             public IPopupHost PopupHost { get; }
 
             public void SetPresenterSubscription(IDisposable? presenterCleanup)

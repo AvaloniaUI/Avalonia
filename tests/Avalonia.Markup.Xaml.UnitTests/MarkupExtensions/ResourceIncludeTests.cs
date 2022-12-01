@@ -14,29 +14,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             [Fact]
             public void ResourceInclude_Loads_ResourceDictionary()
             {
-                var includeXaml = @"
+                var documents = new[]
+                {
+                    new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resource.xaml"), @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <SolidColorBrush x:Key='brush'>#ff506070</SolidColorBrush>
-</ResourceDictionary>
-";
-                using (StaticResourceExtensionTests.StartWithResources(("test:include.xaml", includeXaml)))
-                {
-                    var xaml = @"
+</ResourceDictionary>"),
+                    new RuntimeXamlLoaderDocument(@"
 <UserControl xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source='test:include.xaml'/>
+                <ResourceInclude Source='avares://Tests/Resource.xaml'/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Border Name='border' Background='{StaticResource brush}'/>
-</UserControl>";
+</UserControl>")
+                };
 
-                    var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+                using (StartWithResources())
+                {
+                    var compiled = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                    var userControl = Assert.IsType<UserControl>(compiled[1]);
                     var border = userControl.FindControl<Border>("border");
 
                     var brush = (ISolidColorBrush)border.Background;
@@ -47,31 +50,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             [Fact]
             public void Missing_ResourceKey_In_ResourceInclude_Does_Not_Cause_StackOverflow()
             {
-                var styleXaml = @"
+                var app = Application.Current;
+                var documents = new[]
+                {
+                    new RuntimeXamlLoaderDocument(new Uri("avares://Tests/Resource.xaml"), @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <StaticResource x:Key='brush' ResourceKey='missing' />
-</ResourceDictionary>";
-
-                using (StaticResourceExtensionTests.StartWithResources(("test:style.xaml", styleXaml)))
-                {
-                    var xaml = @"
+</ResourceDictionary>"),
+                    new RuntimeXamlLoaderDocument(app, @"
 <Application xmlns='https://github.com/avaloniaui'
              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source='test:style.xaml'/>
+                <ResourceInclude Source='avares://Tests/Resource.xaml'/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
-</Application>";
+</Application>")
+                };
 
-                    var app = Application.Current;
-
+                using (StartWithResources())
+                {
                     try
                     {
-                        AvaloniaRuntimeXamlLoader.Load(xaml, null, app);
+                        AvaloniaRuntimeXamlLoader.LoadGroup(documents);
                     }
                     catch (KeyNotFoundException)
                     {
@@ -80,7 +84,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 }
             }
 
-            private static IDisposable StartWithResources(params (string, string)[] assets)
+            private IDisposable StartWithResources(params (string, string)[] assets)
             {
                 var assetLoader = new MockAssetLoader(assets);
                 var services = new TestServices(assetLoader: assetLoader);

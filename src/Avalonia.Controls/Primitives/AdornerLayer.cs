@@ -60,7 +60,7 @@ namespace Avalonia.Controls.Primitives
             adorner.SetValue(AdornedElementProperty, adorned);
         }
 
-        public static AdornerLayer? GetAdornerLayer(IVisual visual)
+        public static AdornerLayer? GetAdornerLayer(Visual visual)
         {
             return visual.FindAncestorOfType<VisualLayerManager>()?.AdornerLayer;
         }
@@ -139,7 +139,7 @@ namespace Avalonia.Controls.Primitives
 
         private static void Attach(Visual visual, Control adorner)
         {
-            var layer = GetAdornerLayer(visual);
+            var layer = AdornerLayer.GetAdornerLayer(visual);
             AddVisualAdorner(visual, adorner, layer);
             visual.SetValue(s_savedAdornerLayerProperty, layer);
         }
@@ -158,8 +158,8 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
 
-            SetAdornedElement(adorner, visual);
-            SetIsClipEnabled(adorner, false);
+            AdornerLayer.SetAdornedElement(adorner, visual);
+            AdornerLayer.SetIsClipEnabled(adorner, false);
 
             ((ISetLogicalParent) adorner).SetParent(visual);
             layer.Children.Add(adorner);
@@ -232,7 +232,7 @@ namespace Avalonia.Controls.Primitives
             layer?.UpdateAdornedElement(adorner, adorned);
         }
 
-        private static void UpdateClip(IControl control, TransformedBounds bounds, bool isEnabled)
+        private void UpdateClip(Control control, TransformedBounds bounds, bool isEnabled)
         {
             if (!isEnabled)
             {

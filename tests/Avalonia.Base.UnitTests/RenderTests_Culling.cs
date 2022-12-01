@@ -171,7 +171,7 @@ namespace Avalonia.Base.UnitTests
             }
         }
 
-        private static void Render(IControl control)
+        private void Render(Control control)
         {
             var ctx = CreateDrawingContext();
             control.Measure(Size.Infinity);
@@ -179,7 +179,7 @@ namespace Avalonia.Base.UnitTests
             ImmediateRenderer.Render(control, ctx);
         }
 
-        private static DrawingContext CreateDrawingContext()
+        private DrawingContext CreateDrawingContext()
         {
             return new DrawingContext(Mock.Of<IDrawingContextImpl>());
         }

@@ -33,13 +33,16 @@ namespace Avalonia.Base.UnitTests.Input
         public void Keypresses_Should_Be_Sent_To_Focused_Element()
         {
             var target = new KeyboardDevice();
-            var focused = new Mock<IInputElement>();
-            var root = Mock.Of<IInputRoot>();
+            var focused = new Control();
+            var root = new TestRoot();
+            var raised = 0;
 
             target.SetFocusedElement(
-                focused.Object,
+                focused,
                 NavigationMethod.Unspecified,
                 KeyModifiers.None);
+
+            focused.KeyDown += (s, e) => ++raised;
 
             target.ProcessRawEvent(
                 new RawKeyEventArgs(
@@ -50,7 +53,7 @@ namespace Avalonia.Base.UnitTests.Input
                     Key.A,
                     RawInputModifiers.None));
 
-            focused.Verify(x => x.RaiseEvent(It.IsAny<KeyEventArgs>()));
+            Assert.Equal(1, raised);
         }
 
         [Fact]
@@ -73,13 +76,16 @@ namespace Avalonia.Base.UnitTests.Input
         public void TextInput_Should_Be_Sent_To_Focused_Element()
         {
             var target = new KeyboardDevice();
-            var focused = new Mock<IInputElement>();
-            var root = Mock.Of<IInputRoot>();
+            var focused = new Control();
+            var root = new TestRoot();
+            var raised = 0;
 
             target.SetFocusedElement(
-                focused.Object,
+                focused,
                 NavigationMethod.Unspecified,
                 KeyModifiers.None);
+
+            focused.TextInput += (s, e) => ++raised;
 
             target.ProcessRawEvent(
                 new RawTextInputEventArgs(
@@ -88,7 +94,7 @@ namespace Avalonia.Base.UnitTests.Input
                     root,
                     "Foo"));
 
-            focused.Verify(x => x.RaiseEvent(It.IsAny<TextInputEventArgs>()));
+            Assert.Equal(1, raised);
         }
 
         [Fact]
@@ -135,25 +141,28 @@ namespace Avalonia.Base.UnitTests.Input
         public void Control_Focus_Should_Be_Set_Before_FocusedElement_Raises_PropertyChanged()
         {
             var target = new KeyboardDevice();
-            var focused = new Mock<IInputElement>();
-            var root = Mock.Of<IInputRoot>();
-            var raised = 0;
+            var focused = new Control();
+            var root = new TestRoot();
+            var gotFocusRaised = 0;
+            var propertyChangedRaised = 0;
+
+            focused.GotFocus += (s, e) => ++gotFocusRaised;
 
             target.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(target.FocusedElement))
                 {
-                    focused.Verify(x => x.RaiseEvent(It.IsAny<GotFocusEventArgs>()));
-                    ++raised;
+                    Assert.Equal(1, gotFocusRaised);
+                    ++propertyChangedRaised;
                 }
             };
 
             target.SetFocusedElement(
-                focused.Object,
+                focused,
                 NavigationMethod.Unspecified,
                 KeyModifiers.None);
 
-            Assert.Equal(1, raised);
+            Assert.Equal(1, propertyChangedRaised);
         }
     }
 }

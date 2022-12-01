@@ -22,14 +22,14 @@ namespace Avalonia.Rendering
     {
         private readonly IDispatcher? _dispatcher;
         private readonly IRenderLoop? _renderLoop;
-        private readonly IVisual _root;
+        private readonly Visual _root;
         private readonly ISceneBuilder _sceneBuilder;
 
         private bool _running;
         private bool _disposed;
         private volatile IRef<Scene>? _scene;
         private DirtyVisuals? _dirty;
-        private HashSet<IVisual>? _recalculateChildren;
+        private HashSet<Visual>? _recalculateChildren;
         private IRef<IRenderTargetBitmapImpl>? _overlay;
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
@@ -56,7 +56,7 @@ namespace Avalonia.Rendering
             IDeferredRendererLock? rendererLock = null) : base(true)
         {
             _dispatcher = dispatcher ?? Dispatcher.UIThread;
-            _root = root ?? throw new ArgumentNullException(nameof(root));
+            _root = root as Visual ?? throw new ArgumentNullException(nameof(root));
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             Layers = new RenderLayers();
             _renderLoop = renderLoop;
@@ -74,7 +74,7 @@ namespace Avalonia.Rendering
         /// This constructor is intended to be used for unit testing.
         /// </remarks>
         public DeferredRenderer(
-            IVisual root,
+            Visual root,
             IRenderTarget renderTarget,
             ISceneBuilder? sceneBuilder = null) : base(true)
         {
@@ -116,7 +116,7 @@ namespace Avalonia.Rendering
         internal IRenderTarget? RenderTarget { get; private set; }
 
         /// <inheritdoc/>
-        public void AddDirty(IVisual visual)
+        public void AddDirty(Visual visual)
         {
             _dirty?.Add(visual);
         }
@@ -142,7 +142,7 @@ namespace Avalonia.Rendering
             DisposeRenderTarget();
         }
 
-        public void RecalculateChildren(IVisual visual) => _recalculateChildren?.Add(visual);
+        public void RecalculateChildren(Visual visual) => _recalculateChildren?.Add(visual);
 
         void DisposeRenderTarget()
         {
@@ -163,17 +163,17 @@ namespace Avalonia.Rendering
         }
 
         /// <inheritdoc/>
-        public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
+        public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter)
         {
             EnsureCanHitTest();
 
             //It's safe to access _scene here without a lock since
             //it's only changed from UI thread which we are currently on
-            return _scene?.Item.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
+            return _scene?.Item.HitTest(p, root, filter) ?? Enumerable.Empty<Visual>();
         }
 
         /// <inheritdoc/>
-        public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool>? filter)
+        public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter)
         {
             EnsureCanHitTest();
 
@@ -414,7 +414,7 @@ namespace Avalonia.Rendering
         }
 
 
-        private void Render(IDrawingContextImpl context, VisualNode node, IVisual? layer, Rect clipBounds)
+        private void Render(IDrawingContextImpl context, VisualNode node, Visual? layer, Rect clipBounds)
         {
             if (layer == null || node.LayerRoot == layer)
             {
@@ -643,7 +643,7 @@ namespace Avalonia.Rendering
                 if (_dirty == null)
                 {
                     _dirty = new DirtyVisuals();
-                    _recalculateChildren = new HashSet<IVisual>();
+                    _recalculateChildren = new HashSet<Visual>();
                     _sceneBuilder.UpdateAll(scene);
                 }
                 else

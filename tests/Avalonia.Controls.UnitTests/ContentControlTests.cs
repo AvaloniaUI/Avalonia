@@ -26,7 +26,7 @@ namespace Avalonia.Controls.UnitTests
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            var child = ((IVisual)target).VisualChildren.Single();
+            var child = ((Visual)target).VisualChildren.Single();
             Assert.IsType<Border>(child);
             child = child.VisualChildren.Single();
             Assert.IsType<ContentPresenter>(child);
@@ -37,22 +37,28 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Templated_Children_Should_Be_Styled()
         {
-            var root = new TestRoot();
-            var target = new ContentControl();
-            var styler = new Mock<IStyler>();
+            var root = new TestRoot
+            {
+                Styles =
+                {
+                    new Style(x => x.Is<Control>())
+                    {
+                        Setters = { new Setter(Control.TagProperty, "foo") }
+                    }
+                }
+            };
 
-            AvaloniaLocator.CurrentMutable.Bind<IStyler>().ToConstant(styler.Object);
+            var target = new ContentControl();
+
             target.Content = "Foo";
             target.Template = GetTemplate();
             root.Child = target;
 
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
 
-            styler.Verify(x => x.ApplyStyles(It.IsAny<ContentControl>()), Times.Once());
-            styler.Verify(x => x.ApplyStyles(It.IsAny<Border>()), Times.Once());
-            styler.Verify(x => x.ApplyStyles(It.IsAny<ContentPresenter>()), Times.Once());
-            styler.Verify(x => x.ApplyStyles(It.IsAny<TextBlock>()), Times.Once());
+            foreach (Control child in target.GetTemplateChildren())
+                Assert.Equal("foo", child.Tag);
         }
 
         [Fact]
@@ -227,7 +233,7 @@ namespace Avalonia.Controls.UnitTests
             ((ILogical)target).LogicalChildren.CollectionChanged += (s, e) => called = true;
 
             target.Content = child2;
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
 
             Assert.True(called);
         }
@@ -279,20 +285,20 @@ namespace Avalonia.Controls.UnitTests
         public void Binding_ContentTemplate_After_Content_Does_Not_Leave_Orpaned_TextBlock()
         {
             // Test for #1271.
-            var children = new List<IControl>();
+            var children = new List<Control>();
             var presenter = new ContentPresenter();
 
             // The content and then the content template property need to be bound with delayed bindings
             // as they are in Avalonia.Markup.Xaml.
             DelayedBinding.Add(presenter, ContentPresenter.ContentProperty, new Binding("Content")
             {
-                Priority = BindingPriority.TemplatedParent,
+                Priority = BindingPriority.Template,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
             });
 
             DelayedBinding.Add(presenter, ContentPresenter.ContentTemplateProperty, new Binding("ContentTemplate")
             {
-                Priority = BindingPriority.TemplatedParent,
+                Priority = BindingPriority.Template,
                 RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
             });
 
@@ -332,40 +338,37 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Should_Set_Child_LogicalParent_After_Removing_And_Adding_Back_To_Logical_Tree()
         {
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            var target = new ContentControl();
+            var root = new TestRoot
             {
-                var target = new ContentControl();
-                var root = new TestRoot
+                Styles =
                 {
-                    Styles =
+                    new Style(x => x.OfType<ContentControl>())
                     {
-                        new Style(x => x.OfType<ContentControl>())
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(ContentControl.TemplateProperty, GetTemplate()),
-                            }
+                            new Setter(ContentControl.TemplateProperty, GetTemplate()),
                         }
-                    },
-                    Child = target
-                };
+                    }
+                },
+                Child = target
+            };
 
-                target.Content = "Foo";
-                target.ApplyTemplate();
-                target.Presenter.ApplyTemplate();
+            target.Content = "Foo";
+            target.ApplyTemplate();
+            target.Presenter.ApplyTemplate();
 
-                Assert.Equal(target, target.Presenter.Child.LogicalParent);
+            Assert.Equal(target, target.Presenter.Child.GetLogicalParent());
 
-                root.Child = null;
+            root.Child = null;
 
-                Assert.Null(target.Template);
+            Assert.Null(target.Template);
 
-                target.Content = null;
-                root.Child = target;
-                target.Content = "Bar";
+            target.Content = null;
+            root.Child = target;
+            target.Content = "Bar";
 
-                Assert.Equal(target, target.Presenter.Child.LogicalParent);
-            }
+            Assert.Equal(target, target.Presenter.Child.GetLogicalParent());
         }
 
         private static FuncControlTemplate GetTemplate()

@@ -92,14 +92,14 @@ namespace Avalonia.Base.UnitTests.Rendering
                 target.AddDirty(root);
                 target.AddDirty(decorator);
 
-                var result = new List<IVisual>();
+                var result = new List<Visual>();
 
-                sceneBuilder.Setup(x => x.Update(It.IsAny<Scene>(), It.IsAny<IVisual>()))
-                    .Callback<Scene, IVisual>((_, v) => result.Add(v));
+                sceneBuilder.Setup(x => x.Update(It.IsAny<Scene>(), It.IsAny<Visual>()))
+                    .Callback<Scene, Visual>((_, v) => result.Add(v));
 
                 RunFrame(target);
 
-                Assert.Equal(new List<IVisual> { root, decorator, border, canvas }, result);
+                Assert.Equal(new List<Visual> { root, decorator, border, canvas }, result);
             }
         }
 
@@ -587,7 +587,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 border.Bind(Border.OpacityProperty, animation, BindingPriority.Animation);
                 RunFrame(target);
 
-                Assert.Equal(new IVisual[] { root, border }, target.Layers.Select(x => x.LayerRoot));
+                Assert.Equal(new Visual[] { root, border }, target.Layers.Select(x => x.LayerRoot));
 
                 animation.OnCompleted();
                 RunFrame(target);
@@ -726,7 +726,7 @@ namespace Avalonia.Base.UnitTests.Rendering
             }
         }
 
-        private static DeferredRenderer CreateTargetAndRunFrame(
+        private DeferredRenderer CreateTargetAndRunFrame(
             TestRoot root,
             Mock<IRenderTimer> timer = null,
             ISceneBuilder sceneBuilder = null,
@@ -745,34 +745,34 @@ namespace Avalonia.Base.UnitTests.Rendering
             return target;
         }
 
-        private static Mock<IDrawingContextImpl> GetLayerContext(DeferredRenderer renderer, IControl layerRoot)
+        private Mock<IDrawingContextImpl> GetLayerContext(DeferredRenderer renderer, Control layerRoot)
         {
             return Mock.Get(renderer.Layers[layerRoot].Bitmap.Item.CreateDrawingContext(null));
         }
 
-        private static void IgnoreFirstFrame(IRenderLoopTask task, Mock<ISceneBuilder> sceneBuilder)
+        private void IgnoreFirstFrame(IRenderLoopTask task, Mock<ISceneBuilder> sceneBuilder)
         {
             RunFrame(task);
             sceneBuilder.Invocations.Clear();
         }
 
-        private static void RunFrame(IRenderLoopTask task)
+        private void RunFrame(IRenderLoopTask task)
         {
             task.Update(TimeSpan.Zero);
             task.Render();
         }
 
-        private static IRenderTargetBitmapImpl CreateLayer()
+        private IRenderTargetBitmapImpl CreateLayer()
         {
             return Mock.Of<IRenderTargetBitmapImpl>(x =>
                 x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
         }
 
-        private static Mock<ISceneBuilder> MockSceneBuilder(IRenderRoot root)
+        private Mock<ISceneBuilder> MockSceneBuilder(IRenderRoot root)
         {
             var result = new Mock<ISceneBuilder>();
             result.Setup(x => x.UpdateAll(It.IsAny<Scene>()))
-                .Callback<Scene>(x => x.Layers.Add(root).Dirty.Add(new Rect(root.ClientSize)));
+                .Callback<Scene>(x => x.Layers.Add((Visual)root).Dirty.Add(new Rect(root.ClientSize)));
             return result;
         }
     }

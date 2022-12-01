@@ -145,7 +145,6 @@ namespace Avalonia.Controls
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
 
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
-            var styler = TryGetService<IStyler>(dependencyResolver);
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
@@ -182,8 +181,6 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesAdded += ((IStyleHost)this).StylesAdded;
                 _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
             }
-
-            styler?.ApplyStyles(this);
 
             ClientSize = impl.ClientSize;
             FrameSize = impl.FrameSize;
@@ -543,7 +540,7 @@ namespace Avalonia.Controls
 
         void PlatformImpl_LostFocus()
         {
-            var focused = (IVisual?)FocusManager.Instance?.Current;
+            var focused = (Visual?)FocusManager.Instance?.Current;
             if (focused == null)
                 return;
             while (focused.VisualParent != null)

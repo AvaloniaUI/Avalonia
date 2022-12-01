@@ -136,9 +136,9 @@ namespace Avalonia.Controls.UnitTests
         {
             var renderer = Mock.Of<IRenderer>();
             var pt = new Point(50, 50);
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
-                .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
-                    r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
+            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+                .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
+                    r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
 
             var target = new TestButton()
             {
@@ -168,9 +168,9 @@ namespace Avalonia.Controls.UnitTests
         {
             var renderer = Mock.Of<IRenderer>();
             
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
-                .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
-                    r.Bounds.Contains(p) ? new IVisual[] { r } : new IVisual[0]);
+            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+                .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
+                    r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
 
             var target = new TestButton()
             {
@@ -201,10 +201,10 @@ namespace Avalonia.Controls.UnitTests
         {
             var renderer = Mock.Of<IRenderer>();
             var pt = new Point(150, 50);
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
-                .Returns<Point, IVisual, Func<IVisual, bool>>((p, r, f) =>
+            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+                .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
-                    new IVisual[] { r } : new IVisual[0]);
+                    new Visual[] { r } : new Visual[0]);
 
             var target = new TestButton()
             {
@@ -379,7 +379,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private static KeyEventArgs CreateKeyDownEvent(Key key, IInteractive source = null)
+        private KeyEventArgs CreateKeyDownEvent(Key key, Interactive source = null)
         {
             return new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = key, Source = source };
         }

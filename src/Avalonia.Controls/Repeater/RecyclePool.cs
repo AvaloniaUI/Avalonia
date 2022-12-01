@@ -30,7 +30,7 @@ namespace Avalonia.Controls
 
         public static void SetPoolInstance(IDataTemplate dataTemplate, RecyclePool value) => s_pools.Add(dataTemplate, value);
 
-        public void PutElement(IControl element, string key, IControl? owner)
+        public void PutElement(Control element, string key, Control? owner)
         {
             var ownerAsPanel = EnsureOwnerIsPanelOrNull(owner);
             var elementInfo = new ElementInfo(element, ownerAsPanel);
@@ -44,7 +44,7 @@ namespace Avalonia.Controls
             pool.Add(elementInfo);
         }
 
-        public IControl? TryGetElement(string key, IControl? owner)
+        public Control? TryGetElement(string key, Control? owner)
         {
             if (_elements.TryGetValue(key, out var elements))
             {
@@ -80,12 +80,12 @@ namespace Avalonia.Controls
             return null;
         }
 
-        internal static string GetReuseKey(IControl element) => ((Control)element).GetValue(ReuseKeyProperty);
-        internal static void SetReuseKey(IControl element, string value) => ((Control)element).SetValue(ReuseKeyProperty, value);
+        internal string GetReuseKey(Control element) => element.GetValue(ReuseKeyProperty);
+        internal void SetReuseKey(Control element, string value) => element.SetValue(ReuseKeyProperty, value);
 
-        private static IPanel? EnsureOwnerIsPanelOrNull(IControl? owner)
+        private Panel? EnsureOwnerIsPanelOrNull(Control? owner)
         {
-            if (owner is IPanel panel)
+            if (owner is Panel panel)
             {
                 return panel;
             }
@@ -99,14 +99,14 @@ namespace Avalonia.Controls
 
         private class ElementInfo
         {
-            public ElementInfo(IControl element, IPanel? owner)
+            public ElementInfo(Control element, Panel? owner)
             {
                 Element = element;
                 Owner = owner;
             }
-
-            public IControl Element { get; }
-            public IPanel? Owner { get;}
+            
+            public Control Element { get; }
+            public Panel? Owner { get;}
         }
     }
 }
