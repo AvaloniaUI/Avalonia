@@ -50,7 +50,7 @@ namespace Avalonia.Win32
                     {
                         WinUICompositorConnection.TryCreateAndRegister(egl, opts.CompositionBackdropCornerRadius);
                     }
-                    else if (opts.UseDxgiSwapChain)
+                    else if (opts.UseLowLatencyDxgiSwapChain)
                     {
                         DxgiConnection.TryCreateAndRegister(egl);
                     }

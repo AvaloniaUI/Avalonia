@@ -103,7 +103,7 @@ namespace ControlCatalog.NetCore
             {
                 builder.With(new Win32PlatformOptions()
                 {
-                    UseDxgiSwapChain = true,
+                    UseLowLatencyDxgiSwapChain = true,
                     UseWindowsUIComposition = false
                 });
                 return builder.StartWithClassicDesktopLifetime(args);

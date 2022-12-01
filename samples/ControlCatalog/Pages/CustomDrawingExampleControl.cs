@@ -151,7 +151,6 @@ namespace ControlCatalog.Pages
             context.DrawGeometry(null, _pen, _smileGeometry);
 
             Point cursorInWorldPoint = UIPointToWorldPoint(_cursorPoint, ViewportCenterX, ViewportCenterY, Scale, Rotation);
-            //System.Diagnostics.Trace.WriteLine($"Cursor In-World: {cursorInWorldPoint.X}, {cursorInWorldPoint.Y}  from UI: {_cursorPoint.X}, {_cursorPoint.Y}");
             context.DrawEllipse(Brushes.Gray, _pen, cursorInWorldPoint, 20.0d, 20.0d);
             
 
@@ -165,23 +164,12 @@ namespace ControlCatalog.Pages
                 context.DrawEllipse(Brushes.Gray, _pen, orbitPosition, 20.0d, 20.0d);
             }
 
-            //Point firstCirclePoint = new Point(Math.Sin(_timeKeeper.Elapsed.TotalSeconds), Math.Cos(_timeKeeper.Elapsed.TotalSeconds)) * 200.0d;
-            //context.DrawEllipse(Brushes.White, _pen, firstCirclePoint, 10.0d, 10.0d);
-
 
             // end drawing the world 
 
             mapPositionModifier.Dispose();
 
             scaleModifier.Dispose();
-
-            //context.DrawLine(_pen, new Avalonia.Point(-halfMax, 0), new Avalonia.Point(halfMax, 0));
-            //context.DrawLine(_pen, new Avalonia.Point(0, -halfMax), new Avalonia.Point(0, halfMax));
-
-            //using (context.PushPreTransform(Avalonia.Matrix.CreateRotation(-Rotation)))
-            //{
-            //    // theoretically one could use this technique to draw text or similar so that it'll always appear "Upright" 
-            //}
 
             rotationModifier.Dispose();
             translateModifier.Dispose();

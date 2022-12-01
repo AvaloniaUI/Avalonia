@@ -113,15 +113,13 @@ namespace Avalonia.Win32.DxgiSwapchain
         private void GetBestOutputToVWaitOn()
         {
             double highestRefreshRate = 0.0d;
-            void* factPointer = null;
 
             // IDXGIFactory Guid: [Guid("7B7166EC-21C7-44AE-B21A-C9AE321AE369")]
             Guid factoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory));
-            CreateDXGIFactory(&factoryGuid, (void**)&factPointer);
+            CreateDXGIFactory(ref factoryGuid, out var factPointer);
 
             using var fact = MicroComRuntime.CreateProxyFor<IDXGIFactory>(factPointer, true);
 
-            IDXGIAdapter? adapter = null;
             void* adapterPointer = null;
 
             ushort adapterIndex = 0;
@@ -129,7 +127,7 @@ namespace Avalonia.Win32.DxgiSwapchain
             // this looks odd, but that's just how one enumerates adapters in DXGI 
             while (fact.EnumAdapters(adapterIndex, &adapterPointer) == 0)
             {
-                adapter = MicroComRuntime.CreateProxyFor<IDXGIAdapter>(adapterPointer, true);
+                using var adapter = MicroComRuntime.CreateProxyFor<IDXGIAdapter>(adapterPointer, true);
                 void* outputPointer = null;
                 ushort outputIndex = 0;
                 while (adapter.EnumOutputs(outputIndex, &outputPointer) == 0)
@@ -149,10 +147,6 @@ namespace Avalonia.Win32.DxgiSwapchain
                     DEVMODEW devMode = default;
                     EnumDisplaySettingsW(outputDesc.DeviceName, ENUM_CURRENT_SETTINGS, &devMode);
 
-                    Trace.WriteLine($"Adapter[{adapterIndex}] Output[{outputIndex}]: " +
-                        $"{new string((char*)outputDesc.DeviceName)}, {new string((char*)monInfo.szDevice)}, " +
-                        $"devModeHz: {devMode.dmDisplayFrequency} Hz");
-
                     if (highestRefreshRate < devMode.dmDisplayFrequency)
                     {
                         // ooh I like this output! 
@@ -164,17 +158,9 @@ namespace Avalonia.Win32.DxgiSwapchain
                         _output = MicroComRuntime.CloneReference(output);
                         highestRefreshRate = devMode.dmDisplayFrequency;
                     }
-
-
-                    // clean up output will be done via the using as above 
-                        
-                    
                     // and then increment index to move onto the next monitor 
                     outputIndex++;
                 }
-                // clean up adapter 
-                adapter.Dispose();
-                adapter = null;
                 // and then increment index to move onto the next display adapater
                 adapterIndex++;
             }

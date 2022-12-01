@@ -46,18 +46,14 @@ namespace Avalonia.Win32.DxgiSwapchain
             // but how do I wrap an IntPtr as a managed IUnknown now? Like this. 
             IUnknown pdevice = MicroComRuntime.CreateProxyFor<IUnknown>(((AngleWin32EglDisplay)_egl.Display).GetDirect3DDevice(), false);
 
-            IDXGIDevice testDevice = pdevice.QueryInterface<IDXGIDevice>();
+            _dxgiDevice = pdevice.QueryInterface<IDXGIDevice>();
 
-            _dxgiDevice = testDevice;
-
-            IDXGIAdapter? adapterPointer = _dxgiDevice.Adapter;
-
-
-            Guid factoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory2));
-            _dxgiFactory = MicroComRuntime.CreateProxyFor<IDXGIFactory2>(adapterPointer.GetParent(&factoryGuid), true);
-
-            adapterPointer.Dispose();
-            adapterPointer = null; // so don't use it 
+            // only needing the adapter pointer to ask it for the IDXGI Factory 
+            using (var adapterPointer = _dxgiDevice.Adapter)
+            {
+                Guid factoryGuid = MicroComRuntime.GetGuidFor(typeof(IDXGIFactory2));
+                _dxgiFactory = MicroComRuntime.CreateProxyFor<IDXGIFactory2>(adapterPointer.GetParent(&factoryGuid), true);
+            }
 
             DXGI_SWAP_CHAIN_DESC1 dxgiSwapChainDesc = new DXGI_SWAP_CHAIN_DESC1();
 
@@ -76,9 +72,7 @@ namespace Avalonia.Win32.DxgiSwapchain
             // this is done in the DxgiConnection itself 
             _flagsUsed = dxgiSwapChainDesc.Flags = (uint)(DXGI_SWAP_CHAIN_FLAG.DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
 
-
-
-            IDXGISwapChain1 pSwapChain = _dxgiFactory.CreateSwapChainForHwnd
+            _swapChain = _dxgiFactory.CreateSwapChainForHwnd
             (
                     _dxgiDevice,
                     window.Handle,
@@ -87,7 +81,6 @@ namespace Avalonia.Win32.DxgiSwapchain
                     null
             );
 
-            _swapChain = pSwapChain;
             Interop.UnmanagedMethods.RECT pClientRect;
             GetClientRect(_window.Handle, out pClientRect);
             _clientRect = pClientRect;

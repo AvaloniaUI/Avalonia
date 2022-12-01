@@ -11,11 +11,11 @@ namespace Avalonia.Win32.DxgiSwapchain
     {
         // these return HRESULTs expecting Marshall to throw Win32 exceptions on failures
         [DllImport("dxgi", ExactSpelling = true, PreserveSig = false)]
-        internal static extern void CreateDXGIFactory(Guid* riid, void** ppFactory);
+        internal static extern void CreateDXGIFactory(ref Guid riid, out void* ppFactory);
 
         // these return HRESULTs expecting Marshall to throw Win32 exceptions on failures
         [DllImport("dxgi", ExactSpelling = true, PreserveSig = false)]
-        internal static extern void CreateDXGIFactory1(Guid* riid, void** ppFactory);
+        internal static extern void CreateDXGIFactory1(ref Guid riid, out void* ppFactory);
 
         [DllImport("user32", ExactSpelling = true)]
         internal static extern bool GetMonitorInfoW(HANDLE hMonitor, IntPtr lpmi);
