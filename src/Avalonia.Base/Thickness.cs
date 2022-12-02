@@ -97,10 +97,9 @@ namespace Avalonia
         /// </summary>
         public double Bottom => _bottom;
 
-        /// <summary>
-        /// Gets a value indicating whether all sides are set to 0.
-        /// </summary>
-        public bool IsEmpty => Left.Equals(0) && IsUniform;
+        /// <inheritdoc cref="IsDefault"/>
+        [Obsolete("Use IsDefault instead.")]
+        public bool IsEmpty => IsDefault;
 
         /// <summary>
         /// Gets a value indicating whether all sides are equal.
@@ -292,15 +291,13 @@ namespace Avalonia
             left = this._left;
             top = this._top;
             right = this._right;
-            bottom = this._bottom;        
+            bottom = this._bottom;
         }
 
         /// <summary>
-        /// Gets a value indicating whether the left, top, right and bottom thickness values are zero.
+        /// Gets a value indicating whether the instance has default values
+        /// (the left, top, right and bottom values are zero).
         /// </summary>
-        public bool IsDefault
-        {
-            get { return (_left == 0) && (_top == 0) && (_right == 0) && (_bottom == 0); }
-        }
+        public bool IsDefault => (_left == 0) && (_top == 0) && (_right == 0) && (_bottom == 0);
     }
 }
