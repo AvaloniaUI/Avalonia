@@ -94,22 +94,22 @@ namespace Avalonia.Media
 
             if (OffsetX != 0.0)
             {
-                sb.AppendFormat(" {0}", OffsetX.ToString());
+                sb.AppendFormat(" {0}", OffsetX.ToString(CultureInfo.InvariantCulture));
             }
 
             if (OffsetY != 0.0)
             {
-                sb.AppendFormat(" {0}", OffsetY.ToString());
+                sb.AppendFormat(" {0}", OffsetY.ToString(CultureInfo.InvariantCulture));
             }
             
             if (Blur != 0.0)
             {
-                sb.AppendFormat(" {0}", Blur.ToString());
+                sb.AppendFormat(" {0}", Blur.ToString(CultureInfo.InvariantCulture));
             }
 
             if (Spread != 0.0)
             {
-                sb.AppendFormat(" {0}", Spread.ToString());
+                sb.AppendFormat(" {0}", Spread.ToString(CultureInfo.InvariantCulture));
             }
 
             sb.AppendFormat(" {0}", Color.ToString());
