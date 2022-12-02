@@ -1,3 +1,5 @@
+using System;
+
 namespace Avalonia.Media
 {
     public sealed class BezierSegment : PathSegment
@@ -60,6 +62,6 @@ namespace Avalonia.Media
         }
 
         public override string ToString()
-            => $"C {Point1} {Point2} {Point3}";
+            => FormattableString.Invariant($"C {Point1} {Point2} {Point3}");
     }
 }
