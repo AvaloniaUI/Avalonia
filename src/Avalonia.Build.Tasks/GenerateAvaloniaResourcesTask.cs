@@ -67,7 +67,7 @@ namespace Avalonia.Build.Tasks
            {
               
                var src = new Source(r.ItemSpec, Root);
-               BuildEngine.LogMessage($"avares -> name:{src.Path}, path: {src.SystemPath}, size:{src.Size}, ItemSpec:{r.ItemSpec}", _reportImportance);
+               BuildEngine.LogMessage(FormattableString.Invariant($"avares -> name:{src.Path}, path: {src.SystemPath}, size:{src.Size}, ItemSpec:{r.ItemSpec}"), _reportImportance);
                return src;
            }).ToList();
 
