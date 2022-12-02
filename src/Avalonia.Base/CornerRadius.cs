@@ -61,9 +61,13 @@ namespace Avalonia
         public double BottomLeft { get; }
 
         /// <summary>
-        /// Gets a value indicating whether all corner radii are set to 0.
+        /// Gets a value indicating whether the instance has default values (all corner radii are set to 0).
         /// </summary>
-        public bool IsEmpty => TopLeft.Equals(0) && IsUniform;
+        public bool IsDefault => TopLeft == 0 && TopRight == 0 && BottomLeft == 0 && BottomRight == 0;
+
+        /// <inheritdoc cref="IsDefault"/>
+        [Obsolete("Use IsDefault instead.")]
+        public bool IsEmpty => IsDefault;
 
         /// <summary>
         /// Gets a value indicating whether all corner radii are equal.
@@ -79,7 +83,6 @@ namespace Avalonia
         {
             // ReSharper disable CompareOfFloatsByEqualityOperator
             return TopLeft == other.TopLeft &&
-                   
                    TopRight == other.TopRight &&
                    BottomRight == other.BottomRight &&
                    BottomLeft == other.BottomLeft;
