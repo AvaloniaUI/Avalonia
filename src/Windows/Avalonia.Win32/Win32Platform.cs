@@ -96,6 +96,16 @@ namespace Avalonia
         /// This can be useful when you need a rounded-corner blurred Windows 10 app, or borderless Windows 11 app
         /// </summary>
         public float? CompositionBackdropCornerRadius { get; set; }
+
+        /// <summary>
+        /// When <see cref="UseLowLatencyDxgiSwapChain"/> is active, renders Avalonia through a low-latency Dxgi Swapchain.
+        /// Requires Feature Level 11_3 to be active, Windows 8.1+ Any Subversion. 
+        /// This is only recommended if low input latency is desirable, and there is no need for the transparency
+        /// and stylings / blurrings offered by <see cref="UseWindowsUIComposition"/><br/>
+        /// This is mutually exclusive with 
+        /// <see cref="UseWindowsUIComposition"/> which if active will override this setting. 
+        /// </summary>
+        public bool UseLowLatencyDxgiSwapChain { get; set; } = false;
     }
 }
 
