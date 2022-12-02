@@ -58,6 +58,7 @@
                                 Padding="{TemplateBinding Padding}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalAlignment}"
                                 Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}"
                                 Focusable="False" />
             </Grid>
           </Border>

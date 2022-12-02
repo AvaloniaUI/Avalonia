@@ -107,7 +107,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="ItemContainerGenerator"/> for the control.
         /// </summary>
-        public ItemContainerGenerator ItemContainerGenerator => _itemContainerGenerator ??= new(this);
+        public ItemContainerGenerator ItemContainerGenerator
+        {
+#pragma warning disable CS0612 // Type or member is obsolete
+            get => _itemContainerGenerator ??= CreateItemContainerGenerator();
+#pragma warning restore CS0612 // Type or member is obsolete
+        }
 
         /// <summary>
         /// Gets or sets the items to display.
@@ -188,7 +193,8 @@ namespace Avalonia.Controls
         /// </returns>
         public Control? ContainerFromItem(object item)
         {
-            throw new NotImplementedException();
+            var index = Items?.IndexOf(item) ?? -1;
+            return index >= 0 ? ContainerFromIndex(index) : null;
         }
 
         /// <summary>
@@ -210,8 +216,8 @@ namespace Avalonia.Controls
         /// </returns>
         public object? ItemFromContainer(Control container)
         {
-            // TODO: Should this throw or return null of container isn't a container?
-            throw new NotImplementedException();
+            var index = IndexFromContainer(container);
+            return index >= 0 && index < ItemCount ? Items!.ElementAt(index) : null;
         }
 
         /// <summary>
@@ -273,6 +279,8 @@ namespace Avalonia.Controls
             if (container == item)
                 return;
 
+            var itemTemplate = GetEffectiveItemTemplate();
+
             if (container is HeaderedContentControl hcc)
             {
                 hcc.Content = item;
@@ -282,20 +290,43 @@ namespace Avalonia.Controls
                 else if (item is not Visual)
                     hcc.Header = item;
 
-                if (GetEffectiveItemTemplate() is { } it)
-                    hcc.HeaderTemplate = it;
+                if (itemTemplate is not null)
+                    hcc.HeaderTemplate = itemTemplate;
             }
             else if (container is ContentControl cc)
             {
                 cc.Content = item;
-                if (GetEffectiveItemTemplate() is { } it)
-                    cc.ContentTemplate = it;
+                if (itemTemplate is not null)
+                    cc.ContentTemplate = itemTemplate;
             }
             else if (container is ContentPresenter p)
             {
                 p.Content = item;
-                if (GetEffectiveItemTemplate() is { } it)
-                    p.ContentTemplate = it;
+                if (itemTemplate is not null)
+                    p.ContentTemplate = itemTemplate;
+            }
+            else if (container is ItemsControl ic)
+            {
+                if (itemTemplate is not null)
+                    ic.ItemTemplate = itemTemplate;
+                if (ItemContainerTheme is { } ict)
+                    ic.ItemContainerTheme = ict;
+            }
+
+            // This condition is separate because HeaderedItemsControl needs to also run the
+            // ItemsControl preparation.
+            if (container is HeaderedItemsControl hic)
+            {
+                hic.Header = item;
+                hic.HeaderTemplate = itemTemplate;
+
+                var treeTemplate = (itemTemplate ?? hic.FindDataTemplate(item)) as ITreeDataTemplate;
+
+                if (treeTemplate is not null)
+                {
+                    if (item is not null && treeTemplate.ItemsSelector(item) is { } itemsBinding)
+                        BindingOperations.Apply(hic, ItemsProperty, itemsBinding, null);
+                }
             }
         }
 
@@ -316,6 +347,7 @@ namespace Avalonia.Controls
         /// <param name="container">The container element.</param>
         protected internal virtual void ClearContainerForItemOverride(Control container)
         {
+            // TODO: Remove HeaderedItemsControl.Items binding.
         }
 
         /// <summary>
@@ -484,6 +516,20 @@ namespace Avalonia.Controls
                     RemoveControlItemsFromLogicalChildren(e.OldItems);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Creates the <see cref="ItemContainerGenerator"/>
+        /// </summary>
+        /// <remarks>
+        /// This method is only present for backwards compatibility with 0.10.x in order for
+        /// TreeView to be able to create a <see cref="TreeItemContainerGenerator"/>. Can be
+        /// removed in 12.0.
+        /// </remarks>
+        [Obsolete]
+        private protected virtual ItemContainerGenerator CreateItemContainerGenerator()
+        {
+            return new ItemContainerGenerator(this);
         }
 
         internal void AddLogicalChild(Control c) => LogicalChildren.Add(c);

@@ -88,6 +88,7 @@
                                 Grid.Column="1"
                                 Focusable="False"
                                 Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}"
                                 HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
                                 VerticalAlignment="{TemplateBinding VerticalAlignment}"
                                 Margin="{TemplateBinding Padding}" />

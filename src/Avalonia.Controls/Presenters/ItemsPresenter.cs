@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using Avalonia.Input;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -18,6 +19,13 @@ namespace Avalonia.Controls.Presenters
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
         private PanelContainerGenerator? _generator;
+
+        static ItemsPresenter()
+        {
+            KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
+                typeof(ItemsPresenter),
+                KeyboardNavigationMode.Once);
+        }
 
         /// <summary>
         /// Gets or sets a template which creates the <see cref="Panel"/> used to display the items.
