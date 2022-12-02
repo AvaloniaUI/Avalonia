@@ -192,14 +192,14 @@ namespace Avalonia.Controls
                     
                     void OnLayoutUpdated(object sender, EventArgs e)
                     {
-                        if(!editingCheckBox.Bounds.IsEmpty)
+                        if(!editingCheckBox.Bounds.IsDefault)
                         {
                             editingCheckBox.LayoutUpdated -= OnLayoutUpdated;
                             ProcessPointerArgs();
                         }
                     }
 
-                    if(editingCheckBox.Bounds.IsEmpty)
+                    if(editingCheckBox.Bounds.IsDefault)
                     {
                         editingCheckBox.LayoutUpdated += OnLayoutUpdated;
                     }

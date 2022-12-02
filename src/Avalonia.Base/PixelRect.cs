@@ -133,7 +133,7 @@ namespace Avalonia
         public PixelPoint Center => new PixelPoint(X + (Width / 2), Y + (Height / 2));
 
         /// <summary>
-        /// Gets a value indicating whether the instance has default values.
+        /// Gets a value indicating whether the instance has default values (the rectangle is empty).
         /// </summary>
         public bool IsDefault => Width == 0 && Height == 0;
 

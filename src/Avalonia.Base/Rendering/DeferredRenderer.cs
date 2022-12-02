@@ -420,7 +420,7 @@ namespace Avalonia.Rendering
             {
                 clipBounds = node.ClipBounds.Intersect(clipBounds);
 
-                if (!clipBounds.IsEmpty && node.Opacity > 0)
+                if (!clipBounds.IsDefault && node.Opacity > 0)
                 {
                     var isLayerRoot = node.Visual == layer;
 

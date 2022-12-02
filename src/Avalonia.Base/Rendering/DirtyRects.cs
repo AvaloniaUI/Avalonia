@@ -27,7 +27,7 @@ namespace Avalonia.Rendering
         /// </remarks>
         public void Add(Rect rect)
         {
-            if (!rect.IsEmpty)
+            if (!rect.IsDefault)
             {
                 for (var i = 0; i < _rects.Count; ++i)
                 {
