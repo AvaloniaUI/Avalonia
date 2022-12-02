@@ -7,7 +7,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Represents a transform on an <see cref="IVisual"/>.
+    /// Represents a transform on an <see cref="Visual"/>.
     /// </summary>
     public abstract class Transform : Animatable, IMutableTransform
     {
