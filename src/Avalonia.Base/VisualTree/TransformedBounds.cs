@@ -77,6 +77,6 @@ namespace Avalonia.VisualTree
             return !left.Equals(right);
         }
 
-        public override string ToString() => $"Bounds: {Bounds} Clip: {Clip} Transform {Transform}";
+        public override string ToString() => FormattableString.Invariant($"Bounds: {Bounds} Clip: {Clip} Transform {Transform}");
     }
 }
