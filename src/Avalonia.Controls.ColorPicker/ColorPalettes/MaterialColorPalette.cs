@@ -42,6 +42,11 @@ namespace Avalonia.Controls
             Red800 = 0xFFC62828,
             Red900 = 0xFFB71C1C,
 
+            RedA100 = 0xFFFF8A80,
+            RedA200 = 0xFFFF5252,
+            RedA400 = 0xFFFF1744,
+            RedA700 = 0xFFD50000,
+
             // Pink
             Pink50  = 0xFFFCE4EC,
             Pink100 = 0xFFF8BBD0,
@@ -53,6 +58,11 @@ namespace Avalonia.Controls
             Pink700 = 0xFFC2185B,
             Pink800 = 0xFFAD1457,
             Pink900 = 0xFF880E4F,
+
+            PinkA100 = 0xFFFF80AB,
+            PinkA200 = 0xFFFF4081,
+            PinkA400 = 0xFFF50057,
+            PinkA700 = 0xFFC51162,
 
             // Purple
             Purple50  = 0xFFF3E5F5,
@@ -66,6 +76,11 @@ namespace Avalonia.Controls
             Purple800 = 0xFF6A1B9A,
             Purple900 = 0xFF4A148C,
 
+            PurpleA100 = 0xFFEA80FC,
+            PurpleA200 = 0xFFE040FB,
+            PurpleA400 = 0xFFD500F9,
+            PurpleA700 = 0xFFAA00FF,
+
             // Deep Purple
             DeepPurple50  = 0xFFEDE7F6,
             DeepPurple100 = 0xFFD1C4E9,
@@ -77,6 +92,11 @@ namespace Avalonia.Controls
             DeepPurple700 = 0xFF512DA8,
             DeepPurple800 = 0xFF4527A0,
             DeepPurple900 = 0xFF311B92,
+
+            DeepPurpleA100 = 0xFFB388FF,
+            DeepPurpleA200 = 0xFF7C4DFF,
+            DeepPurpleA400 = 0xFF651FFF,
+            DeepPurpleA700 = 0xFF6200EA,
 
             // Indigo
             Indigo50  = 0xFFE8EAF6,
@@ -90,6 +110,11 @@ namespace Avalonia.Controls
             Indigo800 = 0xFF283593,
             Indigo900 = 0xFF1A237E,
 
+            IndigoA100 = 0xFF8C9EFF,
+            IndigoA200 = 0xFF536DFE,
+            IndigoA400 = 0xFF3D5AFE,
+            IndigoA700 = 0xFF304FFE,
+
             // Blue
             Blue50  = 0xFFE3F2FD,
             Blue100 = 0xFFBBDEFB,
@@ -101,6 +126,11 @@ namespace Avalonia.Controls
             Blue700 = 0xFF1976D2,
             Blue800 = 0xFF1565C0,
             Blue900 = 0xFF0D47A1,
+
+            BlueA100 = 0xFF82B1FF,
+            BlueA200 = 0xFF448AFF,
+            BlueA400 = 0xFF2979FF,
+            BlueA700 = 0xFF2962FF,
 
             // Light Blue
             LightBlue50  = 0xFFE1F5FE,
@@ -114,6 +144,11 @@ namespace Avalonia.Controls
             LightBlue800 = 0xFF0277BD,
             LightBlue900 = 0xFF01579B,
 
+            LightBlueA100 = 0xFF80D8FF,
+            LightBlueA200 = 0xFF40C4FF,
+            LightBlueA400 = 0xFF00B0FF,
+            LightBlueA700 = 0xFF0091EA,
+
             // Cyan
             Cyan50  = 0xFFE0F7FA,
             Cyan100 = 0xFFB2EBF2,
@@ -125,6 +160,11 @@ namespace Avalonia.Controls
             Cyan700 = 0xFF0097A7,
             Cyan800 = 0xFF00838F,
             Cyan900 = 0xFF006064,
+
+            CyanA100 = 0xFF84FFFF,
+            CyanA200 = 0xFF18FFFF,
+            CyanA400 = 0xFF00E5FF,
+            CyanA700 = 0xFF00B8D4,
 
             // Teal
             Teal50  = 0xFFE0F2F1,
@@ -138,6 +178,11 @@ namespace Avalonia.Controls
             Teal800 = 0xFF00695C,
             Teal900 = 0xFF004D40,
 
+            TealA100 = 0xFFA7FFEB,
+            TealA200 = 0xFF64FFDA,
+            TealA400 = 0xFF1DE9B6,
+            TealA700 = 0xFF00BFA5,
+
             // Green
             Green50  = 0xFFE8F5E9,
             Green100 = 0xFFC8E6C9,
@@ -149,6 +194,11 @@ namespace Avalonia.Controls
             Green700 = 0xFF388E3C,
             Green800 = 0xFF2E7D32,
             Green900 = 0xFF1B5E20,
+
+            GreenA100 = 0xFFB9F6CA,
+            GreenA200 = 0xFF69F0AE,
+            GreenA400 = 0xFF00E676,
+            GreenA700 = 0xFF00C853,
 
             // Light Green
             LightGreen50  = 0xFFF1F8E9,
@@ -162,6 +212,11 @@ namespace Avalonia.Controls
             LightGreen800 = 0xFF558B2F,
             LightGreen900 = 0xFF33691E,
 
+            LightGreenA100 = 0xFFCCFF90,
+            LightGreenA200 = 0xFFB2FF59,
+            LightGreenA400 = 0xFF76FF03,
+            LightGreenA700 = 0xFF64DD17,
+
             // Lime
             Lime50  = 0xFFF9FBE7,
             Lime100 = 0xFFF0F4C3,
@@ -173,6 +228,11 @@ namespace Avalonia.Controls
             Lime700 = 0xFFAFB42B,
             Lime800 = 0xFF9E9D24,
             Lime900 = 0xFF827717,
+
+            LimeA100 = 0xFFF4FF81,
+            LimeA200 = 0xFFEEFF41,
+            LimeA400 = 0xFFC6FF00,
+            LimeA700 = 0xFFAEEA00,
 
             // Yellow
             Yellow50  = 0xFFFFFDE7,
@@ -186,6 +246,11 @@ namespace Avalonia.Controls
             Yellow800 = 0xFFF9A825,
             Yellow900 = 0xFFF57F17,
 
+            YellowA100 = 0xFFFFFF8D,
+            YellowA200 = 0xFFFFFF00,
+            YellowA400 = 0xFFFFEA00,
+            YellowA700 = 0xFFFFD600,
+
             // Amber
             Amber50  = 0xFFFFF8E1,
             Amber100 = 0xFFFFECB3,
@@ -197,6 +262,11 @@ namespace Avalonia.Controls
             Amber700 = 0xFFFFA000,
             Amber800 = 0xFFFF8F00,
             Amber900 = 0xFFFF6F00,
+
+            AmberA100 = 0xFFFFE57F,
+            AmberA200 = 0xFFFFD740,
+            AmberA400 = 0xFFFFC400,
+            AmberA700 = 0xFFFFAB00,
 
             // Orange
             Orange50  = 0xFFFFF3E0,
@@ -210,6 +280,11 @@ namespace Avalonia.Controls
             Orange800 = 0xFFEF6C00,
             Orange900 = 0xFFE65100,
 
+            OrangeA100 = 0xFFFFD180,
+            OrangeA200 = 0xFFFFAB40,
+            OrangeA400 = 0xFFFF9100,
+            OrangeA700 = 0xFFFF6D00,
+
             // Deep Orange
             DeepOrange50  = 0xFFFBE9E7,
             DeepOrange100 = 0xFFFFCCBC,
@@ -221,6 +296,11 @@ namespace Avalonia.Controls
             DeepOrange700 = 0xFFE64A19,
             DeepOrange800 = 0xFFD84315,
             DeepOrange900 = 0xFFBF360C,
+
+            DeepOrangeA100 = 0xFFFF9E80,
+            DeepOrangeA200 = 0xFFFF6E40,
+            DeepOrangeA400 = 0xFFFF3D00,
+            DeepOrangeA700 = 0xFFDD2C00,
 
             // Brown
             Brown50  = 0xFFEFEBE9,
@@ -257,6 +337,9 @@ namespace Avalonia.Controls
             BlueGray700 = 0xFF455A64,
             BlueGray800 = 0xFF37474F,
             BlueGray900 = 0xFF263238,
+
+            Black = 0xFF000000,
+            White = 0xFFFFFFFF,
         }
 
         // See: https://material.io/design/color/the-color-system.html#tools-for-picking-colors

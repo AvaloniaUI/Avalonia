@@ -19,6 +19,6 @@ namespace Avalonia.Rendering.SceneGraph
         /// <param name="scene">The scene.</param>
         /// <param name="visual">The visual to update.</param>
         /// <returns>True if changes were made, otherwise false.</returns>
-        bool Update(Scene scene, IVisual visual);
+        bool Update(Scene scene, Visual visual);
     }
 }

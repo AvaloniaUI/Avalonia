@@ -10,7 +10,7 @@ namespace Avalonia.Controls
     /// </summary>
     public class ItemsRepeaterElementPreparedEventArgs
     {
-        internal ItemsRepeaterElementPreparedEventArgs(IControl element, int index)
+        internal ItemsRepeaterElementPreparedEventArgs(Control element, int index)
         {
             Element = element;
             Index = index;
@@ -19,14 +19,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the prepared element.
         /// </summary>
-        public IControl Element { get; private set; }
+        public Control Element { get; private set; }
 
         /// <summary>
         /// Gets the index of the item the element was prepared for.
         /// </summary>
         public int Index { get; private set; }
 
-        internal void Update(IControl element, int index)
+        internal void Update(Control element, int index)
         {
             Element = element;
             Index = index;

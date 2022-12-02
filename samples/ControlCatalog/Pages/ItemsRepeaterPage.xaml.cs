@@ -44,7 +44,7 @@ namespace ControlCatalog.Pages
 
         public void OnSelectTemplateKey(object sender, SelectTemplateEventArgs e)
         {
-            if (e.DataContext is ItemsRepeaterPageViewModel.Item item)
+            if (e.DataContext is ItemsRepeaterPageViewModelItem item)
             {
                 e.TemplateKey = (item.Index % 2 == 0) ? "even" : "odd";
             }
@@ -125,7 +125,7 @@ namespace ControlCatalog.Pages
 
         private void RepeaterClick(object? sender, PointerPressedEventArgs e)
         {
-            if ((e.Source as TextBlock)?.DataContext is ItemsRepeaterPageViewModel.Item item)
+            if ((e.Source as TextBlock)?.DataContext is ItemsRepeaterPageViewModelItem item)
             {
                 _viewModel.SelectedItem = item;
                 _selectedIndex = _viewModel.Items.IndexOf(item);

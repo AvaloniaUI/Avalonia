@@ -30,13 +30,13 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new TestVisual();
             var child = new TestVisual();
-            var parents = new List<IVisual>();
+            var parents = new List<Visual>();
 
             child.GetObservable(Visual.VisualParentProperty).Subscribe(x => parents.Add(x));
             target.AddChild(child);
             target.RemoveChild(child);
 
-            Assert.Equal(new IVisual[] { null, target, null }, parents);
+            Assert.Equal(new Visual[] { null, target, null }, parents);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace Avalonia.Base.UnitTests
         {
             var root = new TestRoot();
 
-            Assert.Same(root, ((IVisual)root).VisualRoot);
+            Assert.Same(root, root.VisualRoot);
         }
 
         [Fact]
@@ -143,8 +143,8 @@ namespace Avalonia.Base.UnitTests
             root.Child = child1;
             child1.Child = child2;
 
-            Assert.Same(root, ((IVisual)child1).VisualRoot);
-            Assert.Same(root, ((IVisual)child2).VisualRoot);
+            Assert.Same(root, child1.VisualRoot);
+            Assert.Same(root, child2.VisualRoot);
         }
 
         [Fact]
@@ -281,13 +281,17 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Decorator();
             var root = new TestRoot { Child = target, DataContext = "foo" };
-            var called = false;
+            var called = 0;
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
                 if (level >= Avalonia.Logging.LogEventLevel.Warning)
                 {
-                    called = true;
+                    Assert.Equal("Error in binding to {Target}.{Property}: {Message}", mt);
+                    Assert.Same(target, pv[0]);
+                    Assert.Equal(Decorator.TagProperty, pv[1]);
+                    Assert.Equal("Could not find a matching property accessor for 'Foo' on 'foo'", pv[2]);
+                    ++called;
                 }
             };
 
@@ -296,7 +300,7 @@ namespace Avalonia.Base.UnitTests
                 target.Bind(Decorator.TagProperty, new Binding("Foo"));
             }
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]

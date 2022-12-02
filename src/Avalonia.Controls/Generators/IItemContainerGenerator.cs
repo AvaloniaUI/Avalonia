@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls.Generators
@@ -24,6 +25,11 @@ namespace Avalonia.Controls.Generators
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
         IDataTemplate? ItemTemplate { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the binding to use to bind to the member of an item used for displaying
+        /// </summary>
+        IBinding? DisplayMemberBinding { get; set; }
 
         /// <summary>
         /// Gets the ContainerType, or null if its an untyped ContainerGenerator.
@@ -96,13 +102,13 @@ namespace Avalonia.Controls.Generators
         /// </summary>
         /// <param name="index">The index.</param>
         /// <returns>The container, or null if no container created.</returns>
-        IControl? ContainerFromIndex(int index);
+        Control? ContainerFromIndex(int index);
 
         /// <summary>
         /// Gets the index of the specified container control.
         /// </summary>
         /// <param name="container">The container.</param>
         /// <returns>The index of the container, or -1 if not found.</returns>
-        int IndexFromContainer(IControl? container);
+        int IndexFromContainer(Control? container);
     }
 }

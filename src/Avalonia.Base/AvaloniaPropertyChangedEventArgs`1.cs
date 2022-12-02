@@ -16,12 +16,23 @@ namespace Avalonia
         /// <param name="newValue">The new value of the property.</param>
         /// <param name="priority">The priority of the binding that produced the value.</param>
         public AvaloniaPropertyChangedEventArgs(
-            IAvaloniaObject sender,
+            AvaloniaObject sender,
             AvaloniaProperty<T> property,
             Optional<T> oldValue,
             BindingValue<T> newValue,
             BindingPriority priority)
-            : base(sender, priority)
+            : this(sender, property, oldValue, newValue, priority, true)
+        {
+        }
+
+        internal AvaloniaPropertyChangedEventArgs(
+            AvaloniaObject sender,
+            AvaloniaProperty<T> property,
+            Optional<T> oldValue,
+            BindingValue<T> newValue,
+            BindingPriority priority,
+            bool isEffectiveValueChange)
+            : base(sender, priority, isEffectiveValueChange)
         {
             Property = property;
             OldValue = oldValue;
@@ -39,27 +50,12 @@ namespace Avalonia
         /// <summary>
         /// Gets the old value of the property.
         /// </summary>
-        /// <remarks>
-        /// When <see cref="AvaloniaPropertyChangedEventArgs.IsEffectiveValueChange"/> is true, returns the
-        /// old value of the property on the object. 
-        /// When <see cref="AvaloniaPropertyChangedEventArgs.IsEffectiveValueChange"/> is false, returns
-        /// <see cref="Optional{T}.Empty"/>.
-        /// </remarks>
         public new Optional<T> OldValue { get; private set; }
 
         /// <summary>
         /// Gets the new value of the property.
         /// </summary>
-        /// <remarks>
-        /// When <see cref="AvaloniaPropertyChangedEventArgs.IsEffectiveValueChange"/> is true, returns the
-        /// value of the property on the object.
-        /// When <see cref="AvaloniaPropertyChangedEventArgs.IsEffectiveValueChange"/> is false returns the
-        /// changed value, or <see cref="Optional{T}.Empty"/> if the value was removed.
-        /// </remarks>
         public new BindingValue<T> NewValue { get; private set; }
-
-        internal void SetOldValue(Optional<T> value) => OldValue = value;
-        internal void SetNewValue(BindingValue<T> value) => NewValue = value;
 
         protected override AvaloniaProperty GetProperty() => Property;
 

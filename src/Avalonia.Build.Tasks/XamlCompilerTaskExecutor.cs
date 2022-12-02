@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions;
+using Avalonia.Platform;
 using Microsoft.Build.Framework;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -21,6 +22,8 @@ namespace Avalonia.Build.Tasks
 {
     public static partial class XamlCompilerTaskExecutor
     {
+        private const string CompiledAvaloniaXamlNamespace = "CompiledAvaloniaXaml";
+        
         static bool CheckXamlName(IResource r) => r.Name.ToLowerInvariant().EndsWith(".xaml")
                                                || r.Name.ToLowerInvariant().EndsWith(".paml")
                                                || r.Name.ToLowerInvariant().EndsWith(".axaml");
@@ -37,45 +40,69 @@ namespace Avalonia.Build.Tasks
             }
         }
 
-        public static CompileResult Compile(IBuildEngine engine, string input, string[] references,
-            string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey,
+        public static CompileResult Compile(IBuildEngine engine,
+            string input, string output,
+            string refInput, string refOutput,
+            string[] references, string projectDirectory,
+            bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey,
             bool skipXamlCompilation)
         {
-            return Compile(engine, input, references, projectDirectory, output, verifyIl, logImportance, strongNameKey, skipXamlCompilation, debuggerLaunch:false);
+            return Compile(engine, input, output, refInput, refOutput, references, projectDirectory, verifyIl, defaultCompileBindings, logImportance, strongNameKey, skipXamlCompilation, debuggerLaunch:false);
         }
 
-        internal static CompileResult Compile(IBuildEngine engine, string input, string[] references,
-            string projectDirectory,
-            string output, bool verifyIl, MessageImportance logImportance, string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
+        internal static CompileResult Compile(IBuildEngine engine,
+            string input, string output,
+            string refInput, string refOutput,
+            string[] references, string projectDirectory,
+            bool verifyIl, bool defaultCompileBindings, MessageImportance logImportance, string strongNameKey, bool skipXamlCompilation, bool debuggerLaunch)
         {
-            var typeSystem = new CecilTypeSystem(
-                references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")),
-                input);
-
-            var asm = typeSystem.TargetAssemblyDefinition;
-
-            if (!skipXamlCompilation)
+            try
             {
-                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, logImportance, debuggerLaunch);
-                if (compileRes == null)
-                    return new CompileResult(true);
-                if (compileRes == false)
-                    return new CompileResult(false);
+                references = references.Where(r => !r.ToLowerInvariant().EndsWith("avalonia.build.tasks.dll")).ToArray();
+                var typeSystem = new CecilTypeSystem(references, input);
+                var refTypeSystem = !string.IsNullOrWhiteSpace(refInput) && File.Exists(refInput) ? new CecilTypeSystem(references, refInput) : null;
+
+                var asm = typeSystem.TargetAssemblyDefinition;
+                var refAsm = refTypeSystem?.TargetAssemblyDefinition;
+                if (!skipXamlCompilation)
+                {
+	                var compileRes = CompileCore(engine, typeSystem, projectDirectory, verifyIl, defaultCompileBindings, logImportance, debuggerLaunch);
+	                if (compileRes == null)
+	                    return new CompileResult(true);
+	                if (compileRes == false)
+	                    return new CompileResult(false);
+
+	                if (refTypeSystem is not null)
+	                {
+	                    var refCompileRes = CompileCoreForRefAssembly(engine, typeSystem, refTypeSystem);
+	                    if (refCompileRes == false)
+	                        return new CompileResult(false);
+	                }
+                }
+
+                var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
+                if (!string.IsNullOrWhiteSpace(strongNameKey))
+	                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+
+                asm.Write(output, writerParameters);
+
+                var refWriterParameters = new WriterParameters { WriteSymbols = false };
+                if (!string.IsNullOrWhiteSpace(strongNameKey))
+	                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
+                refAsm?.Write(refOutput, refWriterParameters);
+
+                return new CompileResult(true, true);
             }
-
-            var writerParameters = new WriterParameters { WriteSymbols = asm.MainModule.HasSymbols };
-            if (!string.IsNullOrWhiteSpace(strongNameKey))
-                writerParameters.StrongNameKeyBlob = File.ReadAllBytes(strongNameKey);
-
-            asm.Write(output, writerParameters);
-
-            return new CompileResult(true, true);
-
+            catch (Exception ex)
+            {
+                engine.LogError(BuildEngineErrorCode.Unknown, "", ex);
+                return new CompileResult(false);
+            }
         }
 
         static bool? CompileCore(IBuildEngine engine, CecilTypeSystem typeSystem,
-            string projectDirectory, bool verifyIl, 
+            string projectDirectory, bool verifyIl,
+            bool defaultCompileBindings,
             MessageImportance logImportance
             , bool debuggerLaunch = false)
         {
@@ -108,19 +135,33 @@ namespace Avalonia.Build.Tasks
                     engine.LogMessage("Debugging cancelled.", MessageImportance.Normal);
                 }
             }
+            
+            // Some transformers might need to parse "avares://" Uri.
+            AssetLoader.RegisterResUriParsers();
+
             var asm = typeSystem.TargetAssemblyDefinition;
             var avares = new AvaloniaResources(asm, projectDirectory);
             if (avares.Resources.Count(CheckXamlName) == 0)
                 // Nothing to do
                 return null;
 
-            var clrPropertiesDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlHelpers",
+            if (typeSystem.FindType("System.Reflection.AssemblyMetadataAttribute") is {} asmMetadata)
+            {
+                var ctor = asm.MainModule.ImportReference(typeSystem.GetTypeReference(asmMetadata).Resolve()
+                    .GetConstructors().First(c => c.Parameters.Count == 2).Resolve());
+                var strType = asm.MainModule.ImportReference(typeof(string));
+                var arg1 = new CustomAttributeArgument(strType, "AvaloniaUseCompiledBindingsByDefault");
+                var arg2 = new CustomAttributeArgument(strType, defaultCompileBindings.ToString());
+                asm.CustomAttributes.Add(new CustomAttribute(ctor) { ConstructorArguments = { arg1, arg2 } });
+            }
+
+            var clrPropertiesDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "XamlIlHelpers",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(clrPropertiesDef);
-            var indexerAccessorClosure = new TypeDefinition("CompiledAvaloniaXaml", "!IndexerAccessorFactoryClosure",
+            var indexerAccessorClosure = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!IndexerAccessorFactoryClosure",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(indexerAccessorClosure);
-            var trampolineBuilder = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlTrampolines",
+            var trampolineBuilder = new TypeDefinition(CompiledAvaloniaXamlNamespace, "XamlIlTrampolines",
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(trampolineBuilder);
 
@@ -136,14 +177,14 @@ namespace Avalonia.Build.Tasks
                 new DeterministicIdGenerator());
 
 
-            var contextDef = new TypeDefinition("CompiledAvaloniaXaml", "XamlIlContext", 
+            var contextDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "XamlIlContext", 
                 TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
             asm.MainModule.Types.Add(contextDef);
 
             var contextClass = XamlILContextDefinition.GenerateContextClass(typeSystem.CreateTypeBuilder(contextDef), typeSystem,
                 xamlLanguage, emitConfig);
 
-            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, emitConfig, contextClass) { EnableIlVerification = verifyIl };
+            var compiler = new AvaloniaXamlIlCompiler(compilerConfig, emitConfig, contextClass) { EnableIlVerification = verifyIl, DefaultCompileBindings = defaultCompileBindings };
 
             var editorBrowsableAttribute = typeSystem
                 .GetTypeReference(typeSystem.FindType("System.ComponentModel.EditorBrowsableAttribute"))
@@ -157,8 +198,8 @@ namespace Avalonia.Build.Tasks
                 typeSystem.GetTypeReference(runtimeHelpers).Resolve().Methods
                     .First(x => x.Name == "CreateRootServiceProviderV2"));
             
-            var loaderDispatcherDef = new TypeDefinition("CompiledAvaloniaXaml", "!XamlLoader",
-                TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+            var loaderDispatcherDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!XamlLoader",
+                TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
 
 
             loaderDispatcherDef.CustomAttributes.Add(new CustomAttribute(editorBrowsableCtor)
@@ -178,15 +219,16 @@ namespace Avalonia.Build.Tasks
 
             var stringEquals = asm.MainModule.ImportReference(asm.MainModule.TypeSystem.String.Resolve().Methods.First(
                 m =>
-                    m.IsStatic && m.Name == "Equals" && m.Parameters.Count == 2 &&
+                    m.IsStatic && m.Name == "Equals" && m.Parameters.Count == 3 &&
                     m.ReturnType.FullName == "System.Boolean"
                     && m.Parameters[0].ParameterType.FullName == "System.String"
-                    && m.Parameters[1].ParameterType.FullName == "System.String"));
+                    && m.Parameters[1].ParameterType.FullName == "System.String"
+                    && m.Parameters[2].ParameterType.FullName == "System.StringComparison"));
             
             bool CompileGroup(IResourceGroup group)
             {
-                var typeDef = new TypeDefinition("CompiledAvaloniaXaml", "!"+ group.Name,
-                    TypeAttributes.Class, asm.MainModule.TypeSystem.Object);
+                var typeDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!"+ group.Name,
+                    TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
 
                 typeDef.CustomAttributes.Add(new CustomAttribute(editorBrowsableCtor)
                 {
@@ -195,12 +237,13 @@ namespace Avalonia.Build.Tasks
                 asm.MainModule.Types.Add(typeDef);
                 var builder = typeSystem.CreateTypeBuilder(typeDef);
                 
-                foreach (var res in group.Resources.Where(CheckXamlName).OrderBy(x=>x.FilePath.ToLowerInvariant()))
+                IReadOnlyCollection<XamlDocumentResource> parsedXamlDocuments = new List<XamlDocumentResource>();
+                foreach (var res in group.Resources.Where(CheckXamlName).OrderBy(x => x.FilePath.ToLowerInvariant()))
                 {
+                    engine.LogMessage($"XAMLIL: {res.Name} -> {res.Uri}", logImportance);
+
                     try
                     {
-                        engine.LogMessage($"XAMLIL: {res.Name} -> {res.Uri}", logImportance);
-
                         // StreamReader is needed here to handle BOM
                         var xaml = new StreamReader(new MemoryStream(res.FileContents)).ReadToEnd();
                         var parsed = XDocumentXamlParser.Parse(xaml);
@@ -237,9 +280,9 @@ namespace Avalonia.Build.Tasks
                         
                         
                         compiler.Transform(parsed);
+
                         var populateName = classType == null ? "Populate:" + res.Name : "!XamlIlPopulate";
-                        var buildName = classType == null ? "Build:" + res.Name : null; 
-                        
+                        var buildName = classType == null ? "Build:" + res.Name : null;
                         var classTypeDefinition =
                             classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
 
@@ -247,11 +290,57 @@ namespace Avalonia.Build.Tasks
                         var populateBuilder = classTypeDefinition == null ?
                             builder :
                             typeSystem.CreateTypeBuilder(classTypeDefinition);
-                        compiler.Compile(parsed, 
-                            contextClass,
+
+                        ((List<XamlDocumentResource>)parsedXamlDocuments).Add(new XamlDocumentResource(
+                            parsed, res.Uri, res, classType,
+                            populateBuilder,
                             compiler.DefinePopulateMethod(populateBuilder, parsed, populateName,
                                 classTypeDefinition == null),
-                            buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true),
+                            buildName == null ? null : compiler.DefineBuildMethod(builder, parsed, buildName, true)));
+                    }
+                    catch (Exception e)
+                    {
+                        int lineNumber = 0, linePosition = 0;
+                        if (e is XamlParseException xe)
+                        {
+                            lineNumber = xe.LineNumber;
+                            linePosition = xe.LinePosition;
+                        }
+
+                        engine.LogError(BuildEngineErrorCode.TransformError, res.FilePath, e, lineNumber, linePosition);
+                        return false;
+                    }
+                }
+
+                try
+                {
+                    compiler.TransformGroup(parsedXamlDocuments);
+                }
+                catch (XamlDocumentParseException e)
+                {
+                    engine.LogError(BuildEngineErrorCode.TransformError, e.FilePath, e, e.LineNumber, e.LinePosition);
+                }
+                catch (XamlParseException e)
+                {
+                    engine.LogError(BuildEngineErrorCode.TransformError, "", e, e.LineNumber, e.LinePosition);
+                }
+
+                foreach (var document in parsedXamlDocuments)
+                {
+                    var parsed = document.XamlDocument;
+                    var res = (IResource)document.FileSource;
+                    var classType = document.ClassType;
+                    var populateBuilder = document.TypeBuilder;
+
+                    try
+                    {
+                        var classTypeDefinition =
+                            classType == null ? null : typeSystem.GetTypeReference(classType).Resolve();
+
+                        compiler.Compile(parsed, 
+                            contextClass,
+                            document.PopulateMethod,
+                            document.BuildMethod,
                             builder.DefineSubType(compilerConfig.WellKnownTypes.Object, "NamespaceInfo:" + res.Name,
                                 true),
                             (closureName, closureBaseType) =>
@@ -260,12 +349,11 @@ namespace Avalonia.Build.Tasks
                                 populateBuilder.DefineDelegateSubType(closureName, false, returnType, parameterTypes),
                             res.Uri, res
                         );
-                        
-                        
+
                         if (classTypeDefinition != null)
                         {
                             var compiledPopulateMethod = typeSystem.GetTypeReference(populateBuilder).Resolve()
-                                .Methods.First(m => m.Name == populateName);
+                                .Methods.First(m => m.Name == document.PopulateMethod.Name);
 
                             var designLoaderFieldType = typeSystem
                                 .GetType("System.Action`1")
@@ -320,15 +408,11 @@ namespace Avalonia.Build.Tasks
                                     if (i[c].OpCode == OpCodes.Call)
                                     {
                                         var op = i[c].Operand as MethodReference;
-                                        
-                                        // TODO: Throw an error
-                                        // This usually happens when the same XAML resource was added twice for some weird reason
-                                        // We currently support it for dual-named default theme resources
                                         if (op != null
                                             && op.Name == TrampolineName)
                                         {
-                                            foundXamlLoader = true;
-                                            break;
+                                            throw new InvalidProgramException("Same XAML file was loaded twice." +
+                                                "Make sure there is no x:Class duplicates no files were added to the AvaloniaResource msbuild items group twice.");
                                         }
                                         if (op != null
                                             && op.Name == "Load"
@@ -367,12 +451,12 @@ namespace Avalonia.Build.Tasks
 
                         }
 
-                        if (buildName != null || classTypeDefinition != null)
+                        if (document.BuildMethod != null || classTypeDefinition != null)
                         {
-                            var compiledBuildMethod = buildName == null ?
+                            var compiledBuildMethod = document.BuildMethod == null ?
                                 null :
                                 typeSystem.GetTypeReference(builder).Resolve()
-                                    .Methods.First(m => m.Name == buildName);
+                                    .Methods.First(m => m.Name == document.BuildMethod?.Name);
                             var parameterlessConstructor = compiledBuildMethod != null ?
                                 null :
                                 classTypeDefinition.GetConstructors().FirstOrDefault(c =>
@@ -384,6 +468,7 @@ namespace Avalonia.Build.Tasks
                                 var nop = Instruction.Create(OpCodes.Nop);
                                 i.Add(Instruction.Create(OpCodes.Ldarg_0));
                                 i.Add(Instruction.Create(OpCodes.Ldstr, res.Uri));
+                                i.Add(Instruction.Create(OpCodes.Ldc_I4, (int)StringComparison.OrdinalIgnoreCase));
                                 i.Add(Instruction.Create(OpCodes.Call, stringEquals));
                                 i.Add(Instruction.Create(OpCodes.Brfalse, nop));
                                 if (parameterlessConstructor != null)
@@ -408,15 +493,12 @@ namespace Avalonia.Build.Tasks
                             lineNumber = xe.LineNumber;
                             linePosition = xe.LinePosition;
                         }
-                        engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", "XAMLIL", res.FilePath,
-                            lineNumber, linePosition, lineNumber, linePosition,
-                            e.Message, "", "Avalonia"));
+                        engine.LogError(BuildEngineErrorCode.EmitError, res.FilePath, e, lineNumber, linePosition);
                         return false;
                     }
                     res.Remove();
                 }
-                
-                
+
                 // Technically that's a hack, but it fixes corert incompatibility caused by deterministic builds
                 int dupeCounter = 1;
                 foreach (var grp in typeDef.NestedTypes.GroupBy(x => x.Name))
@@ -443,6 +525,55 @@ namespace Avalonia.Build.Tasks
             loaderDispatcherMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
             return true;
         }
-        
+
+        static bool? CompileCoreForRefAssembly(
+            IBuildEngine engine, CecilTypeSystem sourceTypeSystem, CecilTypeSystem refTypeSystem)
+        {
+            var asm = refTypeSystem.TargetAssemblyDefinition;
+
+            var compiledTypes = sourceTypeSystem.TargetAssemblyDefinition.MainModule.Types
+                .Where(t => t.Namespace.StartsWith(CompiledAvaloniaXamlNamespace) && t.IsPublic).ToArray();
+            if (compiledTypes.Length == 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                foreach (var ogType in compiledTypes)
+                {
+                    var wrappedOgType = sourceTypeSystem.TargetAssembly.FindType(ogType.FullName);
+                    
+                    var clrPropertiesDef = new TypeDefinition(ogType.Namespace, ogType.Name,
+                        TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
+                    asm.MainModule.Types.Add(clrPropertiesDef);
+                    foreach (var attribute in ogType.CustomAttributes)
+                    {
+                        var method = asm.MainModule.ImportReference(attribute.Constructor);
+                        clrPropertiesDef.CustomAttributes.Add(new CustomAttribute(method, attribute.GetBlob()));
+                    }
+
+                    var typeBuilder = refTypeSystem.CreateTypeBuilder(clrPropertiesDef);
+                    foreach (var ogMethod in wrappedOgType.Methods.Where(m => m.IsPublic && m.IsStatic))
+                    {
+                        var method = typeBuilder.DefineMethod(ogMethod.ReturnType, ogMethod.Parameters, ogMethod.Name,
+                            ogMethod.IsPublic, ogMethod.IsStatic, false);
+                        method.Generator.Ldnull();
+                        method.Generator.Throw();
+                    }
+
+                    typeBuilder.CreateType();
+                }
+            }
+            catch (Exception e)
+            {
+                engine.LogErrorEvent(new BuildErrorEventArgs("Avalonia", "XAMLIL", "",
+                    0, 0, 0, 0,
+                    e.Message, "", "Avalonia"));
+                return false;
+            }
+
+            return true;
+        }
     }
 }

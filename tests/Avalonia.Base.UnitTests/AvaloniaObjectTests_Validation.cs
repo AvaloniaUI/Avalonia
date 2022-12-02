@@ -1,6 +1,7 @@
 using System;
 using System.Reactive.Subjects;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests
@@ -41,7 +42,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Reverts_To_DefaultValue_If_Binding_Fails_Validation()
+        public void Reverts_To_DefaultValue_If_LocalValue_Binding_Fails_Validation()
         {
             var target = new Class1();
             var source = new Subject<int>();
@@ -50,6 +51,31 @@ namespace Avalonia.Base.UnitTests
             source.OnNext(150);
 
             Assert.Equal(11, target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Reverts_To_DefaultValue_If_Style_Binding_Fails_Validation()
+        {
+            var target = new Class1();
+            var source = new Subject<int>();
+
+            target.Bind(Class1.FooProperty, source, BindingPriority.Style);
+            source.OnNext(150);
+
+            Assert.Equal(11, target.GetValue(Class1.FooProperty));
+        }
+
+        [Fact]
+        public void Reverts_To_Lower_Priority_If_Style_Binding_Fails_Validation()
+        {
+            var target = new Class1();
+            var source = new Subject<int>();
+
+            target.SetValue(Class1.FooProperty, 10, BindingPriority.Style);
+            target.Bind(Class1.FooProperty, source, BindingPriority.StyleTrigger);
+            source.OnNext(150);
+
+            Assert.Equal(10, target.GetValue(Class1.FooProperty));
         }
 
         [Fact]

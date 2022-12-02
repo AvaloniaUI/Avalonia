@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
@@ -18,7 +19,7 @@ namespace Avalonia.Controls.Generators
 
         public new TabControl Owner { get; }
 
-        protected override IControl CreateContainer(object item)
+        protected override Control CreateContainer(object item)
         {
             var tabItem = (TabItem)base.CreateContainer(item)!;
 
@@ -33,6 +34,12 @@ namespace Avalonia.Controls.Generators
                     TabControl.ItemTemplateProperty));
             }
 
+            if (Owner.HeaderDisplayMemberBinding is not null)
+            {
+                tabItem.Bind(HeaderedContentControl.HeaderProperty, Owner.HeaderDisplayMemberBinding,
+                    BindingPriority.Style);
+            }
+
             if (tabItem.Header == null)
             {
                 if (item is IHeadered headered)
@@ -41,14 +48,14 @@ namespace Avalonia.Controls.Generators
                 }
                 else
                 {
-                    if (!(tabItem.DataContext is IControl))
+                    if (!(tabItem.DataContext is Control))
                     {
                         tabItem.Header = tabItem.DataContext;
                     }
                 }
             }
 
-            if (!(tabItem.Content is IControl))
+            if (!(tabItem.Content is Control))
             {
                 tabItem.Bind(TabItem.ContentTemplateProperty, new OwnerBinding<IDataTemplate?>(
                     tabItem,

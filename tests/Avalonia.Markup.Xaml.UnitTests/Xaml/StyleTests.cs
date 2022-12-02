@@ -110,31 +110,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void StyleInclude_Is_Built()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow
-                                              .With(theme: () => new Styles())))
-            {
-                var xaml = @"
-<ContentControl xmlns='https://github.com/avaloniaui'>
-    <ContentControl.Styles>
-        <StyleInclude Source='resm:Avalonia.Markup.Xaml.UnitTests.Xaml.Style1.xaml?assembly=Avalonia.Markup.Xaml.UnitTests'/>
-    </ContentControl.Styles>
-</ContentControl>";
-
-                var window = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
-
-                Assert.Single(window.Styles);
-
-                var styleInclude = window.Styles[0] as StyleInclude;
-
-                Assert.NotNull(styleInclude);
-                Assert.NotNull(styleInclude.Source);
-                Assert.NotNull(styleInclude.Loaded);
-            }
-        }
-
-        [Fact]
         public void Setter_Can_Contain_Template()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -453,7 +428,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 collection.Remove(Brushes.Green);
 
-                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
+                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors().ToList());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);

@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Presenters
     /// interface.
     /// </remarks>
     [NotClientImplementable]
-    public interface IItemsPresenterHost : ITemplatedControl
+    public interface IItemsPresenterHost
     {
         /// <summary>
         /// Registers an <see cref="IItemsPresenter"/> with a host control.

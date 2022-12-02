@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -15,9 +14,9 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal class ControlDetailsViewModel : ViewModelBase, IDisposable
+    internal class ControlDetailsViewModel : ViewModelBase, IDisposable, IClassesChangedListener
     {
-        private readonly IAvaloniaObject _avaloniaObject;
+        private readonly AvaloniaObject _avaloniaObject;
         private IDictionary<object, PropertyViewModel[]>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private DataGridCollectionView? _propertiesView;
@@ -30,23 +29,23 @@ namespace Avalonia.Diagnostics.ViewModels
         private string? _selectedEntityType;
         private bool _showImplementedInterfaces;
 
-        public ControlDetailsViewModel(TreePageViewModel treePage, IAvaloniaObject avaloniaObject)
+        public ControlDetailsViewModel(TreePageViewModel treePage, AvaloniaObject avaloniaObject)
         {
             _avaloniaObject = avaloniaObject;
 
             TreePage = treePage;            
-                        Layout =  avaloniaObject is IVisual 
-                ?  new ControlLayoutViewModel((IVisual)avaloniaObject)
+                        Layout =  avaloniaObject is Visual 
+                ?  new ControlLayoutViewModel((Visual)avaloniaObject)
                 : default;
 
-            NavigateToProperty(_avaloniaObject, (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString()); 
+            NavigateToProperty(_avaloniaObject, (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString()); 
 
             AppliedStyles = new ObservableCollection<StyleViewModel>();
             PseudoClasses = new ObservableCollection<PseudoClassViewModel>();
 
             if (avaloniaObject is StyledElement styledElement)
             {
-                styledElement.Classes.CollectionChanged += OnClassesChanged;
+                styledElement.Classes.AddListener(this);
 
                 var pseudoClassAttributes = styledElement.GetType().GetCustomAttributes<PseudoClassesAttribute>(true);
 
@@ -250,7 +249,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             if (_avaloniaObject is StyledElement se)
             {
-                se.Classes.CollectionChanged -= OnClassesChanged;
+                se.Classes.RemoveListener(this);
             }
         }
 
@@ -325,7 +324,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private void OnClassesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        void IClassesChangedListener.Changed()
         {
             if (!SnapshotStyles)
             {
@@ -448,7 +447,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 case AvaloniaPropertyViewModel avaloniaProperty:
 
-                    property = (_selectedEntity as IControl)?.GetValue(avaloniaProperty.Property);
+                    property = (_selectedEntity as Control)?.GetValue(avaloniaProperty.Property);
 
                     break;
 
@@ -497,7 +496,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             switch (oldSelectedEntity)
             {
-                case IAvaloniaObject ao1:
+                case AvaloniaObject ao1:
                     ao1.PropertyChanged -= ControlPropertyChanged;
                     break;
 
@@ -529,7 +528,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             switch (o)
             {
-                case IAvaloniaObject ao2:
+                case AvaloniaObject ao2:
                     ao2.PropertyChanged += ControlPropertyChanged;
                     break;
 
@@ -547,7 +546,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 NavigateToProperty(
                     _avaloniaObject, 
-                    (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString());    
+                    (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());    
             }
             
             if (PropertiesView is null)
@@ -570,7 +569,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _showImplementedInterfaces = showImplementedInterfaces;
             SelectedProperty = null;
-            NavigateToProperty(_avaloniaObject, (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString());
+            NavigateToProperty(_avaloniaObject, (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());
         }
     }
 }

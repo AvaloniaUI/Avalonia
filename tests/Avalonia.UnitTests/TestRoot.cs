@@ -24,13 +24,13 @@ namespace Avalonia.UnitTests
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
         }
 
-        public TestRoot(IControl child)
+        public TestRoot(Control child)
             : this(false, child)
         {
             Child = child;
         }
 
-        public TestRoot(bool useGlobalStyles, IControl child)
+        public TestRoot(bool useGlobalStyles, Control child)
             : this()
         {
             if (useGlobalStyles)
@@ -101,7 +101,7 @@ namespace Avalonia.UnitTests
                         scope.Register(element.Name, element);
                 }
 
-                if(element is IVisual visual && (force || NameScope.GetNameScope(element) == null))
+                if(element is Visual visual && (force || NameScope.GetNameScope(element) == null))
                     foreach(var child in visual.GetVisualChildren())
                         if (child is StyledElement styledChild)
                             Visit(styledChild);

@@ -1,6 +1,8 @@
 <UserControl x:Class="ControlCatalog.Pages.ContextMenuPage"
              xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:DataType="viewModels:ContextPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock Classes="h2">A right click menu that can be applied to any control.</TextBlock>
 
@@ -47,7 +49,7 @@
       </Border>
       <Border>
         <Border.Styles>
-          <Style Selector="ContextMenu MenuItem">
+          <Style Selector="ContextMenu MenuItem" x:DataType="viewModels:MenuItemViewModel">
             <Setter Property="Header" Value="{Binding Header}"/>
             <Setter Property="Items" Value="{Binding Items}"/>
             <Setter Property="Command" Value="{Binding Command}"/>

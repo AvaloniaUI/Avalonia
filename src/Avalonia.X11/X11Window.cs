@@ -190,7 +190,7 @@ namespace Avalonia.X11
             UpdateMotifHints();
             UpdateSizeHints(null);
 
-            _rawEventGrouper = new RawEventGrouper(e => Input?.Invoke(e));
+            _rawEventGrouper = new RawEventGrouper(DispatchInput);
             
             _transparencyHelper = new TransparencyHelper(_x11, _handle, platform.Globals);
             _transparencyHelper.SetTransparencyRequest(WindowTransparencyLevel.None);
@@ -398,7 +398,7 @@ namespace Avalonia.X11
                     {
                         RenderOnlyOnRenderThread = true
                     }
-                : (IRenderer)new X11ImmediateRendererProxy(root, loop);
+                : (IRenderer)new X11ImmediateRendererProxy((Visual)root, loop);
         }
 
         void OnEvent(ref XEvent ev)
@@ -724,7 +724,13 @@ namespace Avalonia.X11
             _x11.LastActivityTimestamp = xev.ButtonEvent.time;
             ScheduleInput(args);
         }
-        
+
+        void DispatchInput(RawInputEventArgs args)
+        {
+            Input?.Invoke(args);
+            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrWhiteSpace(text.Text))
+                Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
+        }
 
         public void ScheduleXI2Input(RawInputEventArgs args)
         {

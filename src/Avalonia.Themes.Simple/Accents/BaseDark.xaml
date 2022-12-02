@@ -1,8 +1,6 @@
-<Style
+<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:sys="clr-namespace:System;assembly=netstandard">
-    <Style.Resources>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
         <Color x:Key="ThemeBackgroundColor">#FF282828</Color>
         <Color x:Key="ThemeBorderLowColor">#FF505050</Color>
@@ -34,5 +32,4 @@
         <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{StaticResource ThemeForegroundColor}" />
         <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}" />
 
-    </Style.Resources>
-</Style>
+</ResourceDictionary>

@@ -13,7 +13,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// An item in a <see cref="TreeView"/>.
     /// </summary>
-    [TemplatePart("PART_Header", typeof(IControl))]
+    [TemplatePart("PART_Header", typeof(Control))]
     [PseudoClasses(":pressed", ":selected")]
     public class TreeViewItem : HeaderedItemsControl, ISelectable
     {
@@ -39,11 +39,11 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<TreeViewItem, int>(
                 nameof(Level), o => o.Level);
 
-        private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel());
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel());
 
         private TreeView? _treeView;
-        private IControl? _header;
+        private Control? _header;
         private bool _isExpanded;
         private int _level;
         private bool _templateApplied;
@@ -198,7 +198,7 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
-            _header = e.NameScope.Find<IControl>("PART_Header");
+            _header = e.NameScope.Find<Control>("PART_Header");
             _templateApplied = true;
             if (_deferredBringIntoViewFlag)
             {

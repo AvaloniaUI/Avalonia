@@ -2,8 +2,8 @@
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:sys="clr-namespace:System;assembly=netstandard"
+             xmlns:sys="using:System"
+             xmlns:models="using:ControlCatalog.Models"
              d:DesignHeight="600"
              d:DesignWidth="400">
   <StackPanel Orientation="Vertical"
@@ -45,7 +45,7 @@
 
       <StackPanel>
         <TextBlock Text="ValueMemberBinding" />
-        <AutoCompleteBox ValueMemberBinding="{Binding Capital}" />
+        <AutoCompleteBox ValueMemberBinding="{Binding Capital, x:DataType=models:StateData}" />
       </StackPanel>
       <StackPanel>
         <TextBlock Text="Multi-Binding" />

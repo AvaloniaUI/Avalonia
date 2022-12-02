@@ -20,8 +20,8 @@ namespace Avalonia.Markup.Xaml.UnitTests
         
         class TestXamlLoaderShim : AvaloniaXamlLoader.IRuntimeXamlLoader
         {
-            public object Load(Stream stream, Assembly localAsm, object o, Uri baseUri, bool designMode) 
-                => AvaloniaRuntimeXamlLoader.Load(stream, localAsm, o, baseUri, designMode);
+            public object Load(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration) 
+                => AvaloniaRuntimeXamlLoader.Load(document, configuration);
         }
     }
 }

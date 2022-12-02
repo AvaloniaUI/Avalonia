@@ -149,6 +149,7 @@ namespace Avalonia.Controls
             try
             {
                 EnsureInitialized();
+                ApplyStyling();
                 IsVisible = true;
 
                 if (!_hasExecutedInitialLayoutPass)

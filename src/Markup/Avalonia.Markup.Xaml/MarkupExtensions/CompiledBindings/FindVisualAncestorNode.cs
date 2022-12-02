@@ -33,7 +33,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         protected override void StartListeningCore(WeakReference<object> reference)
         {
-            if (reference.TryGetTarget(out object target) && target is IVisual visual)
+            if (reference.TryGetTarget(out object target) && target is Visual visual)
             {
                 _subscription = VisualLocator.Track(visual, _level, _ancestorType).Subscribe(ValueChanged);
             }

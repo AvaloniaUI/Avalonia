@@ -99,7 +99,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var items = new[] { "Foo", "Bar", "Baz " };
-                var theme = new ControlTheme();
+                var theme = new ControlTheme(typeof(ListBoxItem));
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
@@ -121,7 +121,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
                 var items = new[] { "Foo", "Bar", "Baz " };
-                var theme = new ControlTheme();
+                var theme = new ControlTheme(typeof(ListBoxItem));
                 var target = new ListBox
                 {
                     Template = ListBoxTemplate(),
@@ -424,8 +424,8 @@ namespace Avalonia.Controls.UnitTests
                 lm.ExecuteLayoutPass();
 
                 var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-                var toMeasure = lm.GetType().GetField("_toMeasure", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.ILayoutable>;
-                var toArrange = lm.GetType().GetField("_toArrange", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.ILayoutable>;
+                var toMeasure = lm.GetType().GetField("_toMeasure", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.Layoutable>;
+                var toArrange = lm.GetType().GetField("_toArrange", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.Layoutable>;
 
                 Assert.Equal(0, toMeasure.Count());
                 Assert.Equal(0, toArrange.Count());
@@ -677,7 +677,7 @@ namespace Avalonia.Controls.UnitTests
 
             // The items were created before the template was applied, so now we need to go back
             // and re-arrange everything.
-            foreach (IControl i in target.GetSelfAndVisualDescendants())
+            foreach (Control i in target.GetSelfAndVisualDescendants())
             {
                 i.InvalidateMeasure();
             }

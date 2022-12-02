@@ -96,6 +96,16 @@ namespace Avalonia
         /// This can be useful when you need a rounded-corner blurred Windows 10 app, or borderless Windows 11 app
         /// </summary>
         public float? CompositionBackdropCornerRadius { get; set; }
+
+        /// <summary>
+        /// When <see cref="UseLowLatencyDxgiSwapChain"/> is active, renders Avalonia through a low-latency Dxgi Swapchain.
+        /// Requires Feature Level 11_3 to be active, Windows 8.1+ Any Subversion. 
+        /// This is only recommended if low input latency is desirable, and there is no need for the transparency
+        /// and stylings / blurrings offered by <see cref="UseWindowsUIComposition"/><br/>
+        /// This is mutually exclusive with 
+        /// <see cref="UseWindowsUIComposition"/> which if active will override this setting. 
+        /// </summary>
+        public bool UseLowLatencyDxgiSwapChain { get; set; } = false;
     }
 }
 
@@ -130,17 +140,6 @@ namespace Avalonia.Win32
         
         internal static Compositor Compositor { get; private set; }
 
-        public Size DoubleClickSize => new Size(
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CXDOUBLECLK),
-            UnmanagedMethods.GetSystemMetrics(UnmanagedMethods.SystemMetric.SM_CYDOUBLECLK));
-
-        public TimeSpan DoubleClickTime => TimeSpan.FromMilliseconds(UnmanagedMethods.GetDoubleClickTime());
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickSize"/>
-        public Size TouchDoubleClickSize => new Size(16,16);
-
-        /// <inheritdoc cref="IPlatformSettings.TouchDoubleClickTime"/>
-        public TimeSpan TouchDoubleClickTime => DoubleClickTime;
         public static void Initialize()
         {
             Initialize(new Win32PlatformOptions());
@@ -398,5 +397,25 @@ namespace Avalonia.Win32
 
             SetProcessDPIAware();
         }
+
+        Size IPlatformSettings.GetTapSize(PointerType type)
+        {
+            return type switch
+            {
+                PointerType.Touch => new(10, 10),
+                _ => new(GetSystemMetrics(SystemMetric.SM_CXDRAG), GetSystemMetrics(SystemMetric.SM_CYDRAG)),
+            };
+        }
+
+        Size IPlatformSettings.GetDoubleTapSize(PointerType type)
+        {
+            return type switch
+            {
+                PointerType.Touch => new(16, 16),
+                _ => new(GetSystemMetrics(SystemMetric.SM_CXDOUBLECLK), GetSystemMetrics(SystemMetric.SM_CYDOUBLECLK)),
+            };
+        }
+
+        TimeSpan IPlatformSettings.GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
     }
 }

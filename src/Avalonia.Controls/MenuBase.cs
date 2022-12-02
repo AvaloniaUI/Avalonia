@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering;
 
 namespace Avalonia.Controls
 {
@@ -74,6 +75,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IMenuInteractionHandler IMenu.InteractionHandler => InteractionHandler;
 
+        IRenderRoot? IMenu.VisualRoot => VisualRoot;
+        
         /// <inheritdoc/>
         IMenuItem? IMenuElement.SelectedItem
         {
@@ -86,8 +89,8 @@ namespace Avalonia.Controls
             }
             set
             {
-                SelectedIndex = value is not null ?
-                    ItemContainerGenerator.IndexFromContainer(value) : -1;
+                SelectedIndex = value is Control c ?
+                    ItemContainerGenerator.IndexFromContainer(c) : -1;
             }
         }
 

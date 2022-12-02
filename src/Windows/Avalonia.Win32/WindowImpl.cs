@@ -26,6 +26,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Collections.Pooled;
 using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
+using Avalonia.Win32.DxgiSwapchain;
 
 namespace Avalonia.Win32
 {
@@ -63,6 +64,7 @@ namespace Avalonia.Win32
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
         private bool _isUsingComposition;
+        private bool _isUsingDxgiSwapchain;
         private IBlurHost _blurHost;
         private PlatformResizeReason _resizeReason;
         private MOUSEMOVEPOINT _lastWmMousePoint;
@@ -143,6 +145,16 @@ namespace Avalonia.Win32
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
+            DxgiConnection dxgiConnection = null;
+            if (!_isUsingComposition)
+            {
+                dxgiConnection = AvaloniaLocator.Current.GetService<DxgiConnection>();
+                _isUsingDxgiSwapchain = dxgiConnection is { } &&
+                    glPlatform is EglPlatformOpenGlInterface eglDxgi &&
+                        eglDxgi.Display is AngleWin32EglDisplay angleDisplayDxgi &&
+                        angleDisplayDxgi.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+            }
+
             _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
             CreateWindow();
@@ -158,6 +170,11 @@ namespace Avalonia.Win32
                     _gl = cgl;
 
                     _isUsingComposition = true;
+                }
+                else if (_isUsingDxgiSwapchain)
+                {
+                    var dxgigl = new DxgiSwapchainWindow(dxgiConnection, this);
+                    _gl = dxgigl;
                 }
                 else
                 {
@@ -269,6 +286,11 @@ namespace Avalonia.Win32
         {
             get
             {
+                if (!IsWindowVisible(_hwnd))
+                {
+                    return _showWindowState;
+                }
+
                 if (_isFullScreenActive)
                 {
                     return WindowState.FullScreen;
@@ -557,11 +579,14 @@ namespace Avalonia.Win32
                         RenderOnlyOnRenderThread = true
                     }
                     : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock)
-                : new ImmediateRenderer(root);
+                : new ImmediateRenderer((Visual)root);
         }
 
         public void Resize(Size value, PlatformResizeReason reason)
         {
+            if (WindowState != WindowState.Normal)
+                return;
+
             int requestedClientWidth = (int)(value.Width * RenderScaling);
             int requestedClientHeight = (int)(value.Height * RenderScaling);
 
@@ -902,11 +927,10 @@ namespace Avalonia.Win32
 
                 var window_rect = monitor_info.rcMonitor.ToPixelRect();
 
+                _isFullScreenActive = true;
                 SetWindowPos(_hwnd, IntPtr.Zero, window_rect.X, window_rect.Y,
                              window_rect.Width, window_rect.Height,
                              SetWindowPosFlags.SWP_NOZORDER | SetWindowPosFlags.SWP_NOACTIVATE | SetWindowPosFlags.SWP_FRAMECHANGED);
-
-                _isFullScreenActive = true;
             }
             else
             {
