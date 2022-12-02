@@ -10,6 +10,9 @@ namespace Avalonia.Rendering
     {
         private List<Rect> _rects = new List<Rect>();
 
+        /// <summary>
+        /// Gets a value indicating whether the collection of dirty rectangles is empty.
+        /// </summary>
         public bool IsEmpty => _rects.Count == 0;
 
         /// <summary>
