@@ -100,7 +100,7 @@ namespace Avalonia
 
         public override string ToString()
         {
-            return $"{TopLeft},{TopRight},{BottomRight},{BottomLeft}";
+            return FormattableString.Invariant($"{TopLeft},{TopRight},{BottomRight},{BottomLeft}");
         }
 
         public static CornerRadius Parse(string s)

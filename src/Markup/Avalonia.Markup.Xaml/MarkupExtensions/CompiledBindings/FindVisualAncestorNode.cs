@@ -22,11 +22,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             {
                 if (_ancestorType == null)
                 {
-                    return $"$visualparent[{_level}]";
+                    return FormattableString.Invariant($"$visualparent[{_level}]");
                 }
                 else
                 {
-                    return $"$visualparent[{_ancestorType.Name}, {_level}]";
+                    return FormattableString.Invariant($"$visualparent[{_ancestorType.Name}, {_level}]");
                 }
             }
         }
