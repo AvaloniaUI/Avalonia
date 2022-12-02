@@ -30,7 +30,9 @@
              />
 
 
-  <Target Name="AddAvaloniaResources" BeforeTargets="ResolveReferences">
+  <Target Name="AddAvaloniaResources" 
+          BeforeTargets="ResolveReferences"
+          Condition="('@(AvaloniaResource->Count())' &gt; 0) or ('@(AvaloniaXaml->Count())' &gt; 0)">
     <PropertyGroup>
       <AvaloniaResourcesTemporaryFilePath Condition="'$(AvaloniaResourcesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/resources</AvaloniaResourcesTemporaryFilePath>
     </PropertyGroup>
@@ -62,7 +64,9 @@
           BeforeTargets="CoreCompile;CoreResGen"
           Inputs="@(AvaloniaResource);@(AvaloniaXaml);@(CustomAdditionalGenerateAvaloniaResourcesInputs);$(MSBuildAllProjects)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
-	  DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
+          DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)"
+          Condition="('@(AvaloniaResource->Count())' &gt; 0) or ('@(AvaloniaXaml->Count())' &gt; 0)"
+          >
     <ItemGroup>
         <AvaloniaResource Include="@(AvaloniaXaml)"/>
     </ItemGroup>
@@ -81,7 +85,12 @@
   <Target
     Name="CompileAvaloniaXaml"
     AfterTargets="AfterCompile"
-    Condition="Exists('@(IntermediateAssembly)') And $(DesignTimeBuild) != true And $(EnableAvaloniaXamlCompilation) != false"
+    Condition="
+      (('@(AvaloniaResource->Count())' &gt; 0) 
+          or ('@(AvaloniaXaml->Count())' &gt; 0))
+      and Exists('@(IntermediateAssembly)') 
+      And $(DesignTimeBuild) != true 
+      And $(EnableAvaloniaXamlCompilation) != false"
     >
     <PropertyGroup>
       <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
