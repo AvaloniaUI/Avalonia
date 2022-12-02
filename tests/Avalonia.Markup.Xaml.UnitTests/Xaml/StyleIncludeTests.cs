@@ -279,33 +279,34 @@ public class StyleIncludeTests
         var sp = new TestServiceProvider();
         var styleInclude = new StyleInclude(sp)
         {
-            Source = new Uri("avares://Avalonia.Markup.Xaml.UnitTests/Xaml/StyleWithServiceLocator.xaml")
+            Source = new Uri("avares://Avalonia.Markup.Xaml.UnitTests/Xaml/StyleWithServiceProvider.xaml")
         };
 
-        var loaded = Assert.IsType<StyleWithServiceLocator>(styleInclude.Loaded);
+        var loaded = Assert.IsType<StyleWithServiceProvider>(styleInclude.Loaded);
         
         Assert.Equal(
             sp.GetService<IAvaloniaXamlIlParentStackProvider>().Parents, 
             loaded.ServiceProvider.GetService<IAvaloniaXamlIlParentStackProvider>().Parents);
     }
+}
 
-    private class TestServiceProvider : IServiceProvider, IUriContext, IAvaloniaXamlIlParentStackProvider
+public class TestServiceProvider : IServiceProvider, IUriContext, IAvaloniaXamlIlParentStackProvider
+{
+    private IServiceProvider _root = XamlIlRuntimeHelpers.CreateRootServiceProviderV2();
+    public object GetService(Type serviceType)
     {
-        private IServiceProvider _root = XamlIlRuntimeHelpers.CreateRootServiceProviderV2();
-        public object GetService(Type serviceType)
+        if (serviceType == typeof(IUriContext))
         {
-            if (serviceType == typeof(IUriContext))
-            {
-                return this;
-            }
-            if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
-            {
-                return this;
-            }
-            return _root.GetService(serviceType);
+            return this;
         }
-
-        public Uri BaseUri { get; set; }
-        public IEnumerable<object> Parents { get; } = new[] { new ContentControl() };
+        if (serviceType == typeof(IAvaloniaXamlIlParentStackProvider))
+        {
+            return this;
+        }
+        return _root.GetService(serviceType);
     }
+
+    public Uri BaseUri { get; set; }
+    public List<object> Parents { get; set; } = new List<object> { new ContentControl() };
+    IEnumerable<object> IAvaloniaXamlIlParentStackProvider.Parents => Parents;
 }

@@ -30,7 +30,7 @@
     </AvaloniaResource>
     <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml" />
     <AvaloniaResource Include="Xaml\XamlIlClassWithCustomProperty.xaml" />
-    <AvaloniaResource Include="Xaml\StyleWithServiceLocator.xaml" />
+    <AvaloniaResource Include="Xaml\StyleWithServiceProvider.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">

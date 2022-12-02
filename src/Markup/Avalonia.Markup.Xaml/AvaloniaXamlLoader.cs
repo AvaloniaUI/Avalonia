@@ -103,10 +103,9 @@ namespace Avalonia.Markup.Xaml
                 var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
                 using (var stream = asset.stream)
                 {
-                    return runtimeLoader.Load(new RuntimeXamlLoaderDocument(absoluteUri, stream), new RuntimeXamlLoaderConfiguration
-                    {
-                        LocalAssembly = asset.assembly
-                    });
+                    var document = new RuntimeXamlLoaderDocument(absoluteUri, stream) { ServiceProvider = sp };
+                    var configuration = new RuntimeXamlLoaderConfiguration { LocalAssembly = asset.assembly };
+                    return runtimeLoader.Load(document, configuration);
                 }
             }
 
