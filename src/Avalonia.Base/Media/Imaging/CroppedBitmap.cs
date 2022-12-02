@@ -79,7 +79,7 @@ namespace Avalonia.Media.Imaging
             {
                 if (Source is not IBitmap bmp)
                     return Size.Empty;
-                if (SourceRect.IsEmpty)
+                if (SourceRect.IsDefault)
                     return Source.Size;
                 return SourceRect.Size.ToSizeWithDpi(bmp.Dpi);
             }
