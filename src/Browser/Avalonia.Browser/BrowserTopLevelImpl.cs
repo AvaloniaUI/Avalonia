@@ -17,7 +17,8 @@ using Avalonia.Rendering.Composition;
 namespace Avalonia.Browser
 {
     [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
-    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
+        ITopLevelWithInsetsManager
     {
         private Size _clientSize;
         private IInputRoot? _inputRoot;
@@ -36,6 +37,7 @@ namespace Avalonia.Browser
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
             NativeControlHost = _avaloniaView.GetNativeControlHostImpl();
+            InsetsManager = new BrowserInsetsManager();
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -62,6 +64,8 @@ namespace Avalonia.Browser
                 }
 
                 Resized?.Invoke(newSize, PlatformResizeReason.User);
+
+                (InsetsManager as BrowserInsetsManager)?.NotifySafeAreaPaddingChanged();
             }
         }
 
@@ -228,5 +232,7 @@ namespace Avalonia.Browser
 
         public INativeControlHostImpl? NativeControlHost { get; }
         public IStorageProvider StorageProvider { get; } = new BrowserStorageProvider();
+
+        public IInsetsManager? InsetsManager { get; }
     }
 }

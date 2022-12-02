@@ -1,0 +1,18 @@
+<Page xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:ControlCatalog.ViewModels"
+             x:DataType="vm:PlatformInsetsPageViewModel"
+             UseSafeArea="{Binding UseSafeArea}"
+             x:Class="ControlCatalog.Pages.WindowInsetsPage">
+  <StackPanel Orientation="Vertical" Spacing="4">
+    <TextBlock Classes="h2">Window Insets</TextBlock>
+    <CheckBox IsChecked="{Binding UseSafeArea}">Use Safe Area</CheckBox>
+    <TextBlock>System Bars</TextBlock>
+    <RadioButton GroupName="SystemBars" IsChecked="{Binding SystemBarDefault}">Default</RadioButton>
+    <RadioButton GroupName="SystemBars"
+                 IsChecked="{Binding SystemBarDrawBehind}">Draw Behind System Bars / Maximize (Android/Desktop)</RadioButton>
+    <RadioButton GroupName="SystemBars"
+                 IsChecked="{Binding SystemBarHide}">Hide System Bars / Full Screen</RadioButton>
+    <CheckBox IsChecked="{Binding LightThemeSystemBar}">Light Themed System Bars (Android)</CheckBox>
+  </StackPanel>
+</Page>

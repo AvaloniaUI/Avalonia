@@ -75,4 +75,5 @@
 
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/FocusAdorner.xaml" />
     <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/UserControl.xaml" />
+    <StyleInclude Source="avares://Avalonia.Themes.Fluent/Controls/Page.xaml" />
 </Styles>

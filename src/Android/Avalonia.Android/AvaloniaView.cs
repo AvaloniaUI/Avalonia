@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
@@ -61,6 +62,8 @@ namespace Avalonia.Android
                 }
 
                 _root.Renderer.Start();
+
+                (_view.InsetsManager as AndroidInsetsManager)?.ApplyStatusBarState();
             }
             else
             {

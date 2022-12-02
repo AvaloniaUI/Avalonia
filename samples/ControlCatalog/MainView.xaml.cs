@@ -11,7 +11,7 @@ using ControlCatalog.Pages;
 
 namespace ControlCatalog
 {
-    public class MainView : UserControl
+    public class MainView : Page
     {
         public MainView()
         {
@@ -36,6 +36,17 @@ namespace ControlCatalog
                 if (themes.SelectedItem is CatalogTheme theme)
                 {
                     App.SetThemeVariant(theme);
+
+                    if(WindowState != WindowState.Normal && WindowState != WindowState.Minimized)
+                    {
+                        SystemBarTheme = (theme == CatalogTheme.FluentDark || theme == CatalogTheme.FluentDark) ? 
+                            Avalonia.Controls.Platform.SystemBarTheme.Dark : 
+                            Avalonia.Controls.Platform.SystemBarTheme.Light;
+                    }
+                    else
+                    {
+                        SystemBarTheme = null;
+                    }
                 }
             };
 
@@ -80,6 +91,12 @@ namespace ControlCatalog
             var decorations = this.Get<ComboBox>("Decorations");
             if (VisualRoot is Window window)
                 decorations.SelectedIndex = (int)window.SystemDecorations;
+
+            var windowInsets = this.Get<TabItem>("WindowInsetsTab");
+            if(VisualRoot is TopLevel topLevel && topLevel.InsetsManager == null)
+            {
+                windowInsets.IsVisible = false;
+            }
         }
     }
 }
