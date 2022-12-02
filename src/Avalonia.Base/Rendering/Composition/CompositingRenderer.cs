@@ -295,7 +295,11 @@ public class CompositingRenderer : IRendererWithCompositor
             CompositionTarget.ImmediateUIThreadRender();
     }
 
-    public void Start() => CompositionTarget.IsEnabled = true;
+    public void Start()
+    {
+        CompositionTarget.IsEnabled = true;
+        CompositionTarget.ImmediateUIThreadRender();
+    }
 
     public void Stop()
     {

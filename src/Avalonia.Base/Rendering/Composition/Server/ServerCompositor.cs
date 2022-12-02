@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.Composition.Server
     internal class ServerCompositor : IRenderLoopTask
     {
         private readonly IRenderLoop _renderLoop;
-        private readonly Queue<Batch> _batches = new Queue<Batch>(); 
+        private readonly Queue<Batch> _batches = new Queue<Batch>();
         public long LastBatchId { get; private set; }
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
@@ -43,7 +43,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void EnqueueBatch(Batch batch)
         {
-            lock (_batches) 
+            lock (_batches)
                 _batches.Enqueue(batch);
         }
 
@@ -58,7 +58,7 @@ namespace Avalonia.Rendering.Composition.Server
                 Batch batch;
                 lock (_batches)
                 {
-                    if(_batches.Count == 0)
+                    if (_batches.Count == 0)
                         break;
                     batch = _batches.Dequeue();
                 }
@@ -87,7 +87,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         void CompletePendingBatches()
         {
-            foreach(var batch in _reusableToCompleteList)
+            foreach (var batch in _reusableToCompleteList)
                 batch.Complete();
             _reusableToCompleteList.Clear();
         }
@@ -105,20 +105,20 @@ namespace Avalonia.Rendering.Composition.Server
                 RenderCore();
             }
         }
-        
+
         private void RenderCore()
         {
             ApplyPendingBatches();
             CompletePendingBatches();
-            
-            foreach(var animation in _activeAnimations)
+
+            foreach (var animation in _activeAnimations)
                 _animationsToUpdate.Add(animation);
-            
-            foreach(var animation in _animationsToUpdate)
+
+            foreach (var animation in _animationsToUpdate)
                 animation.Invalidate();
-            
+
             _animationsToUpdate.Clear();
-            
+
             foreach (var t in _activeTargets)
                 t.Render();
         }
@@ -134,13 +134,12 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void RemoveCompositionTarget(ServerCompositionTarget target)
         {
-            _activeTargets.Remove(target);
-            if (_activeTargets.Count == 0)
+            if (_activeTargets.Remove(target) && _activeTargets.Count == 0)
             {
                 Dispatcher.UIThread.Post(() => _renderLoop.Remove(this), DispatcherPriority.Render);
             }
         }
-        
+
         public void AddToClock(IAnimationInstance animationInstance) =>
             _activeAnimations.Add(animationInstance);
 
