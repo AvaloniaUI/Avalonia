@@ -88,9 +88,10 @@ namespace Avalonia.Controls
         {
             if (!string.IsNullOrWhiteSpace(e.Text))
             {
-                var text = e.Text.ToUpperInvariant();
+                var text = e.Text;
                 var focus = _registered
-                    .FirstOrDefault(x => x.Element.IsEffectivelyVisible && x.Item1 == text).Element;
+                    .FirstOrDefault(x => x.Element.IsEffectivelyVisible 
+                        && string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)).Element;
 
                 focus?.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
 
