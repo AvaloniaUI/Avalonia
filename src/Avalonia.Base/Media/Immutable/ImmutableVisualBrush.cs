@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Media.Immutable
 {
     /// <summary>
-    /// Paints an area with an <see cref="IVisual"/>.
+    /// Paints an area with an <see cref="Visual"/>.
     /// </summary>
     internal class ImmutableVisualBrush : ImmutableTileBrush, IVisualBrush
     {
