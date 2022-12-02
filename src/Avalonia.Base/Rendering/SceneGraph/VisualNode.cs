@@ -10,7 +10,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Rendering.SceneGraph
 {
     /// <summary>
-    /// A node in the low-level scene graph representing an <see cref="IVisual"/>.
+    /// A node in the low-level scene graph representing an <see cref="Visual"/>.
     /// </summary>
     internal class VisualNode : IVisualNode
     {
