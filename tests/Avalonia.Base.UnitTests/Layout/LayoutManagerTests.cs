@@ -88,8 +88,8 @@ namespace Avalonia.Base.UnitTests.Layout
                 }
             };
 
-            var order = new List<ILayoutable>();
-            Size MeasureOverride(ILayoutable control, Size size)
+            var order = new List<Layoutable>();
+            Size MeasureOverride(Layoutable control, Size size)
             {
                 order.Add(control);
                 return new Size(10, 10);
@@ -107,7 +107,7 @@ namespace Avalonia.Base.UnitTests.Layout
             order.Clear();
             root.LayoutManager.ExecuteLayoutPass();
 
-            Assert.Equal(new ILayoutable[] { root, control1, control2 }, order);
+            Assert.Equal(new Layoutable[] { root, control1, control2 }, order);
         }
 
         [Fact]
@@ -123,8 +123,8 @@ namespace Avalonia.Base.UnitTests.Layout
                 }
             };
 
-            var order = new List<ILayoutable>();
-            Size MeasureOverride(ILayoutable control, Size size)
+            var order = new List<Layoutable>();
+            Size MeasureOverride(Layoutable control, Size size)
             {
                 order.Add(control);
                 return new Size(10, 10);
@@ -141,7 +141,7 @@ namespace Avalonia.Base.UnitTests.Layout
             order.Clear();
             root.LayoutManager.ExecuteLayoutPass();
 
-            Assert.Equal(new ILayoutable[] { root, control2 }, order);
+            Assert.Equal(new Layoutable[] { root, control2 }, order);
         }
 
         [Fact]

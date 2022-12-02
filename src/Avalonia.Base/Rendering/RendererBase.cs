@@ -36,7 +36,7 @@ namespace Avalonia.Rendering
                 _lastFpsUpdate = now;
             }
 
-            var text = layerCount.HasValue ? $"Layers: {layerCount} FPS: {_fps:000}" : $"FPS: {_fps:000}";
+            var text = layerCount.HasValue ? FormattableString.Invariant($"Layers: {layerCount} FPS: {_fps:000}") : FormattableString.Invariant($"FPS: {_fps:000}");
 
             var formattedText = new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, s_fontSize, Brushes.White);
 

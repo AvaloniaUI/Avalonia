@@ -26,9 +26,9 @@ namespace Avalonia.Markup.Xaml.Templates
             }
         }
 
-        public IControl Build(object data) => Build(data, null);
+        public Control Build(object data) => Build(data, null);
 
-        public IControl Build(object data, IControl existing)
+        public Control Build(object data, Control existing)
         {
             return existing ?? TemplateContent.Load(Content)?.Control;
         }

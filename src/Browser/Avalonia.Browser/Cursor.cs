@@ -20,9 +20,9 @@ namespace Avalonia.Browser
         /// </summary>
         public CssCursor(string base64, string format, PixelPoint hotspot, StandardCursorType fallback)
         {
-            Value = $"url(\"data:image/{format};base64,{base64}\") {hotspot.X} {hotspot.Y}, {ToKeyword(fallback)}";
+            Value = FormattableString.Invariant($"url(\"data:image/{format};base64,{base64}\") {hotspot.X} {hotspot.Y}, {ToKeyword(fallback)}");
         }
-        
+
         /// <summary>
         /// Create a cursor from url to *.cur file.
         /// </summary>
@@ -30,15 +30,15 @@ namespace Avalonia.Browser
         {
             Value = $"url('{url}'), {ToKeyword(fallback)}";
         }
-        
+
         /// <summary>
         /// Create a cursor from png/svg and hotspot position
         /// </summary>
         public CssCursor(string url, PixelPoint hotSpot, StandardCursorType fallback)
         {
-            Value = $"url('{url}') {hotSpot.X} {hotSpot.Y}, {ToKeyword(fallback)}";
+            Value = FormattableString.Invariant($"url('{url}') {hotSpot.X} {hotSpot.Y}, {ToKeyword(fallback)}");
         }
-        
+
         private static string ToKeyword(StandardCursorType type) => type switch
         {
             StandardCursorType.Hand => "pointer",
@@ -49,16 +49,16 @@ namespace Avalonia.Browser
             StandardCursorType.None => "none",
             StandardCursorType.Wait => "progress",
             StandardCursorType.AppStarting => "wait",
-            
+
             StandardCursorType.DragMove => "move",
             StandardCursorType.DragCopy => "copy",
             StandardCursorType.DragLink => "alias",
-            
+
             StandardCursorType.UpArrow => "default",/*not found matching one*/
             StandardCursorType.SizeWestEast => "ew-resize",
             StandardCursorType.SizeNorthSouth => "ns-resize",
             StandardCursorType.SizeAll => "move",
-            
+
             StandardCursorType.TopSide => "n-resize",
             StandardCursorType.BottomSide => "s-resize",
             StandardCursorType.LeftSide => "w-resize",
@@ -67,10 +67,10 @@ namespace Avalonia.Browser
             StandardCursorType.TopRightCorner => "ne-resize",
             StandardCursorType.BottomLeftCorner => "sw-resize",
             StandardCursorType.BottomRightCorner => "se-resize",
-            
+
             _ => Default,
         };
-        
+
         public void Dispose() {}
     }
 

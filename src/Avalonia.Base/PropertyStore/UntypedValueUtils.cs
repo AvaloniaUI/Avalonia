@@ -23,18 +23,6 @@ namespace Avalonia.PropertyStore
             return v;
         }
 
-        public static bool TryConvertAndValidate(
-            AvaloniaProperty property,
-            object? value,
-            out object? result)
-        {
-            if (TypeUtilities.TryConvertImplicit(property.PropertyType, value, out result))
-                return ((IStyledPropertyAccessor)property).ValidateValue(result);
-
-            result = default;
-            return false;
-        }
-
         public static bool TryConvertAndValidate<T>(
             StyledPropertyBase<T> property,
             object? value, 

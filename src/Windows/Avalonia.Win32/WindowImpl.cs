@@ -26,6 +26,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Collections.Pooled;
 using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
+using Avalonia.Win32.DxgiSwapchain;
 
 namespace Avalonia.Win32
 {
@@ -63,6 +64,7 @@ namespace Avalonia.Win32
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
         private bool _isUsingComposition;
+        private bool _isUsingDxgiSwapchain;
         private IBlurHost _blurHost;
         private PlatformResizeReason _resizeReason;
         private MOUSEMOVEPOINT _lastWmMousePoint;
@@ -143,6 +145,16 @@ namespace Avalonia.Win32
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
+            DxgiConnection dxgiConnection = null;
+            if (!_isUsingComposition)
+            {
+                dxgiConnection = AvaloniaLocator.Current.GetService<DxgiConnection>();
+                _isUsingDxgiSwapchain = dxgiConnection is { } &&
+                    glPlatform is EglPlatformOpenGlInterface eglDxgi &&
+                        eglDxgi.Display is AngleWin32EglDisplay angleDisplayDxgi &&
+                        angleDisplayDxgi.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+            }
+
             _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
             CreateWindow();
@@ -158,6 +170,11 @@ namespace Avalonia.Win32
                     _gl = cgl;
 
                     _isUsingComposition = true;
+                }
+                else if (_isUsingDxgiSwapchain)
+                {
+                    var dxgigl = new DxgiSwapchainWindow(dxgiConnection, this);
+                    _gl = dxgigl;
                 }
                 else
                 {
@@ -562,7 +579,7 @@ namespace Avalonia.Win32
                         RenderOnlyOnRenderThread = true
                     }
                     : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock)
-                : new ImmediateRenderer(root);
+                : new ImmediateRenderer((Visual)root);
         }
 
         public void Resize(Size value, PlatformResizeReason reason)

@@ -22,7 +22,7 @@ namespace Avalonia
             StyledPropertyMetadata<TValue> metadata,
             bool inherits = false,
             Func<TValue, bool>? validate = null,
-            Action<IAvaloniaObject, bool>? notifying = null)
+            Action<AvaloniaObject, bool>? notifying = null)
             : base(name, ownerType, metadata, inherits, validate, notifying)
         {
         }
@@ -42,7 +42,7 @@ namespace Avalonia
         /// </summary>
         /// <typeparam name="TOwner">The type of the additional owner.</typeparam>
         /// <returns>The property.</returns>        
-        public StyledProperty<TValue> AddOwner<TOwner>() where TOwner : IAvaloniaObject
+        public StyledProperty<TValue> AddOwner<TOwner>() where TOwner : AvaloniaObject
         {
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), this);
             return this;

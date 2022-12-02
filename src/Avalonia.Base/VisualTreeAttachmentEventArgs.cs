@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Rendering;
-using Avalonia.VisualTree;
 
 namespace Avalonia
 {
@@ -15,7 +14,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="parent">The parent that the visual is being attached to or detached from.</param>
         /// <param name="root">The root visual.</param>
-        public VisualTreeAttachmentEventArgs(IVisual parent, IRenderRoot root)
+        public VisualTreeAttachmentEventArgs(Visual parent, IRenderRoot root)
         {
             Parent = parent ?? throw new ArgumentNullException(nameof(parent));
             Root = root ?? throw new ArgumentNullException(nameof(root));
@@ -24,7 +23,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the parent that the visual is being attached to or detached from.
         /// </summary>
-        public IVisual Parent { get; }
+        public Visual Parent { get; }
 
         /// <summary>
         /// Gets the root of the visual tree that the visual is being attached to or detached from.
