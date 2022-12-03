@@ -143,6 +143,9 @@ dotnet_diagnostic.CA1802.severity = warning
 dotnet_diagnostic.CA1820.severity = warning
 # CA1821: Remove empty finalizers
 dotnet_diagnostic.CA1821.severity = warning
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = suggestion
+dotnet_code_quality.CA1822.api_surface = private, internal
 # CA1825: Avoid zero-length array allocations
 dotnet_diagnostic.CA1825.severity = warning
 # CA1826: Use property instead of Linq Enumerable method

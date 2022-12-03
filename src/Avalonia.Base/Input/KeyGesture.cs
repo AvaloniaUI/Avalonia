@@ -166,7 +166,7 @@ namespace Avalonia.Input
             return EnumHelper.Parse<KeyModifiers>(modifier.ToString(), true);
         }
 
-        private Key ResolveNumPadOperationKey(Key key)
+        private static Key ResolveNumPadOperationKey(Key key)
         {
             switch (key)
             {

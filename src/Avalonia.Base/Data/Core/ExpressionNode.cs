@@ -159,7 +159,7 @@ namespace Avalonia.Data.Core
             _listening = false;
         }
 
-        private BindingNotification TargetNullNotification()
+        private static BindingNotification TargetNullNotification()
         {
             return new BindingNotification(
                 new MarkupBindingChainException("Null value"),

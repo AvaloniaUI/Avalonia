@@ -272,7 +272,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        Scene? TryGetChildScene(IRef<IDrawOperation>? op) => (op?.Item as BrushDrawOperation)?.Aux as Scene;
+        static Scene? TryGetChildScene(IRef<IDrawOperation>? op) => (op?.Item as BrushDrawOperation)?.Aux as Scene;
         
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
