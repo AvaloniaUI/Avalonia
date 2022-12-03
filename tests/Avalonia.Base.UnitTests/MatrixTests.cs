@@ -19,7 +19,7 @@ public class MatrixTests
     /// </summary>
     /// <param name="expected">The expected vector</param>
     /// <param name="actual">The actual transformed point</param>
-    private void AssertCoordinatesEqualWithReducedPrecision(Vector2 expected, Point actual)
+    private static void AssertCoordinatesEqualWithReducedPrecision(Vector2 expected, Point actual)
     {
         double ReducePrecision(double input) => Math.Truncate(input * 10000);
         
@@ -86,7 +86,7 @@ public class MatrixTests
         var matrix = Matrix.CreateSkew(30, 20);
         var point = new Point(1, 1);
         var actual = matrix.Transform(point);
-        
+
         AssertCoordinatesEqualWithReducedPrecision(expected, actual);
     }
 }

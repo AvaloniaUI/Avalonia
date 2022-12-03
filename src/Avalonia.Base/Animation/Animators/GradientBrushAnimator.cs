@@ -72,7 +72,7 @@ namespace Avalonia.Animation.Animators
             return control.Bind((AvaloniaProperty<IBrush?>)Property, instance, BindingPriority.Animation);
         }
 
-        private IReadOnlyList<ImmutableGradientStop> InterpolateStops(double progress, IReadOnlyList<IGradientStop> oldValue, IReadOnlyList<IGradientStop> newValue)
+        private static IReadOnlyList<ImmutableGradientStop> InterpolateStops(double progress, IReadOnlyList<IGradientStop> oldValue, IReadOnlyList<IGradientStop> newValue)
         {
             var resultCount = Math.Max(oldValue.Count, newValue.Count);
             var stops = new ImmutableGradientStop[resultCount];

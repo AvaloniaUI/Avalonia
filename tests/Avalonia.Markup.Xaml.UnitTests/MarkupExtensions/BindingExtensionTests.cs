@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -137,7 +135,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             public object Foo { get; } = null;
         }
 
-        private IDisposable StyledWindow(params (string, string)[] assets)
+        private static IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
                 assetLoader: new MockAssetLoader(assets),
@@ -149,7 +147,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             return UnitTestApplication.Start(services);
         }
 
-        private Style WindowStyle()
+        private static Style WindowStyle()
         {
             return new Style(x => x.OfType<Window>())
             {
