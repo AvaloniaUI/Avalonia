@@ -90,8 +90,8 @@ namespace Avalonia.Controls
             {
                 var text = e.Text;
                 var focus = _registered
-                    .FirstOrDefault(x => x.Element.IsEffectivelyVisible 
-                        && string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)).Element;
+                    .FirstOrDefault(x => string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)
+                        && x.Element.IsEffectivelyVisible).Element;
 
                 focus?.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
 

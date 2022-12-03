@@ -183,8 +183,8 @@ namespace Avalonia.Input
                 // find all controls who have registered that access key.
                 var text = e.Key.ToString();
                 var matches = _registered
-                    .Where(x => x.Element.IsEffectivelyVisible 
-                        && string.Equals(x.AccessKey , text, StringComparison.OrdinalIgnoreCase) )
+                    .Where(x => string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)
+                        && x.Element.IsEffectivelyVisible)
                     .Select(x => x.Element);
 
                 // If the menu is open, only match controls in the menu's visual tree.
