@@ -68,20 +68,12 @@ namespace Avalonia.Controls
 
         private IDisposable? _flyoutPropertyChangedDisposable;
 
-        ////////////////////////////////////////////////////////////////////////
-        // Constructor / Destructors
-        ////////////////////////////////////////////////////////////////////////
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SplitButton"/> class.
         /// </summary>
         public SplitButton()
         {
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Properties
-        ////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Gets or sets the <see cref="ICommand"/> invoked when the primary part is pressed.
@@ -122,10 +114,6 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
-
-        ////////////////////////////////////////////////////////////////////////
-        // Methods
-        ////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc/>
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
@@ -220,10 +208,6 @@ namespace Avalonia.Controls
                 _secondaryButton.Click -= SecondaryButton_Click;
             }
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // OnEvent Overridable Methods
-        ////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -427,10 +411,6 @@ namespace Avalonia.Controls
         {
             // Available for derived types
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Event Handling
-        ////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Event handler for when the internal primary button part is pressed.
