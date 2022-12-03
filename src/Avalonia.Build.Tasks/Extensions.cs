@@ -5,7 +5,7 @@ namespace Avalonia.Build.Tasks
 {
     static class Extensions
     {
-        static string FormatErrorCode(BuildEngineErrorCode code) => $"AVLN:{(int)code:0000}";
+        static string FormatErrorCode(BuildEngineErrorCode code) => FormattableString.Invariant($"AVLN:{(int)code:0000}");
 
         public static void LogError(this IBuildEngine engine, BuildEngineErrorCode code, string file, Exception ex,
             int lineNumber = 0, int linePosition = 0)

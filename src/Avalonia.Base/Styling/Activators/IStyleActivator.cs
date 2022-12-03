@@ -39,7 +39,7 @@ namespace Avalonia.Styling.Activators
         /// </summary>
         /// <param name="sink">The listener.</param>
         /// <remarks>
-        /// This method should not call <see cref="IStyleActivatorSink.OnNext(bool, int)"/>.
+        /// This method should not call <see cref="IStyleActivatorSink.OnNext(bool)"/>.
         /// </remarks>
         void Subscribe(IStyleActivatorSink sink);
 
