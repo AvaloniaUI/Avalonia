@@ -1074,7 +1074,7 @@ namespace Avalonia.Controls.Primitives
                     {
                         for (int y = pixelDimension - 1; y >= 0; --y)
                         {
-                            ColorSpectrum.FillPixelForBox(
+                            FillPixelForBox(
                                 x, y, hsv, pixelDimension, components, minHue, maxHue, minSaturation, maxSaturation, minValue, maxValue,
                                 bgraMinPixelData, bgraMiddle1PixelData, bgraMiddle2PixelData, bgraMiddle3PixelData, bgraMiddle4PixelData, bgraMaxPixelData,
                                 newHsvValues);

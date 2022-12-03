@@ -52,7 +52,7 @@ namespace ControlCatalog.Pages
                 var comboxBox = (ComboBox)sender;
                 if (_croppedImage.Source is CroppedBitmap croppedBitmap)
                 {
-                    croppedBitmap.SourceRect = ImagePage.GetCropRect(comboxBox.SelectedIndex);
+                    croppedBitmap.SourceRect = GetCropRect(comboxBox.SelectedIndex);
                 }
                 
             }

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -17,7 +15,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void BindingExtension_Binds_To_Source()
         {
-            using (BindingExtensionTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -41,7 +39,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void BindingExtension_Binds_To_TargetNullValue()
         {
-            using (BindingExtensionTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -66,7 +64,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void BindingExtension_TargetNullValue_UnsetByDefault()
         {
-            using (BindingExtensionTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -143,7 +141,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
                 assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
-                    BindingExtensionTests.WindowStyle(),
+                    WindowStyle(),
                 });
 
             return UnitTestApplication.Start(services);

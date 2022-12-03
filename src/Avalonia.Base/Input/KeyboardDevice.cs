@@ -67,7 +67,7 @@ namespace Avalonia.Input
         {
             if (newElement == null && oldElement != null)
             {
-                KeyboardDevice.ClearFocusWithinAncestors(oldElement);
+                ClearFocusWithinAncestors(oldElement);
                 return;
             }
             

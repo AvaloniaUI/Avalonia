@@ -55,11 +55,11 @@ namespace ControlCatalog.Pages
                     context.DrawRectangle(p, workingAreaRect);
 
 
-                    var formattedText = ScreenPage.CreateFormattedText($"Bounds: {screen.Bounds.Width}:{screen.Bounds.Height}");
+                    var formattedText = CreateFormattedText($"Bounds: {screen.Bounds.Width}:{screen.Bounds.Height}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height));
 
                     formattedText =
-                        ScreenPage.CreateFormattedText($"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}");
+                        CreateFormattedText($"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 20));
 
                     formattedText = CreateFormattedText($"Scaling: {screen.Scaling * 100}%");
@@ -70,7 +70,7 @@ namespace ControlCatalog.Pages
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 60));
 
                     formattedText =
-                        ScreenPage.CreateFormattedText(
+                        CreateFormattedText(
                             $"Current: {screen.Equals(w.Screens.ScreenFromBounds(new PixelRect(w.Position, PixelSize.FromSize(w.Bounds.Size, scaling))))}");
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 80));
                 }

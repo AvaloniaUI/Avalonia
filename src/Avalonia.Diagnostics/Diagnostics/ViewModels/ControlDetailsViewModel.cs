@@ -82,7 +82,7 @@ namespace Avalonia.Diagnostics.ViewModels
                             {
                                 var setterValue = regularSetter.Value;
 
-                                var resourceInfo = ControlDetailsViewModel.GetResourceInfo(setterValue);
+                                var resourceInfo =  GetResourceInfo(setterValue);
 
                                 SetterViewModel setterVm;
 
@@ -95,7 +95,7 @@ namespace Avalonia.Diagnostics.ViewModels
                                 }
                                 else
                                 {
-                                    var isBinding = ControlDetailsViewModel.IsBinding(setterValue);
+                                    var isBinding = IsBinding(setterValue);
 
                                     if (isBinding)
                                     {
@@ -509,8 +509,8 @@ namespace Avalonia.Diagnostics.ViewModels
             SelectedEntityName = entityName;
             SelectedEntityType = o.ToString();
 
-            var properties = ControlDetailsViewModel.GetAvaloniaProperties(o)
-                .Concat(ControlDetailsViewModel.GetClrProperties(o, _showImplementedInterfaces))
+            var properties = GetAvaloniaProperties(o)
+                .Concat(GetClrProperties(o, _showImplementedInterfaces))
                 .OrderBy(x => x, PropertyComparer.Instance)
                 .ThenBy(x => x.Name)
                 .ToArray();

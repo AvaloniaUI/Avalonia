@@ -197,7 +197,7 @@ namespace Avalonia.X11
             }
         }
 
-        static void OnEnterLeaveEvent(IXI2Client client, ref XIEnterLeaveEvent ev)
+        void OnEnterLeaveEvent(IXI2Client client, ref XIEnterLeaveEvent ev)
         {
             if (ev.evtype == XiEventType.XI_Leave)
             {

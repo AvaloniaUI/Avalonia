@@ -55,7 +55,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
         if (next == null || !next.Item.Equals(Transform, brush, pen, geometry))
         {
-            Add(new GeometryNode(Transform, brush, pen, geometry, CompositionDrawingContext.CreateChildScene(brush)));
+            Add(new GeometryNode(Transform, brush, pen, geometry, CreateChildScene(brush)));
         }
         else
         {
@@ -94,7 +94,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
         if (next == null || !next.Item.Equals(Transform, pen, p1, p2))
         {
-            Add(new LineNode(Transform, pen, p1, p2, CompositionDrawingContext.CreateChildScene(pen.Brush)));
+            Add(new LineNode(Transform, pen, p1, p2, CreateChildScene(pen.Brush)));
         }
         else
         {
@@ -110,7 +110,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
         if (next == null || !next.Item.Equals(Transform, brush, pen, rect, boxShadows))
         {
-            Add(new RectangleNode(Transform, brush, pen, rect, boxShadows, CompositionDrawingContext.CreateChildScene(brush)));
+            Add(new RectangleNode(Transform, brush, pen, rect, boxShadows, CreateChildScene(brush)));
         }
         else
         {
@@ -139,7 +139,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
         if (next == null || !next.Item.Equals(Transform, brush, pen, rect))
         {
-            Add(new EllipseNode(Transform, brush, pen, rect, CompositionDrawingContext.CreateChildScene(brush)));
+            Add(new EllipseNode(Transform, brush, pen, rect, CreateChildScene(brush)));
         }
         else
         {
@@ -165,7 +165,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
         if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
         {
-            Add(new GlyphRunNode(Transform, foreground, glyphRun, CompositionDrawingContext.CreateChildScene(foreground)));
+            Add(new GlyphRunNode(Transform, foreground, glyphRun, CreateChildScene(foreground)));
         }
 
         else
@@ -324,7 +324,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
 
         if (next == null || !next.Item.Equals(mask, bounds))
         {
-            Add(new OpacityMaskNode(mask, bounds, CompositionDrawingContext.CreateChildScene(mask)));
+            Add(new OpacityMaskNode(mask, bounds, CreateChildScene(mask)));
         }
         else
         {

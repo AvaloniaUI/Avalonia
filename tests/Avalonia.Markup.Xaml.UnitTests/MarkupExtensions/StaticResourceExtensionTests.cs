@@ -380,7 +380,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Converter()
         {
-            using (StaticResourceExtensionTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -406,7 +406,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void StaticResource_Can_Be_Assigned_To_Binding_Converter_In_DataTemplate()
         {
-            using (StaticResourceExtensionTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -441,7 +441,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         {
             // this tests if IAmbientProviders in DataTemplate contexts are in correct order
             // if they wouldn't be, Purple brush would be bound to
-            using (StaticResourceExtensionTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'
@@ -522,7 +522,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         [Fact]
         public void Automatically_Converts_Color_To_SolidColorBrush_From_Setter()
         {
-            using (StaticResourceExtensionTests.StyledWindow())
+            using (StyledWindow())
             {
                 var xaml = @"
 <Window xmlns='https://github.com/avaloniaui'

@@ -109,8 +109,8 @@ namespace ControlCatalog.Pages
         {
             this.InitializeComponent();
 
-            States = AutoCompleteBoxPage.BuildAllStates();
-            Sentences = AutoCompleteBoxPage.BuildAllSentences();
+            States = BuildAllStates();
+            Sentences = BuildAllSentences();
 
             foreach (AutoCompleteBox box in GetAllAutoCompleteBox().Where(x => x.Name != "CustomAutocompleteBox"))
             {

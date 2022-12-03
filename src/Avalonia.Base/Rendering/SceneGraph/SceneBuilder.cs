@@ -18,7 +18,7 @@ namespace Avalonia.Rendering.SceneGraph
             _ = scene ?? throw new ArgumentNullException(nameof(scene));
             Dispatcher.UIThread.VerifyAccess();
 
-            SceneBuilder.UpdateSize(scene);
+            UpdateSize(scene);
             scene.Layers.GetOrAdd(scene.Root.Visual);
 
             using (var impl = new DeferredDrawingContextImpl(this, scene.Layers))
@@ -46,7 +46,7 @@ namespace Avalonia.Rendering.SceneGraph
 
             if (visual == scene.Root.Visual)
             {
-                SceneBuilder.UpdateSize(scene);
+                UpdateSize(scene);
             }
 
             if (visual.VisualRoot == scene.Root.Visual)

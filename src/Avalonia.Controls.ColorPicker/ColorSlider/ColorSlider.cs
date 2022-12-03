@@ -180,7 +180,7 @@ namespace Avalonia.Controls.Primitives
 
                 if (IsRoundingEnabled)
                 {
-                    hsvColor = ColorSlider.RoundComponentValues(hsvColor);
+                    hsvColor = RoundComponentValues(hsvColor);
                 }
 
                 // Note: Components converted into a usable range for the user
@@ -305,7 +305,7 @@ namespace Avalonia.Controls.Primitives
 
             if (IsRoundingEnabled)
             {
-                hsvColor = ColorSlider.RoundComponentValues(hsvColor);
+                hsvColor = RoundComponentValues(hsvColor);
             }
 
             return (rgbColor, hsvColor);
