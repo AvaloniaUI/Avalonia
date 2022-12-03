@@ -137,6 +137,8 @@ space_within_single_line_array_initializer_braces = true
 #Net Analyzer
 dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomment when all violations are fixed.
 
+# CA1304: Specify CultureInfo
+dotnet_diagnostic.CA1304.severity = warning
 # CA1802: Use literals where appropriate
 dotnet_diagnostic.CA1802.severity = warning
 # CA1820: Test for empty strings using string length

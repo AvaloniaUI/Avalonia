@@ -14,7 +14,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// The registered access keys.
         /// </summary>
-        private readonly List<Tuple<string, IInputElement>> _registered = new List<Tuple<string, IInputElement>>();
+        private readonly List<(string AccessKey, IInputElement Element)> _registered = new();
 
         /// <summary>
         /// The window to which the handler belongs.
@@ -59,12 +59,12 @@ namespace Avalonia.Controls
         {
             var existing = _registered.FirstOrDefault(x => x.Item2 == element);
 
-            if (existing != null)
+            if (existing != default)
             {
                 _registered.Remove(existing);
             }
 
-            _registered.Add(Tuple.Create(accessKey.ToString().ToUpper(), element));
+            _registered.Add((accessKey.ToString().ToUpperInvariant(), element));
         }
 
         /// <summary>
@@ -88,9 +88,10 @@ namespace Avalonia.Controls
         {
             if (!string.IsNullOrWhiteSpace(e.Text))
             {
-                var text = e.Text.ToUpper();
+                var text = e.Text;
                 var focus = _registered
-                    .FirstOrDefault(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)?.Item2;
+                    .FirstOrDefault(x => string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)
+                        && x.Element.IsEffectivelyVisible).Element;
 
                 focus?.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
 
