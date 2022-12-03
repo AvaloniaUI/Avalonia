@@ -68,7 +68,6 @@ namespace Avalonia.Controls.Primitives
 
         static ToggleButton()
         {
-            IsCheckedProperty.Changed.AddClassHandler<ToggleButton>((x, e) => x.OnIsCheckedChanged(e));
         }
 
         public ToggleButton()
@@ -176,6 +175,7 @@ namespace Avalonia.Controls.Primitives
         /// Called when <see cref="IsChecked"/> becomes true.
         /// </summary>
         /// <param name="e">Event arguments for the routed event that is raised by the default implementation of this method.</param>
+        [Obsolete("Use OnIsCheckedChanged instead.")]
         protected virtual void OnChecked(RoutedEventArgs e)
         {
             RaiseEvent(e);
@@ -185,6 +185,7 @@ namespace Avalonia.Controls.Primitives
         /// Called when <see cref="IsChecked"/> becomes false.
         /// </summary>
         /// <param name="e">Event arguments for the routed event that is raised by the default implementation of this method.</param>
+        [Obsolete("Use OnIsCheckedChanged instead.")]
         protected virtual void OnUnchecked(RoutedEventArgs e)
         {
             RaiseEvent(e);
@@ -194,7 +195,17 @@ namespace Avalonia.Controls.Primitives
         /// Called when <see cref="IsChecked"/> becomes null.
         /// </summary>
         /// <param name="e">Event arguments for the routed event that is raised by the default implementation of this method.</param>
+        [Obsolete("Use OnIsCheckedChanged instead.")]
         protected virtual void OnIndeterminate(RoutedEventArgs e)
+        {
+            RaiseEvent(e);
+        }
+
+        /// <summary>
+        /// Called when <see cref="IsChecked"/> changes.
+        /// </summary>
+        /// <param name="e">Event arguments for the routed event that is raised by the default implementation of this method.</param>
+        protected virtual void OnIsCheckedChanged(RoutedEventArgs e)
         {
             RaiseEvent(e);
         }
@@ -204,21 +215,31 @@ namespace Avalonia.Controls.Primitives
             return new ToggleButtonAutomationPeer(this);
         }
 
-        private void OnIsCheckedChanged(AvaloniaPropertyChangedEventArgs e)
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            var newValue = (bool?)e.NewValue;
+            base.OnPropertyChanged(change);
 
-            switch (newValue)
+            if (change.Property == IsCheckedProperty)
             {
-                case true:
-                    OnChecked(new RoutedEventArgs(IsCheckedChangedEvent));
-                    break;
-                case false:
-                    OnUnchecked(new RoutedEventArgs(IsCheckedChangedEvent));
-                    break;
-                default:
-                    OnIndeterminate(new RoutedEventArgs(IsCheckedChangedEvent));
-                    break;
+                var newValue = change.GetNewValue<bool?>();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                switch (newValue)
+                {
+                    case true:
+                        OnChecked(new RoutedEventArgs(CheckedEvent));
+                        break;
+                    case false:
+                        OnUnchecked(new RoutedEventArgs(UncheckedEvent));
+                        break;
+                    default:
+                        OnIndeterminate(new RoutedEventArgs(IndeterminateEvent));
+                        break;
+                }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                OnIsCheckedChanged(new RoutedEventArgs(IsCheckedChangedEvent));
             }
         }
 
