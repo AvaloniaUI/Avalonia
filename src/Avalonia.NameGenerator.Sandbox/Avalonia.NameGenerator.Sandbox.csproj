@@ -20,6 +20,6 @@
         <ProjectReference Include="..\Avalonia.NameGenerator\Avalonia.NameGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="ReactiveUI.Validation" Version="3.0.1" />
+      <PackageReference Include="ReactiveUI.Validation" Version="3.0.22" />
     </ItemGroup>
 </Project>
