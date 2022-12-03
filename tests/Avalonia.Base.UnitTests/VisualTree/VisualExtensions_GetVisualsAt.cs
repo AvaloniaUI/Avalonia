@@ -96,7 +96,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
             }
         }
 
-        private IDisposable TestApplication()
+        private static IDisposable TestApplication()
         {
             return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
         }

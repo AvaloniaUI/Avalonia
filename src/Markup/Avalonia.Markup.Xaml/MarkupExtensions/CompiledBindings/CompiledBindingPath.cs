@@ -275,7 +275,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public int Level { get; }
 
         public override string ToString()
-           => $"$parent[{AncestorType?.Name},{Level}]";
+           => FormattableString.Invariant($"$parent[{AncestorType?.Name},{Level}]");
     }
 
     internal class VisualAncestorPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
@@ -316,7 +316,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public int[] Indices { get; }
         public Type ElementType { get; }
         public override string ToString()
-            => $"[{string.Join(",", Indices)}]";
+            => FormattableString.Invariant($"[{string.Join(",", Indices)}]");
     }
 
     internal class TypeCastPathElement<T> : ITypeCastElement

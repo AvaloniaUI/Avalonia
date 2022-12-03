@@ -318,7 +318,7 @@ namespace Avalonia.Rendering.SceneGraph
             }
         }
 
-        private void UpdateSize(Scene scene)
+        private static void UpdateSize(Scene scene)
         {
             var renderRoot = scene.Root.Visual as IRenderRoot;
             var newSize = renderRoot?.ClientSize ?? scene.Root.Visual.Bounds.Size;

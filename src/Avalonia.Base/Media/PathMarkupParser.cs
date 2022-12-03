@@ -527,7 +527,7 @@ namespace Avalonia.Media
             return span.Slice(i);
         }
 
-        private bool ReadBool(ref ReadOnlySpan<char> span)
+        private static bool ReadBool(ref ReadOnlySpan<char> span)
         {
             span = SkipWhitespace(span);
             
@@ -551,7 +551,7 @@ namespace Avalonia.Media
             }
         }
 
-        private double ReadDouble(ref ReadOnlySpan<char> span)
+        private static double ReadDouble(ref ReadOnlySpan<char> span)
         {
             if (!ReadArgument(ref span, out var doubleValue))
             {
@@ -561,7 +561,7 @@ namespace Avalonia.Media
             return double.Parse(doubleValue.ToString(), CultureInfo.InvariantCulture);
         }
 
-        private Size ReadSize(ref ReadOnlySpan<char> span)
+        private static Size ReadSize(ref ReadOnlySpan<char> span)
         {
             var width = ReadDouble(ref span);
             span = ReadSeparator(span);
@@ -569,7 +569,7 @@ namespace Avalonia.Media
             return new Size(width, height);
         }
 
-        private Point ReadPoint(ref ReadOnlySpan<char> span)
+        private static Point ReadPoint(ref ReadOnlySpan<char> span)
         {
             var x = ReadDouble(ref span);
             span = ReadSeparator(span);
@@ -577,7 +577,7 @@ namespace Avalonia.Media
             return new Point(x, y);
         }
 
-        private Point ReadRelativePoint(ref ReadOnlySpan<char> span, Point origin)
+        private static Point ReadRelativePoint(ref ReadOnlySpan<char> span, Point origin)
         {
             var x = ReadDouble(ref span);
             span = ReadSeparator(span);
@@ -585,7 +585,7 @@ namespace Avalonia.Media
             return new Point(origin.X + x, origin.Y + y);
         }
 
-        private bool ReadCommand(ref ReadOnlySpan<char> span, out Command command, out bool relative)
+        private static bool ReadCommand(ref ReadOnlySpan<char> span, out Command command, out bool relative)
         {
             span = SkipWhitespace(span);
             if (span.IsEmpty)

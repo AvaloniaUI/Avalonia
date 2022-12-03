@@ -21,7 +21,7 @@ namespace Avalonia.Input
         private Rect _lastClickRect;
         private ulong _lastClickTime;
 
-        RawInputModifiers GetModifiers(RawInputModifiers modifiers, bool isLeftButtonDown)
+        static RawInputModifiers GetModifiers(RawInputModifiers modifiers, bool isLeftButtonDown)
         {
             var rv = modifiers &= RawInputModifiers.KeyboardMask;
             if (isLeftButtonDown)

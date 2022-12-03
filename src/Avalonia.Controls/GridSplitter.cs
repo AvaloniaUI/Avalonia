@@ -516,7 +516,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Retrieves the ActualWidth or ActualHeight of the definition depending on its type Column or Row.
         /// </summary>
-        private double GetActualLength(DefinitionBase definition)
+        private static double GetActualLength(DefinitionBase definition)
         {
             var column = definition as ColumnDefinition;
 

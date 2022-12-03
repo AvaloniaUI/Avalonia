@@ -276,7 +276,7 @@ namespace Avalonia
         /// <returns>The string representation of the thickness.</returns>
         public override string ToString()
         {
-            return $"{_left},{_top},{_right},{_bottom}";
+            return FormattableString.Invariant($"{_left},{_top},{_right},{_bottom}");
         }
 
         /// <summary>

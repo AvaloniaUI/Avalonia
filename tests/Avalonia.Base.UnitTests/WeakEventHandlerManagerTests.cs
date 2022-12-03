@@ -79,7 +79,7 @@ namespace Avalonia.Base.UnitTests
             Assert.False(handled);
         }
 
-        private void AddCollectableSubscriber(EventSource source, string name, Action func)
+        private static void AddCollectableSubscriber(EventSource source, string name, Action func)
         {
             WeakEventHandlerManager.Subscribe<EventSource, EventArgs, Subscriber>(source, name, new Subscriber(func).OnEvent);
         }

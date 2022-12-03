@@ -137,14 +137,27 @@ space_within_single_line_array_initializer_braces = true
 #Net Analyzer
 dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomment when all violations are fixed.
 
+# CA1304: Specify CultureInfo
+dotnet_diagnostic.CA1304.severity = warning
 # CA1802: Use literals where appropriate
 dotnet_diagnostic.CA1802.severity = warning
 # CA1820: Test for empty strings using string length
 dotnet_diagnostic.CA1820.severity = warning
 # CA1821: Remove empty finalizers
 dotnet_diagnostic.CA1821.severity = warning
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = suggestion
+dotnet_code_quality.CA1822.api_surface = private, internal
 # CA1825: Avoid zero-length array allocations
 dotnet_diagnostic.CA1825.severity = warning
+# CA1826: Use property instead of Linq Enumerable method
+dotnet_diagnostic.CA1826.severity = suggestion
+# CA1827: Do not use Count/LongCount when Any can be used
+dotnet_diagnostic.CA1827.severity = warning
+# CA1828: Do not use CountAsync/LongCountAsync when AnyAsync can be used
+dotnet_diagnostic.CA1828.severity = warning
+# CA1829: Use Length/Count property instead of Enumerable.Count method
+dotnet_diagnostic.CA1829.severity = warning
 #CA1847: Use string.Contains(char) instead of string.Contains(string) with single characters
 dotnet_diagnostic.CA1847.severity = warning
 

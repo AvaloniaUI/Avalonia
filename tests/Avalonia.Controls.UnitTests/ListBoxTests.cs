@@ -590,7 +590,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "Bar" }, target.Selection.SelectedItems);
         }
 
-        private FuncControlTemplate ListBoxTemplate()
+        private static FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>((parent, scope) =>
                 new ScrollViewer
@@ -607,7 +607,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private FuncControlTemplate ListBoxItemTemplate()
+        private static FuncControlTemplate ListBoxItemTemplate()
         {
             return new FuncControlTemplate<ListBoxItem>((parent, scope) =>
                 new ContentPresenter
@@ -618,7 +618,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private FuncControlTemplate ScrollViewerTemplate()
+        private static FuncControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
                 new Panel
@@ -643,7 +643,7 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        private void Prepare(ListBox target)
+        private static void Prepare(ListBox target)
         {
             // The ListBox needs to be part of a rooted visual tree.
             var root = new TestRoot();
@@ -718,7 +718,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
         }
 
-        private void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
+        private static void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
         {
             listBox.RaiseEvent(new KeyEventArgs
             {

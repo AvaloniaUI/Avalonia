@@ -156,7 +156,7 @@ namespace Avalonia.Rendering.Composition.Server
                         (Compositor.BatchObjectPool.CurrentUsage + Compositor.BatchObjectPool.CurrentPool) *
                                                                      Compositor.BatchObjectPool.ArraySize *
                                                                      IntPtr.Size), false);
-                    _fpsCounter.RenderFps(targetContext, $"M:{managedMem} / N:{nativeMem} R:{RenderedVisuals:0000}");
+                    _fpsCounter.RenderFps(targetContext, FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} R:{RenderedVisuals:0000}"));
                 }
                 RenderedVisuals = 0;
 

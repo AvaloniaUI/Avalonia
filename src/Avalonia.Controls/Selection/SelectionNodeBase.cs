@@ -290,12 +290,12 @@ namespace Avalonia.Controls.Selection
             // so bail.
             //
             // See unit test Handles_Selection_Made_In_CollectionChanged for more details.
-            if (ItemsView is object &&
+            if (ItemsView is not null &&
                 RangesEnabled &&
                 Ranges.Count > 0 &&
                 e.Action == NotifyCollectionChangedAction.Add)
             {
-                var lastIndex = Ranges.Last().End;
+                var lastIndex = Ranges[Ranges.Count - 1].End;
 
                 if (e.NewStartingIndex <= lastIndex)
                 {

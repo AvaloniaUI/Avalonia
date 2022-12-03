@@ -187,13 +187,13 @@ namespace Avalonia.Platform
             throw new ArgumentException($"Unsupported url type: " + uri.Scheme, nameof(uri));
         }
 
-        private (IAssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
+        private static (IAssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
         {
             var asm = s_assemblyDescriptorResolver.GetAssembly(uri.Authority);
             return (asm, uri.GetUnescapeAbsolutePath());
         }
         
-        private IAssemblyDescriptor? GetAssembly(Uri? uri)
+        private static IAssemblyDescriptor? GetAssembly(Uri? uri)
         {
             if (uri != null)
             {
