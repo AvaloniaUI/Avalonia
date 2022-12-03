@@ -3,7 +3,7 @@
 namespace Avalonia.Media.Immutable
 {
     /// <summary>
-    /// Represents a transform on an <see cref="IVisual"/>.
+    /// Represents a transform on an <see cref="Visual"/>.
     /// </summary>
     public class ImmutableTransform : ITransform
     {

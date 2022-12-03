@@ -259,7 +259,7 @@ namespace Avalonia.Controls.Primitives
                 SelectedValue = (int)newSel * Increment + MinimumValue;
                 _suppressUpdateOffset = false;
 
-                System.Diagnostics.Debug.WriteLine($"Offset: {_offset} ItemHeight: {ItemHeight}");
+                System.Diagnostics.Debug.WriteLine(FormattableString.Invariant($"Offset: {_offset} ItemHeight: {ItemHeight}"));
             }
         }
 
