@@ -437,14 +437,14 @@ namespace Avalonia.Rendering.SceneGraph
                 null;
         }
 
-        private static void PropagateLayer(VisualNode node, SceneLayer layer, SceneLayer oldLayer)
+        private static void PropagateLayer(IVisualNode node, SceneLayer layer, SceneLayer oldLayer)
         {
             node.LayerRoot = layer.LayerRoot;
 
             layer.Dirty.Add(node.Bounds);
             oldLayer.Dirty.Add(node.Bounds);
 
-            foreach (VisualNode child in node.Children)
+            foreach (var child in node.Children)
             {
                 // If the child is not the start of a new layer, recurse.
                 if (child.LayerRoot != child.Visual)

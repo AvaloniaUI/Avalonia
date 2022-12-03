@@ -101,5 +101,10 @@ namespace Avalonia.Rendering.SceneGraph
         bool HitTest(Point p);
 
         bool Disposed { get; }
+
+        /// <summary>
+        /// Get Root Layer
+        /// </summary>
+        Visual? LayerRoot { get; set; }
     }
 }
