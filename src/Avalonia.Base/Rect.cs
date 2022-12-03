@@ -16,9 +16,13 @@ namespace Avalonia
         }
 
         /// <summary>
-        /// An empty rectangle.
+        /// A shared default instance representing an empty rectangle.
         /// </summary>
-        public static readonly Rect Empty = default(Rect);
+        public static readonly Rect Default = default;
+
+        /// <inheritdoc cref="Default"/>
+        [Obsolete("Use Default instead.")]
+        public static readonly Rect Empty = Default;
 
         /// <summary>
         /// The X position.
@@ -394,7 +398,7 @@ namespace Avalonia
             }
             else
             {
-                return Empty;
+                return Default;
             }
         }
 
@@ -467,7 +471,7 @@ namespace Avalonia
                 double.IsNaN(rect.X) || double.IsNaN(rect.Y) || 
                 double.IsNaN(Height) || double.IsNaN(Width))
             {
-                return Rect.Empty;
+                return Rect.Default;
             }
 
             if (rect.Width < 0)

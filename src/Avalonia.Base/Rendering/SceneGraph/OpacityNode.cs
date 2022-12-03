@@ -26,7 +26,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public Rect Bounds => Rect.Empty;
+        public Rect Bounds => Rect.Default;
 
         /// <summary>
         /// Gets the opacity to be pushed or null if the operation represents a pop.

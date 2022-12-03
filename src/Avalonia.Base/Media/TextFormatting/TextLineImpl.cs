@@ -528,7 +528,7 @@ namespace Avalonia.Media.TextFormatting
 
             var startX = Start;
             double currentWidth = 0;
-            var currentRect = Rect.Empty;
+            var currentRect = Rect.Default;
 
             TextRunBounds lastRunBounds = default;
 
@@ -762,7 +762,7 @@ namespace Avalonia.Media.TextFormatting
 
             var startX = WidthIncludingTrailingWhitespace;
             double currentWidth = 0;
-            var currentRect = Rect.Empty;
+            var currentRect = Rect.Default;
 
             for (var index = TextRuns.Count - 1; index >= 0; index--)
             {

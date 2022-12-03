@@ -570,7 +570,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var items = (IList<string>)target.Items;
                 target.ApplyTemplate();
                 target.Measure(Size.Empty);
-                target.Arrange(Rect.Empty);
+                target.Arrange(Rect.Default);
 
                 // Check for issue #591: this should not throw.
                 target.ScrollIntoView(0);

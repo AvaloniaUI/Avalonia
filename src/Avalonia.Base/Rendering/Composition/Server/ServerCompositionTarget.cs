@@ -160,7 +160,7 @@ namespace Avalonia.Rendering.Composition.Server
                 }
                 RenderedVisuals = 0;
 
-                _dirtyRect = Rect.Empty;
+                _dirtyRect = Rect.Default;
             }
         }
 

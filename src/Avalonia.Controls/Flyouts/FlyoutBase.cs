@@ -457,7 +457,7 @@ namespace Avalonia.Controls.Primitives
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
             }
 
-            var trgtBnds = Target?.Bounds ?? Rect.Empty;
+            var trgtBnds = Target?.Bounds ?? Rect.Default;
 
             switch (Placement)
             {
