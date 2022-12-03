@@ -18,7 +18,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the <see cref="IsChecked"/> property value changes.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> IsCheckedChanged
+        public event EventHandler<RoutedEventArgs>? IsCheckedChanged
         {
             add => AddHandler(IsCheckedChangedEvent, value);
             remove => RemoveHandler(IsCheckedChangedEvent, value);
