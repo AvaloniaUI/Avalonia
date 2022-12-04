@@ -69,7 +69,7 @@ namespace Avalonia.Platform
             return effect;
         }
 
-        private DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
+        private static DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
         {
             if (effect == DragDropEffects.Copy || effect == DragDropEffects.Move || effect == DragDropEffects.Link || effect == DragDropEffects.None)
                 return effect; // No need to check for the modifiers.
@@ -80,7 +80,7 @@ namespace Avalonia.Platform
             return DragDropEffects.Move;
         }
 
-        private StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
+        private static StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
         {
             if (effects.HasAllFlags(DragDropEffects.Copy))
                 return StandardCursorType.DragCopy;

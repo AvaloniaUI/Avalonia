@@ -306,7 +306,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             return button;
         }
 
-        private FuncControlTemplate CreateWindowTemplate()
+        private static FuncControlTemplate CreateWindowTemplate()
         {
             return new FuncControlTemplate<Window>((parent, scope) =>
             {

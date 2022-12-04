@@ -87,7 +87,7 @@ namespace Avalonia.Controls
 
         protected virtual string OnSelectTemplateKeyCore(object? dataContext, Control? owner)
         {
-            if (SelectTemplateKey is object)
+            if (SelectTemplateKey is not null)
             {
                 _args ??= new SelectTemplateEventArgs();
                 _args.TemplateKey = null;

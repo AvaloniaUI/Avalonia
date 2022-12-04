@@ -1,0 +1,139 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Avalonia.Win32.DxgiSwapchain
+{
+    internal enum D3D_FEATURE_LEVEL
+    {
+        D3D_FEATURE_LEVEL_1_0_CORE = 0x1000,
+
+        D3D_FEATURE_LEVEL_9_1 = 0x9100,
+
+        D3D_FEATURE_LEVEL_9_2 = 0x9200,
+
+        D3D_FEATURE_LEVEL_9_3 = 0x9300,
+
+        D3D_FEATURE_LEVEL_10_0 = 0xa000,
+
+        D3D_FEATURE_LEVEL_10_1 = 0xa100,
+
+        D3D_FEATURE_LEVEL_11_0 = 0xb000,
+
+        D3D_FEATURE_LEVEL_11_1 = 0xb100,
+
+        D3D_FEATURE_LEVEL_12_0 = 0xc000,
+
+        D3D_FEATURE_LEVEL_12_1 = 0xc100,
+
+        D3D_FEATURE_LEVEL_12_2 = 0xc200,
+    }
+
+    internal enum D3D11_RESOURCE_DIMENSION
+    {
+        D3D11_USAGE_DEFAULT = 0,
+
+        D3D11_USAGE_IMMUTABLE = 1,
+
+        D3D11_USAGE_DYNAMIC = 2,
+
+        D3D11_USAGE_STAGING = 3,
+    }
+
+    internal enum D3D11_USAGE
+    {
+        D3D11_USAGE_DEFAULT = 0,
+
+        D3D11_USAGE_IMMUTABLE = 1,
+
+        D3D11_USAGE_DYNAMIC = 2,
+
+        D3D11_USAGE_STAGING = 3,
+    }
+    internal enum DXGI_SWAP_EFFECT
+    {
+        DXGI_SWAP_EFFECT_DISCARD = 0,
+
+        DXGI_SWAP_EFFECT_SEQUENTIAL = 1,
+
+        DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL = 3,
+
+        DXGI_SWAP_EFFECT_FLIP_DISCARD = 4,
+    }
+    
+    [Flags]
+    internal enum DXGI_SWAP_CHAIN_FLAG
+    {
+        DXGI_SWAP_CHAIN_FLAG_NONPREROTATED = 1,
+
+        DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH = 2,
+
+        DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE = 4,
+
+        DXGI_SWAP_CHAIN_FLAG_RESTRICTED_CONTENT = 8,
+
+        DXGI_SWAP_CHAIN_FLAG_RESTRICT_SHARED_RESOURCE_DRIVER = 16,
+
+        DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY = 32,
+
+        DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT = 64,
+
+        DXGI_SWAP_CHAIN_FLAG_FOREGROUND_LAYER = 128,
+
+        DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO = 256,
+
+        DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO = 512,
+
+        DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED = 1024,
+
+        DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING = 2048,
+
+        DXGI_SWAP_CHAIN_FLAG_RESTRICTED_TO_ALL_HOLOGRAPHIC_DISPLAYS = 4096,
+    }
+    
+    internal enum DXGI_SCALING
+    {
+        DXGI_SCALING_STRETCH = 0,
+
+        DXGI_SCALING_NONE = 1,
+
+        DXGI_SCALING_ASPECT_RATIO_STRETCH = 2,
+    }
+
+    internal enum DXGI_RESIDENCY
+    {
+        DXGI_RESIDENCY_FULLY_RESIDENT = 1,
+
+        DXGI_RESIDENCY_RESIDENT_IN_SHARED_MEMORY = 2,
+
+        DXGI_RESIDENCY_EVICTED_TO_DISK = 3,
+    }
+
+    internal enum DXGI_MODE_ROTATION
+    {
+        DXGI_MODE_ROTATION_UNSPECIFIED = 0,
+
+        DXGI_MODE_ROTATION_IDENTITY = 1,
+
+        DXGI_MODE_ROTATION_ROTATE90 = 2,
+
+        DXGI_MODE_ROTATION_ROTATE180 = 3,
+
+        DXGI_MODE_ROTATION_ROTATE270 = 4,
+    }
+
+    internal enum DXGI_ALPHA_MODE
+    {
+        DXGI_ALPHA_MODE_UNSPECIFIED = 0,
+
+        DXGI_ALPHA_MODE_PREMULTIPLIED = 1,
+
+        DXGI_ALPHA_MODE_STRAIGHT = 2,
+
+        DXGI_ALPHA_MODE_IGNORE = 3,
+
+        DXGI_ALPHA_MODE_FORCE_DWORD = (unchecked((int)0xffffffff)),
+    }
+}

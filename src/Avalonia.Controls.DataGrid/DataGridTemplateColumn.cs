@@ -56,7 +56,7 @@ namespace Avalonia.Controls
             set => SetAndRaise(CellEditingTemplateProperty, ref _cellEditingCellTemplate, value);
         }
         
-        private void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+        private static void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var oldValue = (IDataTemplate)e.OldValue;
             var value = (IDataTemplate)e.NewValue;

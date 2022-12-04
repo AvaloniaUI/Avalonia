@@ -272,7 +272,7 @@ namespace Avalonia.Rendering
             }
         }
 
-        Scene? TryGetChildScene(IRef<IDrawOperation>? op) => (op?.Item as BrushDrawOperation)?.Aux as Scene;
+        static Scene? TryGetChildScene(IRef<IDrawOperation>? op) => (op?.Item as BrushDrawOperation)?.Aux as Scene;
         
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
@@ -725,7 +725,7 @@ namespace Avalonia.Rendering
 
             foreach (var layer in Layers)
             {
-                var fileName = Path.Combine(DebugFramesPath ?? string.Empty, $"frame-{id}-layer-{index++}.png");
+                var fileName = Path.Combine(DebugFramesPath ?? string.Empty, FormattableString.Invariant($"frame-{id}-layer-{index++}.png"));
                 layer.Bitmap.Item.Save(fileName);
             }
         }

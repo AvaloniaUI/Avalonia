@@ -154,7 +154,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="hsvColor">The <see cref="HsvColor"/> to round component values for.</param>
         /// <returns>A new <see cref="HsvColor"/> with rounded component values.</returns>
-        private HsvColor RoundComponentValues(HsvColor hsvColor)
+        private static HsvColor RoundComponentValues(HsvColor hsvColor)
         {
             return new HsvColor(
                 Math.Round(hsvColor.A, 2, MidpointRounding.AwayFromZero),

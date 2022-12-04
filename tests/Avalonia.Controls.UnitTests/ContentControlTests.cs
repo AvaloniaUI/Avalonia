@@ -371,7 +371,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(target, target.Presenter.Child.GetLogicalParent());
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ContentControl>((parent, scope) =>
             {

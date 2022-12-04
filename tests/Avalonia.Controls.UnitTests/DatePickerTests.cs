@@ -207,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new MockTextShaperImpl());
 
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate((control, scope) =>
             {

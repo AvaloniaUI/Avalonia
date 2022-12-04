@@ -181,7 +181,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(((ILogical)rectangle).IsAttachedToLogicalTree);
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ComboBox>((parent, scope) =>
             {

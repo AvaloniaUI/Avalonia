@@ -11,7 +11,7 @@ namespace Avalonia.Input
         
         private Interactive? _lastTarget = null;
         
-        private Interactive? GetTarget(IInputRoot root, Point local)
+        private static Interactive? GetTarget(IInputRoot root, Point local)
         {
             var hit = root.InputHitTest(local) as Visual;
             var target = hit?.GetSelfAndVisualAncestors()?.OfType<Interactive>()?.FirstOrDefault();
@@ -20,7 +20,7 @@ namespace Avalonia.Input
             return null;
         }
         
-        private DragDropEffects RaiseDragEvent(Interactive? target, IInputRoot inputRoot, Point point, RoutedEvent<DragEventArgs> routedEvent, DragDropEffects operation, IDataObject data, KeyModifiers modifiers)
+        private static DragDropEffects RaiseDragEvent(Interactive? target, IInputRoot inputRoot, Point point, RoutedEvent<DragEventArgs> routedEvent, DragDropEffects operation, IDataObject data, KeyModifiers modifiers)
         {
             if (target == null)
                 return DragDropEffects.None;

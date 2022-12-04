@@ -32,14 +32,14 @@
                      Opacity="0.5" />
 
           <!--  Focusable="False"  -->
-          <ContentControl Name="Content"
-                          Margin="1,0,1,1"
-                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                          Content="{TemplateBinding Content}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          FontSize="{TemplateBinding FontSize}"
-                          Foreground="{TemplateBinding Foreground}" />
+          <ContentPresenter Name="Content"
+                            Margin="1,0,1,1"
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            FontSize="{TemplateBinding FontSize}"
+                            Foreground="{TemplateBinding Foreground}" />
 
           <Rectangle Name="FocusVisual"
                      IsHitTestVisible="False"
@@ -62,7 +62,7 @@
       <Setter Property="IsVisible" Value="True" />
     </Style>
 
-    <Style Selector="^:inactive /template/ ContentControl#Content">
+    <Style Selector="^:inactive /template/ ContentPresenter#Content">
       <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
     </Style>
 
