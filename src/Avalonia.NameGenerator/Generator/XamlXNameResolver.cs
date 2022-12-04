@@ -31,12 +31,8 @@ internal class XamlXNameResolver : INameResolver, IXamlAstVisitor
             return node;
 
         var clrType = objectNode.Type.GetClrType();
-        var isAvaloniaControl = clrType
-            .Interfaces
-            .Any(abstraction => abstraction.IsInterface &&
-                                abstraction.FullName == "Avalonia.Controls.IControl");
 
-        if (!isAvaloniaControl)
+        if (!clrType.IsAvaloniaControl())
             return node;
 
         foreach (var child in objectNode.Children)

@@ -6,6 +6,7 @@ using Avalonia.NameGenerator.Domain;
 using XamlX;
 using XamlX.Ast;
 using XamlX.Parsers;
+using XamlX.TypeSystem;
 
 namespace Avalonia.NameGenerator.Generator;
 
@@ -55,19 +56,15 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
             return null;
         }
     }
-
+    
     IXamlAstNode IXamlAstVisitor.Visit(IXamlAstNode node)
     {
         if (node is not XamlAstObjectNode objectNode)
             return node;
 
         var clrType = objectNode.Type.GetClrType();
-        var isAvaloniaControl = clrType
-            .Interfaces
-            .Any(abstraction => abstraction.IsInterface &&
-                                abstraction.FullName == "Avalonia.Controls.IControl");
 
-        if (!isAvaloniaControl)
+        if (!clrType.IsAvaloniaControl())
             return node;
 
         foreach (var child in objectNode.Children)
