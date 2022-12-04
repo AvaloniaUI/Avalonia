@@ -6,7 +6,6 @@
 using Avalonia.Threading;
 using System;
 using System.Collections.ObjectModel;
-using System.Threading;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -353,7 +352,7 @@ namespace Avalonia.Controls.Primitives
             return true;
         }
         
-        private void EnsureValidThread()
+        private static void EnsureValidThread()
         {
             Dispatcher.UIThread.VerifyAccess();
         }

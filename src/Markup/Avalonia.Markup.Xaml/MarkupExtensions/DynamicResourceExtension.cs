@@ -68,7 +68,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return null;
         }
 
-        private Func<object?, object?>? GetConverter(AvaloniaProperty? targetProperty)
+        private static Func<object?, object?>? GetConverter(AvaloniaProperty? targetProperty)
         {
             if (targetProperty?.PropertyType == typeof(IBrush))
             {

@@ -113,7 +113,7 @@ namespace Avalonia.Markup.Parsers.Nodes
         }
 
 
-        private bool SetValueInArray(Array array, int[] indices, object? value)
+        private static bool SetValueInArray(Array array, int[] indices, object? value)
         {
             if (ValidBounds(indices, array))
             {
@@ -223,7 +223,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return GetValueFromArray(array, intArgs);
         }
 
-        private object? GetValueFromArray(Array array, int[] indices)
+        private static object? GetValueFromArray(Array array, int[] indices)
         {
             if (ValidBounds(indices, array))
             {
@@ -275,7 +275,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return null;
         }
 
-        private bool ValidBounds(int[] indices, Array array)
+        private static bool ValidBounds(int[] indices, Array array)
         {
             if (indices.Length == array.Rank)
             {

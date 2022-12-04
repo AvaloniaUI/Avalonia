@@ -291,7 +291,7 @@ namespace Avalonia.Win32
             return WriteBytesToHGlobal(ref hGlobal, SerializeObject(data));
         }
 
-        private byte[] SerializeObject(object data)
+        private static byte[] SerializeObject(object data)
         {
             using (var ms = new MemoryStream())
             {
@@ -302,7 +302,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private unsafe uint WriteBytesToHGlobal(ref IntPtr hGlobal, ReadOnlySpan<byte> data)
+        private static unsafe uint WriteBytesToHGlobal(ref IntPtr hGlobal, ReadOnlySpan<byte> data)
         {
             int required = data.Length;
             if (hGlobal == IntPtr.Zero)
@@ -326,7 +326,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private uint WriteFileListToHGlobal(ref IntPtr hGlobal, IEnumerable<string> files)
+        private static uint WriteFileListToHGlobal(ref IntPtr hGlobal, IEnumerable<string> files)
         {
             if (!files?.Any() ?? false)
                 return unchecked((int)UnmanagedMethods.HRESULT.S_OK);
@@ -358,7 +358,7 @@ namespace Avalonia.Win32
             }
         }
 
-        private uint WriteStringToHGlobal(ref IntPtr hGlobal, string data)
+        private static uint WriteStringToHGlobal(ref IntPtr hGlobal, string data)
         {
             int required = (data.Length + 1) * sizeof(char);
             if (hGlobal == IntPtr.Zero)

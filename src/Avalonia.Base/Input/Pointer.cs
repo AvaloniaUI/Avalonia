@@ -19,7 +19,7 @@ namespace Avalonia.Input
 
         public int Id { get; }
 
-        IInputElement? FindCommonParent(IInputElement? control1, IInputElement? control2)
+        static IInputElement? FindCommonParent(IInputElement? control1, IInputElement? control2)
         {
             if (control1 is not Visual c1 || control2 is not Visual c2)
                 return null;
@@ -54,7 +54,7 @@ namespace Avalonia.Input
                 v3.DetachedFromVisualTree += OnCaptureDetached;
         }
 
-        IInputElement? GetNextCapture(Visual parent)
+        static IInputElement? GetNextCapture(Visual parent)
         {
             return parent as IInputElement ?? parent.FindAncestorOfType<IInputElement>();
         }
