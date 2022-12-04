@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Input.Raw;
-using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
@@ -34,7 +30,7 @@ namespace Avalonia.Input
                 ProcessRawEvent(margs);
         }
 
-        int ButtonCount(PointerPointProperties props)
+        static int ButtonCount(PointerPointProperties props)
         {
             var rv = 0;
             if (props.IsLeftButtonPressed)
@@ -106,9 +102,10 @@ namespace Avalonia.Input
 
         private void LeaveWindow()
         {
+
         }
 
-        PointerPointProperties CreateProperties(RawPointerEventArgs args)
+        static PointerPointProperties CreateProperties(RawPointerEventArgs args)
         {
             return new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind());
         }

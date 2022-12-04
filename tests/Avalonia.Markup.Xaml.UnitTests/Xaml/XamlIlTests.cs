@@ -163,7 +163,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             
         }
 
-        void AssertThrows(Action callback, Func<Exception, bool> check)
+        static void AssertThrows(Action callback, Func<Exception, bool> check)
         {
             try
             {

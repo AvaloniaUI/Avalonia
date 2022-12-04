@@ -63,7 +63,7 @@ namespace Avalonia.Data.Core.Plugins
                 }
             }
 
-            private Exception CreateException(IList<ValidationResult> errors)
+            private static Exception CreateException(IList<ValidationResult> errors)
             {
                 if (errors.Count == 1)
                 {

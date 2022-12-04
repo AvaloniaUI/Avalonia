@@ -32,7 +32,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.NotNull(target.Template);
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<UserControl>((parent, scope) =>
             {

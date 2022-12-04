@@ -37,7 +37,7 @@ namespace Avalonia.Controls
         /// <param name="items">The initial items.</param>
         public Classes(params string[] items)
             : base(items)
-        {            
+        {
         }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace Avalonia.Controls
                 listener.Changed();
         }
 
-        private void ThrowIfPseudoclass(string name, string operation)
+        private static void ThrowIfPseudoclass(string name, string operation)
         {
             if (name.StartsWith(":"))
             {

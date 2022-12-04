@@ -104,7 +104,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
             GC.KeepAlive(data);
         }
 
-        private Recorded<Notification<T>> OnNext<T>(long time, T value)
+        private static Recorded<Notification<T>> OnNext<T>(long time, T value)
         {
             return new Recorded<Notification<T>>(time, Notification.CreateOnNext<T>(value));
         }
