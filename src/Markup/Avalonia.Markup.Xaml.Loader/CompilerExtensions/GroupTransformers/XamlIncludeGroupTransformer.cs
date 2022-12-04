@@ -192,8 +192,9 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         public bool NeedsParentStack => true;
         public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
+            codeGen.Ldloc(context.ContextLocal);
             var method = context.GetAvaloniaTypes().RuntimeHelpers
-                .FindMethod(m => m.Name == "CreateRootServiceProviderV2");
+                .FindMethod(m => m.Name == "CreateRootServiceProviderV3");
             codeGen.EmitCall(method);
 
             return XamlILNodeEmitResult.Type(0, Type.GetClrType());

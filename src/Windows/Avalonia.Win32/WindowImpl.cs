@@ -26,6 +26,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Collections.Pooled;
 using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
+using Avalonia.Win32.DxgiSwapchain;
 
 namespace Avalonia.Win32
 {
@@ -63,6 +64,7 @@ namespace Avalonia.Win32
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
         private bool _isUsingComposition;
+        private bool _isUsingDxgiSwapchain;
         private IBlurHost _blurHost;
         private PlatformResizeReason _resizeReason;
         private MOUSEMOVEPOINT _lastWmMousePoint;
@@ -143,6 +145,16 @@ namespace Avalonia.Win32
                     egl.Display is AngleWin32EglDisplay angleDisplay &&
                     angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
 
+            DxgiConnection dxgiConnection = null;
+            if (!_isUsingComposition)
+            {
+                dxgiConnection = AvaloniaLocator.Current.GetService<DxgiConnection>();
+                _isUsingDxgiSwapchain = dxgiConnection is { } &&
+                    glPlatform is EglPlatformOpenGlInterface eglDxgi &&
+                        eglDxgi.Display is AngleWin32EglDisplay angleDisplayDxgi &&
+                        angleDisplayDxgi.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+            }
+
             _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
             CreateWindow();
@@ -158,6 +170,11 @@ namespace Avalonia.Win32
                     _gl = cgl;
 
                     _isUsingComposition = true;
+                }
+                else if (_isUsingDxgiSwapchain)
+                {
+                    var dxgigl = new DxgiSwapchainWindow(dxgiConnection, this);
+                    _gl = dxgigl;
                 }
                 else
                 {
@@ -649,7 +666,7 @@ namespace Avalonia.Win32
         public Point PointToClient(PixelPoint point)
         {
             var p = new POINT { X = point.X, Y = point.Y };
-            UnmanagedMethods.ScreenToClient(_hwnd, ref p);
+            ScreenToClient(_hwnd, ref p);
             return new Point(p.X, p.Y) / RenderScaling;
         }
 
@@ -1330,12 +1347,13 @@ namespace Avalonia.Win32
         private const int MF_DISABLED = 0x2;
         private const int SC_CLOSE = 0xF060;
 
-        void DisableCloseButton(IntPtr hwnd)
+        static void DisableCloseButton(IntPtr hwnd)
         {
             EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
                            MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
         }
-        void EnableCloseButton(IntPtr hwnd)
+
+        static void EnableCloseButton(IntPtr hwnd)
         {
             EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
                            MF_BYCOMMAND | MF_ENABLED);

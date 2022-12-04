@@ -184,7 +184,7 @@ namespace Avalonia.Layout
         /// </summary>
         protected void InvalidateArrange() => ArrangeInvalidated?.Invoke(this, EventArgs.Empty);
 
-        private VirtualizingLayoutContext GetVirtualizingLayoutContext(LayoutContext context)
+        private static VirtualizingLayoutContext GetVirtualizingLayoutContext(LayoutContext context)
         {
             if (context is VirtualizingLayoutContext virtualizingContext)
             {

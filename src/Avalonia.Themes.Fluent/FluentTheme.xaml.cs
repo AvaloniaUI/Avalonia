@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
@@ -31,9 +32,10 @@ namespace Avalonia.Themes.Fluent
         /// <summary>
         /// Initializes a new instance of the <see cref="FluentTheme"/> class.
         /// </summary>
-        public FluentTheme()
+        /// <param name="sp">The parent's service provider.</param>
+        public FluentTheme(IServiceProvider? sp = null)
         {
-            AvaloniaXamlLoader.Load(this);
+            AvaloniaXamlLoader.Load(sp, this);
             
             _baseDark = (IResourceDictionary)GetAndRemove("BaseDark");
             _fluentDark = (IResourceDictionary)GetAndRemove("FluentDark");

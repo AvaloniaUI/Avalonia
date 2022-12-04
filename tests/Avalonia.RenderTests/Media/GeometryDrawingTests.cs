@@ -17,7 +17,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
         }
 
-        private GeometryDrawing CreateGeometryDrawing()
+        private static GeometryDrawing CreateGeometryDrawing()
         {
             GeometryDrawing geometryDrawing = new GeometryDrawing();
             EllipseGeometry ellipse = new EllipseGeometry();

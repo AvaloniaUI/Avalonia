@@ -58,7 +58,7 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private PixelRect GetCropRect(int index)
+        private static PixelRect GetCropRect(int index)
         {
             var bitmapWidth = 640;
             var bitmapHeight = 426;

@@ -1146,7 +1146,7 @@ namespace Avalonia.Controls.Primitives
             });
         }
 
-        private void FillPixelForBox(
+        private static void FillPixelForBox(
             double x,
             double y,
             Hsv baseHsv,
