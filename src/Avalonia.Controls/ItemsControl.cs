@@ -92,7 +92,6 @@ namespace Avalonia.Controls
         static ItemsControl()
         {
             ItemsProperty.Changed.AddClassHandler<ItemsControl>((x, e) => x.ItemsChanged(e));
-            ItemTemplateProperty.Changed.AddClassHandler<ItemsControl>((x, e) => x.ItemTemplateChanged(e));
         }
 
         /// <summary>
@@ -645,19 +644,6 @@ namespace Avalonia.Controls
             }
 
             return _displayMemberItemTemplate;
-        }
-
-        /// <summary>
-        /// Called when the <see cref="ItemTemplate"/> changes.
-        /// </summary>
-        /// <param name="e">The event args.</param>
-        private void ItemTemplateChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (_itemContainerGenerator != null)
-            {
-                ////_itemContainerGenerator.ItemTemplate = (IDataTemplate?)e.NewValue;
-                // TODO: Rebuild the item containers.
-            }
         }
 
         private void UpdateItemCount()
