@@ -69,12 +69,15 @@ namespace Avalonia.Controls
 
             // Determine the largest available size after the transformation
             Size finalSizeTransformed = ComputeLargestTransformedSize(finalSize);
-            if (IsSizeSmaller(finalSizeTransformed, TransformRoot.DesiredSize))
-            {
-                // Some elements do not like being given less space than they asked for (ex: TextBlock)
-                // Bump the working size up to do the right thing by them
-                finalSizeTransformed = TransformRoot.DesiredSize;
-            }
+            
+            //This is commented because it did cause layout issues if content is not a filled scrollviewer...
+            //I think this is because logic of control is broken by a comments on line ~100
+            //if (IsSizeSmaller(finalSizeTransformed, TransformRoot.DesiredSize))
+            //{
+            //    // Some elements do not like being given less space than they asked for (ex: TextBlock)
+            //    // Bump the working size up to do the right thing by them
+            //    finalSizeTransformed = TransformRoot.DesiredSize;
+            //}
 
             // Transform the working size to find its width/height
             Rect transformedRect = new Rect(0, 0, finalSizeTransformed.Width, finalSizeTransformed.Height).TransformToAABB(_transformation);
