@@ -70,7 +70,7 @@ namespace ControlCatalog.Pages
                 3 => new PixelRect(new PixelPoint(bitmapWidth - cropSize.Width, 0), cropSize),
                 4 => new PixelRect(new PixelPoint(0, bitmapHeight - cropSize.Height), cropSize),
                 5 => new PixelRect(new PixelPoint(bitmapWidth - cropSize.Width, bitmapHeight - cropSize.Height), cropSize),
-                _ => PixelRect.Default
+                _ => default
             };
             
         }

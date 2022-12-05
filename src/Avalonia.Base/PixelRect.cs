@@ -10,13 +10,10 @@ namespace Avalonia
     public readonly struct PixelRect : IEquatable<PixelRect>
     {
         /// <summary>
-        /// A shared default instance representing an empty rectangle.
+        /// An empty rectangle.
         /// </summary>
-        public static readonly PixelRect Default = default;
-
-        /// <inheritdoc cref="Default"/>
-        [Obsolete("Use Default instead.")]
-        public static readonly PixelRect Empty = Default;
+        [Obsolete("Use the default keyword instead.")]
+        public static readonly PixelRect Empty = default;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PixelRect"/> structure.
@@ -265,7 +262,7 @@ namespace Avalonia
             }
             else
             {
-                return Default;
+                return default;
             }
         }
 
