@@ -19,7 +19,6 @@ namespace Avalonia.Win32
     public class TrayIconImpl : ITrayIconImpl
     {
         private static readonly IntPtr s_emptyIcon = new System.Drawing.Bitmap(32, 32).GetHicon();
-
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private bool _iconAdded;
