@@ -1588,7 +1588,7 @@ namespace Avalonia.Controls
 
         private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text);
 
-        private int CoerceCaretIndex(int value, string? text)
+        private static int CoerceCaretIndex(int value, string? text)
         {
             if (text == null)
             {

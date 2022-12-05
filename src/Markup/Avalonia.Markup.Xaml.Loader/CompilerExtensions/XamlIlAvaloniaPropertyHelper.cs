@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using Avalonia.Markup.Xaml.Parsers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using Avalonia.Utilities;
-using XamlX;
 using XamlX.Ast;
 using XamlX.Transform;
 using XamlX.Transform.Transformers;
@@ -67,10 +65,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             string propertyName, IXamlAstTypeReference selectorTypeReference, IXamlLineInfo lineInfo)
         {
             XamlAstNamePropertyReference forgedReference;
-            
-            var parser = new PropertyParser();
-            
-            var parsedPropertyName = parser.Parse(new CharacterReader(propertyName.AsSpan()));
+
+            var parsedPropertyName = PropertyParser.Parse(new CharacterReader(propertyName.AsSpan()));
             if(parsedPropertyName.owner == null)
                 forgedReference = new XamlAstNamePropertyReference(lineInfo, selectorTypeReference,
                     propertyName, selectorTypeReference);

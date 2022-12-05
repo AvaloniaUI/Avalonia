@@ -23,7 +23,7 @@ namespace Avalonia.Controls.UnitTests.Generators
             Assert.Equal(items, result);
         }
 
-        private IList<ItemContainerInfo> Materialize(
+        private static IList<ItemContainerInfo> Materialize(
             IItemContainerGenerator generator,
             int index,
             string[] items)
