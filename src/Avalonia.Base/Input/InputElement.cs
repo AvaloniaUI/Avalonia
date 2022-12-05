@@ -199,6 +199,7 @@ namespace Avalonia.Input
         private bool _isFocusVisible;
         private bool _isPointerOver;
         private GestureRecognizerCollection? _gestureRecognizers;
+        private bool _restoreFocus;
 
         /// <summary>
         /// Initializes static members of the <see cref="InputElement"/> class.
@@ -442,6 +443,23 @@ namespace Avalonia.Input
             {
                 SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
                 PseudoClasses.Set(":disabled", !value);
+
+                if (!IsEffectivelyEnabled)
+                {
+                    if (FocusManager.Instance?.Current == this)
+                    {
+                        _restoreFocus = true;
+                        FocusManager.Instance?.Focus(null);
+                    }
+                    else
+                    {
+                        _restoreFocus = false;
+                    }
+                }
+                else if (IsEffectivelyEnabled && _restoreFocus)
+                {
+                    FocusManager.Instance?.Focus(this);
+                }
             }
         }
 
