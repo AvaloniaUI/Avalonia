@@ -1379,7 +1379,7 @@ namespace Metsys.Bson
             if (optionsString.Contains('w')) options = options | RegexOptions.IgnorePatternWhitespace;
             if (optionsString.Contains('x')) options = options | RegexOptions.ExplicitCapture;
 
-            return new Regex(pattern, options);
+            return new Regex(pattern, options | RegexOptions.Compiled);
         }
 
         private Types ReadType()
