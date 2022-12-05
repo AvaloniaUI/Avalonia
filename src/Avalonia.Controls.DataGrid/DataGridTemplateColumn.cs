@@ -67,7 +67,7 @@ namespace Avalonia.Controls
             if (CellTemplate != null)
             {
                 return (CellTemplate is IRecyclingDataTemplate recyclingDataTemplate)
-                    ? recyclingDataTemplate.Build(dataItem, cell.Content as IControl)
+                    ? recyclingDataTemplate.Build(dataItem, cell.Content as Control)
                     : CellTemplate.Build(dataItem);
             }
             if (Design.IsDesignMode)
