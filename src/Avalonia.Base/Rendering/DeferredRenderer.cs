@@ -277,7 +277,7 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
-            return TryGetChildScene(_currentDraw)?.Size ?? Size.Empty;
+            return TryGetChildScene(_currentDraw)?.Size ?? default;
         }
 
         /// <inheritdoc/>

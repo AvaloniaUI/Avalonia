@@ -569,7 +569,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 var target = CreateTarget(itemCount: 10);
                 var items = (IList<string>)target.Items;
                 target.ApplyTemplate();
-                target.Measure(Size.Empty);
+                target.Measure(default(Size));
                 target.Arrange(default);
 
                 // Check for issue #591: this should not throw.

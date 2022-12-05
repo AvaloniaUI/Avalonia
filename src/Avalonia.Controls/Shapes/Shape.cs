@@ -292,7 +292,7 @@ namespace Avalonia.Controls.Shapes
                 return finalSize;
             }
 
-            return Size.Empty;
+            return default;
         }
 
         internal static (Size size, Matrix transform) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)

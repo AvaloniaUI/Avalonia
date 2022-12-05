@@ -189,7 +189,7 @@ namespace Avalonia.Rendering
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
             (brush.Visual as IVisualBrushInitialize)?.EnsureInitialized();
-            return brush.Visual?.Bounds.Size ?? Size.Empty;
+            return brush.Visual?.Bounds.Size ?? default;
         }
 
         /// <inheritdoc/>

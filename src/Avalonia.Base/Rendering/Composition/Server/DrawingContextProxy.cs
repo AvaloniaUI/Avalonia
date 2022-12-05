@@ -163,7 +163,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
         public CompositionDrawList? VisualBrushDrawList { get; set; }
         public Size GetRenderTargetSize(IVisualBrush brush)
         {
-            return VisualBrushDrawList?.Size ?? Size.Empty;
+            return VisualBrushDrawList?.Size ?? default;
         }
 
         public void RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
