@@ -9,6 +9,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml.UnitTests.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -313,6 +314,26 @@ namespace Avalonia.Markup.Xaml.UnitTests
 </ListBox>");
 
             Assert.NotNull(parsed.ItemTemplate);
+        }
+        
+        [Fact]
+        public void Runtime_Loader_Should_Pass_Parents_From_ServiceProvider()
+        {
+            var sp = new TestServiceProvider
+            {
+                Parents = new List<object>
+                {
+                    new UserControl { Resources = { ["Resource1"] = new SolidColorBrush(Colors.Blue) } }
+                }
+            };
+            var document = new RuntimeXamlLoaderDocument(@"
+<Button xmlns='https://github.com/avaloniaui' Background='{StaticResource Resource1}' />")
+            {
+                ServiceProvider = sp
+            };
+            
+            var parsed = (Button)AvaloniaRuntimeXamlLoader.Load(document);
+            Assert.Equal(Colors.Blue, ((ISolidColorBrush)parsed.Background!).Color);
         }
     }
 

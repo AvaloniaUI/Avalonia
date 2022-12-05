@@ -23,6 +23,17 @@ namespace Avalonia.Markup.Xaml
             throw new XamlLoadException(
                 $"No precompiled XAML found for {obj.GetType()}, make sure to specify x:Class and include your XAML file as AvaloniaResource");
         }
+        
+        /// <summary>
+        /// Loads the XAML into a Avalonia component.
+        /// </summary>
+        /// <param name="sp">The parent's service provider.</param>
+        /// <param name="obj">The object to load the XAML into.</param>
+        public static void Load(IServiceProvider? sp, object obj)
+        {
+            throw new XamlLoadException(
+                $"No precompiled XAML found for {obj.GetType()}, make sure to specify x:Class and include your XAML file as AvaloniaResource");
+        }
 
         /// <summary>
         /// Loads XAML from a URI.
@@ -33,6 +44,20 @@ namespace Avalonia.Markup.Xaml
         /// </param>
         /// <returns>The loaded object.</returns>
         public static object Load(Uri uri, Uri? baseUri = null)
+        {
+            return Load(null, uri, baseUri);
+        }
+        
+        /// <summary>
+        /// Loads XAML from a URI.
+        /// </summary>
+        /// <param name="sp">The parent's service provider.</param>
+        /// <param name="uri">The URI of the XAML file.</param>
+        /// <param name="baseUri">
+        /// A base URI to use if <paramref name="uri"/> is relative.
+        /// </param>
+        /// <returns>The loaded object.</returns>
+        public static object Load(IServiceProvider? sp, Uri uri, Uri? baseUri = null)
         {
             if (uri is null)
                 throw new ArgumentNullException(nameof(uri));
@@ -51,12 +76,24 @@ namespace Avalonia.Markup.Xaml
 
             var compiledLoader = assetLocator.GetAssembly(uri, baseUri)
                 ?.GetType("CompiledAvaloniaXaml.!XamlLoader")
-                ?.GetMethod("TryLoad", new[] {typeof(string)});
+                ?.GetMethod("TryLoad", new[] { typeof(System.IServiceProvider), typeof(string) });
             if (compiledLoader != null)
             {
-                var compiledResult = compiledLoader.Invoke(null, new object[] {absoluteUri.ToString()});
+                var compiledResult = compiledLoader.Invoke(null, new object?[] { sp, absoluteUri.ToString()});
                 if (compiledResult != null)
                     return compiledResult;
+            }
+            else
+            {
+                compiledLoader = assetLocator.GetAssembly(uri, baseUri)
+                    ?.GetType("CompiledAvaloniaXaml.!XamlLoader")
+                    ?.GetMethod("TryLoad", new[] {typeof(string)});
+                if (compiledLoader != null)
+                {
+                    var compiledResult = compiledLoader.Invoke(null, new object?[] {absoluteUri.ToString()});
+                    if (compiledResult != null)
+                        return compiledResult;
+                }   
             }
 
             // This is intended for unit-tests only
@@ -66,10 +103,9 @@ namespace Avalonia.Markup.Xaml
                 var asset = assetLocator.OpenAndGetAssembly(uri, baseUri);
                 using (var stream = asset.stream)
                 {
-                    return runtimeLoader.Load(new RuntimeXamlLoaderDocument(absoluteUri, stream), new RuntimeXamlLoaderConfiguration
-                    {
-                        LocalAssembly = asset.assembly
-                    });
+                    var document = new RuntimeXamlLoaderDocument(absoluteUri, stream) { ServiceProvider = sp };
+                    var configuration = new RuntimeXamlLoaderConfiguration { LocalAssembly = asset.assembly };
+                    return runtimeLoader.Load(document, configuration);
                 }
             }
 

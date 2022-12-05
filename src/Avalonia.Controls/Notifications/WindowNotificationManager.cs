@@ -146,7 +146,11 @@ namespace Avalonia.Controls.Notifications
         {
             var adornerLayer = host.FindDescendantOfType<VisualLayerManager>()?.AdornerLayer;
 
-            adornerLayer?.Children.Add(this);
+            if (adornerLayer is not null)
+            {
+                adornerLayer.Children.Add(this);
+                AdornerLayer.SetAdornedElement(this, adornerLayer);
+            }
         }
 
         private void UpdatePseudoClasses(NotificationPosition position)
