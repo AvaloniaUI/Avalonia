@@ -1,14 +1,13 @@
 using Avalonia.Data;
 using System;
+using Avalonia.Controls;
+using Avalonia.Data.Converters;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions
 {
-    using Avalonia.Controls;
-    using Avalonia.Data.Converters;
-    using Avalonia.Markup.Data;
-    using Avalonia.Styling;
-    using System.ComponentModel;
-
+    [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
     public class ReflectionBindingExtension
     {
         public ReflectionBindingExtension()

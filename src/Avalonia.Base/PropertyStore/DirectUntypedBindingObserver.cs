@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Threading;
 
 namespace Avalonia.PropertyStore
 {
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
     internal class DirectUntypedBindingObserver<T> : IObserver<object?>,
         IDisposable
     {

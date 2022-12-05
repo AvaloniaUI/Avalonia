@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
@@ -9,11 +10,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     class TaskStreamPlugin<T> : IStreamPlugin
     {
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         public bool Match(WeakReference<object> reference)
         {
             return reference.TryGetTarget(out var target) && target is Task<T>;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         public IObservable<object> Start(WeakReference<object> reference)
         {
             if(!(reference.TryGetTarget(out var target) && target is Task<T> task))

@@ -6,7 +6,7 @@
         <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
         <DefineConstants>$(DefineConstants);BUILDTASK;XAMLX_CECIL_INTERNAL;XAMLX_INTERNAL</DefineConstants>
         <CopyLocalLockFileAssemblies Condition="$(TargetFramework) == 'netstandard2.0'">true</CopyLocalLockFileAssemblies>
-        <NoWarn>NU1605;CS8632</NoWarn>
+        <NoWarn>$(NoWarn);NU1605;CS8632</NoWarn>
     </PropertyGroup>
 
     <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
@@ -111,6 +111,7 @@
         <Link>Markup/%(RecursiveDir)%(FileName)%(Extension)</Link>
       </Compile>
       <Compile Include="..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
+      <Compile Include="..\Shared\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\**\obj\**\*.cs" />
       <Compile Remove="../Markup/Avalonia.Markup.Xaml.Loader\xamlil.github\src\XamlX\IL\SreTypeSystem.cs" />
       <PackageReference Include="Mono.Cecil" Version="0.11.4" />

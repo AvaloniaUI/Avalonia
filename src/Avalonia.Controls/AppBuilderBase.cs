@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Linq;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -163,13 +164,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Specifies a windowing subsystem to use.
-        /// </summary>
-        /// <param name="dll">The dll in which to look for subsystem.</param>
-        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
-        public TAppBuilder UseWindowingSubsystem(string dll) => UseWindowingSubsystem(GetInitializer(dll), dll.Replace("Avalonia.", string.Empty));
-
-        /// <summary>
         /// Specifies a rendering subsystem to use.
         /// </summary>
         /// <param name="initializer">The method to call to initialize the rendering subsystem.</param>
@@ -182,49 +176,7 @@ namespace Avalonia.Controls
             return Self;
         }
 
-        /// <summary>
-        /// Specifies a rendering subsystem to use.
-        /// </summary>
-        /// <param name="dll">The dll in which to look for subsystem.</param>
-        /// <returns>An <typeparamref name="TAppBuilder"/> instance.</returns>
-        public TAppBuilder UseRenderingSubsystem(string dll) => UseRenderingSubsystem(GetInitializer(dll));
-
-        static Action GetInitializer(string assemblyName) => () =>
-        {
-            var assembly = Assembly.Load(new AssemblyName(assemblyName));
-            var platformClassName = assemblyName.Replace("Avalonia.", string.Empty) + "Platform";
-            var platformClassFullName = assemblyName + "." + platformClassName;
-            var platformClass = assembly.GetType(platformClassFullName);
-            var init = platformClass!.GetRuntimeMethod("Initialize", Type.EmptyTypes);
-            init!.Invoke(null, null);
-        };
-
-        public TAppBuilder UseAvaloniaModules() => AfterSetup(builder => SetupAvaloniaModules());
-
         protected virtual bool CheckSetup => true;
-
-        /// <summary>
-        /// Searches and initiates modules included with <see cref="ExportAvaloniaModuleAttribute"/> attribute.
-        /// </summary>
-        private void SetupAvaloniaModules()
-        {
-            var moduleInitializers = from assembly in AppDomain.CurrentDomain.GetAssemblies()
-                                     from attribute in assembly.GetCustomAttributes<ExportAvaloniaModuleAttribute>()
-                                     where string.IsNullOrEmpty(attribute.ForWindowingSubsystem)
-                                      || attribute.ForWindowingSubsystem == WindowingSubsystemName
-                                     where string.IsNullOrEmpty(attribute.ForRenderingSubsystem)
-                                      || attribute.ForRenderingSubsystem == RenderingSubsystemName
-                                     group attribute by attribute.Name into exports
-                                     select (from export in exports
-                                             orderby export.ForWindowingSubsystem.Length descending
-                                             orderby export.ForRenderingSubsystem.Length descending
-                                             select export).First().ModuleType into moduleType
-                                     select (from constructor in moduleType.GetTypeInfo().DeclaredConstructors
-                                             where constructor.GetParameters().Length == 0 && !constructor.IsStatic
-                                             select constructor).Single() into constructor
-                                     select (Action)(() => constructor.Invoke(Array.Empty<object>()));
-            Delegate.Combine(moduleInitializers.ToArray())!.DynamicInvoke();
-        }
 
         /// <summary>
         /// Configures platform-specific options
