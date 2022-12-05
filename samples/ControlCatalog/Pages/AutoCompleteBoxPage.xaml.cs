@@ -14,7 +14,26 @@ namespace ControlCatalog.Pages
 {
     public class AutoCompleteBoxPage : UserControl
     {
-        private StateData[] BuildAllStates()
+        public class StateData
+        {
+            public string Name { get; private set; }
+            public string Abbreviation { get; private set; }
+            public string Capital { get; private set; }
+
+            public StateData(string name, string abbreviatoin, string capital)
+            {
+                Name = name;
+                Abbreviation = abbreviatoin;
+                Capital = capital;
+            }
+
+            public override string ToString()
+            {
+                return Name;
+            }
+        }
+
+        private static StateData[] BuildAllStates()
         {
             return new StateData[]
             {
@@ -72,7 +91,7 @@ namespace ControlCatalog.Pages
         }
         public StateData[] States { get; private set; }
         
-        private LinkedList<string>[] BuildAllSentences()
+        private static LinkedList<string>[] BuildAllSentences()
         {
             return new string[]
             {
@@ -124,7 +143,7 @@ namespace ControlCatalog.Pages
                     .OfType<AutoCompleteBox>();
         }
 
-        private bool StringContains(string str, string? query)
+        private static bool StringContains(string str, string? query)
         {
             if (query == null) return false;
             return str.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;

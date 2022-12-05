@@ -23,7 +23,7 @@ namespace Avalonia.Base.UnitTests.Media
             }
         }
 
-        private TestServices GetServices()
+        private static TestServices GetServices()
         {
             var context = Mock.Of<IStreamGeometryContextImpl>();
             var transformedGeometry = new Mock<ITransformedGeometryImpl>();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
@@ -9,6 +10,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Data.Converters
 {
+    [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
     class MethodToCommandConverter : ICommand
     {
         readonly static Func<object?, bool> AlwaysEnabled = (_) => true;

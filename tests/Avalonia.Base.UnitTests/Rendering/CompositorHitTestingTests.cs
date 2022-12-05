@@ -460,7 +460,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
         }
     }
 
-    private IDisposable TestApplication()
+    private static IDisposable TestApplication()
     {
         return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
     }
