@@ -47,7 +47,7 @@ namespace Avalonia.Diagnostics.Screenshots
         /// </summary>
         public string Title { get; } = "Save Screenshot to ...";
 
-        Window GetWindow(Control control)
+        static Window GetWindow(Control control)
         {
             var window = control.VisualRoot as Window;
             var app = Application.Current;

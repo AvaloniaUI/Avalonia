@@ -377,7 +377,7 @@ namespace Avalonia.Win32
                                     RawPointerEventType.XButton1Down :
                                     RawPointerEventType.XButton2Down,
                             },
-                            PointToClient(PointFromLParam(lParam)), GetMouseModifiers(wParam));
+                            PointToClient(WindowImpl.PointFromLParam(lParam)), GetMouseModifiers(wParam));
                         break;
                     }
                 case WindowsMessage.WM_TOUCH:
@@ -1035,7 +1035,7 @@ namespace Avalonia.Win32
             return new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)) / RenderScaling;
         }
 
-        private PixelPoint PointFromLParam(IntPtr lParam)
+        private static PixelPoint PointFromLParam(IntPtr lParam)
         {
             return new PixelPoint((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16));
         }

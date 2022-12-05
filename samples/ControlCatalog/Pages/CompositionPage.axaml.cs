@@ -25,7 +25,7 @@ public partial class CompositionPage : UserControl
         this.Get<ItemsControl>("Items").Items = CreateColorItems();
     }
 
-    private List<CompositionPageColorItem> CreateColorItems()
+    private static List<CompositionPageColorItem> CreateColorItems()
     {
         var list = new List<CompositionPageColorItem>();
 

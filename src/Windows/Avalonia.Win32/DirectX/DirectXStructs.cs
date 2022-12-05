@@ -1245,7 +1245,7 @@ namespace Avalonia.Win32.DxgiSwapchain
 
         internal RECT DesktopCoordinates;
 
-        internal bool AttachedToDesktop;
+        internal int AttachedToDesktop; // BOOL maps to int. If we use the CLR 'bool' type here, the struct becomes non-blittable. See #9599
 
         internal DXGI_MODE_ROTATION Rotation;
 
@@ -1323,7 +1323,7 @@ namespace Avalonia.Win32.DxgiSwapchain
         public uint Width;
         public uint Height;
         public DXGI_FORMAT Format;
-        public bool Stereo;
+        public int Stereo; // BOOL maps to int. If we use the CLR 'bool' type here, the struct becomes non-blittable. See #9599
         public DXGI_SAMPLE_DESC SampleDesc;
         public uint BufferUsage;
         public uint BufferCount;

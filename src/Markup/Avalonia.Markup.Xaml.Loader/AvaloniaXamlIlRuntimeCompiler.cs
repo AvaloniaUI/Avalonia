@@ -209,7 +209,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             };
 
             var parsedDocuments = new List<XamlDocumentResource>();
-            var rootInstances = new List<object>();
+            var originalDocuments = new List<RuntimeXamlLoaderDocument>();
 
             foreach (var document in documents)
             {
@@ -235,7 +235,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                     builder,
                     compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, true),
                     compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, true)));
-                rootInstances.Add(document.RootInstance);
+                originalDocuments.Add(document);
             }
 
             compiler.TransformGroup(parsedDocuments);
@@ -251,7 +251,9 @@ namespace Avalonia.Markup.Xaml.XamlIl
             indexerClosureType.CreateTypeInfo();
             trampolineBuilder.CreateTypeInfo();
 
-            return createdTypes.Zip(rootInstances, (l, r) => (l, r)).Select(t => LoadOrPopulate(t.Item1, t.Item2)).ToArray();
+            return createdTypes.Zip(originalDocuments, (l, r) => (l, r))
+                .Select(t => LoadOrPopulate(t.Item1, t.Item2.RootInstance, t.Item2.ServiceProvider))
+                .ToArray();
         }
         
         static object LoadSreCore(RuntimeXamlLoaderDocument document, RuntimeXamlLoaderConfiguration configuration)
@@ -260,7 +262,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
         }
 #endif
 
-        static object LoadOrPopulate(Type created, object rootInstance)
+        static object LoadOrPopulate(Type created, object rootInstance, IServiceProvider parentServiceProvider)
         {
             var isp = Expression.Parameter(typeof(IServiceProvider));
 
@@ -271,6 +273,8 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var populateCb = Expression.Lambda<Action<IServiceProvider, object>>(
                 Expression.Call(populate, isp, Expression.Convert(epar, populate.GetParameters()[1].ParameterType)),
                 isp, epar).Compile();
+
+            var serviceProvider = XamlIlRuntimeHelpers.CreateRootServiceProviderV3(parentServiceProvider);
             
             if (rootInstance == null)
             {
@@ -282,7 +286,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 {
                     overrideField.SetValue(null,
                         new Action<object>(
-                            target => { populateCb(XamlIlRuntimeHelpers.CreateRootServiceProviderV2(), target); }));
+                            target => { populateCb(serviceProvider, target); }));
                     try
                     {
                         return Activator.CreateInstance(targetType);
@@ -296,11 +300,11 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 var createCb = Expression.Lambda<Func<IServiceProvider, object>>(
                     Expression.Convert(Expression.Call(
                         created.GetMethod(AvaloniaXamlIlCompiler.BuildName), isp), typeof(object)), isp).Compile();
-                return createCb(XamlIlRuntimeHelpers.CreateRootServiceProviderV2());
+                return createCb(serviceProvider);
             }
             else
             {
-                populateCb(XamlIlRuntimeHelpers.CreateRootServiceProviderV2(), rootInstance);
+                populateCb(serviceProvider, rootInstance);
                 return rootInstance;
             }
         }
@@ -411,7 +415,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             var loaded = Assembly.LoadFile(asmPath)
                 .GetTypes().First(x => x.Name == safeUri);
             _cecilGeneratedCache[safeUri] = loaded;
-            return LoadOrPopulate(loaded, rootInstance);
+            return LoadOrPopulate(loaded, rootInstance, null);
         }
 #endif
     }
