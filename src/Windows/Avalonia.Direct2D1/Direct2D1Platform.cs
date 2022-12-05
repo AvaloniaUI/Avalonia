@@ -241,7 +241,14 @@ namespace Avalonia.Direct2D1
                     glyphs[i] = (short)glyphRun.GlyphIndices[i];
                 }
 
-                glyphTypeface.FontFace.GetGlyphRunOutline((float)glyphRun.FontRenderingEmSize, glyphs, null, null, false, !glyphRun.IsLeftToRight, sink);
+                glyphTypeface.FontFace.GetGlyphRunOutline(emSize: (float)glyphRun.FontRenderingEmSize
+                    , glyphIndices: glyphs
+                    , glyphAdvances: null
+                    , glyphOffsets: null
+                    , glyphCount: glyphs.Length
+                    , isSideways: false
+                    , isRightToLeft: !glyphRun.IsLeftToRight
+                    , geometrySink: sink);
 
                 sink.Close();
             }
