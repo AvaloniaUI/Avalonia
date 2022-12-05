@@ -13,7 +13,7 @@
   <Import Project="IncludeXamlIlSre.props" />
   <ItemGroup>
     <Compile Include="..\..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
-    <Compile Include="..\..\Shared\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
+    <Compile Include="..\..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
