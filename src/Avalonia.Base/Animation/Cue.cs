@@ -8,7 +8,7 @@ namespace Avalonia.Animation
     /// Determines the time index for a <see cref="KeyFrame"/>. 
     /// </summary>
     [TypeConverter(typeof(CueTypeConverter))]
-    public readonly struct Cue : IEquatable<Cue>, IEquatable<double>
+    public readonly record struct Cue : IEquatable<Cue>, IEquatable<double>
     {
         /// <summary>
         /// The normalized percent value, ranging from 0.0 to 1.0
@@ -67,6 +67,11 @@ namespace Avalonia.Animation
         public bool Equals(double other)
         {
             return CueValue == other;
+        }
+
+        public override int GetHashCode()
+        {
+            return CueValue.GetHashCode();
         }
     }
 

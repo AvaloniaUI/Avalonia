@@ -5,7 +5,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// <summary>
     /// Represents the smallest unit of a writing system of any given language.
     /// </summary>
-    public readonly struct Grapheme
+    public readonly record struct Grapheme
     {
         public Grapheme(Codepoint firstCodepoint, ReadOnlySlice<char> text)
         {

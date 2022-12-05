@@ -11,7 +11,7 @@ namespace Avalonia.Utilities
     /// </summary>
     /// <typeparam name="T">The type of elements in the slice.</typeparam>
     [DebuggerTypeProxy(typeof(ReadOnlySlice<>.ReadOnlySliceDebugView))]
-    public readonly struct ReadOnlySlice<T> : IReadOnlyList<T> where T : struct
+    public readonly record struct ReadOnlySlice<T> : IReadOnlyList<T> where T : struct
     {
         private readonly int _bufferOffset;
         

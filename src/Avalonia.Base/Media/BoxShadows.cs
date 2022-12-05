@@ -62,7 +62,7 @@ namespace Avalonia.Media
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public struct BoxShadowsEnumerator
+        public record struct BoxShadowsEnumerator
         {
             private int _index;
             private BoxShadows _shadows;
@@ -149,5 +149,11 @@ namespace Avalonia.Media
                 return hashCode;
             }
         }
+
+        public static bool operator ==(BoxShadows left, BoxShadows right) => 
+            left.Equals(right);
+
+        public static bool operator !=(BoxShadows left, BoxShadows right) =>
+            !(left == right);
     }
 }

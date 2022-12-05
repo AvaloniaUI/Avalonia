@@ -255,7 +255,7 @@ namespace Avalonia.Media.TextFormatting
         }
     }
 
-    public readonly struct GlyphInfo
+    public readonly record struct GlyphInfo
     {
         public GlyphInfo(ushort glyphIndex, int glyphCluster, double glyphAdvance = 0, Vector glyphOffset = default)
         {

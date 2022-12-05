@@ -738,7 +738,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        public struct BatchUpdateOperation : IDisposable
+        public record struct BatchUpdateOperation : IDisposable
         {
             private readonly SelectionModel<T> _owner;
             private bool _isDisposed;

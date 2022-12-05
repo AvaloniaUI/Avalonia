@@ -4,7 +4,7 @@
     /// Represents a metric for a <see cref="TextLine"/> objects,
     /// that holds information about ascent, descent, line gap, size and origin of the text line.
     /// </summary>
-    public readonly struct TextLineMetrics
+    public readonly record struct TextLineMetrics
     {
         public TextLineMetrics(bool hasOverflowed, double height, int newLineLength, double start, double textBaseline,
             int trailingWhitespaceLength, double width,
