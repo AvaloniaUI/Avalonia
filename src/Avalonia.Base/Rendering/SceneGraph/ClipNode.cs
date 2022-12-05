@@ -40,7 +40,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public Rect Bounds => Rect.Default;
+        public Rect Bounds => default;
 
         /// <summary>
         /// Gets the clip to be pushed or null if the operation represents a pop.

@@ -127,7 +127,7 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void AddDirty(Visual visual)
         {
-            if (visual.Bounds != Rect.Default)
+            if (!visual.Bounds.IsDefault)
             {
                 var m = visual.TransformToVisual(_root);
 

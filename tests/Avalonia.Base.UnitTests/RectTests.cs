@@ -52,7 +52,7 @@ namespace Avalonia.Base.UnitTests
                 double.PositiveInfinity, double.PositiveInfinity)
                 .Normalize();
 
-            Assert.Equal(Rect.Default, result);
+            Assert.Equal(default, result);
         }
     }
 }

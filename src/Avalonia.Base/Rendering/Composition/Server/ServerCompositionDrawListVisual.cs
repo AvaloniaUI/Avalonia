@@ -37,7 +37,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         {
             if (_contentBounds == null)
             {
-                var rect = Rect.Default;
+                var rect = default(Rect);
                 if(_renderCommands!=null)
                     foreach (var cmd in _renderCommands)
                         rect = rect.Union(cmd.Item.Bounds);

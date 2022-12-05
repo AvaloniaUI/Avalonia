@@ -192,7 +192,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         void AddDirtyRect(Rect rc)
         {
-            if(rc == Rect.Default)
+            if(rc == default)
                 return;
             Root?.AddDirtyRect(rc);
         }

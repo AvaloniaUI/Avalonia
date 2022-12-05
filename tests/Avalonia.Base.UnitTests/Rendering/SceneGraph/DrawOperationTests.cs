@@ -13,9 +13,9 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         [Fact]
         public void Empty_Bounds_Remain_Empty()
         {
-            var target = new TestDrawOperation(Rect.Default, Matrix.Identity, null);
+            var target = new TestDrawOperation(default, Matrix.Identity, null);
 
-            Assert.Equal(Rect.Default, target.Bounds);
+            Assert.Equal(default, target.Bounds);
         }
 
         [Theory]

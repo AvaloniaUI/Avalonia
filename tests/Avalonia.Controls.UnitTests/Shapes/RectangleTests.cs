@@ -18,7 +18,7 @@ namespace Avalonia.Controls.UnitTests.Shapes
             target.Measure(new Size(100, 100));
 
             var geometry = Assert.IsType<RectangleGeometry>(target.RenderedGeometry);
-            Assert.Equal(Rect.Default, geometry.Rect);
+            Assert.Equal(default, geometry.Rect);
         }
 
         [Fact]

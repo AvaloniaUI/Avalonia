@@ -69,7 +69,7 @@ namespace Avalonia.Media
         public override Rect GetBounds()
         {
             IPen pen = Pen ?? s_boundsPen;
-			return Geometry?.GetRenderBounds(pen) ?? Rect.Default;
+			return Geometry?.GetRenderBounds(pen) ?? default;
         }
     }
 }

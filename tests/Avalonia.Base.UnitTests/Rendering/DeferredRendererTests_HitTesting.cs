@@ -403,7 +403,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
                 
-                root.Renderer.Paint(Rect.Default);
+                root.Renderer.Paint(default);
                 var result = root.Renderer.HitTest(new Point(50, 150), root, null).First();
 
                 Assert.Equal(item1, result);
@@ -419,7 +419,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 container.InvalidateArrange();
                 container.Arrange(new Rect(container.DesiredSize));
 
-                root.Renderer.Paint(Rect.Default);
+                root.Renderer.Paint(default);
                 result = root.Renderer.HitTest(new Point(50, 150), root, null).First();
                 Assert.Equal(item2, result);
 

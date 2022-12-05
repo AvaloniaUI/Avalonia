@@ -34,7 +34,7 @@ namespace Avalonia.Skia
         /// <summary>
         /// Initializes a new instance of the <see cref="StreamGeometryImpl"/> class.
         /// </summary>
-        public StreamGeometryImpl() : this(CreateEmptyPath(), Rect.Default)
+        public StreamGeometryImpl() : this(CreateEmptyPath(), default)
         {
         }
         

@@ -30,7 +30,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the geometry's bounding rectangle.
         /// </summary>
-        public Rect Bounds => PlatformImpl?.Bounds ?? Rect.Default;
+        public Rect Bounds => PlatformImpl?.Bounds ?? default;
 
         /// <summary>
         /// Gets the platform-specific implementation of the geometry.
@@ -84,7 +84,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="pen">The stroke thickness.</param>
         /// <returns>The bounding rectangle.</returns>
-        public Rect GetRenderBounds(IPen pen) => PlatformImpl?.GetRenderBounds(pen) ?? Rect.Default;
+        public Rect GetRenderBounds(IPen pen) => PlatformImpl?.GetRenderBounds(pen) ?? default;
 
         /// <summary>
         /// Indicates whether the geometry's fill contains the specified point.

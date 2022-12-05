@@ -161,7 +161,7 @@ namespace Avalonia.Controls.Primitives
                 {
                     // Clip
                     RectangleGeometry rg = new RectangleGeometry();
-                    rg.Rect = Rect.Default;
+                    rg.Rect = default;
                     cell.Clip = rg;
                 }
             }
