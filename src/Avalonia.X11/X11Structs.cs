@@ -34,6 +34,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Diagnostics.CodeAnalysis;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable IdentifierTypo
 // ReSharper disable MemberCanBePrivate.Global
@@ -654,7 +655,8 @@ namespace Avalonia.X11 {
 					return type.ToString ();
 			}
 		}
-		
+
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
 		public static string ToString (object ev)
 		{
 			string result = string.Empty;

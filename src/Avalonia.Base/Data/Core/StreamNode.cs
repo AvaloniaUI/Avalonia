@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using Avalonia.Data.Core.Plugins;
 
 namespace Avalonia.Data.Core
 {
+    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
     public class StreamNode : ExpressionNode
     {
         private IStreamPlugin? _customPlugin = null;

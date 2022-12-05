@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
@@ -22,6 +23,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             RawSource = rawSource;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.CompiledBindingSafeSupressWarningMessage)]
         public ExpressionNode BuildExpression(bool enableValidation)
         {
             ExpressionNode pathRoot = null;

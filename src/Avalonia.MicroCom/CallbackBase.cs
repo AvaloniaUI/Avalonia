@@ -38,7 +38,7 @@ namespace Avalonia.MicroCom
             }
         }
 
-        public MicroComShadow Shadow { get; set; }
+        public MicroComShadow? Shadow { get; set; }
         public void OnReferencedFromNative()
         {
             lock (_lock) 

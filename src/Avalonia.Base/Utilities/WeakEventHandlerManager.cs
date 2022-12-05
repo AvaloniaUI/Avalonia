@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -20,7 +21,8 @@ namespace Avalonia.Utilities
         /// <param name="target">The event source.</param>
         /// <param name="eventName">The name of the event.</param>
         /// <param name="subscriber">The subscriber.</param>
-        public static void Subscribe<TTarget, TEventArgs, TSubscriber>(TTarget target, string eventName, EventHandler<TEventArgs> subscriber)
+        public static void Subscribe<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicEvents | DynamicallyAccessedMemberTypes.NonPublicEvents)] TTarget, TEventArgs, TSubscriber>(
+            TTarget target, string eventName, EventHandler<TEventArgs> subscriber)
             where TEventArgs : EventArgs where TSubscriber : class
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
@@ -92,7 +94,9 @@ namespace Avalonia.Utilities
             private static Dictionary<MethodInfo, CallerDelegate> s_Callers =
                 new Dictionary<MethodInfo, CallerDelegate>();
             
-            public Subscription(SubscriptionDic<T, TSubscriber> sdic, Type targetType, object target, string eventName)
+            public Subscription(SubscriptionDic<T, TSubscriber> sdic,
+                [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicEvents | DynamicallyAccessedMemberTypes.NonPublicEvents)] Type targetType,
+                object target, string eventName)
             {
                 _sdic = sdic;
                 _target = target;

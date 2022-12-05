@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -291,13 +292,16 @@ namespace Avalonia.Win32
             return WriteBytesToHGlobal(ref hGlobal, SerializeObject(data));
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for WinForms dragndrop compatability")]
         private static byte[] SerializeObject(object data)
         {
             using (var ms = new MemoryStream())
             {
                 ms.Write(SerializedObjectGUID, 0, SerializedObjectGUID.Length);
                 BinaryFormatter binaryFormatter = new BinaryFormatter();
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
                 binaryFormatter.Serialize(ms, data);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
                 return ms.ToArray();
             }
         }
