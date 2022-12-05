@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Presenters
@@ -72,8 +73,8 @@ namespace Avalonia.Controls.Presenters
         private IDisposable? _logicalScrollSubscription;
         private Size _viewport;
         private Dictionary<int, Vector>? _activeLogicalGestureScrolls;
-        private List<IControl>? _anchorCandidates;
-        private IControl? _anchorElement;
+        private List<Control>? _anchorCandidates;
+        private Control? _anchorElement;
         private Rect _anchorElementBounds;
         private bool _isAnchorElementDirty;
 
@@ -157,7 +158,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        IControl? IScrollAnchorProvider.CurrentAnchor
+        Control? IScrollAnchorProvider.CurrentAnchor
         {
             get
             {
@@ -172,7 +173,7 @@ namespace Avalonia.Controls.Presenters
         /// <param name="target">The target visual.</param>
         /// <param name="targetRect">The portion of the target visual to bring into view.</param>
         /// <returns>True if the scroll offset was changed; otherwise false.</returns>
-        public bool BringDescendantIntoView(IVisual target, Rect targetRect)
+        public bool BringDescendantIntoView(Visual target, Rect targetRect)
         {
             if (Child?.IsEffectivelyVisible != true)
             {
@@ -180,7 +181,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             var scrollable = Child as ILogicalScrollable;
-            var control = target as IControl;
+            var control = target as Control;
 
             if (scrollable?.IsLogicalScrollEnabled == true && control != null)
             {
@@ -231,7 +232,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        void IScrollAnchorProvider.RegisterAnchorCandidate(IControl element)
+        void IScrollAnchorProvider.RegisterAnchorCandidate(Control element)
         {
             if (!this.IsVisualAncestorOf(element))
             {
@@ -239,13 +240,13 @@ namespace Avalonia.Controls.Presenters
                     "An anchor control must be a visual descendent of the ScrollContentPresenter.");
             }
 
-            _anchorCandidates ??= new List<IControl>();
+            _anchorCandidates ??= new List<Control>();
             _anchorCandidates.Add(element);
             _isAnchorElementDirty = true;
         }
 
         /// <inheritdoc/>
-        void IScrollAnchorProvider.UnregisterAnchorCandidate(IControl element)
+        void IScrollAnchorProvider.UnregisterAnchorCandidate(Control element)
         {
             _anchorCandidates?.Remove(element);
             _isAnchorElementDirty = true;
@@ -440,15 +441,23 @@ namespace Avalonia.Controls.Presenters
             if (Extent.Height > Viewport.Height || Extent.Width > Viewport.Width)
             {
                 var scrollable = Child as ILogicalScrollable;
-                bool isLogical = scrollable?.IsLogicalScrollEnabled == true;
+                var isLogical = scrollable?.IsLogicalScrollEnabled == true;
 
-                double x = Offset.X;
-                double y = Offset.Y;
+                var x = Offset.X;
+                var y = Offset.Y;
+                var delta = e.Delta;
 
+                // KeyModifiers.Shift should scroll in horizontal direction. This does not work on every platform. 
+                // If Shift-Key is pressed and X is close to 0 we swap the Vector.
+                if (e.KeyModifiers == KeyModifiers.Shift && MathUtilities.IsZero(delta.X))
+                {
+                    delta = new Vector(delta.Y, delta.X);
+                }
+                
                 if (Extent.Height > Viewport.Height)
                 {
                     double height = isLogical ? scrollable!.ScrollSize.Height : 50;
-                    y += -e.Delta.Y * height;
+                    y += -delta.Y * height;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
                 }
@@ -456,7 +465,7 @@ namespace Avalonia.Controls.Presenters
                 if (Extent.Width > Viewport.Width)
                 {
                     double width = isLogical ? scrollable!.ScrollSize.Width : 50;
-                    x += -e.Delta.X * width;
+                    x += -delta.X * width;
                     x = Math.Max(x, 0);
                     x = Math.Min(x, Extent.Width - Viewport.Width);
                 }
@@ -487,7 +496,7 @@ namespace Avalonia.Controls.Presenters
 
         private void ChildChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            UpdateScrollableSubscription((IControl?)e.NewValue);
+            UpdateScrollableSubscription((Control?)e.NewValue);
 
             if (e.OldValue != null)
             {
@@ -495,7 +504,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private void UpdateScrollableSubscription(IControl? child)
+        private void UpdateScrollableSubscription(Control? child)
         {
             var scrollable = child as ILogicalScrollable;
 
@@ -555,7 +564,7 @@ namespace Avalonia.Controls.Presenters
             _anchorElementBounds = default;
             _isAnchorElementDirty = false;
 
-            var bestCandidate = default(IControl);
+            var bestCandidate = default(Control);
             var bestCandidateDistance = double.MaxValue;
 
             // Find the anchor candidate that is scrolled closest to the top-left of this
@@ -586,7 +595,7 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
-        private bool GetViewportBounds(IControl element, out Rect bounds)
+        private bool GetViewportBounds(Control element, out Rect bounds)
         {
             if (TranslateBounds(element, Child!, out var childBounds))
             {
@@ -603,7 +612,7 @@ namespace Avalonia.Controls.Presenters
             return false;
         }
 
-        private Rect TranslateBounds(IControl control, IControl to)
+        private Rect TranslateBounds(Control control, Control to)
         {
             if (TranslateBounds(control, to, out var bounds))
             {
@@ -613,7 +622,7 @@ namespace Avalonia.Controls.Presenters
             throw new InvalidOperationException("The control's bounds could not be translated to the requested control.");
         }
 
-        private bool TranslateBounds(IControl control, IControl to, out Rect bounds)
+        private bool TranslateBounds(Control control, Control to, out Rect bounds)
         {
             if (!control.IsVisible)
             {

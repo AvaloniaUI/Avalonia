@@ -5,6 +5,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Templates;
 using Avalonia.Controls.Utils;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 
@@ -13,7 +14,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Base class for controls that present items inside an <see cref="ItemsControl"/>.
     /// </summary>
-    public abstract class ItemsPresenterBase : Control, IItemsPresenter, ITemplatedControl, IChildIndexProvider
+    public abstract class ItemsPresenterBase : Control, IItemsPresenter, IChildIndexProvider
     {
         /// <summary>
         /// Defines the <see cref="Items"/> property.
@@ -24,7 +25,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITemplate<IPanel>> ItemsPanelProperty =
+        public static readonly StyledProperty<ITemplate<Panel>> ItemsPanelProperty =
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenterBase>();
 
         /// <summary>
@@ -33,6 +34,12 @@ namespace Avalonia.Controls.Presenters
         public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
             ItemsControl.ItemTemplateProperty.AddOwner<ItemsPresenterBase>();
 
+        /// <summary>
+        /// Defines the <see cref="DisplayMemberBinding" /> property
+        /// </summary>
+        public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
+            ItemsControl.DisplayMemberBindingProperty.AddOwner<ItemsPresenterBase>();
+        
         private IEnumerable? _items;
         private IDisposable? _itemsSubscription;
         private bool _createdPanel;
@@ -105,7 +112,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a template which creates the <see cref="Panel"/> used to display the items.
         /// </summary>
-        public ITemplate<IPanel> ItemsPanel
+        public ITemplate<Panel> ItemsPanel
         {
             get { return GetValue(ItemsPanelProperty); }
             set { SetValue(ItemsPanelProperty, value); }
@@ -121,9 +128,18 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
+        /// </summary>
+        public IBinding? DisplayMemberBinding
+        {
+            get { return GetValue(DisplayMemberBindingProperty); }
+            set { SetValue(DisplayMemberBindingProperty, value); }
+        }
+
+        /// <summary>
         /// Gets the panel used to display the items.
         /// </summary>
-        public IPanel? Panel
+        public Panel? Panel
         {
             get;
             private set;
@@ -177,6 +193,7 @@ namespace Avalonia.Controls.Presenters
             {
                 result = new ItemContainerGenerator(this);
                 result.ItemTemplate = ItemTemplate;
+                result.DisplayMemberBinding = DisplayMemberBinding;
             }
 
             result.Materialized += ContainerActionHandler;
@@ -212,7 +229,7 @@ namespace Avalonia.Controls.Presenters
         /// Called when the <see cref="Panel"/> is created.
         /// </summary>
         /// <param name="panel">The panel.</param>
-        protected virtual void PanelCreated(IPanel panel)
+        protected virtual void PanelCreated(Panel panel)
         {
         }
 
@@ -273,7 +290,7 @@ namespace Avalonia.Controls.Presenters
 
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
-            if (child is IControl control && ItemContainerGenerator is { } generator)
+            if (child is Control control && ItemContainerGenerator is { } generator)
             {
                 var index = ItemContainerGenerator.IndexFromContainer(control);
 

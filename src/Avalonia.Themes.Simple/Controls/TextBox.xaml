@@ -192,7 +192,8 @@
         <Template>
           <Button Command="{Binding $parent[TextBox].Clear}"
                   Focusable="False"
-                  Theme="{StaticResource SimpleTextBoxClearButtonTheme}" />
+                  Theme="{StaticResource SimpleTextBoxClearButtonTheme}" 
+                  ClipToBounds="True" />
         </Template>
       </Setter>
     </Style>
@@ -212,7 +213,8 @@
             <ToggleButton Background="Transparent"
                           Focusable="False"
                           IsChecked="{Binding $parent[TextBox].RevealPassword, Mode=TwoWay}"
-                          Theme="{StaticResource SimplePasswordBoxRevealButtonTheme}" />
+                          Theme="{StaticResource SimplePasswordBoxRevealButtonTheme}"
+                          ClipToBounds="True" />
           </Panel>
         </Template>
       </Setter>

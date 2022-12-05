@@ -4,6 +4,7 @@
     <_AvaloniaUseExternalMSBuild Condition="'$(_AvaloniaForceInternalMSBuild)' == 'true'">false</_AvaloniaUseExternalMSBuild>
     <AvaloniaXamlReportImportance Condition="'$(AvaloniaXamlReportImportance)' == ''">low</AvaloniaXamlReportImportance>
     <_AvaloniaSkipXamlCompilation Condition="'$(_AvaloniaSkipXamlCompilation)' == ''">false</_AvaloniaSkipXamlCompilation>
+    <AvaloniaUseCompiledBindingsByDefault Condition="'$(AvaloniaUseCompiledBindingsByDefault)' == ''">false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <!-- Unfortunately we have to update default items in .targets since custom nuget props are improted before Microsoft.NET.Sdk.DefaultItems.props -->
@@ -29,7 +30,9 @@
              />
 
 
-  <Target Name="AddAvaloniaResources" BeforeTargets="ResolveReferences">
+  <Target Name="AddAvaloniaResources" 
+          BeforeTargets="ResolveReferences"
+          Condition="('@(AvaloniaResource->Count())' &gt; 0) or ('@(AvaloniaXaml->Count())' &gt; 0)">
     <PropertyGroup>
       <AvaloniaResourcesTemporaryFilePath Condition="'$(AvaloniaResourcesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/resources</AvaloniaResourcesTemporaryFilePath>
     </PropertyGroup>
@@ -43,7 +46,7 @@
   <PropertyGroup>
     <BuildAvaloniaResourcesDependsOn>$(BuildAvaloniaResourcesDependsOn);AddAvaloniaResources;ResolveReferences;_GenerateAvaloniaResourcesDependencyCache</BuildAvaloniaResourcesDependsOn>
   </PropertyGroup>
-  
+
   <Target Name="_GenerateAvaloniaResourcesDependencyCache" BeforeTargets="GenerateAvaloniaResources">
     <ItemGroup>
       <CustomAdditionalGenerateAvaloniaResourcesInputs Include="$(IntermediateOutputPath)/Avalonia/Resources.Inputs.cache" />
@@ -61,7 +64,9 @@
           BeforeTargets="CoreCompile;CoreResGen"
           Inputs="@(AvaloniaResource);@(AvaloniaXaml);@(CustomAdditionalGenerateAvaloniaResourcesInputs);$(MSBuildAllProjects)"
           Outputs="$(AvaloniaResourcesTemporaryFilePath)"
-	  DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)">
+          DependsOnTargets="$(BuildAvaloniaResourcesDependsOn)"
+          Condition="('@(AvaloniaResource->Count())' &gt; 0) or ('@(AvaloniaXaml->Count())' &gt; 0)"
+          >
     <ItemGroup>
         <AvaloniaResource Include="@(AvaloniaXaml)"/>
     </ItemGroup>
@@ -73,14 +78,19 @@
       ReportImportance="$(AvaloniaXamlReportImportance)"/>
     <Exec 
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:BuildProjectReferences=false"/>
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>
 
   </Target>
 
   <Target
     Name="CompileAvaloniaXaml"
     AfterTargets="AfterCompile"
-    Condition="Exists('@(IntermediateAssembly)') And $(DesignTimeBuild) != true And $(EnableAvaloniaXamlCompilation) != false"
+    Condition="
+      (('@(AvaloniaResource->Count())' &gt; 0) 
+          or ('@(AvaloniaXaml->Count())' &gt; 0))
+      and Exists('@(IntermediateAssembly)') 
+      And $(DesignTimeBuild) != true 
+      And $(EnableAvaloniaXamlCompilation) != false"
     >
     <PropertyGroup>
       <AvaloniaXamlReferencesTemporaryFilePath Condition="'$(AvaloniaXamlReferencesTemporaryFilePath)' == ''">$(IntermediateOutputPath)/Avalonia/references</AvaloniaXamlReferencesTemporaryFilePath>
@@ -98,6 +108,7 @@
       AssemblyFile="@(IntermediateAssembly)"
       ReferencesFilePath="$(AvaloniaXamlReferencesTemporaryFilePath)"
       OriginalCopyPath="$(AvaloniaXamlOriginalCopyFilePath)"
+      RefAssemblyFile="@(IntermediateRefAssembly)"
       ProjectDirectory="$(MSBuildProjectDirectory)"
       VerifyIl="$(AvaloniaXamlIlVerifyIl)"
       ReportImportance="$(AvaloniaXamlReportImportance)"
@@ -106,10 +117,11 @@
       DelaySign="$(DelaySign)"
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
       DebuggerLaunch="$(AvaloniaXamlIlDebuggerLaunch)"
+      DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)"
     />
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
-      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:BuildProjectReferences=false"/>
+      Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>
   </Target>
 
   

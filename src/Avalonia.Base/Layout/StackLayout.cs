@@ -78,10 +78,10 @@ namespace Avalonia.Layout
         internal Rect GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            ILayoutable? firstRealized,
+            Layoutable? firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            ILayoutable? lastRealized,
+            Layoutable? lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds)
         {
@@ -121,7 +121,7 @@ namespace Avalonia.Layout
         }
 
         internal void OnElementMeasured(
-            ILayoutable element,
+            Layoutable element,
             int index,
             Size availableSize,
             Size measureSize,
@@ -188,10 +188,10 @@ namespace Avalonia.Layout
         Rect IFlowLayoutAlgorithmDelegates.Algorithm_GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            ILayoutable? firstRealized,
+            Layoutable? firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            ILayoutable? lastRealized,
+            Layoutable? lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds)
         {
@@ -206,7 +206,7 @@ namespace Avalonia.Layout
                 lastRealizedLayoutBounds);
         }
 
-        void IFlowLayoutAlgorithmDelegates.Algorithm_OnElementMeasured(ILayoutable element, int index, Size availableSize, Size measureSize, Size desiredSize, Size provisionalArrangeSize, VirtualizingLayoutContext context)
+        void IFlowLayoutAlgorithmDelegates.Algorithm_OnElementMeasured(Layoutable element, int index, Size availableSize, Size measureSize, Size desiredSize, Size provisionalArrangeSize, VirtualizingLayoutContext context)
         {
             OnElementMeasured(
                 element,
@@ -335,7 +335,7 @@ namespace Avalonia.Layout
             InvalidateLayout();
         }
 
-        private double GetAverageElementSize(
+        private static double GetAverageElementSize(
             Size availableSize,
             VirtualizingLayoutContext context,
             StackLayoutState stackLayoutState)
@@ -359,6 +359,6 @@ namespace Avalonia.Layout
 
         private void InvalidateLayout() => InvalidateMeasure();
 
-        private FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((StackLayoutState)context.LayoutState!).FlowAlgorithm;
+        private static FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((StackLayoutState)context.LayoutState!).FlowAlgorithm;
     }
 }

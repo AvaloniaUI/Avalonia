@@ -28,7 +28,7 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Name_Doesnt_Match_Control_With_TemplatedParent()
         {
-            var control = new Control1 { TemplatedParent = new Mock<ITemplatedControl>().Object };
+            var control = new Control1 { TemplatedParent = new Button() };
             var target = default(Selector).Name("foo");
             var activator = target.Match(control);
 

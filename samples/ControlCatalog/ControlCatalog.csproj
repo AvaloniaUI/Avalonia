@@ -15,9 +15,6 @@
     <AvaloniaResource Include="Assets\Fonts\*" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Pages\NativeEmbedPage.xaml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
@@ -35,17 +32,15 @@
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
   </ItemGroup>
 
+  <Import Project="..\..\build\BuildTargets.targets" />
+
   <ItemGroup>
-    <AvaloniaResource Update="Pages\NativeEmbedPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <None Remove="Pages\CustomDrawing.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Update="Pages\CustomDrawing.xaml">
+      <Generator></Generator>
     </AvaloniaResource>
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Pages\NativeEmbedPage.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

@@ -12,13 +12,13 @@ namespace Avalonia.Controls
     /// </summary>
     public class ItemsRepeaterElementClearingEventArgs : EventArgs
     {
-        internal ItemsRepeaterElementClearingEventArgs(IControl element) => Element = element;
+        internal ItemsRepeaterElementClearingEventArgs(Control element) => Element = element;
 
         /// <summary>
         /// Gets the element that is being cleared for re-use.
         /// </summary>
-        public IControl Element { get; private set; }
+        public Control Element { get; private set; }
 
-        internal void Update(IControl element) => Element = element;
+        internal void Update(Control element) => Element = element;
     }
 }

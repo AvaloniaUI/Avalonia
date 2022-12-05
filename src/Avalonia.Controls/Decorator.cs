@@ -11,8 +11,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly StyledProperty<IControl?> ChildProperty =
-            AvaloniaProperty.Register<Decorator, IControl?>(nameof(Child));
+        public static readonly StyledProperty<Control?> ChildProperty =
+            AvaloniaProperty.Register<Decorator, Control?>(nameof(Child));
 
         /// <summary>
         /// Defines the <see cref="Padding"/> property.
@@ -33,7 +33,7 @@ namespace Avalonia.Controls
         /// Gets or sets the decorated control.
         /// </summary>
         [Content]
-        public IControl? Child
+        public Control? Child
         {
             get { return GetValue(ChildProperty); }
             set { SetValue(ChildProperty, value); }

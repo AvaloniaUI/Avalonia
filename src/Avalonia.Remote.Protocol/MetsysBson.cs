@@ -562,7 +562,7 @@ namespace Metsys.Bson
         {
             if (_string == null && Value != null)
             {
-                _string = BitConverter.ToString(Value).Replace("-", string.Empty).ToLower();
+                _string = BitConverter.ToString(Value).Replace("-", string.Empty).ToLowerInvariant();
             }
 
             return _string;

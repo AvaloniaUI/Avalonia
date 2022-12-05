@@ -78,7 +78,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public void RequestTreeNavigateTo(EventChainLink navTarget)
         {
-            if (navTarget.Handler is IControl control)
+            if (navTarget.Handler is Control control)
             {
                 _mainViewModel.RequestTreeNavigateTo(control, true);
             }

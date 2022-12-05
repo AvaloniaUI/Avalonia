@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
-using Avalonia.Dialogs;
 using Avalonia.FreeDesktop;
 using Avalonia.FreeDesktop.DBusIme;
 using Avalonia.Input;
@@ -80,12 +79,12 @@ namespace Avalonia.X11
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
-                .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
-            X11Screens = Avalonia.X11.X11Screens.Init(this);
+            X11Screens = X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
             if (Info.XInputVersion != null)
             {
@@ -143,7 +142,7 @@ namespace Avalonia.X11
             throw new NotSupportedException();
         }
 
-        bool EnableIme(X11PlatformOptions options)
+        static bool EnableIme(X11PlatformOptions options)
         {
             // Disable if explicitly asked by user
             var avaloniaImModule = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
@@ -164,8 +163,8 @@ namespace Avalonia.X11
 
             return isCjkLocale;
         }
-        
-        bool ShouldUseXim()
+
+        static bool ShouldUseXim()
         {
             // Check if we are forbidden from using IME
             if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"

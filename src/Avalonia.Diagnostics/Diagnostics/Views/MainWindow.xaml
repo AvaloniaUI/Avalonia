@@ -1,9 +1,11 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:views="clr-namespace:Avalonia.Diagnostics.Views"
-        xmlns:diag="clr-namespace:Avalonia.Diagnostics"
+        xmlns:views="using:Avalonia.Diagnostics.Views"
+        xmlns:diag="using:Avalonia.Diagnostics"
+        xmlns:viewModels="using:Avalonia.Diagnostics.ViewModels"
         Title="Avalonia DevTools"
-        x:Class="Avalonia.Diagnostics.Views.MainWindow">
+        x:Class="Avalonia.Diagnostics.Views.MainWindow"
+        x:DataType="viewModels:MainViewModel">
   <Window.DataTemplates>
     <diag:ViewLocator/>
   </Window.DataTemplates>

@@ -26,19 +26,19 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public override Type? TargetType => null;
 
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
-                _selectorString = _parent.ToString() + " /template/ ";
+                _selectorString = _parent.ToString(owner) + " /template/ ";
             }
 
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
-            var templatedParent = control.TemplatedParent as IStyleable;
+            var templatedParent = control.TemplatedParent as StyledElement;
 
             if (templatedParent == null)
             {

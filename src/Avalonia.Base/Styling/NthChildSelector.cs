@@ -48,7 +48,7 @@ namespace Avalonia.Styling
         public int Step { get; }
         public int Offset { get; }
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (!(control is ILogical logical))
             {
@@ -107,11 +107,11 @@ namespace Avalonia.Styling
         protected override Selector? MovePrevious() => _previous;
         protected override Selector? MovePreviousOrParent() => _previous;
 
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             var expectedCapacity = NthLastChildSelectorName.Length + 8;
             var stringBuilder =  StringBuilderCache.Acquire(expectedCapacity);
-            stringBuilder.Append(_previous?.ToString());
+            stringBuilder.Append(_previous?.ToString(owner));
             
             stringBuilder.Append(':');
             stringBuilder.Append(_reversed ? NthLastChildSelectorName : NthChildSelectorName);

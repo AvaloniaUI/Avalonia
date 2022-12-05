@@ -81,7 +81,7 @@ namespace Avalonia.Data.Core.Parsers
             return node;
         }
 
-        private T GetArgumentExpressionValue<T>(Expression expr)
+        private static T GetArgumentExpressionValue<T>(Expression expr)
         {
             try
             {
@@ -193,7 +193,7 @@ namespace Avalonia.Data.Core.Parsers
             throw new ExpressionParseException(0, $"Invalid method call in binding expression: '{node.Method.DeclaringType!.AssemblyQualifiedName}.{node.Method.Name}'.");
         }
 
-        private PropertyInfo? TryGetPropertyFromMethod(MethodInfo method)
+        private static PropertyInfo? TryGetPropertyFromMethod(MethodInfo method)
         {
             var type = method.DeclaringType;
             return type?.GetRuntimeProperties().FirstOrDefault(prop => prop.GetMethod == method);

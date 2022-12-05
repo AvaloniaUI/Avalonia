@@ -1,9 +1,11 @@
 <UserControl x:Class="ControlCatalog.MainView"
              xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:ControlSamples;assembly=ControlSamples"
-             xmlns:models="clr-namespace:ControlCatalog.Models"
-             xmlns:pages="clr-namespace:ControlCatalog.Pages">
+             xmlns:controls="using:ControlSamples"
+             xmlns:models="using:ControlCatalog.Models"
+             xmlns:pages="using:ControlCatalog.Pages"
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:DataType="viewModels:MainWindowViewModel">
   <Grid>
     <Grid.Styles>
       <Style Selector="TextBlock.h2">
@@ -12,8 +14,8 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
       </Style>
     </Grid.Styles>
-    <controls:HamburgerMenu Name="Sidebar">
-      <TabItem Header="Composition">
+      <controls:HamburgerMenu Name="Sidebar">
+        <TabItem Header="Composition">
         <pages:CompositionPage/>
       </TabItem>
       <TabItem Header="Acrylic">
@@ -63,6 +65,9 @@
       </TabItem>
       <TabItem Header="Cursor" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:CursorPage />
+      </TabItem>
+      <TabItem Header="Custom Drawing" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CustomDrawing/>
       </TabItem>
       <TabItem Header="DataGrid"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -118,6 +123,9 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
+      <TabItem Header="Platform Information">
+        <pages:PlatformInfoPage />
+      </TabItem>
       <TabItem Header="Pointers">
         <pages:PointersPage />
       </TabItem>
@@ -130,7 +138,7 @@
       <TabItem Header="RelativePanel">
         <pages:RelativePanelPage />
       </TabItem>
-      <TabItem Header="ScrollViewer">
+        <TabItem Header="ScrollViewer">
         <pages:ScrollViewerPage />
       </TabItem>
       <TabItem Header="Slider">

@@ -377,7 +377,7 @@ namespace Avalonia.Win32
                                     RawPointerEventType.XButton1Down :
                                     RawPointerEventType.XButton2Down,
                             },
-                            PointToClient(PointFromLParam(lParam)), GetMouseModifiers(wParam));
+                            PointToClient(WindowImpl.PointFromLParam(lParam)), GetMouseModifiers(wParam));
                         break;
                     }
                 case WindowsMessage.WM_TOUCH:
@@ -588,9 +588,13 @@ namespace Avalonia.Win32
                             Resized(clientSize / RenderScaling, _resizeReason);
                         }
 
-                        var windowState = size == SizeCommand.Maximized ?
-                            WindowState.Maximized :
-                            (size == SizeCommand.Minimized ? WindowState.Minimized : WindowState.Normal);
+                        var windowState = size switch
+                        {
+                            SizeCommand.Maximized => WindowState.Maximized,
+                            SizeCommand.Minimized => WindowState.Minimized,
+                            _ when _isFullScreenActive => WindowState.FullScreen,
+                            _ => WindowState.Normal,
+                        };
 
                         if (windowState != _lastWindowState)
                         {
@@ -672,7 +676,10 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_IME_SETCONTEXT:
                     {
-                        DefWindowProc(Hwnd, msg, wParam, (IntPtr)(lParam.ToInt64() & ~ISC_SHOWUICOMPOSITIONWINDOW));
+                        unchecked
+                        {
+                            DefWindowProc(Hwnd, msg, wParam, lParam & ~(nint)ISC_SHOWUICOMPOSITIONWINDOW);
+                        }
 
                         UpdateInputMethod(GetKeyboardLayout(0));
 
@@ -1028,7 +1035,7 @@ namespace Avalonia.Win32
             return new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)) / RenderScaling;
         }
 
-        private PixelPoint PointFromLParam(IntPtr lParam)
+        private static PixelPoint PointFromLParam(IntPtr lParam)
         {
             return new PixelPoint((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16));
         }

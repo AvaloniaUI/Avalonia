@@ -14,12 +14,12 @@ namespace Avalonia.Base.UnitTests.Input;
 
 public abstract class PointerTestsBase
 {
-    protected static void SetHit(Mock<IRenderer> renderer, IControl? hit)
+    protected static void SetHit(Mock<IRenderer> renderer, Control? hit)
     {
-        renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
-            .Returns(hit is null ? Array.Empty<IControl>() : new[] { hit });
+        renderer.Setup(x => x.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+            .Returns(hit is null ? Array.Empty<Control>() : new[] { hit });
 
-        renderer.Setup(x => x.HitTestFirst(It.IsAny<Point>(), It.IsAny<IVisual>(), It.IsAny<Func<IVisual, bool>>()))
+        renderer.Setup(x => x.HitTestFirst(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
             .Returns(hit);
     }
 
@@ -41,7 +41,7 @@ public abstract class PointerTestsBase
         return impl;
     }
 
-    protected static IInputRoot CreateInputRoot(IWindowImpl impl, IControl child)
+    protected static IInputRoot CreateInputRoot(IWindowImpl impl, Control child)
     {
         var root = new Window(impl)
         {
@@ -66,7 +66,7 @@ public abstract class PointerTestsBase
     protected static PointerEventArgs CreatePointerMovedArgs(
         IInputRoot root, IInputElement? source, Point? positition = null)
     {
-        return new PointerEventArgs(InputElement.PointerMovedEvent, source, new Mock<IPointer>().Object, root,
+        return new PointerEventArgs(InputElement.PointerMovedEvent, source, new Mock<IPointer>().Object, (Visual)root,
             positition ?? default, default, PointerPointProperties.None, KeyModifiers.None);
     }
 

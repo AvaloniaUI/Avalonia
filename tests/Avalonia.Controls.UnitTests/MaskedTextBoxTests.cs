@@ -118,7 +118,7 @@ namespace Avalonia.Controls.UnitTests
                 target.ApplyTemplate();
                 target.CaretIndex = 3;
                 target.Measure(Size.Infinity);
-                
+
                 RaiseKeyEvent(target, Key.Right, 0);
 
                 Assert.Equal(4, target.CaretIndex);
@@ -885,7 +885,7 @@ namespace Avalonia.Controls.UnitTests
             textShaperImpl: new MockTextShaperImpl(), 
             fontManagerImpl: new MockFontManagerImpl());
 
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<MaskedTextBox>((control, scope) =>
                 new TextPresenter
@@ -895,20 +895,20 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Path = nameof(TextPresenter.Text),
                         Mode = BindingMode.TwoWay,
-                        Priority = BindingPriority.TemplatedParent,
+                        Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
                     [!!TextPresenter.CaretIndexProperty] = new Binding
                     {
                         Path = nameof(TextPresenter.CaretIndex),
                         Mode = BindingMode.TwoWay,
-                        Priority = BindingPriority.TemplatedParent,
+                        Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     }
                 }.RegisterInNameScope(scope));
         }
 
-        private void RaiseKeyEvent(MaskedTextBox textBox, Key key, KeyModifiers inputModifiers)
+        private static void RaiseKeyEvent(MaskedTextBox textBox, Key key, KeyModifiers inputModifiers)
         {
             textBox.RaiseEvent(new KeyEventArgs
             {

@@ -9,7 +9,7 @@ namespace Avalonia.X11
 {
     class X11IconLoader : IPlatformIconLoader
     {
-        IWindowIconImpl LoadIcon(Bitmap bitmap)
+        static IWindowIconImpl LoadIcon(Bitmap bitmap)
         {
             var rv = new X11IconData(bitmap);
             bitmap.Dispose();

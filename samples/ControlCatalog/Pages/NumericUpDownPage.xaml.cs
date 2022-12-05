@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
 using MiniMvvm;
 
@@ -22,6 +23,8 @@ namespace ControlCatalog.Pages
             AvaloniaXamlLoader.Load(this);
         }
 
+        public static IValueConverter CultureConverter =
+            new FuncValueConverter<CultureInfo, NumberFormatInfo>(c => (c ?? CultureInfo.CurrentCulture).NumberFormat);
     }
 
     public class NumbersPageViewModel : ViewModelBase

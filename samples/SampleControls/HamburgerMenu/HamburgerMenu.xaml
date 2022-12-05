@@ -194,7 +194,7 @@
                              VerticalAlignment="Center"
                              Classes="h1"
                              Margin="{StaticResource HeaderMarginExpandedPane}"
-                             Text="{Binding $parent[TabControl].SelectedItem.Header, FallbackValue=''}">
+                             Text="{Binding $parent[TabControl].SelectedItem.(TabItem.Header), FallbackValue=''}">
                     <TextBlock.Transitions>
                       <Transitions>
                         <ThicknessTransition Easing="{StaticResource SplitViewPaneAnimationEasing}"
@@ -250,10 +250,10 @@
       <Setter Property="PaneBackground" Value="{TemplateBinding PaneBackground}" />
     </Style>
     <Style Selector="^ /template/ SplitView[DisplayMode=Overlay]">
-      <Setter Property="Background" Value="{Binding $parent[TabControl].ContentBackground}" />
+      <Setter Property="Background" Value="{Binding $parent[catalog:HamburgerMenu].ContentBackground}" />
     </Style>
     <Style Selector="^ /template/ SplitView[DisplayMode=Inline] Border#BackgroundBorder">
-      <Setter Property="Background" Value="{Binding $parent[TabControl].ContentBackground}" />
+      <Setter Property="Background" Value="{Binding $parent[catalog:HamburgerMenu].ContentBackground}" />
       <Setter Property="BoxShadow" Value="{StaticResource NavigationContentShadow}" />
     </Style>
     <Style Selector="^ /template/ SplitView[DisplayMode=Inline][IsPaneOpen=True] Border#BackgroundBorder">

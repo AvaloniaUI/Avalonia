@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Data;
 using Avalonia.Data.Core;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 
@@ -37,7 +38,7 @@ namespace Avalonia
             Type valueType,
             Type ownerType,
             AvaloniaPropertyMetadata metadata,
-            Action<IAvaloniaObject, bool>? notifying = null)
+            Action<AvaloniaObject, bool>? notifying = null)
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
@@ -144,7 +145,7 @@ namespace Avalonia
         /// will be true before the property change notifications are sent and false afterwards. This
         /// callback is intended to support Control.IsDataContextChanging.
         /// </remarks>
-        public Action<IAvaloniaObject, bool>? Notifying { get; }
+        public Action<AvaloniaObject, bool>? Notifying { get; }
 
         /// <summary>
         /// Gets the integer ID that represents this property.
@@ -176,7 +177,7 @@ namespace Avalonia
         {
             return new IndexerDescriptor
             {
-                Priority = BindingPriority.TemplatedParent,
+                Priority = BindingPriority.Template,
                 Property = property,
             };
         }
@@ -237,9 +238,9 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null,
-            Action<IAvaloniaObject, bool>? notifying = null)
-                where TOwner : IAvaloniaObject
+            Func<AvaloniaObject, TValue, TValue>? coerce = null,
+            Action<AvaloniaObject, bool>? notifying = null)
+                where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
@@ -278,8 +279,8 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
-                where THost : IAvaloniaObject
+            Func<AvaloniaObject, TValue, TValue>? coerce = null)
+                where THost : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
@@ -315,8 +316,8 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<IAvaloniaObject, TValue, TValue>? coerce = null)
-                where THost : IAvaloniaObject
+            Func<AvaloniaObject, TValue, TValue>? coerce = null)
+                where THost : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
 
@@ -353,7 +354,7 @@ namespace Avalonia
             TValue unsetValue = default!,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             bool enableDataValidation = false)
-                where TOwner : IAvaloniaObject
+                where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
             _ = getter ?? throw new ArgumentNullException(nameof(getter));
@@ -414,7 +415,7 @@ namespace Avalonia
         /// <returns>
         /// The property metadata.
         /// </returns>
-        public AvaloniaPropertyMetadata GetMetadata<T>() where T : IAvaloniaObject
+        public AvaloniaPropertyMetadata GetMetadata<T>() where T : AvaloniaObject
         {
             return GetMetadata(typeof(T));
         }
@@ -456,6 +457,12 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Creates an effective value for the property.
+        /// </summary>
+        /// <param name="o">The effective value owner.</param>
+        internal abstract EffectiveValue CreateEffectiveValue(AvaloniaObject o);
+
+        /// <summary>
         /// Routes an untyped ClearValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
@@ -471,8 +478,7 @@ namespace Avalonia
         /// Routes an untyped GetBaseValue call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>
-        /// <param name="maxPriority">The maximum priority for the value.</param>
-        internal abstract object? RouteGetBaseValue(AvaloniaObject o, BindingPriority maxPriority);
+        internal abstract object? RouteGetBaseValue(AvaloniaObject o);
 
         /// <summary>
         /// Routes an untyped SetValue call to a typed call.
@@ -496,11 +502,8 @@ namespace Avalonia
         /// <param name="priority">The priority.</param>
         internal abstract IDisposable RouteBind(
             AvaloniaObject o,
-            IObservable<BindingValue<object?>> source,
+            IObservable<object?> source,
             BindingPriority priority);
-
-        internal abstract void RouteInheritanceParentChanged(AvaloniaObject o, AvaloniaObject? oldParent);
-        internal abstract ISetterInstance CreateSetterInstance(IStyleable target, object? value);
 
         /// <summary>
         /// Overrides the metadata for the property on the specified type.

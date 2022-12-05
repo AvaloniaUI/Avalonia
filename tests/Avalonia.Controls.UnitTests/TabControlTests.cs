@@ -227,28 +227,24 @@ namespace Avalonia.Controls.UnitTests
             };
 
             var template = new FuncControlTemplate<TabItem>((x, __) => new Decorator());
-
-            using (UnitTestApplication.Start(TestServices.RealStyler))
+            var root = new TestRoot
             {
-                var root = new TestRoot
+                Styles =
                 {
-                    Styles =
+                    new Style(x => x.OfType<TabItem>())
                     {
-                        new Style(x => x.OfType<TabItem>())
+                        Setters =
                         {
-                            Setters =
-                            {
-                                new Setter(TemplatedControl.TemplateProperty, template)
-                            }
+                            new Setter(TemplatedControl.TemplateProperty, template)
                         }
-                    },
-                    Child = new TabControl
-                    {
-                        Template = TabControlTemplate(),
-                        Items = collection,
                     }
-                };
-            }
+                },
+                Child = new TabControl
+                {
+                    Template = TabControlTemplate(),
+                    Items = collection,
+                }
+            };
 
             Assert.Same(collection[0].Template, template);
             Assert.Same(collection[1].Template, template);
@@ -301,7 +297,7 @@ namespace Avalonia.Controls.UnitTests
 
             target.SelectedIndex = 4;
             ((ContentPresenter)target.ContentPart).UpdateChild();
-            dataContext = target.ContentPart.DataContext;
+            dataContext = ((Control)target.ContentPart).DataContext;
             Assert.Equal("Base", dataContext);
         }
 
@@ -425,7 +421,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private IControlTemplate TabControlTemplate()
+        private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
                 new StackPanel
@@ -448,7 +444,7 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        private IControlTemplate TabItemTemplate()
+        private static IControlTemplate TabItemTemplate()
         {
             return new FuncControlTemplate<TabItem>((parent, scope) =>
                 new ContentPresenter
@@ -459,14 +455,14 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private void Prepare(TabControl target)
+        private static void Prepare(TabControl target)
         {
             ApplyTemplate(target);
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
         }
 
-        private void ApplyTemplate(TabControl target)
+        private static void ApplyTemplate(TabControl target)
         {
             target.ApplyTemplate();
 

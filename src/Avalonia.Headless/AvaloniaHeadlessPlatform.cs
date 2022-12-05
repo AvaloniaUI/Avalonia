@@ -63,7 +63,7 @@ namespace Avalonia.Headless
                 .Bind<IPlatformThreadingInterface>().ToConstant(new HeadlessPlatformThreadingInterface())
                 .Bind<IClipboard>().ToSingleton<HeadlessClipboardStub>()
                 .Bind<ICursorFactory>().ToSingleton<HeadlessCursorFactoryStub>()
-                .Bind<IPlatformSettings>().ToConstant(new HeadlessPlatformSettingsStub())
+                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
                 .Bind<IPlatformIconLoader>().ToSingleton<HeadlessIconLoaderStub>()
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())

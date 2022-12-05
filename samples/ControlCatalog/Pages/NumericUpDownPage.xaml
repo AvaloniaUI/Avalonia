@@ -1,8 +1,10 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:sys="clr-namespace:System;assembly=netstandard"
-             xmlns:converter="clr-namespace:ControlCatalog.Converter"
-             x:Class="ControlCatalog.Pages.NumericUpDownPage">
+             xmlns:sys="using:System"
+             xmlns:converter="using:ControlCatalog.Converter"
+             xmlns:pages="using:ControlCatalog.Pages"
+             x:Class="ControlCatalog.Pages.NumericUpDownPage"
+             x:DataType="pages:NumbersPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4"
               MaxWidth="800">
     <TextBlock Margin="2" Classes="h2" TextWrapping="Wrap">Numeric up-down control provides a TextBox with button spinners that allow incrementing and decrementing numeric values by using the spinner buttons, keyboard up/down arrows, or mouse wheel.</TextBlock>
@@ -43,7 +45,7 @@
                   VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="2">CultureInfo:</TextBlock>
-        <ComboBox Grid.Row="2" Grid.Column="1" Items="{Binding Cultures}" SelectedItem="{Binding #upDown.CultureInfo}"
+        <ComboBox x:Name="CultureSelector" Grid.Row="2" Grid.Column="1" Items="{Binding Cultures}"
                   VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">Watermark:</TextBlock>
@@ -77,6 +79,7 @@
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="upDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of decimal NumericUpDown:</Label>
         <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
+                       NumberFormat="{Binding #CultureSelector.SelectedItem, Converter={x:Static pages:NumericUpDownPage.CultureConverter}}"
                        VerticalAlignment="Center" Value="{Binding DecimalValue}"
                        Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
       </StackPanel>

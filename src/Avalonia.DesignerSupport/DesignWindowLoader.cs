@@ -35,7 +35,15 @@ namespace Avalonia.DesignerSupport
                 }
 
                 var localAsm = assemblyPath != null ? Assembly.LoadFile(Path.GetFullPath(assemblyPath)) : null;
-                var loaded = loader.Load(stream, localAsm, null, baseUri, true);
+                var useCompiledBindings = localAsm?.GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .FirstOrDefault(a => a.Key == "AvaloniaUseCompiledBindingsByDefault")?.Value;
+
+                var loaded = loader.Load(new RuntimeXamlLoaderDocument(baseUri, stream), new RuntimeXamlLoaderConfiguration
+                {
+                    LocalAssembly = localAsm,
+                    DesignMode = true,
+                    UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue ) && parsedValue 
+                });
                 var style = loaded as IStyle;
                 var resources = loaded as ResourceDictionary;
                 if (style != null)

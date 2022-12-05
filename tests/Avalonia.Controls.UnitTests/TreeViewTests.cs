@@ -77,7 +77,7 @@ namespace Avalonia.Controls.UnitTests
         public void Items_Should_Be_Created_Using_ItemConatinerTheme_If_Present()
         {
             TreeView target;
-            var theme = new ControlTheme();
+            var theme = new ControlTheme(typeof(TreeViewItem));
 
             var root = new TestRoot
             {
@@ -1235,7 +1235,7 @@ namespace Avalonia.Controls.UnitTests
             ApplyTemplates(tree.Presenter.Panel.Children);
         }
 
-        private void ApplyTemplates(IEnumerable<IControl> controls)
+        private void ApplyTemplates(IEnumerable<Control> controls)
         {
             foreach (TreeViewItem control in controls)
             {
@@ -1293,7 +1293,7 @@ namespace Avalonia.Controls.UnitTests
             };
         }
 
-        private void CreateNodeDataTemplate(IControl control)
+        private void CreateNodeDataTemplate(Control control)
         {
             control.DataTemplates.Add(new TestTreeDataTemplate());
         }
@@ -1344,7 +1344,7 @@ namespace Avalonia.Controls.UnitTests
                 .ToList();
         }
 
-        private IEnumerable<TreeViewItem> ExtractItemContent(IPanel panel, int currentLevel, int level)
+        private IEnumerable<TreeViewItem> ExtractItemContent(Panel panel, int currentLevel, int level)
         {
             foreach (TreeViewItem container in panel.Children)
             {
@@ -1368,7 +1368,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private void ClickContainer(IControl container, KeyModifiers modifiers)
+        private void ClickContainer(Control container, KeyModifiers modifiers)
         {
             _mouse.Click(container, modifiers: modifiers);
         }
@@ -1416,7 +1416,7 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestTreeDataTemplate : ITreeDataTemplate
         {
-            public IControl Build(object param)
+            public Control Build(object param)
             {
                 var node = (Node)param;
                 return new TextBlock { Text = node.Value };

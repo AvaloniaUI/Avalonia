@@ -1,7 +1,9 @@
 <UserControl
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     x:Class="ControlCatalog.Pages.TabControlPage"
-    xmlns="https://github.com/avaloniaui">
+    xmlns="https://github.com/avaloniaui"
+    xmlns:viewModels="using:ControlCatalog.ViewModels"
+    x:DataType="viewModels:TabControlPageViewModel">
     <DockPanel>
         <TextBlock 
             DockPanel.Dock="Top" 
@@ -51,16 +53,10 @@
                 <TabControl
                     Items="{Binding Tabs}"
                     Margin="0 16"
+                    HeaderDisplayMemberBinding="{Binding Header, x:DataType=viewModels:TabControlPageViewModelItem}"
                     TabStripPlacement="{Binding TabPlacement}">
-                    <TabControl.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock
-                                Text="{Binding Header}">
-                            </TextBlock>
-                        </DataTemplate>
-                    </TabControl.ItemTemplate>
                     <TabControl.ContentTemplate>
-                        <DataTemplate>
+                        <DataTemplate x:DataType="viewModels:TabControlPageViewModelItem">
                             <StackPanel Orientation="Vertical" Spacing="8">
                                 <TextBlock Text="{Binding Text}"/>
                                 <Image Source="{Binding Image}" Width="300"/>
@@ -68,7 +64,7 @@
                         </DataTemplate>
                     </TabControl.ContentTemplate>
                     <TabControl.Styles>
-                        <Style Selector="TabItem">
+                        <Style Selector="TabItem" x:DataType="viewModels:TabControlPageViewModelItem">
                             <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
                         </Style>
                     </TabControl.Styles>
