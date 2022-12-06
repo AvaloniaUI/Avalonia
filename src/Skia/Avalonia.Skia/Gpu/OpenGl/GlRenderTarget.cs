@@ -14,10 +14,11 @@ namespace Avalonia.Skia
         private readonly GRContext _grContext;
         private IGlPlatformSurfaceRenderTarget _surface;
 
-        public GlRenderTarget(GRContext grContext, IGlPlatformSurface glSurface)
+        public GlRenderTarget(GRContext grContext, IGlContext glContext, IGlPlatformSurface glSurface)
         {
             _grContext = grContext;
-            _surface = glSurface.CreateGlRenderTarget();
+            using (glContext.EnsureCurrent())
+                _surface = glSurface.CreateGlRenderTarget(glContext);
         }
 
         public void Dispose() => _surface.Dispose();

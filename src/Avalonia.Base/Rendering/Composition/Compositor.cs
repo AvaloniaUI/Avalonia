@@ -34,6 +34,7 @@ namespace Avalonia.Rendering.Composition
         internal ServerCompositor Server => _server;
         private Task? _pendingBatch;
         private readonly object _pendingBatchLock = new();
+        private List<Action> _pendingServerCompositorJobs = new();
 
         internal IEasing DefaultEasing { get; }
         
@@ -43,7 +44,7 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         /// <param name="loop"></param>
         /// <param name="gpu"></param>
-        public Compositor(IRenderLoop loop, IPlatformGpu? gpu)
+        public Compositor(IRenderLoop loop, IPlatformGraphics? gpu)
         {
             Loop = loop;
             _server = new ServerCompositor(loop, gpu, _batchObjectPool, _batchMemoryPool);
@@ -101,6 +102,13 @@ namespace Avalonia.Rendering.Composition
 #endif
                 }
                 _objectsForSerialization.Clear();
+                if (_pendingServerCompositorJobs.Count > 0)
+                {
+                    writer.WriteObject(ServerCompositor.RenderThreadJobsStartMarker);
+                    foreach (var job in _pendingServerCompositorJobs)
+                        writer.WriteObject(job);
+                    writer.WriteObject(ServerCompositor.RenderThreadJobsEndMarker);
+                }
             }
             
             batch.CommitedAt = Server.Clock.Elapsed;
@@ -135,6 +143,29 @@ namespace Avalonia.Rendering.Composition
             Dispatcher.UIThread.VerifyAccess();
             _invokeBeforeCommit.Enqueue(action);
             RequestCommitAsync();
+        }
+
+        /// <summary>
+        /// Attempts to query for a feature from the platform render interface
+        /// </summary>
+        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType)
+        {
+            var tcs = new TaskCompletionSource<object?>();
+            _pendingServerCompositorJobs.Add(() =>
+            {
+                try
+                {
+                    using (Server.RenderInterface.EnsureCurrent())
+                    {
+                        tcs.TrySetResult(Server.RenderInterface.Value.TryGetFeature(featureType));
+                    }
+                }
+                catch (Exception e)
+                {
+                    tcs.SetResult(e);
+                }
+            });
+            return new ValueTask<object?>(tcs.Task);
         }
     }
 }

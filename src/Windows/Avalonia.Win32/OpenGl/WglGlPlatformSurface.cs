@@ -11,18 +11,16 @@ namespace Avalonia.Win32.OpenGl
     class WglGlPlatformSurface: IGlPlatformSurface
     {
 
-        private readonly WglContext _context;
         private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
         
-        public WglGlPlatformSurface(WglContext context, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
+        public WglGlPlatformSurface( EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
         {
-            _context = context;
             _info = info;
         }
         
-        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
-            return new RenderTarget(_context, _info);
+            return new RenderTarget((WglContext)context, _info);
         }
 
         class RenderTarget : IGlPlatformSurfaceRenderTarget

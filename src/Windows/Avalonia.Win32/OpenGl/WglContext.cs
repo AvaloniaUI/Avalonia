@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Disposables;
 using Avalonia.OpenGL;
+using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.OpenGl.WglConsts;
@@ -45,6 +48,7 @@ namespace Avalonia.Win32.OpenGl
             wglDeleteContext(_context);
             ReleaseDC(_hWnd, _dc);
             DestroyWindow(_hWnd);
+            IsLost = true;
         }
 
         public GlVersion Version { get; }
@@ -55,11 +59,14 @@ namespace Avalonia.Win32.OpenGl
         private bool IsCurrent => wglGetCurrentContext() == _context && wglGetCurrentDC() == _dc;
         public IDisposable MakeCurrent()
         {
+            if (IsLost)
+                throw new PlatformGraphicsContextLostException();
             if(IsCurrent)
                 return Disposable.Empty;
             return new WglRestoreContext(_dc, _context, _lock);
         }
 
+        public bool IsLost { get; private set; }
         public IDisposable EnsureCurrent() => MakeCurrent();
 
 
@@ -81,5 +88,14 @@ namespace Avalonia.Win32.OpenGl
                    || _sharedWith == context
                    || _sharedWith != null && _sharedWith == c._sharedWith;
         }
+
+        public bool CanCreateSharedContext => true;
+        public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null)
+        {
+            var versions = preferredVersions?.Append(Version).ToArray() ?? new[] { Version };
+            return WglDisplay.CreateContext(versions, _sharedWith ?? this);
+        }
+
+        public object TryGetFeature(Type featureType) => null;
     }
 }

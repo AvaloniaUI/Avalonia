@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Avalonia.Browser.Skia;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Platform;
@@ -43,6 +44,7 @@ namespace Avalonia.Browser
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(ManualTriggerRenderTimer.Instance)
                 .Bind<IWindowingPlatform>().ToConstant(instance)
+                .Bind<IPlatformGraphics>().ToConstant(new BrowserSkiaGraphics())
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoaderStub>()
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
         }

@@ -18,19 +18,22 @@ namespace Avalonia.OpenGL
 
         public static OpenGlException GetFormattedException(string funcName, EglInterface egl)
         {
-            return GetFormattedException(typeof(EglErrors), funcName, egl.GetError());
+            return GetFormattedException<EglErrors>(funcName, egl.GetError());
         }
 
         public static OpenGlException GetFormattedException(string funcName, GlInterface gl)
         {
-            return GetFormattedException(typeof(GlErrors), funcName, gl.GetError());
+            return GetFormattedException<GlErrors>(funcName, gl.GetError());
         }
 
-        private static OpenGlException GetFormattedException(Type consts, string funcName, int errorCode)
+        public static OpenGlException GetFormattedEglException(string funcName, int errorCode) =>
+            GetFormattedException<EglErrors>(funcName, errorCode);
+
+        private static OpenGlException GetFormattedException<T>(string funcName, int errorCode)
         {
             try
             {
-                string errorName = Enum.GetName(consts, errorCode);
+                string errorName = Enum.GetName(typeof(T), errorCode);
                 return new OpenGlException(
                     $"{funcName} failed with error {errorName} (0x{errorCode.ToString("X")})", errorCode);
             }

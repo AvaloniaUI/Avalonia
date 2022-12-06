@@ -1,193 +1,176 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Threading;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl
 {
-    public class EglDisplay
+    public class EglDisplay : IDisposable
     {
         private readonly EglInterface _egl;
+        private IntPtr _display;
+        private readonly EglDisplayOptions _options;
+        private EglConfigInfo _config;
+        private bool _isLost;
+        private object _lock = new();
+        
         public bool SupportsSharing { get; }
-        private readonly IntPtr _display;
-        private readonly IntPtr _config;
-        private readonly int[] _contextAttributes;
-        private readonly int _surfaceType;
 
         public IntPtr Handle => _display;
-        public IntPtr Config => _config;
-        private int _sampleCount;
-        private int _stencilSize;
-        private GlVersion _version;
-
-        public EglDisplay(EglInterface egl, bool supportsSharing) : this(egl, supportsSharing, -1, IntPtr.Zero, null)
+        public IntPtr Config => _config.Config;
+        internal bool SingleContext => !_options.SupportsMultipleContexts;
+        private List<EglContext> _contexts = new();
+        
+        public EglDisplay() : this(new EglDisplayCreationOptions
         {
-            
-        }
-
-        static IntPtr CreateDisplay(EglInterface egl, int platformType, IntPtr platformDisplay, int[] attrs)
-        {
-            var display = IntPtr.Zero;
-            if (platformType == -1 && platformDisplay == IntPtr.Zero)
-            {
-                if (display == IntPtr.Zero)
-                    display = egl.GetDisplay(IntPtr.Zero);
-            }
-            else
-            {
-                if (!egl.IsGetPlatformDisplayExtAvailable)
-                    throw new OpenGlException("eglGetPlatformDisplayEXT is not supported by libegl");
-                display = egl.GetPlatformDisplayExt(platformType, platformDisplay, attrs);
-            }
-            
-            if (display == IntPtr.Zero)
-                throw OpenGlException.GetFormattedException("eglGetDisplay", egl);
-            return display;
-        }
-
-        public EglDisplay(EglInterface egl, bool supportsSharing, int platformType, IntPtr platformDisplay, int[] attrs)
-            : this(egl, supportsSharing, CreateDisplay(egl, platformType, platformDisplay, attrs))
+            Egl = new EglInterface()
+        })
         {
 
         }
 
-        public EglDisplay(EglInterface egl, bool supportsSharing, IntPtr display)
-        {
-            _egl = egl;
-            SupportsSharing = supportsSharing;
-            _display = display;
-            if(_display == IntPtr.Zero)
-                throw new ArgumentException();
-            
-            
-            if (!_egl.Initialize(_display, out var major, out var minor))
-                throw OpenGlException.GetFormattedException("eglInitialize", _egl);
-
-            var glProfiles = AvaloniaLocator.Current.GetService<AngleOptions>()?.GlProfiles
-                                    ?? new[]
-                                    {
-                                        new GlVersion(GlProfileType.OpenGLES, 3, 0),
-                                        new GlVersion(GlProfileType.OpenGLES, 2, 0)
-                                    };
-
-            var cfgs = glProfiles.Select(x =>
-            {
-                var typeBit = EGL_OPENGL_ES3_BIT;
-
-                switch (x.Major)
-                {
-                    case 2:
-                        typeBit = EGL_OPENGL_ES2_BIT;
-                        break;
-
-                    case 1:
-                        typeBit = EGL_OPENGL_ES_BIT;
-                        break;
-                }
-
-                return new
-                {
-                    Attributes = new[]
-                    {
-                        EGL_CONTEXT_MAJOR_VERSION, x.Major,
-                        EGL_CONTEXT_MINOR_VERSION, x.Minor,
-                        EGL_NONE
-                    },
-                    Api = EGL_OPENGL_ES_API,
-                    RenderableTypeBit = typeBit,
-                    Version = x
-                };
-            });
-
-            foreach (var cfg in cfgs)
-            {
-                if (!_egl.BindApi(cfg.Api))
-                    continue;
-                foreach(var surfaceType in new[]{EGL_PBUFFER_BIT|EGL_WINDOW_BIT, EGL_WINDOW_BIT})
-                foreach(var stencilSize in new[]{8, 1, 0})
-                foreach (var depthSize in new []{8, 1, 0})
-                {
-                    var attribs = new[]
-                    {
-                        EGL_SURFACE_TYPE, surfaceType,
-                        EGL_RENDERABLE_TYPE, cfg.RenderableTypeBit,
-                        EGL_RED_SIZE, 8,
-                        EGL_GREEN_SIZE, 8,
-                        EGL_BLUE_SIZE, 8,
-                        EGL_ALPHA_SIZE, 8,
-                        EGL_STENCIL_SIZE, stencilSize,
-                        EGL_DEPTH_SIZE, depthSize,
-                        EGL_NONE
-                    };
-                    if (!_egl.ChooseConfig(_display, attribs, out _config, 1, out int numConfigs))
-                        continue;
-                    if (numConfigs == 0)
-                        continue;
-                    _contextAttributes = cfg.Attributes;
-                    _surfaceType = surfaceType;
-                    _version = cfg.Version;
-                    _egl.GetConfigAttrib(_display, _config, EGL_SAMPLES, out _sampleCount);
-                    _egl.GetConfigAttrib(_display, _config, EGL_STENCIL_SIZE, out _stencilSize);
-                    goto Found;
-                }
-
-            }
-            Found:
-            if (_contextAttributes == null)
-                throw new OpenGlException("No suitable EGL config was found");
-        }
-
-        public EglDisplay() : this(false)
+        public EglDisplay(EglDisplayCreationOptions options) : this(EglDisplayUtils.CreateDisplay(options), options)
         {
             
         }
         
-        public EglDisplay(bool supportsSharing) : this(new EglInterface(), supportsSharing)
+        public EglDisplay(IntPtr display, EglDisplayOptions options)
         {
-            
+            _egl = options.Egl;
+            SupportsSharing = options.SupportsContextSharing;
+            _display = display;
+            _options = options;
+            if(_display == IntPtr.Zero)
+                throw new ArgumentException();
+
+            _config = EglDisplayUtils.InitializeAndGetConfig(_egl, display, options.GlVersions);
         }
         
         public EglInterface EglInterface => _egl;
-        public EglContext CreateContext(IGlContext share)
+        public EglContext CreateContext(EglContextOptions options)
         {
-            if (share != null && !SupportsSharing)
-                throw new NotSupportedException("Context sharing is not supported by this display");
-            
-            if((_surfaceType|EGL_PBUFFER_BIT) == 0)
-                throw new InvalidOperationException("Platform doesn't support PBUFFER surfaces");
-            var shareCtx = (EglContext)share;
-            var ctx = _egl.CreateContext(_display, _config, shareCtx?.Context ?? IntPtr.Zero, _contextAttributes);
-            if (ctx == IntPtr.Zero)
-                throw OpenGlException.GetFormattedException("eglCreateContext", _egl);
-            
-            var extensions = _egl.QueryString(Handle, EGL_EXTENSIONS);
-            
-            IntPtr surf = IntPtr.Zero;
-            if (extensions?.Contains("EGL_KHR_surfaceless_context") != true)
+            options ??= new EglContextOptions();
+            lock (_lock)
             {
-                surf = _egl.CreatePBufferSurface(_display, _config,
-                    new[] { EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE });
-                if (surf == IntPtr.Zero)
-                    throw OpenGlException.GetFormattedException("eglCreatePBufferSurface", _egl);
-            }
+                var share = options.ShareWith;
+                if (share != null && !SupportsSharing)
+                    throw new NotSupportedException("Context sharing is not supported by this display");
 
-            var rv = new EglContext(this, _egl, shareCtx, ctx,
-                context =>
-                    surf == IntPtr.Zero ? null : new EglSurface(this, context, surf),
-                _version, _sampleCount, _stencilSize);
-            return rv;
+                var offscreenSurface = options.OffscreenSurface;
+
+                if (offscreenSurface == null)
+                {
+                    // Check if eglMakeCurrent can work with EGL_NONE as read-write surfaces
+                    var extensions = _egl.QueryString(Handle, EGL_EXTENSIONS);
+                    if (extensions?.Contains("EGL_KHR_surfaceless_context") != true)
+                    {
+                        // Attempt to create a PBuffer as a surface for offscreen rendering
+                        if ((_config.SurfaceType | EGL_PBUFFER_BIT) == 0)
+                            throw new InvalidOperationException(
+                                "Platform doesn't support EGL_KHR_surfaceless_context and PBUFFER surfaces");
+                        
+                        var pBufferSurface = _egl.CreatePBufferSurface(_display, Config,
+                            new[] { EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE });
+                        if (pBufferSurface == IntPtr.Zero)
+                            throw OpenGlException.GetFormattedException("eglCreatePBufferSurface", _egl);
+
+                        offscreenSurface = new EglSurface(this, pBufferSurface);
+                    }
+                }
+
+                var ctx = _egl.CreateContext(_display, Config, share?.Context ?? IntPtr.Zero, _config.Attributes);
+                if (ctx == IntPtr.Zero)
+                {
+                    var ex = OpenGlException.GetFormattedException("eglCreateContext", _egl);
+                    offscreenSurface?.Dispose();
+                    throw ex;
+                }
+
+                var rv = new EglContext(this, _egl, share, ctx, offscreenSurface,
+                    _config.Version, _config.SampleCount, _config.StencilSize,
+                    options.DisposeCallback, options.ExtraFeatures);
+                _contexts.Add(rv);
+                return rv;
+            }
         }
 
-        public EglContext CreateContext(EglContext share, EglSurface offscreenSurface)
+        public EglSurface CreateWindowSurface(IntPtr window)
         {
-            if (share != null && !SupportsSharing)
-                throw new NotSupportedException("Context sharing is not supported by this display");
+            if (window == IntPtr.Zero)
+                throw new OpenGlException($"Window {window} is invalid.");
 
-            var ctx = _egl.CreateContext(_display, _config, share?.Context ?? IntPtr.Zero, _contextAttributes);
-            if (ctx == IntPtr.Zero)
-                throw OpenGlException.GetFormattedException("eglCreateContext", _egl);
-            var rv = new EglContext(this, _egl, share, ctx, _ => offscreenSurface, _version, _sampleCount, _stencilSize);
-            rv.MakeCurrent(null);
-            return rv;
+            using (Lock())
+            {
+                var s = EglInterface.CreateWindowSurface(Handle, Config, window,
+                    new[] { EGL_NONE, EGL_NONE });
+                if (s == IntPtr.Zero)
+                    throw OpenGlException.GetFormattedException("eglCreateWindowSurface", EglInterface);
+                return new EglSurface(this, s);
+            }
+        }
+        
+        public EglSurface CreatePBufferFromClientBuffer (int bufferType, IntPtr handle, int[] attribs)
+        {
+            using (Lock())
+            {
+                var s = EglInterface.CreatePbufferFromClientBuffer(Handle, bufferType, handle,
+                    Config, attribs);
+
+                if (s == IntPtr.Zero)
+                    throw OpenGlException.GetFormattedException("eglCreatePbufferFromClientBuffer", EglInterface);
+                return new EglSurface(this, s);
+            }
+        }
+
+        protected virtual bool DisplayLockIsSharedWithContexts => false;
+        
+        internal object ContextSharedSyncRoot => DisplayLockIsSharedWithContexts ? _lock : null;
+
+        internal void OnContextLost(EglContext context)
+        {
+            if (_options.ContextLossIsDisplayLoss)
+                _isLost = true;
+        }
+
+        internal void OnContextDisposed(EglContext context)
+        {
+            lock (_lock)
+                _contexts.Remove(context);
+        }
+        
+        public bool IsLost
+        {
+            get
+            {
+                if (_isLost || _display == IntPtr.Zero)
+                    return true;
+                if (_options.DeviceLostCheckCallback?.Invoke() == true)
+                    return _isLost = true;
+                return false;
+            }
+        }
+        
+        public IDisposable Lock()
+        {
+            Monitor.Enter(_lock);
+            return Disposable.Create(() => { Monitor.Exit(_lock); });
+        }
+
+        public void Dispose()
+        {
+            lock (_lock)
+            {
+                foreach(var ctx in _contexts)
+                    ctx.Dispose();
+                _contexts.Clear();
+                if (_display != IntPtr.Zero)
+                    _egl.Terminate(_display);
+                _display = IntPtr.Zero;
+                _config = null;
+                _options.DisposeCallback?.Invoke();
+            }
         }
     }
 }

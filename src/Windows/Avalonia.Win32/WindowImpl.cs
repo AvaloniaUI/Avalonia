@@ -26,7 +26,8 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Collections.Pooled;
 using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
-using Avalonia.Win32.DxgiSwapchain;
+using Avalonia.Win32.DirectX;
+using Avalonia.Win32.OpenGl.Angle;
 
 namespace Avalonia.Win32
 {
@@ -64,7 +65,6 @@ namespace Avalonia.Win32
         private Thickness _offScreenMargin;
         private double _extendTitleBarHint = -1;
         private bool _isUsingComposition;
-        private bool _isUsingDxgiSwapchain;
         private IBlurHost _blurHost;
         private PlatformResizeReason _resizeReason;
         private MOUSEMOVEPOINT _lastWmMousePoint;
@@ -79,7 +79,7 @@ namespace Avalonia.Win32
         private readonly PenDevice _penDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
-        private readonly IGlPlatformSurface _gl;
+        private readonly object _gl;
         private readonly bool _wmPointerEnabled;
 
         private Win32NativeControlHost _nativeControlHost;
@@ -136,23 +136,20 @@ namespace Avalonia.Win32
             };
             _rendererLock = new ManagedDeferredRendererLock();
 
-            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
 
-            var compositionConnector = AvaloniaLocator.Current.GetService<WinUICompositorConnection>();
+            var compositionConnector = AvaloniaLocator.Current.GetService<WinUiCompositorConnection>();
 
-            _isUsingComposition = compositionConnector is { } &&
-                glPlatform is EglPlatformOpenGlInterface egl &&
-                    egl.Display is AngleWin32EglDisplay angleDisplay &&
-                    angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+            var isUsingAngleDX11 = glPlatform is AngleWin32PlatformGraphics angle &&
+                          angle.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+            _isUsingComposition = compositionConnector is { } && isUsingAngleDX11;
 
             DxgiConnection dxgiConnection = null;
+            var isUsingDxgiSwapchain = false;
             if (!_isUsingComposition)
             {
                 dxgiConnection = AvaloniaLocator.Current.GetService<DxgiConnection>();
-                _isUsingDxgiSwapchain = dxgiConnection is { } &&
-                    glPlatform is EglPlatformOpenGlInterface eglDxgi &&
-                        eglDxgi.Display is AngleWin32EglDisplay angleDisplayDxgi &&
-                        angleDisplayDxgi.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+                isUsingDxgiSwapchain = dxgiConnection is { } && isUsingAngleDX11;
             }
 
             _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
@@ -164,24 +161,24 @@ namespace Avalonia.Win32
             {
                 if (_isUsingComposition)
                 {
-                    var cgl = new WinUiCompositedWindowSurface(compositionConnector, this);
+                    var cgl = compositionConnector.CreateSurface(this);
                     _blurHost = cgl;
 
                     _gl = cgl;
 
                     _isUsingComposition = true;
                 }
-                else if (_isUsingDxgiSwapchain)
+                else if (isUsingDxgiSwapchain)
                 {
                     var dxgigl = new DxgiSwapchainWindow(dxgiConnection, this);
                     _gl = dxgigl;
                 }
                 else
                 {
-                    if (glPlatform is EglPlatformOpenGlInterface egl2)
-                        _gl = new EglGlPlatformSurface(egl2, this);
+                    if (glPlatform is AngleWin32PlatformGraphics egl2)
+                        _gl = new EglGlPlatformSurface(this);
                     else if (glPlatform is WglPlatformOpenGlInterface wgl)
-                        _gl = new WglGlPlatformSurface(wgl.PrimaryContext, this);
+                        _gl = new WglGlPlatformSurface(this);
                 }
             }
 
@@ -434,7 +431,7 @@ namespace Avalonia.Win32
                     _ => BlurEffect.None
                 };
 
-                if (Win32Platform.WindowsVersion >= WinUICompositorConnection.MinHostBackdropVersion)
+                if (Win32Platform.WindowsVersion >= WinUiCompositionShared.MinHostBackdropVersion)
                 {
                     unsafe
                     {
@@ -443,7 +440,7 @@ namespace Avalonia.Win32
                     }
                 }
 
-                if (Win32Platform.WindowsVersion < WinUICompositorConnection.MinHostBackdropVersion && effect == BlurEffect.Mica)
+                if (Win32Platform.WindowsVersion < WinUiCompositionShared.MinHostBackdropVersion && effect == BlurEffect.Mica)
                 {
                     effect = BlurEffect.Acrylic;
                 }
@@ -570,16 +567,22 @@ namespace Avalonia.Win32
                 return customRendererFactory.Create(root, loop);
 
             if (Win32Platform.Compositor != null)
-                return new CompositingRenderer(root, Win32Platform.Compositor);
-            
+                return new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
+
             return Win32Platform.UseDeferredRendering
                 ? _isUsingComposition
-                    ? new DeferredRenderer(root, loop)
+                    ? new DeferredRenderer(root, loop, 
+                        () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
+                        Win32Platform.RenderInterface)
                     {
                         RenderOnlyOnRenderThread = true
                     }
-                    : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock)
-                : new ImmediateRenderer((Visual)root);
+                    : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock,
+                        renderTargetFactory: () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
+                        renderInterface: Win32Platform.RenderInterface)
+                : new ImmediateRenderer((Visual)root, 
+                    () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
+                    Win32Platform.RenderInterface);
         }
 
         public void Resize(Size value, PlatformResizeReason reason)

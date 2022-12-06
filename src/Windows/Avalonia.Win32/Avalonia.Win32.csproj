@@ -16,8 +16,12 @@
     <MicroComIdl Include="Win32Com\win32.idl" CSharpInteropPath="Win32Com\Win32.Generated.cs" />
     <MicroComIdl Include="DirectX\directx.idl" CSharpInteropPath="DirectX\directx.Generated.cs" />
   </ItemGroup>
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\SourceGenerators.props" />
   <ItemGroup>
     <Compile Remove="..\..\Shared\ModuleInitializer.cs" />
+    <Compile Remove="..\..\Shared\SourceGeneratorAttributes.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
