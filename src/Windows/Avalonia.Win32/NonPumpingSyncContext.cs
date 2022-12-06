@@ -20,8 +20,10 @@ namespace Avalonia.Win32
 
         public override void Post(SendOrPostCallback d, object state) => _inner.Post(d, state);
         public override void Send(SendOrPostCallback d, object state) => _inner.Send(d, state);
-        
+
+#if !NET6_0_OR_GREATER
         [PrePrepareMethod]
+#endif
         public override int Wait(IntPtr[] waitHandles, bool waitAll, int millisecondsTimeout)
         {
             return UnmanagedMethods.WaitForMultipleObjectsEx(waitHandles.Length, waitHandles, waitAll,
