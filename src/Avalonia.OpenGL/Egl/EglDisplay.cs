@@ -51,6 +51,9 @@ namespace Avalonia.OpenGL.Egl
         public EglInterface EglInterface => _egl;
         public EglContext CreateContext(EglContextOptions options)
         {
+            if (SingleContext && _contexts.Any())
+                throw new OpenGlException("This EGLDisplay can only have one active context");
+            
             options ??= new EglContextOptions();
             lock (_lock)
             {
