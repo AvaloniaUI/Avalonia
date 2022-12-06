@@ -103,9 +103,7 @@ namespace Avalonia.X11
             }
 
             var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
-            if (gl != null)
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl);
-
+            
             if (options.UseCompositor)
                 Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
             else

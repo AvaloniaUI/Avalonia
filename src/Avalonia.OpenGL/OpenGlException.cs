@@ -18,28 +18,33 @@ namespace Avalonia.OpenGL
 
         public static OpenGlException GetFormattedException(string funcName, EglInterface egl)
         {
-            return GetFormattedException<EglErrors>(funcName, egl.GetError());
+            return GetFormattedEglException(funcName, egl.GetError());
         }
 
         public static OpenGlException GetFormattedException(string funcName, GlInterface gl)
         {
-            return GetFormattedException<GlErrors>(funcName, gl.GetError());
+            var err = gl.GetError();
+            return GetFormattedException(funcName, (GlErrors)err, err);
         }
 
         public static OpenGlException GetFormattedEglException(string funcName, int errorCode) =>
-            GetFormattedException<EglErrors>(funcName, errorCode);
+            GetFormattedException(funcName, (EglErrors)errorCode,errorCode);
 
-        private static OpenGlException GetFormattedException<T>(string funcName, int errorCode)
+        private static OpenGlException GetFormattedException<T>(string funcName, T errorCode, int intErrorCode) where T : struct, Enum
         {
             try
             {
-                string errorName = Enum.GetName(typeof(T), errorCode);
+#if NET6_0_OR_GREATER
+                var errorName = Enum.GetName(errorCode);
+#else
+                var errorName = Enum.GetName(typeof(T), errorCode);
+#endif
                 return new OpenGlException(
-                    $"{funcName} failed with error {errorName} (0x{errorCode.ToString("X")})", errorCode);
+                    $"{funcName} failed with error {errorName} (0x{errorCode.ToString("X")})", intErrorCode);
             }
             catch (ArgumentException)
             {
-                return new OpenGlException($"{funcName} failed with error 0x{errorCode.ToString("X")}", errorCode);
+                return new OpenGlException($"{funcName} failed with error 0x{errorCode.ToString("X")}", intErrorCode);
             }
         }
     }

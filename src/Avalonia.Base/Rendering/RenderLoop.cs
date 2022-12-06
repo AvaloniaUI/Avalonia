@@ -101,8 +101,7 @@ namespace Avalonia.Rendering
                     lock (_items)
                     {
                         _itemsCopy.Clear();
-                        foreach (var i in _items)
-                            _itemsCopy.Add(i);
+                        _itemsCopy.AddRange(_items);
                     }
                     
                     foreach (IRenderLoopTask item in _itemsCopy)
