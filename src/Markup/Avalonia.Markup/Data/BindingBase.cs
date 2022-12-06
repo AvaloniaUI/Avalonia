@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -7,7 +8,6 @@ using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Parsers;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
@@ -81,6 +81,7 @@ namespace Avalonia.Data
             bool enableDataValidation);
 
         /// <inheritdoc/>
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
         public InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,

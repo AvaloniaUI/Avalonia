@@ -21,6 +21,7 @@
   <Import Project="..\..\build\BuildTargets.targets" />
   <!--<Import Project="..\..\build\ApiDiff.props" />-->
   <Import Project="..\..\build\NullableEnable.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
 
   <ItemGroup Label="InternalsVisibleTo">

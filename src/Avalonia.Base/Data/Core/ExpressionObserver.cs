@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -126,6 +127,7 @@ namespace Avalonia.Data.Core
         /// <param name="description">
         /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
         /// </param>
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ExpressionSafeSupressWarningMessage)]
         public static ExpressionObserver Create<T, U>(
             T? root,
             Expression<Func<T, U>> expression,
@@ -144,6 +146,7 @@ namespace Avalonia.Data.Core
         /// <param name="description">
         /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
         /// </param>
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ExpressionSafeSupressWarningMessage)]
         public static ExpressionObserver Create<T, U>(
             IObservable<T> rootObservable,
             Expression<Func<T, U>> expression,
@@ -168,6 +171,7 @@ namespace Avalonia.Data.Core
         /// <param name="description">
         /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
         /// </param>
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ExpressionSafeSupressWarningMessage)]
         public static ExpressionObserver Create<T, U>(
             Func<T> rootGetter,
             Expression<Func<T, U>> expression,
@@ -283,6 +287,7 @@ namespace Avalonia.Data.Core
             }
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
         private static ExpressionNode Parse(LambdaExpression expression, bool enableDataValidation)
         {
             return ExpressionTreeParser.Parse(expression, enableDataValidation);

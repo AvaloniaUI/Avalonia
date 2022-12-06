@@ -40,6 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{A689DE
 		.editorconfig = .editorconfig
 		src\Shared\IsExternalInit.cs = src\Shared\IsExternalInit.cs
 		src\Shared\ModuleInitializer.cs = src\Shared\ModuleInitializer.cs
+		src\Shared\NullableAttributes.cs = src\Shared\NullableAttributes.cs
 		src\Shared\SourceGeneratorAttributes.cs = src\Shared\SourceGeneratorAttributes.cs
 		src\Avalonia.Base\Compatibility\StringCompatibilityExtensions.cs = src\Avalonia.Base\Compatibility\StringCompatibilityExtensions.cs
 	EndProjectSection
@@ -119,6 +120,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\SourceLink.props = build\SourceLink.props
 		build\System.Drawing.Common.props = build\System.Drawing.Common.props
 		build\System.Memory.props = build\System.Memory.props
+		build\TrimmingEnable.props = build\TrimmingEnable.props
 		build\UnitTests.NetFX.props = build\UnitTests.NetFX.props
 		build\XUnit.props = build\XUnit.props
 	EndProjectSection
@@ -222,9 +224,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobileSandbox.iOS", "sample
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MobileSandbox.Desktop", "samples\MobileSandbox.Desktop\MobileSandbox.Desktop.csproj", "{62D392C9-81CF-487F-92E8-598B2AF3FDCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Browser", "src\Browser\Avalonia.Browser\Avalonia.Browser.csproj", "{4A39637C-9338-4925-A4DB-D072E292EC78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Browser", "src\Browser\Avalonia.Browser\Avalonia.Browser.csproj", "{4A39637C-9338-4925-A4DB-D072E292EC78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Browser.Blazor", "src\Browser\Avalonia.Browser.Blazor\Avalonia.Browser.Blazor.csproj", "{47F8530C-F19B-4B1A-B4D6-EB231522AE5D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Browser.Blazor", "src\Browser\Avalonia.Browser.Blazor\Avalonia.Browser.Blazor.csproj", "{47F8530C-F19B-4B1A-B4D6-EB231522AE5D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Browser", "samples\ControlCatalog.Browser\ControlCatalog.Browser.csproj", "{15B93A4C-1B46-43F6-B534-7B25B6E99932}"
 EndProject

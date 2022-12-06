@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -9,6 +10,9 @@ namespace Avalonia.Remote.Protocol
     {
         private readonly Dictionary<Guid, Type> _guidsToTypes = new Dictionary<Guid, Type>();
         private readonly Dictionary<Type, Guid> _typesToGuids = new Dictionary<Type, Guid>();
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026",
+            Justification = "If type was trimmed, we don't need to resolve it in the remove protocol")]
         public DefaultMessageTypeResolver(params Assembly[] assemblies)
         {
             foreach (var asm in

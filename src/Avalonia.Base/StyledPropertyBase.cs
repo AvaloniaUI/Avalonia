@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
@@ -206,6 +207,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
         internal override IDisposable? RouteSetValue(
             AvaloniaObject target,
             object? value,

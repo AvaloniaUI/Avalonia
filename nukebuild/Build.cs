@@ -80,7 +80,6 @@ partial class Build : NukeBuild
         if (Parameters.IsRunningOnAzure)
             c.AddProperty("JavaSdkDirectory", GetVariable<string>("JAVA_HOME_11_X64"));
         c.AddProperty("PackageVersion", Parameters.Version)
-            .AddProperty("iOSRoslynPathHackRequired", true)
             .SetConfiguration(Parameters.Configuration)
             .SetVerbosity(DotNetVerbosity.Minimal);
         return c;
