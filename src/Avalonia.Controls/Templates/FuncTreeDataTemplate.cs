@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Templates
         /// </param>
         public FuncTreeDataTemplate(
             Type type,
-            Func<object?, INameScope, IControl> build,
+            Func<object?, INameScope, Control> build,
             Func<object?, IEnumerable> itemsSelector)
             : this(o => IsInstance(o, type), build, itemsSelector)
         {
@@ -44,7 +44,7 @@ namespace Avalonia.Controls.Templates
         /// </param>
         public FuncTreeDataTemplate(
             Func<object?, bool> match,
-            Func<object?, INameScope, IControl?> build,
+            Func<object?, INameScope, Control?> build,
             Func<object?, IEnumerable> itemsSelector)
             : base(match, build)
         {

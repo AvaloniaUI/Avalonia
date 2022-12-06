@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Input
 {
@@ -12,7 +9,7 @@ namespace Avalonia.Input
     /// Defines input-related functionality for a control.
     /// </summary>
     [NotClientImplementable]
-    public interface IInputElement : IInteractive, IVisual
+    public interface IInputElement
     {
         /// <summary>
         /// Occurs when the control receives focus.
@@ -93,7 +90,12 @@ namespace Avalonia.Input
         /// <see cref="IsEnabled"/> value of this control and its parent controls.
         /// </remarks>
         bool IsEffectivelyEnabled { get; }
-        
+
+        /// <summary>
+        /// Gets a value indicating whether this control and all its parents are visible.
+        /// </summary>
+        bool IsEffectivelyVisible { get; }
+
         /// <summary>
         /// Gets a value indicating whether keyboard focus is anywhere within the element or its visual tree child elements.
         /// </summary>
@@ -123,5 +125,32 @@ namespace Avalonia.Input
         /// Gets the key bindings for the element.
         /// </summary>
         List<KeyBinding> KeyBindings { get; }
+
+        /// <summary>
+        /// Adds a handler for the specified routed event.
+        /// </summary>
+        /// <param name="routedEvent">The routed event.</param>
+        /// <param name="handler">The handler.</param>
+        /// <param name="routes">The routing strategies to listen to.</param>
+        /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
+        /// <returns>A disposable that terminates the event subscription.</returns>
+        void AddHandler(
+            RoutedEvent routedEvent,
+            Delegate handler,
+            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
+            bool handledEventsToo = false);
+
+        /// <summary>
+        /// Removes a handler for the specified routed event.
+        /// </summary>
+        /// <param name="routedEvent">The routed event.</param>
+        /// <param name="handler">The handler.</param>
+        void RemoveHandler(RoutedEvent routedEvent, Delegate handler);
+
+        /// <summary>
+        /// Raises a routed event.
+        /// </summary>
+        /// <param name="e">The event args.</param>
+        void RaiseEvent(RoutedEventArgs e);
     }
 }

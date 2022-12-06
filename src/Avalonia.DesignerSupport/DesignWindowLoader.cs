@@ -38,10 +38,9 @@ namespace Avalonia.DesignerSupport
                 var useCompiledBindings = localAsm?.GetCustomAttributes<AssemblyMetadataAttribute>()
                     .FirstOrDefault(a => a.Key == "AvaloniaUseCompiledBindingsByDefault")?.Value;
 
-                var loaded = loader.Load(stream, new RuntimeXamlLoaderConfiguration
+                var loaded = loader.Load(new RuntimeXamlLoaderDocument(baseUri, stream), new RuntimeXamlLoaderConfiguration
                 {
                     LocalAssembly = localAsm,
-                    BaseUri = baseUri,
                     DesignMode = true,
                     UseCompiledBindingsByDefault = bool.TryParse(useCompiledBindings, out var parsedValue ) && parsedValue 
                 });

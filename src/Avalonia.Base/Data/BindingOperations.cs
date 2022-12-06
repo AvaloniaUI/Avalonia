@@ -9,7 +9,7 @@ namespace Avalonia.Data
         public static readonly object DoNothing = new DoNothingType();
 
         /// <summary>
-        /// Applies an <see cref="InstancedBinding"/> a property on an <see cref="IAvaloniaObject"/>.
+        /// Applies an <see cref="InstancedBinding"/> a property on an <see cref="AvaloniaObject"/>.
         /// </summary>
         /// <param name="target">The target object.</param>
         /// <param name="property">The property to bind.</param>
@@ -22,7 +22,7 @@ namespace Avalonia.Data
         /// </param>
         /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
         public static IDisposable Apply(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty property,
             InstancedBinding binding,
             object? anchor)

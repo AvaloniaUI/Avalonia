@@ -8,7 +8,7 @@ namespace Avalonia.Rendering
     /// Represents the root of a renderable tree.
     /// </summary>
     [NotClientImplementable]
-    public interface IRenderRoot : IVisual
+    public interface IRenderRoot
     {
         /// <summary>
         /// Gets the client size of the window.

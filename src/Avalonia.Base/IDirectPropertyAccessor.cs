@@ -24,13 +24,13 @@ namespace Avalonia
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <returns>The property value.</returns>
-        object? GetValue(IAvaloniaObject instance);
+        object? GetValue(AvaloniaObject instance);
 
         /// <summary>
         /// Sets the value of the property on the instance.
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <param name="value">The value.</param>
-        void SetValue(IAvaloniaObject instance, object? value);
+        void SetValue(AvaloniaObject instance, object? value);
     }
 }

@@ -30,13 +30,13 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new TestVisual();
             var child = new TestVisual();
-            var parents = new List<IVisual>();
+            var parents = new List<Visual>();
 
             child.GetObservable(Visual.VisualParentProperty).Subscribe(x => parents.Add(x));
             target.AddChild(child);
             target.RemoveChild(child);
 
-            Assert.Equal(new IVisual[] { null, target, null }, parents);
+            Assert.Equal(new Visual[] { null, target, null }, parents);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace Avalonia.Base.UnitTests
         {
             var root = new TestRoot();
 
-            Assert.Same(root, ((IVisual)root).VisualRoot);
+            Assert.Same(root, root.VisualRoot);
         }
 
         [Fact]
@@ -143,8 +143,8 @@ namespace Avalonia.Base.UnitTests
             root.Child = child1;
             child1.Child = child2;
 
-            Assert.Same(root, ((IVisual)child1).VisualRoot);
-            Assert.Same(root, ((IVisual)child2).VisualRoot);
+            Assert.Same(root, child1.VisualRoot);
+            Assert.Same(root, child2.VisualRoot);
         }
 
         [Fact]

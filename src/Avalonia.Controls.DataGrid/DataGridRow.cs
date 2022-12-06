@@ -58,7 +58,7 @@ namespace Avalonia.Controls
 
         private bool _detailsLoaded;
         private bool _detailsVisibilityNotificationPending;
-        private IControl _detailsContent;
+        private Control _detailsContent;
         private IDisposable _detailsContentSizeSubscription;
         private DataGridDetailsPresenter _detailsElement;
 
@@ -441,7 +441,7 @@ namespace Avalonia.Controls
         public static DataGridRow GetRowContainingElement(Control element)
         {
             // Walk up the tree to find the DataGridRow that contains the element
-            IVisual parent = element;
+            Visual parent = element;
             DataGridRow row = parent as DataGridRow;
             while ((parent != null) && (row == null))
             {

@@ -125,7 +125,7 @@ namespace Avalonia.Controls.Documents
         /// Adds a control wrapped inside a <see cref="InlineUIContainer"/> to the collection.
         /// </summary>
         /// <param name="control">The to be added control.</param>
-        public void Add(IControl control)
+        public void Add(Control control)
         {
             Add(new InlineUIContainer(control));
         }

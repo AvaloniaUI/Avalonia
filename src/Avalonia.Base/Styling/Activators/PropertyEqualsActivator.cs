@@ -7,13 +7,13 @@ namespace Avalonia.Styling.Activators
     /// </summary>
     internal class PropertyEqualsActivator : StyleActivatorBase, IObserver<object?>
     {
-        private readonly IStyleable _control;
+        private readonly StyledElement _control;
         private readonly AvaloniaProperty _property;
         private readonly object? _value;
         private IDisposable? _subscription;
 
         public PropertyEqualsActivator(
-            IStyleable control,
+            StyledElement control,
             AvaloniaProperty property,
             object? value)
         {

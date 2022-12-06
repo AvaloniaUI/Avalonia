@@ -13,7 +13,7 @@ namespace Avalonia.Win32
         private HitTestValues HitTestNCA(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
         {
             // Get the point coordinates for the hit test (screen space).
-            var ptMouse = PointFromLParam(lParam);
+            var ptMouse = WindowImpl.PointFromLParam(lParam);
 
             // Get the window rectangle.
             GetWindowRect(hWnd, out var rcWindow);
@@ -105,13 +105,13 @@ namespace Avalonia.Win32
 
                         if (hittestResult == HitTestValues.HTCAPTION)
                         {
-                            var position = PointToClient(PointFromLParam(lParam));
+                            var position = PointToClient(WindowImpl.PointFromLParam(lParam));
 
                             if (_owner is Window window)
                             {
-                                var visual = window.Renderer.HitTestFirst(position, _owner, x =>
+                                var visual = window.Renderer.HitTestFirst(position, (Visual)_owner, x =>
                                 {
-                                    if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsVisible))
+                                    if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                     {
                                         return false;
                                     }

@@ -13,7 +13,7 @@ namespace Avalonia.Layout
 {
     internal class ElementManager
     {
-        private readonly List<ILayoutable?> _realizedElements = new List<ILayoutable?>();
+        private readonly List<Layoutable?> _realizedElements = new List<Layoutable?>();
         private readonly List<Rect> _realizedElementLayoutBounds = new List<Rect>();
         private int _firstRealizedDataIndex;
         private VirtualizingLayoutContext? _context;
@@ -69,9 +69,9 @@ namespace Avalonia.Layout
             return IsVirtualizingContext ? _realizedElements.Count : _context!.ItemCount;
         }
 
-        public ILayoutable GetAt(int realizedIndex)
+        public Layoutable GetAt(int realizedIndex)
         {
-            ILayoutable? element;
+            Layoutable? element;
 
             if (IsVirtualizingContext)
             {
@@ -99,7 +99,7 @@ namespace Avalonia.Layout
             return element;
         }
 
-        public void Add(ILayoutable element, int dataIndex)
+        public void Add(Layoutable element, int dataIndex)
         {
             if (_realizedElements.Count == 0)
             {
@@ -110,7 +110,7 @@ namespace Avalonia.Layout
             _realizedElementLayoutBounds.Add(default);
         }
 
-        public void Insert(int realizedIndex, int dataIndex, ILayoutable? element)
+        public void Insert(int realizedIndex, int dataIndex, Layoutable? element)
         {
             if (realizedIndex == 0)
             {
@@ -207,7 +207,7 @@ namespace Avalonia.Layout
 
         public bool IsIndexValidInData(int currentIndex) => (uint)currentIndex < _context!.ItemCount;
 
-        public ILayoutable? GetRealizedElement(int dataIndex)
+        public Layoutable? GetRealizedElement(int dataIndex)
         {
             return IsVirtualizingContext ?
                 GetAt(GetRealizedRangeIndexFromDataIndex(dataIndex)) :
@@ -330,7 +330,7 @@ namespace Avalonia.Layout
             }
         }
 
-        public int GetElementDataIndex(ILayoutable suggestedAnchor)
+        public int GetElementDataIndex(Layoutable suggestedAnchor)
         {
             var it = _realizedElements.IndexOf(suggestedAnchor);
             return it != -1 ? GetDataIndexFromRealizedRangeIndex(it) : -1;

@@ -14,12 +14,14 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Should_Register_With_Host_When_TemplatedParent_Set()
         {
-            var host = new Mock<IItemsPresenterHost>();
+            var host = new Carousel();
             var target = new CarouselPresenter();
 
-            target.SetValue(Control.TemplatedParentProperty, host.Object);
+            Assert.Null(host.Presenter);
 
-            host.Verify(x => x.RegisterItemsPresenter(target));
+            target.SetValue(Control.TemplatedParentProperty, host);
+
+            Assert.Same(target, host.Presenter);
         }
 
         [Fact]
@@ -27,7 +29,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
         {
             var target = new CarouselPresenter
             {
-                ItemsPanel = new FuncTemplate<IPanel>(() => new Panel()),
+                ItemsPanel = new FuncTemplate<Panel>(() => new Panel()),
             };
 
             target.ApplyTemplate();
@@ -383,7 +385,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 AssertSingle(target);
             }
 
-            private static IControl AssertSingle(CarouselPresenter target)
+            private static Control AssertSingle(CarouselPresenter target)
             {
                 var items = (IList)target.Items;
                 var index = target.SelectedIndex;

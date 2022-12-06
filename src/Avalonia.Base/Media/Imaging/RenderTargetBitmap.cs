@@ -7,7 +7,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Media.Imaging
 {
     /// <summary>
-    /// A bitmap that holds the rendering of a <see cref="IVisual"/>.
+    /// A bitmap that holds the rendering of a <see cref="Visual"/>.
     /// </summary>
     public class RenderTargetBitmap : Bitmap, IDisposable, IRenderTarget
     {
@@ -44,7 +44,7 @@ namespace Avalonia.Media.Imaging
         /// Renders a visual to the <see cref="RenderTargetBitmap"/>.
         /// </summary>
         /// <param name="visual">The visual to render.</param>
-        public void Render(IVisual visual) => ImmediateRenderer.Render(visual, this);
+        public void Render(Visual visual) => ImmediateRenderer.Render(visual, this);
 
         /// <summary>
         /// Creates a platform-specific implementation for a <see cref="RenderTargetBitmap"/>.

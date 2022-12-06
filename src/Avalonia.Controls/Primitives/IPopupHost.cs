@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Primitives
         /// Gets the root of the visual tree in the case where the popup is presented using a
         /// separate visual tree.
         /// </summary>
-        IVisual? HostedVisualTreeRoot { get; }
+        Visual? HostedVisualTreeRoot { get; }
 
         /// <summary>
         /// Raised when the control's template is applied.
@@ -88,7 +88,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rect">
         /// The anchor rect. If null, the bounds of <paramref name="target"/> will be used.
         /// </param>
-        void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
+        void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None,
             PopupGravity gravity = PopupGravity.None,
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
@@ -98,7 +98,7 @@ namespace Avalonia.Controls.Primitives
         /// Sets the control to display in the popup.
         /// </summary>
         /// <param name="control"></param>
-        void SetChild(IControl? control);
+        void SetChild(Control? control);
 
         /// <summary>
         /// Shows the popup.

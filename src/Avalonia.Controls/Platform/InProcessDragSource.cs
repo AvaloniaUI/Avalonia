@@ -61,7 +61,7 @@ namespace Avalonia.Platform
             _lastPosition = pt;
 
             RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData!, _allowedEffects, modifiers);
-            var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
+            var tl = (root as Visual)?.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
             tl?.PlatformImpl?.Input?.Invoke(rawEvent);
 
             var effect = GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
@@ -69,7 +69,7 @@ namespace Avalonia.Platform
             return effect;
         }
 
-        private DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
+        private static DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
         {
             if (effect == DragDropEffects.Copy || effect == DragDropEffects.Move || effect == DragDropEffects.Link || effect == DragDropEffects.None)
                 return effect; // No need to check for the modifiers.
@@ -80,7 +80,7 @@ namespace Avalonia.Platform
             return DragDropEffects.Move;
         }
 
-        private StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
+        private static StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
         {
             if (effects.HasAllFlags(DragDropEffects.Copy))
                 return StandardCursorType.DragCopy;
@@ -200,8 +200,8 @@ namespace Avalonia.Platform
 
                     if (e.Root != _lastRoot)
                     {
-                        if (_lastRoot != null)
-                            RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, _lastRoot.PointToClient(e.Root.PointToScreen(e.Position)), e.InputModifiers);
+                        if (_lastRoot is Visual lr && e.Root is Visual r)
+                            RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, lr.PointToClient(r.PointToScreen(e.Position)), e.InputModifiers);
                         RaiseEventAndUpdateCursor(RawDragEventType.DragEnter, e.Root, e.Position, e.InputModifiers);
                     }
                     else

@@ -110,45 +110,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void StyleInclude_Is_Built()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow
-                       .With(theme: () => new Styles())))
-            {
-                var xaml = @"
-<ContentControl xmlns='https://github.com/avaloniaui'>
-    <ContentControl.Styles>
-        <StyleInclude Source='avares://Avalonia.Markup.Xaml.UnitTests/Xaml/Style1.xaml'/>
-    </ContentControl.Styles>
-</ContentControl>";
-
-                var window = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
-                
-                Assert.IsType<Style>(window.Styles[0]);
-            }
-        }
-        
-        [Fact]
-        public void StyleInclude_Is_Built_Resources()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow
-                       .With(theme: () => new Styles())))
-            {
-                var xaml = @"
-<ContentControl xmlns='https://github.com/avaloniaui'
-                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <ContentControl.Resources>
-        <StyleInclude x:Key='Include' Source='avares://Avalonia.Markup.Xaml.UnitTests/Xaml/Style1.xaml'/>
-    </ContentControl.Resources>
-</ContentControl>";
-
-                var window = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
-
-                Assert.IsType<Style>(window.Resources["Include"]);
-            }
-        }
-        
-        [Fact]
         public void Setter_Can_Contain_Template()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))

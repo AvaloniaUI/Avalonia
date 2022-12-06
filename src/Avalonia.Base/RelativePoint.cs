@@ -199,7 +199,7 @@ namespace Avalonia
         {
             return _unit == RelativeUnit.Absolute ?
                 _point.ToString() :
-                 string.Format(CultureInfo.InvariantCulture, "{0}%, {1}%", _point.X * 100, _point.Y * 100);
+                string.Format(CultureInfo.InvariantCulture, "{0}%, {1}%", _point.X * 100, _point.Y * 100);
         }
     }
 }

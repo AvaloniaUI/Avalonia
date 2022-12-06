@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -10,8 +11,10 @@ namespace Avalonia.Data.Core.Plugins
         private readonly Dictionary<(Type, string), MethodInfo?> _methodLookup =
             new Dictionary<(Type, string), MethodInfo?>();
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string methodName) => GetFirstMethodWithName(obj.GetType(), methodName) != null;
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor? Start(WeakReference<object?> reference, string methodName)
         {
             _ = reference ?? throw new ArgumentNullException(nameof(reference));
@@ -34,7 +37,8 @@ namespace Avalonia.Data.Core.Plugins
             }
         }
 
-        private MethodInfo? GetFirstMethodWithName(Type type, string methodName)
+        private MethodInfo? GetFirstMethodWithName(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] Type type, string methodName)
         {
             var key = (type, methodName);
 
@@ -46,7 +50,8 @@ namespace Avalonia.Data.Core.Plugins
             return methodInfo;
         }
 
-        private MethodInfo? TryFindAndCacheMethod(Type type, string methodName)
+        private MethodInfo? TryFindAndCacheMethod(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] Type type, string methodName)
         {
             MethodInfo? found = null;
 

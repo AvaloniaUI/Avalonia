@@ -54,14 +54,14 @@ namespace Avalonia
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <returns>The property value.</returns>
-        internal abstract TValue InvokeGetter(IAvaloniaObject instance);
+        internal abstract TValue InvokeGetter(AvaloniaObject instance);
 
         /// <summary>
         /// Sets the value of the property on the instance.
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <param name="value">The value.</param>
-        internal abstract void InvokeSetter(IAvaloniaObject instance, BindingValue<TValue> value);
+        internal abstract void InvokeSetter(AvaloniaObject instance, BindingValue<TValue> value);
 
         /// <summary>
         /// Gets the unset value for the property on the specified type.
@@ -91,7 +91,7 @@ namespace Avalonia
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="metadata">The metadata.</param>
-        public void OverrideMetadata<T>(DirectPropertyMetadata<TValue> metadata) where T : IAvaloniaObject
+        public void OverrideMetadata<T>(DirectPropertyMetadata<TValue> metadata) where T : AvaloniaObject
         {
             base.OverrideMetadata(typeof(T), metadata);
         }

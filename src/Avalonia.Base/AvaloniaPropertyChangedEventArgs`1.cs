@@ -16,7 +16,7 @@ namespace Avalonia
         /// <param name="newValue">The new value of the property.</param>
         /// <param name="priority">The priority of the binding that produced the value.</param>
         public AvaloniaPropertyChangedEventArgs(
-            IAvaloniaObject sender,
+            AvaloniaObject sender,
             AvaloniaProperty<T> property,
             Optional<T> oldValue,
             BindingValue<T> newValue,
@@ -26,7 +26,7 @@ namespace Avalonia
         }
 
         internal AvaloniaPropertyChangedEventArgs(
-            IAvaloniaObject sender,
+            AvaloniaObject sender,
             AvaloniaProperty<T> property,
             Optional<T> oldValue,
             BindingValue<T> newValue,

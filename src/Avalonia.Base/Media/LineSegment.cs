@@ -1,3 +1,5 @@
+using System;
+
 namespace Avalonia.Media
 {
     public sealed class LineSegment : PathSegment
@@ -26,6 +28,6 @@ namespace Avalonia.Media
         }
 
         public override string ToString()
-            => $"L {Point}";
+            => FormattableString.Invariant($"L {Point}");
     }
 }

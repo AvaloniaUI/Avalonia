@@ -270,15 +270,16 @@ namespace Avalonia.Controls
                     double percent = Maximum == Minimum ? 1.0 : (Value - Minimum) / (Maximum - Minimum);
 
                     // When the Orientation changed, the indicator's Width or Height should set to double.NaN.
+                    // Indicator size calculation should consider the ProgressBar's Padding property setting
                     if (Orientation == Orientation.Horizontal)
                     {
-                        _indicator.Width = barSize.Width * percent;
+                        _indicator.Width = (barSize.Width - _indicator.Margin.Left - _indicator.Margin.Right) * percent;
                         _indicator.Height = double.NaN;
                     }
                     else
                     {
                         _indicator.Width = double.NaN;
-                        _indicator.Height = barSize.Height * percent;
+                        _indicator.Height = (barSize.Height - _indicator.Margin.Top - _indicator.Margin.Bottom) * percent;
                     }
 
 
