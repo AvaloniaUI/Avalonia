@@ -234,7 +234,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
                 parsedDocuments.Add(new XamlDocumentResource(parsed, document.BaseUri?.ToString(), null, null,
                     builder,
                     compiler.DefinePopulateMethod(builder, parsed, AvaloniaXamlIlCompiler.PopulateName, true),
-                    compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, true)));
+                    document.RootInstance is null ? compiler.DefineBuildMethod(builder, parsed, AvaloniaXamlIlCompiler.BuildName, true) : null));
                 originalDocuments.Add(document);
             }
 
