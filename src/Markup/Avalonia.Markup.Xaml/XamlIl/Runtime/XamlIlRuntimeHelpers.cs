@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
@@ -141,6 +142,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.Runtime
                 _nsInfo = nsInfo;
             }
 
+            [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
             public Type Resolve(string qualifiedTypeName)
             {
                 var sp = qualifiedTypeName.Split(new[] {':'}, 2);

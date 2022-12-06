@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Controls;
 using Avalonia.Logging;
@@ -10,6 +11,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Xaml.Converters
 {
+    [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
     public class AvaloniaPropertyTypeConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -48,6 +50,7 @@ namespace Avalonia.Markup.Xaml.Converters
             return property;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
         private static Type TryResolveOwnerByName(ITypeDescriptorContext context, string ns, string owner)
         {
             if (owner != null)
