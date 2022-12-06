@@ -196,7 +196,7 @@ namespace Avalonia.Animation
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        private bool IsValidXValue(double value)
+        private static bool IsValidXValue(double value)
         {
             return value >= 0.0 && value <= 1.0;
         }

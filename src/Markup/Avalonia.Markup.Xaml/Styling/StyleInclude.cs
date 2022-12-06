@@ -2,6 +2,7 @@ using Avalonia.Styling;
 using System;
 using Avalonia.Controls;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -10,8 +11,10 @@ namespace Avalonia.Markup.Xaml.Styling
     /// <summary>
     /// Includes a style from a URL.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
     public class StyleInclude : IStyle, IResourceProvider
     {
+        private readonly IServiceProvider? _serviceProvider;
         private readonly Uri? _baseUri;
         private IStyle[]? _loaded;
         private bool _isLoading;
@@ -31,6 +34,7 @@ namespace Avalonia.Markup.Xaml.Styling
         /// <param name="serviceProvider">The XAML service provider.</param>
         public StyleInclude(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             _baseUri = serviceProvider.GetContextBaseUri();
         }
 
@@ -51,7 +55,8 @@ namespace Avalonia.Markup.Xaml.Styling
                 if (_loaded == null)
                 {
                     _isLoading = true;
-                    var loaded = (IStyle)AvaloniaXamlLoader.Load(Source, _baseUri);
+                    var source = Source ?? throw new InvalidOperationException("StyleInclude.Source must be set.");
+                    var loaded = (IStyle)AvaloniaXamlLoader.Load(_serviceProvider, source, _baseUri);
                     _loaded = new[] { loaded };
                     _isLoading = false;
                 }

@@ -3,7 +3,7 @@
     public class IndexerBinding : IBinding
     {
         public IndexerBinding(
-            IAvaloniaObject source,
+            AvaloniaObject source,
             AvaloniaProperty property,
             BindingMode mode)
         {
@@ -12,12 +12,12 @@
             Mode = mode;
         }
 
-        private IAvaloniaObject Source { get; }
+        private AvaloniaObject Source { get; }
         public AvaloniaProperty Property { get; }
         private BindingMode Mode { get; }
 
         public InstancedBinding? Initiate(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)

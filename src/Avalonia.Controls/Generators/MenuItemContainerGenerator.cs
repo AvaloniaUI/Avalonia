@@ -6,13 +6,13 @@
         /// Initializes a new instance of the <see cref="ItemContainerGenerator{T}"/> class.
         /// </summary>
         /// <param name="owner">The owner control.</param>
-        public MenuItemContainerGenerator(IControl owner)
+        public MenuItemContainerGenerator(Control owner)
             : base(owner, MenuItem.HeaderProperty, null)
         {
         }
 
         /// <inheritdoc/>
-        protected override IControl? CreateContainer(object item)
+        protected override Control? CreateContainer(object item)
         {
             var separator = item as Separator;
             return separator != null ? separator : base.CreateContainer(item);

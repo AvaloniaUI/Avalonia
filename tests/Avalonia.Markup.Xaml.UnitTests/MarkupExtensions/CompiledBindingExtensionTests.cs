@@ -1642,10 +1642,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
         xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
         X='{Binding StringProperty, DataType=local:TestDataContext}' />";
-                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(xaml, new RuntimeXamlLoaderConfiguration
-                {
-                    UseCompiledBindingsByDefault = true
-                });
+                var control = (AssignBindingControl)AvaloniaRuntimeXamlLoader.Load(new RuntimeXamlLoaderDocument(xaml),
+                    new RuntimeXamlLoaderConfiguration { UseCompiledBindingsByDefault = true });
                 var compiledPath = ((CompiledBindingExtension)control.X).Path;
 
                 var node = Assert.IsType<PropertyElement>(Assert.Single(compiledPath.Elements));
@@ -1653,7 +1651,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             }
         }
         
-        void Throws(string type, Action cb)
+        static void Throws(string type, Action cb)
         {
             try
             {
@@ -1667,8 +1665,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             throw new Exception("Expected " + type);
         }
 
-        void ThrowsXamlParseException(Action cb) => Throws("XamlParseException", cb);
-        void ThrowsXamlTransformException(Action cb) => Throws("XamlTransformException", cb);
+        static void ThrowsXamlParseException(Action cb) => Throws("XamlParseException", cb);
+        static void ThrowsXamlTransformException(Action cb) => Throws("XamlTransformException", cb);
 
 
         static void PerformClick(Button button)
@@ -1676,7 +1674,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
             button.RaiseEvent(new KeyEventArgs
             {
                 RoutedEvent = InputElement.KeyDownEvent,
-                Key = Input.Key.Enter,
+                Key = Key.Enter,
             });
         }
     }
@@ -1828,7 +1826,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
 
         public bool Match(object data) => FancyDataType?.IsInstanceOfType(data) ?? true;
 
-        public IControl Build(object data) => TemplateContent.Load(Content)?.Control;
+        public Control Build(object data) => TemplateContent.Load(Content)?.Control;
     }
     
     public class CustomDataTemplateInherit : CustomDataTemplate { }

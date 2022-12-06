@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -15,6 +16,7 @@ namespace Avalonia.Data
     /// <summary>
     /// A XAML binding.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
     public class Binding : BindingBase
     {
         /// <summary>
@@ -61,7 +63,7 @@ namespace Avalonia.Data
         /// </summary>
         public Func<string, string, Type>? TypeResolver { get; set; }
 
-        protected override ExpressionObserver CreateExpressionObserver(IAvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
+        protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
@@ -78,11 +80,11 @@ namespace Avalonia.Data
                 throw new InvalidOperationException("Could not parse binding expression.");
             }
 
-            IStyledElement GetSource()
+            StyledElement GetSource()
             {
-                return target as IStyledElement ??
-                    anchor as IStyledElement ??
-                    throw new ArgumentException("Could not find binding source: either target or anchor must be an IStyledElement.");
+                return target as StyledElement ??
+                    anchor as StyledElement ??
+                    throw new ArgumentException("Could not find binding source: either target or anchor must be an StyledElement.");
             }
 
             if (ElementName != null)

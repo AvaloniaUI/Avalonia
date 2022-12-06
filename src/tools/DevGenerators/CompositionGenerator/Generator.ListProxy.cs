@@ -92,7 +92,7 @@ class Template
         }}
 ";
 
-        private ClassDeclarationSyntax AppendListProxy(GList list, ClassDeclarationSyntax cl)
+        private static ClassDeclarationSyntax AppendListProxy(GList list, ClassDeclarationSyntax cl)
         {
 
             var itemType = list.ItemType;

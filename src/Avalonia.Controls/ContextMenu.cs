@@ -77,8 +77,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<Control?> PlacementTargetProperty =
             Popup.PlacementTargetProperty.AddOwner<ContextMenu>();
 
-        private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Vertical });
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel { Orientation = Orientation.Vertical });
         private Popup? _popup;
         private List<Control>? _attachedControls;
         private IInputElement? _previousFocus;

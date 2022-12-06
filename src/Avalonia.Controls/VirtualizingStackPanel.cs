@@ -80,7 +80,7 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            if (_forceRemeasure || availableSize != ((ILayoutable)this).PreviousMeasure)
+            if (_forceRemeasure || availableSize != PreviousMeasure)
             {
                 _forceRemeasure = false;
                 _availableSpace = availableSize;
@@ -110,7 +110,7 @@ namespace Avalonia.Controls
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (IControl control in e.NewItems!)
+                    foreach (Control control in e.NewItems!)
                     {
                         UpdateAdd(control);
                     }
@@ -118,7 +118,7 @@ namespace Avalonia.Controls
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (IControl control in e.OldItems!)
+                    foreach (Control control in e.OldItems!)
                     {
                         UpdateRemove(control);
                     }
@@ -127,7 +127,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override IInputElement? GetControlInDirection(NavigationDirection direction, IControl? from)
+        protected override IInputElement? GetControlInDirection(NavigationDirection direction, Control? from)
         {
             var logicalScrollable = Parent as ILogicalScrollable;
 
@@ -142,7 +142,7 @@ namespace Avalonia.Controls
         }
 
         internal override void ArrangeChild(
-            IControl child,
+            Control child,
             Rect rect,
             Size panelSize,
             Orientation orientation)
@@ -191,7 +191,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdateAdd(IControl child)
+        private void UpdateAdd(Control child)
         {
             var bounds = Bounds;
             var spacing = Spacing;
@@ -213,7 +213,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private void UpdateRemove(IControl child)
+        private void UpdateRemove(Control child)
         {
             var bounds = Bounds;
             var spacing = Spacing;

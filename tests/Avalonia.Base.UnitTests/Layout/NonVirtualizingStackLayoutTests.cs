@@ -310,7 +310,7 @@ namespace Avalonia.Base.UnitTests.Layout
             Assert.Equal(new Size(10, 10), arrangeSize);
         }
 
-        private NonVirtualizingLayoutContext CreateContext(Control[] children)
+        private static NonVirtualizingLayoutContext CreateContext(Control[] children)
         {
             return new TestLayoutContext(children);
         }
@@ -318,7 +318,7 @@ namespace Avalonia.Base.UnitTests.Layout
         private class TestLayoutContext : NonVirtualizingLayoutContext
         {
             public TestLayoutContext(Control[] children) => ChildrenCore = children;
-            protected override IReadOnlyList<ILayoutable> ChildrenCore { get; }
+            protected override IReadOnlyList<Layoutable> ChildrenCore { get; }
         }
 
         private class TestControl : Control

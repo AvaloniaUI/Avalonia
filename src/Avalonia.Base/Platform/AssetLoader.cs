@@ -3,16 +3,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+#if !BUILDTASK
 using Avalonia.Platform.Internal;
 using Avalonia.Utilities;
+#endif
 
 namespace Avalonia.Platform
 {
     /// <summary>
     /// Loads assets compiled into the application binary.
     /// </summary>
-    public class AssetLoader : IAssetLoader
+    public class AssetLoader
+#if !BUILDTASK
+        : IAssetLoader
+#endif
     {
+#if !BUILDTASK
         private static IAssemblyDescriptorResolver s_assemblyDescriptorResolver = new AssemblyDescriptorResolver();
 
         private AssemblyDescriptor? _defaultResmAssembly;
@@ -181,13 +187,13 @@ namespace Avalonia.Platform
             throw new ArgumentException($"Unsupported url type: " + uri.Scheme, nameof(uri));
         }
 
-        private (IAssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
+        private static (IAssemblyDescriptor asm, string path) GetResAsmAndPath(Uri uri)
         {
             var asm = s_assemblyDescriptorResolver.GetAssembly(uri.Authority);
             return (asm, uri.GetUnescapeAbsolutePath());
         }
         
-        private IAssemblyDescriptor? GetAssembly(Uri? uri)
+        private static IAssemblyDescriptor? GetAssembly(Uri? uri)
         {
             if (uri != null)
             {
@@ -206,7 +212,8 @@ namespace Avalonia.Platform
 
             return null;
         }
-
+#endif
+        
         public static void RegisterResUriParsers()
         {
             if (!UriParser.IsKnownScheme("avares"))

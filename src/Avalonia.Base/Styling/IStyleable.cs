@@ -8,7 +8,7 @@ namespace Avalonia.Styling
     /// Interface for styleable elements.
     /// </summary>
     [NotClientImplementable]
-    public interface IStyleable : IAvaloniaObject, INamed
+    public interface IStyleable : INamed
     {
         /// <summary>
         /// Gets the list of classes for the control.
@@ -23,6 +23,6 @@ namespace Avalonia.Styling
         /// <summary>
         /// Gets the template parent of this element if the control comes from a template.
         /// </summary>
-        ITemplatedControl? TemplatedParent { get; }
+        AvaloniaObject? TemplatedParent { get; }
     }
 }

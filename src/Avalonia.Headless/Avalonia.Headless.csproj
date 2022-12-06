@@ -5,5 +5,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
-  </ItemGroup>  
+  </ItemGroup>
+
+  <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

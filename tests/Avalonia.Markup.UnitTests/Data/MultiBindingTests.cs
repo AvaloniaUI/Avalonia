@@ -29,10 +29,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 }
             };
 
-            var target = new Mock<IAvaloniaObject>().As<IControl>();
-            target.Setup(x => x.GetValue(Control.DataContextProperty)).Returns(source);
-
-            var observable = binding.Initiate(target.Object, null).Observable;
+            var target = new Control { DataContext = source };
+            var observable = binding.Initiate(target, null).Observable;
             var result = await observable.Take(1);
 
             Assert.Equal("1,2,3", result);
@@ -60,10 +58,8 @@ namespace Avalonia.Markup.UnitTests.Data
                 }
             };
 
-            var target = new Mock<IAvaloniaObject>().As<IControl>();
-            target.Setup(x => x.GetValue(Control.DataContextProperty)).Returns(source);
-
-            var observable = binding.Initiate(target.Object, null).Observable;
+            var target = new Control { DataContext = source };
+            var observable = binding.Initiate(target, null).Observable;
             var result = await observable.Take(1);
 
             Assert.Equal("1,2,3", result);
@@ -161,10 +157,10 @@ namespace Avalonia.Markup.UnitTests.Data
         public void MultiBinding_Without_StringFormat_And_Converter()
         {
             var source = new { A = 1, B = 2, C = 3 };
-            var target = new ItemsControl {  };
+            var target = new ItemsControl { };
 
             var binding = new MultiBinding
-            {                
+            {
                 Bindings = new[]
                 {
                     new Binding { Path = "A", Source = source },

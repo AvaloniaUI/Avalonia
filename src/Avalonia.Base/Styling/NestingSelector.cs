@@ -13,7 +13,7 @@ namespace Avalonia.Styling
 
         public override string ToString(Style? owner) => owner?.Parent?.ToString() ?? "^";
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (parent is Style s && s.Selector is not null)
             {
@@ -23,7 +23,7 @@ namespace Avalonia.Styling
             {
                 if (theme.TargetType is null)
                     throw new InvalidOperationException("ControlTheme has no TargetType.");
-                return theme.TargetType.IsAssignableFrom(control.StyleKey) ?
+                return theme.TargetType.IsAssignableFrom(((IStyleable)control).StyleKey) ?
                     SelectorMatch.AlwaysThisType :
                     SelectorMatch.NeverThisType;
             }

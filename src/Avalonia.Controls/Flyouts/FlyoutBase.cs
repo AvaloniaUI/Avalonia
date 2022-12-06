@@ -325,14 +325,14 @@ namespace Avalonia.Controls.Primitives
                     return;
                 }
 
-                if (Popup?.Host is PopupRoot)
+                if (Popup?.Host is PopupRoot && pArgs.Root is Visual eventRoot)
                 {
                     // As long as the pointer stays within the enlargedPopupRect
                     // the flyout stays open. If it leaves, close it
                     // Despite working in screen coordinates, leaving the TopLevel
                     // window will not close this (as pointer events stop), which 
                     // does match UWP
-                    var pt = pArgs.Root.PointToScreen(pArgs.Position);
+                    var pt = eventRoot.PointToScreen(pArgs.Position);
                     if (!_enlargePopupRectScreenPixelRect?.Contains(pt) ?? false)
                     {
                         HideCore(false);
@@ -587,7 +587,7 @@ namespace Avalonia.Controls.Primitives
             return eventArgs.Cancel;
         }
 
-        internal static void SetPresenterClasses(IControl? presenter, Classes classes)
+        internal static void SetPresenterClasses(Control? presenter, Classes classes)
         {
             if(presenter is null)
             {

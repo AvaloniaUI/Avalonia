@@ -18,6 +18,6 @@
         /// The caller should ensure that any control passed to <paramref name="existing"/>
         /// originated from the same data template.
         /// </remarks>
-        IControl? Build(object? data, IControl? existing);
+        Control? Build(object? data, Control? existing);
     }
 }
