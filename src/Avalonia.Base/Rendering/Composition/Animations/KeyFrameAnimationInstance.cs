@@ -177,6 +177,7 @@ namespace Avalonia.Rendering.Composition.Animations
         public override void Deactivate()
         {
             TargetObject.Compositor.RemoveFromClock(this);
+            _finished = false;
             base.Deactivate();
         }
     }
