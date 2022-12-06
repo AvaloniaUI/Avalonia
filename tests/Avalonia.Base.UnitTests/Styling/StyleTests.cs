@@ -868,7 +868,53 @@ namespace Avalonia.Base.UnitTests.Styling
         }
 
         [Fact]
-        public void Animations_Should_Be_Activated_And_Deactivated()
+        public void Animations_Should_Be_Activated()
+        {
+            Style style = new Style(x => x.OfType<Class1>())
+            {
+                Animations =
+                {
+                    new Avalonia.Animation.Animation
+                    {
+                        Duration = TimeSpan.FromSeconds(1),
+                        Children =
+                        {
+                            new KeyFrame
+                            {
+                                Setters =
+                                {
+                                    new Setter { Property = Class1.DoubleProperty, Value = 5.0 }
+                                },
+                            },
+                            new KeyFrame
+                            {
+                                Setters =
+                                {
+                                    new Setter { Property = Class1.DoubleProperty, Value = 10.0 }
+                                },
+                                Cue = new Cue(1d)
+                            }
+                        },
+                    }
+                }
+            };
+
+            var clock = new TestClock();
+            var target = new Class1 { Clock = clock };
+
+            StyleHelpers.TryAttach(style, target);
+
+            Assert.Equal(0.0, target.Double);
+
+            clock.Step(TimeSpan.Zero);
+            Assert.Equal(5.0, target.Double);
+
+            clock.Step(TimeSpan.FromSeconds(0.5));
+            Assert.Equal(7.5, target.Double);
+        }
+
+        [Fact]
+        public void Animations_With_Trigger_Should_Be_Activated_And_Deactivated()
         {
             Style style = new Style(x => x.OfType<Class1>().Class("foo"))
             {

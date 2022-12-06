@@ -359,16 +359,49 @@ public class StyledElementTests_Theming
         }
 
         [Fact]
-        public void Implicit_Theme_Is_Cleared_When_Removed_From_Logical_Tree()
+        public void Implicit_Theme_Is_Not_Detached_When_Removed_From_Logical_Tree()
         {
             var target = CreateTarget();
             var root = CreateRoot(target);
-            
-            Assert.NotNull(target.GetEffectiveTheme());
+
+            Assert.Equal("theme", target.Tag);
 
             root.Child = null;
 
-            Assert.Null(target.GetEffectiveTheme());
+            var border = Assert.IsType<Border>(target.VisualChild);
+            Assert.Equal("theme", target.Tag);
+            Assert.Equal("theme", border.Tag);
+        }
+
+        [Fact]
+        public void Can_Attach_Then_Reattach_To_Same_Logical_Tree()
+        {
+            var target = CreateTarget();
+            var root = CreateRoot(target);
+
+            Assert.Equal("theme", target.Tag);
+
+            root.Child = null;
+            root.Child = target;
+
+            Assert.Equal("theme", target.Tag);
+        }
+
+        [Fact]
+        public void Implicit_Theme_Is_Reevaluated_When_Removed_And_Added_To_Different_Logical_Tree()
+        {
+            var target = CreateTarget();
+            var root1 = CreateRoot(target, "theme1");
+            var root2 = CreateRoot(null, "theme2");
+
+            Assert.Equal("theme1", target.Tag);
+
+            root1.Child = null;
+            root2.Child = target;
+
+            var border = Assert.IsType<Border>(target.VisualChild);
+            Assert.Equal("theme2", target.Tag);
+            Assert.Equal("theme2", border.Tag);
         }
 
         [Fact]
@@ -402,10 +435,10 @@ public class StyledElementTests_Theming
 
         private static ThemedControl CreateTarget() => new ThemedControl();
 
-        private static TestRoot CreateRoot(Control child)
+        private static TestRoot CreateRoot(Control? child, string themeTag = "theme")
         {
             var result = new TestRoot();
-            result.Resources.Add(typeof(ThemedControl), CreateTheme());
+            result.Resources.Add(typeof(ThemedControl), CreateTheme(themeTag));
             result.Child = child;
             result.LayoutManager.ExecuteInitialLayoutPass();
             return result;
@@ -530,7 +563,7 @@ public class StyledElementTests_Theming
         }
     }
 
-    private static ControlTheme CreateTheme()
+    private static ControlTheme CreateTheme(string tag = "theme")
     {
         var template = new FuncControlTemplate<ThemedControl>((o, n) => new Border());
 
@@ -539,7 +572,7 @@ public class StyledElementTests_Theming
             TargetType = typeof(ThemedControl),
             Setters =
             {
-                new Setter(Control.TagProperty, "theme"),
+                new Setter(Control.TagProperty, tag),
                 new Setter(TemplatedControl.TemplateProperty, template),
                 new Setter(TemplatedControl.CornerRadiusProperty, new CornerRadius(5)),
             },
@@ -550,7 +583,7 @@ public class StyledElementTests_Theming
                     Setters = 
                     { 
                         new Setter(Border.BackgroundProperty, Brushes.Red),
-                        new Setter(Control.TagProperty, "theme"),
+                        new Setter(Control.TagProperty, tag),
                     }
                 },
                 new Style(x => x.Nesting().Class("foo").Template().OfType<Border>())

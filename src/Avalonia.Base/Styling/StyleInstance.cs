@@ -70,6 +70,9 @@ namespace Avalonia.Styling
                 _animationTrigger ??= new Subject<bool>();
                 foreach (var animation in _animations)
                     animation.Apply(animatable, null, _animationTrigger);
+
+                if (_activator is null)
+                    _animationTrigger.OnNext(true);
             }
         }
 
