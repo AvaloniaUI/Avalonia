@@ -90,7 +90,7 @@ namespace Avalonia.IntegrationTests.Appium
                     try
                     {
                         _session.FindElementByAccessibilityId("WindowState").SendClick();
-                        _session.FindElementByName("Normal").SendClick();
+                        _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
                         // Wait for animations to run.
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -155,11 +155,11 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Normal", windowState.GetComboBoxValue());
 
             windowState.Click();
-            _session.FindElementByName("Maximized").SendClick();
+            _session.FindElementByAccessibilityId("WindowStateMaximized").SendClick();
             Assert.Equal("Maximized", windowState.GetComboBoxValue());
 
             windowState.Click();
-            _session.FindElementByName("Normal").SendClick();
+            _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
             var current = GetWindowInfo();
             Assert.Equal(original.Position, current.Position);
@@ -169,7 +169,7 @@ namespace Avalonia.IntegrationTests.Appium
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || mode == ShowWindowMode.NonOwned)
             {
                 windowState.Click();
-                _session.FindElementByName("FullScreen").SendClick();
+                _session.FindElementByAccessibilityId("WindowStateFullScreen").SendClick();
                 Assert.Equal("FullScreen", windowState.GetComboBoxValue());
 
                 current = GetWindowInfo();
@@ -179,7 +179,7 @@ namespace Avalonia.IntegrationTests.Appium
 
                 windowState.SendClick();
                 
-                _session.FindElementByName("Normal").SendClick();
+                _session.FindElementByAccessibilityId("WindowStateNormal").SendClick();
 
                 current = GetWindowInfo();
                 Assert.Equal(original.Position, current.Position);
@@ -223,13 +223,13 @@ namespace Avalonia.IntegrationTests.Appium
                         // Not sure how to handle testing minimized windows currently.
                         if (state == Controls.WindowState.Minimized)
                             continue;
-                        
+
                         // Child/Modal windows cannot be fullscreen on macOS.
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) &&
                             state == Controls.WindowState.FullScreen &&
                             mode != ShowWindowMode.NonOwned)
                             continue;
-                        
+
                         data.Add(size, mode, state);
                     }
                 }
@@ -286,7 +286,7 @@ namespace Avalonia.IntegrationTests.Appium
             _session.FindElementByName(location.ToString()).SendClick();
 
             stateComboBox.Click();
-            _session.FindElementByName(state.ToString()).SendClick();
+            _session.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
 
             return showButton.OpenWindowWithClick();
         }
