@@ -66,6 +66,7 @@ namespace ControlCatalog.Pages
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 40));
 
                     formattedText = CreateFormattedText($"IsPrimary: {screen.IsPrimary}");
+
                     context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 60));
 
                     formattedText =
@@ -77,7 +78,7 @@ namespace ControlCatalog.Pages
             context.DrawRectangle(p, new Rect(w.Position.X / 10f + Math.Abs(_leftMost), w.Position.Y / 10f, w.Bounds.Width / 10, w.Bounds.Height / 10));
         }
 
-        private FormattedText CreateFormattedText(string textToFormat)
+        private static FormattedText CreateFormattedText(string textToFormat)
         {
             return new FormattedText(textToFormat, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
                 Typeface.Default, 12, Brushes.Green);

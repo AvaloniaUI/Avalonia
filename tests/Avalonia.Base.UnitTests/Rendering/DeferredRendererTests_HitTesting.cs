@@ -569,7 +569,7 @@ namespace Avalonia.Base.UnitTests.Rendering
             }
         }
 
-        private IDisposable TestApplication()
+        private static IDisposable TestApplication()
         {
             return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
         }

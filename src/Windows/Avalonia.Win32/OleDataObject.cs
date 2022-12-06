@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -49,6 +50,7 @@ namespace Avalonia.Win32
             return GetDataFromOleHGLOBAL(dataFormat, DVASPECT.DVASPECT_CONTENT);
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for WinForms dragndrop compatability")]
         private unsafe object GetDataFromOleHGLOBAL(string format, DVASPECT aspect)
         {
             var formatEtc = new Interop.FORMATETC();
@@ -77,7 +79,9 @@ namespace Avalonia.Win32
                             {
                                 ms.Position = DataObject.SerializedObjectGUID.Length;
                                 BinaryFormatter binaryFormatter = new BinaryFormatter();
+#pragma warning disable SYSLIB0011 // Type or member is obsolete
                                 return binaryFormatter.Deserialize(ms);
+#pragma warning restore SYSLIB0011 // Type or member is obsolete
                             }
                         }
                         return data;

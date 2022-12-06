@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Avalonia.Data;
 using Avalonia.Data.Core;
@@ -19,11 +20,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             _accessorFactory = accessorFactory;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string propertyName)
         {
             throw new InvalidOperationException("The PropertyInfoAccessorPlugin does not support dynamic matching");
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
             Debug.Assert(_propertyInfo.Name == propertyName);

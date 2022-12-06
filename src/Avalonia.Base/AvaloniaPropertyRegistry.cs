@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia
@@ -42,6 +43,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
+        [UnconditionalSuppressMessage("Trimming", "IL2059", Justification = "If type was trimmed out, no properties were referenced")]
         public IReadOnlyList<AvaloniaProperty> GetRegistered(Type type)
         {
             _ = type ?? throw new ArgumentNullException(nameof(type));
