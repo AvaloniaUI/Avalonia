@@ -26,10 +26,10 @@
     
     <Label Grid.Column="0" Grid.Row="7">WindowState</Label>
     <ComboBox Name="WindowState" Grid.Column="1" Grid.Row="7" SelectedIndex="{Binding WindowState}">
-      <ComboBoxItem>Normal</ComboBoxItem>
-      <ComboBoxItem>Minimized</ComboBoxItem>
-      <ComboBoxItem>Maximized</ComboBoxItem>
-      <ComboBoxItem>FullScreen</ComboBoxItem>
+      <ComboBoxItem Name="WindowStateNormal">Normal</ComboBoxItem>
+      <ComboBoxItem Name="WindowStateMinimized">Minimized</ComboBoxItem>
+      <ComboBoxItem Name="WindowStateMaximized">Maximized</ComboBoxItem>
+      <ComboBoxItem Name="WindowStateFullScreen">FullScreen</ComboBoxItem>
     </ComboBox>
     <Button Name="HideButton" Grid.Row="8" Command="{Binding $parent[Window].Hide}">Hide</Button>
   </Grid>

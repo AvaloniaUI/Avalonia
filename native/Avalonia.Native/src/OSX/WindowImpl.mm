@@ -136,7 +136,11 @@ void WindowImpl::BringToFront()
         
         for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
         {
-            (*iterator)->BringToFront();
+            auto window = (*iterator)->Window;
+            
+            // #9565: Only bring window to front if it's on the currently active space
+            if ([window isOnActiveSpace])
+                (*iterator)->BringToFront();
         }
     }
 }
@@ -160,6 +164,9 @@ void WindowImpl::StartStateTransition() {
 
 void WindowImpl::EndStateTransition() {
     _transitioningWindowState = false;
+    
+    // Ensure correct order of child windows after fullscreen transition.
+    BringToFront();
 }
 
 SystemDecorations WindowImpl::Decorations() {
