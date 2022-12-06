@@ -162,7 +162,7 @@ namespace Avalonia.Rendering.Composition
                 }
                 catch (Exception e)
                 {
-                    tcs.SetResult(e);
+                    tcs.TrySetException(e);
                 }
             });
             return new ValueTask<object?>(tcs.Task);
