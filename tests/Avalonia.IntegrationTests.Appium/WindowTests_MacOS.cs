@@ -128,7 +128,7 @@ namespace Avalonia.IntegrationTests.Appium
             Thread.Sleep(1000);
 
             // Make sure we entered fullscreen.
-            var windowState = mainWindow.FindElementByAccessibilityId("WindowState");
+            var windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
             Assert.Equal("FullScreen", windowState.Text);
 
             // Open child window.
@@ -147,7 +147,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             // Make sure we exited fullscreen.
             mainWindow = _session.FindElementByAccessibilityId("MainWindow");
-            windowState = mainWindow.FindElementByAccessibilityId("WindowState");
+            windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
             Assert.Equal("Normal", windowState.Text);
         }
 
@@ -169,7 +169,7 @@ namespace Avalonia.IntegrationTests.Appium
 
                 // Make sure we entered fullscreen.
                 mainWindow = _session.FindElementByAccessibilityId("MainWindow");
-                windowState = mainWindow.FindElementByAccessibilityId("WindowState");
+                windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
                 Assert.Equal("FullScreen", windowState.Text);
                 
                 // Click on main window
@@ -185,7 +185,7 @@ namespace Avalonia.IntegrationTests.Appium
 
             // Make sure we exited fullscreen.
             mainWindow = _session.FindElementByAccessibilityId("MainWindow");
-            windowState = mainWindow.FindElementByAccessibilityId("WindowState");
+            windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
             Assert.Equal("Normal", windowState.Text);
         }
 
