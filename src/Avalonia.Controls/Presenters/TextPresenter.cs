@@ -110,15 +110,7 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(
-                CaretBrushProperty,
-                SelectionBrushProperty,
-                TextElement.FontFamilyProperty,
-                TextElement.FontSizeProperty,
-                TextElement.FontStyleProperty,
-                TextElement.FontWeightProperty,
-                TextElement.FontStretchProperty,
-                TextElement.ForegroundProperty);
+            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, TextElement.ForegroundProperty);
         }
 
         public TextPresenter()
