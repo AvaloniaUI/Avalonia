@@ -202,9 +202,7 @@ namespace Avalonia.Animation
         /// <param name="setter">The animation setter.</param>
         /// <param name="value">The property animator value.</param>
         public static void SetAnimator(IAnimationSetter setter, 
-#if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor | DynamicallyAccessedMemberTypes.PublicMethods)]
-#endif
             Type value)
         {
             s_animators[setter] = (value, () => (IAnimator)Activator.CreateInstance(value)!);

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Animation;
 using Avalonia.Data;
 using Avalonia.Metadata;
@@ -64,6 +65,7 @@ namespace Avalonia.Styling
 
         void IValueEntry.Unsubscribe() { }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
         ISetterInstance ISetter.Instance(IStyleInstance instance, StyledElement target)
         {
             if (target is not AvaloniaObject ao)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using System.Windows.Input;
@@ -23,11 +24,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             _dependsOnProperties = dependsOnProperties;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string propertyName)
         {
             throw new InvalidOperationException("The CommandAccessorPlugin does not support dynamic matching");
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
             return new CommandAccessor(reference, _execute, _canExecute, _dependsOnProperties);

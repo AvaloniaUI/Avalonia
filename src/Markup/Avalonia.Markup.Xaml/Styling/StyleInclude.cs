@@ -2,6 +2,7 @@ using Avalonia.Styling;
 using System;
 using Avalonia.Controls;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -10,9 +11,10 @@ namespace Avalonia.Markup.Xaml.Styling
     /// <summary>
     /// Includes a style from a URL.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
     public class StyleInclude : IStyle, IResourceProvider
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceProvider? _serviceProvider;
         private readonly Uri? _baseUri;
         private IStyle[]? _loaded;
         private bool _isLoading;

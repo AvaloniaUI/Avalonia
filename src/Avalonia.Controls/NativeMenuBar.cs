@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 
@@ -21,7 +22,16 @@ namespace Avalonia.Controls
                     item.Click -= OnMenuItemClick;
             });
         }
-        
+
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NativeMenu))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NativeMenuItem))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NativeMenuItemBase))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NativeMenuItemSeparator))]
+        public NativeMenuBar()
+        {
+
+        }
+
         public static void SetEnableMenuItemClickForwarding(MenuItem menuItem, bool enable)
         {
             menuItem.SetValue(EnableMenuItemClickForwardingProperty, enable);

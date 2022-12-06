@@ -6,10 +6,9 @@
     <DefineConstants Condition="$(UseCecil) == true">$(DefineConstants);RUNTIME_XAML_CECIL</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <NoWarn>CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
-        <Compile Include="..\..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\ColorToBrushConverter.cs" />
@@ -69,12 +68,9 @@
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\ApiDiff.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Compatibility\" />
   </ItemGroup>
 </Project>
