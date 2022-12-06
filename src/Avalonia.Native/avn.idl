@@ -410,6 +410,13 @@ enum AvnPlatformResizeReason
     ResizeDpiChange,
 }
 
+enum AvnWindowTransparencyMode
+ {
+     Opaque,
+     Transparent,
+     Blur
+ }
+
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
