@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
-using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
@@ -70,7 +69,6 @@ namespace IntegrationTestApp
                 var existing = lifetime.Windows.OfType<ShowWindowTest>().Count();
                 if (existing > 0)
                 {
-                    AutomationProperties.SetAutomationId(window, window.Name + (existing + 1));
                     window.Title += $" {existing + 1}";
                 }
             }
