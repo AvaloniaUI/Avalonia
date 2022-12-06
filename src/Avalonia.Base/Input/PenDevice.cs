@@ -99,7 +99,7 @@ namespace Avalonia.Input
             return false;
         }
 
-        private bool PenMove(Pointer pointer, ulong timestamp,
+        private static bool PenMove(Pointer pointer, ulong timestamp,
             IInputRoot root, Point p, PointerPointProperties properties,
             KeyModifiers inputModifiers, IInputElement? hitTest,
             Lazy<IReadOnlyList<RawPointerPoint>?>? intermediatePoints)

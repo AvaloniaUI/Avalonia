@@ -154,7 +154,7 @@ namespace Avalonia.Controls.UnitTests.Generators
             Assert.True(container != null, "The containers is not materialized.");
         }
 
-        private IList<ItemContainerInfo> Materialize(
+        private static IList<ItemContainerInfo> Materialize(
             IItemContainerGenerator generator,
             int index,
             string[] items)

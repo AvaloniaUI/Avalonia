@@ -19,7 +19,6 @@ namespace Avalonia.Win32
     public class TrayIconImpl : ITrayIconImpl
     {
         private static readonly IntPtr s_emptyIcon = new System.Drawing.Bitmap(32, 32).GetHicon();
-        
         private readonly int _uniqueId;
         private static int s_nextUniqueId;
         private bool _iconAdded;
@@ -137,6 +136,12 @@ namespace Avalonia.Win32
 
         private void OnRightClicked()
         {
+            var menuItems = _exporter.GetMenu();
+            if (null == menuItems || menuItems.Count == 0)
+            {
+                return;
+            }
+
             var _trayMenu = new TrayPopupRoot()
             {
                 SystemDecorations = SystemDecorations.None,
@@ -145,7 +150,7 @@ namespace Avalonia.Win32
                 TransparencyLevelHint = WindowTransparencyLevel.Transparent,
                 Content = new TrayIconMenuFlyoutPresenter()
                 {
-                    Items = _exporter.GetMenu()
+                    Items = menuItems
                 }
             };
 

@@ -196,7 +196,8 @@ namespace Avalonia.Build.Tasks
             var runtimeHelpers = typeSystem.GetType("Avalonia.Markup.Xaml.XamlIl.Runtime.XamlIlRuntimeHelpers");
             var createRootServiceProviderMethod = asm.MainModule.ImportReference(
                 typeSystem.GetTypeReference(runtimeHelpers).Resolve().Methods
-                    .First(x => x.Name == "CreateRootServiceProviderV2"));
+                    .First(x => x.Name == "CreateRootServiceProviderV3"));
+            var serviceProviderType = createRootServiceProviderMethod.ReturnType;
             
             var loaderDispatcherDef = new TypeDefinition(CompiledAvaloniaXamlNamespace, "!XamlLoader",
                 TypeAttributes.Class | TypeAttributes.Public, asm.MainModule.TypeSystem.Object);
@@ -212,10 +213,35 @@ namespace Avalonia.Build.Tasks
                 MethodAttributes.Static | MethodAttributes.Public,
                 asm.MainModule.TypeSystem.Object)
             {
-                Parameters = {new ParameterDefinition(asm.MainModule.TypeSystem.String)}
+                Parameters =
+                {
+                    new ParameterDefinition(serviceProviderType),
+                    new ParameterDefinition(asm.MainModule.TypeSystem.String)
+                },
+            };
+            var loaderDispatcherMethodOld = new MethodDefinition("TryLoad",
+                MethodAttributes.Static | MethodAttributes.Public,
+                asm.MainModule.TypeSystem.Object)
+            {
+                Parameters =
+                {
+                    new ParameterDefinition(asm.MainModule.TypeSystem.String)
+                },
+                Body =
+                {
+                    Instructions =
+                    {
+                        Instruction.Create(OpCodes.Ldnull),
+                        Instruction.Create(OpCodes.Ldarg_0),
+                        Instruction.Create(OpCodes.Call, loaderDispatcherMethod),
+                        Instruction.Create(OpCodes.Ret)
+                    }
+                }
             };
             loaderDispatcherDef.Methods.Add(loaderDispatcherMethod);
+            loaderDispatcherDef.Methods.Add(loaderDispatcherMethodOld);
             asm.MainModule.Types.Add(loaderDispatcherDef);
+
 
             var stringEquals = asm.MainModule.ImportReference(asm.MainModule.TypeSystem.String.Resolve().Methods.First(
                 m =>
@@ -377,30 +403,42 @@ namespace Avalonia.Build.Tasks
                             classTypeDefinition.Fields.Add(designLoaderField);
 
                             const string TrampolineName = "!XamlIlPopulateTrampoline";
-                            var trampoline = new MethodDefinition(TrampolineName,
-                                MethodAttributes.Static | MethodAttributes.Private, asm.MainModule.TypeSystem.Void);
-                            trampoline.Parameters.Add(new ParameterDefinition(classTypeDefinition));
-                            classTypeDefinition.Methods.Add(trampoline);
+                            var trampolineMethodWithoutSP = new Lazy<MethodDefinition>(() => CreateTrampolineMethod(false));
+                            var trampolineMethodWithSP = new Lazy<MethodDefinition>(() => CreateTrampolineMethod(true));
+                            MethodDefinition CreateTrampolineMethod(bool hasSystemProviderArg)
+                            {
+                                var trampoline = new MethodDefinition(TrampolineName,
+                                    MethodAttributes.Static | MethodAttributes.Private, asm.MainModule.TypeSystem.Void);
+                                if (hasSystemProviderArg)
+                                {
+                                    trampoline.Parameters.Add(new ParameterDefinition(serviceProviderType));   
+                                }
+                                trampoline.Parameters.Add(new ParameterDefinition(classTypeDefinition));
+                                
+                                classTypeDefinition.Methods.Add(trampoline);
 
-                            var regularStart = Instruction.Create(OpCodes.Call, createRootServiceProviderMethod);
+                                var regularStart = Instruction.Create(OpCodes.Nop);
                             
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsfld, designLoaderField));
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Brfalse, regularStart));
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsfld, designLoaderField));
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, designLoaderLoad));
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+                                trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsfld, designLoaderField));
+                                trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Brfalse, regularStart));
+                                trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldsfld, designLoaderField));
+                                trampoline.Body.Instructions.Add(Instruction.Create(hasSystemProviderArg ? OpCodes.Ldarg_1 : OpCodes.Ldarg_0));
+                                trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, designLoaderLoad));
+                                trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
                             
-                            trampoline.Body.Instructions.Add(regularStart);
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ldarg_0));
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, compiledPopulateMethod));
-                            trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-                            CopyDebugDocument(trampoline, compiledPopulateMethod);
+                                trampoline.Body.Instructions.Add(regularStart);
+                                trampoline.Body.Instructions.Add(Instruction.Create(hasSystemProviderArg ? OpCodes.Ldarg_0 : OpCodes.Ldnull));
+                                trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, createRootServiceProviderMethod));
+                                trampoline.Body.Instructions.Add(Instruction.Create(hasSystemProviderArg ? OpCodes.Ldarg_1 : OpCodes.Ldarg_0)); 
+                                trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Call, compiledPopulateMethod));
+                                trampoline.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+                                CopyDebugDocument(trampoline, compiledPopulateMethod);
+                                return trampoline;
+                            }
 
                             var foundXamlLoader = false;
-                            // Find AvaloniaXamlLoader.Load(this) and replace it with !XamlIlPopulateTrampoline(this)
-                            foreach (var method in classTypeDefinition.Methods
-                                .Where(m => !m.Attributes.HasFlag(MethodAttributes.Static)))
+                            // Find AvaloniaXamlLoader.Load(this) or AvaloniaXamlLoader.Load(sp, this) and replace it with !XamlIlPopulateTrampoline(this)
+                            foreach (var method in classTypeDefinition.Methods.ToArray())
                             {
                                 var i = method.Body.Instructions;
                                 for (var c = 1; c < i.Count; c++)
@@ -422,7 +460,20 @@ namespace Avalonia.Build.Tasks
                                         {
                                             if (MatchThisCall(i, c - 1))
                                             {
-                                                i[c].Operand = trampoline;
+                                                i[c].Operand = trampolineMethodWithoutSP.Value;
+                                                foundXamlLoader = true;
+                                            }
+                                        }
+                                        if (op != null
+                                            && op.Name == "Load"
+                                            && op.Parameters.Count == 2
+                                            && op.Parameters[0].ParameterType.FullName == "System.IServiceProvider"
+                                            && op.Parameters[1].ParameterType.FullName == "System.Object"
+                                            && op.DeclaringType.FullName == "Avalonia.Markup.Xaml.AvaloniaXamlLoader")
+                                        {
+                                            if (MatchThisCall(i, c - 1))
+                                            {
+                                                i[c].Operand = trampolineMethodWithSP.Value;
                                                 foundXamlLoader = true;
                                             }
                                         }
@@ -439,7 +490,7 @@ namespace Avalonia.Build.Tasks
                                 {
                                     var i = ctors[0].Body.Instructions;
                                     var retIdx = i.IndexOf(i.Last(x => x.OpCode == OpCodes.Ret));
-                                    i.Insert(retIdx, Instruction.Create(OpCodes.Call, trampoline));
+                                    i.Insert(retIdx, Instruction.Create(OpCodes.Call, trampolineMethodWithoutSP.Value));
                                     i.Insert(retIdx, Instruction.Create(OpCodes.Ldarg_0));
                                 }
                                 else
@@ -461,26 +512,44 @@ namespace Avalonia.Build.Tasks
                                 null :
                                 classTypeDefinition.GetConstructors().FirstOrDefault(c =>
                                     c.IsPublic && !c.IsStatic && !c.HasParameters);
+                            var constructorWithSp = compiledBuildMethod != null ?
+                                null :
+                                classTypeDefinition.GetConstructors().FirstOrDefault(c =>
+                                    c.IsPublic && !c.IsStatic && c.Parameters.Count == 1 && c.Parameters[0].ParameterType.FullName == serviceProviderType.FullName);
 
-                            if (compiledBuildMethod != null || parameterlessConstructor != null)
+                            if (compiledBuildMethod != null || parameterlessConstructor != null || constructorWithSp != null)
                             {
                                 var i = loaderDispatcherMethod.Body.Instructions;
                                 var nop = Instruction.Create(OpCodes.Nop);
-                                i.Add(Instruction.Create(OpCodes.Ldarg_0));
+                                i.Add(Instruction.Create(OpCodes.Ldarg_1));
                                 i.Add(Instruction.Create(OpCodes.Ldstr, res.Uri));
                                 i.Add(Instruction.Create(OpCodes.Ldc_I4, (int)StringComparison.OrdinalIgnoreCase));
                                 i.Add(Instruction.Create(OpCodes.Call, stringEquals));
                                 i.Add(Instruction.Create(OpCodes.Brfalse, nop));
                                 if (parameterlessConstructor != null)
+                                {
                                     i.Add(Instruction.Create(OpCodes.Newobj, parameterlessConstructor));
+                                }
+                                else if (constructorWithSp != null)
+                                {
+                                    i.Add(Instruction.Create(OpCodes.Ldarg_0));
+                                    i.Add(Instruction.Create(OpCodes.Call, createRootServiceProviderMethod));
+                                    i.Add(Instruction.Create(OpCodes.Newobj, constructorWithSp));
+                                }
                                 else
                                 {
+                                    i.Add(Instruction.Create(OpCodes.Ldarg_0));
                                     i.Add(Instruction.Create(OpCodes.Call, createRootServiceProviderMethod));
                                     i.Add(Instruction.Create(OpCodes.Call, compiledBuildMethod));
                                 }
 
                                 i.Add(Instruction.Create(OpCodes.Ret));
                                 i.Add(nop);
+                            }
+                            else
+                            {
+                                engine.LogWarning(BuildEngineErrorCode.Loader, "",
+                                    $"XAML resource \"{res.Uri}\" won't be reachable via runtime loader, as no public constructor was found");
                             }
                         }
 
