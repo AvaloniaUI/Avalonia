@@ -62,7 +62,9 @@ namespace Avalonia.Media
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public record struct BoxShadowsEnumerator
+#pragma warning disable CA1815 // Override equals and operator equals on value types
+        public struct BoxShadowsEnumerator
+#pragma warning restore CA1815 // Override equals and operator equals on value types
         {
             private int _index;
             private BoxShadows _shadows;

@@ -50,15 +50,6 @@ namespace Avalonia.Animation
         }
 
         /// <summary>
-        /// Checks for equality between two <see cref="Cue"/>s.
-        /// </summary>
-        /// <param name="other">The second cue.</param>
-        public bool Equals(Cue other)
-        {
-            return CueValue == other.CueValue;
-        }
-
-        /// <summary>
         /// Checks for equality between a <see cref="Cue"/>
         /// and a <see cref="double"/> value.
         /// </summary>
@@ -67,11 +58,6 @@ namespace Avalonia.Animation
         public bool Equals(double other)
         {
             return CueValue == other;
-        }
-
-        public override int GetHashCode()
-        {
-            return CueValue.GetHashCode();
         }
     }
 
