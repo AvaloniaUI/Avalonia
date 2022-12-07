@@ -428,7 +428,8 @@ namespace Avalonia.Controls
 
         private Control GetOrCreateElement(IList items, int index)
         {
-            var e = GetRealizedElement(index) ?? 
+            var e = GetRealizedElement(index) ??
+                GetItemIsOwnContainer(items, index) ??
                 GetRecycledElement(items, index) ??
                 CreateElement(items, index);
             InvalidateHack(e);
@@ -442,15 +443,12 @@ namespace Avalonia.Controls
             return _realizedElements?.GetElement(index);
         }
 
-        private Control? GetRecycledElement(IList items, int index)
+        private Control? GetItemIsOwnContainer(IList items, int index)
         {
-            Debug.Assert(ItemsControl is not null);
-
-            var generator = ItemsControl!.ItemContainerGenerator;
-            var item = items[index];
-
-            if (item is Control controlItem)
+            if (items[index] is Control controlItem)
             {
+                var generator = ItemsControl!.ItemContainerGenerator;
+
                 if (controlItem.IsSet(ItemIsOwnContainerProperty))
                 {
                     controlItem.IsVisible = true;
@@ -459,11 +457,22 @@ namespace Avalonia.Controls
                 else if (generator.IsItemItsOwnContainer(controlItem))
                 {
                     AddInternalChild(controlItem);
-                    generator.PrepareItemContainer(controlItem, item, index);
+                    generator.PrepareItemContainer(controlItem, controlItem, index);
                     controlItem.SetValue(ItemIsOwnContainerProperty, true);
                     return controlItem;
                 }
             }
+
+            return null;
+        }
+
+        private Control? GetRecycledElement(IList items, int index)
+        {
+            Debug.Assert(ItemsControl is not null);
+
+            var generator = ItemsControl!.ItemContainerGenerator;
+            var item = items[index];
+
 
             if (_recyclePool?.Count > 0)
             {
