@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.PropertyStore;
@@ -442,6 +443,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="value">The value.</param>
         /// <returns>True if the value is valid, otherwise false.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
         public bool IsValidValue(object? value)
         {
             return TypeUtilities.TryConvertImplicit(PropertyType, value, out _);

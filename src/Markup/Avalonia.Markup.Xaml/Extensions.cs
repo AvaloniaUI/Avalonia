@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
@@ -28,6 +29,7 @@ namespace Avalonia.Markup.Xaml
 
         public static bool IsInControlTemplate(this IServiceProvider sp) => sp.GetService<IAvaloniaXamlIlControlTemplateProvider>() != null;
 
+        [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
         public static Type ResolveType(this IServiceProvider ctx, string namespacePrefix, string type)
         {
             var tr = ctx.GetService<IXamlTypeResolver>();
