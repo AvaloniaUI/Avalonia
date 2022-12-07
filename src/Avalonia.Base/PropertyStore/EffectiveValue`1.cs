@@ -262,7 +262,7 @@ namespace Avalonia.PropertyStore
 
         private class UncommonFields
         {
-            public Func<IAvaloniaObject, T, T>? _coerce;
+            public Func<AvaloniaObject, T, T>? _coerce;
             public T? _uncoercedValue;
             public T? _uncoercedBaseValue;
         }

@@ -15,7 +15,7 @@ namespace Avalonia.Diagnostics
         /// <param name="source">Control to be rendered.</param>
         /// <param name="destination">Destination stream.</param>
         /// <param name="dpi">Dpi quality.</param>
-        public static void RenderTo(this IControl source, Stream destination, double dpi = 96)
+        public static void RenderTo(this Control source, Stream destination, double dpi = 96)
         {
             if (source.TransformedBounds == null)
             {
@@ -29,7 +29,7 @@ namespace Avalonia.Diagnostics
             // get Visual root
             var root = (source.VisualRoot
                 ?? source.GetVisualRoot())
-                as IControl ?? source;
+                as Control ?? source;
 
             IDisposable? clipSetter = default;
             IDisposable? clipToBoundsSetter = default;

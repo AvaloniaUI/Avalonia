@@ -23,7 +23,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="routedEvent">The routed event associated with these event args.</param>
         /// <param name="source">The source object that raised the routed event.</param>
-        public SizeChangedEventArgs(RoutedEvent? routedEvent, IInteractive? source)
+        public SizeChangedEventArgs(RoutedEvent? routedEvent, object? source)
             : base(routedEvent, source)
         {
         }
@@ -37,7 +37,7 @@ namespace Avalonia.Controls
         /// <param name="newSize">The new size (or bounds) of the object.</param>
         public SizeChangedEventArgs(
             RoutedEvent? routedEvent,
-            IInteractive? source,
+            object? source,
             Size previousSize,
             Size newSize)
             : base(routedEvent, source)

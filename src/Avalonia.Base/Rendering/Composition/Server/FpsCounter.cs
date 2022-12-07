@@ -52,7 +52,7 @@ internal class FpsCounter
             _lastFpsUpdate = now;
         }
 
-        var fpsLine = $"Frame #{_totalFrames:00000000} FPS: {_fps:000} " + aux;
+        var fpsLine = FormattableString.Invariant($"Frame #{_totalFrames:00000000} FPS: {_fps:000} ") + aux;
         double width = 0;
         double height = 0;
         foreach (var ch in fpsLine)

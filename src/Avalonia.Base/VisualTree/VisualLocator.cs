@@ -6,18 +6,18 @@ namespace Avalonia.VisualTree
 {
     public class VisualLocator
     {
-        public static IObservable<IVisual?> Track(IVisual relativeTo, int ancestorLevel, Type? ancestorType = null)
+        public static IObservable<Visual?> Track(Visual relativeTo, int ancestorLevel, Type? ancestorType = null)
         {
             return new VisualTracker(relativeTo, ancestorLevel, ancestorType);
         }
 
-        private class VisualTracker : LightweightObservableBase<IVisual?>
+        private class VisualTracker : LightweightObservableBase<Visual?>
         {
-            private readonly IVisual _relativeTo;
+            private readonly Visual _relativeTo;
             private readonly int _ancestorLevel;
             private readonly Type? _ancestorType;
 
-            public VisualTracker(IVisual relativeTo, int ancestorLevel, Type? ancestorType)
+            public VisualTracker(Visual relativeTo, int ancestorLevel, Type? ancestorType)
             {
                 _relativeTo = relativeTo;
                 _ancestorLevel = ancestorLevel;
@@ -36,14 +36,14 @@ namespace Avalonia.VisualTree
                 _relativeTo.DetachedFromVisualTree -= AttachedDetached;
             }
 
-            protected override void Subscribed(IObserver<IVisual?> observer, bool first)
+            protected override void Subscribed(IObserver<Visual?> observer, bool first)
             {
                 observer.OnNext(GetResult());
             }
 
             private void AttachedDetached(object? sender, VisualTreeAttachmentEventArgs e) => PublishNext(GetResult());
 
-            private IVisual? GetResult()
+            private Visual? GetResult()
             {
                 if (_relativeTo.IsAttachedToVisualTree)
                 {

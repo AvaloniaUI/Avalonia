@@ -33,29 +33,32 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         [Fact]
         public void DynamicResource_Finds_Resource_In_Parent_Dictionary()
         {
-            var dictionaryXaml = @"
+            using (StyledWindow())
+            {
+                var documents = new[]
+                {
+                    new RuntimeXamlLoaderDocument(new Uri("avares://Avalonia.Markup.Xaml.UnitTests/dict.xaml"), @"
 <ResourceDictionary xmlns='https://github.com/avaloniaui'
                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
   <SolidColorBrush x:Key='RedBrush' Color='{DynamicResource Red}'/>
-</ResourceDictionary>";
-
-            using (StyledWindow(assets: ("test:dict.xaml", dictionaryXaml)))
-            {
-                var xaml = @"
+</ResourceDictionary>"),
+                    new RuntimeXamlLoaderDocument(@"
 <Window xmlns='https://github.com/avaloniaui'
         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source='test:dict.xaml'/>
+                <ResourceInclude Source='avares://Avalonia.Markup.Xaml.UnitTests/dict.xaml'/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
         <Color x:Key='Red'>Red</Color>
     </Window.Resources>
     <Button Name='button' Background='{DynamicResource RedBrush}'/>
-</Window>";
+</Window>")
+                };
 
-                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var loaded = AvaloniaRuntimeXamlLoader.LoadGroup(documents);
+                var window = Assert.IsType<Window>(loaded[1]);
                 var button = window.FindControl<Button>("button");
 
                 var brush = Assert.IsType<SolidColorBrush>(button.Background);
@@ -276,7 +279,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
-                assetLoader: new MockAssetLoader(assets),
                 theme: () => new Styles
                 {
                     WindowStyle(),

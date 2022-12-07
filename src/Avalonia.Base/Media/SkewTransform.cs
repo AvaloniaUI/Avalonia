@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Skews an <see cref="IVisual"/>.
+    /// Skews an <see cref="Visual"/>.
     /// </summary>
     public class SkewTransform : Transform
     {

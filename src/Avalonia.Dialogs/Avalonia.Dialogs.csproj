@@ -16,4 +16,5 @@
 
   <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

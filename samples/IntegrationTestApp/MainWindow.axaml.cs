@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
@@ -178,6 +179,8 @@ namespace IntegrationTestApp
                 ShowWindow();
             if (source?.Name == "SendToBack")
                 SendToBack();
+            if (source?.Name == "EnterFullscreen")
+                WindowState = WindowState.FullScreen;
             if (source?.Name == "ExitFullscreen")
                 WindowState = WindowState.Normal;
             if (source?.Name == "RestoreAll")

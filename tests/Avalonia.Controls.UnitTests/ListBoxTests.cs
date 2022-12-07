@@ -424,8 +424,8 @@ namespace Avalonia.Controls.UnitTests
                 lm.ExecuteLayoutPass();
 
                 var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-                var toMeasure = lm.GetType().GetField("_toMeasure", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.ILayoutable>;
-                var toArrange = lm.GetType().GetField("_toArrange", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.ILayoutable>;
+                var toMeasure = lm.GetType().GetField("_toMeasure", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.Layoutable>;
+                var toArrange = lm.GetType().GetField("_toArrange", flags).GetValue(lm) as System.Collections.Generic.IEnumerable<Layout.Layoutable>;
 
                 Assert.Equal(0, toMeasure.Count());
                 Assert.Equal(0, toArrange.Count());
@@ -590,7 +590,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(new[] { "Bar" }, target.Selection.SelectedItems);
         }
 
-        private FuncControlTemplate ListBoxTemplate()
+        private static FuncControlTemplate ListBoxTemplate()
         {
             return new FuncControlTemplate<ListBox>((parent, scope) =>
                 new ScrollViewer
@@ -607,7 +607,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private FuncControlTemplate ListBoxItemTemplate()
+        private static FuncControlTemplate ListBoxItemTemplate()
         {
             return new FuncControlTemplate<ListBoxItem>((parent, scope) =>
                 new ContentPresenter
@@ -618,7 +618,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private FuncControlTemplate ScrollViewerTemplate()
+        private static FuncControlTemplate ScrollViewerTemplate()
         {
             return new FuncControlTemplate<ScrollViewer>((parent, scope) =>
                 new Panel
@@ -643,7 +643,7 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        private void Prepare(ListBox target)
+        private static void Prepare(ListBox target)
         {
             // The ListBox needs to be part of a rooted visual tree.
             var root = new TestRoot();
@@ -677,7 +677,7 @@ namespace Avalonia.Controls.UnitTests
 
             // The items were created before the template was applied, so now we need to go back
             // and re-arrange everything.
-            foreach (IControl i in target.GetSelfAndVisualDescendants())
+            foreach (Control i in target.GetSelfAndVisualDescendants())
             {
                 i.InvalidateMeasure();
             }
@@ -718,7 +718,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
         }
 
-        private void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
+        private static void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
         {
             listBox.RaiseEvent(new KeyEventArgs
             {

@@ -20,8 +20,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
+        private static readonly FuncTemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new VirtualizingStackPanel());
 
         /// <summary>
         /// Defines the <see cref="Scroll"/> property.
@@ -149,7 +149,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.Source is IVisual source)
+            if (e.Source is Visual source)
             {
                 var point = e.GetCurrentPoint(source);
 

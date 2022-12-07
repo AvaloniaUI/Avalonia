@@ -89,7 +89,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new ImmediateRenderer(root);
+            return new ImmediateRenderer((Visual)root);
         }
 
         public void Dispose()
@@ -142,8 +142,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         protected override void OnLostFocus(RoutedEventArgs e) => LostFocus?.Invoke();
 
-
-        RawInputModifiers GetModifiers(MouseEventArgs e)
+        static RawInputModifiers GetModifiers(MouseEventArgs e)
         {
             var state = Keyboard.Modifiers;
             var rv = default(RawInputModifiers);

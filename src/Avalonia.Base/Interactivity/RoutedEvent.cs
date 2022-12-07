@@ -116,7 +116,7 @@ namespace Avalonia.Interactivity
         public IDisposable AddClassHandler<TTarget>(
             Action<TTarget, TEventArgs> handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
-            bool handledEventsToo = false) where TTarget : class, IInteractive
+            bool handledEventsToo = false) where TTarget : Interactive
         {
             void Adapter(object? sender, RoutedEventArgs e)
             {

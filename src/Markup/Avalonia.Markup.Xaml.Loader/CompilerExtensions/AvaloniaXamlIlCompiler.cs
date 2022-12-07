@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-
+using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX;
 using XamlX.Ast;
@@ -56,8 +56,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 new AvaloniaXamlIlSetterTransformer(),
                 new AvaloniaXamlIlConstructorServiceProviderTransformer(),
                 new AvaloniaXamlIlTransitionsTypeMetadataTransformer(),
-                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer(),
-                new AvaloniaXamlIlAssetIncludeTransformer()
+                new AvaloniaXamlIlResolveByNameMarkupExtensionReplacer()
             );
             InsertBefore<ConvertPropertyValuesToAssignmentsTransformer>(
                 new AvaloniaXamlIlOptionMarkupExtensionTransformer());
@@ -83,6 +82,11 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             Emitters.Add(new AvaloniaNameScopeRegistrationXamlIlNodeEmitter());
             Emitters.Add(new AvaloniaXamlIlRootObjectScope.Emitter());
+            
+            GroupTransformers = new()
+            {
+                new AvaloniaXamlIncludeTransformer()
+            };
         }
         public AvaloniaXamlIlCompiler(TransformerConfiguration configuration,
             XamlLanguageEmitMappings<IXamlILEmitter, XamlILNodeEmitResult> emitMappings,
@@ -115,7 +119,27 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             set => _bindingTransformer.CompileBindingsByDefault = value;
         }
 
-        public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
+        public List<IXamlAstGroupTransformer> GroupTransformers { get; }
+
+        public void TransformGroup(IReadOnlyCollection<IXamlDocumentResource> documents, bool strict = true)
+        {
+            var ctx = new AstGroupTransformationContext(documents, _configuration, strict);
+            foreach (var transformer in GroupTransformers)
+            {
+                foreach (var doc in documents)
+                {
+                    var root = doc.XamlDocument.Root;
+                    ctx.CurrentDocument = doc;
+                    ctx.RootObject = (IXamlAstValueNode)root;
+                    ctx.VisitChildren(ctx.RootObject, transformer);
+                    root = ctx.Visit(root, transformer);
+
+                    doc.XamlDocument.Root = root;
+                }
+            }
+        }
+
+        public XamlDocument Parse(string xaml, IXamlType overrideRootType)
         {
             var parsed = XDocumentXamlParser.Parse(xaml, new Dictionary<string, string>
             {
@@ -148,9 +172,26 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
 
             OverrideRootType(parsed, rootType);
 
+            return parsed;
+        }
+
+        public void Compile(XamlDocument document, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlMethodBuilder<IXamlILEmitter> populateMethod, IXamlMethodBuilder<IXamlILEmitter> buildMethod, string baseUri, IFileSource fileSource)
+        {
+            Compile(document, _contextType, populateMethod, buildMethod,
+                _configuration.TypeMappings.XmlNamespaceInfoProvider == null ?
+                    null :
+                    tb.DefineSubType(_configuration.WellKnownTypes.Object,
+                        "__AvaloniaXamlIlNsInfo", false), (name, bt) => tb.DefineSubType(bt, name, false),
+                (s, returnType, parameters) => tb.DefineDelegateSubType(s, false, returnType, parameters), baseUri,
+                fileSource);
+        }
+        
+        public void ParseAndCompile(string xaml, string baseUri, IFileSource fileSource, IXamlTypeBuilder<IXamlILEmitter> tb, IXamlType overrideRootType)
+        {
+            var parsed = Parse(xaml, overrideRootType);
+
             Transform(parsed);
             Compile(parsed, tb, _contextType, PopulateName, BuildName, "__AvaloniaXamlIlNsInfo", baseUri, fileSource);
-
         }
 
         public void OverrideRootType(XamlDocument doc, IXamlAstTypeReference newType)

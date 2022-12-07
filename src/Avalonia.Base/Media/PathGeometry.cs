@@ -133,7 +133,7 @@ namespace Avalonia.Media
         public override string ToString()
         {
             var figuresString = _figures is not null ? string.Join(" ", _figures) : string.Empty;
-            return $"{(FillRule != FillRule.EvenOdd ? "F1 " : "")}{figuresString}";
+            return FormattableString.Invariant($"{(FillRule != FillRule.EvenOdd ? "F1 " : "")}{figuresString}");
         }
     }
 }

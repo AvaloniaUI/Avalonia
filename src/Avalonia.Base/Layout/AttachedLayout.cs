@@ -43,7 +43,7 @@ namespace Avalonia.Layout
 
         /// <summary>
         /// Initializes any per-container state the layout requires when it is attached to an
-        /// <see cref="ILayoutable"/> container.
+        /// <see cref="Layoutable"/> container.
         /// </summary>
         /// <param name="context">
         /// The context object that facilitates communication between the layout and its host
@@ -184,7 +184,7 @@ namespace Avalonia.Layout
         /// </summary>
         protected void InvalidateArrange() => ArrangeInvalidated?.Invoke(this, EventArgs.Empty);
 
-        private VirtualizingLayoutContext GetVirtualizingLayoutContext(LayoutContext context)
+        private static VirtualizingLayoutContext GetVirtualizingLayoutContext(LayoutContext context)
         {
             if (context is VirtualizingLayoutContext virtualizingContext)
             {

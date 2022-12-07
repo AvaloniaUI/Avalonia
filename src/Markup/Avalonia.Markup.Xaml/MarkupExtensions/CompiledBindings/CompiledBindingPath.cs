@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
@@ -22,6 +23,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             RawSource = rawSource;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.CompiledBindingSafeSupressWarningMessage)]
         public ExpressionNode BuildExpression(bool enableValidation)
         {
             ExpressionNode pathRoot = null;
@@ -275,7 +277,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public int Level { get; }
 
         public override string ToString()
-           => $"$parent[{AncestorType?.Name},{Level}]";
+           => FormattableString.Invariant($"$parent[{AncestorType?.Name},{Level}]");
     }
 
     internal class VisualAncestorPathElement : ICompiledBindingPathElement, IControlSourceBindingPathElement
@@ -316,7 +318,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         public int[] Indices { get; }
         public Type ElementType { get; }
         public override string ToString()
-            => $"[{string.Join(",", Indices)}]";
+            => FormattableString.Invariant($"[{string.Join(",", Indices)}]");
     }
 
     internal class TypeCastPathElement<T> : ITypeCastElement

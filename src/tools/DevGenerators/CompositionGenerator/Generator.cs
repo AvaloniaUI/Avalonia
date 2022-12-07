@@ -35,16 +35,14 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             GenerateAnimations();
         }
 
+        static string ServerName(string? c) => c != null ? ("Server" + c) : "ServerObject";
+        static string ChangesName(string? c) => c != null ? (c + "Changes") : "ChangeSet";
+        static string ChangedFieldsTypeName(GClass c) => c.Name + "ChangedFields";
+        static string ChangedFieldsFieldName(GClass c) =>  "_changedFieldsOf" + c.Name;
+        static string PropertyBackingFieldName(GProperty prop) => "_" + prop.Name.WithLowerFirst();
+        static string CompositionPropertyField(GProperty prop) => "s_IdOf" + prop.Name + "Property";
 
-
-        string ServerName(string? c) => c != null ? ("Server" + c) : "ServerObject";
-        string ChangesName(string? c) => c != null ? (c + "Changes") : "ChangeSet";
-        string ChangedFieldsTypeName(GClass c) => c.Name + "ChangedFields";
-        string ChangedFieldsFieldName(GClass c) =>  "_changedFieldsOf" + c.Name;
-        string PropertyBackingFieldName(GProperty prop) => "_" + prop.Name.WithLowerFirst();
-        string CompositionPropertyField(GProperty prop) => "s_IdOf" + prop.Name + "Property";
-
-        ExpressionSyntax ClientProperty(GClass c, GProperty p) =>
+        static ExpressionSyntax ClientProperty(GClass c, GProperty p) =>
             MemberAccess(ServerName(c.Name), CompositionPropertyField(p));
 
         void GenerateClass(GClass cl)
@@ -313,7 +311,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 "Server", "Server" + cl.Name + ".generated.cs");
         }
         
-        private ClassDeclarationSyntax GenerateClientProperty(ClassDeclarationSyntax client, GClass cl, GProperty prop,
+        private static ClassDeclarationSyntax GenerateClientProperty(ClassDeclarationSyntax client, GClass cl, GProperty prop,
             TypeSyntax propType, bool isObject, bool isNullable)
         {
             var fieldName = PropertyBackingFieldName(prop);
@@ -346,7 +344,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                         .AddModifiers(SyntaxKind.PartialKeyword).WithSemicolonToken(Semicolon()));
         }
 
-        EnumDeclarationSyntax GenerateChangedFieldsEnum(GClass cl)
+        static EnumDeclarationSyntax GenerateChangedFieldsEnum(GClass cl)
         {
             var changedFieldsEnum = EnumDeclaration(Identifier(ChangedFieldsTypeName(cl)));
             int count = 0;
@@ -373,7 +371,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                 .AddAttributeLists(AttributeList(SingletonSeparatedList(Attribute(IdentifierName("System.Flags")))));
         }
 
-        StatementSyntax GeneratePropertySetterAssignment(GClass cl, GProperty prop, bool isObject, bool isNullable)
+        static StatementSyntax GeneratePropertySetterAssignment(GClass cl, GProperty prop, bool isObject, bool isNullable)
         {
             var code = @$"
     // Update the backing value
@@ -406,8 +404,8 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
 
             return ParseStatement("{\n" + code + "\n}");
         }
-        
-        BlockSyntax ApplyStartAnimation(BlockSyntax body, GClass cl, GProperty prop)
+
+        static BlockSyntax ApplyStartAnimation(BlockSyntax body, GClass cl, GProperty prop)
         {
             var code = $@"
 if (propertyName == ""{prop.Name}"")
@@ -437,8 +435,8 @@ return;
             "Color",
             "Avalonia.Media.Color"
         };
-        
-        BlockSyntax ApplyGetProperty(BlockSyntax body, GProperty prop, string? expr = null)
+
+        static BlockSyntax ApplyGetProperty(BlockSyntax body, GProperty prop, string? expr = null)
         {
             if (VariantPropertyTypes.Contains(prop.Type))
                 return body.AddStatements(
@@ -448,7 +446,7 @@ return;
             return body;
         }
         
-        private BlockSyntax SerializeChangesPrologue(GClass cl)
+        private static BlockSyntax SerializeChangesPrologue(GClass cl)
         {
             return Block(
                 ParseStatement("base.SerializeChangesCore(writer);"),
@@ -456,10 +454,10 @@ return;
                 );
         }
 
-        private BlockSyntax SerializeChangesEpilogue(GClass cl) =>
+        private static BlockSyntax SerializeChangesEpilogue(GClass cl) =>
             Block(ParseStatement(ChangedFieldsFieldName(cl) + " = default;"));
-        
-        BlockSyntax ApplySerializeField(BlockSyntax body, GClass cl, GProperty prop, bool isObject, bool isPassthrough)
+
+        static BlockSyntax ApplySerializeField(BlockSyntax body, GClass cl, GProperty prop, bool isObject, bool isPassthrough)
         {
             var changedFields = ChangedFieldsFieldName(cl);
             var changedFieldsType = ChangedFieldsTypeName(cl);
@@ -480,7 +478,7 @@ return;
             return body.AddStatements(ParseStatement(code));
         }     
         
-        private BlockSyntax DeserializeChangesPrologue(GClass cl)
+        private static BlockSyntax DeserializeChangesPrologue(GClass cl)
         {
             return Block(ParseStatement($@"
 base.DeserializeChangesCore(reader, commitedAt);
@@ -489,12 +487,12 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
 "));
         }
 
-        private BlockSyntax ApplyDeserializeChangesEpilogue(BlockSyntax body, GClass cl)
+        private static BlockSyntax ApplyDeserializeChangesEpilogue(BlockSyntax body, GClass cl)
         {
             return body.AddStatements(ParseStatement("OnFieldsDeserialized(changed);"));
         }
-        
-        BlockSyntax ApplyDeserializeField(BlockSyntax body, GClass cl, GProperty prop, string serverType, bool isObject)
+
+        static BlockSyntax ApplyDeserializeField(BlockSyntax body, GClass cl, GProperty prop, string serverType, bool isObject)
         {
             var changedFieldsType = ChangedFieldsTypeName(cl);
             var code = "";
@@ -516,7 +514,7 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
             return body.AddStatements(ParseStatement(code));
         }
 
-        ClassDeclarationSyntax WithGetPropertyForAnimation(ClassDeclarationSyntax cl, BlockSyntax body)
+        static ClassDeclarationSyntax WithGetPropertyForAnimation(ClassDeclarationSyntax cl, BlockSyntax body)
         {
             if (body.Statements.Count == 0)
                 return cl;
@@ -528,8 +526,8 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
 
             return cl.AddMembers(method);
         }
-        
-        ClassDeclarationSyntax WithGetCompositionProperty(ClassDeclarationSyntax cl, BlockSyntax body)
+
+        static ClassDeclarationSyntax WithGetCompositionProperty(ClassDeclarationSyntax cl, BlockSyntax body)
         {
             if (body.Statements.Count == 0)
                 return cl;
@@ -542,7 +540,7 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
             return cl.AddMembers(method);
         }
 
-        ClassDeclarationSyntax WithStartAnimation(ClassDeclarationSyntax cl, BlockSyntax body)
+        static ClassDeclarationSyntax WithStartAnimation(ClassDeclarationSyntax cl, BlockSyntax body)
         {
             body = body.AddStatements(
                 ExpressionStatement(InvocationExpression(MemberAccess("base", "StartAnimation"),

@@ -59,7 +59,7 @@ namespace Avalonia.Layout
             {
                 var element = context.Children[i];
 
-                if (!element.IsVisible)
+                if ((element as Visual)?.IsVisible == false)
                 {
                     continue;
                 }
@@ -100,7 +100,7 @@ namespace Avalonia.Layout
             {
                 var element = context.Children[i];
 
-                if (!element.IsVisible)
+                if ((element as Visual)?.IsVisible == false)
                 {
                     continue;
                 }
@@ -117,7 +117,7 @@ namespace Avalonia.Layout
                 Math.Max(finalSize.Height, bounds.Height));
         }
 
-        private static Rect LayoutVertical(ILayoutable element, double y, Size constraint)
+        private static Rect LayoutVertical(Layoutable element, double y, Size constraint)
         {
             var x = 0.0;
             var width = element.DesiredSize.Width;
@@ -138,7 +138,7 @@ namespace Avalonia.Layout
             return new Rect(x, y, width, element.DesiredSize.Height);
         }
 
-        private static Rect LayoutHorizontal(ILayoutable element, double x, Size constraint)
+        private static Rect LayoutHorizontal(Layoutable element, double x, Size constraint)
         {
             var y = 0.0;
             var height = element.DesiredSize.Height;
