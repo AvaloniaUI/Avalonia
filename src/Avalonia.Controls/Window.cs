@@ -567,10 +567,8 @@ namespace Avalonia.Controls
         /// </summary>
         public override void Hide()
         {
-            try
+            using (FreezeVisibilityChangeHandling())
             {
-                IgnoreVisibilityChange = true;
-                
                 if (!_shown)
                 {
                     return;
@@ -596,10 +594,6 @@ namespace Avalonia.Controls
                 IsVisible = false;
                 _shown = false;
             }
-            finally
-            {
-                IgnoreVisibilityChange = false;
-            }
         }
 
         /// <summary>
@@ -615,7 +609,7 @@ namespace Avalonia.Controls
 
         protected override void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (!IgnoreVisibilityChange)
+            if (!IgnoreVisibilityChanges)
             {
                 var isVisible = e.GetNewValue<bool>();
 
@@ -685,12 +679,10 @@ namespace Avalonia.Controls
 
         private void ShowCore(Window? owner)
         {
-            try
+            using (FreezeVisibilityChangeHandling())
             {
-                IgnoreVisibilityChange = true;
-
                 EnsureStateBeforeShow();
-                
+
                 if (owner != null)
                 {
                     EnsureParentStateBeforeShow(owner);
@@ -733,10 +725,6 @@ namespace Avalonia.Controls
                 Renderer?.Start();
                 OnOpened(EventArgs.Empty);
             }
-            finally
-            {
-                IgnoreVisibilityChange = false;
-            }
         }
 
         /// <summary>
@@ -766,19 +754,17 @@ namespace Avalonia.Controls
         /// </returns>
         public Task<TResult> ShowDialog<TResult>(Window owner)
         {
-            try
+            using (FreezeVisibilityChangeHandling())
             {
-                IgnoreVisibilityChange = true;
-                
                 EnsureStateBeforeShow();
-                
+
                 if (owner == null)
                 {
                     throw new ArgumentNullException(nameof(owner));
                 }
-                
+
                 EnsureParentStateBeforeShow(owner);
-                
+
                 if (_shown)
                 {
                     throw new InvalidOperationException("The window is already being shown.");
@@ -827,10 +813,6 @@ namespace Avalonia.Controls
 
                 OnOpened(EventArgs.Empty);
                 return result.Task;
-            }
-            finally
-            {
-                IgnoreVisibilityChange = false;
             }
         }
 
