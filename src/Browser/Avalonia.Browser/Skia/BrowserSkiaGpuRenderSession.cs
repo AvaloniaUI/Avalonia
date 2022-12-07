@@ -9,7 +9,8 @@ namespace Avalonia.Browser.Skia
 
         public BrowserSkiaGpuRenderSession(BrowserSkiaSurface browserSkiaSurface, GRBackendRenderTarget renderTarget)
         {
-            _surface = SKSurface.Create(browserSkiaSurface.Context, renderTarget, browserSkiaSurface.Origin, browserSkiaSurface.ColorType);
+            _surface = SKSurface.Create(browserSkiaSurface.Context, renderTarget, browserSkiaSurface.Origin, 
+                browserSkiaSurface.ColorType, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
 
             GrContext = browserSkiaSurface.Context;
 

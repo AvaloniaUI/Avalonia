@@ -52,6 +52,24 @@
         </StackPanel>
       </Expander>
       <CheckBox IsChecked="{Binding Rounded}">Rounded</CheckBox>
+      <Expander x:Name="CollapsingDisabledExpander"
+                Header="Collapsing Disabled"
+                IsExpanded="True"
+                ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
+      <Expander x:Name="ExpandingDisabledExpander"
+                Header="Expanding Disabled"
+                IsExpanded="False"
+                ExpandDirection="Down"
+                CornerRadius="{Binding CornerRadius}">
+        <StackPanel>
+          <TextBlock>Expanded content</TextBlock>
+        </StackPanel>
+      </Expander>
     </StackPanel>
   </StackPanel>
 </UserControl>

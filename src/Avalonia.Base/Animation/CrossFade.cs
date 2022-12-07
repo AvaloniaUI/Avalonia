@@ -10,7 +10,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Defines a cross-fade animation between two <see cref="IVisual"/>s.
+    /// Defines a cross-fade animation between two <see cref="Visual"/>s.
     /// </summary>
     public class CrossFade : IPageTransition
     {

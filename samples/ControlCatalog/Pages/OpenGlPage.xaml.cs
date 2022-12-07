@@ -247,7 +247,7 @@ namespace ControlCatalog.Pages
 
         }
 
-        private void CheckError(GlInterface gl)
+        private static void CheckError(GlInterface gl)
         {
             int err;
             while ((err = gl.GetError()) != GL_NO_ERROR)

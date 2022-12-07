@@ -10,7 +10,7 @@ namespace Avalonia.Diagnostics.Controls
 
     {
         private readonly App _application;
-        private static readonly Version s_version = typeof(IAvaloniaObject).Assembly?.GetName()?.Version
+        private static readonly Version s_version = typeof(AvaloniaObject).Assembly?.GetName()?.Version
             ?? Version.Parse("0.0.00");
         public event EventHandler? Closed;
 
@@ -31,7 +31,7 @@ namespace Avalonia.Diagnostics.Controls
             RendererRoot = application.ApplicationLifetime switch
             {
                 Lifetimes.IClassicDesktopStyleApplicationLifetime classic => classic.MainWindow?.Renderer,
-                Lifetimes.ISingleViewApplicationLifetime single => (single.MainView as VisualTree.IVisual)?.VisualRoot?.Renderer,
+                Lifetimes.ISingleViewApplicationLifetime single => (single.MainView as Visual)?.VisualRoot?.Renderer,
                 _ => null
             };
         }

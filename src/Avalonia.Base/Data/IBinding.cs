@@ -24,7 +24,7 @@ namespace Avalonia.Data
         /// A <see cref="InstancedBinding"/> or null if the binding could not be resolved.
         /// </returns>
         InstancedBinding? Initiate(
-            IAvaloniaObject target, 
+            AvaloniaObject target, 
             AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false);

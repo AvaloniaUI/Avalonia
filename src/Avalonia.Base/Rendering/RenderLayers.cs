@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
 {
     public class RenderLayers : IEnumerable<RenderLayer>
     {
         private readonly List<RenderLayer> _inner = new List<RenderLayer>();
-        private readonly Dictionary<IVisual, RenderLayer> _index = new Dictionary<IVisual, RenderLayer>();
+        private readonly Dictionary<Visual, RenderLayer> _index = new Dictionary<Visual, RenderLayer>();
         
         public int Count => _inner.Count;
-        public RenderLayer this[IVisual layerRoot] => _index[layerRoot];
+        public RenderLayer this[Visual layerRoot] => _index[layerRoot];
 
         public void Update(Scene scene, IDrawingContextImpl context)
         {
@@ -59,7 +58,7 @@ namespace Avalonia.Rendering
             _inner.Clear();
         }
 
-        public bool TryGetValue(IVisual layerRoot, [NotNullWhen(true)] out RenderLayer? value)
+        public bool TryGetValue(Visual layerRoot, [NotNullWhen(true)] out RenderLayer? value)
         {
             return _index.TryGetValue(layerRoot, out value);
         }

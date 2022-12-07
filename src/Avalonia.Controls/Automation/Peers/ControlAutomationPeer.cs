@@ -58,7 +58,7 @@ namespace Avalonia.Automation.Peers
 
         protected virtual IReadOnlyList<AutomationPeer>? GetChildrenCore()
         {
-            var children = ((IVisual)Owner).VisualChildren;
+            var children = Owner.VisualChildren;
 
             if (children.Count == 0)
                 return null;
@@ -176,10 +176,10 @@ namespace Avalonia.Automation.Peers
         {
             var root = control.GetVisualRoot();
 
-            if (root is null)
+            if (root is not Visual rootVisual)
                 return default;
 
-            var transform = control.TransformToVisual(root);
+            var transform = control.TransformToVisual(rootVisual);
 
             if (!transform.HasValue)
                 return default;
@@ -190,7 +190,7 @@ namespace Avalonia.Automation.Peers
         private void Initialize()
         {
             Owner.PropertyChanged += OwnerPropertyChanged;
-            var visualChildren = ((IVisual)Owner).VisualChildren;
+            var visualChildren = Owner.VisualChildren;
             visualChildren.CollectionChanged += VisualChildrenChanged;
         }
 

@@ -237,7 +237,7 @@ namespace Avalonia.Direct2D1.RenderTests
             return Math.Sqrt(meanSquaresError);
         }
 
-        private string GetTestsDirectory()
+        private static string GetTestsDirectory()
         {
             var path = Directory.GetCurrentDirectory();
 

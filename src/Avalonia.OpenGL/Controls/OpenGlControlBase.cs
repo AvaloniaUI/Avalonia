@@ -38,7 +38,7 @@ namespace Avalonia.OpenGL.Controls
             base.Render(context);
         }
         
-        private void CheckError(GlInterface gl)
+        private static void CheckError(GlInterface gl)
         {
             int err;
             while ((err = gl.GetError()) != GL_NO_ERROR)
@@ -197,7 +197,7 @@ namespace Avalonia.OpenGL.Controls
             }
         }
 
-        private bool CheckFramebufferStatus(GlInterface gl)
+        private static bool CheckFramebufferStatus(GlInterface gl)
         {
             var status = gl.CheckFramebufferStatus(GL_FRAMEBUFFER);
             if (status != GL_FRAMEBUFFER_COMPLETE)

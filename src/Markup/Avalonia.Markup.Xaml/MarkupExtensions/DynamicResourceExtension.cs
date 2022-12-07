@@ -31,9 +31,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
 
-            if (!(provideTarget.TargetObject is IStyledElement))
+            if (!(provideTarget.TargetObject is StyledElement))
             {
-                _anchor = serviceProvider.GetFirstParent<IStyledElement>() ??
+                _anchor = serviceProvider.GetFirstParent<StyledElement>() ??
                     serviceProvider.GetFirstParent<IResourceProvider>() ??
                     (object?)serviceProvider.GetFirstParent<IResourceHost>();
             }
@@ -42,7 +42,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         }
 
         InstancedBinding? IBinding.Initiate(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor,
             bool enableDataValidation)
@@ -68,7 +68,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             return null;
         }
 
-        private Func<object?, object?>? GetConverter(AvaloniaProperty? targetProperty)
+        private static Func<object?, object?>? GetConverter(AvaloniaProperty? targetProperty)
         {
             if (targetProperty?.PropertyType == typeof(IBrush))
             {

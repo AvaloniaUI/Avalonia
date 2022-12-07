@@ -36,9 +36,9 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
-            var templatedParent = control.TemplatedParent as IStyleable;
+            var templatedParent = control.TemplatedParent as StyledElement;
 
             if (templatedParent == null)
             {

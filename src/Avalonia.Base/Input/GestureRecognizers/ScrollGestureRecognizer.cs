@@ -72,7 +72,7 @@ namespace Avalonia.Input.GestureRecognizers
                 EndGesture();
                 _tracking = e.Pointer;
                 _gestureId = ScrollGestureEventArgs.GetNextFreeId();
-                _trackedRootPoint = e.GetPosition(_target);
+                _trackedRootPoint = e.GetPosition((Visual?)_target);
             }
         }
 
@@ -86,7 +86,7 @@ namespace Avalonia.Input.GestureRecognizers
         {
             if (e.Pointer == _tracking)
             {
-                var rootPoint = e.GetPosition(_target);
+                var rootPoint = e.GetPosition((Visual?)_target);
                 if (!_scrolling)
                 {
                     if (CanHorizontallyScroll && Math.Abs(_trackedRootPoint.X - rootPoint.X) > ScrollStartDistance)

@@ -4,11 +4,11 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Rendering
 {
-    public class ZIndexComparer : IComparer<IVisual>
+    public class ZIndexComparer : IComparer<Visual>
     {
         public static readonly ZIndexComparer Instance = new ZIndexComparer();
-        public static readonly Comparison<IVisual> ComparisonInstance = Instance.Compare;
+        public static readonly Comparison<Visual> ComparisonInstance = Instance.Compare;
 
-        public int Compare(IVisual? x, IVisual? y) => (x?.ZIndex ?? 0).CompareTo(y?.ZIndex ?? 0);
+        public int Compare(Visual? x, Visual? y) => (x?.ZIndex ?? 0).CompareTo(y?.ZIndex ?? 0);
     }
 }

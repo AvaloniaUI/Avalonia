@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Animation;
 using Avalonia.Data;
 using Avalonia.Metadata;
@@ -64,7 +65,8 @@ namespace Avalonia.Styling
 
         void IValueEntry.Unsubscribe() { }
 
-        ISetterInstance ISetter.Instance(IStyleInstance instance, IStyleable target)
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+        ISetterInstance ISetter.Instance(IStyleInstance instance, StyledElement target)
         {
             if (target is not AvaloniaObject ao)
                 throw new InvalidOperationException("Don't know how to instance a style on this type.");
@@ -119,7 +121,7 @@ namespace Avalonia.Styling
             }
         }
 
-        private ISetterInstance SetDirectValue(IStyleable target)
+        private ISetterInstance SetDirectValue(StyledElement target)
         {
             target.SetValue(Property!, Value);
             return _direct ??= new DirectPropertySetterInstance();

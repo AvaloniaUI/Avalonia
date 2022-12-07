@@ -4,6 +4,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.UnitTests;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Primitives
@@ -118,7 +119,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { ":selected" }, target.Presenter.Panel.Children[0].Classes);
         }
 
-        private FuncControlTemplate Template()
+        private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
                 new ItemsPresenter

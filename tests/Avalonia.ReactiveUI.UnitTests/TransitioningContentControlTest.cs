@@ -24,15 +24,15 @@ namespace Avalonia.ReactiveUI.UnitTests
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            var child = ((IVisual)target).VisualChildren.Single();
+            var child = ((Visual)target).GetVisualChildren().Single();
             Assert.IsType<Border>(child);
-            child = child.VisualChildren.Single();
+            child = child.GetVisualChildren().Single();
             Assert.IsType<ContentPresenter>(child);
-            child = child.VisualChildren.Single();
+            child = child.GetVisualChildren().Single();
             Assert.IsType<TextBlock>(child);
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ContentControl>((parent, scope) =>
             {

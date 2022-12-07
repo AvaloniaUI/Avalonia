@@ -1,3 +1,4 @@
+using System;
 using System.Globalization;
 
 namespace Avalonia.Media
@@ -100,6 +101,6 @@ namespace Avalonia.Media
         }
 
         public override string ToString()
-            => $"A {Size} {RotationAngle.ToString(CultureInfo.InvariantCulture)} {(IsLargeArc ? 1 : 0)} {(int)SweepDirection} {Point}";
+            => FormattableString.Invariant($"A {Size} {RotationAngle} {(IsLargeArc ? 1 : 0)} {(int)SweepDirection} {Point}");
     }
 }

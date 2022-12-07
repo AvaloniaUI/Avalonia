@@ -25,7 +25,15 @@ namespace Avalonia
     /// - Implements <see cref="ILogical"/> to form part of a logical tree.
     /// - A collection of class strings for custom styling.
     /// </summary>
-    public class StyledElement : Animatable, IDataContextProvider, IStyledElement, ISetLogicalParent, ISetInheritanceParent
+    public class StyledElement : Animatable, 
+        IDataContextProvider, 
+        ILogical,
+        IResourceHost,
+        IStyleHost,
+        IStyleable,
+        ISetLogicalParent,
+        ISetInheritanceParent,
+        ISupportInitialize
     {
         /// <summary>
         /// Defines the <see cref="DataContext"/> property.
@@ -45,14 +53,14 @@ namespace Avalonia
         /// <summary>
         /// Defines the <see cref="Parent"/> property.
         /// </summary>
-        public static readonly DirectProperty<StyledElement, IStyledElement?> ParentProperty =
-            AvaloniaProperty.RegisterDirect<StyledElement, IStyledElement?>(nameof(Parent), o => o.Parent);
+        public static readonly DirectProperty<StyledElement, StyledElement?> ParentProperty =
+            AvaloniaProperty.RegisterDirect<StyledElement, StyledElement?>(nameof(Parent), o => o.Parent);
 
         /// <summary>
         /// Defines the <see cref="TemplatedParent"/> property.
         /// </summary>
-        public static readonly DirectProperty<StyledElement, ITemplatedControl?> TemplatedParentProperty =
-            AvaloniaProperty.RegisterDirect<StyledElement, ITemplatedControl?>(
+        public static readonly DirectProperty<StyledElement, AvaloniaObject?> TemplatedParentProperty =
+            AvaloniaProperty.RegisterDirect<StyledElement, AvaloniaObject?>(
                 nameof(TemplatedParent),
                 o => o.TemplatedParent,
                 (o ,v) => o.TemplatedParent = v);
@@ -73,7 +81,8 @@ namespace Avalonia
         private Styles? _styles;
         private bool _stylesApplied;
         private bool _themeApplied;
-        private ITemplatedControl? _templatedParent;
+        private bool _templatedParentThemeApplied;
+        private AvaloniaObject? _templatedParent;
         private bool _dataContextUpdating;
         private ControlTheme? _implicitTheme;
 
@@ -233,7 +242,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the styled element whose lookless template this styled element is part of.
         /// </summary>
-        public ITemplatedControl? TemplatedParent
+        public AvaloniaObject? TemplatedParent
         {
             get => _templatedParent;
             internal set => SetAndRaise(TemplatedParentProperty, ref _templatedParent, value);
@@ -251,7 +260,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the styled element's logical children.
         /// </summary>
-        protected IAvaloniaList<ILogical> LogicalChildren
+        protected internal IAvaloniaList<ILogical> LogicalChildren
         {
             get
             {
@@ -284,7 +293,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the styled element's logical parent.
         /// </summary>
-        public IStyledElement? Parent { get; private set; }
+        public StyledElement? Parent { get; private set; }
 
         /// <summary>
         /// Gets the styled element's logical parent.
@@ -365,6 +374,12 @@ namespace Avalonia
                     {
                         ApplyControlTheme();
                         _themeApplied = true;
+                    }
+
+                    if (!_templatedParentThemeApplied)
+                    {
+                        ApplyTemplatedParentControlTheme();
+                        _templatedParentThemeApplied = true;
                     }
 
                     if (!_stylesApplied)
@@ -451,7 +466,7 @@ namespace Avalonia
                     InheritanceParent = parent as AvaloniaObject;
                 }
 
-                Parent = (IStyledElement?)parent;
+                Parent = (StyledElement?)parent;
 
                 if (_logicalRoot != null)
                 {
@@ -482,8 +497,8 @@ namespace Avalonia
 #nullable disable
                 RaisePropertyChanged(
                     ParentProperty,
-                    new Optional<IStyledElement>(old),
-                    new BindingValue<IStyledElement>(Parent),
+                    new Optional<StyledElement>(old),
+                    new BindingValue<StyledElement>(Parent),
                     BindingPriority.LocalValue);
 #nullable enable
             }
@@ -493,14 +508,9 @@ namespace Avalonia
         /// Sets the styled element's inheritance parent.
         /// </summary>
         /// <param name="parent">The parent.</param>
-        void ISetInheritanceParent.SetParent(IAvaloniaObject? parent)
+        void ISetInheritanceParent.SetParent(AvaloniaObject? parent)
         {
-            InheritanceParent = parent switch
-            {
-                AvaloniaObject ao => ao,
-                null => null,
-                _ => throw new NotSupportedException("Custom implementations of IAvaloniaObject not supported.")
-            };
+            InheritanceParent = parent;
         }
 
         void IStyleHost.StylesAdded(IReadOnlyList<IStyle> styles)
@@ -610,26 +620,38 @@ namespace Avalonia
             base.OnPropertyChanged(change);
 
             if (change.Property == ThemeProperty)
-            {
                 OnControlThemeChanged();
-                _themeApplied = false;
-            }
         }
 
         private protected virtual void OnControlThemeChanged()
         {
             var values = GetValueStore();
             values.BeginStyling();
-            try { values.RemoveFrames(FrameType.Theme); }
-            finally { values.EndStyling(); }
+
+            try 
+            { 
+                values.RemoveFrames(FrameType.Theme);
+            }
+            finally 
+            { 
+                values.EndStyling();
+                _themeApplied = false;
+            }
         }
 
         internal virtual void OnTemplatedParentControlThemeChanged()
         {
             var values = GetValueStore();
             values.BeginStyling();
-            try { values.RemoveFrames(FrameType.TemplatedParentTheme); }
-            finally { values.EndStyling(); }
+            try 
+            { 
+                values.RemoveFrames(FrameType.TemplatedParentTheme); 
+            }
+            finally 
+            { 
+                values.EndStyling();
+                _templatedParentThemeApplied = false;
+            }
         }
 
         internal ControlTheme? GetEffectiveTheme()
@@ -674,7 +696,7 @@ namespace Avalonia
             }
         }
 
-        private static void DataContextNotifying(IAvaloniaObject o, bool updateStarted)
+        private static void DataContextNotifying(AvaloniaObject o, bool updateStarted)
         {
             if (o is StyledElement element)
             {
@@ -740,13 +762,13 @@ namespace Avalonia
 
         private void ApplyControlTheme()
         {
-            var theme = GetEffectiveTheme();
-
-            if (theme is not null)
+            if (GetEffectiveTheme() is { } theme)
                 ApplyControlTheme(theme, FrameType.Theme);
+        }
 
-            if (TemplatedParent is StyledElement styleableParent &&
-                styleableParent.GetEffectiveTheme() is { } parentTheme)
+        private void ApplyTemplatedParentControlTheme()
+        {
+            if ((TemplatedParent as StyledElement)?.GetEffectiveTheme() is { } parentTheme)
             {
                 ApplyControlTheme(parentTheme, FrameType.TemplatedParentTheme);
             }
@@ -790,6 +812,28 @@ namespace Avalonia
                 ApplyStyle(child, host, type);
         }
 
+        private void ReevaluateImplicitTheme()
+        {
+            // We only need to check if the theme has changed when Theme isn't set (i.e. when we
+            // have an implicit theme).
+            if (Theme is not null)
+                return;
+
+            // Refetch the implicit theme.
+            var oldImplicitTheme = _implicitTheme == s_invalidTheme ? null : _implicitTheme;
+            _implicitTheme = null;
+            GetEffectiveTheme();
+
+            var newImplicitTheme = _implicitTheme == s_invalidTheme ? null : _implicitTheme;
+
+            // If the implicit theme has changed, detach the existing theme.
+            if (newImplicitTheme != oldImplicitTheme)
+            {
+                OnControlThemeChanged();
+                _themeApplied = false;
+            }
+        }
+
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
             if (this.GetLogicalParent() == null && !(this is ILogicalRoot))
@@ -808,6 +852,7 @@ namespace Avalonia
             {
                 _logicalRoot = e.Root;
 
+                ReevaluateImplicitTheme();
                 ApplyStyling();
                 NotifyResourcesChanged(propagate: false);
 
@@ -832,7 +877,6 @@ namespace Avalonia
             if (_logicalRoot != null)
             {
                 _logicalRoot = null;
-                _implicitTheme = null;
                 InvalidateStyles(recurse: false);
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);

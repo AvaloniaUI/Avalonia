@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -19,165 +18,107 @@ namespace Avalonia.Base.UnitTests.Rendering
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var visual = new Mock<Visual>();
-                var child = new Mock<Visual>() { CallBase = true };
-                var renderRoot = visual.As<IRenderRoot>();
+                var child = new Border
+                {
+                    Width = 100,
+                    Height = 100,
+                    Margin = new(10),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                };
 
-                visual.As<IVisual>().Setup(v => v.Bounds).Returns(new Rect(0, 0, 400, 400));
+                var root = new RenderRoot
+                {
+                    Child = child,
+                    Width = 400,
+                    Height = 400,
+                };
 
-                child.As<IVisual>().Setup(v => v.Bounds).Returns(new Rect(10, 10, 100, 100));
-                child.As<IVisual>().Setup(v => v.VisualParent).Returns(visual.Object);
+                root.LayoutManager.ExecuteInitialLayoutPass();
 
-                var target = new ImmediateRenderer(visual.Object);
+                var target = new ImmediateRenderer(root);
 
-                target.AddDirty(child.Object);
+                target.AddDirty(child);
 
-                renderRoot.Verify(v => v.Invalidate(new Rect(10, 10, 100, 100)));
+                Assert.Equal(new[] { new Rect(10, 10, 100, 100) }, root.Invalidations);
             }
         }
 
-        [Fact(Skip = "https://github.com/moq/moq4/issues/988")]
+        [Fact]
         public void AddDirty_With_RenderTransform_Call_RenderRoot_Invalidate()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var visual = new Mock<Visual>();
-                var child = new Mock<Visual>() { CallBase = true };
-                var renderRoot = visual.As<IRenderRoot>();
+                var child = new Border
+                {
+                    Width = 100,
+                    Height = 100,
+                    Margin = new(100),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                };
 
-                visual.As<IVisual>().Setup(v => v.Bounds).Returns(new Rect(0, 0, 400, 400));
+                var root = new RenderRoot
+                {
+                    Child = child,
+                    Width = 400,
+                    Height = 400,
+                };
 
-                child.As<IVisual>().Setup(v => v.Bounds).Returns(new Rect(100, 100, 100, 100));
-                child.As<IVisual>().Setup(v => v.VisualParent).Returns(visual.Object);
-                child.Object.RenderTransform = new ScaleTransform() { ScaleX = 2, ScaleY = 2 };
+                root.LayoutManager.ExecuteInitialLayoutPass();
 
-                var target = new ImmediateRenderer(visual.Object);
+                child.RenderTransform = new ScaleTransform() { ScaleX = 2, ScaleY = 2 };
 
-                target.AddDirty(child.Object);
+                var target = new ImmediateRenderer(root);
 
-                renderRoot.Verify(v => v.Invalidate(new Rect(50, 50, 200, 200)));
+                target.AddDirty(child);
+
+                Assert.Equal(new[] { new Rect(50, 50, 200, 200) }, root.Invalidations);
             }
         }
 
-        [Fact(Skip = "https://github.com/moq/moq4/issues/988")]
+        [Fact]
         public void AddDirty_For_Child_Moved_Should_Invalidate_Previous_Bounds()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var visual = new Mock<Visual>() { CallBase = true };
-                var child = new Mock<Visual>() { CallBase = true };
-                var renderRoot = visual.As<IRenderRoot>();
-                var renderTarget = visual.As<IRenderTarget>();
+                var child = new Border
+                {
+                    Width = 100,
+                    Height = 100,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top,
+                };
 
-                renderRoot.Setup(r => r.CreateRenderTarget()).Returns(renderTarget.Object);
+                var root = new RenderRoot
+                {
+                    Child = child,
+                    Width = 400,
+                    Height = 400,
+                };
 
-                renderTarget.Setup(r => r.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()))
-                    .Returns(Mock.Of<IDrawingContextImpl>());
+                var target = new ImmediateRenderer(root);
 
-                visual.As<IVisual>().Setup(v => v.Bounds).Returns(new Rect(0, 0, 400, 400));
+                root.LayoutManager.ExecuteInitialLayoutPass();
+                target.AddDirty(child);
 
-                visual.As<IVisual>().Setup(v => v.VisualChildren)
-                    .Returns(new AvaloniaList<IVisual>() { child.As<IVisual>().Object });
-
-                Rect childBounds = new Rect(0, 0, 100, 100);
-                child.As<IVisual>().Setup(v => v.Bounds).Returns(() => childBounds);
-                child.As<IVisual>().Setup(v => v.VisualParent).Returns(visual.Object);
-                child.As<IVisual>().Setup(v => v.VisualChildren).Returns(new AvaloniaList<IVisual>());
-
-                var invalidationCalls = new List<Rect>();
-
-                renderRoot.Setup(v => v.Invalidate(It.IsAny<Rect>())).Callback<Rect>(v => invalidationCalls.Add(v));
-
-                var target = new ImmediateRenderer(visual.Object);
-
-                target.AddDirty(child.Object);
-
-                Assert.Equal(new Rect(0, 0, 100, 100), invalidationCalls[0]);
+                Assert.Equal(new Rect(0, 0, 100, 100), root.Invalidations[0]);
 
                 target.Paint(new Rect(0, 0, 100, 100));
 
                 //move child 100 pixels bottom/right
-                childBounds = new Rect(100, 100, 100, 100);
+                child.Margin = new(100, 100);
+                root.LayoutManager.ExecuteLayoutPass();
 
                 //renderer should invalidate old child bounds with new one
                 //as on old area there can be artifacts
-                target.AddDirty(child.Object);
+                target.AddDirty(child);
 
                 //invalidate first old position
-                Assert.Equal(new Rect(0, 0, 100, 100), invalidationCalls[1]);
+                Assert.Equal(new Rect(0, 0, 100, 100), root.Invalidations[1]);
 
                 //then new position
-                Assert.Equal(new Rect(100, 100, 100, 100), invalidationCalls[2]);
-            }
-        }
-
-        [Fact(Skip = "https://github.com/moq/moq4/issues/988")]
-        public void Should_Render_Child_In_Parent_With_RenderTransform()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                var targetMock = new Mock<Control>() { CallBase = true };
-                var target = targetMock.Object;
-                target.Width = 100;
-                target.Height = 50;
-
-                var child = new Panel()
-                {
-                    RenderTransform = new RotateTransform() { Angle = 90 },
-                    Children = { new Panel() { Children = { target } } }
-                };
-
-                var visualTarget = targetMock.As<IVisual>();
-                int rendered = 0;
-                visualTarget.Setup(v => v.Render(It.IsAny<DrawingContext>())).Callback(() => rendered++);
-
-                var root = new TestRoot(child);
-                root.Renderer = new ImmediateRenderer(root);
-
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                root.Measure(new Size(50, 100));
-                root.Arrange(new Rect(new Size(50, 100)));
-
-                root.Renderer.Paint(root.Bounds);
-
-                Assert.Equal(1, rendered);
-            }
-        }
-
-        [Fact(Skip = "https://github.com/moq/moq4/issues/988")]
-        public void Should_Render_Child_In_Parent_With_RenderTransform2()
-        {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                var targetMock = new Mock<Control>() { CallBase = true };
-                var target = targetMock.Object;
-
-                target.Width = 100;
-                target.Height = 50;
-                target.HorizontalAlignment = HorizontalAlignment.Center;
-                target.VerticalAlignment = VerticalAlignment.Center;
-
-                var child = new Panel()
-                {
-                    RenderTransform = new RotateTransform() { Angle = 90 },
-                    Children = { new Panel() { Children = { target } } }
-                };
-
-                var visualTarget = targetMock.As<IVisual>();
-                int rendered = 0;
-                visualTarget.Setup(v => v.Render(It.IsAny<DrawingContext>())).Callback(() => rendered++);
-
-                var root = new TestRoot(child);
-                root.Renderer = new ImmediateRenderer(root);
-
-                root.LayoutManager.ExecuteInitialLayoutPass();
-
-                root.Measure(new Size(300, 100));
-                root.Arrange(new Rect(new Size(300, 100)));
-                root.Renderer.Paint(root.Bounds);
-
-                Assert.Equal(1, rendered);
+                Assert.Equal(new Rect(100, 100, 100, 100), root.Invalidations[2]);
             }
         }
 
@@ -209,7 +150,10 @@ namespace Avalonia.Base.UnitTests.Rendering
                 TestControl CreateControl()
                     => new TestControl
                     {
-                        Width = 80, Height = 40, Margin = new Thickness(0, 0, 5, 0), ClipToBounds = true
+                        Width = 80,
+                        Height = 40,
+                        Margin = new Thickness(0, 0, 5, 0),
+                        ClipToBounds = true
                     };
 
                 var control1 = CreateControl();
@@ -264,7 +208,10 @@ namespace Avalonia.Base.UnitTests.Rendering
                 TestControl CreateControl()
                     => new TestControl
                     {
-                        Width = 160, Height = 40, Margin = new Thickness(0, 0, 5, 0), ClipToBounds = true
+                        Width = 160,
+                        Height = 40,
+                        Margin = new Thickness(0, 0, 5, 0),
+                        ClipToBounds = true
                     };
 
                 var control1 = CreateControl();
@@ -299,14 +246,20 @@ namespace Avalonia.Base.UnitTests.Rendering
                 var target = new Border();
                 var expected = new TransformedBounds(new Rect(1, 2, 3, 4), new Rect(4, 5, 6, 7), Matrix.CreateRotation(0.8));
 
-                ((IVisual)target).TransformedBounds = expected;
+                target.SetTransformedBounds(expected);
 
-                var renderTarget = Mock.Of<IRenderTarget>(x => 
+                var renderTarget = Mock.Of<IRenderTarget>(x =>
                     x.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()) == Mock.Of<IDrawingContextImpl>());
                 ImmediateRenderer.Render(target, renderTarget);
 
                 Assert.Equal(expected, target.TransformedBounds);
             }
+        }
+
+        private class RenderRoot : TestRoot, IRenderRoot
+        {
+            public List<Rect> Invalidations { get; } = new();
+            void IRenderRoot.Invalidate(Rect rect) => Invalidations.Add(rect);
         }
 
         private class TestControl : Control

@@ -162,7 +162,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                     if (sendNow != null && socket != null)
                     {
                         await socket.SendMessage(
-                            $"frame:{sendNow.SequenceId}:{sendNow.Width}:{sendNow.Height}:{sendNow.Stride}:{sendNow.DpiX}:{sendNow.DpiY}");
+                            FormattableString.Invariant($"frame:{sendNow.SequenceId}:{sendNow.Width}:{sendNow.Height}:{sendNow.Stride}:{sendNow.DpiX}:{sendNow.DpiY}"));
                         await socket.SendMessage(false, sendNow.Data);
                     }
 
