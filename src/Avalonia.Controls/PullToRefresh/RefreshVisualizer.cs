@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using System.Reactive.Linq;
-using System.Threading;
-using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.PullToRefresh;
@@ -104,14 +102,7 @@ namespace Avalonia.Controls
         internal PullDirection PullDirection
         {
             get => GetValue(PullDirectionProperty);
-            set
-            {
-                SetValue(PullDirectionProperty, value);
-
-                OnOrientationChanged();
-
-                UpdateContent();
-            }
+            set => SetValue(PullDirectionProperty, value);
         }
 
         internal RefreshInfoProvider? RefreshInfoProvider
@@ -201,7 +192,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    RaisePropertyChanged(ContentProperty, null, Content);
+                    RaisePropertyChanged(ContentProperty, null, Content, Data.BindingPriority.Style, false);
                 }
             }
 
@@ -402,6 +393,12 @@ namespace Avalonia.Controls
 
                 UpdateContent();
             }
+            else if(change.Property == PullDirectionProperty)
+            {
+                OnOrientationChanged();
+
+                UpdateContent();
+            }
         }
 
         private void OnOrientationChanged()
@@ -551,97 +548,6 @@ namespace Avalonia.Controls
                         break;
                 }
             }
-        }
-    }
-
-    /// <summary>
-    /// Defines constants that specify the state of a RefreshVisualizer
-    /// </summary>
-    public enum RefreshVisualizerState
-    {
-        Idle,
-        Peeking,
-        Interacting,
-        Pending,
-        Refreshing
-    }
-
-    /// <summary>
-    /// Defines constants that specify the orientation of a RefreshVisualizer.
-    /// </summary>
-    public enum RefreshVisualizerOrientation
-    {
-        Auto,
-        Normal,
-        Rotate90DegreesCounterclockwise,
-        Rotate270DegreesCounterclockwise
-    }
-
-    /// <summary>
-    /// Provides event data for RefreshRequested events.
-    /// </summary>
-    public class RefreshRequestedEventArgs : RoutedEventArgs
-    {
-        private RefreshCompletionDeferral _refreshCompletionDeferral;
-
-        /// <summary>
-        /// Gets a deferral object for managing the work done in the RefreshRequested event handler.
-        /// </summary>
-        /// <returns>A <see cref="RefreshCompletionDeferral"/> object</returns>
-        public RefreshCompletionDeferral GetDeferral()
-        {
-            return _refreshCompletionDeferral.Get();
-        }
-
-        public RefreshRequestedEventArgs(Action deferredAction, RoutedEvent? routedEvent) : base(routedEvent)
-        {
-            _refreshCompletionDeferral = new RefreshCompletionDeferral(deferredAction);
-        }
-
-        public RefreshRequestedEventArgs(RefreshCompletionDeferral completionDeferral, RoutedEvent? routedEvent) : base(routedEvent)
-        {
-            _refreshCompletionDeferral = completionDeferral;
-        }
-
-        internal void IncrementCount()
-        {
-            _refreshCompletionDeferral?.Get();
-        }
-
-        internal void DecrementCount()
-        {
-            _refreshCompletionDeferral?.Complete();
-        }
-    }
-
-    /// <summary>
-    /// Deferral class for notify that a work done in RefreshRequested event is done.
-    /// </summary>
-    public class RefreshCompletionDeferral
-    {
-        private Action _deferredAction;
-        private int _deferCount;
-
-        public RefreshCompletionDeferral(Action deferredAction)
-        {
-            _deferredAction = deferredAction;
-        }
-
-        public void Complete()
-        {
-            Interlocked.Decrement(ref _deferCount);
-
-            if (_deferCount == 0)
-            {
-                _deferredAction?.Invoke();
-            }
-        }
-
-        public RefreshCompletionDeferral Get()
-        {
-            Interlocked.Increment(ref _deferCount);
-
-            return this;
         }
     }
 }

@@ -4,7 +4,7 @@
                 TargetType="RefreshContainer">
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid Background="{DynamicResource ThemeControlMidHighBrush}">
+        <Grid>
           <ContentPresenter Name="PART_ContentPresenter"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"

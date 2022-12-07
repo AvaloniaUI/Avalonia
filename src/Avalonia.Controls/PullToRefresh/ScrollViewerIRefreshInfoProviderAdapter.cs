@@ -23,7 +23,7 @@ namespace Avalonia.Controls.PullToRefresh
             _refreshPullDirection = pullDirection;
         }
 
-        public RefreshInfoProvider? AdaptFromTree(IVisual root, Size? refreshVIsualizerSize)
+        public RefreshInfoProvider? AdaptFromTree(Visual root, Size? refreshVIsualizerSize)
         {
             if (root is ScrollViewer scrollViewer)
             {
@@ -45,7 +45,7 @@ namespace Avalonia.Controls.PullToRefresh
                 }
             }
 
-            ScrollViewer? AdaptFromTreeRecursiveHelper(IVisual root, int depth)
+            ScrollViewer? AdaptFromTreeRecursiveHelper(Visual root, int depth)
             {
                 if (depth == 0)
                 {

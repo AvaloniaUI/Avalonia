@@ -60,9 +60,9 @@ namespace Avalonia.Input
 
         public void PointerMoved(PointerEventArgs e)
         {
-            if (_tracking == e.Pointer)
+            if (_tracking == e.Pointer && _target is Visual visual)
             {
-                var currentPosition = e.GetPosition(_target);
+                var currentPosition = e.GetPosition(visual);
                 _actions!.Capture(e.Pointer, this);
 
                 Vector delta = default;
@@ -100,13 +100,13 @@ namespace Avalonia.Input
 
         public void PointerPressed(PointerPressedEventArgs e)
         {
-            if (_target != null && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
+            if (_target != null && _target is Visual visual && (e.Pointer.Type == PointerType.Touch || e.Pointer.Type == PointerType.Pen))
             {
-                var position = e.GetPosition(_target);
+                var position = e.GetPosition(visual);
 
                 var canPull = false;
 
-                var bounds = _target.Bounds;
+                var bounds = visual.Bounds;
 
                 switch (PullDirection)
                 {
