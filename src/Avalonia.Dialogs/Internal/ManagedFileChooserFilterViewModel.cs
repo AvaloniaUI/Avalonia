@@ -19,7 +19,7 @@ namespace Avalonia.Dialogs.Internal
             }
 
             _patterns = filter.Patterns?
-                .Select(e => new Regex(Regex.Escape(e).Replace(@"\*", ".*").Replace(@"\?", "."), RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.Compiled))
+                .Select(e => new Regex(Regex.Escape(e).Replace(@"\*", ".*").Replace(@"\?", "."), RegexOptions.Singleline | RegexOptions.IgnoreCase))
                 .ToArray();
         }
 

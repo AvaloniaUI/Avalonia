@@ -1370,7 +1370,7 @@ namespace Metsys.Bson
             var pattern = ReadName();
             var optionsString = ReadName();
 
-            var options = RegexOptions.None;
+            var options = RegexOptions.Compiled;
             if (optionsString.Contains('e')) options = options | RegexOptions.ECMAScript;
             if (optionsString.Contains('i')) options = options | RegexOptions.IgnoreCase;
             if (optionsString.Contains('l')) options = options | RegexOptions.CultureInvariant;
@@ -1379,7 +1379,7 @@ namespace Metsys.Bson
             if (optionsString.Contains('w')) options = options | RegexOptions.IgnorePatternWhitespace;
             if (optionsString.Contains('x')) options = options | RegexOptions.ExplicitCapture;
 
-            return new Regex(pattern, options | RegexOptions.Compiled);
+            return new Regex(pattern, options);
         }
 
         private Types ReadType()
