@@ -71,7 +71,7 @@ namespace Avalonia.Automation.Peers
             }
         }
 
-        private ExpandCollapseState ToState(bool value)
+        private static ExpandCollapseState ToState(bool value)
         {
             return value ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
         }

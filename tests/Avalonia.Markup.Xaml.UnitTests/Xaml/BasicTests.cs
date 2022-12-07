@@ -899,6 +899,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("Foo", target.Text);
         }
 
+        [Fact]
+        public void Should_Parse_And_Populate_Type_Without_Public_Ctor()
+        {
+            var xaml = @"<ObjectWithoutPublicCtor xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml' Test2='World' />";
+            var target = (ObjectWithoutPublicCtor)AvaloniaRuntimeXamlLoader.Load(xaml, rootInstance: new ObjectWithoutPublicCtor("Hello"));
+
+            Assert.NotNull(target);
+            Assert.Equal("World", target.Test2);
+            Assert.Equal("Hello", target.Test1);
+        }
+        
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }
@@ -927,6 +938,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             Child = child;
         }
+    }
+    
+    public class ObjectWithoutPublicCtor
+    {
+        public ObjectWithoutPublicCtor(string param)
+        {
+            Test1 = param;
+        }
+        
+        public string Test1 { get; set; }
+        
+        public string Test2 { get; set; }
     }
 
     public class ObjectWithAddChildOfT : IAddChild, IAddChild<string>

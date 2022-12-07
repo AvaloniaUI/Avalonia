@@ -1042,7 +1042,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private IWindowImpl CreateImpl(Mock<IRenderer> renderer)
+        private static IWindowImpl CreateImpl(Mock<IRenderer> renderer)
         {
             return Mock.Of<IWindowImpl>(x =>
                 x.RenderScaling == 1 &&

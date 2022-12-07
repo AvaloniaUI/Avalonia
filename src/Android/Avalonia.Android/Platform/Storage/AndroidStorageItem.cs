@@ -178,7 +178,7 @@ internal sealed class AndroidStorageFile : AndroidStorageItem, IStorageBookmarkF
         return false;
     }
 
-    private Stream? GetVirtualFileStream(Context context, AndroidUri uri, bool isOutput)
+    private static Stream? GetVirtualFileStream(Context context, AndroidUri uri, bool isOutput)
     {
         var mimeTypes = context.ContentResolver?.GetStreamTypes(uri, FilePickerFileTypes.All.MimeTypes![0]);
         if (mimeTypes?.Length >= 1)

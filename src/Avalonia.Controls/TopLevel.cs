@@ -357,12 +357,6 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
-        public override void InvalidateMirrorTransform()
-        {
-        }
-        
-        protected override bool BypassFlowDirectionPolicies => true;
-        
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
@@ -427,7 +421,7 @@ namespace Avalonia.Controls
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
-        private bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
+        private static bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
         {
             if(requested == received)
             {

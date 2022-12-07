@@ -167,7 +167,7 @@ namespace Avalonia.Base.UnitTests.Input
             Assert.False(raised);
         }
 
-        private void AddHandlers(
+        private static void AddHandlers(
             Decorator decorator,
             Border border,
             IList<string> result,

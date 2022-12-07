@@ -307,7 +307,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private FuncControlTemplate<TestTopLevel> CreateTemplate()
+        private static FuncControlTemplate<TestTopLevel> CreateTemplate()
         {
             return new FuncControlTemplate<TestTopLevel>((x, scope) =>
                 new ContentPresenter

@@ -66,5 +66,10 @@ public class RuntimeXamlLoaderDocument
     /// <summary>
     /// The stream containing the XAML.
     /// </summary>
-    public Stream XamlStream { get; set; }
+    public Stream XamlStream { get; }
+    
+    /// <summary>
+    /// Parent's service provider to pass to the Build method or type ctor, if available.
+    /// </summary>
+    public IServiceProvider? ServiceProvider { get; set; }
 }
