@@ -26,13 +26,14 @@ using Avalonia.Controls.Utils;
 using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input.GestureRecognizers;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Displays data in a customizable grid.
     /// </summary>
-    [TemplatePart(DATAGRID_elementBottomRightCornerHeaderName,     typeof(IVisual))]
+    [TemplatePart(DATAGRID_elementBottomRightCornerHeaderName,     typeof(Visual))]
     [TemplatePart(DATAGRID_elementColumnHeadersPresenterName,      typeof(DataGridColumnHeadersPresenter))]
     [TemplatePart(DATAGRID_elementFrozenColumnScrollBarSpacerName, typeof(Control))]
     [TemplatePart(DATAGRID_elementHorizontalScrollbarName,         typeof(ScrollBar))]
@@ -90,7 +91,7 @@ namespace Avalonia.Controls
         private INotifyCollectionChanged _topLevelGroup;
         private ContentControl _clipboardContentControl;
 
-        private IVisual _bottomRightCorner;
+        private Visual _bottomRightCorner;
         private DataGridColumnHeadersPresenter _columnHeadersPresenter;
         private DataGridRowsPresenter _rowsPresenter;
         private ScrollBar _vScrollBar;
@@ -121,7 +122,7 @@ namespace Avalonia.Controls
         private bool _executingLostFocusActions;
         private bool _flushCurrentCellChanged;
         private bool _focusEditingControl;
-        private IVisual _focusedObject;
+        private Visual _focusedObject;
         private byte _horizontalScrollChangesIgnored;
         private DataGridRow _focusedRow;
         private bool _ignoreNextScrollBarsLayout;
@@ -238,29 +239,72 @@ namespace Avalonia.Controls
             AvaloniaProperty.Register<DataGrid, DataGridLength>(nameof(ColumnWidth), defaultValue: DataGridLength.Auto);
 
         /// <summary>
+        /// Identifies the <see cref="RowTheme"/> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme> RowThemeProperty =
+            AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(RowTheme));
+
+        /// <summary>
+        /// Gets or sets the theme applied to all rows.
+        /// </summary>
+        public ControlTheme RowTheme
+        {
+            get { return GetValue(RowThemeProperty); }
+            set { SetValue(RowThemeProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="CellTheme"/> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme> CellThemeProperty =
+            AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(CellTheme));
+
+        /// <summary>
+        /// Gets or sets the theme applied to all cells.
+        /// </summary>
+        public ControlTheme CellTheme
+        {
+            get { return GetValue(CellThemeProperty); }
+            set { SetValue(CellThemeProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="ColumnHeaderTheme"/> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme> ColumnHeaderThemeProperty =
+            AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(ColumnHeaderTheme));
+
+        /// <summary>
+        /// Gets or sets the theme applied to all column headers.
+        /// </summary>
+        public ControlTheme ColumnHeaderTheme
+        {
+            get { return GetValue(ColumnHeaderThemeProperty); }
+            set { SetValue(ColumnHeaderThemeProperty, value); }
+        }
+
+        /// <summary>
+        /// Identifies the <see cref="RowGroupTheme"/> dependency property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme> RowGroupThemeProperty =
+            AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(RowGroupTheme));
+
+        /// <summary>
+        /// Gets or sets the theme applied to all row groups.
+        /// </summary>
+        public ControlTheme RowGroupTheme
+        {
+            get { return GetValue(RowGroupThemeProperty); }
+            set { SetValue(RowGroupThemeProperty, value); }
+        }
+
+        /// <summary>
         /// Gets or sets the standard width or automatic sizing mode of columns in the control.
         /// </summary>
         public DataGridLength ColumnWidth
         {
             get { return GetValue(ColumnWidthProperty); }
             set { SetValue(ColumnWidthProperty, value); }
-        }
-
-        public static readonly StyledProperty<IBrush> AlternatingRowBackgroundProperty =
-            AvaloniaProperty.Register<DataGrid, IBrush>(nameof(AlternatingRowBackground));
-
-        /// <summary>
-        /// Gets or sets the <see cref="T:System.Windows.Media.Brush" /> that is used to paint the background of odd-numbered rows.
-        /// </summary>
-        /// <returns>
-        /// The brush that is used to paint the background of odd-numbered rows. The default is a
-        /// <see cref="T:System.Windows.Media.SolidColorBrush" /> with a
-        /// <see cref="P:System.Windows.Media.SolidColorBrush.Color" /> value of white (ARGB value #00FFFFFF).
-        /// </returns>
-        public IBrush AlternatingRowBackground
-        {
-            get { return GetValue(AlternatingRowBackgroundProperty); }
-            set { SetValue(AlternatingRowBackgroundProperty, value); }
         }
 
         public static readonly StyledProperty<int> FrozenColumnCountProperty =
@@ -522,13 +566,13 @@ namespace Avalonia.Controls
             set { SetValue(VerticalScrollBarVisibilityProperty, value); }
         }
 
-        public static readonly StyledProperty<ITemplate<IControl>> DropLocationIndicatorTemplateProperty =
-            AvaloniaProperty.Register<DataGrid, ITemplate<IControl>>(nameof(DropLocationIndicatorTemplate));
+        public static readonly StyledProperty<ITemplate<Control>> DropLocationIndicatorTemplateProperty =
+            AvaloniaProperty.Register<DataGrid, ITemplate<Control>>(nameof(DropLocationIndicatorTemplate));
 
         /// <summary>
         /// Gets or sets the template that is used when rendering the column headers.
         /// </summary>
-        public ITemplate<IControl> DropLocationIndicatorTemplate
+        public ITemplate<Control> DropLocationIndicatorTemplate
         {
             get { return GetValue(DropLocationIndicatorTemplateProperty); }
             set { SetValue(DropLocationIndicatorTemplateProperty, value); }
@@ -1252,7 +1296,7 @@ namespace Avalonia.Controls
         public event EventHandler<SelectionChangedEventArgs> SelectionChanged
         {
             add { AddHandler(SelectionChangedEvent, value); }
-            remove { AddHandler(SelectionChangedEvent, value); }
+            remove { RemoveHandler(SelectionChangedEvent, value); }
         }
 
         /// <summary>
@@ -2058,7 +2102,7 @@ namespace Avalonia.Controls
                     forceHorizontalScroll: true);
             }
         }
-        
+
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -2167,7 +2211,7 @@ namespace Avalonia.Controls
 
             return desiredSize;
         }
-        
+
         /// <inheritdoc/>
         protected override void OnDataContextBeginUpdate()
         {
@@ -2183,7 +2227,7 @@ namespace Avalonia.Controls
 
             NotifyDataContextPropertyForAllRowCells(GetAllRows(), false);
         }
-        
+
         /// <summary>
         /// Raises the BeginningEdit event.
         /// </summary>
@@ -2470,7 +2514,7 @@ namespace Avalonia.Controls
             _topLeftCornerHeader = e.NameScope.Find<ContentControl>(DATAGRID_elementTopLeftCornerHeaderName);
             EnsureTopLeftCornerHeader(); // EnsureTopLeftCornerHeader checks for a null _topLeftCornerHeader;
             _topRightCornerHeader = e.NameScope.Find<ContentControl>(DATAGRID_elementTopRightCornerHeaderName);
-            _bottomRightCorner = e.NameScope.Find<IVisual>(DATAGRID_elementBottomRightCornerHeaderName);
+            _bottomRightCorner = e.NameScope.Find<Visual>(DATAGRID_elementBottomRightCornerHeaderName);
         }
 
         /// <summary>
@@ -3129,7 +3173,7 @@ namespace Avalonia.Controls
             if (EditingRow != null && EditingColumnIndex != -1 && !_executingLostFocusActions)
             {
                 DataGridColumn editingColumn = ColumnsItemsInternal[EditingColumnIndex];
-                IControl editingElement = editingColumn.GetCellContent(EditingRow);
+                Control editingElement = editingColumn.GetCellContent(EditingRow);
                 if (editingElement != null && editingElement.ContainsChild(_focusedObject))
                 {
                     Debug.Assert(_lostFocusActions != null);
@@ -3242,7 +3286,6 @@ namespace Avalonia.Controls
             }
         }
 
-        //TODO Styles
         private void AddNewCellPrivate(DataGridRow row, DataGridColumn column)
         {
             DataGridCell newCell = new DataGridCell();
@@ -3255,8 +3298,11 @@ namespace Avalonia.Controls
             {
                 newCell.OwningColumn = column;
                 newCell.IsVisible = column.IsVisible;
+                if (row.OwningGrid.CellTheme is {} cellTheme)
+                {
+                    newCell.SetValue(ThemeProperty, cellTheme, BindingPriority.TemplatedParent);
+                }
             }
-            //newCell.EnsureStyle(null);
             row.Cells.Insert(column.Index, newCell);
         }
 
@@ -3867,7 +3913,7 @@ namespace Avalonia.Controls
 
             // Keep track of which row contains the newly focused element
             DataGridRow focusedRow = null;
-            IVisual focusedElement = e.Source as IVisual;
+            Visual focusedElement = e.Source as Visual;
             _focusedObject = focusedElement;
             while (focusedElement != null)
             {
@@ -3920,7 +3966,7 @@ namespace Avalonia.Controls
             {
                 bool focusLeftDataGrid = true;
                 bool dataGridWillReceiveRoutedEvent = true;
-                IVisual focusedObject = FocusManager.Instance.Current;
+                Visual focusedObject = FocusManager.Instance.Current as Visual;
 
                 while (focusedObject != null)
                 {
@@ -3933,7 +3979,7 @@ namespace Avalonia.Controls
                     // Walk up the visual tree.  If we hit the root, try using the framework element's
                     // parent.  We do this because Popups behave differently with respect to the visual tree,
                     // and it could have a parent even if the VisualTreeHelper doesn't find it.
-                    IVisual parent = focusedObject.GetVisualParent();
+                    Visual parent = focusedObject.GetVisualParent();
                     if (parent == null)
                     {
                         if (focusedObject is Control element)
@@ -4537,7 +4583,6 @@ namespace Avalonia.Controls
             FlushCurrentCellChanged();
         }
 
-        //TODO Styles
         private void PopulateCellContent(bool isCellEdited,
                                          DataGridColumn dataGridColumn,
                                          DataGridRow dataGridRow,
@@ -4547,7 +4592,7 @@ namespace Avalonia.Controls
             Debug.Assert(dataGridRow != null);
             Debug.Assert(dataGridCell != null);
 
-            IControl element = null;
+            Control element = null;
             DataGridBoundColumn dataGridBoundColumn = dataGridColumn as DataGridBoundColumn;
             if (isCellEdited)
             {
@@ -4575,7 +4620,7 @@ namespace Avalonia.Controls
                 dataGridCell.Content = element;
             }
 
-            
+
         }
 
         private void PreparingCellForEditPrivate(Control editingElement)

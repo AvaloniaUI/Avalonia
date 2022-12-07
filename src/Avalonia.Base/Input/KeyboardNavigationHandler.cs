@@ -50,7 +50,7 @@ namespace Avalonia.Input
             element = element ?? throw new ArgumentNullException(nameof(element));
 
             // If there's a custom keyboard navigation handler as an ancestor, use that.
-            var custom = element.FindAncestorOfType<ICustomKeyboardNavigation>(true);
+            var custom = (element as Visual)?.FindAncestorOfType<ICustomKeyboardNavigation>(true);
             if (custom is object && HandlePreCustomNavigation(custom, element, direction, out var ce))
                 return ce;
 
@@ -156,9 +156,9 @@ namespace Avalonia.Input
             NavigationDirection direction,
             [NotNullWhen(true)] out IInputElement? result)
         {
-            if (newElement is object)
+            if (newElement is Visual v)
             {
-                var customHandler = newElement.FindAncestorOfType<ICustomKeyboardNavigation>(true);
+                var customHandler = v.FindAncestorOfType<ICustomKeyboardNavigation>(true);
 
                 if (customHandler is object)
                 {

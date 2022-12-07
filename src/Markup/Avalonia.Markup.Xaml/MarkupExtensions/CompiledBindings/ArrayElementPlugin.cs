@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
@@ -17,11 +18,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             _elementType = elementType;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string propertyName)
         {
             throw new InvalidOperationException("The ArrayElementPlugin does not support dynamic matching");
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
             if (reference.TryGetTarget(out var target) && target is Array arr)

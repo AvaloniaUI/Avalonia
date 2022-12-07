@@ -15,6 +15,7 @@
   <Import Project="..\..\..\build\SkiaSharp.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />

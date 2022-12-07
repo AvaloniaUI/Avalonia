@@ -117,7 +117,7 @@ namespace Avalonia.Base.UnitTests.PropertyStore
 
         private static StyleInstance InstanceStyle(Style style, StyledElement target)
         {
-            var result = new StyleInstance(style, null);
+            var result = new StyleInstance(style, null, FrameType.Style);
 
             foreach (var setter in style.Setters)
                 result.Add(setter.Instance(result, target));

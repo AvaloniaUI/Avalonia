@@ -20,6 +20,6 @@ namespace Avalonia.Layout
 
         public UvMeasure? Position { get; internal set; }
 
-        public ILayoutable? Element { get; internal set; }
+        public Layoutable? Element { get; internal set; }
     }
 }

@@ -16,7 +16,7 @@ namespace Avalonia.Diagnostics.ViewModels
 {
     internal class ControlDetailsViewModel : ViewModelBase, IDisposable, IClassesChangedListener
     {
-        private readonly IAvaloniaObject _avaloniaObject;
+        private readonly AvaloniaObject _avaloniaObject;
         private IDictionary<object, PropertyViewModel[]>? _propertyIndex;
         private PropertyViewModel? _selectedProperty;
         private DataGridCollectionView? _propertiesView;
@@ -29,16 +29,16 @@ namespace Avalonia.Diagnostics.ViewModels
         private string? _selectedEntityType;
         private bool _showImplementedInterfaces;
 
-        public ControlDetailsViewModel(TreePageViewModel treePage, IAvaloniaObject avaloniaObject)
+        public ControlDetailsViewModel(TreePageViewModel treePage, AvaloniaObject avaloniaObject)
         {
             _avaloniaObject = avaloniaObject;
 
             TreePage = treePage;            
-                        Layout =  avaloniaObject is IVisual 
-                ?  new ControlLayoutViewModel((IVisual)avaloniaObject)
+                        Layout =  avaloniaObject is Visual 
+                ?  new ControlLayoutViewModel((Visual)avaloniaObject)
                 : default;
 
-            NavigateToProperty(_avaloniaObject, (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString()); 
+            NavigateToProperty(_avaloniaObject, (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString()); 
 
             AppliedStyles = new ObservableCollection<StyleViewModel>();
             PseudoClasses = new ObservableCollection<PseudoClassViewModel>();
@@ -82,7 +82,7 @@ namespace Avalonia.Diagnostics.ViewModels
                             {
                                 var setterValue = regularSetter.Value;
 
-                                var resourceInfo = GetResourceInfo(setterValue);
+                                var resourceInfo =  GetResourceInfo(setterValue);
 
                                 SetterViewModel setterVm;
 
@@ -121,7 +121,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public bool CanNavigateToParentProperty => _selectedEntitiesStack.Count >= 1;
 
-        private (object resourceKey, bool isDynamic)? GetResourceInfo(object? value)
+        private static (object resourceKey, bool isDynamic)? GetResourceInfo(object? value)
         {
             if (value is StaticResourceExtension staticResource)
             {
@@ -136,7 +136,7 @@ namespace Avalonia.Diagnostics.ViewModels
             return null;
         }
 
-        private bool IsBinding(object? value)
+        private static bool IsBinding(object? value)
         {
             switch (value)
             {
@@ -253,7 +253,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private IEnumerable<PropertyViewModel> GetAvaloniaProperties(object o)
+        private static IEnumerable<PropertyViewModel> GetAvaloniaProperties(object o)
         {
             if (o is AvaloniaObject ao)
             {
@@ -267,7 +267,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private IEnumerable<PropertyViewModel> GetClrProperties(object o, bool showImplementedInterfaces)
+        private static IEnumerable<PropertyViewModel> GetClrProperties(object o, bool showImplementedInterfaces)
         {
             foreach (var p in GetClrProperties(o, o.GetType()))
             {
@@ -286,7 +286,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private IEnumerable<PropertyViewModel> GetClrProperties(object o, Type t)
+        private static IEnumerable<PropertyViewModel> GetClrProperties(object o, Type t)
         {
             return t.GetProperties()
                 .Where(x => x.GetIndexParameters().Length == 0)
@@ -411,7 +411,7 @@ namespace Avalonia.Diagnostics.ViewModels
                 }
             }
 
-            private int GroupIndex(string? group)
+            private static int GroupIndex(string? group)
             {
                 switch (group)
                 {
@@ -447,7 +447,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 case AvaloniaPropertyViewModel avaloniaProperty:
 
-                    property = (_selectedEntity as IControl)?.GetValue(avaloniaProperty.Property);
+                    property = (_selectedEntity as Control)?.GetValue(avaloniaProperty.Property);
 
                     break;
 
@@ -496,7 +496,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             switch (oldSelectedEntity)
             {
-                case IAvaloniaObject ao1:
+                case AvaloniaObject ao1:
                     ao1.PropertyChanged -= ControlPropertyChanged;
                     break;
 
@@ -528,7 +528,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
             switch (o)
             {
-                case IAvaloniaObject ao2:
+                case AvaloniaObject ao2:
                     ao2.PropertyChanged += ControlPropertyChanged;
                     break;
 
@@ -546,7 +546,7 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 NavigateToProperty(
                     _avaloniaObject, 
-                    (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString());    
+                    (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());    
             }
             
             if (PropertiesView is null)
@@ -569,7 +569,7 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _showImplementedInterfaces = showImplementedInterfaces;
             SelectedProperty = null;
-            NavigateToProperty(_avaloniaObject, (_avaloniaObject as IControl)?.Name ?? _avaloniaObject.ToString());
+            NavigateToProperty(_avaloniaObject, (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());
         }
     }
 }

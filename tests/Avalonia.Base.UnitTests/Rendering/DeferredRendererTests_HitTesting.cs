@@ -35,7 +35,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -63,7 +63,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -100,7 +100,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -129,7 +129,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -173,7 +173,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
@@ -227,7 +227,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
@@ -276,13 +276,13 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
                 var result = root.Renderer.HitTest(new Point(120, 120), root, null);
 
-                Assert.Equal(new IVisual[] { target, container }, result);
+                Assert.Equal(new Visual[] { target, container }, result);
             }
         }
 
@@ -324,7 +324,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
@@ -399,7 +399,7 @@ namespace Avalonia.Base.UnitTests.Rendering
 
                 scroll.UpdateChild();
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
                 
@@ -447,7 +447,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -486,7 +486,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
                 Assert.Equal(new Rect(100, 100, 200, 200), border.Bounds);
@@ -494,7 +494,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 var context = new DrawingContext(Mock.Of<IDrawingContextImpl>());
 
                 var result = root.Renderer.HitTest(new Point(200, 200), root, null);
-                Assert.Equal(new IVisual[] { canvas, border }, result);
+                Assert.Equal(new Visual[] { canvas, border }, result);
 
                 result = root.Renderer.HitTest(new Point(110, 110), root, null);
                 Assert.Empty(result);
@@ -522,7 +522,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 }; 
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -560,7 +560,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 }; 
 
-                root.Renderer = new DeferredRenderer(root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -569,7 +569,7 @@ namespace Avalonia.Base.UnitTests.Rendering
             }
         }
 
-        private IDisposable TestApplication()
+        private static IDisposable TestApplication()
         {
             return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
         }

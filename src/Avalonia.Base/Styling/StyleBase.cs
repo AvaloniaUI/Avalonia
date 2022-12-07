@@ -18,7 +18,6 @@ namespace Avalonia.Styling
         private IResourceDictionary? _resources;
         private List<ISetter>? _setters;
         private List<IAnimation>? _animations;
-        private StyleCache? _childCache;
         private StyleInstance? _sharedInstance;
 
         public IList<IStyle> Children => _children ??= new(this);
@@ -67,6 +66,7 @@ namespace Avalonia.Styling
         bool IResourceNode.HasResources => _resources?.Count > 0;
         IReadOnlyList<IStyle> IStyle.Children => (IReadOnlyList<IStyle>?)_children ?? Array.Empty<IStyle>();
 
+        internal bool HasChildren => _children?.Count > 0;
         internal bool HasSettersOrAnimations => _setters?.Count > 0 || _animations?.Count > 0;
 
         public void Add(ISetter setter) => Setters.Add(setter);
@@ -74,15 +74,25 @@ namespace Avalonia.Styling
 
         public event EventHandler? OwnerChanged;
 
-        public abstract SelectorMatchResult TryAttach(IStyleable target, object? host);
-
         public bool TryGetResource(object key, out object? result)
         {
-            result = null;
-            return _resources?.TryGetResource(key, out result) ?? false;
+            if (_resources is not null && _resources.TryGetResource(key, out result))
+                return true;
+
+            if (_children is not null)
+            {
+                for (var i = 0; i < _children.Count; ++i)
+                {
+                    if (_children[i].TryGetResource(key, out result))
+                        return true;
+                }
+            }
+
+            result= null;
+            return false;
         }
 
-        internal ValueFrame Attach(IStyleable target, IStyleActivator? activator)
+        internal ValueFrame Attach(StyledElement target, IStyleActivator? activator, FrameType type)
         {
             if (target is not AvaloniaObject ao)
                 throw new InvalidOperationException("Styles can only be applied to AvaloniaObjects.");
@@ -97,7 +107,7 @@ namespace Avalonia.Styling
             {
                 var canShareInstance = activator is null;
 
-                instance = new StyleInstance(this, activator);
+                instance = new StyleInstance(this, activator, type);
 
                 if (_setters is not null)
                 {
@@ -122,14 +132,6 @@ namespace Avalonia.Styling
             ao.GetValueStore().AddFrame(instance);
             instance.ApplyAnimations(ao);
             return instance;
-        }
-
-        internal SelectorMatchResult TryAttachChildren(IStyleable target, object? host)
-        {
-            if (_children is null || _children.Count == 0)
-                return SelectorMatchResult.NeverThisType;
-            _childCache ??= new StyleCache();
-            return _childCache.TryAttach(_children, target, host);
         }
 
         internal virtual void SetParent(StyleBase? parent) => Parent = parent;

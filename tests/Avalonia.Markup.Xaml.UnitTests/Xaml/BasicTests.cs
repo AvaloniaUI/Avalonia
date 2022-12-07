@@ -18,6 +18,7 @@ using System.Xml;
 using Xunit;
 using Avalonia.Controls.Documents;
 using Avalonia.Metadata;
+using Avalonia.Themes.Simple;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -459,27 +460,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void StyleInclude_Is_Built()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
-<Styles xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <StyleInclude Source='avares://Avalonia.Themes.Simple/Controls/UserControl.xaml'/>
-</Styles>";
-
-                var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
-
-                Assert.True(styles.Count == 1);
-
-                var styleInclude = styles.First() as IStyle;
-
-                Assert.NotNull(styleInclude);
-            }
-        }
-
-        [Fact]
         public void Simple_Xaml_Binding_Is_Operational()
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformWrapper
@@ -720,7 +700,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 //ensure binding is set and operational first
                 Assert.Equal(100.0, tracker.Tag);
 
-                Assert.Equal("EndInit 0", tracker.Order.Last());
+                // EndInit should be second-to-last operation, as last operation will be
+                // caused by styling being applied on EndInit.
+                Assert.Equal("EndInit 0", tracker.Order[tracker.Order.Count - 2]);
+
+                // Caused by styling.
+                Assert.Equal("Property Foreground Changed", tracker.Order[tracker.Order.Count - 1]);
             }
         }
 
@@ -914,6 +899,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("Foo", target.Text);
         }
 
+        [Fact]
+        public void Should_Parse_And_Populate_Type_Without_Public_Ctor()
+        {
+            var xaml = @"<ObjectWithoutPublicCtor xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml' Test2='World' />";
+            var target = (ObjectWithoutPublicCtor)AvaloniaRuntimeXamlLoader.Load(xaml, rootInstance: new ObjectWithoutPublicCtor("Hello"));
+
+            Assert.NotNull(target);
+            Assert.Equal("World", target.Test2);
+            Assert.Equal("Hello", target.Test1);
+        }
+        
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }
@@ -942,6 +938,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             Child = child;
         }
+    }
+    
+    public class ObjectWithoutPublicCtor
+    {
+        public ObjectWithoutPublicCtor(string param)
+        {
+            Test1 = param;
+        }
+        
+        public string Test1 { get; set; }
+        
+        public string Test2 { get; set; }
     }
 
     public class ObjectWithAddChildOfT : IAddChild, IAddChild<string>

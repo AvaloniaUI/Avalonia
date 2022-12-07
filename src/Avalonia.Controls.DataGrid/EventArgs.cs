@@ -345,7 +345,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// UIElement to display at the insertion position.  If null and Handled = true, then do not display an insertion indicator.
         /// </summary>
-        public IControl DropLocationIndicator
+        public Control DropLocationIndicator
         {
             get;
             set;
@@ -542,7 +542,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="row">The row that the event occurs for.</param>
         /// <param name="detailsElement">The row details section as a framework element.</param>
-        public DataGridRowDetailsEventArgs(DataGridRow row, IControl detailsElement)
+        public DataGridRowDetailsEventArgs(DataGridRow row, Control detailsElement)
         {
             Row = row;
             DetailsElement = detailsElement;
@@ -551,7 +551,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the row details section as a framework element.
         /// </summary>
-        public IControl DetailsElement
+        public Control DetailsElement
         {
             get;
             private set;

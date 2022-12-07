@@ -19,12 +19,12 @@ namespace Avalonia.Input
 
         public int Id { get; }
 
-        IInputElement? FindCommonParent(IInputElement? control1, IInputElement? control2)
+        static IInputElement? FindCommonParent(IInputElement? control1, IInputElement? control2)
         {
-            if (control1 == null || control2 == null)
+            if (control1 is not Visual c1 || control2 is not Visual c2)
                 return null;
-            var seen = new HashSet<IInputElement>(control1.GetSelfAndVisualAncestors().OfType<IInputElement>());
-            return control2.GetSelfAndVisualAncestors().OfType<IInputElement>().FirstOrDefault(seen.Contains);
+            var seen = new HashSet<IInputElement>(c1.GetSelfAndVisualAncestors().OfType<IInputElement>());
+            return c2.GetSelfAndVisualAncestors().OfType<IInputElement>().FirstOrDefault(seen.Contains);
         }
 
         protected virtual void PlatformCapture(IInputElement? element)
@@ -34,15 +34,15 @@ namespace Avalonia.Input
         
         public void Capture(IInputElement? control)
         {
-            if (Captured != null)
-                Captured.DetachedFromVisualTree -= OnCaptureDetached;
+            if (Captured is Visual v1)
+                v1.DetachedFromVisualTree -= OnCaptureDetached;
             var oldCapture = Captured;
             Captured = control;
             PlatformCapture(control);
-            if (oldCapture != null)
+            if (oldCapture is Visual v2)
             {
                 var commonParent = FindCommonParent(control, oldCapture);
-                foreach (var notifyTarget in oldCapture.GetSelfAndVisualAncestors().OfType<IInputElement>())
+                foreach (var notifyTarget in v2.GetSelfAndVisualAncestors().OfType<IInputElement>())
                 {
                     if (notifyTarget == commonParent)
                         break;
@@ -50,11 +50,11 @@ namespace Avalonia.Input
                 }
             }
 
-            if (Captured != null)
-                Captured.DetachedFromVisualTree += OnCaptureDetached;
+            if (Captured is Visual v3)
+                v3.DetachedFromVisualTree += OnCaptureDetached;
         }
 
-        IInputElement? GetNextCapture(IVisual parent)
+        static IInputElement? GetNextCapture(Visual parent)
         {
             return parent as IInputElement ?? parent.FindAncestorOfType<IInputElement>();
         }

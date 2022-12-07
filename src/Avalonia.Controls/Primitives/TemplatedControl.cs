@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 
@@ -13,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// <summary>
     /// A lookless control whose visual appearance is defined by its <see cref="Template"/>.
     /// </summary>
-    public class TemplatedControl : Control, ITemplatedControl
+    public class TemplatedControl : Control
     {
         /// <summary>
         /// Defines the <see cref="Background"/> property.
@@ -306,7 +307,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override IControl GetTemplateFocusTarget()
+        protected override Control GetTemplateFocusTarget()
         {
             foreach (Control child in this.GetTemplateChildren())
             {
@@ -379,7 +380,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="templatedParent">The templated parent to apply.</param>
-        internal static void ApplyTemplatedParent(IStyledElement control, ITemplatedControl? templatedParent)
+        internal static void ApplyTemplatedParent(StyledElement control, AvaloniaObject? templatedParent)
         {
             control.SetValue(TemplatedParentProperty, templatedParent);
 
@@ -388,63 +389,43 @@ namespace Avalonia.Controls.Primitives
 
             for (var i = 0; i < count; i++)
             {
-                if (children[i] is IStyledElement child && child.TemplatedParent is null)
+                if (children[i] is StyledElement child && child.TemplatedParent is null)
                 {
                     ApplyTemplatedParent(child, templatedParent);
                 }
             }
         }
 
-        internal override void DetachControlThemeFromTemplateChildren(ControlTheme theme)
+        private protected override void OnControlThemeChanged()
         {
-            static ControlTheme? GetControlTheme(StyleBase style)
+            base.OnControlThemeChanged();
+
+            var count = VisualChildren.Count;
+            for (var i = 0; i < count; ++i)
             {
-                var s = style;
-
-                while (s is not null)
+                if (VisualChildren[i] is StyledElement child &&
+                    child.TemplatedParent == this)
                 {
-                    if (s is ControlTheme c)
-                        return c;
-                    s = s.Parent as StyleBase;
-                }
-
-                return null;
-            }
-
-            static void Detach(Visual control, ITemplatedControl templatedParent, ControlTheme theme)
-            {
-                var valueStore = control.GetValueStore();
-                var count = valueStore.Frames.Count;
-
-                if (control != templatedParent)
-                {
-                    valueStore.BeginStyling();
-
-                    for (var i = count - 1; i >= 0; --i)
-                    {
-                        if (valueStore.Frames[i] is StyleInstance si &&
-                            si.Source is StyleBase style &&
-                            GetControlTheme(style) == theme)
-                        {
-                            valueStore.RemoveFrame(si);
-                        }
-                    }
-
-                    valueStore.EndStyling();
-                }
-
-                var children = ((IVisual)control).VisualChildren;
-                count = children.Count;
-
-                for (var i = 0; i < count; i++)
-                {
-                    if (children[i] is Visual v &&
-                        v.TemplatedParent == templatedParent)
-                        Detach(v, templatedParent, theme);
+                    child.OnTemplatedParentControlThemeChanged();
                 }
             }
+        }
 
-            Detach(this, this, theme);
+        internal override void OnTemplatedParentControlThemeChanged()
+        {
+            base.OnTemplatedParentControlThemeChanged();
+
+            var count = VisualChildren.Count;
+            var templatedParent = TemplatedParent;
+
+            for (var i = 0; i < count; ++i)
+            {
+                if (VisualChildren[i] is TemplatedControl child &&
+                    child.TemplatedParent == templatedParent)
+                {
+                    child.OnTemplatedParentControlThemeChanged();
+                }
+            }
         }
     }
 }

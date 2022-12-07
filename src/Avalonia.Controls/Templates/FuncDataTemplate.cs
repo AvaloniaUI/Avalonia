@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Templates
     /// <summary>
     /// Builds a control for a piece of data.
     /// </summary>
-    public class FuncDataTemplate : FuncTemplate<object?, IControl?>, IRecyclingDataTemplate
+    public class FuncDataTemplate : FuncTemplate<object?, Control?>, IRecyclingDataTemplate
     {
         /// <summary>
         /// The default data template used in the case where no matching data template is found.
@@ -69,7 +69,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
             Type type,
-            Func<object?, INameScope, IControl?> build,
+            Func<object?, INameScope, Control?> build,
             bool supportsRecycling = false)
             : this(o => IsInstance(o, type), build, supportsRecycling)
         {
@@ -87,7 +87,7 @@ namespace Avalonia.Controls.Templates
         /// <param name="supportsRecycling">Whether the control can be recycled.</param>
         public FuncDataTemplate(
             Func<object?, bool> match,
-            Func<object?, INameScope, IControl?> build,
+            Func<object?, INameScope, Control?> build,
             bool supportsRecycling = false)
             : base(build)
         {
@@ -120,7 +120,7 @@ namespace Avalonia.Controls.Templates
         /// The caller should ensure that any control passed to <paramref name="existing"/>
         /// originated from the same data template.
         /// </remarks>
-        public IControl? Build(object? data, IControl? existing)
+        public Control? Build(object? data, Control? existing)
         {
             return _supportsRecycling && existing is object ? existing : Build(data);
         }

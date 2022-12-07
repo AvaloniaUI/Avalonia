@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Translates (moves) an <see cref="IVisual"/>.
+    /// Translates (moves) an <see cref="Visual"/>.
     /// </summary>
     public class TranslateTransform : Transform
     {

@@ -7,7 +7,7 @@ namespace Avalonia.Controls.Primitives
     public class OverlayLayer : Canvas, ICustomSimpleHitTest
     {
         public Size AvailableSize { get; private set; }
-        public static OverlayLayer? GetOverlayLayer(IVisual visual)
+        public static OverlayLayer? GetOverlayLayer(Visual visual)
         {
             foreach(var v in visual.GetVisualAncestors())
                 if(v is VisualLayerManager vlm)

@@ -6,7 +6,7 @@ namespace Avalonia.Controls
     /// <summary>
     /// A collection of <see cref="Control"/>s.
     /// </summary>
-    public class Controls : AvaloniaList<IControl>
+    public class Controls : AvaloniaList<Control>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Controls"/> class.
@@ -20,7 +20,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="Controls"/> class.
         /// </summary>
         /// <param name="items">The initial items in the collection.</param>
-        public Controls(IEnumerable<IControl> items)
+        public Controls(IEnumerable<Control> items)
             : base(items)
         {
             ResetBehavior = ResetBehavior.Remove;

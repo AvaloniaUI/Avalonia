@@ -16,19 +16,19 @@ namespace Avalonia.Controls.UnitTests
             this.output = output;
         }
 
-        private Grid CreateGrid(params (string name, GridLength width)[] columns)
+        private static Grid CreateGrid(params (string name, GridLength width)[] columns)
         {
             return CreateGrid(columns.Select(c =>
                 (c.name, c.width, ColumnDefinition.MinWidthProperty.GetDefaultValue(typeof(ColumnDefinition)))).ToArray());
         }
 
-        private Grid CreateGrid(params (string name, GridLength width, double minWidth)[] columns)
+        private static Grid CreateGrid(params (string name, GridLength width, double minWidth)[] columns)
         {
             return CreateGrid(columns.Select(c =>
                 (c.name, c.width, c.minWidth, ColumnDefinition.MaxWidthProperty.GetDefaultValue(typeof(ColumnDefinition)))).ToArray());
         }
 
-        private Grid CreateGrid(params (string name, GridLength width, double minWidth, double maxWidth)[] columns)
+        private static Grid CreateGrid(params (string name, GridLength width, double minWidth, double maxWidth)[] columns)
         {
             var grid = new Grid();
             foreach (var k in columns.Select(c => new ColumnDefinition

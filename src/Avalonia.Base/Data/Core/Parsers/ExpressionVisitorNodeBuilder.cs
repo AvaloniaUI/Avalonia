@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Avalonia.Data.Core.Parsers
 {
+    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
     class ExpressionVisitorNodeBuilder : ExpressionVisitor
     {
         private const string MultiDimensionalArrayGetterMethodName = "Get";
@@ -81,7 +83,7 @@ namespace Avalonia.Data.Core.Parsers
             return node;
         }
 
-        private T GetArgumentExpressionValue<T>(Expression expr)
+        private static T GetArgumentExpressionValue<T>(Expression expr)
         {
             try
             {
@@ -193,7 +195,7 @@ namespace Avalonia.Data.Core.Parsers
             throw new ExpressionParseException(0, $"Invalid method call in binding expression: '{node.Method.DeclaringType!.AssemblyQualifiedName}.{node.Method.Name}'.");
         }
 
-        private PropertyInfo? TryGetPropertyFromMethod(MethodInfo method)
+        private static PropertyInfo? TryGetPropertyFromMethod(MethodInfo method)
         {
             var type = method.DeclaringType;
             return type?.GetRuntimeProperties().FirstOrDefault(prop => prop.GetMethod == method);

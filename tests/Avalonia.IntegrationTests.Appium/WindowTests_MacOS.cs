@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Avalonia.Controls;
+using Avalonia.Utilities;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
@@ -113,6 +114,79 @@ namespace Avalonia.IntegrationTests.Appium
                 var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
                 Assert.Equal(1, secondaryWindowIndex);
             }
+        }
+        
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void WindowOrder_Owned_Dialog_Stays_InFront_Of_FullScreen_Parent()
+        {
+            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+
+            // Enter fullscreen
+            mainWindow.FindElementByAccessibilityId("EnterFullscreen").Click();
+            
+            // Wait for fullscreen transition.
+            Thread.Sleep(1000);
+
+            // Make sure we entered fullscreen.
+            var windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
+            Assert.Equal("FullScreen", windowState.Text);
+
+            // Open child window.
+            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.Manual))
+            {
+                mainWindow.SendClick();
+                var secondaryWindowIndex = GetWindowOrder("SecondaryWindow");
+                Assert.Equal(1, secondaryWindowIndex);
+            }
+
+            // Exit fullscreen by menu shortcut Command+R
+            mainWindow.FindElementByAccessibilityId("ExitFullscreen").Click();
+
+            // Wait for restore transition.
+            Thread.Sleep(1000);
+
+            // Make sure we exited fullscreen.
+            mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
+            Assert.Equal("Normal", windowState.Text);
+        }
+
+        [PlatformFact(TestPlatforms.MacOS)]
+        public void Does_Not_Switch_Space_From_FullScreen_To_Main_Desktop_When_FullScreen_Window_Clicked()
+        {
+            // Issue #9565
+            var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            AppiumWebElement windowState;
+
+            // Open child window.
+            using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.Manual))
+            {
+                // Enter fullscreen
+                mainWindow.FindElementByAccessibilityId("EnterFullscreen").Click();
+            
+                // Wait for fullscreen transition.
+                Thread.Sleep(1000);
+
+                // Make sure we entered fullscreen.
+                mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+                windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
+                Assert.Equal("FullScreen", windowState.Text);
+                
+                // Click on main window
+                mainWindow.Click();
+
+                // Failed here due to #9565: main window is no longer visible as the main space is now shown instead
+                // of the fullscreen space.
+                mainWindow.FindElementByAccessibilityId("ExitFullscreen").Click();
+
+                // Wait for restore transition.
+                Thread.Sleep(1000);
+            }
+
+            // Make sure we exited fullscreen.
+            mainWindow = _session.FindElementByAccessibilityId("MainWindow");
+            windowState = mainWindow.FindElementByAccessibilityId("MainWindowState");
+            Assert.Equal("Normal", windowState.Text);
         }
 
         [PlatformFact(TestPlatforms.MacOS)]

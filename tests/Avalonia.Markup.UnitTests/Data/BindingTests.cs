@@ -123,7 +123,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private WeakReference AssignValue(TestControl source, string val)
+        private static WeakReference AssignValue(TestControl source, string val)
         {
             var obj = new DummyObject(val);
 

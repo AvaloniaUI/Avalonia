@@ -1051,10 +1051,10 @@ namespace Avalonia.Controls.UnitTests.Presenters
             });
         }
 
-        private static ITemplate<IPanel> VirtualizingPanelTemplate(
+        private static ITemplate<Panel> VirtualizingPanelTemplate(
             Orientation orientation = Orientation.Vertical)
         {
-            return new FuncTemplate<IPanel>(() => new VirtualizingStackPanel
+            return new FuncTemplate<Panel>(() => new VirtualizingStackPanel
             {
                 Orientation = orientation,
             });

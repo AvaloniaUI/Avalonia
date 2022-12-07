@@ -173,7 +173,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             target.Child = child;
 
-            Assert.Null(((IVisual)child).VisualParent);
+            Assert.Null(((Visual)child).VisualParent);
         }
 
         [Fact]
@@ -350,7 +350,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 }
 
                 var templatedParents = children
-                    .OfType<IControl>()
+                    .OfType<Control>()
                     .Select(x => x.TemplatedParent).ToList();
 
                 if (UsePopupHost)
@@ -443,7 +443,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 }
 
                 var templatedParents = children
-                    .OfType<IControl>()
+                    .OfType<Control>()
                     .Select(x => x.TemplatedParent).ToList();
 
                 if (UsePopupHost)
@@ -569,6 +569,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
                 var window = new Window(windowImpl.Object);
+                window.ApplyStyling();
                 window.ApplyTemplate();
 
                 var target = new Popup() 
@@ -583,7 +584,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 window.Content = border;
 
                 renderer.Setup(x =>
-                    x.HitTestFirst(new Point(10, 15), window, It.IsAny<Func<IVisual, bool>>()))
+                    x.HitTestFirst(new Point(10, 15), window, It.IsAny<Func<Visual, bool>>()))
                     .Returns(border);
 
                 border.PointerPressed += (s, e) =>
@@ -1074,7 +1075,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
        
-        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
+        private static PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             return new PointerPressedEventArgs(
@@ -1087,14 +1088,15 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 KeyModifiers.None);
         }
 
-        private Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object content = null)
         {
             var w = new Window { Content = content };
+            w.ApplyStyling();
             w.ApplyTemplate();
             return w;
         }
 
-        private static IControl PopupContentControlTemplate(PopupContentControl control, INameScope scope)
+        private static Control PopupContentControlTemplate(PopupContentControl control, INameScope scope)
         {
             return new Popup
             {
@@ -1107,7 +1109,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }.RegisterInNameScope(scope);
         }
 
-        private static IControl PopupItemsControlTemplate(PopupItemsControl control, INameScope scope)
+        private static Control PopupItemsControlTemplate(PopupItemsControl control, INameScope scope)
         {
             return new Popup
             {
@@ -1132,7 +1134,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         {
             public event EventHandler DataContextBeginUpdate;
 
-            public new IAvaloniaObject InheritanceParent => base.InheritanceParent;
+            public new AvaloniaObject InheritanceParent => base.InheritanceParent;
 
             protected override void OnDataContextBeginUpdate()
             {

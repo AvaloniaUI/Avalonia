@@ -61,7 +61,7 @@ namespace Avalonia.DesignerSupport.Remote
                     }));
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
+        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer((Visual)root);
         public void Dispose()
         {
         }

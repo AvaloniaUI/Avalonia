@@ -280,7 +280,7 @@ namespace Avalonia.Skia
             }
         }
 
-        SKRect AreaCastingShadowInHole(
+        static SKRect AreaCastingShadowInHole(
             SKRect hole_rect,
             float shadow_blur,
             float shadow_spread,
@@ -689,7 +689,7 @@ namespace Avalonia.Skia
         /// <param name="paintWrapper">Paint wrapper.</param>
         /// <param name="targetSize">Target size.</param>
         /// <param name="gradientBrush">Gradient brush.</param>
-        private void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
+        private static void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
         {
             var tileMode = gradientBrush.SpreadMethod.ToSKShaderTileMode();
             var stopColors = gradientBrush.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();

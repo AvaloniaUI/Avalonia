@@ -62,7 +62,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             };
 
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
             target.SelectedItems = new AvaloniaList<object>("bar");
 
             Assert.Equal(1, target.SelectedIndex);
@@ -1523,14 +1523,14 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Assert.Equal(2, raised);
         }
-        private IEnumerable<int> SelectedContainers(SelectingItemsControl target)
+        private static IEnumerable<int> SelectedContainers(SelectingItemsControl target)
         {
             return target.Presenter.Panel.Children
                 .Select((x, i) => x.Classes.Contains(":selected") ? i : -1)
                 .Where(x => x != -1);
         }
 
-        private FuncControlTemplate Template()
+        private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
                 new ItemsPresenter

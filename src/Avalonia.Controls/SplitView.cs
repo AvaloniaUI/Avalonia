@@ -1,14 +1,11 @@
 ﻿using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Metadata;
-using Avalonia.Platform;
 using Avalonia.VisualTree;
 using System;
-using System.Reactive.Disposables;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
@@ -368,7 +365,7 @@ namespace Avalonia.Controls
                 return;
             }
 
-            var src = e.Source as IVisual;
+            var src = e.Source as Visual;
             while (src != null)
             {
                 // Make assumption that if Popup is in visual tree,
@@ -431,7 +428,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private string GetPseudoClass(SplitViewDisplayMode mode)
+        private static string GetPseudoClass(SplitViewDisplayMode mode)
         {
             return mode switch
             {
@@ -443,7 +440,7 @@ namespace Avalonia.Controls
             };
         }
         
-        private string GetPseudoClass(SplitViewPanePlacement placement)
+        private static string GetPseudoClass(SplitViewPanePlacement placement)
         {
             return placement switch
             {

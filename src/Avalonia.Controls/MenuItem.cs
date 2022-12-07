@@ -110,8 +110,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel());
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel());
 
         private ICommand? _command;
         private bool _commandCanExecute = true;
@@ -323,7 +323,7 @@ namespace Avalonia.Controls
             }
             set
             {
-                SelectedIndex = value is not null ? ItemContainerGenerator.IndexFromContainer(value) : -1;
+                SelectedIndex = value is Control c ? ItemContainerGenerator.IndexFromContainer(c) : -1;
             }
         }
 
@@ -450,7 +450,7 @@ namespace Avalonia.Controls
             base.OnPointerEntered(e);
 
             var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerEnteredItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+            RaiseEvent(new PointerEventArgs(PointerEnteredItemEvent, this, e.Pointer, (Visual?)VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
@@ -460,7 +460,7 @@ namespace Avalonia.Controls
             base.OnPointerExited(e);
 
             var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerExitedItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+            RaiseEvent(new PointerEventArgs(PointerExitedItemEvent, this, e.Pointer, (Visual?)VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
