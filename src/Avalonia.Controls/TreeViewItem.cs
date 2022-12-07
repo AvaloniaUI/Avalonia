@@ -90,7 +90,7 @@ namespace Avalonia.Controls
 
         internal TreeView? TreeViewOwner => _treeView;
 
-        protected internal override Control CreateContainerOverride() => new TreeViewItem();
+        protected internal override Control CreateContainerForItemOverride() => new TreeViewItem();
         protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TreeViewItem;
 
         /// <inheritdoc/>

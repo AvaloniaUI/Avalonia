@@ -27,7 +27,7 @@ namespace Avalonia.Controls.Generators
         /// calling this method, <see cref="PrepareItemContainer(Control, object, int)"/> should
         /// be called to prepare the container to display the specified item.
         /// </remarks>
-        public Control CreateContainer() => _owner.CreateContainerOverride();
+        public Control CreateContainer() => _owner.CreateContainerForItemOverride();
 
         /// <summary>
         /// Determines whether the specified item is (or is eligible to be) its own container.

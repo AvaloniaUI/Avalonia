@@ -103,7 +103,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void UnselectAll() => Selection.Clear();
 
-        protected internal override Control CreateContainerOverride() => new ListBoxItem();
+        protected internal override Control CreateContainerForItemOverride() => new ListBoxItem();
 
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)

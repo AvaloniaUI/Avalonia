@@ -265,7 +265,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Creates or a container that can be used to display an item.
         /// </summary>
-        protected internal virtual Control CreateContainerOverride() => new ContentPresenter();
+        protected internal virtual Control CreateContainerForItemOverride() => new ContentPresenter();
 
         /// <summary>
         /// Prepares the specified element to display the specified item.
