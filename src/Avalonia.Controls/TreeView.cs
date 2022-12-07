@@ -468,6 +468,18 @@ namespace Avalonia.Controls
         protected internal override Control CreateContainerForItemOverride() => new TreeViewItem();
         protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TreeViewItem;
 
+        protected internal override void PrepareContainerForItemOverride(Control container, object? item, int index)
+        {
+            base.PrepareContainerForItemOverride(container, item, index);
+
+            if (item == SelectedItem)
+            {
+                MarkContainerSelected(container, true);
+                if (AutoScrollToSelectedItem)
+                    Dispatcher.UIThread.Post(container.BringIntoView);
+            }
+        }
+
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
@@ -830,36 +842,6 @@ namespace Avalonia.Controls
 
             return item?.TreeViewOwner == this ? item : null;
         }
-
-        /// <summary>
-        /// Called when a new item container is materialized, to set its selected state.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        ////private void ContainerMaterialized(object? sender, ItemContainerEventArgs e)
-        ////{
-        ////    var selectedItem = SelectedItem;
-
-        ////    if (selectedItem == null)
-        ////    {
-        ////        return;
-        ////    }
-
-        ////    foreach (var container in e.Containers)
-        ////    {
-        ////        if (container.Item == selectedItem)
-        ////        {
-        ////            ((TreeViewItem)container.ContainerControl).IsSelected = true;
-
-        ////            if (AutoScrollToSelectedItem)
-        ////            {
-        ////                Dispatcher.UIThread.Post(container.ContainerControl.BringIntoView);
-        ////            }
-
-        ////            break;
-        ////        }
-        ////    }
-        ////}
 
         /// <summary>
         /// Sets a container's 'selected' class or <see cref="ISelectable.IsSelected"/>.
