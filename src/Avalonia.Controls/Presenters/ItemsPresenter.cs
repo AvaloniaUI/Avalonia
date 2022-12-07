@@ -1,8 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
 namespace Avalonia.Controls.Presenters
@@ -10,7 +9,7 @@ namespace Avalonia.Controls.Presenters
     /// <summary>
     /// Presents items inside an <see cref="Avalonia.Controls.ItemsControl"/>.
     /// </summary>
-    public class ItemsPresenter : Control
+    public class ItemsPresenter : Control, ILogicalScrollable
     {
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
@@ -19,12 +18,20 @@ namespace Avalonia.Controls.Presenters
             ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
         private PanelContainerGenerator? _generator;
+        private ILogicalScrollable? _logicalScrollable;
+        private EventHandler? _scrollInvalidated;
 
         static ItemsPresenter()
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
                 typeof(ItemsPresenter),
                 KeyboardNavigationMode.Once);
+        }
+
+        event EventHandler? ILogicalScrollable.ScrollInvalidated
+        {
+            add => _scrollInvalidated += value;
+            remove => _scrollInvalidated -= value;
         }
 
         /// <summary>
@@ -45,11 +52,52 @@ namespace Avalonia.Controls.Presenters
         /// Gets the owner <see cref="ItemsControl"/>.
         /// </summary>
         internal ItemsControl? ItemsControl { get; private set; }
+        
+        bool ILogicalScrollable.CanHorizontallyScroll 
+        {
+            get => _logicalScrollable?.CanHorizontallyScroll ?? false;
+            set
+            {
+                if (_logicalScrollable is not null)
+                    _logicalScrollable.CanHorizontallyScroll = value;
+            }
+        }
+
+        bool ILogicalScrollable.CanVerticallyScroll 
+        {
+            get => _logicalScrollable?.CanVerticallyScroll ?? false;
+            set
+            {
+                if (_logicalScrollable is not null)
+                    _logicalScrollable.CanVerticallyScroll = value;
+            }
+        }
+
+        Vector IScrollable.Offset 
+        {
+            get => _logicalScrollable?.Offset ?? default;
+            set
+            {
+                if (_logicalScrollable is not null)
+                    _logicalScrollable.Offset = value;
+            }
+        }
+
+        bool ILogicalScrollable.IsLogicalScrollEnabled => _logicalScrollable?.IsLogicalScrollEnabled ?? false;
+        Size ILogicalScrollable.ScrollSize => _logicalScrollable?.ScrollSize ?? default;
+        Size ILogicalScrollable.PageScrollSize => _logicalScrollable?.PageScrollSize ?? default;
+        Size IScrollable.Extent => _logicalScrollable?.Extent ?? default;
+        Size IScrollable.Viewport => _logicalScrollable?.Viewport ?? default;
 
         public override sealed void ApplyTemplate()
         {
             if (Panel is null && ItemsControl is not null)
             {
+                if (_logicalScrollable is not null)
+                {
+                    _logicalScrollable.ScrollInvalidated -= OnLogicalScrollInvalidated;
+                }
+
                 Panel = ItemsPanel.Build();
                 Panel.SetValue(TemplatedParentProperty, TemplatedParent);
                 LogicalChildren.Add(Panel);
@@ -59,8 +107,21 @@ namespace Avalonia.Controls.Presenters
                     v.Attach(ItemsControl);
                 else
                     CreateSimplePanelGenerator();
+
+                _logicalScrollable = Panel as ILogicalScrollable;
+
+                if (_logicalScrollable is not null)
+                {
+                    _logicalScrollable.ScrollInvalidated += OnLogicalScrollInvalidated;
+                }
             }
         }
+
+        bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect) =>
+            _logicalScrollable?.BringIntoView(target, targetRect) ?? false;
+        Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from) =>
+            _logicalScrollable?.GetControlInDirection(direction, from);
+        void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e) => _scrollInvalidated?.Invoke(this, e);
 
         internal void ScrollIntoView(int index)
         {
@@ -142,5 +203,6 @@ namespace Avalonia.Controls.Presenters
             return Panel?.Children.IndexOf(container) ?? -1;
         }
 
+        private void OnLogicalScrollInvalidated(object? sender, EventArgs e) => _scrollInvalidated?.Invoke(this, e);
     }
 }
