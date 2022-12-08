@@ -630,7 +630,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                textSource = new SimpleTextSource((text ?? "").AsMemory(), defaultProperties);
+                textSource = new SimpleTextSource(text ?? "", defaultProperties);
             }
 
             return new TextLayout(
@@ -829,12 +829,12 @@ namespace Avalonia.Controls
 
         protected readonly struct SimpleTextSource : ITextSource
         {
-            private readonly ReadOnlySlice<char> _text;
+            private readonly CharacterBufferRange _text;
             private readonly TextRunProperties _defaultProperties;
 
-            public SimpleTextSource(ReadOnlySlice<char> text, TextRunProperties defaultProperties)
+            public SimpleTextSource(string text, TextRunProperties defaultProperties)
             {
-                _text = text;
+                _text = new CharacterBufferRange(new CharacterBufferReference(text), text.Length);
                 _defaultProperties = defaultProperties;
             }
 
@@ -852,7 +852,7 @@ namespace Avalonia.Controls
                     return new TextEndOfParagraph();
                 }
 
-                return new TextCharacters(runText, _defaultProperties);
+                return new TextCharacters(runText.CharacterBufferReference, runText.Length, _defaultProperties);
             }
         }
 
@@ -873,21 +873,28 @@ namespace Avalonia.Controls
 
                 foreach (var textRun in _textRuns)
                 {
-                    if (textRun.TextSourceLength == 0)
+                    if (textRun.Length == 0)
                     {
                         continue;
                     }
 
-                    if (textSourceIndex >= currentPosition + textRun.TextSourceLength)
+                    if (textSourceIndex >= currentPosition + textRun.Length)
                     {
-                        currentPosition += textRun.TextSourceLength;
+                        currentPosition += textRun.Length;
 
                         continue;
                     }
 
-                    if (textRun is TextCharacters)
+                    if (textRun is TextCharacters)                 
                     {
-                        return new TextCharacters(textRun.Text.Skip(Math.Max(0, textSourceIndex - currentPosition)), textRun.Properties!);
+                        var characterBufferReference = textRun.CharacterBufferReference;
+
+                        var skip = Math.Max(0, textSourceIndex - currentPosition);
+
+                        return new TextCharacters(
+                            new CharacterBufferReference(characterBufferReference.CharacterBuffer, characterBufferReference.OffsetToFirstChar + skip), 
+                            textRun.Length - skip,
+                            textRun.Properties!);
                     }
 
                     return textRun;
