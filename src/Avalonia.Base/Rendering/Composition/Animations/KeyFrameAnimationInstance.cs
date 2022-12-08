@@ -170,6 +170,10 @@ namespace Avalonia.Rendering.Composition.Animations
 
         public override void Activate()
         {
+            if (_finished)
+            {
+                return;
+            }
             TargetObject.Compositor.AddToClock(this);
             base.Activate();
         }
@@ -177,7 +181,6 @@ namespace Avalonia.Rendering.Composition.Animations
         public override void Deactivate()
         {
             TargetObject.Compositor.RemoveFromClock(this);
-            _finished = false;
             base.Deactivate();
         }
     }
