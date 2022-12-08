@@ -92,7 +92,7 @@ namespace Avalonia.Styling
             return false;
         }
 
-        internal ValueFrame Attach(IStyleable target, IStyleActivator? activator, FrameType type)
+        internal ValueFrame Attach(StyledElement target, IStyleActivator? activator, FrameType type)
         {
             if (target is not AvaloniaObject ao)
                 throw new InvalidOperationException("Styles can only be applied to AvaloniaObjects.");

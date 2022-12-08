@@ -212,9 +212,10 @@ namespace Avalonia.Input.Navigation
                     if (!IsFocusScope(e))
                     {
                         // Verify if focusedElement is a visual descendant of e
-                        if (focusedElement is IVisual visualFocusedElement &&
+                        if (focusedElement is Visual visualFocusedElement &&
+                            e is Visual v &&
                             visualFocusedElement != e &&
-                            e.IsVisualAncestorOf(visualFocusedElement))
+                            v.IsVisualAncestorOf(visualFocusedElement))
                         {
                             return focusedElement;
                         }
@@ -236,7 +237,7 @@ namespace Avalonia.Input.Navigation
 
             if (uiElement is null || IsVisibleAndEnabled(uiElement))
             {
-                if (e is IVisual elementAsVisual)
+                if (e is Visual elementAsVisual)
                 {
                     var children = elementAsVisual.VisualChildren;
                     var count = children.Count;
@@ -272,7 +273,7 @@ namespace Avalonia.Input.Navigation
 
             if (uiElement == null || IsVisibleAndEnabled(uiElement))
             {
-                var elementAsVisual = e as IVisual;
+                var elementAsVisual = e as Visual;
 
                 if (elementAsVisual != null)
                 {
@@ -385,7 +386,7 @@ namespace Avalonia.Input.Navigation
 
         private static IInputElement? GetNextSibling(IInputElement e)
         {
-            if (GetParent(e) is IVisual parentAsVisual && e is IVisual elementAsVisual)
+            if (GetParent(e) is Visual parentAsVisual && e is Visual elementAsVisual)
             {
                 var children = parentAsVisual.VisualChildren;
                 var count = children.Count;
@@ -589,7 +590,7 @@ namespace Avalonia.Input.Navigation
 
         private static IInputElement? GetPreviousSibling(IInputElement e)
         {
-            if (GetParent(e) is IVisual parentAsVisual && e is IVisual elementAsVisual)
+            if (GetParent(e) is Visual parentAsVisual && e is Visual elementAsVisual)
             {
                 var children = parentAsVisual.VisualChildren;
                 var count = children.Count;
@@ -646,7 +647,7 @@ namespace Avalonia.Input.Navigation
         private static IInputElement? GetParent(IInputElement e)
         {
             // For Visual - go up the visual parent chain until we find Visual.
-            if (e is IVisual v)
+            if (e is Visual v)
                 return v.FindAncestorOfType<IInputElement>();
 
             // This will need to be implemented when we have non-visual input elements.
@@ -669,6 +670,7 @@ namespace Avalonia.Input.Navigation
         }
 
         private static bool IsTabStopOrGroup(IInputElement e) => IsTabStop(e) || IsGroup(e);
-        private static bool IsVisibleAndEnabled(IInputElement e) => e.IsVisible && e.IsEnabled;
+        private static bool IsVisible(IInputElement e) => (e as Visual)?.IsVisible ?? true;
+        private static bool IsVisibleAndEnabled(IInputElement e) => IsVisible(e) && e.IsEnabled;
     }
 }

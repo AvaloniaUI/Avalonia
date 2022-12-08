@@ -20,7 +20,8 @@ namespace Avalonia.Input.Platform
             WholeWordTextActionModifiers = wholeWordTextActionModifiers;
             Copy = new List<KeyGesture>
             {
-                new KeyGesture(Key.C, commandModifiers)
+                new KeyGesture(Key.C, commandModifiers),
+                new KeyGesture(Key.Insert, KeyModifiers.Control)
             };
             Cut = new List<KeyGesture>
             {
@@ -28,7 +29,8 @@ namespace Avalonia.Input.Platform
             };
             Paste = new List<KeyGesture>
             {
-                new KeyGesture(Key.V, commandModifiers)
+                new KeyGesture(Key.V, commandModifiers),
+                new KeyGesture(Key.Insert, KeyModifiers.Shift)
             };
             Undo = new List<KeyGesture>
             {

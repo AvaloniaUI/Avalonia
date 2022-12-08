@@ -12,7 +12,7 @@ namespace Avalonia.Controls.Generators
     /// </summary>
     /// <typeparam name="T">The type of the container.</typeparam>
     public class TreeItemContainerGenerator<T> : ItemContainerGenerator<T>, ITreeItemContainerGenerator
-        where T : class, IControl, new()
+        where T : Control, new()
     {
         private TreeView? _treeView;
 
@@ -25,7 +25,7 @@ namespace Avalonia.Controls.Generators
         /// <param name="itemsProperty">The container's Items property.</param>
         /// <param name="isExpandedProperty">The container's IsExpanded property.</param>
         public TreeItemContainerGenerator(
-            IControl owner,
+            Control owner,
             AvaloniaProperty contentProperty,
             AvaloniaProperty contentTemplateProperty,
             AvaloniaProperty itemsProperty,
@@ -53,7 +53,7 @@ namespace Avalonia.Controls.Generators
         protected AvaloniaProperty IsExpandedProperty { get; }
 
         /// <inheritdoc/>
-        protected override IControl? CreateContainer(object? item)
+        protected override Control? CreateContainer(object? item)
         {
             var container = item as T;
 
@@ -93,7 +93,7 @@ namespace Avalonia.Controls.Generators
                     BindingOperations.Apply(result, ItemsProperty, itemsSelector, null);
                 }
 
-                if (!(item is IControl))
+                if (!(item is Control))
                 {
                     result.DataContext = item;
                 }
@@ -149,7 +149,7 @@ namespace Avalonia.Controls.Generators
         {
             private readonly IDataTemplate _inner;
             public WrapperTreeDataTemplate(IDataTemplate inner) => _inner = inner;
-            public IControl? Build(object? param) => _inner.Build(param);
+            public Control? Build(object? param) => _inner.Build(param);
             public bool Match(object? data) => _inner.Match(data);
             public InstancedBinding? ItemsSelector(object item) => null;
         }

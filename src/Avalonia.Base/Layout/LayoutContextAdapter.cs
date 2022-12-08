@@ -38,8 +38,8 @@ namespace Avalonia.Layout
 
         protected override int ItemCountCore() => _nonVirtualizingContext.Children.Count;
         protected override object GetItemAtCore(int index) => _nonVirtualizingContext.Children[index];
-        protected override ILayoutable GetOrCreateElementAtCore(int index, ElementRealizationOptions options) =>
+        protected override Layoutable GetOrCreateElementAtCore(int index, ElementRealizationOptions options) =>
             _nonVirtualizingContext.Children[index];
-        protected override void RecycleElementCore(ILayoutable element) { }
+        protected override void RecycleElementCore(Layoutable element) { }
     }
 }

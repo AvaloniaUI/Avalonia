@@ -2,6 +2,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Win32.DxgiSwapchain;
 using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.WinRT.Composition;
 
@@ -48,6 +49,10 @@ namespace Avalonia.Win32
                     if (opts.UseWindowsUIComposition)
                     {
                         WinUICompositorConnection.TryCreateAndRegister(egl, opts.CompositionBackdropCornerRadius);
+                    }
+                    else if (opts.UseLowLatencyDxgiSwapChain)
+                    {
+                        DxgiConnection.TryCreateAndRegister(egl);
                     }
                 }
 

@@ -91,7 +91,7 @@ internal sealed class AvaloniaPropertyValueStoreOld<TValue>
         return (0, false);
     }
 
-    public bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out TValue value)
+    public bool TryGetValue(AvaloniaProperty property, out TValue value)
     {
         (var index, var found) = TryFindEntry(property.Id);
         if (!found)

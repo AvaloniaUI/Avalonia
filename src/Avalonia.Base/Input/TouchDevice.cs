@@ -21,7 +21,7 @@ namespace Avalonia.Input
         private Rect _lastClickRect;
         private ulong _lastClickTime;
 
-        RawInputModifiers GetModifiers(RawInputModifiers modifiers, bool isLeftButtonDown)
+        static RawInputModifiers GetModifiers(RawInputModifiers modifiers, bool isLeftButtonDown)
         {
             var rv = modifiers &= RawInputModifiers.KeyboardMask;
             if (isLeftButtonDown)
@@ -75,7 +75,7 @@ namespace Avalonia.Input
                 }
 
                 target.RaiseEvent(new PointerPressedEventArgs(target, pointer,
-                    args.Root, args.Position, ev.Timestamp,
+                    (Visual)args.Root, args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind),
                     keyModifier, _clickCount));
             }
@@ -86,7 +86,7 @@ namespace Avalonia.Input
                 using (pointer)
                 {
                     target.RaiseEvent(new PointerReleasedEventArgs(target, pointer,
-                        args.Root, args.Position, ev.Timestamp,
+                        (Visual)args.Root, args.Position, ev.Timestamp,
                         new PointerPointProperties(GetModifiers(args.InputModifiers, false), updateKind),
                         keyModifier, MouseButton.Left));
                 }
@@ -101,7 +101,7 @@ namespace Avalonia.Input
 
             if (args.Type == RawPointerEventType.TouchUpdate)
             {
-                target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, args.Root,
+                target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, target, pointer, (Visual)args.Root,
                     args.Position, ev.Timestamp,
                     new PointerPointProperties(GetModifiers(args.InputModifiers, true), updateKind),
                     keyModifier, args.IntermediatePoints));

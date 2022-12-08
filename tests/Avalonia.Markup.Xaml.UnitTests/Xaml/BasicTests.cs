@@ -18,6 +18,7 @@ using System.Xml;
 using Xunit;
 using Avalonia.Controls.Documents;
 using Avalonia.Metadata;
+using Avalonia.Themes.Simple;
 
 namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 {
@@ -456,27 +457,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             style.TryGetResource("Double", out var d);
 
             Assert.Equal(10.0, d);
-        }
-
-        [Fact]
-        public void StyleInclude_Is_Built()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow))
-            {
-                var xaml = @"
-<Styles xmlns='https://github.com/avaloniaui'
-        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
-    <StyleInclude Source='avares://Avalonia.Themes.Simple/Controls/UserControl.xaml'/>
-</Styles>";
-
-                var styles = AvaloniaRuntimeXamlLoader.Parse<Styles>(xaml);
-
-                Assert.True(styles.Count == 1);
-
-                var styleInclude = styles.First() as IStyle;
-
-                Assert.NotNull(styleInclude);
-            }
         }
 
         [Fact]
@@ -919,6 +899,17 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("Foo", target.Text);
         }
 
+        [Fact]
+        public void Should_Parse_And_Populate_Type_Without_Public_Ctor()
+        {
+            var xaml = @"<ObjectWithoutPublicCtor xmlns='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml' Test2='World' />";
+            var target = (ObjectWithoutPublicCtor)AvaloniaRuntimeXamlLoader.Load(xaml, rootInstance: new ObjectWithoutPublicCtor("Hello"));
+
+            Assert.NotNull(target);
+            Assert.Equal("World", target.Test2);
+            Assert.Equal("Hello", target.Test1);
+        }
+        
         private class SelectedItemsViewModel : INotifyPropertyChanged
         {
             public string[] Items { get; set; }
@@ -947,6 +938,18 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         {
             Child = child;
         }
+    }
+    
+    public class ObjectWithoutPublicCtor
+    {
+        public ObjectWithoutPublicCtor(string param)
+        {
+            Test1 = param;
+        }
+        
+        public string Test1 { get; set; }
+        
+        public string Test2 { get; set; }
     }
 
     public class ObjectWithAddChildOfT : IAddChild, IAddChild<string>

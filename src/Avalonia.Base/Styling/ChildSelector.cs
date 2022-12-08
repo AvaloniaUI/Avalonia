@@ -37,13 +37,13 @@ namespace Avalonia.Styling
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             var controlParent = ((ILogical)control).LogicalParent;
 
             if (controlParent != null)
             {
-                var parentMatch = _parent.Match((IStyleable)controlParent, parent, subscribe);
+                var parentMatch = _parent.Match((StyledElement)controlParent, parent, subscribe);
 
                 if (parentMatch.Result == SelectorMatchResult.Sometimes)
                 {

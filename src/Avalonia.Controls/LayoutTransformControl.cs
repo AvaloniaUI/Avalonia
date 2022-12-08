@@ -52,7 +52,7 @@ namespace Avalonia.Controls
             set { SetValue(UseRenderTransformProperty, value); }
         }
 
-        public IControl? TransformRoot => Child;
+        public Control? TransformRoot => Child;
 
         /// <summary>
         /// Provides the behavior for the "Arrange" pass of layout.

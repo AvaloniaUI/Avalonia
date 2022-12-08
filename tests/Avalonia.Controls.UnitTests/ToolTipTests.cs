@@ -24,7 +24,7 @@ namespace Avalonia.Controls.UnitTests
                 [ToolTip.ShowDelayProperty] = 0
             };
 
-            Assert.False((control as IVisual).IsAttachedToVisualTree);
+            Assert.False(control.IsAttachedToVisualTree);
 
             //here in issue #3188 exception is raised
             _mouseHelper.Enter(control);
@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
-                Assert.True((target as IVisual).IsAttachedToVisualTree);                               
+                Assert.True(target.IsAttachedToVisualTree);                               
 
                 _mouseHelper.Enter(target);
 
@@ -88,7 +88,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = window.Find<Decorator>("PART_target");
                 var panel = window.Find<Panel>("PART_panel");
                 
-                Assert.True((target as IVisual).IsAttachedToVisualTree);                               
+                Assert.True(target.IsAttachedToVisualTree);                               
 
                 _mouseHelper.Enter(target);
 
@@ -119,7 +119,7 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
-                Assert.True((target as IVisual).IsAttachedToVisualTree);
+                Assert.True(target.IsAttachedToVisualTree);
 
                 _mouseHelper.Enter(target);
 
@@ -190,7 +190,7 @@ namespace Avalonia.Controls.UnitTests
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
 
-                Assert.True((target as IVisual).IsAttachedToVisualTree);
+                Assert.True(target.IsAttachedToVisualTree);
 
                 _mouseHelper.Enter(target);
 

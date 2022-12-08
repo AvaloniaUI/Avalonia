@@ -56,13 +56,13 @@ namespace Avalonia.Controls
             set => SetAndRaise(CellEditingTemplateProperty, ref _cellEditingCellTemplate, value);
         }
         
-        private void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+        private static void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var oldValue = (IDataTemplate)e.OldValue;
             var value = (IDataTemplate)e.NewValue;
         }
 
-        protected override IControl GenerateElement(DataGridCell cell, object dataItem)
+        protected override Control GenerateElement(DataGridCell cell, object dataItem)
         {
             if(CellTemplate != null)
             {
@@ -78,7 +78,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override IControl GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding binding)
+        protected override Control GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding binding)
         {
             binding = null;
             if(CellEditingTemplate != null)
@@ -99,12 +99,12 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override object PrepareCellForEdit(IControl editingElement, RoutedEventArgs editingEventArgs)
+        protected override object PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
         {
             return null;
         }
 
-        protected internal override void RefreshCellContent(IControl element, string propertyName)
+        protected internal override void RefreshCellContent(Control element, string propertyName)
         {
             var cell = element.Parent as DataGridCell;
             if(propertyName == nameof(CellTemplate) && cell is not null)

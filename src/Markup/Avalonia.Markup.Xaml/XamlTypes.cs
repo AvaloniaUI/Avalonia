@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Markup.Xaml
 {
@@ -28,6 +29,7 @@ namespace Avalonia.Markup.Xaml
     
     public interface IXamlTypeResolver
     {
+        [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
         Type Resolve (string qualifiedTypeName);
     }
 

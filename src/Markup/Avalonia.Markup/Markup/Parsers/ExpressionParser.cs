@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Markup.Parsers
 {
@@ -24,6 +25,7 @@ namespace Avalonia.Markup.Parsers
             _enableValidation = enableValidation;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
         public (ExpressionNode Node, SourceMode Mode) Parse(ref CharacterReader r)
         {
             ExpressionNode? rootNode = null;

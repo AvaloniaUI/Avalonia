@@ -198,7 +198,7 @@ namespace Avalonia.Base.UnitTests.Styling
             Assert.True(raised);
         }
 
-        private IControlTemplate ContentControlTemplate()
+        private static IControlTemplate ContentControlTemplate()
         {
             return new FuncControlTemplate<ContentControl>((x, scope) =>
                 new ContentPresenter

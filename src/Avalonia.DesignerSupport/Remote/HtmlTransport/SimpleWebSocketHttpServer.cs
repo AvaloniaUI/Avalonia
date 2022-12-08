@@ -146,7 +146,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
 
         public async Task RespondAsync(int code, byte[] data, string contentType)
         {
-            var headers = Encoding.UTF8.GetBytes($"HTTP/1.1 {code} {(HttpStatusCode)code}\r\nConnection: close\r\nContent-Type: {contentType}\r\nContent-Length: {data.Length}\r\n\r\n");
+            var headers = Encoding.UTF8.GetBytes(FormattableString.Invariant($"HTTP/1.1 {code} {(HttpStatusCode)code}\r\nConnection: close\r\nContent-Type: {contentType}\r\nContent-Length: {data.Length}\r\n\r\n"));
             await _stream.WriteAsync(headers, 0, headers.Length);
             await _stream.WriteAsync(data, 0, data.Length);
             _stream.Dispose();

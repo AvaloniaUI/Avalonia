@@ -338,10 +338,10 @@ namespace Avalonia.Layout
         Rect IFlowLayoutAlgorithmDelegates.Algorithm_GetExtent(
             Size availableSize,
             VirtualizingLayoutContext context,
-            ILayoutable? firstRealized,
+            Layoutable? firstRealized,
             int firstRealizedItemIndex,
             Rect firstRealizedLayoutBounds,
-            ILayoutable? lastRealized,
+            Layoutable? lastRealized,
             int lastRealizedItemIndex,
             Rect lastRealizedLayoutBounds)
         {
@@ -391,7 +391,7 @@ namespace Avalonia.Layout
             return extent;
         }
 
-        void IFlowLayoutAlgorithmDelegates.Algorithm_OnElementMeasured(ILayoutable element, int index, Size availableSize, Size measureSize, Size desiredSize, Size provisionalArrangeSize, VirtualizingLayoutContext context)
+        void IFlowLayoutAlgorithmDelegates.Algorithm_OnElementMeasured(Layoutable element, int index, Size availableSize, Size measureSize, Size desiredSize, Size provisionalArrangeSize, VirtualizingLayoutContext context)
         {
         }
 
@@ -557,6 +557,6 @@ namespace Avalonia.Layout
 
         private void InvalidateLayout() => InvalidateMeasure();
 
-        private FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((UniformGridLayoutState)context.LayoutState!).FlowAlgorithm;
+        private static FlowLayoutAlgorithm GetFlowAlgorithm(VirtualizingLayoutContext context) => ((UniformGridLayoutState)context.LayoutState!).FlowAlgorithm;
     }
 }

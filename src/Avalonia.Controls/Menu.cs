@@ -14,8 +14,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Menu : MenuBase, IMainMenu
     {
-        private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel { Orientation = Orientation.Horizontal });
 
 
         /// <summary>

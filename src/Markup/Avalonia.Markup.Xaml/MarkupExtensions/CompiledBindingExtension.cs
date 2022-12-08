@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             };
         }
 
-        protected override ExpressionObserver CreateExpressionObserver(IAvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
+        protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
         {
             if (Source != null)
             {
@@ -62,7 +62,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             else
             {
                 return CreateSourceObserver(
-                    (target as IStyledElement) ?? (anchor as IStyledElement),
+                    (target as StyledElement) ?? (anchor as StyledElement),
                     Path.BuildExpression(enableDataValidation));
             }
         }

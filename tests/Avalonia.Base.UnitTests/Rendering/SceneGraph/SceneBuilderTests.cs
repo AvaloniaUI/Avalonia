@@ -238,8 +238,8 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
                 sceneBuilder.UpdateAll(result);
 
                 var panelNode = result.FindNode(tree.Child);
-                var expected = new IVisual[] { back, front };
-                var actual = panelNode.Children.OfType<IVisualNode>().Select(x => x.Visual).ToArray();
+                var expected = new Visual[] { back, front };
+                var actual = panelNode.Children.OfType<VisualNode>().Select(x => x.Visual).ToArray();
                 Assert.Equal(expected, actual);
             }
         }
@@ -267,7 +267,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
                 var panelNode = result.FindNode(tree.Child);
                 var expected = panel.Children.ToArray();
-                var actual = panelNode.Children.OfType<IVisualNode>().Select(x => x.Visual).ToArray();
+                var actual = panelNode.Children.OfType<VisualNode>().Select(x => x.Visual).ToArray();
                 Assert.Equal(expected, actual);
             }
         }

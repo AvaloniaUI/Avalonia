@@ -45,7 +45,7 @@ namespace Avalonia.Direct2D1.RenderTests.Controls
         [Win32Fact("Has text")]
         public async Task RestrictedHeight_VerticalAlign()
         {
-            IControl text(VerticalAlignment verticalAlingnment, bool clip = true, bool restrictHeight = true)
+            Control text(VerticalAlignment verticalAlingnment, bool clip = true, bool restrictHeight = true)
             {
                 return new Border()
                 {

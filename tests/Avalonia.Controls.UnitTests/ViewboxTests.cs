@@ -227,8 +227,8 @@ namespace Avalonia.Controls.UnitTests
 
             Assert.Equal("foo", target.Child.DataContext);
         }
-
-        private bool TryGetScale(Viewbox viewbox, out Vector scale)
+      
+        private static bool TryGetScale(Viewbox viewbox, out Vector scale)
         {
             if (viewbox.InternalTransform is null)
             {
