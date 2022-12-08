@@ -58,6 +58,10 @@ namespace Avalonia.Input
             RoutedEvent.Register<PullGestureEventArgs>(
                 "PullGesture", RoutingStrategies.Bubble, typeof(Gestures));
 
+        public static readonly RoutedEvent<HoldGestureEventArgs> HoldGestureEvent =
+            RoutedEvent.Register<HoldGestureEventArgs>(
+                "HoldGesture", RoutingStrategies.Bubble, typeof(Gestures));
+
         public static readonly RoutedEvent<PullGestureEndedEventArgs> PullGestureEndedEvent =
             RoutedEvent.Register<PullGestureEndedEventArgs>(
                 "PullGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
