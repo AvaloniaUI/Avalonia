@@ -55,7 +55,7 @@ namespace Avalonia.Win32.OpenGl
             
             _windowClass = RegisterClassEx(ref wndClassEx);
             _bootstrapWindow = CreateOffscreenWindow();
-            _bootstrapDc = GetDC(_bootstrapWindow);
+            _bootstrapDc = WglDCManager.GetDC(_bootstrapWindow);
             _defaultPfd = new PixelFormatDescriptor
             {
                 Size = (ushort)Marshal.SizeOf<PixelFormatDescriptor>(),
@@ -132,7 +132,7 @@ namespace Avalonia.Win32.OpenGl
             using (new WglRestoreContext(_bootstrapDc, _bootstrapContext, null))
             {
                 var window = CreateOffscreenWindow();
-                var dc = GetDC(window);
+                var dc = WglDCManager.GetDC(window);
                 SetPixelFormat(dc, _defaultPixelFormat, ref _defaultPfd);
                 foreach (var version in versions)
                 {
@@ -159,7 +159,7 @@ namespace Avalonia.Win32.OpenGl
                             _defaultPixelFormat, _defaultPfd);
                 }
 
-                ReleaseDC(window, dc);
+                WglDCManager.ReleaseDC(window, dc);
                 DestroyWindow(window);
                 return null;
             }

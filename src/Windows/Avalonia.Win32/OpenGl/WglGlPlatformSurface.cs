@@ -37,7 +37,7 @@ namespace Avalonia.Win32.OpenGl
 
             public void Dispose()
             {
-                UnmanagedMethods.ReleaseDC(_hdc, _info.Handle);
+                WglDCManager.ReleaseDC(_info.Handle, _hdc);
             }
 
             public IGlPlatformSurfaceRenderingSession BeginDraw()

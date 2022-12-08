@@ -46,7 +46,7 @@ namespace Avalonia.Win32.OpenGl
         public void Dispose()
         {
             wglDeleteContext(_context);
-            ReleaseDC(_hWnd, _dc);
+            WglDCManager.ReleaseDC(_hWnd, _dc);
             DestroyWindow(_hWnd);
             IsLost = true;
         }
@@ -72,7 +72,7 @@ namespace Avalonia.Win32.OpenGl
 
         public IntPtr CreateConfiguredDeviceContext(IntPtr hWnd)
         {
-            var dc = GetDC(hWnd);
+            var dc = WglDCManager.GetDC(hWnd);
             var fmt = _formatDescriptor;
             SetPixelFormat(dc, _pixelFormat, ref fmt);
             return dc;
