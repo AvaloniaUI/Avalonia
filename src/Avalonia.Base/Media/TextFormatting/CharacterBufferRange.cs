@@ -48,21 +48,6 @@ namespace Avalonia.Media.TextFormatting
         { }
 
         /// <summary>
-        /// Construct <see cref="CharacterBufferRange"/> from unsafe character string
-        /// </summary>
-        /// <param name="unsafeCharacterString">pointer to character string</param>
-        /// <param name="characterLength">character length</param>
-        public unsafe CharacterBufferRange(
-            char* unsafeCharacterString,
-            int characterLength
-            )
-            : this(
-                new CharacterBufferReference(unsafeCharacterString, characterLength),
-                characterLength
-                )
-        { }
-
-        /// <summary>
         /// Construct a <see cref="CharacterBufferRange"/> from <see cref="CharacterBufferReference"/>
         /// </summary>
         /// <param name="characterBufferReference">character buffer reference</param>

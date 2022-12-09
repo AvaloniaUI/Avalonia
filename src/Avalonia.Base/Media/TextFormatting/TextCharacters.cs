@@ -58,21 +58,6 @@ namespace Avalonia.Media.TextFormatting
         { }
 
         /// <summary>
-        /// Construct a run for text content from unsafe character string
-        /// </summary>
-        public unsafe TextCharacters(
-            char* unsafeCharacterString,
-            int length,
-            TextRunProperties textRunProperties
-            ) :
-            this(
-                new CharacterBufferReference(unsafeCharacterString, length),
-                length,
-                textRunProperties
-                )
-        { }
-
-        /// <summary>
         /// Internal constructor of TextContent
         /// </summary>
         public TextCharacters(
