@@ -98,11 +98,10 @@ internal class WglGdiResourceManager
         };
             
         s_WindowClass = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
-        new Thread(Worker)
-        {
-            IsBackground = true,
-            Name = "Win32 OpenGL HDC manager"
-        }.Start();
+        var th = new Thread(Worker) { IsBackground = true, Name = "Win32 OpenGL HDC manager" };
+        // This makes CLR to automatically pump the event queue from WaitOne
+        th.SetApartmentState(ApartmentState.STA);
+        th.Start();
     }
     
         
