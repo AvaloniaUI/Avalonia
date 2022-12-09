@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Selection
                     if (ItemsView?.Inner is INotifyCollectionChanged inccOld)
                         CollectionChangedEventManager.Instance.RemoveListener(inccOld, this);
                     _source = value;
-                    ItemsView = value is object ? ItemsSourceView<T>.GetOrCreate(value) : null;
+                    ItemsView = value is object ? ItemsSourceView.GetOrCreate<T>(value) : null;
                     if (ItemsView?.Inner is INotifyCollectionChanged inccNew)
                         CollectionChangedEventManager.Instance.AddListener(inccNew, this);
                 }

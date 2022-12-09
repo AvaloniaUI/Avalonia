@@ -442,7 +442,7 @@ namespace Avalonia.Controls
                     var newDataSource = newEnumerable as ItemsSourceView;
                     if (newEnumerable != null && newDataSource == null)
                     {
-                        newDataSource = new ItemsSourceView(newEnumerable);
+                        newDataSource = ItemsSourceView.GetOrCreate(newEnumerable);
                     }
 
                     OnDataSourcePropertyChanged(ItemsSourceView, newDataSource);

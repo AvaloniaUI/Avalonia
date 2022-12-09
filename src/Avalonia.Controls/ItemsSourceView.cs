@@ -34,7 +34,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
         /// <param name="source">The data source.</param>
-        public ItemsSourceView(IEnumerable source)
+        private protected ItemsSourceView(IEnumerable source)
         {
             _inner = source switch
             {
@@ -166,6 +166,48 @@ namespace Avalonia.Controls
             };
         }
 
+        /// <summary>
+        /// Gets or creates an <see cref="ItemsSourceView{T}"/> for the specified enumerable.
+        /// </summary>
+        /// <param name="items">The enumerable.</param>
+        /// <remarks>
+        /// This method handles the following three cases:
+        /// - If <paramref name="items"/> is null, returns <see cref="Empty"/>
+        /// - If <paramref name="items"/> is an <see cref="ItemsSourceView"/> returns the existing
+        ///   <see cref="ItemsSourceView"/>
+        /// - Otherwise creates a new <see cref="ItemsSourceView"/>
+        /// </remarks>
+        public static ItemsSourceView<T> GetOrCreate<T>(IEnumerable? items)
+        {
+            return items switch
+            {
+                ItemsSourceView<T> isv => isv,
+                null => ItemsSourceView<T>.Empty,
+                _ => new ItemsSourceView<T>(items)
+            };
+        }
+
+        /// <summary>
+        /// Gets or creates an <see cref="ItemsSourceView{T}"/> for the specified enumerable.
+        /// </summary>
+        /// <param name="items">The enumerable.</param>
+        /// <remarks>
+        /// This method handles the following three cases:
+        /// - If <paramref name="items"/> is null, returns <see cref="Empty"/>
+        /// - If <paramref name="items"/> is an <see cref="ItemsSourceView"/> returns the existing
+        ///   <see cref="ItemsSourceView"/>
+        /// - Otherwise creates a new <see cref="ItemsSourceView"/>
+        /// </remarks>
+        public static ItemsSourceView<T> GetOrCreate<T>(IEnumerable<T>? items)
+        {
+            return items switch
+            {
+                ItemsSourceView<T> isv => isv,
+                null => ItemsSourceView<T>.Empty,
+                _ => new ItemsSourceView<T>(items)
+            };
+        }
+
         public IEnumerator<object?> GetEnumerator()
         {
             static IEnumerator<object> EnumerateItems(IList list)
@@ -210,7 +252,7 @@ namespace Avalonia.Controls
         internal string KeyFromIndex(int index) => throw new NotImplementedException();
     }
 
-    public class ItemsSourceView<T> : ItemsSourceView, IReadOnlyList<T>
+    public sealed class ItemsSourceView<T> : ItemsSourceView, IReadOnlyList<T>
     {
         /// <summary>
         ///  Gets an empty <see cref="ItemsSourceView"/>
@@ -221,12 +263,12 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the ItemsSourceView class for the specified data source.
         /// </summary>
         /// <param name="source">The data source.</param>
-        public ItemsSourceView(IEnumerable<T> source)
+        internal ItemsSourceView(IEnumerable<T> source)
             : base(source)
         {
         }
 
-        private ItemsSourceView(IEnumerable source)
+        internal ItemsSourceView(IEnumerable source)
             : base(source)
         {
         }
@@ -263,26 +305,5 @@ namespace Avalonia.Controls
         }
 
         IEnumerator IEnumerable.GetEnumerator() => Inner.GetEnumerator();
-
-        /// <summary>
-        /// Gets or creates an <see cref="ItemsSourceView{T}"/> for the specified enumerable.
-        /// </summary>
-        /// <param name="items">The enumerable.</param>
-        /// <remarks>
-        /// This method handles the following three cases:
-        /// - If <paramref name="items"/> is null, returns <see cref="Empty"/>
-        /// - If <paramref name="items"/> is an <see cref="ItemsSourceView"/> returns the existing
-        ///   <see cref="ItemsSourceView"/>
-        /// - Otherwise creates a new <see cref="ItemsSourceView"/>
-        /// </remarks>
-        public static new ItemsSourceView<T> GetOrCreate(IEnumerable? items)
-        {
-            return items switch
-            {
-                ItemsSourceView<T> isv => isv,
-                null => Empty,
-                _ => new ItemsSourceView<T>(items)
-            };
-        }
     }
 }

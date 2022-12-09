@@ -96,7 +96,7 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemsControl()
         {
-            _itemsView = new(_items);
+            _itemsView = ItemsSourceView.GetOrCreate(_items);
             _itemsView.PostCollectionChanged += ItemsCollectionChanged;
             UpdatePseudoClasses(0);
         }
