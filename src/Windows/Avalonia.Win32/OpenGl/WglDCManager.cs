@@ -55,7 +55,11 @@ internal class WglDCManager
 
     static WglDCManager()
     {
-        new Thread(Worker) { IsBackground = true }.Start();
+        new Thread(Worker)
+        {
+            IsBackground = true,
+            Name = "Win32 OpenGL HDC manager"
+        }.Start();
     }
     
     public static IntPtr GetDC(IntPtr hWnd)
