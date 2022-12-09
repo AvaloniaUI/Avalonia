@@ -9,7 +9,7 @@
     <DockPanel LastChildFill="True" Margin="16">
         <StackPanel DockPanel.Dock="Right" 
                     Margin="16 0 0 0" 
-                    MinWidth="150"
+                    Width="150"
                     Spacing="4">
             <ComboBox Items="{Binding Orientations}"
                       SelectedItem="{Binding Orientation}"/>
