@@ -346,7 +346,8 @@ namespace Avalonia.Controls
         /// <param name="container">The container element.</param>
         protected internal virtual void ClearContainerForItemOverride(Control container)
         {
-            // TODO: Remove HeaderedItemsControl.Items binding.
+            // Feels like we should be clearing the HeaderedItemsControl.Items binding here, but looking at
+            // the WPF source it seems that this isn't done there.
         }
 
         /// <summary>
