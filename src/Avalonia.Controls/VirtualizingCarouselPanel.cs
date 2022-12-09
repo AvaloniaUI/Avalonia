@@ -275,8 +275,8 @@ namespace Avalonia.Controls
                 }
                 else if (generator.IsItemItsOwnContainer(controlItem))
                 {
-                    AddInternalChild(controlItem);
                     generator.PrepareItemContainer(controlItem, controlItem, index);
+                    AddInternalChild(controlItem);
                     controlItem.SetValue(ItemIsOwnContainerProperty, true);
                     return controlItem;
                 }
@@ -311,8 +311,8 @@ namespace Avalonia.Controls
             var item = items[index];
             var container = generator.CreateContainer();
 
-            AddInternalChild(container);
             generator.PrepareItemContainer(container, item, index);
+            AddInternalChild(container);
 
             return container;
         }

@@ -137,9 +137,9 @@ namespace Avalonia.Controls.Presenters
                 container = generator.CreateContainer();
             }
 
+            generator.PrepareItemContainer(container, item, index);
             itemsControl.AddLogicalChild(container);
             children.Insert(index, container);
-            generator.PrepareItemContainer(container, item, index);
         }
 
         private void ClearItemsControlLogicalChildren()

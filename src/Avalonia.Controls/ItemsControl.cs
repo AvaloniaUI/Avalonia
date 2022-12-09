@@ -313,9 +313,9 @@ namespace Avalonia.Controls
                 hic.Header = item;
                 hic.HeaderTemplate = itemTemplate;
 
-                var treeTemplate = (itemTemplate ?? hic.FindDataTemplate(item)) as ITreeDataTemplate;
+                itemTemplate ??= hic.FindDataTemplate(item) ?? this.FindDataTemplate(item);
 
-                if (treeTemplate is not null)
+                if (itemTemplate is ITreeDataTemplate treeTemplate)
                 {
                     if (item is not null && treeTemplate.ItemsSelector(item) is { } itemsBinding)
                         BindingOperations.Apply(hic, ItemsProperty, itemsBinding, null);
@@ -481,14 +481,6 @@ namespace Avalonia.Controls
 
         internal void PrepareItemContainer(Control container, object? item, int index)
         {
-            // Putting this precondition in place in case we want to raise an event when a
-            // container is realized. If we want to do that, then the event subscriber will expect
-            // the container to be attached to the tree. Not using IsAttachedToVisualTree here
-            // because a bunch of tests don't have a rooted visual tree.
-            if (container.GetVisualParent() is null)
-                throw new InvalidOperationException(
-                    "Container must be attached to parent before PrepareItemContainer is called.");
-
             var itemContainerTheme = ItemContainerTheme;
 
             if (itemContainerTheme is not null && 
