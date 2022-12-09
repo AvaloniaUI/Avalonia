@@ -18,6 +18,9 @@ namespace Avalonia.Controls.Primitives
             ItemsPanelProperty.OverrideDefaultValue<TabStrip>(DefaultPanel);
         }
 
+        protected internal override Control CreateContainerForItemOverride() => new TabStripItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TabStripItem;
+
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)
         {

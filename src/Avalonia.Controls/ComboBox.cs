@@ -170,6 +170,9 @@ namespace Avalonia.Controls
             UpdateFlowDirection();
         }
 
+        protected internal override Control CreateContainerForItemOverride() => new ComboBoxItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is ComboBoxItem;
+
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
         {
