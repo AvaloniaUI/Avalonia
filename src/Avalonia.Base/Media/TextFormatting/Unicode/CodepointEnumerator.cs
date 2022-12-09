@@ -1,12 +1,13 @@
-﻿using Avalonia.Utilities;
+﻿using System;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
     public ref struct CodepointEnumerator
     {
-        private ReadOnlySlice<char> _text;
+        private CharacterBufferRange _text;
+        private int _pos;
 
-        public CodepointEnumerator(ReadOnlySlice<char> text)
+        public CodepointEnumerator(CharacterBufferRange text)
         {
             _text = text;
             Current = Codepoint.ReplacementCodepoint;

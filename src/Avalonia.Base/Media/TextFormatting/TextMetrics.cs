@@ -5,9 +5,9 @@
     /// </summary>
     public readonly struct TextMetrics
     {
-        public TextMetrics(Typeface typeface, double fontRenderingEmSize)
+        public TextMetrics(IGlyphTypeface glyphTypeface, double fontRenderingEmSize)
         {
-            var fontMetrics = typeface.GlyphTypeface.Metrics;
+            var fontMetrics = glyphTypeface.Metrics;
 
             var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
 
