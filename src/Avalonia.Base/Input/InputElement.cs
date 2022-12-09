@@ -442,6 +442,11 @@ namespace Avalonia.Input
             {
                 SetAndRaise(IsEffectivelyEnabledProperty, ref _isEffectivelyEnabled, value);
                 PseudoClasses.Set(":disabled", !value);
+
+                if (!IsEffectivelyEnabled && FocusManager.Instance?.Current == this)
+                {
+                    FocusManager.Instance?.Focus(null);
+                }
             }
         }
 

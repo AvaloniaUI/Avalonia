@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Animation.Utils;
 using Avalonia.Collections;
@@ -39,7 +40,7 @@ namespace Avalonia.Animation.Animators
                 VerifyConvertKeyFrames();
 
             var subject = new DisposeAnimationInstanceSubject<T>(this, animation, control, clock, onComplete);
-            return match.Subscribe(subject);
+            return new CompositeDisposable(match.Subscribe(subject), subject);
         }
 
         protected T InterpolationHandler(double animationTime, T neutralValue)
