@@ -138,20 +138,25 @@ namespace Avalonia.Win32.OpenGl
                 {
                     if(version.Type != GlProfileType.OpenGL)
                         continue;
-                    var context = WglCreateContextAttribsArb(dc, shareContext?.Handle ?? IntPtr.Zero,
-                        new[]
-                        {
-                            // major
-                            WGL_CONTEXT_MAJOR_VERSION_ARB, version.Major,
-                            // minor
-                            WGL_CONTEXT_MINOR_VERSION_ARB,  version.Minor,
-                            // core profile
-                            WGL_CONTEXT_PROFILE_MASK_ARB, 1, 
-                            // debug 
-                            // WGL_CONTEXT_FLAGS_ARB, 1,
-                            // end
-                            0, 0
-                        });
+                    IntPtr context;
+                    using (shareContext?.Lock())
+                    {
+                        context = WglCreateContextAttribsArb(dc, shareContext?.Handle ?? IntPtr.Zero,
+                            new[]
+                            {
+                                // major
+                                WGL_CONTEXT_MAJOR_VERSION_ARB, version.Major,
+                                // minor
+                                WGL_CONTEXT_MINOR_VERSION_ARB, version.Minor,
+                                // core profile
+                                WGL_CONTEXT_PROFILE_MASK_ARB, 1,
+                                // debug 
+                                // WGL_CONTEXT_FLAGS_ARB, 1,
+                                // end
+                                0, 0
+                            });
+                    }
+
                     using(new WglRestoreContext(dc, context, null))
                         GlDebugMessageCallback(Marshal.GetFunctionPointerForDelegate(_debugCallback), IntPtr.Zero);
                     if (context != IntPtr.Zero)

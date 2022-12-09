@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
@@ -68,6 +69,12 @@ namespace Avalonia.Win32.OpenGl
 
         public bool IsLost { get; private set; }
         public IDisposable EnsureCurrent() => MakeCurrent();
+
+        internal IDisposable Lock()
+        {
+            Monitor.Enter(_lock);
+            return Disposable.Create(_lock, Monitor.Exit);
+        }
 
 
         public IntPtr CreateConfiguredDeviceContext(IntPtr hWnd)
