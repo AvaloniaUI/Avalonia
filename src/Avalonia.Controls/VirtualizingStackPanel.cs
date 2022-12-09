@@ -92,7 +92,7 @@ namespace Avalonia.Controls
 
                 // Recycle elements outside of the expected range.
                 _realizedElements.RecycleElementsBefore(viewport.firstIndex, _recycleElement);
-                _realizedElements.RecycleElementsAfter(viewport.estimatedLastIndex, _recycleElement);
+                _realizedElements.RecycleElementsAfter(viewport.lastIndex, _recycleElement);
 
                 // Do the measure, creating/recycling elements as necessary to fill the viewport. Don't
                 // write to _realizedElements yet, only _measureElements.
@@ -307,8 +307,8 @@ namespace Avalonia.Controls
             var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
             var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
-            var (firstIndex, firstIndexU) = _realizedElements!.GetElementAt(viewportStart);
-            var (lastIndex, _) = _realizedElements.GetElementAt(viewportEnd);
+            var (firstIndex, firstIndexU) = _realizedElements.GetModelIndexAt(viewportStart);
+            var (lastIndex, _) = _realizedElements.GetModelIndexAt(viewportEnd);
             var estimatedElementSize = -1.0;
             var itemCount = items?.Count ?? 0;
 
@@ -329,7 +329,7 @@ namespace Avalonia.Controls
             return new MeasureViewport
             {
                 firstIndex = MathUtilities.Clamp(firstIndex, 0, itemCount - 1),
-                estimatedLastIndex = MathUtilities.Clamp(lastIndex, 0, itemCount - 1),
+                lastIndex = MathUtilities.Clamp(lastIndex, 0, itemCount - 1),
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
                 startU = firstIndexU,
@@ -353,23 +353,9 @@ namespace Avalonia.Controls
             if (_realizedElements is null)
                 return _lastEstimatedElementSizeU;
 
-            var count = _realizedElements.Count;
-            var divisor = 0.0;
-            var total = 0.0;
-
-            for (var i = 0; i < count; ++i)
-            {
-                if (_realizedElements.Elements[i] is object)
-                {
-                    total += _realizedElements.SizeU[i];
-                    ++divisor;
-                }
-            }
-
-            if (divisor == 0 || total == 0)
-                return _lastEstimatedElementSizeU;
-
-            _lastEstimatedElementSizeU = total / divisor;
+            var result = _realizedElements.EstimateElementSizeU();
+            if (result >= 0)
+                _lastEstimatedElementSizeU = result;
             return _lastEstimatedElementSizeU;
         }
 
@@ -409,6 +395,10 @@ namespace Avalonia.Controls
             var index = viewport.firstIndex;
             var u = viewport.startU;
 
+            // The layout is likely invalid. Don't create any elements and instead rely on our previous
+            // element size estimates to calculate a new desired size and trigger a new layout pass.
+            if (index >= items.Count)
+                return;
             do
             {
                 var e = GetOrCreateElement(items, index);
@@ -587,6 +577,7 @@ namespace Avalonia.Controls
             private List<Control?>? _elements;
             private List<double>? _sizes;
             private double _startU;
+            private bool _startUUnstable;
 
             /// <summary>
             /// Gets the number of realized elements.
@@ -672,6 +663,38 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
+            /// Gets the model index and start U position of the element at the specified U position.
+            /// </summary>
+            /// <param name="u">The U position.</param>
+            /// <returns>
+            /// A tuple containing:
+            /// - The index of the item at the specified U position, or -1 if the item could not be
+            ///   determined
+            /// - The U position of the start of the item, if determined
+            /// </returns>
+            public (int index, double position) GetModelIndexAt(double u)
+            {
+                if (_elements is null || _sizes is null || _startU > u || _startUUnstable)
+                    return (-1, 0);
+
+                var index = 0;
+                var position = _startU;
+
+                while (index < _elements.Count)
+                {
+                    var size = _sizes[index];
+                    if (double.IsNaN(size))
+                        break;
+                    if (u >= position && u < position + size)
+                        return (index + FirstModelIndex, position);
+                    position += size;
+                    ++index;
+                }
+
+                return (-1, 0);
+            }
+
+            /// <summary>
             /// Gets the element at the specified position on the primary axis, if realized.
             /// </summary>
             /// <param name="position">The position.</param>
@@ -700,33 +723,42 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Gets the position of an element on the primary axis, if realized.
+            /// Estimates the average U size of all elements in the source collection based on the
+            /// realized elements.
             /// </summary>
-            /// <param name="modelIndex">The index in the source collection of the element.</param>
-            /// <param name="position">
-            /// When the method exits, contains the element's position on the primary axis, if 
-            /// the element is realized.
-            /// </param>
             /// <returns>
-            /// True if the requested element was found, otherwise false.
+            /// The estimated U size of an element, or -1 if not enough information is present to make
+            /// an estimate.
             /// </returns>
-            public bool TryGetElementU(int modelIndex, out double position)
+            public double EstimateElementSizeU()
             {
-                if (_sizes is null || modelIndex < FirstModelIndex || modelIndex > LastModelIndex)
+                var total = 0.0;
+                var divisor = 0.0;
+
+                // Start by averaging the size of the elements before the first realized element.
+                if (FirstModelIndex >= 0 && !_startUUnstable)
                 {
-                    position = double.NaN;
-                    return false;
+                    total += _startU;
+                    divisor += FirstModelIndex;
                 }
 
-                var index = modelIndex - FirstModelIndex;
-                position = StartU;
-
-                for (var i = 0; i < index; ++i)
+                // Average the size of the realized elements.
+                if (_sizes is not null)
                 {
-                    position += _sizes[i];
+                    foreach (var size in _sizes)
+                    {
+                        if (double.IsNaN(size))
+                            continue;
+                        total += size;
+                        ++divisor;
+                    }
                 }
 
-                return true;
+                // We don't have any elements on which to base our estimate.
+                if (divisor == 0 || total == 0)
+                    return -1;
+
+                return total / divisor;
             }
 
             /// <summary>
@@ -781,7 +813,7 @@ namespace Avalonia.Controls
                         // The insertion point was within the realized elements, insert an empty space
                         // in _elements and _sizes.
                         _elements!.InsertMany(index, null, count);
-                        _sizes!.InsertMany(index, 0.0, count);
+                        _sizes!.InsertMany(index, double.NaN, count);
                     }
                 }
             }
@@ -840,9 +872,13 @@ namespace Avalonia.Controls
                     _sizes!.RemoveRange(start, end - start);
 
                     // If the remove started before and ended within our realized elements, then our new
-                    // first index will be the index where the remove started.
+                    // first index will be the index where the remove started. Mark StartU as unstable
+                    // because we can't rely on it now to estimate element heights.
                     if (startIndex <= 0 && end < last)
+                    {
                         _firstIndex = first = modelIndex;
+                        _startUUnstable = true;
+                    }
 
                     // Update the indexes of the elements after the removed range.
                     end = _elements.Count;
@@ -942,6 +978,7 @@ namespace Avalonia.Controls
             public void ResetForReuse()
             {
                 _startU = _firstIndex = 0;
+                _startUUnstable = false;
                 _elements?.Clear();
                 _sizes?.Clear();
             }
@@ -950,7 +987,7 @@ namespace Avalonia.Controls
         private struct MeasureViewport
         {
             public int firstIndex;
-            public int estimatedLastIndex;
+            public int lastIndex;
             public double viewportUStart;
             public double viewportUEnd;
             public double measuredV;
