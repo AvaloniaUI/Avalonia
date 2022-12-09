@@ -65,6 +65,7 @@ namespace Avalonia.UnitTests
         }
 
         public void Move(Interactive target, in Point position, KeyModifiers modifiers = default) => Move(target, target, position, modifiers);
+
         public void Move(Interactive target, Interactive source, in Point position, KeyModifiers modifiers = default)
         {
             target.RaiseEvent(new PointerEventArgs(InputElement.PointerMovedEvent, source, _pointer, (Visual)target, position,
@@ -98,13 +99,26 @@ namespace Avalonia.UnitTests
         public void Click(Interactive target, MouseButton button = MouseButton.Left, Point position = default,
             KeyModifiers modifiers = default)
             => Click(target, target, button, position, modifiers);
+
         public void Click(Interactive target, Interactive source, MouseButton button = MouseButton.Left, 
             Point position = default, KeyModifiers modifiers = default)
         {
             Down(target, source, button, position, modifiers);
             Up(target, source, button, position, modifiers);
         }
-        
+
+        public void DoubleClick(Interactive target, MouseButton button = MouseButton.Left, Point position = default,
+            KeyModifiers modifiers = default)
+            => DoubleClick(target, target, button, position, modifiers);
+
+        public void DoubleClick(Interactive target, Interactive source, MouseButton button = MouseButton.Left,
+            Point position = default, KeyModifiers modifiers = default)
+        {
+            Down(target, source, button, position, modifiers, clickCount: 1);
+            Up(target, source, button, position, modifiers);
+            Down(target, source, button, position, modifiers, clickCount: 2);
+        }
+
         public void Enter(Interactive target)
         {
             target.RaiseEvent(new PointerEventArgs(InputElement.PointerEnteredEvent, target, _pointer, (Visual)target, default,

@@ -1,6 +1,6 @@
 ﻿namespace Avalonia.Media.TextFormatting
 {
-    internal readonly struct SplitResult<T>
+    public readonly struct SplitResult<T>
     {
         public SplitResult(T first, T? second)
         {
