@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.VisualTree;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
 
@@ -59,17 +60,25 @@ namespace ControlCatalog
             };
 
             var transparencyLevels = this.Get<ComboBox>("TransparencyLevels");
-            IDisposable? backgroundSetter = null, paneBackgroundSetter = null;
+            IDisposable? topLevelBackgroundSideSetter = null, sideBarBackgroundSetter = null, paneBackgroundSetter = null;
             transparencyLevels.SelectionChanged += (sender, e) =>
             {
-                backgroundSetter?.Dispose();
+                topLevelBackgroundSideSetter?.Dispose();
+                sideBarBackgroundSetter?.Dispose();
                 paneBackgroundSetter?.Dispose();
-                if (transparencyLevels.SelectedItem is WindowTransparencyLevel selected
-                    && selected != WindowTransparencyLevel.None)
+                if (transparencyLevels.SelectedItem is WindowTransparencyLevel selected)
                 {
-                    var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.5);
-                    backgroundSetter = sideBar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
-                    paneBackgroundSetter = sideBar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
+                    var topLevel = (TopLevel)this.GetVisualRoot()!;
+                    topLevel.TransparencyLevelHint = selected;
+
+                    if (selected != WindowTransparencyLevel.None)
+                    {
+                        var transparentBrush = new ImmutableSolidColorBrush(Colors.White, 0);
+                        var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
+                        topLevelBackgroundSideSetter = topLevel.SetValue(BackgroundProperty, transparentBrush, Avalonia.Data.BindingPriority.Style);
+                        sideBarBackgroundSetter = sideBar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
+                        paneBackgroundSetter = sideBar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
+                    }
                 }
             };
         }
