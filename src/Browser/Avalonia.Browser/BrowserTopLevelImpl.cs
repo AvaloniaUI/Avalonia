@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Versioning;
 using Avalonia.Browser.Skia;
 using Avalonia.Browser.Storage;
 using Avalonia.Controls;
@@ -14,9 +15,10 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 
+[assembly: SupportedOSPlatform("browser")]
+
 namespace Avalonia.Browser
 {
-    [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
     internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
     {
         private Size _clientSize;

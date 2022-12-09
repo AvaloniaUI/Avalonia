@@ -5,7 +5,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace Avalonia.Browser.Blazor;
 
-[SupportedOSPlatform("browser")]
 public static class WebAppBuilder
 {
     public static T SetupWithSingleViewLifetime<T>(
