@@ -23,9 +23,7 @@ namespace Avalonia.Controls.Presenters
             
             _presenter = presenter;
             _presenter.ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
-
-            if (_presenter.ItemsControl.Items is INotifyCollectionChanged incc)
-                incc.CollectionChanged += OnItemsChanged;
+            _presenter.ItemsControl.ItemsView.PostCollectionChanged += OnItemsChanged;
 
             OnItemsChanged(null, CollectionUtils.ResetEventArgs);
         }
@@ -35,9 +33,7 @@ namespace Avalonia.Controls.Presenters
             if (_presenter.ItemsControl is { } itemsControl)
             {
                 itemsControl.PropertyChanged -= OnItemsControlPropertyChanged;
-
-                if (itemsControl.Items is INotifyCollectionChanged incc)
-                    incc.CollectionChanged -= OnItemsChanged;
+                itemsControl.ItemsView.PostCollectionChanged -= OnItemsChanged;
 
                 ClearItemsControlLogicalChildren();
             }
@@ -117,8 +113,7 @@ namespace Avalonia.Controls.Presenters
                 case NotifyCollectionChangedAction.Reset:
                     ClearItemsControlLogicalChildren();
                     children.Clear();
-                    if (_presenter.ItemsControl?.Items is { } items)
-                        Add(0, items);
+                    Add(0, _presenter.ItemsControl.ItemsView);
                     break;
             }
         }

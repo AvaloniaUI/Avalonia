@@ -628,7 +628,6 @@ namespace Avalonia.Controls
                 oldValue.CollectionChanged -= OnItemsSourceViewChanged;
             }
 
-            ItemsSourceView?.Dispose();
             ItemsSourceView = newValue;
 
             if (newValue != null)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -65,7 +64,7 @@ namespace Avalonia.Controls
 
             try
             {
-                var items = ItemsControl?.Items as IList;
+                var items = ItemsControl?.ItemsView;
 
                 if (items is null || items.Count == 0)
                 {
@@ -149,7 +148,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnItemsChanged(IList items, NotifyCollectionChangedEventArgs e)
+        protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
             if (_realizedElements is null)
                 return;
@@ -172,7 +171,7 @@ namespace Avalonia.Controls
 
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
         {
-            var count = (ItemsControl?.Items as IList)?.Count ?? 0;
+            var count = ItemsControl?.ItemsView.Count ?? 0;
 
             if (count == 0 || from is not Control fromControl)
                 return null;
@@ -239,7 +238,7 @@ namespace Avalonia.Controls
 
         protected internal override Control? ScrollIntoView(int index)
         {
-            var items = ItemsControl?.Items as IList;
+            var items = ItemsControl?.ItemsView;
 
             if (_isInLayout || items is null || index < 0 || index >= items.Count)
                 return null;
@@ -296,7 +295,7 @@ namespace Avalonia.Controls
             return _realizedElements?.Elements ?? Array.Empty<Control>();
         }
 
-        private MeasureViewport CalculateMeasureViewport(IList items)
+        private MeasureViewport CalculateMeasureViewport(ItemsSourceView items)
         {
             Debug.Assert(_realizedElements is not null);
 
@@ -337,7 +336,7 @@ namespace Avalonia.Controls
             };
         }
 
-        private Size CalculateDesiredSize(Orientation orientation, IList items, double sizeV)
+        private Size CalculateDesiredSize(Orientation orientation, ItemsSourceView items, double sizeV)
         {
             var sizeU = EstimateElementSizeU() * items.Count;
 
@@ -402,10 +401,10 @@ namespace Avalonia.Controls
 
         private void GenerateElements(Size availableSize, ref MeasureViewport viewport)
         {
-            Debug.Assert(ItemsControl?.Items is IList);
+            Debug.Assert(ItemsControl is not null);
             Debug.Assert(_measureElements is not null);
 
-            var items = (IList)ItemsControl!.Items;
+            var items = ItemsControl!.ItemsView;
             var horizontal = Orientation == Orientation.Horizontal;
             var index = viewport.firstIndex;
             var u = viewport.startU;
@@ -426,7 +425,7 @@ namespace Avalonia.Controls
             } while (u < viewport.viewportUEnd && index < items.Count);
         }
 
-        private Control GetOrCreateElement(IList items, int index)
+        private Control GetOrCreateElement(ItemsSourceView items, int index)
         {
             var e = GetRealizedElement(index) ??
                 GetItemIsOwnContainer(items, index) ??
@@ -443,7 +442,7 @@ namespace Avalonia.Controls
             return _realizedElements?.GetElement(index);
         }
 
-        private Control? GetItemIsOwnContainer(IList items, int index)
+        private Control? GetItemIsOwnContainer(ItemsSourceView items, int index)
         {
             if (items[index] is Control controlItem)
             {
@@ -466,7 +465,7 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private Control? GetRecycledElement(IList items, int index)
+        private Control? GetRecycledElement(ItemsSourceView items, int index)
         {
             Debug.Assert(ItemsControl is not null);
 
@@ -485,7 +484,7 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private Control CreateElement(IList items, int index)
+        private Control CreateElement(ItemsSourceView items, int index)
         {
             Debug.Assert(ItemsControl is not null);
 

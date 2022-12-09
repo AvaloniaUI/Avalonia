@@ -21,10 +21,12 @@ namespace Avalonia.Controls.Selection
             {
                 if (_source != value)
                 {
-                    ItemsView?.RemoveListener(this);
+                    if (ItemsView?.Inner is INotifyCollectionChanged inccOld)
+                        CollectionChangedEventManager.Instance.RemoveListener(inccOld, this);
                     _source = value;
                     ItemsView = value is object ? ItemsSourceView<T>.GetOrCreate(value) : null;
-                    ItemsView?.AddListener(this);
+                    if (ItemsView?.Inner is INotifyCollectionChanged inccNew)
+                        CollectionChangedEventManager.Instance.AddListener(inccNew, this);
                 }
             }
         }

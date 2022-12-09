@@ -150,7 +150,7 @@ namespace Avalonia.Controls
                 switch (e.Key)
                 {
                     case Key.Right:
-                        if (Items != null && Items.Cast<object>().Any() && !IsExpanded)
+                        if (ItemsView.Count > 0 && !IsExpanded)
                         {
                             IsExpanded = true;
                             e.Handled = true;
@@ -158,7 +158,7 @@ namespace Avalonia.Controls
                         break;
 
                     case Key.Left:
-                        if (Items is not null && Items.Cast<object>().Any() && IsExpanded)
+                        if (ItemsView.Count > 0 && IsExpanded)
                         {
                             if (IsFocused)
                             {

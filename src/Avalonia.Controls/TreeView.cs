@@ -192,11 +192,8 @@ namespace Avalonia.Controls
 
             void AddItems(ItemsControl itemsControl)
             {
-                if (itemsControl.Items is { } items)
-                {
-                    foreach (var item in items)
-                        allItems.Add(item);
-                }
+                foreach (var item in itemsControl.ItemsView)
+                    allItems.Add(item!);
 
                 foreach (var child in itemsControl.GetRealizedContainers())
                 {
@@ -513,7 +510,7 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    SelectedItem = ElementAt(Items, 0);
+                    SelectedItem = ItemsView[0];
                 }
             }
 

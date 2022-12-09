@@ -99,7 +99,7 @@ namespace Avalonia.Controls
         /// new collection, in which case the <see cref="NotifyCollectionChangedAction"/> will
         /// be <see cref="NotifyCollectionChangedAction.Reset"/>.
         /// </remarks>
-        protected virtual void OnItemsChanged(IList items, NotifyCollectionChangedEventArgs e)
+        protected virtual void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
         }
 
@@ -158,9 +158,7 @@ namespace Avalonia.Controls
 
             ItemsControl = itemsControl;
             ItemsControl.PropertyChanged += OnItemsControlPropertyChanged;
-
-            if (ItemsControl.Items is INotifyCollectionChanged incc)
-                incc.CollectionChanged += OnItemsControlItemsChanged;
+            ItemsControl.ItemsView.PostCollectionChanged += OnItemsControlItemsChanged;
         }
 
         internal void Detach()
@@ -168,9 +166,7 @@ namespace Avalonia.Controls
             var itemsControl = EnsureItemsControl();
 
             itemsControl.PropertyChanged -= OnItemsControlPropertyChanged;
-
-            if (itemsControl.Items is INotifyCollectionChanged incc)
-                incc.CollectionChanged -= OnItemsControlItemsChanged;
+            itemsControl.ItemsView.PostCollectionChanged -= OnItemsControlItemsChanged;
 
             ItemsControl = null;
             Children.Clear();
@@ -187,20 +183,18 @@ namespace Avalonia.Controls
 
         private protected virtual void OnItemsControlPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.Property == ItemsControl.ItemsProperty)
+            if (e.Property == ItemsControl.ItemsViewProperty)
             {
-                if (e.OldValue is INotifyCollectionChanged inccOld)
-                    inccOld.CollectionChanged -= OnItemsControlItemsChanged;
+                var (oldValue, newValue) = e.GetOldAndNewValue<ItemsSourceView>();
+                oldValue.PostCollectionChanged -= OnItemsControlItemsChanged;
                 Refresh();
-                if (e.NewValue is INotifyCollectionChanged inccNew)
-                    inccNew.CollectionChanged += OnItemsControlItemsChanged;
+                newValue.PostCollectionChanged += OnItemsControlItemsChanged;
             }
         }
 
         private void OnItemsControlItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (_itemsControl?.Items is IList items)
-                OnItemsChanged(items, e);
+            OnItemsChanged(_itemsControl?.ItemsView ?? ItemsSourceView.Empty, e);
         }
 
         [DoesNotReturn]

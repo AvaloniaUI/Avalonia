@@ -48,7 +48,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void Next()
         {
-            if (SelectedIndex < Items.Count() - 1)
+            if (SelectedIndex < ItemCount - 1)
             {
                 ++SelectedIndex;
             }

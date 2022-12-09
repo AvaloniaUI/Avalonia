@@ -95,7 +95,7 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var items = ItemsControl?.Items as IList ?? Array.Empty<object?>();
+            var items = ItemsControl?.ItemsView ?? ItemsSourceView.Empty;
             var index = (int)_offset.X;
 
             if (index != _realizedIndex)
@@ -195,7 +195,7 @@ namespace Avalonia.Controls
             return null;
         }
 
-        protected override void OnItemsChanged(IList items, NotifyCollectionChangedEventArgs e)
+        protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
             base.OnItemsChanged(items, e);
 
@@ -247,7 +247,7 @@ namespace Avalonia.Controls
             InvalidateMeasure();
         }
 
-        private Control GetOrCreateElement(IList items, int index)
+        private Control GetOrCreateElement(ItemsSourceView items, int index)
         {
             return GetRealizedElement(index) ??
                 GetItemIsOwnContainer(items, index) ??
@@ -260,7 +260,7 @@ namespace Avalonia.Controls
             return _realizedIndex == index ? _realized : null;
         }
 
-        private Control? GetItemIsOwnContainer(IList items, int index)
+        private Control? GetItemIsOwnContainer(ItemsSourceView items, int index)
         {
             Debug.Assert(ItemsControl is not null);
 
@@ -285,7 +285,7 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private Control? GetRecycledElement(IList items, int index)
+        private Control? GetRecycledElement(ItemsSourceView items, int index)
         {
             Debug.Assert(ItemsControl is not null);
 
@@ -303,7 +303,7 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private Control CreateElement(IList items, int index)
+        private Control CreateElement(ItemsSourceView items, int index)
         {
             Debug.Assert(ItemsControl is not null);
 

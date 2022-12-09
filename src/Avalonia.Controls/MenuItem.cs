@@ -659,7 +659,7 @@ namespace Avalonia.Controls
 
             if (value)
             {
-                foreach (var item in Items!.OfType<MenuItem>())
+                foreach (var item in ItemsView.OfType<MenuItem>())
                 {
                     item.TryUpdateCanExecute();
                 }
