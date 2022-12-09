@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Win32.Interop;
@@ -28,9 +29,22 @@ internal class WglDCManager
         public IntPtr DC;
         public TaskCompletionSource<object> Result;
     }
+    
+    class CreateWindowOp
+    {
+        public TaskCompletionSource<IntPtr> Result;
+    }
+
+    class DestroyWindowOp
+    {
+        public IntPtr Window;
+        public TaskCompletionSource<object> Result;
+    }
 
     private static readonly Queue<object> s_Queue = new();
     private static readonly AutoResetEvent s_Event = new(false);
+    private static readonly ushort s_WindowClass;
+    private static readonly UnmanagedMethods.WndProc s_wndProcDelegate = WndProc;
 
     static void Worker()
     {
@@ -49,17 +63,65 @@ internal class WglDCManager
                     UnmanagedMethods.ReleaseDC(releaseDc.Window, releaseDc.DC);
                     releaseDc.Result.SetResult(null);
                 }
+                else if (job is CreateWindowOp createWindow)
+                    createWindow.Result.TrySetResult(UnmanagedMethods.CreateWindowEx(
+                        0,
+                        s_WindowClass,
+                        null,
+                        (int)UnmanagedMethods.WindowStyles.WS_OVERLAPPEDWINDOW,
+                        0,
+                        0,
+                        640,
+                        480,
+                        IntPtr.Zero,
+                        IntPtr.Zero,
+                        IntPtr.Zero,
+                        IntPtr.Zero));
+                else if (job is DestroyWindowOp destroyWindow)
+                {
+                    UnmanagedMethods.DestroyWindow(destroyWindow.Window);
+                    destroyWindow.Result.TrySetResult(null);
+                }
             }
         }
     }
 
     static WglDCManager()
     {
+        var wndClassEx = new UnmanagedMethods.WNDCLASSEX
+        {
+            cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
+            hInstance = UnmanagedMethods.GetModuleHandle(null),
+            lpfnWndProc = s_wndProcDelegate,
+            lpszClassName = "AvaloniaGlWindow-" + Guid.NewGuid(),
+            style = (int)UnmanagedMethods.ClassStyles.CS_OWNDC
+        };
+            
+        s_WindowClass = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
         new Thread(Worker)
         {
             IsBackground = true,
             Name = "Win32 OpenGL HDC manager"
         }.Start();
+    }
+    
+        
+    
+    static IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+    {
+        return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+    }
+    
+    public static IntPtr CreateOffscreenWindow()
+    {
+        var tcs = new TaskCompletionSource<IntPtr>();
+        lock(s_Queue)
+            s_Queue.Enqueue(new CreateWindowOp()
+            {
+                Result = tcs
+            });
+        s_Event.Set();
+        return tcs.Task.Result;
     }
     
     public static IntPtr GetDC(IntPtr hWnd)
@@ -83,6 +145,19 @@ internal class WglDCManager
             {
                 Window = hWnd,
                 DC = hDC,
+                Result = tcs
+            });
+        s_Event.Set();
+        tcs.Task.Wait();
+    }
+    
+    public static void DestroyWindow(IntPtr hWnd)
+    {
+        var tcs = new TaskCompletionSource<object>();
+        lock(s_Queue)
+            s_Queue.Enqueue(new DestroyWindowOp()
+            {
+                Window = hWnd,
                 Result = tcs
             });
         s_Event.Set();

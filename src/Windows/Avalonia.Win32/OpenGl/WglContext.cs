@@ -48,7 +48,7 @@ namespace Avalonia.Win32.OpenGl
         {
             wglDeleteContext(_context);
             WglDCManager.ReleaseDC(_hWnd, _dc);
-            DestroyWindow(_hWnd);
+            WglDCManager.DestroyWindow(_hWnd);
             IsLost = true;
         }
 
