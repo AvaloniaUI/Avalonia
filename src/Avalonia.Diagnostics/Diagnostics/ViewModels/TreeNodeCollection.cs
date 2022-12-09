@@ -88,8 +88,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
         int IList.Add(object? value) => throw new NotImplementedException();
         void IList.Clear() => throw new NotImplementedException();
-        bool IList.Contains(object? value) => throw new NotImplementedException();
-        int IList.IndexOf(object? value) => throw new NotImplementedException();
+        bool IList.Contains(object? value) => EnsureInitialized().Contains((TreeNode)value!);
+        int IList.IndexOf(object? value) => EnsureInitialized().IndexOf((TreeNode)value!);
         void IList.Insert(int index, object? value) => throw new NotImplementedException();
         void IList.Remove(object? value) => throw new NotImplementedException();
         void IList.RemoveAt(int index) => throw new NotImplementedException();
