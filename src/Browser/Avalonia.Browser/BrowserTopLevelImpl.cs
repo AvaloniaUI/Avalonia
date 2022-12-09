@@ -202,7 +202,11 @@ namespace Avalonia.Browser
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
-
+            if (transparencyLevel == WindowTransparencyLevel.None
+                || transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                TransparencyLevel = transparencyLevel;
+            }
         }
 
         public Size ClientSize => _clientSize;
@@ -222,7 +226,7 @@ namespace Avalonia.Browser
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; } = BrowserWindowingPlatform.Keyboard;
-        public WindowTransparencyLevel TransparencyLevel { get; }
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
 
         public ITextInputMethodImpl TextInputMethod => _avaloniaView;
