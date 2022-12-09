@@ -114,10 +114,6 @@ export class Canvas {
                 this.htmlCanvas.height = this.newHeight ?? 0;
             }
 
-            const GL = (globalThis as any).AvaloniaGL;
-            const GLctx = GL.currentContext.GLctx as WebGLRenderingContext;
-            GLctx.clearColor(0.0, 0.0, 0.0, 0.0);
-            GLctx.clear(GLctx.COLOR_BUFFER_BIT | GLctx.DEPTH_BUFFER_BIT);
             this.renderFrameCallback();
             this.renderLoopRequest = 0;
 
