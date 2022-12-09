@@ -528,9 +528,21 @@ namespace Avalonia.Controls
 
         private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
+            var vertical = Orientation == Orientation.Vertical;
+            var oldViewportStart = vertical ? _viewport.Top : _viewport.Left;
+            var oldViewportEnd = vertical ? _viewport.Bottom : _viewport.Right;
+
             _viewport = e.EffectiveViewport;
             _isWaitingForViewportUpdate = false;
-            InvalidateMeasure();
+
+            var newViewportStart = vertical ? _viewport.Top : _viewport.Left;
+            var newViewportEnd = vertical ? _viewport.Bottom : _viewport.Right;
+
+            if (!MathUtilities.AreClose(oldViewportStart, newViewportStart) ||
+                !MathUtilities.AreClose(oldViewportEnd, newViewportEnd))
+            {
+                InvalidateMeasure();
+            }
         }
 
         private static void InvalidateHack(Control c)
