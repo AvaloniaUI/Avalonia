@@ -1,5 +1,7 @@
 ﻿using Avalonia.Controls.Mixins;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Mixins
@@ -19,6 +21,7 @@ namespace Avalonia.Controls.UnitTests.Mixins
         [Fact]
         public void Setting_IsSelected_Should_Add_Selected_Class()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             var target = new TestControl();
 
             _mouse.Down(target);

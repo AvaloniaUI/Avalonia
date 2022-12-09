@@ -3,7 +3,9 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Media;
+using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
@@ -15,6 +17,7 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Tapped_Should_Follow_Pointer_Pressed_Released()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             Border border = new Border();
             var decorator = new Decorator
             {
@@ -32,6 +35,7 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Tapped_Should_Be_Raised_Even_When_Pressed_Released_Handled()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             Border border = new Border();
             var decorator = new Decorator
             {
@@ -49,6 +53,7 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Tapped_Should_Not_Be_Raised_For_Middle_Button()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             Border border = new Border();
             var decorator = new Decorator
             {
@@ -66,6 +71,7 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Tapped_Should_Not_Be_Raised_For_Right_Button()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             Border border = new Border();
             var decorator = new Decorator
             {
@@ -83,6 +89,7 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void RightTapped_Should_Be_Raised_For_Right_Button()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             Border border = new Border();
             var decorator = new Decorator
             {
@@ -100,6 +107,7 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void DoubleTapped_Should_Follow_Pointer_Pressed_Released_Pressed()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             Border border = new Border();
             var decorator = new Decorator
             {
@@ -118,6 +126,7 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void DoubleTapped_Should_Be_Raised_Even_When_Pressed_Released_Handled()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             Border border = new Border();
             var decorator = new Decorator
             {
@@ -136,6 +145,7 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void DoubleTapped_Should_Not_Be_Raised_For_Middle_Button()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             Border border = new Border();
             var decorator = new Decorator
             {
@@ -154,6 +164,7 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void DoubleTapped_Should_Not_Be_Raised_For_Right_Button()
         {
+            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             Border border = new Border();
             var decorator = new Decorator
             {

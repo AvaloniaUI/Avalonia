@@ -15,6 +15,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Moq;
@@ -1466,7 +1467,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Right_Click_On_SelectedItem_Should_Not_Clear_Existing_Selection()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
             {
                 var tree = CreateTestTreeData();
                 var target = new TreeView

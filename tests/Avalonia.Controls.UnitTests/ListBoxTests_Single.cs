@@ -8,6 +8,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.LogicalTree;
+using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
@@ -115,7 +116,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Item_Should_Select_It()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
             {
                 var target = new ListBox
                 {
@@ -133,7 +134,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Selected_Item_Should_Not_Deselect_It()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
             {
                 var target = new ListBox
                 {
@@ -153,7 +154,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Item_Should_Select_It_When_SelectionMode_Toggle()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
             {
                 var target = new ListBox
                 {
@@ -173,7 +174,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Selected_Item_Should_Deselect_It_When_SelectionMode_Toggle()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
             {
                 var target = new ListBox
                 {
@@ -195,7 +196,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Selected_Item_Should_Not_Deselect_It_When_SelectionMode_ToggleAlwaysSelected()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
             {
                 var target = new ListBox
                 {
@@ -216,7 +217,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_Another_Item_Should_Select_It_When_SelectionMode_Toggle()
         {
-            using (UnitTestApplication.Start())
+            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
             {
                 var target = new ListBox
                 {
