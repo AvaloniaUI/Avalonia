@@ -14,6 +14,7 @@ namespace Avalonia.Skia
     {
         private GRContext _grContext;
         private IGlContext _glContext;
+        private List<Action> _postDisposeCallbacks = new();
         private bool? _canCreateSurfaces;
 
         public GlSkiaGpu(IGlContext context, long? maxResourceBytes)
@@ -83,7 +84,8 @@ namespace Avalonia.Skia
                 return null;
             try
             {
-                var surface = new FboSkiaSurface(_grContext, _glContext, size, session?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft);
+                var surface = new FboSkiaSurface(this, _grContext, _glContext, size, 
+                    session?.SurfaceOrigin ?? GRSurfaceOrigin.TopLeft);
                 _canCreateSurfaces = true;
                 return surface;
             }
@@ -110,6 +112,10 @@ namespace Avalonia.Skia
             else
                 _grContext.AbandonContext(true);
             _grContext.Dispose();
+            
+            lock(_postDisposeCallbacks)
+                foreach (var cb in _postDisposeCallbacks)
+                    cb();
         }
 
         public bool IsLost => _glContext.IsLost;
@@ -120,6 +126,12 @@ namespace Avalonia.Skia
             if (featureType == typeof(IOpenGlTextureSharingRenderInterfaceContextFeature))
                 return this;
             return null;
+        }
+        
+        public void AddPostDispose(Action dispose)
+        {
+            lock (_postDisposeCallbacks)
+                _postDisposeCallbacks.Add(dispose);
         }
     }
 }
