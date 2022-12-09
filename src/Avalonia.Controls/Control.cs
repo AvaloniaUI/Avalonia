@@ -216,12 +216,6 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         bool IDataTemplateHost.IsDataTemplatesInitialized => _dataTemplates != null;
 
-        public Control()
-        {
-            // Add a default HoldGestureRecognizer
-            GestureRecognizers.Add(new HoldGestureRecognizer());
-        }
-
         /// <inheritdoc/>
         void ISetterValue.Initialize(ISetter setter)
         {
@@ -372,19 +366,19 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTreeCore(e);
 
-            AddHandler(Gestures.HoldGestureEvent, OnHoldEvent);
+            AddHandler(Gestures.HoldingEvent, OnHoldEvent);
 
             InitializeIfNeeded();
 
             ScheduleOnLoadedCore();
         }
 
-        private void OnHoldEvent(object? sender, HoldGestureEventArgs e)
+        private void OnHoldEvent(object? sender, HoldingRoutedEventArgs e)
         {
-            if(e.HoldingState == HoldingState.Started)
+            if(e.HoldingState == HoldingState.Completed)
             {
-                // Trigger ContentRequest when hold starts
-                RaiseEvent(new ContextRequestedEventArgs(e.PointerEventArgs!));
+                // Trigger ContentRequest when hold is complete
+                RaiseEvent(new ContextRequestedEventArgs());
             }
         }
 
@@ -393,7 +387,7 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTreeCore(e);
 
-            RemoveHandler(Gestures.HoldGestureEvent, OnHoldEvent);
+            RemoveHandler(Gestures.HoldingEvent, OnHoldEvent);
 
             OnUnloadedCore();
         }

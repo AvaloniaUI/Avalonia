@@ -1,6 +1,8 @@
 using System;
+using System.Threading;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -8,6 +10,16 @@ namespace Avalonia.Input
     public static class Gestures
     {
         private static bool s_isDoubleTapped = false;
+        private static bool s_isHolding;
+        private static CancellationTokenSource? s_holdCancellationToken;
+
+   /*     /// <summary>
+        /// Defines the <see cref="IsHoldWithMouseEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsHoldWithMouseEnabledProperty =
+            AvaloniaProperty.RegisterAttached<Gestures, Interactive, bool>(
+             "IsHoldWithMouseEnabled");*/
+
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "Tapped",
             RoutingStrategies.Bubble,
@@ -45,6 +57,7 @@ namespace Avalonia.Input
 
         private static readonly WeakReference<object?> s_lastPress = new WeakReference<object?>(null);
         private static Point s_lastPressPoint;
+        private static IPointer? s_lastPointer;
 
         public static readonly RoutedEvent<PinchEventArgs> PinchEvent =
             RoutedEvent.Register<PinchEventArgs>(
@@ -58,9 +71,9 @@ namespace Avalonia.Input
             RoutedEvent.Register<PullGestureEventArgs>(
                 "PullGesture", RoutingStrategies.Bubble, typeof(Gestures));
 
-        public static readonly RoutedEvent<HoldGestureEventArgs> HoldGestureEvent =
-            RoutedEvent.Register<HoldGestureEventArgs>(
-                "HoldGesture", RoutingStrategies.Bubble, typeof(Gestures));
+        public static readonly RoutedEvent<HoldingRoutedEventArgs> HoldingEvent =
+            RoutedEvent.Register<HoldingRoutedEventArgs>(
+                "Holding", RoutingStrategies.Bubble, typeof(Gestures));
 
         public static readonly RoutedEvent<PullGestureEndedEventArgs> PullGestureEndedEvent =
             RoutedEvent.Register<PullGestureEndedEventArgs>(
@@ -70,6 +83,7 @@ namespace Avalonia.Input
         {
             InputElement.PointerPressedEvent.RouteFinished.Subscribe(PointerPressed);
             InputElement.PointerReleasedEvent.RouteFinished.Subscribe(PointerReleased);
+            InputElement.PointerMovedEvent.RouteFinished.Subscribe(PointerMoved);
         }
 
         public static void AddTappedHandler(Interactive element, EventHandler<RoutedEventArgs> handler)
@@ -114,11 +128,38 @@ namespace Avalonia.Input
                 var e = (PointerPressedEventArgs)ev;
                 var visual = (Visual)ev.Source;
 
+                if(s_lastPointer != null)
+                {
+                    if(s_isHolding && ev.Source is Interactive i)
+                    {
+                        i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled));
+                    }
+                    s_holdCancellationToken?.Cancel();
+                    s_holdCancellationToken?.Dispose();
+                    s_holdCancellationToken = null;
+
+                    s_lastPointer = null;
+                }
+
+                s_isHolding = false;
+
                 if (e.ClickCount % 2 == 1)
                 {
                     s_isDoubleTapped = false;
                     s_lastPress.SetTarget(ev.Source);
+                    s_lastPointer = e.Pointer;
                     s_lastPressPoint = e.GetPosition((Visual)ev.Source);
+                    s_holdCancellationToken = new CancellationTokenSource();
+                    var token = s_holdCancellationToken.Token;
+                    var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                    DispatcherTimer.RunOnce(() =>
+                    {
+                        if (!token.IsCancellationRequested && e.Source is InputElement i && i.IsHoldingEnabled && ( e.Pointer.Type != PointerType.Mouse || i.IsHoldWithMouseEnabled))
+                        {
+                            s_isHolding = true;
+                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started));
+                        }
+                    }, TimeSpan.FromMilliseconds(300));
                 }
                 else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
@@ -152,7 +193,12 @@ namespace Avalonia.Input
 
                     if (tapRect.ContainsExclusive(point.Position))
                     {
-                        if (e.InitialPressMouseButton == MouseButton.Right)
+                        if(s_isHolding)
+                        {
+                            s_isHolding = false;
+                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Completed));
+                        }
+                        else if (e.InitialPressMouseButton == MouseButton.Right)
                         {
                             i.RaiseEvent(new TappedEventArgs(RightTappedEvent, e));
                         }
@@ -164,6 +210,45 @@ namespace Avalonia.Input
                         }
                     }
                 }
+
+                s_holdCancellationToken?.Cancel();
+                s_holdCancellationToken?.Dispose();
+                s_holdCancellationToken = null;
+                s_lastPointer = null;
+            }
+        }
+
+        private static void PointerMoved(RoutedEventArgs ev)
+        {
+            if (ev.Route == RoutingStrategies.Bubble)
+            {
+                var e = (PointerEventArgs)ev;
+                if (s_lastPress.TryGetTarget(out var target))
+                {
+                    if (e.Pointer == s_lastPointer)
+                    {
+                        var point = e.GetCurrentPoint((Visual)target);
+                        var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
+                        var tapSize = settings?.GetTapSize(point.Pointer.Type) ?? new Size(4, 4);
+                        var tapRect = new Rect(s_lastPressPoint, new Size())
+                            .Inflate(new Thickness(tapSize.Width, tapSize.Height));
+
+                        if (tapRect.ContainsExclusive(point.Position))
+                        {
+                            return;
+                        }
+                    }
+
+                    if (s_isHolding && ev.Source is Interactive i)
+                    {
+                        i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled));
+                    }
+                }
+
+                s_holdCancellationToken?.Cancel();
+                s_holdCancellationToken?.Dispose();
+                s_holdCancellationToken = null;
+                s_isHolding = false;
             }
         }
     }
