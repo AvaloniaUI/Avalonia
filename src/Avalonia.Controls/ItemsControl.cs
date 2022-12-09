@@ -302,7 +302,7 @@ namespace Avalonia.Controls
             {
                 if (itemTemplate is not null)
                     ic.ItemTemplate = itemTemplate;
-                if (ItemContainerTheme is { } ict)
+                if (ItemContainerTheme is { } ict && !ict.IsSet(ItemContainerThemeProperty))
                     ic.ItemContainerTheme = ict;
             }
 
