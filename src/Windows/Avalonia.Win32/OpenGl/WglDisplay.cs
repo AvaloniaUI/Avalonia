@@ -44,8 +44,8 @@ namespace Avalonia.Win32.OpenGl
         static bool InitializeCore()
         {
             Dispatcher.UIThread.VerifyAccess();
-            _bootstrapWindow = WglDCManager.CreateOffscreenWindow();
-            _bootstrapDc = WglDCManager.GetDC(_bootstrapWindow);
+            _bootstrapWindow = WglGdiResourceManager.CreateOffscreenWindow();
+            _bootstrapDc = WglGdiResourceManager.GetDC(_bootstrapWindow);
             _defaultPfd = new PixelFormatDescriptor
             {
                 Size = (ushort)Marshal.SizeOf<PixelFormatDescriptor>(),
@@ -115,8 +115,8 @@ namespace Avalonia.Win32.OpenGl
 
             using (new WglRestoreContext(_bootstrapDc, _bootstrapContext, null))
             {
-                var window = WglDCManager.CreateOffscreenWindow();
-                var dc = WglDCManager.GetDC(window);
+                var window = WglGdiResourceManager.CreateOffscreenWindow();
+                var dc = WglGdiResourceManager.GetDC(window);
                 SetPixelFormat(dc, _defaultPixelFormat, ref _defaultPfd);
                 foreach (var version in versions)
                 {
@@ -148,8 +148,8 @@ namespace Avalonia.Win32.OpenGl
                             _defaultPixelFormat, _defaultPfd);
                 }
 
-                WglDCManager.ReleaseDC(window, dc);
-                WglDCManager.DestroyWindow(window);
+                WglGdiResourceManager.ReleaseDC(window, dc);
+                WglGdiResourceManager.DestroyWindow(window);
                 return null;
             }
         }

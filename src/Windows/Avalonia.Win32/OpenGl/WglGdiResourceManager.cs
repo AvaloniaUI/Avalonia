@@ -8,14 +8,14 @@ using Avalonia.Win32.Interop;
 namespace Avalonia.Win32.OpenGl;
 
 /// <summary>
-/// 1) ReleaseDC can only happen from the same thread that has called GetDC
-/// 2) When thread exits all of its HDCs are getting destroyed
-/// 3) We need to create OpenGL render targets from thread pool threads
+/// - ReleaseDC can only happen from the same thread that has called GetDC
+/// - When thread exits all of its windows and HDCs are getting destroyed
+/// - We need to create OpenGL context (require a window and an HDC) and render targets (require an HDC) from thread pool threads
 ///
-/// So this class hosts a dedicated thread for managing HDCs for OpenGL
+/// So this class hosts a dedicated thread for managing offscreen windows and HDCs for OpenGL
 /// </summary>
 
-internal class WglDCManager
+internal class WglGdiResourceManager
 {
     class GetDCOp
     {
@@ -86,7 +86,7 @@ internal class WglDCManager
         }
     }
 
-    static WglDCManager()
+    static WglGdiResourceManager()
     {
         var wndClassEx = new UnmanagedMethods.WNDCLASSEX
         {
