@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -264,13 +266,16 @@ namespace Avalonia.Controls
         {
             Debug.Assert(ItemsControl is not null);
 
-            if (items[index] is Control controlItem)
+            var item = items[index];
+
+            if (item is Control controlItem)
             {
                 var generator = ItemsControl!.ItemContainerGenerator;
 
                 if (controlItem.IsSet(ItemIsOwnContainerProperty))
                 {
                     controlItem.IsVisible = true;
+                    generator.ItemContainerPrepared(controlItem, item, index);
                     return controlItem;
                 }
                 else if (generator.IsItemItsOwnContainer(controlItem))
@@ -278,6 +283,7 @@ namespace Avalonia.Controls
                     generator.PrepareItemContainer(controlItem, controlItem, index);
                     AddInternalChild(controlItem);
                     controlItem.SetValue(ItemIsOwnContainerProperty, true);
+                    generator.ItemContainerPrepared(controlItem, item, index);
                     return controlItem;
                 }
             }
@@ -297,6 +303,7 @@ namespace Avalonia.Controls
                 var recycled = _recyclePool.Pop();
                 recycled.IsVisible = true;
                 generator.PrepareItemContainer(recycled, item, index);
+                generator.ItemContainerPrepared(recycled, item, index);
                 return recycled;
             }
 
@@ -313,6 +320,7 @@ namespace Avalonia.Controls
 
             generator.PrepareItemContainer(container, item, index);
             AddInternalChild(container);
+            generator.ItemContainerPrepared(container, item, index);
 
             return container;
         }

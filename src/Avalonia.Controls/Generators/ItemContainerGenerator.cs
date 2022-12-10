@@ -57,6 +57,22 @@ namespace Avalonia.Controls.Generators
             _owner.PrepareItemContainer(container, item, index);
 
         /// <summary>
+        /// Notifies the <see cref="ItemsControl"/> that a container has been fully prepared to
+        /// display an item.
+        /// </summary>
+        /// <param name="container">The container control.</param>
+        /// <param name="item">The item being displayed.</param>
+        /// <param name="index">The index of the item being displayed.</param>
+        /// <remarks>
+        /// This method should be called when a container has been fully prepared and added
+        /// to the logical and visual trees, but may be called before a layout pass has completed.
+        /// It should be called regardless of the result of
+        /// <see cref="IsItemItsOwnContainer(Control)"/>.
+        /// </remarks>
+        public void ItemContainerPrepared(Control container, object? item, int index) =>
+            _owner.ItemContainerPrepared(container, item, index);
+
+        /// <summary>
         /// Called when the index for a container changes due to an insertion or removal in the
         /// items collection.
         /// </summary>
@@ -69,8 +85,8 @@ namespace Avalonia.Controls.Generators
         /// <summary>
         /// Undoes the effects of the <see cref="PrepareItemContainer(Control, object, int)"/> method.
         /// </summary>
-        /// <param name="container">The element that's used to display the specified item.</param>
-        public void ClearItemContainer(Control container) => _owner.ClearContainerForItemOverride(container);
+        /// <param name="container">The container control.</param>
+        public void ClearItemContainer(Control container) => _owner.ClearItemContainer(container);
 
         public Control? ContainerFromIndex(int index) => _owner.ContainerFromIndex(index);
         public int IndexFromContainer(Control container) => _owner.IndexFromContainer(container);

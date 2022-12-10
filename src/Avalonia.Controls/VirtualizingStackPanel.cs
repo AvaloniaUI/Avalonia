@@ -434,20 +434,24 @@ namespace Avalonia.Controls
 
         private Control? GetItemIsOwnContainer(ItemsSourceView items, int index)
         {
-            if (items[index] is Control controlItem)
+            var item = items[index];
+
+            if (item is Control controlItem)
             {
                 var generator = ItemsControl!.ItemContainerGenerator;
 
                 if (controlItem.IsSet(ItemIsOwnContainerProperty))
                 {
                     controlItem.IsVisible = true;
+                    generator.ItemContainerPrepared(controlItem, item, index);
                     return controlItem;
                 }
                 else if (generator.IsItemItsOwnContainer(controlItem))
                 {
-                    AddInternalChild(controlItem);
                     generator.PrepareItemContainer(controlItem, controlItem, index);
+                    AddInternalChild(controlItem);
                     controlItem.SetValue(ItemIsOwnContainerProperty, true);
+                    generator.ItemContainerPrepared(controlItem, item, index);
                     return controlItem;
                 }
             }
@@ -468,6 +472,7 @@ namespace Avalonia.Controls
                 var recycled = _recyclePool.Pop();
                 recycled.IsVisible = true;
                 generator.PrepareItemContainer(recycled, item, index);
+                generator.ItemContainerPrepared(recycled, item, index);
                 return recycled;
             }
 
@@ -482,8 +487,9 @@ namespace Avalonia.Controls
             var item = items[index];
             var container = generator.CreateContainer();
 
-            AddInternalChild(container);
             generator.PrepareItemContainer(container, item, index);
+            AddInternalChild(container);
+            generator.ItemContainerPrepared(container, item, index);
 
             return container;
         }

@@ -90,6 +90,7 @@ namespace Avalonia.Controls
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private IDataTemplate? _displayMemberItemTemplate;
         private Tuple<int, Control>? _containerBeingPrepared;
+        private ScrollViewer? _scrollViewer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsControl"/> class.
@@ -351,6 +352,12 @@ namespace Avalonia.Controls
         /// <returns>true if the item is (or is eligible to be) its own container; otherwise, false.</returns>
         protected internal virtual bool IsItemItsOwnContainerOverride(Control item) => true;
 
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+            _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+        }
+
         /// <summary>
         /// Handles directional navigation within the <see cref="ItemsControl"/>.
         /// </summary>
@@ -494,16 +501,27 @@ namespace Avalonia.Controls
                 container.DataContext = item;
 
             PrepareContainerForItemOverride(container, item, index);
+        }
 
+        internal void ItemContainerPrepared(Control container, object? item, int index)
+        {
             _containerBeingPrepared = new(index, container);
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
             _containerBeingPrepared = null;
+
+            _scrollViewer?.RegisterAnchorCandidate(container);
         }
 
         internal void ItemContainerIndexChanged(Control container, int oldIndex, int newIndex)
         {
             ContainerIndexChangedOverride(container, oldIndex, newIndex);
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
+        }
+
+        internal void ClearItemContainer(Control container)
+        {
+            _scrollViewer?.UnregisterAnchorCandidate(container);
+            ClearContainerForItemOverride(container);
         }
 
         /// <summary>

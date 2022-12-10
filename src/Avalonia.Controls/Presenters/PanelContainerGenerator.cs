@@ -140,6 +140,7 @@ namespace Avalonia.Controls.Presenters
             generator.PrepareItemContainer(container, item, index);
             itemsControl.AddLogicalChild(container);
             children.Insert(index, container);
+            generator.ItemContainerPrepared(container, item, index);
         }
 
         private void ClearItemsControlLogicalChildren()
