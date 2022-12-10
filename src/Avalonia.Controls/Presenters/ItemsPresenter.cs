@@ -143,7 +143,7 @@ namespace Avalonia.Controls.Presenters
                 if (change.NewValue is ItemsControl itemsControl)
                 {
                     ItemsControl = itemsControl;
-                    ((IItemsPresenterHost)itemsControl)?.RegisterItemsPresenter(this);
+                    ItemsControl.RegisterItemsPresenter(this);
                 }
             }
             else if (change.Property == ItemsPanelProperty)

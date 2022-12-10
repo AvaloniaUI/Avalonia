@@ -23,7 +23,7 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
-    public class ItemsControl : TemplatedControl, IItemsPresenterHost, IChildIndexProvider
+    public class ItemsControl : TemplatedControl, IChildIndexProvider
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -250,12 +250,6 @@ namespace Avalonia.Controls
         /// </summary>
         public IEnumerable<Control> GetRealizedContainers() => Presenter?.GetRealizedContainers() ?? Array.Empty<Control>();
 
-        /// <inheritdoc/>
-        void IItemsPresenterHost.RegisterItemsPresenter(ItemsPresenter presenter)
-        {
-            Presenter = presenter;
-            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
-        }
 
         /// <summary>
         /// Creates or a container that can be used to display an item.
@@ -485,6 +479,21 @@ namespace Avalonia.Controls
 
         internal void AddLogicalChild(Control c) => LogicalChildren.Add(c);
         internal void RemoveLogicalChild(Control c) => LogicalChildren.Remove(c);
+
+        /// <summary>
+        /// Called by <see cref="ItemsPresenter"/> to register with the <see cref="ItemsControl"/>.
+        /// </summary>
+        /// <param name="presenter">The items presenter.</param>
+        /// <remarks>
+        /// ItemsPresenters can be within nested templates or in popups and so are not necessarily
+        /// created immediately when the ItemsControl control's template is instantiated. Instead
+        /// they register themselves using this method.
+        /// </remarks>
+        internal void RegisterItemsPresenter(ItemsPresenter presenter)
+        {
+            Presenter = presenter;
+            _childIndexChanged?.Invoke(this, ChildIndexChangedEventArgs.Empty);
+        }
 
         internal void PrepareItemContainer(Control container, object? item, int index)
         {
