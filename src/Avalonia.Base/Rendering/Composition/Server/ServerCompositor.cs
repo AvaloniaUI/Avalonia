@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Expressions;
@@ -19,6 +20,7 @@ namespace Avalonia.Rendering.Composition.Server
     internal class ServerCompositor : IRenderLoopTask
     {
         private readonly IRenderLoop _renderLoop;
+
         private readonly Queue<Batch> _batches = new Queue<Batch>(); 
         public long LastBatchId { get; private set; }
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
@@ -29,13 +31,15 @@ namespace Avalonia.Rendering.Composition.Server
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
         private object _lock = new object();
-        public IPlatformGpuContext? GpuContext { get; }
+        public PlatformRenderInterfaceContextManager RenderInterface { get; }
+        internal static readonly object RenderThreadJobsStartMarker = new();
+        internal static readonly object RenderThreadJobsEndMarker = new();
 
-        public ServerCompositor(IRenderLoop renderLoop, IPlatformGpu? platformGpu,
+        public ServerCompositor(IRenderLoop renderLoop, IPlatformGraphics? platformGraphics,
             BatchStreamObjectPool<object?> batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
         {
-            GpuContext = platformGpu?.PrimaryContext;
             _renderLoop = renderLoop;
+            RenderInterface = new PlatformRenderInterfaceContextManager(platformGraphics);
             BatchObjectPool = batchObjectPool;
             BatchMemoryPool = batchMemoryPool;
             _renderLoop.Add(this);
@@ -66,7 +70,14 @@ namespace Avalonia.Rendering.Composition.Server
                 {
                     while (!stream.IsObjectEof)
                     {
-                        var target = (ServerObject)stream.ReadObject()!;
+                        var readObject = stream.ReadObject();
+                        if (readObject == RenderThreadJobsStartMarker)
+                        {
+                            ReadAndExecuteJobs(stream);
+                            continue;
+                        }
+                        
+                        var target = (ServerObject)readObject!;
                         target.DeserializeChanges(stream, batch);
 #if DEBUG_COMPOSITOR_SERIALIZATION
                         if (stream.ReadObject() != BatchStreamDebugMarkers.ObjectEndMarker)
@@ -81,6 +92,23 @@ namespace Avalonia.Rendering.Composition.Server
 
                 _reusableToCompleteList.Add(batch);
                 LastBatchId = batch.SequenceId;
+            }
+        }
+
+        void ReadAndExecuteJobs(BatchStreamReader reader)
+        {
+            object? readObject;
+            while ((readObject = reader.ReadObject()) != RenderThreadJobsEndMarker)
+            {
+                var job = (Action)readObject!;
+                try
+                {
+                    job();
+                }
+                catch
+                {
+                    // Ignore
+                }
             }
         }
 
@@ -118,8 +146,16 @@ namespace Avalonia.Rendering.Composition.Server
             
             _animationsToUpdate.Clear();
             
-            foreach (var t in _activeTargets)
-                t.Render();
+            try
+            {
+                RenderInterface.EnsureValidBackendContext();
+                foreach (var t in _activeTargets)
+                    t.Render();
+            }
+            catch (Exception e)
+            {
+                Logger.TryGet(LogEventLevel.Error, LogArea.Visual)?.Log(this, "Exception when rendering: {Error}", e);
+            }
         }
 
         public void AddCompositionTarget(ServerCompositionTarget target)
@@ -137,5 +173,11 @@ namespace Avalonia.Rendering.Composition.Server
 
         public void RemoveFromClock(IAnimationInstance animationInstance) =>
             _activeAnimations.Remove(animationInstance);
+
+        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+        {
+            using (RenderInterface.EnsureCurrent())
+                return RenderInterface.CreateRenderTarget(surfaces);
+        }
     }
 }

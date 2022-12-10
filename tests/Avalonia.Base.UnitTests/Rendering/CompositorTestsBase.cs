@@ -76,7 +76,7 @@ public class CompositorTestsBase
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return Renderer = new CompositingRenderer(root, _compositor);
+            return Renderer = new CompositingRenderer(root, _compositor, () => Surfaces);
         }
 
         public void Invalidate(Rect rect)

@@ -1,18 +1,31 @@
 using System;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL.Egl;
+using Avalonia.SourceGenerator;
 
 namespace Avalonia.OpenGL.Angle
 {
-    public class AngleEglInterface : EglInterface
+    internal partial class Win32AngleEglInterface : EglInterface
     {
         [DllImport("av_libGLESv2.dll", CharSet = CharSet.Ansi)]
         static extern IntPtr EGL_GetProcAddress(string proc);
 
-        public AngleEglInterface() : base(LoadAngle())
-        {
 
+        public Win32AngleEglInterface() : this(LoadAngle())
+        {
+            
         }
+        
+        private Win32AngleEglInterface(Func<string,IntPtr> getProcAddress) : base(getProcAddress)
+        {
+            Initialize(getProcAddress);
+        }
+        
+        [GetProcAddress("eglCreateDeviceANGLE", true)]
+        public partial IntPtr CreateDeviceANGLE(int deviceType, IntPtr nativeDevice, int[] attribs);
+
+        [GetProcAddress("eglReleaseDeviceANGLE", true)]
+        public partial void ReleaseDeviceANGLE(IntPtr device);
 
         static Func<string, IntPtr> LoadAngle()
         {

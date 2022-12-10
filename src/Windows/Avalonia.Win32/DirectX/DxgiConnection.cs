@@ -10,11 +10,12 @@ using Avalonia.Logging;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
+using Avalonia.Win32.OpenGl.Angle;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
-using static Avalonia.Win32.DxgiSwapchain.DirectXUnmanagedMethods;
+using static Avalonia.Win32.DirectX.DirectXUnmanagedMethods;
 using MicroCom.Runtime;
 
-namespace Avalonia.Win32.DxgiSwapchain
+namespace Avalonia.Win32.DirectX
 {
 #pragma warning disable CA1416 // This should only be reachable on Windows
 #nullable enable
@@ -25,34 +26,27 @@ namespace Avalonia.Win32.DxgiSwapchain
         public bool RunsInBackground => true;
 
         public event Action<TimeSpan>? Tick;
-
-        private AngleWin32EglDisplay _angle;
-        private EglPlatformOpenGlInterface _gl;
         private object _syncLock;
 
         private IDXGIOutput? _output = null;
 
         private Stopwatch? _stopwatch = null;
+        private const string LogArea = "DXGI";
 
-        public DxgiConnection(EglPlatformOpenGlInterface gl, object syncLock)
+        public DxgiConnection(object syncLock)
         {
-
             _syncLock = syncLock;
-            _angle = (AngleWin32EglDisplay)gl.Display;
-            _gl = gl;
         }
-
-        public EglPlatformOpenGlInterface Egl => _gl;
-
-        public static void TryCreateAndRegister(EglPlatformOpenGlInterface angle)
+        
+        public static void TryCreateAndRegister()
         {
             try
             {
-                TryCreateAndRegisterCore(angle);
+                TryCreateAndRegisterCore();
             }
             catch (Exception ex)
             {
-                Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
+                Logger.TryGet(LogEventLevel.Error, LogArea)
                     ?.Log(null, "Unable to establish Dxgi: {0}", ex);
             }
         }
@@ -66,7 +60,7 @@ namespace Avalonia.Win32.DxgiSwapchain
             }
             catch (Exception ex)
             {
-                Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
+                Logger.TryGet(LogEventLevel.Error, LogArea)
                                     ?.Log(this, $"Failed to wait for vblank, Exception: {ex.Message}, HRESULT = {ex.HResult}");
             }
 
@@ -84,7 +78,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                             }
                             catch (Exception ex)
                             {
-                                Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
+                                Logger.TryGet(LogEventLevel.Error, LogArea)
                                     ?.Log(this, $"Failed to wait for vblank, Exception: {ex.Message}, HRESULT = {ex.HResult}");
                                 _output.Dispose();
                                 _output = null;
@@ -103,7 +97,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                 }
                 catch (Exception ex)
                 {
-                    Logger.TryGet(LogEventLevel.Error, nameof(DxgiSwapchain))
+                    Logger.TryGet(LogEventLevel.Error, LogArea)
                                     ?.Log(this, $"Failed to wait for vblank, Exception: {ex.Message}, HRESULT = {ex.HResult}");
                 }
             }
@@ -168,7 +162,7 @@ namespace Avalonia.Win32.DxgiSwapchain
         }
 
         // Used the windows composition as a blueprint for this startup/creation 
-        static private bool TryCreateAndRegisterCore(EglPlatformOpenGlInterface gl)
+        static private bool TryCreateAndRegisterCore()
         {
             var tcs = new TaskCompletionSource<bool>();
             var pumpLock = new object();
@@ -178,7 +172,7 @@ namespace Avalonia.Win32.DxgiSwapchain
                 {
                     DxgiConnection connection;
 
-                    connection = new DxgiConnection(gl, pumpLock);
+                    connection = new DxgiConnection(pumpLock);
 
                     AvaloniaLocator.CurrentMutable.BindToSelf(connection);
                     AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connection);

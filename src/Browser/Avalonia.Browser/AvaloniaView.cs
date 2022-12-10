@@ -11,6 +11,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using SkiaSharp;
@@ -106,7 +107,7 @@ namespace Avalonia.Browser
 
             _dpi = DomHelper.ObserveDpi(OnDpiChanged);
 
-            _useGL = skiaOptions?.CustomGpuFactory != null;
+            _useGL = AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>() != null;
 
             if (_useGL)
             {
