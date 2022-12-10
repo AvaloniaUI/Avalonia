@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
@@ -97,7 +94,7 @@ namespace Avalonia.Controls
 
         protected override Size MeasureOverride(Size availableSize)
         {
-            var items = ItemsControl?.ItemsView ?? ItemsSourceView.Empty;
+            var items = Items;
             var index = (int)_offset.X;
 
             if (index != _realizedIndex)
@@ -249,7 +246,7 @@ namespace Avalonia.Controls
             InvalidateMeasure();
         }
 
-        private Control GetOrCreateElement(ItemsSourceView items, int index)
+        private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
         {
             return GetRealizedElement(index) ??
                 GetItemIsOwnContainer(items, index) ??
@@ -262,15 +259,15 @@ namespace Avalonia.Controls
             return _realizedIndex == index ? _realized : null;
         }
 
-        private Control? GetItemIsOwnContainer(ItemsSourceView items, int index)
+        private Control? GetItemIsOwnContainer(IReadOnlyList<object?> items, int index)
         {
-            Debug.Assert(ItemsControl is not null);
+            Debug.Assert(ItemContainerGenerator is not null);
 
             var item = items[index];
 
             if (item is Control controlItem)
             {
-                var generator = ItemsControl!.ItemContainerGenerator;
+                var generator = ItemContainerGenerator;
 
                 if (controlItem.IsSet(ItemIsOwnContainerProperty))
                 {
@@ -291,11 +288,11 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private Control? GetRecycledElement(ItemsSourceView items, int index)
+        private Control? GetRecycledElement(IReadOnlyList<object?> items, int index)
         {
-            Debug.Assert(ItemsControl is not null);
+            Debug.Assert(ItemContainerGenerator is not null);
 
-            var generator = ItemsControl!.ItemContainerGenerator;
+            var generator = ItemContainerGenerator;
             var item = items[index];
 
             if (_recyclePool?.Count > 0)
@@ -310,11 +307,11 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private Control CreateElement(ItemsSourceView items, int index)
+        private Control CreateElement(IReadOnlyList<object?> items, int index)
         {
-            Debug.Assert(ItemsControl is not null);
+            Debug.Assert(ItemContainerGenerator is not null);
 
-            var generator = ItemsControl!.ItemContainerGenerator;
+            var generator = ItemContainerGenerator;
             var item = items[index];
             var container = generator.CreateContainer();
 
@@ -327,7 +324,7 @@ namespace Avalonia.Controls
 
         private void RecycleElement(Control element)
         {
-            Debug.Assert(ItemsControl is not null);
+            Debug.Assert(ItemContainerGenerator is not null);
 
             if (element.IsSet(ItemIsOwnContainerProperty))
             {
@@ -335,7 +332,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                ItemsControl!.ItemContainerGenerator.ClearItemContainer(element);
+                ItemContainerGenerator.ClearItemContainer(element);
                 _recyclePool ??= new();
                 _recyclePool.Push(element);
                 element.IsVisible = false;

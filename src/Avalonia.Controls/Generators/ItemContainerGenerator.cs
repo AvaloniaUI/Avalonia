@@ -6,7 +6,23 @@ namespace Avalonia.Controls.Generators
     /// Generates containers for an <see cref="ItemsControl"/>.
     /// </summary>
     /// <remarks>
-    /// Although this class is similar to that found in WPF/UWP, in Avalonia this class only
+    /// When creating a container for an item from a <see cref="VirtualizingPanel"/>, the following
+    /// method order should be followed:
+    /// 
+    /// - <see cref="IsItemItsOwnContainer(Control)"/> should first be called if the item is
+    ///   derived from the <see cref="Control"/> class. If this method returns true then the
+    ///   item itself should be used as the container.
+    /// - If <see cref="IsItemItsOwnContainer(Control)"/> returns false then
+    ///   <see cref="CreateContainer"/> should be called to create a new container.
+    /// - <see cref="PrepareItemContainer(Control, object?, int)"/> method should be called for the
+    ///   container.
+    /// - The container should then be added to the panel using 
+    ///   <see cref="VirtualizingPanel.AddInternalChild(Control)"/>
+    /// - Finally, <see cref="ItemContainerPrepared(Control, object?, int)"/> should be called.
+    /// - When the item is ready to be recycled, <see cref="ClearItemContainer(Control)"/> should
+    ///   be called if <see cref="IsItemItsOwnContainer(Control)"/> returned false.
+    /// 
+    /// NOTE: Although this class is similar to that found in WPF/UWP, in Avalonia this class only
     /// concerns itself with generating and clearing item containers; it does not maintain a
     /// record of the currently realized containers, that responsibility is delegated to the
     /// items panel.

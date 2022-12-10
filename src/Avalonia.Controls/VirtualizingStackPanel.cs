@@ -11,6 +11,9 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
+    /// <summary>
+    /// Arranges and virtualizes content on a single line that is oriented either horizontally or vertically.
+    /// </summary>
     public class VirtualizingStackPanel : VirtualizingPanel
     {
         /// <summary>
@@ -64,9 +67,9 @@ namespace Avalonia.Controls
 
             try
             {
-                var items = ItemsControl?.ItemsView;
+                var items = Items;
 
-                if (items is null || items.Count == 0)
+                if (items.Count == 0)
                 {
                     RemoveInternalChildRange(0, Children.Count);
                     return default;
@@ -171,7 +174,7 @@ namespace Avalonia.Controls
 
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
         {
-            var count = ItemsControl?.ItemsView.Count ?? 0;
+            var count = Items.Count;
 
             if (count == 0 || from is not Control fromControl)
                 return null;
@@ -238,9 +241,9 @@ namespace Avalonia.Controls
 
         protected internal override Control? ScrollIntoView(int index)
         {
-            var items = ItemsControl?.ItemsView;
+            var items = Items;
 
-            if (_isInLayout || items is null || index < 0 || index >= items.Count)
+            if (_isInLayout || index < 0 || index >= items.Count)
                 return null;
 
             if (GetRealizedElement(index) is Control element)
@@ -295,7 +298,7 @@ namespace Avalonia.Controls
             return _realizedElements?.Elements ?? Array.Empty<Control>();
         }
 
-        private MeasureViewport CalculateMeasureViewport(ItemsSourceView items)
+        private MeasureViewport CalculateMeasureViewport(IReadOnlyList<object?> items)
         {
             Debug.Assert(_realizedElements is not null);
 
@@ -336,7 +339,7 @@ namespace Avalonia.Controls
             };
         }
 
-        private Size CalculateDesiredSize(Orientation orientation, ItemsSourceView items, double sizeV)
+        private Size CalculateDesiredSize(Orientation orientation, IReadOnlyList<object?> items, double sizeV)
         {
             var sizeU = EstimateElementSizeU() * items.Count;
 
@@ -387,10 +390,9 @@ namespace Avalonia.Controls
 
         private void GenerateElements(Size availableSize, ref MeasureViewport viewport)
         {
-            Debug.Assert(ItemsControl is not null);
             Debug.Assert(_measureElements is not null);
 
-            var items = ItemsControl!.ItemsView;
+            var items = Items;
             var horizontal = Orientation == Orientation.Horizontal;
             var index = viewport.firstIndex;
             var u = viewport.startU;
@@ -415,7 +417,7 @@ namespace Avalonia.Controls
             } while (u < viewport.viewportUEnd && index < items.Count);
         }
 
-        private Control GetOrCreateElement(ItemsSourceView items, int index)
+        private Control GetOrCreateElement(IReadOnlyList<object?> items, int index)
         {
             var e = GetRealizedElement(index) ??
                 GetItemIsOwnContainer(items, index) ??
@@ -432,13 +434,13 @@ namespace Avalonia.Controls
             return _realizedElements?.GetElement(index);
         }
 
-        private Control? GetItemIsOwnContainer(ItemsSourceView items, int index)
+        private Control? GetItemIsOwnContainer(IReadOnlyList<object?> items, int index)
         {
             var item = items[index];
 
             if (item is Control controlItem)
             {
-                var generator = ItemsControl!.ItemContainerGenerator;
+                var generator = ItemContainerGenerator!;
 
                 if (controlItem.IsSet(ItemIsOwnContainerProperty))
                 {
@@ -459,11 +461,11 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private Control? GetRecycledElement(ItemsSourceView items, int index)
+        private Control? GetRecycledElement(IReadOnlyList<object?> items, int index)
         {
-            Debug.Assert(ItemsControl is not null);
+            Debug.Assert(ItemContainerGenerator is not null);
 
-            var generator = ItemsControl!.ItemContainerGenerator;
+            var generator = ItemContainerGenerator!;
             var item = items[index];
 
 
@@ -479,11 +481,11 @@ namespace Avalonia.Controls
             return null;
         }
 
-        private Control CreateElement(ItemsSourceView items, int index)
+        private Control CreateElement(IReadOnlyList<object?> items, int index)
         {
-            Debug.Assert(ItemsControl is not null);
+            Debug.Assert(ItemContainerGenerator is not null);
 
-            var generator = ItemsControl!.ItemContainerGenerator;
+            var generator = ItemContainerGenerator!;
             var item = items[index];
             var container = generator.CreateContainer();
 
@@ -502,7 +504,7 @@ namespace Avalonia.Controls
 
         private void RecycleElement(Control element)
         {
-            Debug.Assert(ItemsControl is not null);
+            Debug.Assert(ItemContainerGenerator is not null);
             
             if (element.IsSet(ItemIsOwnContainerProperty))
             {
@@ -510,7 +512,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                ItemsControl!.ItemContainerGenerator.ClearItemContainer(element);
+                ItemContainerGenerator!.ClearItemContainer(element);
                 _recyclePool ??= new();
                 _recyclePool.Push(element);
                 element.IsVisible = false;
@@ -519,7 +521,9 @@ namespace Avalonia.Controls
 
         private void UpdateElementIndex(Control element, int oldIndex, int newIndex)
         {
-            ItemsControl!.ItemContainerGenerator.ItemContainerIndexChanged(element, oldIndex, newIndex);
+            Debug.Assert(ItemContainerGenerator is not null);
+
+            ItemContainerGenerator.ItemContainerIndexChanged(element, oldIndex, newIndex);
         }
 
         private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
@@ -575,7 +579,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Stores the realized element state for a <see cref="VirtualizingStackPanel"/> in smooth mode.
+        /// Stores the realized element state for a <see cref="VirtualizingStackPanel"/>.
         /// </summary>
         internal class RealizedElementList
         {

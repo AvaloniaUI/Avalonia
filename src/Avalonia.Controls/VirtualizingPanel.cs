@@ -1,20 +1,44 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
+using Avalonia.Controls.Generators;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Base class for panels that can be used to virtualize items.
+    /// Base class for panels that can be used to virtualize items for an <see cref="ItemsControl"/>.
     /// </summary>
+    /// <remarks>
+    /// Panels should implement the abstract members of this class to provide virtualization of
+    /// items in a <see cref="ItemsControl"/>. Derived panels can manage scrolling by implementing
+    /// <see cref="ILogicalScrollable"/> or by listening to the 
+    /// <see cref="Layoutable.EffectiveViewportChanged"/> event.
+    /// 
+    /// The methods on the <see cref="ItemContainerGenerator"/> should be used to create, prepare and
+    /// clear containers for items.
+    /// </remarks>
     public abstract class VirtualizingPanel : Panel, INavigableContainer
     {
         private ItemsControl? _itemsControl;
 
+        /// <summary>
+        /// Gets the <see cref="ItemContainerGenerator"/> for this <see cref="VirtualizingPanel"/>.
+        /// </summary>
+        public ItemContainerGenerator? ItemContainerGenerator => _itemsControl?.ItemContainerGenerator;
+
+        /// <summary>
+        /// Gets the items to display.
+        /// </summary>
+        protected IReadOnlyList<object?> Items => ItemsControl?.ItemsView ?? ItemsSourceView.Empty;
+
+        /// <summary>
+        /// Gets the <see cref="ItemsControl"/> that the panel is displaying items for.
+        /// </summary>
         protected ItemsControl? ItemsControl 
         {
             get => _itemsControl;
