@@ -102,7 +102,7 @@ namespace Avalonia.Controls
                 GenerateElements(availableSize, ref viewport);
 
                 // Now we know what definitely fits, recycle anything left over.
-                _realizedElements.RecycleElementsAfter(_measureElements.LastModelIndex, _recycleElement);
+                _realizedElements.RecycleElementsAfter(_measureElements.LastIndex, _recycleElement);
 
                 // And swap the measureElements and realizedElements collection.
                 (_measureElements, _realizedElements) = (_realizedElements, _measureElements);
@@ -310,8 +310,8 @@ namespace Avalonia.Controls
             var viewportStart = Orientation == Orientation.Horizontal ? viewport.X : viewport.Y;
             var viewportEnd = Orientation == Orientation.Horizontal ? viewport.Right : viewport.Bottom;
 
-            var (firstIndex, firstIndexU) = _realizedElements.GetModelIndexAt(viewportStart);
-            var (lastIndex, _) = _realizedElements.GetModelIndexAt(viewportEnd);
+            var (firstIndex, firstIndexU) = _realizedElements.GetIndexAt(viewportStart);
+            var (lastIndex, _) = _realizedElements.GetIndexAt(viewportEnd);
             var estimatedElementSize = -1.0;
             var itemCount = items?.Count ?? 0;
 
@@ -595,14 +595,14 @@ namespace Avalonia.Controls
             public int Count => _elements?.Count ?? 0;
 
             /// <summary>
-            /// Gets the model index of the first realized element, or -1 if no elements are realized.
+            /// Gets the index of the first realized element, or -1 if no elements are realized.
             /// </summary>
-            public int FirstModelIndex => _elements?.Count > 0 ? _firstIndex : -1;
+            public int FirstIndex => _elements?.Count > 0 ? _firstIndex : -1;
 
             /// <summary>
-            /// Gets the model index of the last realized element, or -1 if no elements are realized.
+            /// Gets the index of the last realized element, or -1 if no elements are realized.
             /// </summary>
-            public int LastModelIndex => _elements?.Count > 0 ? _firstIndex + _elements.Count - 1 : -1;
+            public int LastIndex => _elements?.Count > 0 ? _firstIndex + _elements.Count - 1 : -1;
 
             /// <summary>
             /// Gets the elements.
@@ -622,14 +622,14 @@ namespace Avalonia.Controls
             /// <summary>
             /// Adds a newly realized element to the collection.
             /// </summary>
-            /// <param name="modelIndex">The model index of the element.</param>
+            /// <param name="index">The index of the element.</param>
             /// <param name="element">The element.</param>
             /// <param name="u">The position of the elemnt on the primary axis.</param>
             /// <param name="sizeU">The size of the element on the primary axis.</param>
-            public void Add(int modelIndex, Control element, double u, double sizeU)
+            public void Add(int index, Control element, double u, double sizeU)
             {
-                if (modelIndex < 0)
-                    throw new ArgumentOutOfRangeException(nameof(modelIndex));
+                if (index < 0)
+                    throw new ArgumentOutOfRangeException(nameof(index));
 
                 _elements ??= new List<Control?>();
                 _sizes ??= new List<double>();
@@ -639,14 +639,14 @@ namespace Avalonia.Controls
                     _elements.Add(element);
                     _sizes.Add(sizeU);
                     _startU = u;
-                    _firstIndex = modelIndex;
+                    _firstIndex = index;
                 }
-                else if (modelIndex == LastModelIndex + 1)
+                else if (index == LastIndex + 1)
                 {
                     _elements.Add(element);
                     _sizes.Add(sizeU);
                 }
-                else if (modelIndex == FirstModelIndex - 1)
+                else if (index == FirstIndex - 1)
                 {
                     --_firstIndex;
                     _elements.Insert(0, element);
@@ -660,20 +660,20 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Gets the element at the specified model index, if realized.
+            /// Gets the element at the specified index, if realized.
             /// </summary>
-            /// <param name="modelIndex">The index in the source collection of the element to get.</param>
+            /// <param name="index">The index in the source collection of the element to get.</param>
             /// <returns>The element if realized; otherwise null.</returns>
-            public Control? GetElement(int modelIndex)
+            public Control? GetElement(int index)
             {
-                var index = modelIndex - FirstModelIndex;
-                if (index >= 0 && index < _elements?.Count)
-                    return _elements[index];
+                var i = index - FirstIndex;
+                if (i >= 0 && i < _elements?.Count)
+                    return _elements[i];
                 return null;
             }
 
             /// <summary>
-            /// Gets the model index and start U position of the element at the specified U position.
+            /// Gets the index and start U position of the element at the specified U position.
             /// </summary>
             /// <param name="u">The U position.</param>
             /// <returns>
@@ -682,7 +682,7 @@ namespace Avalonia.Controls
             ///   determined
             /// - The U position of the start of the item, if determined
             /// </returns>
-            public (int index, double position) GetModelIndexAt(double u)
+            public (int index, double position) GetIndexAt(double u)
             {
                 if (_elements is null || _sizes is null || _startU > u || _startUUnstable)
                     return (-1, 0);
@@ -696,7 +696,7 @@ namespace Avalonia.Controls
                     if (double.IsNaN(size))
                         break;
                     if (u >= position && u < position + size)
-                        return (index + FirstModelIndex, position);
+                        return (index + FirstIndex, position);
                     position += size;
                     ++index;
                 }
@@ -718,7 +718,7 @@ namespace Avalonia.Controls
                     return (-1, 0);
 
                 var u = StartU;
-                var i = FirstModelIndex;
+                var i = FirstIndex;
 
                 foreach (var size in _sizes)
                 {
@@ -746,10 +746,10 @@ namespace Avalonia.Controls
                 var divisor = 0.0;
 
                 // Start by averaging the size of the elements before the first realized element.
-                if (FirstModelIndex >= 0 && !_startUUnstable)
+                if (FirstIndex >= 0 && !_startUUnstable)
                 {
                     total += _startU;
-                    divisor += FirstModelIndex;
+                    divisor += FirstIndex;
                 }
 
                 // Average the size of the realized elements.
@@ -772,38 +772,38 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
-            /// Gets the model index of the specified element.
+            /// Gets the index of the specified element.
             /// </summary>
             /// <param name="element">The element.</param>
-            /// <returns>The model index or -1 if the element is not present in the collection.</returns>
+            /// <returns>The index or -1 if the element is not present in the collection.</returns>
             public int GetIndex(Control element)
             {
-                return _elements?.IndexOf(element) is int index && index >= 0 ? index + FirstModelIndex : -1;
+                return _elements?.IndexOf(element) is int index && index >= 0 ? index + FirstIndex : -1;
             }
 
             /// <summary>
             /// Updates the elements in response to items being inserted into the source collection.
             /// </summary>
-            /// <param name="modelIndex">The index in the source collection of the insert.</param>
+            /// <param name="index">The index in the source collection of the insert.</param>
             /// <param name="count">The number of items inserted.</param>
             /// <param name="updateElementIndex">A method used to update the element indexes.</param>
-            public void ItemsInserted(int modelIndex, int count, Action<Control, int, int> updateElementIndex)
+            public void ItemsInserted(int index, int count, Action<Control, int, int> updateElementIndex)
             {
-                if (modelIndex < 0)
-                    throw new ArgumentOutOfRangeException(nameof(modelIndex));
+                if (index < 0)
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 if (_elements is null || _elements.Count == 0)
                     return;
 
                 // Get the index within the realized _elements collection.
-                var first = FirstModelIndex;
-                var index = modelIndex - first;
+                var first = FirstIndex;
+                var realizedIndex = index - first;
 
-                if (index < Count)
+                if (realizedIndex < Count)
                 {
                     // The insertion point affects the realized elements. Update the index of the
                     // elements after the insertion point.
                     var elementCount = _elements.Count;
-                    var start = Math.Max(index, 0);
+                    var start = Math.Max(realizedIndex, 0);
                     var newIndex = first + count;
 
                     for (var i = start; i < elementCount; ++i)
@@ -813,7 +813,7 @@ namespace Avalonia.Controls
                         ++newIndex;
                     }
 
-                    if (index <= 0)
+                    if (realizedIndex <= 0)
                     {
                         // The insertion point was before the first element, update the first index.
                         _firstIndex += count;
@@ -822,8 +822,8 @@ namespace Avalonia.Controls
                     {
                         // The insertion point was within the realized elements, insert an empty space
                         // in _elements and _sizes.
-                        _elements!.InsertMany(index, null, count);
-                        _sizes!.InsertMany(index, double.NaN, count);
+                        _elements!.InsertMany(realizedIndex, null, count);
+                        _sizes!.InsertMany(realizedIndex, double.NaN, count);
                     }
                 }
             }
@@ -831,26 +831,26 @@ namespace Avalonia.Controls
             /// <summary>
             /// Updates the elements in response to items being removed from the source collection.
             /// </summary>
-            /// <param name="modelIndex">The index in the source collection of the remove.</param>
+            /// <param name="index">The index in the source collection of the remove.</param>
             /// <param name="count">The number of items removed.</param>
             /// <param name="updateElementIndex">A method used to update the element indexes.</param>
             /// <param name="recycleElement">A method used to recycle elements.</param>
             public void ItemsRemoved(
-                int modelIndex,
+                int index,
                 int count,
                 Action<Control, int, int> updateElementIndex,
                 Action<Control> recycleElement)
             {
-                if (modelIndex < 0)
-                    throw new ArgumentOutOfRangeException(nameof(modelIndex));
+                if (index < 0)
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 if (_elements is null || _elements.Count == 0)
                     return;
 
                 // Get the removal start and end index within the realized _elements collection.
-                var first = FirstModelIndex;
-                var last = LastModelIndex;
-                var startIndex = modelIndex - first;
-                var endIndex = (modelIndex + count) - first;
+                var first = FirstIndex;
+                var last = LastIndex;
+                var startIndex = index - first;
+                var endIndex = (index + count) - first;
 
                 if (endIndex < 0)
                 {
@@ -886,7 +886,7 @@ namespace Avalonia.Controls
                     // because we can't rely on it now to estimate element heights.
                     if (startIndex <= 0 && end < last)
                     {
-                        _firstIndex = first = modelIndex;
+                        _firstIndex = first = index;
                         _startUUnstable = true;
                     }
 
@@ -905,20 +905,20 @@ namespace Avalonia.Controls
             /// <summary>
             /// Recycles elements before a specific index.
             /// </summary>
-            /// <param name="modelIndex">The index in the source collection of new first element.</param>
+            /// <param name="index">The index in the source collection of new first element.</param>
             /// <param name="recycleElement">A method used to recycle elements.</param>
-            public void RecycleElementsBefore(int modelIndex, Action<Control> recycleElement)
+            public void RecycleElementsBefore(int index, Action<Control> recycleElement)
             {
-                if (modelIndex <= FirstModelIndex || _elements is null || _elements.Count == 0)
+                if (index <= FirstIndex || _elements is null || _elements.Count == 0)
                     return;
 
-                if (modelIndex > LastModelIndex)
+                if (index > LastIndex)
                 {
                     RecycleAllElements(recycleElement);
                 }
                 else
                 {
-                    var endIndex = modelIndex - FirstModelIndex;
+                    var endIndex = index - FirstIndex;
 
                     for (var i = 0; i < endIndex; ++i)
                     {
@@ -928,27 +928,27 @@ namespace Avalonia.Controls
 
                     _elements.RemoveRange(0, endIndex);
                     _sizes!.RemoveRange(0, endIndex);
-                    _firstIndex = modelIndex;
+                    _firstIndex = index;
                 }
             }
 
             /// <summary>
             /// Recycles elements after a specific index.
             /// </summary>
-            /// <param name="modelIndex">The index in the source collection of new last element.</param>
+            /// <param name="index">The index in the source collection of new last element.</param>
             /// <param name="recycleElement">A method used to recycle elements.</param>
-            public void RecycleElementsAfter(int modelIndex, Action<Control> recycleElement)
+            public void RecycleElementsAfter(int index, Action<Control> recycleElement)
             {
-                if (modelIndex >= LastModelIndex || _elements is null || _elements.Count == 0)
+                if (index >= LastIndex || _elements is null || _elements.Count == 0)
                     return;
 
-                if (modelIndex < FirstModelIndex)
+                if (index < FirstIndex)
                 {
                     RecycleAllElements(recycleElement);
                 }
                 else
                 {
-                    var startIndex = (modelIndex + 1) - FirstModelIndex;
+                    var startIndex = (index + 1) - FirstIndex;
                     var count = _elements.Count;
 
                     for (var i = startIndex; i < count; ++i)
