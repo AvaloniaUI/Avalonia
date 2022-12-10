@@ -88,7 +88,10 @@ namespace Avalonia.Controls.Generators
         /// <param name="container">The container control.</param>
         public void ClearItemContainer(Control container) => _owner.ClearItemContainer(container);
 
+        [Obsolete("Use ItemsControl.ContainerFromIndex")]
         public Control? ContainerFromIndex(int index) => _owner.ContainerFromIndex(index);
+
+        [Obsolete("Use ItemsControl.IndexFromContainer")]
         public int IndexFromContainer(Control container) => _owner.IndexFromContainer(container);
     }
 }
