@@ -23,8 +23,6 @@
     <Compile Remove="..\..\Shared\ModuleInitializer.cs" />
     <Compile Remove="..\..\Shared\SourceGeneratorAttributes.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />
-  <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
   <PropertyGroup Label="Warnings">
     <NoWarn>$(NoWarn);CA1416</NoWarn>
