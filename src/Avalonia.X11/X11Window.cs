@@ -298,7 +298,7 @@ namespace Avalonia.X11
                 min_height = min.Height
             };
             hints.height_inc = hints.width_inc = 1;
-            var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc | XSizeHintsFlags.PPosition | XSizeHintsFlags.PSize;
+            var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc;
             // People might be passing double.MaxValue
             if (max.Width < 100000 && max.Height < 100000)
             {
