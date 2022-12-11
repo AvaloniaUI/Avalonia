@@ -1,10 +1,8 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
-using Avalonia.Controls;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 
@@ -25,7 +23,7 @@ namespace Avalonia.Media
         private const double MaxFontEmSize = RealInfiniteWidth / GreatestMultiplierOfEm;
 
         // properties and format runs
-        private ReadOnlySlice<char> _text;
+        private string _text;
         private readonly SpanVector _formatRuns = new SpanVector(null);
         private SpanPosition _latestPosition;
 
@@ -69,9 +67,7 @@ namespace Avalonia.Media
 
             ValidateFontSize(emSize);
 
-            _text = textToFormat != null ?
-                new ReadOnlySlice<char>(textToFormat.AsMemory()) :
-                throw new ArgumentNullException(nameof(textToFormat));
+            _text = textToFormat;
 
             var runProps = new GenericTextRunProperties(
                 typeface,

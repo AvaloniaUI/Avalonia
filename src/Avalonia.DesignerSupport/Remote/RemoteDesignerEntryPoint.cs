@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -150,10 +151,20 @@ namespace Avalonia.DesignerSupport.Remote
                 }
 
                 if (args.Method == Methods.Win32)
-                    builder.UseWindowingSubsystem("Avalonia.Win32");
+                    builder.UseWindowingSubsystem(GetInitializer("Avalonia.Win32"), "Win32");
                 builder.SetupWithoutStarting();
                 return transport;
             }
+
+            private static Action GetInitializer(string assemblyName) => () =>
+            {
+                var assembly = Assembly.Load(new AssemblyName(assemblyName));
+                var platformClassName = assemblyName.Replace("Avalonia.", string.Empty) + "Platform";
+                var platformClassFullName = assemblyName + "." + platformClassName;
+                var platformClass = assembly.GetType(platformClassFullName);
+                var init = platformClass!.GetRuntimeMethod("Initialize", Type.EmptyTypes);
+                init!.Invoke(null, null);
+            };
         }
 
         private const string BuilderMethodName = "BuildAvaloniaApp";

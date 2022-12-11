@@ -111,8 +111,8 @@ namespace Avalonia.X11.Glx
             return Glx.CreatePbuffer(_x11.Display, _fbconfig, new[] { GLX_PBUFFER_WIDTH, 1, GLX_PBUFFER_HEIGHT, 1, 0 });
         }
 
-
-        public GlxContext CreateContext() => CreateContext();
+        public GlxContext CreateContext() => CreateContext(CreatePBuffer(), null, DeferredContext.SampleCount,
+            DeferredContext.StencilSize, true);
         
         public GlxContext CreateContext(IGlContext share) => CreateContext(CreatePBuffer(), share,
             share.SampleCount, share.StencilSize, true);

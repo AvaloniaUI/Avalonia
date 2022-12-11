@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -125,6 +126,7 @@ namespace Avalonia.Utilities
         /// <param name="culture">The culture to use.</param>
         /// <param name="result">If successful, contains the convert value.</param>
         /// <returns>True if the cast was successful, otherwise false.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
         public static bool TryConvert(Type to, object? value, CultureInfo? culture, out object? result)
         {
             if (value == null)
@@ -150,7 +152,7 @@ namespace Avalonia.Utilities
 
             if (toUnderl == typeof(string))
             {
-                result = Convert.ToString(value, culture);
+                result = Convert.ToString(value, culture)!;
                 return true;
             }
 
@@ -244,6 +246,7 @@ namespace Avalonia.Utilities
         /// <param name="value">The value to convert.</param>
         /// <param name="result">If successful, contains the converted value.</param>
         /// <returns>True if the convert was successful, otherwise false.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
         public static bool TryConvertImplicit(Type to, object? value, out object? result)
         {
             if (value == null)
@@ -306,6 +309,7 @@ namespace Avalonia.Utilities
         /// <param name="type">The type to convert to..</param>
         /// <param name="culture">The culture to use.</param>
         /// <returns>A value of <paramref name="type"/>.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
         public static object? ConvertOrDefault(object? value, Type type, CultureInfo culture)
         {
             return TryConvert(type, value, culture, out var result) ? result : Default(type);
@@ -318,11 +322,13 @@ namespace Avalonia.Utilities
         /// <param name="value">The value to convert.</param>
         /// <param name="type">The type to convert to.</param>
         /// <returns>A value of <paramref name="type"/>.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
         public static object? ConvertImplicitOrDefault(object? value, Type type)
         {
             return TryConvertImplicit(type, value, out var result) ? result : Default(type);
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
         public static T ConvertImplicit<T>(object value)
         {
             if (TryConvertImplicit(typeof(T), value, out var result))
@@ -339,6 +345,7 @@ namespace Avalonia.Utilities
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>The default value.</returns>
+        [UnconditionalSuppressMessage("Trimming", "IL2067", Justification = "We don't care about public ctors for the value types, and always return null for the ref types.")]
         public static object? Default(Type type)
         {
             if (type.IsValueType)
@@ -391,7 +398,9 @@ namespace Avalonia.Utilities
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
-        private static MethodInfo? FindTypeConversionOperatorMethod(Type fromType, Type toType, OperatorType operatorType)
+        private static MethodInfo? FindTypeConversionOperatorMethod(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type fromType,
+            Type toType, OperatorType operatorType)
         {
             const string implicitName = "op_Implicit";
             const string explicitName = "op_Explicit";

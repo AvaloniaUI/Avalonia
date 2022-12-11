@@ -3,7 +3,7 @@
     /// <summary>
     /// The bounding rectangle of text run
     /// </summary>
-    public readonly struct TextRunBounds
+    public readonly record struct TextRunBounds
     {
         /// <summary>
         /// Constructing TextRunBounds

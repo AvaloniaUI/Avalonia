@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -12,6 +13,7 @@ namespace Avalonia.Data.Core.Plugins
     public class DataAnnotationsValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
+        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         public bool Match(WeakReference<object?> reference, string memberName)
         {
             reference.TryGetTarget(out var target);
@@ -24,11 +26,13 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
+        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object?> reference, string name, IPropertyAccessor inner)
         {
             return new Accessor(reference, name, inner);
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         private sealed class Accessor : DataValidationBase
         {
             private readonly ValidationContext? _context;

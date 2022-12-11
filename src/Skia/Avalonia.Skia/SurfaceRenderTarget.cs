@@ -107,6 +107,8 @@ namespace Avalonia.Skia
             return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
         }
 
+        public bool IsCorrupted => _gpu?.IsLost == true;
+
         /// <inheritdoc />
         public Vector Dpi { get; }
 

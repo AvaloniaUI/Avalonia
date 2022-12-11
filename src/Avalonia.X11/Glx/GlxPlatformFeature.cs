@@ -6,38 +6,36 @@ using Avalonia.Platform;
 
 namespace Avalonia.X11.Glx
 {
-    class GlxPlatformOpenGlInterface : IPlatformOpenGlInterface
+    class GlxPlatformGraphics : IPlatformGraphics
     {
         public GlxDisplay Display { get; private set; }
         public bool CanCreateContexts => true;
         public bool CanShareContexts => true;
-        public IGlContext CreateContext() => Display.CreateContext();
-        public IGlContext CreateSharedContext() => Display.CreateContext(PrimaryContext);
-        public GlxContext DeferredContext { get; private set; }
-        public IGlContext PrimaryContext => DeferredContext;
-        IPlatformGpuContext IPlatformGpu.PrimaryContext => PrimaryContext;
+        public bool UsesSharedContext => false;
+        IPlatformGraphicsContext IPlatformGraphics.CreateContext() => Display.CreateContext();
+
+        public IPlatformGraphicsContext GetSharedContext() => throw new NotSupportedException();
 
         public static bool TryInitialize(X11Info x11, IList<GlVersion> glProfiles)
         {
             var feature = TryCreate(x11, glProfiles);
             if (feature != null)
             {
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(feature);
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(feature);
                 return true;
             }
 
             return false;
         }
         
-        public static GlxPlatformOpenGlInterface TryCreate(X11Info x11, IList<GlVersion> glProfiles)
+        public static GlxPlatformGraphics TryCreate(X11Info x11, IList<GlVersion> glProfiles)
         {
             try
             {
                 var disp = new GlxDisplay(x11, glProfiles);
-                return new GlxPlatformOpenGlInterface
+                return new GlxPlatformGraphics
                 {
-                    Display = disp,
-                    DeferredContext = disp.DeferredContext
+                    Display = disp
                 };
             }
             catch(Exception e)

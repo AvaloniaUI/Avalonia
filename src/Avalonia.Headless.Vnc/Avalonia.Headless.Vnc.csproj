@@ -9,4 +9,5 @@
       <PackageReference Include="Quamotion.RemoteViewing" Version="1.1.21" />
     </ItemGroup>
 
+    <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

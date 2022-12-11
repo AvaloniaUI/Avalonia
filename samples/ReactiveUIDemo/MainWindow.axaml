@@ -1,0 +1,19 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        x:Class="ReactiveUIDemo.MainWindow"
+        xmlns:vm="using:ReactiveUIDemo.ViewModels"
+        xmlns:rxui="using:Avalonia.ReactiveUI"
+        Title="AvaloniaUI ReactiveUI Demo"
+        x:DataType="vm:MainWindowViewModel">
+  <TabControl TabStripPlacement="Left">
+    <TabItem Header="RoutedViewHost">
+      <DockPanel DataContext="{Binding RoutedViewHost}">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8">
+          <Button Command="{Binding ShowFoo}">Foo</Button>
+          <Button Command="{Binding ShowBar}">Bar</Button>
+        </StackPanel>
+        <rxui:RoutedViewHost Router="{Binding Router}"/>
+      </DockPanel>
+    </TabItem>
+  </TabControl>
+</Window>

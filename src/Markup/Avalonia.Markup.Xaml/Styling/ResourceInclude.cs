@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 
 #nullable enable
@@ -8,9 +9,10 @@ namespace Avalonia.Markup.Xaml.Styling
     /// <summary>
     /// Loads a resource dictionary from a specified URL.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
     public class ResourceInclude : IResourceProvider
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceProvider? _serviceProvider;
         private readonly Uri? _baseUri;
         private IResourceDictionary? _loaded;
         private bool _isLoading;

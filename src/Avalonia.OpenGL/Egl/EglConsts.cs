@@ -196,6 +196,11 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_WARP_ANGLE = 0x320B;
 //        public const int  EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_REFERENCE_ANGLE = 0x320C;
         
+//
+        // EXT_platform_device
+        public const int EGL_PLATFORM_DEVICE_EXT = 0x313F;
+
+
         //EXT_device_query
         public const int  EGL_DEVICE_EXT = 0x322C;
 

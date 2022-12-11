@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia.Media.TextFormatting.Unicode;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -14,10 +13,10 @@ namespace Avalonia.Media.TextFormatting
         public ShapedTextCharacters(ShapedBuffer shapedBuffer, TextRunProperties properties)
         {
             ShapedBuffer = shapedBuffer;
-            Text = shapedBuffer.Text;
+            CharacterBufferReference = shapedBuffer.CharacterBufferRange.CharacterBufferReference;
+            Length = shapedBuffer.CharacterBufferRange.Length;
             Properties = properties;
-            TextSourceLength = Text.Length;
-            TextMetrics = new TextMetrics(properties.Typeface, properties.FontRenderingEmSize);
+            TextMetrics = new TextMetrics(properties.Typeface.GlyphTypeface, properties.FontRenderingEmSize);
         }
 
         public bool IsReversed { get; private set; }
@@ -27,13 +26,13 @@ namespace Avalonia.Media.TextFormatting
         public ShapedBuffer ShapedBuffer { get; }
 
         /// <inheritdoc/>
-        public override ReadOnlySlice<char> Text { get; }
+        public override CharacterBufferReference CharacterBufferReference { get; }
 
         /// <inheritdoc/>
         public override TextRunProperties Properties { get; }
 
         /// <inheritdoc/>
-        public override int TextSourceLength { get; }
+        public override int Length { get; }
 
         public TextMetrics TextMetrics { get; }
 
@@ -176,12 +175,12 @@ namespace Avalonia.Media.TextFormatting
 
             #if DEBUG
 
-            if (first.Text.Length != length)
+            if (first.Length != length)
             {
                 throw new InvalidOperationException("Split length mismatch.");
             }
-            
-            #endif
+
+#endif
 
             var second = new ShapedTextCharacters(splitBuffer.Second!, Properties);
 
@@ -193,7 +192,7 @@ namespace Avalonia.Media.TextFormatting
             return new GlyphRun(
                 ShapedBuffer.GlyphTypeface,
                 ShapedBuffer.FontRenderingEmSize,
-                Text,
+                new CharacterBufferRange(CharacterBufferReference, Length),
                 ShapedBuffer.GlyphIndices,
                 ShapedBuffer.GlyphAdvances,
                 ShapedBuffer.GlyphOffsets,

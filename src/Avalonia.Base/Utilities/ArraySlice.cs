@@ -112,14 +112,6 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
-        /// Defines an implicit conversion of a <see cref="ArraySlice{T}"/> to a <see cref="ReadOnlySlice{T}"/>
-        /// </summary>
-        public static implicit operator ReadOnlySlice<T>(ArraySlice<T> slice)
-        {
-            return new ReadOnlySlice<T>(slice._data, 0, slice.Length, slice.Start);
-        }
-
-        /// <summary>
         /// Defines an implicit conversion of an array to a <see cref="ArraySlice{T}"/>
         /// </summary>
         public static implicit operator ArraySlice<T>(T[] array) => new ArraySlice<T>(array, 0, array.Length);

@@ -46,7 +46,7 @@ namespace Avalonia.Input.TextInput
         void SelectInSurroundingText(int start, int end);
     }
 
-    public struct TextInputMethodSurroundingText
+    public record struct TextInputMethodSurroundingText
     {
         public string Text { get; set; }
         public int CursorOffset { get; set; }
