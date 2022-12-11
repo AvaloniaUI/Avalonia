@@ -2,7 +2,7 @@
 
 namespace Avalonia.Direct2D1
 {
-    public readonly struct OptionalDispose<T> : IDisposable where T : IDisposable
+    public readonly record struct OptionalDispose<T> : IDisposable where T : IDisposable
     {
         private readonly bool _dispose;
 

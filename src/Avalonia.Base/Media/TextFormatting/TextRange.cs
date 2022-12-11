@@ -5,7 +5,7 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// References a portion of a text buffer.
     /// </summary>
-    public readonly struct TextRange
+    public readonly record struct TextRange
     {
         public TextRange(int start, int length)
         {

@@ -43,7 +43,7 @@ namespace Avalonia.Styling
     /// A selector match describes whether and how a <see cref="Selector"/> matches a control, and
     /// in addition whether the selector can ever match a control of the same type.
     /// </remarks>
-    public readonly struct SelectorMatch
+    public readonly record struct SelectorMatch
     {
         /// <summary>
         /// A selector match with the result of <see cref="SelectorMatchResult.NeverThisType"/>.

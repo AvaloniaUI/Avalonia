@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
-    public readonly struct Codepoint
+    public readonly record struct Codepoint
     {
         private readonly uint _value;
 
