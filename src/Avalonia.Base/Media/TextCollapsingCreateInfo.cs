@@ -2,7 +2,7 @@
 
 namespace Avalonia.Media
 {
-    public readonly struct TextCollapsingCreateInfo
+    public readonly record struct TextCollapsingCreateInfo
     {
         public readonly double Width;
         public readonly TextRunProperties TextRunProperties;

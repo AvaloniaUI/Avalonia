@@ -60,6 +60,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBox_Should_Lose_Focus_When_Disabled()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate()
+                };
+
+                target.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target };
+
+                target.Focus();
+                Assert.True(target.IsFocused);
+                target.IsEnabled = false;
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsEnabled);
+            }
+        }
+
+        [Fact]
         public void Opening_Context_Flyout_Does_not_Lose_Selection()
         {
             using (UnitTestApplication.Start(FocusServices))

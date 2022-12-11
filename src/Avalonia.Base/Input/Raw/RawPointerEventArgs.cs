@@ -130,7 +130,7 @@ namespace Avalonia.Input.Raw
         internal IInputElement? InputHitTestResult { get; set; }
     }
 
-    public struct RawPointerPoint
+    public record struct RawPointerPoint
     {
         /// <summary>
         /// Pointer position, in client DIPs.

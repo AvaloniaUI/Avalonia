@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Input;
 using Avalonia.Utilities;
@@ -9,6 +10,7 @@ namespace Avalonia.Data.Converters
     /// Provides a default set of value conversions for bindings that do not specify a value
     /// converter.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
     public class DefaultValueConverter : IValueConverter
     {
         /// <summary>

@@ -1627,7 +1627,7 @@ namespace Avalonia.Win32.Interop
         public static extern bool wglDeleteContext(IntPtr context);
 
 
-        [DllImport("opengl32.dll")]
+        [DllImport("opengl32.dll", SetLastError = true)]
         public static extern bool wglMakeCurrent(IntPtr hdc, IntPtr context);
 
         [DllImport("opengl32.dll")]

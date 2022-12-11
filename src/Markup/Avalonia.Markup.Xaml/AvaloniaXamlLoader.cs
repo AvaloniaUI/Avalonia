@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Avalonia.Platform;
 #nullable enable
@@ -43,11 +44,12 @@ namespace Avalonia.Markup.Xaml
         /// A base URI to use if <paramref name="uri"/> is relative.
         /// </param>
         /// <returns>The loaded object.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.AvaloniaXamlLoaderRequiresUnreferenceCodeMessage)]
         public static object Load(Uri uri, Uri? baseUri = null)
         {
             return Load(null, uri, baseUri);
         }
-        
+
         /// <summary>
         /// Loads XAML from a URI.
         /// </summary>
@@ -57,6 +59,7 @@ namespace Avalonia.Markup.Xaml
         /// A base URI to use if <paramref name="uri"/> is relative.
         /// </param>
         /// <returns>The loaded object.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.AvaloniaXamlLoaderRequiresUnreferenceCodeMessage)]
         public static object Load(IServiceProvider? sp, Uri uri, Uri? baseUri = null)
         {
             if (uri is null)

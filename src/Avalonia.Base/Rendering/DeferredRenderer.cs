@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -22,6 +23,8 @@ namespace Avalonia.Rendering
     {
         private readonly IDispatcher? _dispatcher;
         private readonly IRenderLoop? _renderLoop;
+        private readonly Func<IRenderTarget>? _renderTargetFactory;
+        private readonly PlatformRenderInterfaceContextManager? _renderInterface;
         private readonly Visual _root;
         private readonly ISceneBuilder _sceneBuilder;
 
@@ -39,6 +42,7 @@ namespace Avalonia.Rendering
         private readonly object _startStopLock = new object();
         private readonly object _renderLoopIsRenderingLock = new object();
         private readonly Action _updateSceneIfNeededDelegate;
+        private List<Action>? _pendingRenderThreadJobs;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeferredRenderer"/> class.
@@ -51,6 +55,8 @@ namespace Avalonia.Rendering
         public DeferredRenderer(
             IRenderRoot root,
             IRenderLoop renderLoop,
+            Func<IRenderTarget> renderTargetFactory,
+            PlatformRenderInterfaceContextManager? renderInterface = null,
             ISceneBuilder? sceneBuilder = null,
             IDispatcher? dispatcher = null,
             IDeferredRendererLock? rendererLock = null) : base(true)
@@ -60,6 +66,8 @@ namespace Avalonia.Rendering
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             Layers = new RenderLayers();
             _renderLoop = renderLoop;
+            _renderTargetFactory = renderTargetFactory;
+            _renderInterface = renderInterface;
             _lock = rendererLock ?? new ManagedDeferredRendererLock();
             _updateSceneIfNeededDelegate = UpdateSceneIfNeeded;
         }
@@ -256,6 +264,30 @@ namespace Avalonia.Rendering
             }
         }
 
+        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType)
+        {
+            if (_renderInterface == null)
+                return new((object?)null);
+            
+            var tcs = new TaskCompletionSource<object?>();
+            _pendingRenderThreadJobs ??= new();
+            _pendingRenderThreadJobs.Add(() =>
+            {
+                try
+                {
+                    using (_renderInterface.EnsureCurrent())
+                    {
+                        tcs.TrySetResult(_renderInterface.Value.TryGetFeature(featureType));
+                    }
+                }
+                catch (Exception e)
+                {
+                    tcs.TrySetException(e);
+                }
+            });
+            return new ValueTask<object?>(tcs.Task);
+        }
+
         bool NeedsUpdate => _dirty == null || _dirty.Count > 0;
         bool IRenderLoopTask.NeedsUpdate => NeedsUpdate;
 
@@ -337,7 +369,16 @@ namespace Avalonia.Rendering
                                 }
                                 finally
                                 {
-                                    scene.Item.MarkAsRendered();
+                                    try
+                                    {
+                                        if(scene.Item.RenderThreadJobs!=null)
+                                            foreach (var job in scene.Item.RenderThreadJobs)
+                                                job();
+                                    }
+                                    finally
+                                    {
+                                        scene.Item.MarkAsRendered();
+                                    }
                                 }
                             }
                         }
@@ -604,7 +645,7 @@ namespace Avalonia.Rendering
                 return;
             }
 
-            if ((RenderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+            if (RenderTarget?.IsCorrupted == true)
             {
                 RenderTarget!.Dispose();
                 RenderTarget = null;
@@ -612,7 +653,7 @@ namespace Avalonia.Rendering
 
             if (RenderTarget == null)
             {
-                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                RenderTarget = _renderTargetFactory!();
             }
 
             context = RenderTarget.CreateDrawingContext(this);
@@ -637,7 +678,11 @@ namespace Avalonia.Rendering
             }
             if (_root.IsVisible)
             {
-                var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
+                var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root)
+                {
+                    RenderThreadJobs = _pendingRenderThreadJobs
+                });
+                _pendingRenderThreadJobs = null;
                 var scene = sceneRef.Item;
 
                 if (_dirty == null)

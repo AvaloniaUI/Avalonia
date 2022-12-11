@@ -12,7 +12,7 @@ using Avalonia.Media.Imaging;
 
 namespace Avalonia.Headless
 {
-    internal class HeadlessPlatformRenderInterface : IPlatformRenderInterface
+    internal class HeadlessPlatformRenderInterface : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public static void Initialize()
         {
@@ -21,6 +21,8 @@ namespace Avalonia.Headless
         }
 
         public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
 
         public bool SupportsIndividualRoundRects => false;
 
@@ -47,6 +49,7 @@ namespace Avalonia.Headless
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => throw new NotImplementedException();
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -313,6 +316,8 @@ namespace Avalonia.Headless
                 return new HeadlessDrawingContextStub();
             }
 
+            public bool IsCorrupted => false;
+
             public void Blit(IDrawingContextImpl context)
             {
                 
@@ -474,6 +479,13 @@ namespace Avalonia.Headless
             {
                 return new HeadlessDrawingContextStub();
             }
+
+            public bool IsCorrupted => false;
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 }

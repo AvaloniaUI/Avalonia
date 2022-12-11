@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
@@ -43,5 +44,7 @@ namespace Avalonia.Benchmarks
         public void Stop()
         {
         }
+
+        public ValueTask<object> TryGetRenderInterfaceFeature(Type featureType) => new(0);
     }
 }

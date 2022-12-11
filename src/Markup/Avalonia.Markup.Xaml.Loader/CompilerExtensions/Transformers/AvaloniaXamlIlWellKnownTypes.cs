@@ -104,6 +104,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType IStyle { get; }
         public IXamlType StyleInclude { get; }
         public IXamlType ResourceInclude { get; }
+        public IXamlType MergeResourceInclude { get; }
         public IXamlType IResourceDictionary { get; }
         public IXamlType ResourceDictionary { get; }
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
@@ -236,6 +237,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             IStyle = cfg.TypeSystem.GetType("Avalonia.Styling.IStyle");
             StyleInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.StyleInclude");
             ResourceInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.ResourceInclude");
+            MergeResourceInclude = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Styling.MergeResourceInclude");
             IResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.IResourceDictionary");
             ResourceDictionary = cfg.TypeSystem.GetType("Avalonia.Controls.ResourceDictionary");
             ResourceDictionaryDeferredAdd = ResourceDictionary.FindMethod("AddDeferred", XamlIlTypes.Void, true, XamlIlTypes.Object,

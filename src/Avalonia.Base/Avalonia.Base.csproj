@@ -19,6 +19,7 @@
   <Import Project="..\..\build\System.Memory.props" />
   <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\NullableEnable.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\SourceGenerators.props" />
   <ItemGroup>
@@ -30,6 +31,8 @@
     <InternalsVisibleTo Include="Avalonia.Base.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Benchmarks, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Controls, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Markup, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Markup.Xaml, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Controls.ColorPicker, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Controls.DataGrid, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Controls.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
@@ -41,6 +44,7 @@
     <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Benchmarks, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Win32, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Dialogs, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Diagnostics, PublicKey=$(AvaloniaPublicKey)" />
@@ -48,14 +52,10 @@
   </ItemGroup>
   
   <ItemGroup Label="Build dependency">
-    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj" 
-                      SetTargetFramework="TargetFramework=netstandard2.0"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)\..\Avalonia.Build.Tasks\Avalonia.Build.Tasks.csproj" SetTargetFramework="TargetFramework=netstandard2.0" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Compatibility\" />
     <Folder Include="Rendering\Composition\Utils" />
   </ItemGroup>
 </Project>

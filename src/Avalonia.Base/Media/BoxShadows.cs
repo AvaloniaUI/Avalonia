@@ -62,7 +62,9 @@ namespace Avalonia.Media
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
         public struct BoxShadowsEnumerator
+#pragma warning restore CA1815 // Override equals and operator equals on value types
         {
             private int _index;
             private BoxShadows _shadows;
@@ -149,5 +151,11 @@ namespace Avalonia.Media
                 return hashCode;
             }
         }
+
+        public static bool operator ==(BoxShadows left, BoxShadows right) => 
+            left.Equals(right);
+
+        public static bool operator !=(BoxShadows left, BoxShadows right) =>
+            !(left == right);
     }
 }

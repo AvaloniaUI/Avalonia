@@ -64,7 +64,7 @@ dotnet_naming_symbols.static_fields.applicable_kinds   = field
 dotnet_naming_symbols.static_fields.required_modifiers = static
 
 dotnet_naming_style.static_prefix_style.required_prefix = s_
-dotnet_naming_style.static_prefix_style.capitalization = camel_case 
+dotnet_naming_style.static_prefix_style.capitalization = camel_case
 
 # internal and private fields should be _camelCase
 dotnet_naming_rule.camel_case_for_private_internal_fields.severity = suggestion
@@ -137,10 +137,15 @@ space_within_single_line_array_initializer_braces = true
 #Net Analyzer
 dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomment when all violations are fixed.
 
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = suggestion
+
 # CA1304: Specify CultureInfo
 dotnet_diagnostic.CA1304.severity = warning
 # CA1802: Use literals where appropriate
 dotnet_diagnostic.CA1802.severity = warning
+# CA1815: Override equals and operator equals on value types
+dotnet_diagnostic.CA1815.severity = warning
 # CA1820: Test for empty strings using string length
 dotnet_diagnostic.CA1820.severity = warning
 # CA1821: Remove empty finalizers

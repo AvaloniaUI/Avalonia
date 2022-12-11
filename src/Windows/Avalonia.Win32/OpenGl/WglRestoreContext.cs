@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.OpenGL;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
@@ -22,9 +23,11 @@ namespace Avalonia.Win32.OpenGl
 
             if (!wglMakeCurrent(gc, context))
             {
+                var lastError = Marshal.GetLastWin32Error();
+                var caps = GetDeviceCaps(gc, (DEVICECAP)12);
                 if(monitor != null && takeMonitor)
                     Monitor.Exit(monitor);
-                throw new OpenGlException("Unable to make the context current");
+                throw new OpenGlException($"Unable to make the context current: {lastError}, DC valid: {caps != 0}");
             }
         }
 
