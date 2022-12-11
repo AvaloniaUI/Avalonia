@@ -8,7 +8,7 @@ namespace Avalonia.Media
     /// </summary>
     public abstract class TextTrimming
     {
-        internal const char DefaultEllipsisChar = '\u2026';
+        internal const string DefaultEllipsisChar = "\u2026";
 
         /// <summary>
         /// Text is not trimmed.

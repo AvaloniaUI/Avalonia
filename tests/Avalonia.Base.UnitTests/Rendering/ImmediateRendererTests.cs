@@ -36,7 +36,7 @@ namespace Avalonia.Base.UnitTests.Rendering
 
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
-                var target = new ImmediateRenderer(root);
+                var target = new ImmediateRenderer(root, root.CreateRenderTarget);
 
                 target.AddDirty(child);
 
@@ -69,7 +69,7 @@ namespace Avalonia.Base.UnitTests.Rendering
 
                 child.RenderTransform = new ScaleTransform() { ScaleX = 2, ScaleY = 2 };
 
-                var target = new ImmediateRenderer(root);
+                var target = new ImmediateRenderer(root, root.CreateRenderTarget);
 
                 target.AddDirty(child);
 
@@ -97,7 +97,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     Height = 400,
                 };
 
-                var target = new ImmediateRenderer(root);
+                var target = new ImmediateRenderer(root, root.CreateRenderTarget);
 
                 root.LayoutManager.ExecuteInitialLayoutPass();
                 target.AddDirty(child);
@@ -165,7 +165,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 stackPanel.Children.Add(control3);
 
                 var root = new TestRoot(rootGrid);
-                root.Renderer = new ImmediateRenderer(root);
+                root.Renderer = new ImmediateRenderer(root, root.CreateRenderTarget);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 var rootSize = new Size(RootWidth, RootHeight);
@@ -223,7 +223,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 stackPanel.Children.Add(control3);
 
                 var root = new TestRoot(rootGrid);
-                root.Renderer = new ImmediateRenderer(root);
+                root.Renderer = new ImmediateRenderer(root, root.CreateRenderTarget);
                 root.LayoutManager.ExecuteInitialLayoutPass();
 
                 var rootSize = new Size(RootWidth, RootHeight);

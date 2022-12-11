@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Threading;
+using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -122,10 +123,13 @@ namespace Avalonia.Direct2D1.RenderTests
             var timer = new ManualRenderTimer();
 
             var compositor = new Compositor(new RenderLoop(timer, Dispatcher.UIThread), null);
-            using (var rtb = factory.CreateRenderTargetBitmap(pixelSize, dpiVector))
+            using (var writableBitmap = factory.CreateWriteableBitmap(pixelSize, dpiVector, factory.DefaultPixelFormat, factory.DefaultAlphaFormat))
             {
-                var root = new TestRenderRoot(dpiVector.X / 96, rtb);
-                using (var renderer = new CompositingRenderer(root, compositor) { RenderOnlyOnRenderThread = false})
+                var root = new TestRenderRoot(dpiVector.X / 96, null!);
+                using (var renderer = new CompositingRenderer(root, compositor, () => new[]
+                       {
+                           new BitmapFramebufferSurface(writableBitmap)
+                       }) { RenderOnlyOnRenderThread = false })
                 {
                     root.Initialize(renderer, target);
                     renderer.Start();
@@ -136,8 +140,20 @@ namespace Avalonia.Direct2D1.RenderTests
                 // Free pools
                 for (var c = 0; c < 11; c++)
                     TestThreadingInterface.RunTimers();
-                rtb.Save(compositedPath);
+                writableBitmap.Save(compositedPath);
             }
+        }
+
+        class BitmapFramebufferSurface : IFramebufferPlatformSurface
+        {
+            private readonly IWriteableBitmapImpl _bitmap;
+
+            public BitmapFramebufferSurface(IWriteableBitmapImpl bitmap)
+            {
+                _bitmap = bitmap;
+            }
+            
+            public ILockedFramebuffer Lock() => _bitmap.Lock();
         }
 
         protected void CompareImages([CallerMemberName] string testName = "")

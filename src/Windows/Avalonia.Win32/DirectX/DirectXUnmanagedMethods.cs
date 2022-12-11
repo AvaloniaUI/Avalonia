@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Avalonia.Win32.DxgiSwapchain
+namespace Avalonia.Win32.DirectX
 {
     internal unsafe class DirectXUnmanagedMethods
     {
@@ -23,7 +23,16 @@ namespace Avalonia.Win32.DxgiSwapchain
         [DllImport("user32", ExactSpelling = true)]
         internal static extern bool EnumDisplaySettingsW(ushort* lpszDeviceName, uint iModeNum, DEVMODEW* lpDevMode);
 
-        [DllImport("user32", ExactSpelling = true, SetLastError = true)]
-        internal static extern bool GetClientRect(IntPtr hWnd, Interop.UnmanagedMethods.RECT* lpRect);
+        [DllImport("d3d11", ExactSpelling = true, PreserveSig = false)]
+        public static extern void D3D11CreateDevice(
+            IntPtr adapter, D3D_DRIVER_TYPE DriverType,
+            IntPtr Software,
+            uint Flags,
+            D3D_FEATURE_LEVEL[] pFeatureLevels,
+            uint FeatureLevels,
+            uint SDKVersion,
+            out IntPtr ppDevice,
+            out D3D_FEATURE_LEVEL pFeatureLevel,
+            IntPtr* ppImmediateContext);
     }
 }

@@ -10,19 +10,15 @@ namespace Avalonia.OpenGL.Imaging
     {
         private IOpenGlBitmapImpl _impl;
 
-        public OpenGlBitmap(PixelSize size, Vector dpi) 
-            : base(CreateOrThrow(size, dpi))
+        public OpenGlBitmap(IOpenGlTextureSharingRenderInterfaceContextFeature feature,
+            PixelSize size, Vector dpi) 
+            : base(CreateOrThrow(feature, size, dpi))
         {
             _impl = (IOpenGlBitmapImpl)PlatformImpl.Item;
         }
-        
-        static IOpenGlBitmapImpl CreateOrThrow(PixelSize size, Vector dpi)
-        {
-            if (!(AvaloniaLocator.Current.GetService<IPlatformRenderInterface>() is IOpenGlAwarePlatformRenderInterface
-                glAware))
-                throw new PlatformNotSupportedException("Rendering platform does not support OpenGL integration");
-            return glAware.CreateOpenGlBitmap(size, dpi);
-        }
+
+        static IOpenGlBitmapImpl CreateOrThrow(IOpenGlTextureSharingRenderInterfaceContextFeature feature,
+            PixelSize size, Vector dpi) => feature.CreateOpenGlBitmap(size, dpi);
 
         public IOpenGlBitmapAttachment CreateFramebufferAttachment(IGlContext context) =>
             _impl.CreateFramebufferAttachment(context, SetIsDirty);

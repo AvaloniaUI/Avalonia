@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Visuals.UnitTests.Media.TextFormatting;
 using Xunit;
@@ -37,11 +38,11 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             var text = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.Codepoints).ToArray());
             var grapheme = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.Grapheme).ToArray()).AsSpan();
 
-            var enumerator = new GraphemeEnumerator(text.AsMemory());
+            var enumerator = new GraphemeEnumerator(new CharacterBufferRange(text));
 
             enumerator.MoveNext();
 
-            var actual = enumerator.Current.Text.Span;
+            var actual = enumerator.Current.Text;
 
             var pass = true;
 
@@ -86,9 +87,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         {
             const string text = "ABCDEFGHIJ";
 
-            var textMemory = text.AsMemory();
-
-            var enumerator = new GraphemeEnumerator(textMemory);
+            var enumerator = new GraphemeEnumerator(new CharacterBufferRange(text));
 
             var count = 0;
 

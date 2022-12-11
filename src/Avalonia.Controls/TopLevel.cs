@@ -323,17 +323,7 @@ namespace Avalonia.Controls
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
             ?? (PlatformImpl as ITopLevelImplWithStorageProvider)?.StorageProvider
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
-
-        IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
-
-        /// <inheritdoc/>
-        protected virtual IRenderTarget CreateRenderTarget()
-        {
-            if(PlatformImpl == null)
-                throw new InvalidOperationException("Can't create render target, PlatformImpl is null (might be already disposed)");
-            return _renderInterface!.CreateRenderTarget(PlatformImpl.Surfaces);
-        }
-
+        
         /// <inheritdoc/>
         void IRenderRoot.Invalidate(Rect rect)
         {
@@ -357,12 +347,6 @@ namespace Avalonia.Controls
         /// </summary>
         protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
-        public override void InvalidateMirrorTransform()
-        {
-        }
-        
-        protected override bool BypassFlowDirectionPolicies => true;
-        
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>

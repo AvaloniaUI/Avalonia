@@ -18,25 +18,27 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia platform render interface.
     /// </summary>
-    internal class PlatformRenderInterface : IPlatformRenderInterface, IOpenGlAwarePlatformRenderInterface
+    internal class PlatformRenderInterface : IPlatformRenderInterface
     {
-        private readonly ISkiaGpu _skiaGpu;
+        private readonly long? _maxResourceBytes;
 
-        public PlatformRenderInterface(ISkiaGpu skiaGpu, long? maxResourceBytes = null)
+        public PlatformRenderInterface(long? maxResourceBytes = null)
         {
+            _maxResourceBytes = maxResourceBytes;
             DefaultPixelFormat = SKImageInfo.PlatformColorType.ToPixelFormat();
-
-            if (skiaGpu != null)
-            {
-                _skiaGpu = skiaGpu;
-                return;
-            }
-
-            var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
-            if (gl != null)
-                _skiaGpu = new GlSkiaGpu(gl, maxResourceBytes);
         }
 
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext)
+        {
+            if (graphicsContext == null)
+                return new SkiaContext(null);
+            if (graphicsContext is ISkiaGpu skiaGpu)
+                return new SkiaContext(skiaGpu);
+            if (graphicsContext is IGlContext gl)
+                return new SkiaContext(new GlSkiaGpu(gl, _maxResourceBytes));
+            throw new ArgumentException("Graphics context of type is not supported");
+        }
 
         public bool SupportsIndividualRoundRects => true;
 
@@ -206,40 +208,9 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
-        {
-            if (!(surfaces is IList))
-                surfaces = surfaces.ToList();
-            var gpuRenderTarget = _skiaGpu?.TryCreateRenderTarget(surfaces);
-            if (gpuRenderTarget != null)
-            {
-                return new SkiaGpuRenderTarget(_skiaGpu, gpuRenderTarget);
-            }
-
-            foreach (var surface in surfaces)
-            {
-                if (surface is IFramebufferPlatformSurface framebufferSurface)
-                    return new FramebufferRenderTarget(framebufferSurface);
-            }
-
-            throw new NotSupportedException(
-                "Don't know how to create a Skia render target from any of provided surfaces");
-        }
-
-        /// <inheritdoc />
         public IWriteableBitmapImpl CreateWriteableBitmap(PixelSize size, Vector dpi, PixelFormat format, AlphaFormat alphaFormat)
         {
             return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
-        }
-
-        public IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi)
-        {
-            if (_skiaGpu is IOpenGlAwareSkiaGpu glAware)
-                return glAware.CreateOpenGlBitmap(size, dpi);
-            if (_skiaGpu == null)
-                throw new PlatformNotSupportedException("GPU acceleration is not available");
-            throw new PlatformNotSupportedException(
-                "Current GPU acceleration backend does not support OpenGL integration");
         }
 
         public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices,

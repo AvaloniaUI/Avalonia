@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using Avalonia.OpenGL;
 
-namespace Avalonia.OpenGL
+namespace Avalonia.Win32
 {
     public class AngleOptions
     {
