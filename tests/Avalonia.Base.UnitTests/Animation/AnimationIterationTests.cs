@@ -181,7 +181,7 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.Equal(border.Width, 300d);
         }
 
-        [Fact(Skip = "See #6111")]
+        [Fact]
         public void Dispose_Subscription_Should_Stop_Animation()
         {
             var keyframe1 = new KeyFrame()
@@ -310,7 +310,7 @@ namespace Avalonia.Base.UnitTests.Animation
             Assert.True(animationRun.IsCompleted);
         }
 
-        [Fact(Skip = "See #6111")]
+        [Fact]
         public void Cancellation_Should_Stop_Animation()
         {
             var keyframe1 = new KeyFrame()
@@ -372,7 +372,6 @@ namespace Avalonia.Base.UnitTests.Animation
             clock.Step(TimeSpan.FromSeconds(1));
             clock.Step(TimeSpan.FromSeconds(2));
             clock.Step(TimeSpan.FromSeconds(3));
-            //Assert.Equal(2, propertyChangedCount);
 
             animationRun.Wait();
 

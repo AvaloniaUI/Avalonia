@@ -4,7 +4,7 @@
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceInclude Source="/Accents/Base.xaml" />  
+        <MergeResourceInclude Source="/Accents/Base.xaml" />  
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->

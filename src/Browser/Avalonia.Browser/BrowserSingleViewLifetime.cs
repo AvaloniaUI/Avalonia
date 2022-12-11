@@ -48,7 +48,6 @@ public static class WebAppBuilder
     {
         return builder
             .UseWindowingSubsystem(BrowserWindowingPlatform.Register)
-            .UseSkia()
-            .With(new SkiaOptions { CustomGpuFactory = () => new BrowserSkiaGpu() });
+            .UseSkia();
     }
 }

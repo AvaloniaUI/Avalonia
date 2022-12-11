@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.OpenGL;
@@ -70,6 +71,8 @@ namespace Avalonia.X11.Glx
         }
         
         public IDisposable MakeCurrent() => MakeCurrent(_defaultXid);
+        public bool IsLost => false;
+
         public IDisposable EnsureCurrent()
         {
             if(IsCurrent)
@@ -85,6 +88,11 @@ namespace Avalonia.X11.Glx
                    || _sharedWith == context
                    || _sharedWith != null && _sharedWith == c._sharedWith;
         }
+
+        public bool CanCreateSharedContext => true;
+
+        public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null) =>
+            Display.CreateContext(_sharedWith ?? this);
 
         public IDisposable MakeCurrent(IntPtr xid)
         {
@@ -114,5 +122,7 @@ namespace Avalonia.X11.Glx
             if (_ownsPBuffer)
                 Glx.DestroyPbuffer(_x11.Display, _defaultXid);
         }
+
+        public object TryGetFeature(Type featureType) => null;
     }
 }

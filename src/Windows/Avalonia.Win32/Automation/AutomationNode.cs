@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -16,6 +17,7 @@ using AAP = Avalonia.Automation.Provider;
 namespace Avalonia.Win32.Automation
 {
     [ComVisible(true)]
+    [RequiresUnreferencedCode("Requires .NET COM interop")]
     internal partial class AutomationNode : MarshalByRefObject,
         IRawElementProviderSimple,
         IRawElementProviderSimple2,

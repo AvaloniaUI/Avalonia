@@ -11,4 +11,5 @@
   <Import Project="..\..\build\ReactiveUI.props" />
   <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\NullableEnable.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

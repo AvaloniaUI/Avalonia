@@ -13,6 +13,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
     {
         private double _scaling = 1;
         private Size _clientSize;
+        private PlatformRenderInterfaceContextManager _renderInterface = new(null);
 
         public IInputRoot? InputRoot { get; private set; }
         public bool IsDisposed { get; private set; }
@@ -22,7 +23,8 @@ namespace Avalonia.Controls.Embedding.Offscreen
             IsDisposed = true;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer((Visual)root);
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new ImmediateRenderer((Visual)root, () => _renderInterface.CreateRenderTarget(Surfaces), _renderInterface);
 
         public abstract void Invalidate(Rect rect);
         public abstract IEnumerable<object> Surfaces { get; }

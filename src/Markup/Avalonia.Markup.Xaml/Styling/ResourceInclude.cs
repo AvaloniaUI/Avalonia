@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 
 #nullable enable
@@ -8,8 +9,14 @@ namespace Avalonia.Markup.Xaml.Styling
     /// <summary>
     /// Loads a resource dictionary from a specified URL.
     /// </summary>
+    /// <remarks>
+    /// If used from the XAML code, it is replaced with direct resource dictionary reference.
+    /// When used in runtime, this type might be unsafe with trimming and AOT.
+    /// </remarks>
+    [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
     public class ResourceInclude : IResourceProvider
     {
+        private readonly IServiceProvider? _serviceProvider;
         private readonly Uri? _baseUri;
         private IResourceDictionary? _loaded;
         private bool _isLoading;
@@ -29,6 +36,7 @@ namespace Avalonia.Markup.Xaml.Styling
         /// <param name="serviceProvider">The XAML service provider.</param>
         public ResourceInclude(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             _baseUri = serviceProvider.GetContextBaseUri();
         }
 
@@ -43,7 +51,7 @@ namespace Avalonia.Markup.Xaml.Styling
                 {
                     _isLoading = true;
                     var source = Source ?? throw new InvalidOperationException("ResourceInclude.Source must be set.");
-                    _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(source, _baseUri);
+                    _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(_serviceProvider, source, _baseUri);
                     _isLoading = false;
                 }
 

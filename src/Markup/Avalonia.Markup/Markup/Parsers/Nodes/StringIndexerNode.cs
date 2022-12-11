@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
@@ -12,6 +13,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
+    [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
     internal class StringIndexerNode : IndexerNodeBase
     {
         public StringIndexerNode(IList<string> arguments)
