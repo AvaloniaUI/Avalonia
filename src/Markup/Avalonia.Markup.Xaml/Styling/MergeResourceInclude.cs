@@ -1,8 +1,17 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 
 namespace Avalonia.Markup.Xaml.Styling;
 
+/// <summary>
+/// Loads a resource dictionary from a specified URL.
+/// </summary>
+/// <remarks>
+/// If used from the XAML code, it is merged into the parent dictionary in the compile time. 
+/// When used in runtime, this type behaves like <see cref="ResourceInclude"/>.  
+/// </remarks>
+[RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
 public class MergeResourceInclude : IResourceProvider
 {
     private readonly IServiceProvider _serviceProvider;
@@ -31,7 +40,7 @@ public class MergeResourceInclude : IResourceProvider
             {
                 _isLoading = true;
                 var source = Source ?? throw new InvalidOperationException("MergeResourceInclude.Source must be set.");
-                _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(source, _baseUri);
+                _loaded = (IResourceDictionary)AvaloniaXamlLoader.Load(_serviceProvider, source, _baseUri);
                 _isLoading = false;
             }
 
