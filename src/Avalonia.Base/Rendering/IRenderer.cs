@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.VisualTree;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Rendering
@@ -87,6 +88,11 @@ namespace Avalonia.Rendering
         /// Stops the renderer.
         /// </summary>
         void Stop();
+
+        /// <summary>
+        /// Attempts to query for a feature from the platform render interface
+        /// </summary>
+        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType);
     }
     
     public interface IRendererWithCompositor : IRenderer

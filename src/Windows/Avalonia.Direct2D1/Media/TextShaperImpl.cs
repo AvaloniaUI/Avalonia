@@ -3,7 +3,6 @@ using System.Globalization;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 using HarfBuzzSharp;
 using Buffer = HarfBuzzSharp.Buffer;
 using GlyphInfo = HarfBuzzSharp.GlyphInfo;
@@ -12,7 +11,7 @@ namespace Avalonia.Direct2D1.Media
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
+        public ShapedBuffer ShapeText(CharacterBufferReference characterBufferReference, int length, TextShaperOptions options)
         {
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
@@ -21,7 +20,7 @@ namespace Avalonia.Direct2D1.Media
 
             using (var buffer = new Buffer())
             {
-                buffer.AddUtf16(text.Buffer.Span, text.BufferOffset, text.Length);
+                buffer.AddUtf16(characterBufferReference.CharacterBuffer.Span, characterBufferReference.OffsetToFirstChar, length);
 
                 MergeBreakPair(buffer);
 
@@ -46,7 +45,9 @@ namespace Avalonia.Direct2D1.Media
 
                 var bufferLength = buffer.Length;
 
-                var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
+                var characterBufferRange = new CharacterBufferRange(characterBufferReference, length);
+
+                var shapedBuffer = new ShapedBuffer(characterBufferRange, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
 
                 var glyphInfos = buffer.GetGlyphInfoSpan();
 
@@ -64,7 +65,7 @@ namespace Avalonia.Direct2D1.Media
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if (text.Buffer.Span[glyphCluster] == '\t')
+                    if (characterBufferRange[i] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 

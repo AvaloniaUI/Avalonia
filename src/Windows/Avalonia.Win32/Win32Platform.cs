@@ -19,6 +19,7 @@ using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using JetBrains.Annotations;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
@@ -59,11 +60,6 @@ namespace Avalonia
         /// GPU rendering will not be enabled if this is set to false.
         /// </remarks>
         public bool? AllowEglInitialization { get; set; }
-        
-        public IList<string> EglRendererBlacklist { get; set; } = new List<string>
-        {
-            "Microsoft Basic Render"
-        };
 
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
@@ -106,6 +102,11 @@ namespace Avalonia
         /// <see cref="UseWindowsUIComposition"/> which if active will override this setting. 
         /// </summary>
         public bool UseLowLatencyDxgiSwapChain { get; set; } = false;
+        
+        /// <summary>
+        /// Provides a way to use a custom-implemented graphics context such as a custom ISkiaGpu
+        /// </summary>
+        [CanBeNull] public IPlatformGraphics CustomPlatformGraphics { get; set; }
     }
 }
 
@@ -139,6 +140,7 @@ namespace Avalonia.Win32
         public static Win32PlatformOptions Options { get; private set; }
         
         internal static Compositor Compositor { get; private set; }
+        internal static PlatformRenderInterfaceContextManager RenderInterface { get; private set; }
 
         public static void Initialize()
         {
@@ -169,16 +171,19 @@ namespace Avalonia.Win32
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(new NonPumpingSyncContext.HelperImpl())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
-
-            var gl = Win32GlManager.Initialize();
-
+            
             _uiThread = Thread.CurrentThread;
 
+            var platformGraphics = options?.CustomPlatformGraphics
+                                   ?? Win32GlManager.Initialize();
+            
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
 
             if (Options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
+                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), platformGraphics);
+            else
+                RenderInterface = new PlatformRenderInterfaceContextManager(platformGraphics);
         }
 
         public bool HasMessages()

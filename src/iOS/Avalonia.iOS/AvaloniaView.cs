@@ -70,7 +70,8 @@ namespace Avalonia.iOS
                 // No-op
             }
 
-            public IRenderer CreateRenderer(IRenderRoot root) => new CompositingRenderer(root, Platform.Compositor);
+            public IRenderer CreateRenderer(IRenderRoot root) =>
+                new CompositingRenderer(root, Platform.Compositor, () => Surfaces);
 
 
             public void Invalidate(Rect rect)

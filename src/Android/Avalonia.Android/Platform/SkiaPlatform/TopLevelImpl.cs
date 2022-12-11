@@ -8,7 +8,6 @@ using Android.Runtime;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
-using Avalonia.Android.OpenGL;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -30,7 +29,7 @@ using AndroidRect = Android.Graphics.Rect;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo,
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
         ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
     {
         private readonly IGlPlatformSurface _gl;
@@ -47,7 +46,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _pointerHelper = new AndroidMotionEventsHelper(this);
-            _gl = GlPlatformSurface.TryCreate(this);
+            _gl = new EglGlPlatformSurface(this);
             _framebuffer = new FramebufferManager(this);
 
             RenderScaling = _view.Scaling;
@@ -106,10 +105,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
             AndroidPlatform.Options.UseCompositor
-                ? new CompositingRenderer(root, AndroidPlatform.Compositor)
+                ? new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces)
                 : AndroidPlatform.Options.UseDeferredRendering
-                    ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
-                    : new ImmediateRenderer((Visual)root);
+                    ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
+                            () => AndroidPlatform.RenderInterface.CreateRenderTarget(Surfaces),
+                            AndroidPlatform.RenderInterface)
+                        { RenderOnlyOnRenderThread = true }
+                    : new ImmediateRenderer((Visual)root,
+                        () => AndroidPlatform.RenderInterface.CreateRenderTarget(Surfaces),
+                        AndroidPlatform.RenderInterface);
 
         public virtual void Hide()
         {
@@ -283,7 +287,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
 
-        IntPtr EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
 
         public PixelSize Size => _view.Size;
 

@@ -1,6 +1,5 @@
 ﻿using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
-using Avalonia.Utilities;
 
 namespace Avalonia.Platform
 {
@@ -13,9 +12,9 @@ namespace Avalonia.Platform
         /// <summary>
         /// Shapes the specified region within the text and returns a shaped buffer.
         /// </summary>
-        /// <param name="text">The text.</param>
+        /// <param name="text">The text buffer.</param>
         /// <param name="options">Text shaper options to customize the shaping process.</param>
         /// <returns>A shaped glyph run.</returns>
-        ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options);
+        ShapedBuffer ShapeText(CharacterBufferReference text, int length, TextShaperOptions options);
     }   
 }

@@ -64,9 +64,11 @@ namespace Avalonia.Controls
 
         protected override Control GenerateElement(DataGridCell cell, object dataItem)
         {
-            if(CellTemplate != null)
+            if (CellTemplate != null)
             {
-                return CellTemplate.Build(dataItem);
+                return (CellTemplate is IRecyclingDataTemplate recyclingDataTemplate)
+                    ? recyclingDataTemplate.Build(dataItem, cell.Content as Control)
+                    : CellTemplate.Build(dataItem);
             }
             if (Design.IsDesignMode)
             {
