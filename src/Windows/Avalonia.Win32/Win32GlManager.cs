@@ -2,8 +2,9 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
-using Avalonia.Win32.DxgiSwapchain;
+using Avalonia.Win32.DirectX;
 using Avalonia.Win32.OpenGl;
+using Avalonia.Win32.OpenGl.Angle;
 using Avalonia.Win32.WinRT.Composition;
 
 namespace Avalonia.Win32
@@ -11,15 +12,15 @@ namespace Avalonia.Win32
     static class Win32GlManager
     {
 
-        public static IPlatformOpenGlInterface Initialize()
+        public static IPlatformGraphics Initialize()
         {
             var gl = InitializeCore();
-            AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(gl);
-            AvaloniaLocator.CurrentMutable.Bind<IPlatformGpu>().ToConstant(gl);
+            AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl);
+            AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl);
             return gl;
         }
         
-        static IPlatformOpenGlInterface InitializeCore()
+        static IPlatformGraphics InitializeCore()
         {
 
             var opts = AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions();
@@ -31,28 +32,18 @@ namespace Avalonia.Win32
 
             if (opts.AllowEglInitialization ?? Win32Platform.WindowsVersion > PlatformConstants.Windows7)
             {
-                var egl = EglPlatformOpenGlInterface.TryCreate(() => new AngleWin32EglDisplay());
+                var egl = AngleWin32PlatformGraphics.TryCreate(AvaloniaLocator.Current.GetService<AngleOptions>() ??
+                                                               new());
 
-                if (egl != null)
+                if (egl != null && egl.PlatformApi == AngleOptions.PlatformApi.DirectX11)
                 {
-                    if (opts.EglRendererBlacklist != null)
-                    {
-                        foreach (var item in opts.EglRendererBlacklist)
-                        {
-                            if (egl.PrimaryEglContext.GlInterface.Renderer.Contains(item))
-                            {
-                                return null;
-                            }
-                        }
-                    }
-
                     if (opts.UseWindowsUIComposition)
                     {
-                        WinUICompositorConnection.TryCreateAndRegister(egl, opts.CompositionBackdropCornerRadius);
+                        WinUiCompositorConnection.TryCreateAndRegister();
                     }
                     else if (opts.UseLowLatencyDxgiSwapChain)
                     {
-                        DxgiConnection.TryCreateAndRegister(egl);
+                        DxgiConnection.TryCreateAndRegister();
                     }
                 }
 

@@ -25,18 +25,18 @@ namespace Avalonia.iOS
 {
     static class Platform
     {
-        public static EaglFeature GlFeature;
+        public static EaglPlatformGraphics GlFeature;
         public static DisplayLinkTimer Timer;
         internal static Compositor Compositor { get; private set; }
 
         public static void Register()
         {
-            GlFeature ??= new EaglFeature();
+            GlFeature ??= new EaglPlatformGraphics();
             Timer ??= new DisplayLinkTimer();
             var keyboard = new KeyboardDevice();
 
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformOpenGlInterface>().ToConstant(GlFeature)
+                .Bind<IPlatformGraphics>().ToConstant(GlFeature)
                 .Bind<ICursorFactory>().ToConstant(new CursorFactoryStub())
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl())
@@ -50,7 +50,7 @@ namespace Avalonia.iOS
 
                 Compositor = new Compositor(
                     AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                    AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>());
+                    AvaloniaLocator.Current.GetService<IPlatformGraphics>());
         }
 
 

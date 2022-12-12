@@ -44,6 +44,7 @@
                   Focusable="True"
                   TemplatedControl.IsTemplateFocusTarget="True">
             <Grid Name="PART_Header"
+                  Background="Transparent"
                   Margin="{TemplateBinding Level,
                                            Mode=OneWay,
                                            Converter={StaticResource LeftMarginConverter}}"

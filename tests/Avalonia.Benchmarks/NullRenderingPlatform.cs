@@ -9,7 +9,7 @@ using Microsoft.Diagnostics.Runtime;
 
 namespace Avalonia.Benchmarks
 {
-    internal class NullRenderingPlatform : IPlatformRenderInterface
+    internal class NullRenderingPlatform : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
@@ -45,6 +45,8 @@ namespace Avalonia.Benchmarks
         {
             throw new NotImplementedException();
         }
+
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -123,10 +125,19 @@ namespace Avalonia.Benchmarks
             return new MockGlyphRun();
         }
 
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext)
+        {
+            return this;
+        }
+
         public bool SupportsIndividualRoundRects => true;
 
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public void Dispose()
+        {
+            
+        }
     }
 }

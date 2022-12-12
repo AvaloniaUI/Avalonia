@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -19,7 +18,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="width">width in which collapsing is constrained to</param>
         /// <param name="textRunProperties">text run properties of ellipsis symbol</param>
         public TextLeadingPrefixCharacterEllipsis(
-            ReadOnlySlice<char> ellipsis,
+            string ellipsis,
             int prefixLength,
             double width,
             TextRunProperties textRunProperties)
@@ -129,7 +128,7 @@ namespace Avalonia.Media.TextFormatting
                                                 if (suffixCount > 0)
                                                 {
                                                     var splitSuffix =
-                                                        endShapedRun.Split(run.TextSourceLength - suffixCount);
+                                                        endShapedRun.Split(run.Length - suffixCount);
 
                                                     collapsedRuns.Add(splitSuffix.Second!);
                                                 }

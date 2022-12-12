@@ -5,7 +5,7 @@ namespace Avalonia.Media.Transformation
     /// <summary>
     /// Represents a single primitive transform (like translation, rotation, scale, etc.).
     /// </summary>
-    public struct TransformOperation
+    public record struct TransformOperation
     {
         public OperationType Type;
         public Matrix Matrix;
@@ -196,7 +196,7 @@ namespace Avalonia.Media.Transformation
         }
 
         [StructLayout(LayoutKind.Explicit)]
-        public struct DataLayout
+        public record struct DataLayout
         {
             [FieldOffset(0)] public SkewLayout Skew;
 
@@ -206,25 +206,25 @@ namespace Avalonia.Media.Transformation
 
             [FieldOffset(0)] public RotateLayout Rotate;
 
-            public struct SkewLayout
+            public record struct SkewLayout
             {
                 public double X;
                 public double Y;
             }
 
-            public struct ScaleLayout
+            public record struct ScaleLayout
             {
                 public double X;
                 public double Y;
             }
 
-            public struct TranslateLayout
+            public record struct TranslateLayout
             {
                 public double X;
                 public double Y;
             }
 
-            public struct RotateLayout
+            public record struct RotateLayout
             {
                 public double Angle;
             }

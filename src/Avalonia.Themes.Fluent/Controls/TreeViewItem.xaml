@@ -75,6 +75,7 @@
                   MinHeight="{TemplateBinding MinHeight}"
                   TemplatedControl.IsTemplateFocusTarget="True">
             <Grid Name="PART_Header"
+                  Background="Transparent"
                   ColumnDefinitions="Auto, *"
                   Margin="{TemplateBinding Level, Mode=OneWay, Converter={StaticResource TreeViewItemLeftMarginConverter}}">
               <Panel Name="PART_ExpandCollapseChevronContainer"

@@ -56,8 +56,9 @@ namespace Avalonia.Headless
 
         public IRenderer CreateRenderer(IRenderRoot root)
             => AvaloniaHeadlessPlatform.Compositor != null
-                ? new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor)
-                : new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>());
+                ? new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces)
+                : new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
+                    () => new PlatformRenderInterfaceContextManager(null).CreateRenderTarget(Surfaces), null);
 
         public void Invalidate(Rect rect)
         {

@@ -171,5 +171,11 @@ namespace Avalonia.Media
 
         public Rect TransformBounds(in Rect rect)
             => IsInset ? rect : rect.Translate(new Vector(OffsetX, OffsetY)).Inflate(Spread + Blur);
+
+        public static bool operator ==(BoxShadow left, BoxShadow right) =>
+            left.Equals(right);
+
+        public static bool operator !=(BoxShadow left, BoxShadow right) => 
+            !(left == right);
     }
 }

@@ -18,7 +18,7 @@ internal class AstGroupTransformationContext : AstTransformationContext
     public IXamlDocumentResource CurrentDocument { get; set; }
     
     public IReadOnlyCollection<IXamlDocumentResource> Documents { get; }
-    
+
     public new IXamlAstNode ParseError(string message, IXamlAstNode node) =>
         Error(node, new XamlDocumentParseException(CurrentDocument?.FileSource?.FilePath, message, node));
 

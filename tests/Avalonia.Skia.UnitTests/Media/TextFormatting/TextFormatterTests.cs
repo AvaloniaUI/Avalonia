@@ -37,7 +37,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(defaultProperties.ForegroundBrush, textRun.Properties.ForegroundBrush);
 
-                Assert.Equal(text.Length, textRun.Text.Length);
+                Assert.Equal(text.Length, textRun.Length);
             }
         }
 
@@ -82,7 +82,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     new ValueSpan<TextRunProperties>(9, 1, defaultProperties)
                 };
 
-                var textSource = new FormattedTextSource(text.AsMemory(), defaultProperties, GenericTextRunPropertiesRuns);
+                var textSource = new FormattedTextSource(text, defaultProperties, GenericTextRunPropertiesRuns);
 
                 var formatter = new TextFormatterImpl();
 
@@ -97,7 +97,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var textRun = textLine.TextRuns[i];
 
-                    Assert.Equal(GenericTextRunPropertiesRun.Length, textRun.Text.Length);
+                    Assert.Equal(GenericTextRunPropertiesRun.Length, textRun.Length);
                 }
             }
         }
@@ -166,7 +166,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var firstRun = textLine.TextRuns[0];
 
-                Assert.Equal(4, firstRun.Text.Length);
+                Assert.Equal(4, firstRun.Length);
             }
         }
 
@@ -216,7 +216,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var lineBreaker = new LineBreakEnumerator(text.AsMemory());
+                var lineBreaker = new LineBreakEnumerator(new CharacterBufferRange(text));
 
                 var expected = new List<int>();
 
@@ -369,7 +369,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         new GenericTextRunProperties(new Typeface("Verdana", FontStyle.Italic),32))
                 };
 
-                var textSource = new FormattedTextSource(text.AsMemory(), defaultProperties, styleSpans);
+                var textSource = new FormattedTextSource(text, defaultProperties, styleSpans);
 
                 var formatter = new TextFormatterImpl();
 
@@ -389,7 +389,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     if (textLine.Width > 300 || currentHeight + textLine.Height > 240)
                     {
-                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(new ReadOnlySlice<char>(new[] { TextTrimming.DefaultEllipsisChar }), 300, defaultProperties));
+                        textLine = textLine.Collapse(new TextTrailingWordEllipsis(TextTrimming.DefaultEllipsisChar, 300, defaultProperties));
                     }
 
                     currentHeight += textLine.Height;
@@ -472,7 +472,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     var textLine =
                         formatter.FormatLine(textSource, textPosition, 50, paragraphProperties, lastBreak);
 
-                    Assert.Equal(textLine.Length, textLine.TextRuns.Sum(x => x.TextSourceLength));
+                    Assert.Equal(textLine.Length, textLine.TextRuns.Sum(x => x.Length));
 
                     textPosition += textLine.Length;
 
@@ -534,7 +534,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                                 new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: foreground))
                         };
 
-                        var textSource = new FormattedTextSource(text.AsMemory(), defaultProperties, spans);
+                        var textSource = new FormattedTextSource(text, defaultProperties, spans);
 
                         var textLine =
                             formatter.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
@@ -614,8 +614,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     return new RectangleRun(new Rect(0, 0, 50, 50), Brushes.Green);
                 }
 
-                return new TextCharacters(_text.AsMemory(),
-                    new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
+                return new TextCharacters(_text, 0, _text.Length, new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
             }
         }
 

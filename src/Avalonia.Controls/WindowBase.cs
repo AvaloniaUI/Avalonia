@@ -42,8 +42,10 @@ namespace Avalonia.Controls
 
         private bool _hasExecutedInitialLayoutPass;
         private bool _isActive;
-        private bool _ignoreVisibilityChange;
+        private int _ignoreVisibilityChanges;
         private WindowBase? _owner;
+
+        protected bool IgnoreVisibilityChanges => _ignoreVisibilityChanges > 0; 
 
         static WindowBase()
         {
@@ -64,6 +66,11 @@ namespace Avalonia.Controls
             impl.Activated = HandleActivated;
             impl.Deactivated = HandleDeactivated;
             impl.PositionChanged = HandlePositionChanged;
+        }
+
+        protected IDisposable FreezeVisibilityChangeHandling()
+        {
+            return new IgnoreVisibilityChangesDisposable(this);
         }
 
         /// <summary>
@@ -125,17 +132,11 @@ namespace Avalonia.Controls
         /// </summary>
         public virtual void Hide()
         {
-            _ignoreVisibilityChange = true;
-
-            try
+            using (FreezeVisibilityChangeHandling())
             {
                 Renderer?.Stop();
                 PlatformImpl?.Hide();
                 IsVisible = false;
-            }
-            finally
-            {
-                _ignoreVisibilityChange = false;
             }
         }
 
@@ -144,9 +145,7 @@ namespace Avalonia.Controls
         /// </summary>
         public virtual void Show()
         {
-            _ignoreVisibilityChange = true;
-
-            try
+            using (FreezeVisibilityChangeHandling())
             {
                 EnsureInitialized();
                 ApplyStyling();
@@ -157,13 +156,10 @@ namespace Avalonia.Controls
                     LayoutManager.ExecuteInitialLayoutPass();
                     _hasExecutedInitialLayoutPass = true;
                 }
+
                 PlatformImpl?.Show(true, false);
                 Renderer?.Start();
                 OnOpened(EventArgs.Empty);
-            }
-            finally
-            {
-                _ignoreVisibilityChange = false;
             }
         }
 
@@ -202,22 +198,16 @@ namespace Avalonia.Controls
 
         protected override void HandleClosed()
         {
-            _ignoreVisibilityChange = true;
-
-            try
+            using (FreezeVisibilityChangeHandling())
             {
                 IsVisible = false;
-                
+
                 if (this is IFocusScope scope)
                 {
                     FocusManager.Instance?.RemoveFocusScope(scope);
                 }
-                
+
                 base.HandleClosed();
-            }
-            finally
-            {
-                _ignoreVisibilityChange = false;
             }
         }
 
@@ -318,9 +308,9 @@ namespace Avalonia.Controls
             Deactivated?.Invoke(this, EventArgs.Empty);
         }
 
-        private void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
+        protected virtual void IsVisibleChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (!_ignoreVisibilityChange)
+            if (_ignoreVisibilityChanges == 0)
             {
                 if ((bool)e.NewValue!)
                 {
@@ -330,6 +320,22 @@ namespace Avalonia.Controls
                 {
                     Hide();
                 }
+            }
+        }
+        
+        private readonly struct IgnoreVisibilityChangesDisposable : IDisposable
+        {
+            private readonly WindowBase _windowBase;
+
+            public IgnoreVisibilityChangesDisposable(WindowBase windowBase)
+            {
+                _windowBase = windowBase;
+                _windowBase._ignoreVisibilityChanges++;
+            }
+            
+            public void Dispose()
+            {
+                _windowBase._ignoreVisibilityChanges--;
             }
         }
     }

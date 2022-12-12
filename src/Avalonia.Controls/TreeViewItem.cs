@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
@@ -147,30 +149,94 @@ namespace Avalonia.Controls
         {
             if (!e.Handled)
             {
-                switch (e.Key)
-                {
-                    case Key.Right:
-                        if (ItemsView.Count > 0 && !IsExpanded)
-                        {
-                            IsExpanded = true;
-                            e.Handled = true;
-                        }
-                        break;
+                Func<TreeViewItem, bool>? handler =
+                    e.Key switch
+                    {
+                        Key.Left => ApplyToItemOrRecursivelyIfCtrl(FocusAwareCollapseItem, e.KeyModifiers),
+                        Key.Right => ApplyToItemOrRecursivelyIfCtrl(ExpandItem, e.KeyModifiers),
+                        Key.Enter or Key.Space => ApplyToItemOrRecursivelyIfCtrl(IsExpanded ? CollapseItem : ExpandItem, e.KeyModifiers),
 
-                    case Key.Left:
-                        if (ItemsView.Count > 0 && IsExpanded)
+                        // do not handle CTRL with numpad keys
+                        Key.Subtract => FocusAwareCollapseItem,
+                        Key.Add => ExpandItem,
+                        Key.Divide => ApplyToSubtree(CollapseItem),
+                        Key.Multiply => ApplyToSubtree(ExpandItem),
+                        _ => null,
+                    };
+
+                if (handler is not null)
+                {
+                    e.Handled = handler(this);
+                }
+
+                // NOTE: these local functions do not use the TreeView.Expand/CollapseSubtree
+                // function because we want to know if any items were in fact expanded to set the
+                // event handled status. Also the handling here avoids a potential infinite recursion/stack overflow.
+                static Func<TreeViewItem, bool> ApplyToSubtree(Func<TreeViewItem, bool> f)
+                {
+                    // Calling toList enumerates all items before applying functions. This avoids a
+                    // potential infinite loop if there is an infinite tree (the control catalog is
+                    // lazily infinite). But also means a lazily loaded tree will not be expanded completely.
+                    return t => SubTree(t)
+                        .ToList()
+                        .Select(treeViewItem => f(treeViewItem))
+                        .Aggregate(false, (p, c) => p || c);
+                }
+
+                static Func<TreeViewItem, bool> ApplyToItemOrRecursivelyIfCtrl(Func<TreeViewItem,bool> f, KeyModifiers keyModifiers)
+                {
+                    if (keyModifiers.HasAllFlags(KeyModifiers.Control))
+                    {
+                        return ApplyToSubtree(f);
+                    }
+
+                    return f;
+                }
+
+                static bool ExpandItem(TreeViewItem treeViewItem)
+                {
+                    if (treeViewItem.ItemCount > 0 && !treeViewItem.IsExpanded)
+                    {
+                        treeViewItem.IsExpanded = true;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                static bool CollapseItem(TreeViewItem treeViewItem)
+                {
+                    if (treeViewItem.ItemCount > 0 && treeViewItem.IsExpanded)
+                    {
+                        treeViewItem.IsExpanded = false;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                static bool FocusAwareCollapseItem(TreeViewItem treeViewItem)
+                {
+                    if (treeViewItem.ItemCount > 0 && treeViewItem.IsExpanded)
+                    {
+                        if (treeViewItem.IsFocused)
                         {
-                            if (IsFocused)
-                            {
-                                IsExpanded = false;
-                            }
-                            else
-                            {
-                                FocusManager.Instance?.Focus(this, NavigationMethod.Directional);
-                            }
-                            e.Handled = true;
+                            treeViewItem.IsExpanded = false;
                         }
-                        break;
+                        else
+                        {
+                            FocusManager.Instance?.Focus(treeViewItem, NavigationMethod.Directional);
+                        }
+
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                static IEnumerable<TreeViewItem> SubTree(TreeViewItem treeViewItem)
+                {
+                    return new[] { treeViewItem }.Concat(treeViewItem.LogicalChildren.OfType<TreeViewItem>().SelectMany(child => SubTree(child)));
                 }
             }
 
@@ -179,8 +245,19 @@ namespace Avalonia.Controls
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
+            if (_header is InputElement previousInputMethod)
+            {
+                previousInputMethod.DoubleTapped -= HeaderDoubleTapped;
+            }
+
             _header = e.NameScope.Find<Control>("PART_Header");
             _templateApplied = true;
+
+            if (_header is InputElement im)
+            {
+                im.DoubleTapped += HeaderDoubleTapped;
+            }
+
             if (_deferredBringIntoViewFlag)
             {
                 _deferredBringIntoViewFlag = false;
@@ -199,6 +276,15 @@ namespace Avalonia.Controls
             }
 
             return logical != null ? result : @default;
+        }
+
+        private void HeaderDoubleTapped(object? sender, TappedEventArgs e)
+        {
+            if (ItemCount > 0)
+            {
+                IsExpanded = !IsExpanded;
+                e.Handled = true;
+            }
         }
     }
 }
