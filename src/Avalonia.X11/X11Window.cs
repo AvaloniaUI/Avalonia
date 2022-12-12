@@ -57,6 +57,7 @@ namespace Avalonia.X11
         private TransparencyHelper _transparencyHelper;
         private RawEventGrouper _rawEventGrouper;
         private bool _useRenderWindow = false;
+        private bool _usePositioningFlags = false;
 
         enum XSyncState
         {
@@ -299,6 +300,9 @@ namespace Avalonia.X11
             };
             hints.height_inc = hints.width_inc = 1;
             var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc;
+            if (_usePositioningFlags)
+                flags |= XSizeHintsFlags.PPosition | XSizeHintsFlags.PSize;
+            
             // People might be passing double.MaxValue
             if (max.Width < 100000 && max.Height < 100000)
             {
@@ -958,6 +962,9 @@ namespace Avalonia.X11
             get => _position ?? default;
             set
             {
+                _usePositioningFlags = true;
+                UpdateSizeHints(null);
+                
                 var changes = new XWindowChanges
                 {
                     x = (int)value.X,
