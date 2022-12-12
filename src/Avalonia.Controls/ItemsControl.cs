@@ -65,7 +65,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="ItemsView"/> property.
         /// </summary>
         public static readonly DirectProperty<ItemsControl, ItemsSourceView> ItemsViewProperty =
-            AvaloniaProperty.RegisterDirect<ItemsControl, ItemsSourceView>(nameof(Items), o => o.ItemsView);
+            AvaloniaProperty.RegisterDirect<ItemsControl, ItemsSourceView>(nameof(ItemsView), o => o.ItemsView);
 
         /// <summary>
         /// Defines the <see cref="DisplayMemberBinding" /> property
