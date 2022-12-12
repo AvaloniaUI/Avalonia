@@ -27,6 +27,8 @@ using Avalonia.Rendering.Composition;
 using Java.Lang;
 using Math = System.Math;
 using AndroidRect = Android.Graphics.Rect;
+using AndroidX.Core.App;
+using Android.Graphics.Drawables;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -279,7 +281,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public Action LostFocus { get; set; }
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
 
@@ -297,7 +299,32 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
-            throw new NotImplementedException();
+            if (TransparencyLevel != transparencyLevel)
+            {
+                bool isLegacy = Build.VERSION.SdkInt < BuildVersionCodes.R;
+                if (_view.Context is AvaloniaMainActivity activity)
+                {
+                    switch (transparencyLevel)
+                    {
+                        case WindowTransparencyLevel.None:
+                            if (!isLegacy)
+                            {
+                                activity.SetTranslucent(false);
+                            }
+                            break;
+                        case WindowTransparencyLevel.Transparent:
+                            if (!isLegacy)
+                            {
+                                activity.SetTranslucent(true);
+                            }
+                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                            break;
+                        default:
+                            return;
+                    }
+                    TransparencyLevel = transparencyLevel;
+                }
+            }
         }
     }
 
