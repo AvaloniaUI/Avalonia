@@ -375,9 +375,9 @@ namespace Avalonia.Controls
 
         private void OnHoldEvent(object? sender, HoldingRoutedEventArgs e)
         {
-            if(e.HoldingState == HoldingState.Completed)
+            if(e.HoldingState == HoldingState.Started)
             {
-                // Trigger ContentRequest when hold is complete
+                // Trigger ContentRequest when hold has started
                 RaiseEvent(new ContextRequestedEventArgs());
             }
         }

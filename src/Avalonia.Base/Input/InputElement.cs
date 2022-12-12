@@ -426,8 +426,7 @@ namespace Avalonia.Input
         }
 
         /// <summary>
-        /// Gets or sets a value that determines whether the Holding event can originate
-        /// from that element.
+        /// Enables or disables support for the press and hold gesture through the left button on a mouse.
         /// </summary>
         public bool IsHoldWithMouseEnabled
         {
