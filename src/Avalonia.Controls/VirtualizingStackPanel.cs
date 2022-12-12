@@ -27,6 +27,7 @@ namespace Avalonia.Controls
 
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
         private readonly Action<Control> _recycleElement;
+        private readonly Action<Control> _recycleElementOnItemRemoved;
         private readonly Action<Control, int, int> _updateElementIndex;
         private int _anchorIndex = -1;
         private Control? _anchorElement;
@@ -41,6 +42,7 @@ namespace Avalonia.Controls
         public VirtualizingStackPanel()
         {
             _recycleElement = RecycleElement;
+            _recycleElementOnItemRemoved = RecycleElementOnItemRemoved;
             _updateElementIndex = UpdateElementIndex;
             EffectiveViewportChanged += OnEffectiveViewportChanged;
         }
@@ -68,13 +70,6 @@ namespace Avalonia.Controls
             try
             {
                 var items = Items;
-
-                if (items.Count == 0)
-                {
-                    RemoveInternalChildRange(0, Children.Count);
-                    return default;
-                }
-
                 var orientation = Orientation;
 
                 _realizedElements ??= new();
@@ -153,6 +148,8 @@ namespace Avalonia.Controls
 
         protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
         {
+            InvalidateMeasure();
+
             if (_realizedElements is null)
                 return;
 
@@ -162,14 +159,12 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElement);
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    _realizedElements.RecycleAllElements(_recycleElement);
+                    _realizedElements.RecycleAllElements(_recycleElementOnItemRemoved);
                     break;
             }
-
-            InvalidateMeasure();
         }
 
         protected override IInputElement? GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
@@ -314,6 +309,7 @@ namespace Avalonia.Controls
             var (lastIndex, _) = _realizedElements.GetIndexAt(viewportEnd);
             var estimatedElementSize = -1.0;
             var itemCount = items?.Count ?? 0;
+            var maxIndex = Math.Max(itemCount - 1, 0);
 
             if (firstIndex == -1)
             {
@@ -331,8 +327,8 @@ namespace Avalonia.Controls
 
             return new MeasureViewport
             {
-                firstIndex = MathUtilities.Clamp(firstIndex, 0, itemCount - 1),
-                lastIndex = MathUtilities.Clamp(lastIndex, 0, itemCount - 1),
+                firstIndex = MathUtilities.Clamp(firstIndex, 0, maxIndex),
+                lastIndex = MathUtilities.Clamp(lastIndex, 0, maxIndex),
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
                 startU = firstIndexU,
@@ -468,7 +464,6 @@ namespace Avalonia.Controls
             var generator = ItemContainerGenerator!;
             var item = items[index];
 
-
             if (_recyclePool?.Count > 0)
             {
                 var recycled = _recyclePool.Pop();
@@ -516,6 +511,24 @@ namespace Avalonia.Controls
                 _recyclePool ??= new();
                 _recyclePool.Push(element);
                 element.IsVisible = false;
+            }
+        }
+
+        private void RecycleElementOnItemRemoved(Control element)
+        {
+            Debug.Assert(ItemContainerGenerator is not null);
+
+            if (element.IsSet(ItemIsOwnContainerProperty))
+            {
+                RemoveInternalChild(element);
+            }
+            else
+            {
+                ItemContainerGenerator!.ClearItemContainer(element);
+                _recyclePool ??= new();
+                _recyclePool.Push(element);
+                element.IsVisible = false;
+                element.GetObservable(Visual.VisualParentProperty).Subscribe(x => { });
             }
         }
 

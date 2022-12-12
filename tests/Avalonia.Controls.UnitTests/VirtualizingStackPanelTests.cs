@@ -12,6 +12,8 @@ using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
 
+#nullable enable
+
 namespace Avalonia.Controls.UnitTests
 {
     public class VirtualizingStackPanelTests
@@ -20,7 +22,6 @@ namespace Avalonia.Controls.UnitTests
         public void Creates_Initial_Items()
         {
             using var app = App();
-
             var (target, scroll, itemsControl) = CreateTarget();
 
             Assert.Equal(1000, scroll.Extent.Height);
@@ -29,10 +30,35 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Initializes_Initial_Control_Items()
+        {
+            using var app = App();
+            var items = Enumerable.Range(0, 100).Select(x => new Button { Width = 25, Height = 10});
+            var (target, scroll, itemsControl) = CreateTarget(items: items, useItemTemplate: false);
+
+            Assert.Equal(1000, scroll.Extent.Height);
+
+            AssertRealizedControlItems<Button>(target, itemsControl, 0, 10);
+        }
+
+        [Fact]
+        public void Creates_Reassigned_Items()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget(items: Array.Empty<object>());
+
+            Assert.Empty(itemsControl.GetRealizedContainers());
+
+            itemsControl.Items = new[] { "foo", "bar" };
+            Layout(target);
+
+            AssertRealizedItems(target, itemsControl, 0, 2);
+        }
+
+        [Fact]
         public void Scrolls_Down_One_Item()
         {
             using var app = App();
-
             var (target, scroll, itemsControl) = CreateTarget();
 
             scroll.Offset = new Vector(0, 10);
@@ -45,7 +71,6 @@ namespace Avalonia.Controls.UnitTests
         public void Scrolls_Down_More_Than_A_Page()
         {
             using var app = App();
-
             var (target, scroll, itemsControl) = CreateTarget();
 
             scroll.Offset = new Vector(0, 200);
@@ -55,12 +80,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Creates_Elements_For_Inserted_Item()
+        public void Creates_Elements_On_Item_Insert()
         {
             using var app = App();
-
             var (target, _, itemsControl) = CreateTarget();
-            var items = (IList)itemsControl.Items;
+            var items = (IList)itemsControl.Items!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 
@@ -88,12 +112,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Updates_Elements_On_Removed_Row()
+        public void Updates_Elements_On_Item_Remove()
         {
             using var app = App();
-
             var (target, _, itemsControl) = CreateTarget();
-            var items = (IList)itemsControl.Items;
+            var items = (IList)itemsControl.Items!;
 
             Assert.Equal(10, target.GetRealizedElements().Count);
 
@@ -118,10 +141,26 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(elements, target.GetRealizedElements());
         }
 
+        [Fact]
+        public void Removes_Control_Items_From_Panel_On_Item_Remove()
+        {
+            using var app = App();
+            var items = new ObservableCollection<Button>(Enumerable.Range(0, 100).Select(x => new Button { Width = 25, Height = 10 }));
+            var (target, scroll, itemsControl) = CreateTarget(items: items, useItemTemplate: false);
+
+            Assert.Equal(1000, scroll.Extent.Height);
+
+            var removed = items[1];
+            items.RemoveAt(1);
+
+            Assert.Null(removed.Parent);
+            Assert.Null(removed.VisualParent);
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
-                .Select(x => x is null ? -1 : itemsControl.ItemContainerGenerator.IndexFromContainer((Control)x))
+                .Select(x => x is null ? -1 : itemsControl.IndexFromContainer((Control)x))
                 .ToList();
         }
 
@@ -131,19 +170,43 @@ namespace Avalonia.Controls.UnitTests
             int firstIndex,
             int count)
         {
-            var childIndexes = target.GetLogicalChildren()
-                .Select(x => itemsControl.ItemContainerGenerator.IndexFromContainer((Control)x))
+            Assert.All(target.GetRealizedContainers(), x => Assert.Same(target, x.VisualParent));
+            Assert.All(target.GetRealizedContainers(), x => Assert.Same(itemsControl, x.Parent));
+
+            var childIndexes = target.GetRealizedContainers()?
+                .Select(x => itemsControl.IndexFromContainer(x))
                 .Where(x => x >= 0)
                 .OrderBy(x => x)
                 .ToList();
             Assert.Equal(Enumerable.Range(firstIndex, count), childIndexes);
         }
 
-        private static (VirtualizingStackPanel, ScrollViewer, ItemsControl) CreateTarget(int itemCount = 100)
+        private static void AssertRealizedControlItems<TContainer>(
+            VirtualizingStackPanel target,
+            ItemsControl itemsControl,
+            int firstIndex,
+            int count)
         {
-            var items = new ObservableCollection<string>(Enumerable.Range(0, itemCount).Select(x => $"Item {x}"));
+            Assert.All(target.GetRealizedContainers(), x => Assert.IsType<TContainer>(x));
+            Assert.All(target.GetRealizedContainers(), x => Assert.Same(target, x.VisualParent));
+            Assert.All(target.GetRealizedContainers(), x => Assert.Same(itemsControl, x.Parent));
+
+            var childIndexes = target.GetRealizedContainers()?
+                .Select(x => itemsControl.IndexFromContainer(x))
+                .Where(x => x >= 0)
+                .OrderBy(x => x)
+                .ToList();
+            Assert.Equal(Enumerable.Range(firstIndex, count), childIndexes);
+        }
+
+        private static (VirtualizingStackPanel, ScrollViewer, ItemsControl) CreateTarget(
+            IEnumerable<object>? items = null,
+            bool useItemTemplate = true)
+        {
             var target = new VirtualizingStackPanel();
-            
+
+            items ??= new ObservableCollection<string>(Enumerable.Range(0, 100).Select(x => $"Item {x}"));
+
             var presenter = new ItemsPresenter
             {
                 [~ItemsPresenter.ItemsPanelProperty] = new TemplateBinding(ItemsPresenter.ItemsPanelProperty),
@@ -160,8 +223,10 @@ namespace Avalonia.Controls.UnitTests
                 Items = items,
                 Template = new FuncControlTemplate<ItemsControl>((_, _) => scroll),
                 ItemsPanel = new FuncTemplate<Panel>(() => target),
-                ItemTemplate = new FuncDataTemplate<string>((x, _) => new Canvas { Width = 100, Height = 10 }),
             };
+
+            if (useItemTemplate)
+                itemsControl.ItemTemplate = new FuncDataTemplate<object>((x, _) => new Canvas { Width = 100, Height = 10 });
 
             var root = new TestRoot(true, itemsControl);
             root.ClientSize = new(100, 100);

@@ -155,6 +155,17 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Removes a child element from the <see cref="Panel.Children"/> collection.
+        /// </summary>
+        /// <param name="child">The child to remove/</param>
+        protected void RemoveInternalChild(Control child)
+        {
+            var itemsControl = EnsureItemsControl();
+            itemsControl.RemoveLogicalChild(child);
+            Children.Remove(child);
+        }
+
+        /// <summary>
         /// Removes child elements from the <see cref="Panel.Children"/> collection.
         /// </summary>
         /// <param name="index">
