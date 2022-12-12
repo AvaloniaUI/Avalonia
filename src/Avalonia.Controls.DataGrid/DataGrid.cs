@@ -1123,7 +1123,7 @@ namespace Avalonia.Controls
                     EnsureColumnHeadersVisibility();
                     if (!newValueCols)
                     {
-                        _columnHeadersPresenter.Measure(Size.Empty);
+                        _columnHeadersPresenter.Measure(default(Size));
                     }
                     else
                     {
@@ -1164,7 +1164,7 @@ namespace Avalonia.Controls
                 _topLeftCornerHeader.IsVisible = newValueRows && newValueCols;
                 if (_topLeftCornerHeader.IsVisible)
                 {
-                    _topLeftCornerHeader.Measure(Size.Empty);
+                    _topLeftCornerHeader.Measure(default(Size));
                 }
             }
 
