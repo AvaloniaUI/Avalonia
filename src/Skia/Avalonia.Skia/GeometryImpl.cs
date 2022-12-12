@@ -244,7 +244,7 @@ namespace Avalonia.Skia
             public void Invalidate()
             {
                 CachedStrokePath?.Dispose();
-                CachedGeometryRenderBounds = Rect.Empty;
+                CachedGeometryRenderBounds = default;
                 _cachedStrokeWidth = default(float);
             }
         }

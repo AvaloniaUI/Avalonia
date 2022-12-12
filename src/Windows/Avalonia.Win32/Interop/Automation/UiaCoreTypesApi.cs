@@ -6,8 +6,6 @@ namespace Avalonia.Win32.Interop.Automation
 {
     internal static class UiaCoreTypesApi
     {
-        private const string StartListeningExportName = "SynchronizedInputPattern_StartListening";
-
         internal enum AutomationIdType
         {
             Property,

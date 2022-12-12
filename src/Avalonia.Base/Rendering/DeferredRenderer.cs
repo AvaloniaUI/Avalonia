@@ -309,7 +309,7 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
-            return TryGetChildScene(_currentDraw)?.Size ?? Size.Empty;
+            return TryGetChildScene(_currentDraw)?.Size ?? default;
         }
 
         /// <inheritdoc/>
@@ -461,7 +461,7 @@ namespace Avalonia.Rendering
             {
                 clipBounds = node.ClipBounds.Intersect(clipBounds);
 
-                if (!clipBounds.IsEmpty && node.Opacity > 0)
+                if (!clipBounds.IsDefault && node.Opacity > 0)
                 {
                     var isLayerRoot = node.Visual == layer;
 
