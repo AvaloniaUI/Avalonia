@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Avalonia.Controls.UnitTests
 {
-    public class VirtualizingStackPanelTests_Smooth
+    public class VirtualizingStackPanelTests
     {
         [Fact]
         public void Creates_Initial_Items()
