@@ -1,5 +1,0 @@
-<Application xmlns="https://github.com/avaloniaui">
-  <Application.Styles>
-    <SimpleTheme Mode="Light" />
-  </Application.Styles>
-</Application>
