@@ -49,6 +49,8 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="root">The control to render.</param>
         /// <param name="renderLoop">The render loop.</param>
+        /// <param name="renderTargetFactory">The target render factory.</param>
+        /// <param name="renderInterface"></param>
         /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
         /// <param name="dispatcher">The dispatcher to use. Optional.</param>
         /// <param name="rendererLock">Lock object used before trying to access render target</param>

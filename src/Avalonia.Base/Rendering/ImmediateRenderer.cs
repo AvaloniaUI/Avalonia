@@ -30,6 +30,8 @@ namespace Avalonia.Rendering
         /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
         /// </summary>
         /// <param name="root">The control to render.</param>
+        /// <param name="renderTargetFactory">The target render factory.</param>
+        /// <param name="renderContext">The render contex.</param>
         public ImmediateRenderer(Visual root, Func<IRenderTarget> renderTargetFactory, 
             PlatformRenderInterfaceContextManager? renderContext = null)
         {
