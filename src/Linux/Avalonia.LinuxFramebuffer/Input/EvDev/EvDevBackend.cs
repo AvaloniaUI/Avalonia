@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
-using Avalonia.Threading;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 
 namespace Avalonia.LinuxFramebuffer.Input.EvDev
@@ -13,7 +12,6 @@ namespace Avalonia.LinuxFramebuffer.Input.EvDev
         private readonly EvDevDeviceDescription[] _deviceDescriptions;
         private readonly List<EvDevDeviceHandler> _handlers = new List<EvDevDeviceHandler>();
         private int _epoll;
-        private object _lock = new object();
         private Action<RawInputEventArgs> _onInput;
         private IInputRoot _inputRoot;
         private RawEventGroupingThreadingHelper _inputQueue;
