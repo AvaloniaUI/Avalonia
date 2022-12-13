@@ -12,7 +12,6 @@ namespace Avalonia.Rendering.SceneGraph
         public DrawOperation(Rect bounds, Matrix transform)
         {
             bounds = bounds
-                .Inflate(1.0) // add 1 px safety offset in order to remove artifacts  
                 .Normalize()
                 .TransformToAABB(transform);
 

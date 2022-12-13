@@ -32,6 +32,9 @@ namespace Avalonia.Rendering
         {
             if (!rect.IsDefault)
             {
+                // we inflate the rect by 1 px in order to add some safety space
+                rect.Inflate(1);
+                
                 for (var i = 0; i < _rects.Count; ++i)
                 {
                     var r = _rects[i];
