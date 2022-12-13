@@ -28,8 +28,9 @@ namespace Avalonia
         public static readonly Size Infinity = new Size(double.PositiveInfinity, double.PositiveInfinity);
 
         /// <summary>
-        /// A size representing zero
+        /// A size representing zero.
         /// </summary>
+        [Obsolete("Use the default keyword instead.")]
         public static readonly Size Empty = new Size(0, 0);
 
         /// <summary>
@@ -309,9 +310,6 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether the Width and Height values are zero.
         /// </summary>
-        public bool IsDefault
-        {
-            get { return (_width == 0) && (_height == 0); }
-        }
+        public bool IsDefault => (_width == 0) && (_height == 0);
     }
 }
