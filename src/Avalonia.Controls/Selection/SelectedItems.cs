@@ -37,9 +37,9 @@ namespace Avalonia.Controls.Selection
                 {
                     return _owner.SelectedItem;
                 }
-                else if (Items is object)
+                else if (Items is not null && Ranges is not null)
                 {
-                    return Items[index];
+                    return Items[IndexRange.GetAt(Ranges, index)];
                 }
                 else
                 {
