@@ -820,6 +820,14 @@ namespace Avalonia.Win32.Interop
             DWMWA_LAST
         };
 
+        public enum DwmWindowCornerPreference : uint
+        {
+            DWMWCP_DEFAULT = 0,
+            DWMWCP_DONOTROUND,
+            DWMWCP_ROUND,
+            DWMWCP_ROUNDSMALL
+        }
+
         public enum MapVirtualKeyMapTypes : uint
         {
             MAPVK_VK_TO_VSC = 0x00,

@@ -1035,6 +1035,12 @@ namespace Avalonia.Win32
             {
                 var margins = UpdateExtendMargins();
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                unsafe
+                {
+                    int cornerPreference = (int)DwmWindowCornerPreference.DWMWCP_ROUND;
+                    DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(int));
+                }
             }
             else
             {
