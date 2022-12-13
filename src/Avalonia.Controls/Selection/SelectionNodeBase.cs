@@ -256,6 +256,7 @@ namespace Avalonia.Controls.Selection
                         break;
                     }
                 case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
                     {
                         var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
                         var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);

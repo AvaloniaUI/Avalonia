@@ -81,9 +81,11 @@ namespace Avalonia.Controls.Presenters
             {
                 for (var i = 0; i < count; ++i)
                 {
-                    var c = children[i];
+                    var c = children[index + i];
                     if (!c.IsSet(ItemIsOwnContainerProperty))
                         itemsControl.RemoveLogicalChild(children[i + index]);
+                    else
+                        generator.ClearItemContainer(c);
                 }
 
                 children.RemoveRange(index, count);
@@ -103,9 +105,6 @@ namespace Avalonia.Controls.Presenters
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    Remove(e.OldStartingIndex, e.OldItems!.Count);
-                    Add(e.NewStartingIndex, e.NewItems!);
-                    break;
                 case NotifyCollectionChangedAction.Move:
                     Remove(e.OldStartingIndex, e.OldItems!.Count);
                     Add(e.NewStartingIndex, e.NewItems!);
