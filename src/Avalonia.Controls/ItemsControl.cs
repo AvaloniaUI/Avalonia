@@ -164,6 +164,11 @@ namespace Avalonia.Controls
         public ItemsPresenter? Presenter { get; private set; }
 
         /// <summary>
+        /// Gets the <see cref="Panel"/> specified by <see cref="ItemsPanel"/>.
+        /// </summary>
+        public Panel? ItemsPanelRoot => Presenter?.Panel;
+
+        /// <summary>
         /// Gets a standardized view over <see cref="Items"/>.
         /// </summary>
         /// <remarks>
