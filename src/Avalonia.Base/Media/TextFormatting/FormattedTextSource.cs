@@ -8,7 +8,6 @@ namespace Avalonia.Media.TextFormatting
     internal readonly struct FormattedTextSource : ITextSource
     {
         private readonly CharacterBufferRange _text;
-        private readonly int length;
         private readonly TextRunProperties _defaultProperties;
         private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
 

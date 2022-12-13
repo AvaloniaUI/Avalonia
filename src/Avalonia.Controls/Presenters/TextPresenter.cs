@@ -106,7 +106,6 @@ namespace Avalonia.Controls.Presenters
         private Rect _caretBounds;
         private Point _navigationPosition;
         private string? _preeditText;
-        private CharacterHit _compositionStartHit = new CharacterHit(-1);
 
         static TextPresenter()
         {
