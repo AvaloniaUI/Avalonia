@@ -120,8 +120,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<bool> WrapSelectionProperty =
             AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
-
-        private static readonly IList Empty = Array.Empty<object>();
         private string _textSearchTerm = string.Empty;
         private DispatcherTimer? _textSearchTimer;
         private ISelectionModel? _selection;
