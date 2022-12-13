@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Primitives.PopupPositioning
     /// surface.
     /// </remarks>
     [Unstable]
-    public struct PopupPositionerParameters
+    public record struct PopupPositionerParameters
     {
         private PopupGravity _gravity;
         private PopupAnchor _anchor;

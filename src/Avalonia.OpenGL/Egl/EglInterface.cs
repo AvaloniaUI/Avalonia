@@ -53,6 +53,9 @@ namespace Avalonia.OpenGL.Egl
 
         [GetProcAddress("eglInitialize")]        
         public partial bool Initialize(IntPtr display, out int major, out int minor);
+        
+        [GetProcAddress("eglTerminate")]        
+        public partial void Terminate(IntPtr display);
 
         [GetProcAddress("eglGetProcAddress")]        
         public partial IntPtr GetProcAddress(IntPtr proc);

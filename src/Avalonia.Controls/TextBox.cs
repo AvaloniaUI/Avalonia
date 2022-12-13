@@ -961,7 +961,9 @@ namespace Avalonia.Controls
 
                 var length = 0;
 
-                var graphemeEnumerator = new GraphemeEnumerator(input.AsMemory());
+                var inputRange = new CharacterBufferRange(new CharacterBufferReference(input), input.Length);
+
+                var graphemeEnumerator = new GraphemeEnumerator(inputRange);
 
                 while (graphemeEnumerator.MoveNext())
                 {

@@ -21,7 +21,7 @@ internal class BatchStreamData
     public Queue<BatchStreamSegment<IntPtr>> Structs { get; } = new();
 }
 
-public struct BatchStreamSegment<TData>
+public record struct BatchStreamSegment<TData>
 {
     public TData Data { get; set; }
     public int ElementCount { get; set; }

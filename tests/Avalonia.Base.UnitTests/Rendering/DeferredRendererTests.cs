@@ -46,6 +46,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 var target = new DeferredRenderer(
                     root,
                     loop.Object,
+                    renderTargetFactory: root.CreateRenderTarget,
                     sceneBuilder: sceneBuilder.Object);
 
                 target.Start();
@@ -83,6 +84,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     root,
                     loop.Object,
                     sceneBuilder: sceneBuilder.Object,
+                    renderTargetFactory: root.CreateRenderTarget,
                     dispatcher: dispatcher);
 
                 target.Start();
@@ -133,6 +135,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     root,
                     loop.Object,
                     sceneBuilder: sceneBuilder,
+                    renderTargetFactory: root.CreateRenderTarget,
                     dispatcher: dispatcher);
 
                 root.Renderer = target;
@@ -178,6 +181,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     root,
                     loop.Object,
                     sceneBuilder: sceneBuilder,
+                    renderTargetFactory: root.CreateRenderTarget,
                     dispatcher: dispatcher);
 
                 root.Renderer = target;
@@ -223,6 +227,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     root,
                     loop.Object,
                     sceneBuilder: sceneBuilder,
+                    renderTargetFactory: root.CreateRenderTarget,
                     dispatcher: dispatcher);
 
                 root.Renderer = target;
@@ -270,6 +275,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     root,
                     loop.Object,
                     sceneBuilder: sceneBuilder,
+                    renderTargetFactory: root.CreateRenderTarget,
                     dispatcher: dispatcher);
 
                 root.Renderer = target;
@@ -317,6 +323,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     root,
                     loop.Object,
                     sceneBuilder: sceneBuilder,
+                    renderTargetFactory: root.CreateRenderTarget,
                     dispatcher: dispatcher);
 
                 root.Renderer = target;
@@ -366,6 +373,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     root,
                     loop.Object,
                     sceneBuilder: sceneBuilder,
+                    renderTargetFactory: root.CreateRenderTarget,
                     dispatcher: dispatcher);
 
                 root.Renderer = target;
@@ -415,6 +423,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     root,
                     loop.Object,
                     sceneBuilder: sceneBuilder,
+                    renderTargetFactory: root.CreateRenderTarget,
                     dispatcher: dispatcher);
 
                 var otherSceneBuilder = new SceneBuilder();
@@ -423,6 +432,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     otherRoot,
                     loop.Object,
                     sceneBuilder: otherSceneBuilder,
+                    renderTargetFactory: root.CreateRenderTarget,
                     dispatcher: dispatcher);
 
                 root.Renderer = target;
@@ -738,6 +748,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 root,
                 new RenderLoop(timer.Object, dispatcher),
                 sceneBuilder: sceneBuilder,
+                renderTargetFactory: root.CreateRenderTarget,
                 dispatcher: dispatcher);
             root.Renderer = target;
             target.Start();

@@ -571,7 +571,7 @@ namespace Avalonia
             return true;
         }
 
-        public struct Decomposed
+        public record struct Decomposed
         {
             public Vector Translate;
             public Vector Scale;

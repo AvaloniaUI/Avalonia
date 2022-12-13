@@ -7,30 +7,26 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public sealed class ShapeableTextCharacters : TextRun
     {
-        public ShapeableTextCharacters(ReadOnlySlice<char> text, TextRunProperties properties, sbyte biDiLevel)
+        public ShapeableTextCharacters(CharacterBufferReference characterBufferReference, int length,
+            TextRunProperties properties, sbyte biDiLevel)
         {
-            TextSourceLength = text.Length;
-            Text = text;
+            CharacterBufferReference = characterBufferReference;
+            Length = length;
             Properties = properties;
             BidiLevel = biDiLevel;
         }
 
-        public override int TextSourceLength { get; }
+        public override int Length { get; }
 
-        public override ReadOnlySlice<char> Text { get; }
+        public override CharacterBufferReference CharacterBufferReference { get; }
 
         public override TextRunProperties Properties { get; }
-        
+
         public sbyte BidiLevel { get; }
 
         public bool CanShapeTogether(ShapeableTextCharacters shapeableTextCharacters)
         {
-            if (!Text.Buffer.Equals(shapeableTextCharacters.Text.Buffer))
-            {
-                return false;
-            }
-
-            if (Text.Start + Text.Length != shapeableTextCharacters.Text.Start)
+            if (!CharacterBufferReference.Equals(shapeableTextCharacters.CharacterBufferReference))
             {
                 return false;
             }

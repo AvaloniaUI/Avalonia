@@ -4,15 +4,15 @@
     /// Represents a metric for a <see cref="TextLine"/> objects,
     /// that holds information about ascent, descent, line gap, size and origin of the text line.
     /// </summary>
-    public readonly struct TextLineMetrics
+    public readonly record struct TextLineMetrics
     {
-        public TextLineMetrics(bool hasOverflowed, double height, int newLineLength, double start, double textBaseline,
+        public TextLineMetrics(bool hasOverflowed, double height, int newlineLength, double start, double textBaseline,
             int trailingWhitespaceLength, double width,
             double widthIncludingTrailingWhitespace)
         {
             HasOverflowed = hasOverflowed;
             Height = height;
-            NewLineLength = newLineLength;
+            NewlineLength = newlineLength;
             Start = start;
             TextBaseline = textBaseline;
             TrailingWhitespaceLength = trailingWhitespaceLength;
@@ -33,7 +33,7 @@
         /// <summary>
         /// Gets the number of newline characters at the end of a line.
         /// </summary>
-        public int NewLineLength { get; }
+        public int NewlineLength { get; }
         
         /// <summary>
         /// Gets the distance from the start of a paragraph to the starting point of a line.

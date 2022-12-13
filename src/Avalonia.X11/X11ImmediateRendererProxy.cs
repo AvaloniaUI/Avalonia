@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -14,11 +16,11 @@ namespace Avalonia.X11
         private bool _running;
         private object _lock = new object();
 
-        public X11ImmediateRendererProxy(Visual root, IRenderLoop loop)
+        public X11ImmediateRendererProxy(Visual root, IRenderLoop loop, Func<IRenderTarget> renderTargetFactory,
+            PlatformRenderInterfaceContextManager renderContext)
         {
             _loop = loop;
-            _renderer = new ImmediateRenderer(root);
-            
+            _renderer = new ImmediateRenderer(root, renderTargetFactory, renderContext);
         }
 
         public void Dispose()
@@ -91,6 +93,9 @@ namespace Avalonia.X11
             _loop.Remove(this);
             _renderer.Stop();
         }
+
+        public ValueTask<object> TryGetRenderInterfaceFeature(Type featureType) =>
+            _renderer.TryGetRenderInterfaceFeature(featureType);
 
         public bool NeedsUpdate => false;
         public void Update(TimeSpan time)

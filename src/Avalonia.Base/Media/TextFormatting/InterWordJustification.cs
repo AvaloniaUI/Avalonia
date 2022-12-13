@@ -46,16 +46,16 @@ namespace Avalonia.Media.TextFormatting
 
             var breakOportunities = new Queue<int>();
 
+            var currentPosition = textLine.FirstTextSourceIndex;
+
             foreach (var textRun in lineImpl.TextRuns)
             {
-                var text = textRun.Text;
+                var text = new CharacterBufferRange(textRun);
 
                 if (text.IsEmpty)
                 {
                     continue;
                 }
-
-                var start = text.Start;
 
                 var lineBreakEnumerator = new LineBreakEnumerator(text);
 
@@ -63,11 +63,13 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var currentBreak = lineBreakEnumerator.Current;
 
-                    if (!currentBreak.Required && currentBreak.PositionWrap != text.Length)
+                    if (!currentBreak.Required && currentBreak.PositionWrap != textRun.Length)
                     {
-                        breakOportunities.Enqueue(start + currentBreak.PositionMeasure);
+                        breakOportunities.Enqueue(currentPosition + currentBreak.PositionMeasure);
                     }
                 }
+
+                currentPosition += textRun.Length;
             }
 
             if (breakOportunities.Count == 0)
@@ -78,9 +80,11 @@ namespace Avalonia.Media.TextFormatting
             var remainingSpace = Math.Max(0, paragraphWidth - lineImpl.WidthIncludingTrailingWhitespace);
             var spacing = remainingSpace / breakOportunities.Count;
 
+            currentPosition = textLine.FirstTextSourceIndex;
+
             foreach (var textRun in lineImpl.TextRuns)
             {
-                var text = textRun.Text;
+                var text = textRun.CharacterBufferReference.CharacterBuffer;
 
                 if (text.IsEmpty)
                 {
@@ -91,7 +95,6 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var glyphRun = shapedText.GlyphRun;
                     var shapedBuffer = shapedText.ShapedBuffer;
-                    var currentPosition = text.Start;
 
                     while (breakOportunities.Count > 0)
                     {
@@ -110,6 +113,8 @@ namespace Avalonia.Media.TextFormatting
 
                     glyphRun.GlyphAdvances = shapedBuffer.GlyphAdvances;
                 }
+
+                currentPosition += textRun.Length;
             }
         }
     }

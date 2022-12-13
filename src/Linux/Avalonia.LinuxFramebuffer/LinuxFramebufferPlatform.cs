@@ -41,7 +41,7 @@ namespace Avalonia.LinuxFramebuffer
         {
             Threading = new InternalPlatformThreadingInterface();
             if (_fb is IGlOutputBackend gl)
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformOpenGlInterface>().ToConstant(gl.PlatformOpenGlInterface);
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl.PlatformGraphics);
 
             var opts = AvaloniaLocator.Current.GetService<LinuxFramebufferPlatformOptions>() ?? new LinuxFramebufferPlatformOptions();
 
@@ -56,7 +56,7 @@ namespace Avalonia.LinuxFramebuffer
             
             Compositor = new Compositor(
                 AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>());
+                AvaloniaLocator.Current.GetService<IPlatformGraphics>());
         }
 
 

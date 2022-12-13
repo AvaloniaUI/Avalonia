@@ -1,5 +1,7 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -22,6 +24,33 @@ namespace Avalonia.Base.UnitTests.Input
                 target.Focus();
 
                 Assert.Same(target, FocusManager.Instance.Current);
+            }
+        }
+
+        [Fact]
+        public void Focus_Should_Not_Get_Restored_To_Enabled_Control()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var sp = new StackPanel();
+                Button target = new Button();
+                Button target1 = new Button();
+                target.Click += (s, e) => target.IsEnabled = false;
+                target1.Click += (s, e) => target.IsEnabled = true;
+                sp.Children.Add(target);
+                sp.Children.Add(target1);
+                var root = new TestRoot
+                {
+                    Child = sp
+                };
+
+                target.Focus();
+                target.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+                Assert.False(target.IsEnabled);
+                Assert.False(target.IsFocused);
+                target1.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
+                Assert.True(target.IsEnabled);
+                Assert.False(target.IsFocused);
             }
         }
 

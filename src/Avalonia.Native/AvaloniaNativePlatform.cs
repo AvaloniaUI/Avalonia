@@ -18,13 +18,14 @@ namespace Avalonia.Native
     {
         private readonly IAvaloniaNativeFactory _factory;
         private AvaloniaNativePlatformOptions _options;
-        private AvaloniaNativePlatformOpenGlInterface _platformGl;
+        private AvaloniaNativeGlPlatformGraphics _platformGl;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
 
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
         [CanBeNull] internal static Compositor Compositor { get; private set; }
+        [CanBeNull] internal static PlatformRenderInterfaceContextManager RenderInterface { get; private set; }
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
@@ -126,10 +127,9 @@ namespace Avalonia.Native
             {
                 try
                 {
-                    _platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay());
+                    _platformGl = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
                     AvaloniaLocator.CurrentMutable
-                        .Bind<IPlatformOpenGlInterface>().ToConstant(_platformGl)
-                        .Bind<IPlatformGpu>().ToConstant(_platformGl);
+                        .Bind<IPlatformGraphics>().ToConstant(_platformGl);
 
                 }
                 catch (Exception)
@@ -137,12 +137,14 @@ namespace Avalonia.Native
                     // ignored
                 }
             }
-            
+
 
             if (_options.UseDeferredRendering && _options.UseCompositor)
             {
                 Compositor = new Compositor(renderLoop, _platformGl);
             }
+            else
+                RenderInterface = new PlatformRenderInterfaceContextManager(_platformGl);
         }
 
         public ITrayIconImpl CreateTrayIcon()

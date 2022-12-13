@@ -7,7 +7,7 @@ namespace Avalonia.Media
     /// <summary>
     /// The <see cref="UnicodeRange"/> descripes a set of Unicode characters.
     /// </summary>
-    public readonly struct UnicodeRange
+    public readonly record struct UnicodeRange
     {
         public readonly static UnicodeRange Default = Parse("0-10FFFD");
 
@@ -102,7 +102,7 @@ namespace Avalonia.Media
         }
     }
 
-    public readonly struct UnicodeRangeSegment
+    public readonly record struct UnicodeRangeSegment
     {
         private static Regex s_regex = new Regex(@"^(?:[uU]\+)?(?:([0-9a-fA-F](?:[0-9a-fA-F?]{1,5})?))$", RegexOptions.Compiled);
 
