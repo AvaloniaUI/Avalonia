@@ -1370,7 +1370,7 @@ namespace Metsys.Bson
             var pattern = ReadName();
             var optionsString = ReadName();
 
-            var options = RegexOptions.None;
+            var options = RegexOptions.Compiled;
             if (optionsString.Contains('e')) options = options | RegexOptions.ECMAScript;
             if (optionsString.Contains('i')) options = options | RegexOptions.IgnoreCase;
             if (optionsString.Contains('l')) options = options | RegexOptions.CultureInvariant;
