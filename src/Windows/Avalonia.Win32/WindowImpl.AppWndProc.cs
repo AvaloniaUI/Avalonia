@@ -134,13 +134,18 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
                     {
-                        e = new RawKeyEventArgs(
-                            WindowsKeyboardDevice.Instance,
-                            timestamp,
-                            _owner,
-                            RawKeyEventType.KeyDown,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
-                            WindowsKeyboardDevice.Instance.Modifiers);
+                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
+
+                        if (key != Key.None)
+                        {
+                            e = new RawKeyEventArgs(
+                                WindowsKeyboardDevice.Instance,
+                                timestamp,
+                                _owner,
+                                RawKeyEventType.KeyDown,
+                                key,
+                                WindowsKeyboardDevice.Instance.Modifiers);
+                        }
                         break;
                     }
 
@@ -159,13 +164,18 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYUP:
                 case WindowsMessage.WM_SYSKEYUP:
                     {
-                        e = new RawKeyEventArgs(
+                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
+
+                        if (key != Key.None)
+                        {
+                            e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
                             _owner,
                             RawKeyEventType.KeyUp,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
+                            key,
                             WindowsKeyboardDevice.Instance.Modifiers);
+                        }
                         break;
                     }
                 case WindowsMessage.WM_CHAR:
