@@ -142,6 +142,64 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Updates_Elements_On_Item_Replace()
+        {
+            using var app = App();
+            var (target, _, itemsControl) = CreateTarget();
+            var items = (ObservableCollection<string>)itemsControl.Items!;
+
+            Assert.Equal(10, target.GetRealizedElements().Count);
+
+            var toReplace = target.GetRealizedElements().ElementAt(2);
+            items[2] = "new";
+
+            // Container being replaced should have been recycled.
+            Assert.DoesNotContain(toReplace, target.GetRealizedElements());
+            Assert.False(toReplace!.IsVisible);
+
+            var indexes = GetRealizedIndexes(target, itemsControl);
+
+            // Item removed from realized elements at old position and space inserted at new position.
+            Assert.Equal(new[] { 0, 1, -1, 3, 4, 5, 6, 7, 8, 9 }, indexes);
+
+            Layout(target);
+
+            indexes = GetRealizedIndexes(target, itemsControl);
+
+            // After layout the missing container should have been created.
+            Assert.Equal(Enumerable.Range(0, 10), indexes);
+        }
+
+        [Fact]
+        public void Updates_Elements_On_Item_Move()
+        {
+            using var app = App();
+            var (target, _, itemsControl) = CreateTarget();
+            var items = (ObservableCollection<string>)itemsControl.Items!;
+
+            Assert.Equal(10, target.GetRealizedElements().Count);
+
+            var toMove = target.GetRealizedElements().ElementAt(2);
+            items.Move(2, 6);
+
+            // Container being moved should have been recycled.
+            Assert.DoesNotContain(toMove, target.GetRealizedElements());
+            Assert.False(toMove!.IsVisible);
+
+            var indexes = GetRealizedIndexes(target, itemsControl);
+
+            // Item removed from realized elements at old position and space inserted at new position.
+            Assert.Equal(new[] { 0, 1, 2, 3, 4, 5, -1, 7, 8, 9 }, indexes);
+
+            Layout(target);
+
+            indexes = GetRealizedIndexes(target, itemsControl);
+
+            // After layout the missing container should have been created.
+            Assert.Equal(Enumerable.Range(0, 10), indexes);
+        }
+
+        [Fact]
         public void Removes_Control_Items_From_Panel_On_Item_Remove()
         {
             using var app = App();

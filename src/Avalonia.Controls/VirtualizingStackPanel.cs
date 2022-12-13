@@ -161,6 +161,11 @@ namespace Avalonia.Controls
                 case NotifyCollectionChangedAction.Remove:
                     _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
                     break;
+                case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
+                    _realizedElements.ItemsRemoved(e.OldStartingIndex, e.OldItems!.Count, _updateElementIndex, _recycleElementOnItemRemoved);
+                    _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
+                    break;
                 case NotifyCollectionChangedAction.Reset:
                     _realizedElements.RecycleAllElements(_recycleElementOnItemRemoved);
                     break;
