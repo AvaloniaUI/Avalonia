@@ -49,8 +49,6 @@ namespace Avalonia.Data.Core
                 new TaskStreamPlugin(),
                 new ObservableStreamPlugin(),
             };
-
-        private static readonly object UninitializedValue = new object();
         private readonly ExpressionNode _node;
         private object? _root;
         private Func<object?>? _rootGetter;

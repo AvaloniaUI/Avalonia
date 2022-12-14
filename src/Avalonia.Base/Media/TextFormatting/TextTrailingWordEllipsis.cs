@@ -16,7 +16,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="width">width in which collapsing is constrained to.</param>
         /// <param name="textRunProperties">text run properties of ellipsis symbol.</param>
         public TextTrailingWordEllipsis(
-            ReadOnlySlice<char> ellipsis,
+            string ellipsis,
             double width,
             TextRunProperties textRunProperties
         )

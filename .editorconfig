@@ -144,12 +144,16 @@ dotnet_diagnostic.CS1591.severity = suggestion
 dotnet_diagnostic.CA1304.severity = warning
 # CA1802: Use literals where appropriate
 dotnet_diagnostic.CA1802.severity = warning
+# CA1815: Override equals and operator equals on value types
+dotnet_diagnostic.CA1815.severity = warning
 # CA1820: Test for empty strings using string length
 dotnet_diagnostic.CA1820.severity = warning
 # CA1821: Remove empty finalizers
 dotnet_diagnostic.CA1821.severity = warning
 # CA1822: Mark members as static
 dotnet_diagnostic.CA1822.severity = suggestion
+# CA1823: Avoid unused private fields
+dotnet_diagnostic.CA1823.severity = warning
 dotnet_code_quality.CA1822.api_surface = private, internal
 # CA1825: Avoid zero-length array allocations
 dotnet_diagnostic.CA1825.severity = warning

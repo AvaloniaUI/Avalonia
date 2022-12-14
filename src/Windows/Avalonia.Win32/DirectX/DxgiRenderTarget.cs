@@ -8,11 +8,12 @@ using System.Threading.Tasks;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Win32.OpenGl.Angle;
 using MicroCom.Runtime;
 using static Avalonia.OpenGL.Egl.EglGlPlatformSurfaceBase;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
-namespace Avalonia.Win32.DxgiSwapchain
+namespace Avalonia.Win32.DirectX
 {
 #pragma warning disable CA1416 // Validate platform compatibility, if you enter this not on windows you have messed up badly 
 #nullable enable
@@ -22,8 +23,7 @@ namespace Avalonia.Win32.DxgiSwapchain
 
         public const uint DXGI_USAGE_RENDER_TARGET_OUTPUT = 0x00000020U;
 
-        private IEglWindowGlPlatformSurfaceInfo _window;
-        private EglPlatformOpenGlInterface _egl;
+        private EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _window;
         private DxgiConnection _connection;
         private IDXGIDevice? _dxgiDevice = null;
         private IDXGIFactory2? _dxgiFactory = null;
@@ -36,15 +36,14 @@ namespace Avalonia.Win32.DxgiSwapchain
 
         private Guid ID3D11Texture2DGuid = Guid.Parse("6F15AAF2-D208-4E89-9AB4-489535D34F9C");
 
-        public DxgiRenderTarget(IEglWindowGlPlatformSurfaceInfo window, EglPlatformOpenGlInterface egl, DxgiConnection connection) : base(egl)
+        public DxgiRenderTarget(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo window, EglContext context, DxgiConnection connection) : base(context)
         {
             _window = window;
-            _egl = egl;
             _connection = connection;
 
             // the D3D device is expected to at least be an ID3D11Device 
             // but how do I wrap an IntPtr as a managed IUnknown now? Like this. 
-            IUnknown pdevice = MicroComRuntime.CreateProxyFor<IUnknown>(((AngleWin32EglDisplay)_egl.Display).GetDirect3DDevice(), false);
+            IUnknown pdevice = MicroComRuntime.CreateProxyFor<IUnknown>(((AngleWin32EglDisplay)context.Display).GetDirect3DDevice(), false);
 
             _dxgiDevice = pdevice.QueryInterface<IDXGIDevice>();
 
@@ -86,14 +85,14 @@ namespace Avalonia.Win32.DxgiSwapchain
             _clientRect = pClientRect;
         }
 
-        public override IGlPlatformSurfaceRenderingSession BeginDraw()
+        public override IGlPlatformSurfaceRenderingSession BeginDrawCore()
         {
             if (_swapChain is null)
             {
                 throw new InvalidOperationException("No chain to draw on");
             }
 
-            var contextLock = _egl.PrimaryContext.EnsureCurrent();
+            var contextLock = Context.EnsureCurrent();
             EglSurface? surface = null;
             IDisposable? transaction = null;
             var success = false;
@@ -132,10 +131,10 @@ namespace Avalonia.Win32.DxgiSwapchain
                 _renderTexture = texture;
 
                 // I also have to get the pointer to this texture directly 
-                surface = ((AngleWin32EglDisplay)_egl.Display).WrapDirect3D11Texture(_egl, MicroComRuntime.GetNativeIntPtr(_renderTexture),
+                surface = ((AngleWin32EglDisplay)Context.Display).WrapDirect3D11Texture(MicroComRuntime.GetNativeIntPtr(_renderTexture),
                     0, 0, size.Width, size.Height);
 
-                var res = base.BeginDraw(surface, _window, () =>
+                var res = base.BeginDraw(surface, _window.Size, _window.Scaling, () =>
                 {
                     _swapChain.Present((ushort)0U, (ushort)0U);
                     surface?.Dispose();

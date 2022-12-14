@@ -60,5 +60,7 @@ namespace Avalonia.Media.Imaging
 
         /// <inheritdoc/>
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer? vbr) => PlatformImpl.Item.CreateDrawingContext(vbr);
+
+        bool IRenderTarget.IsCorrupted => false;
     }
 }

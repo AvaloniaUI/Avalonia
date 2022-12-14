@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Media.TextFormatting.Unicode;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -10,26 +9,83 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public class TextCharacters : TextRun
     {
-        public TextCharacters(ReadOnlySlice<char> text, TextRunProperties properties)
-        {
-            TextSourceLength = text.Length;
-            Text = text;
-            Properties = properties;
-        }
+        /// <summary>
+        /// Construct a run of text content from character array
+        /// </summary>
+        public TextCharacters(
+            char[] characterArray,
+            int offsetToFirstChar,
+            int length,
+            TextRunProperties textRunProperties
+            ) :
+            this(
+                new CharacterBufferReference(characterArray, offsetToFirstChar),
+                length,
+                textRunProperties
+                )
+        { }
 
-        public TextCharacters(ReadOnlySlice<char> text, int offsetToFirstCharacter, int length,
-            TextRunProperties properties)
+
+        /// <summary>
+        /// Construct a run for text content from string 
+        /// </summary>
+        public TextCharacters(
+            string characterString,
+            TextRunProperties textRunProperties
+            ) :
+            this(
+                characterString,
+                0,  // offsetToFirstChar
+                (characterString == null) ? 0 : characterString.Length,
+                textRunProperties
+                )
+        { }
+
+        /// <summary>
+        /// Construct a run for text content from string
+        /// </summary>
+        public TextCharacters(
+            string characterString,
+            int offsetToFirstChar,
+            int length,
+            TextRunProperties textRunProperties
+            ) :
+            this(
+                new CharacterBufferReference(characterString, offsetToFirstChar),
+                length,
+                textRunProperties
+                )
+        { }
+
+        /// <summary>
+        /// Internal constructor of TextContent
+        /// </summary>
+        public TextCharacters(
+            CharacterBufferReference characterBufferReference,
+            int length,
+            TextRunProperties textRunProperties
+            )
         {
-            Text = text.Skip(offsetToFirstCharacter).Take(length);
-            TextSourceLength = length;
-            Properties = properties;
+            if (length <= 0)
+            {
+                throw new ArgumentOutOfRangeException("length", "ParameterMustBeGreaterThanZero");
+            }
+
+            if (textRunProperties.FontRenderingEmSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException("textRunProperties.FontRenderingEmSize", "ParameterMustBeGreaterThanZero");
+            }
+
+            CharacterBufferReference = characterBufferReference;
+            Length = length;
+            Properties = textRunProperties;
         }
 
         /// <inheritdoc />
-        public override int TextSourceLength { get; }
+        public override int Length { get; }
 
         /// <inheritdoc />
-        public override ReadOnlySlice<char> Text { get; }
+        public override CharacterBufferReference CharacterBufferReference { get; }
 
         /// <inheritdoc />
         public override TextRunProperties Properties { get; }
@@ -38,18 +94,17 @@ namespace Avalonia.Media.TextFormatting
         /// Gets a list of <see cref="ShapeableTextCharacters"/>.
         /// </summary>
         /// <returns>The shapeable text characters.</returns>
-        internal IReadOnlyList<ShapeableTextCharacters> GetShapeableCharacters(ReadOnlySlice<char> runText, sbyte biDiLevel,
-            ref TextRunProperties? previousProperties)
+        internal IReadOnlyList<ShapeableTextCharacters> GetShapeableCharacters(CharacterBufferRange characterBufferRange, sbyte biDiLevel, ref TextRunProperties? previousProperties)
         {
             var shapeableCharacters = new List<ShapeableTextCharacters>(2);
 
-            while (!runText.IsEmpty)
+            while (characterBufferRange.Length > 0)
             {
-                var shapeableRun = CreateShapeableRun(runText, Properties, biDiLevel, ref previousProperties);
+                var shapeableRun = CreateShapeableRun(characterBufferRange, Properties, biDiLevel, ref previousProperties);
 
                 shapeableCharacters.Add(shapeableRun);
 
-                runText = runText.Skip(shapeableRun.Text.Length);
+                characterBufferRange = characterBufferRange.Skip(shapeableRun.Length);
 
                 previousProperties = shapeableRun.Properties;
             }
@@ -60,45 +115,45 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Creates a shapeable text run with unique properties.
         /// </summary>
-        /// <param name="text">The text to create text runs from.</param>
+        /// <param name="characterBufferRange">The character buffer range to create text runs from.</param>
         /// <param name="defaultProperties">The default text run properties.</param>
         /// <param name="biDiLevel">The bidi level of the run.</param>
         /// <param name="previousProperties"></param>
         /// <returns>A list of shapeable text runs.</returns>
-        private static ShapeableTextCharacters CreateShapeableRun(ReadOnlySlice<char> text,
+        private static ShapeableTextCharacters CreateShapeableRun(CharacterBufferRange characterBufferRange,
             TextRunProperties defaultProperties, sbyte biDiLevel, ref TextRunProperties? previousProperties)
         {
             var defaultTypeface = defaultProperties.Typeface;
             var currentTypeface = defaultTypeface;
             var previousTypeface = previousProperties?.Typeface;
 
-            if (TryGetShapeableLength(text, currentTypeface, null, out var count, out var script))
+            if (TryGetShapeableLength(characterBufferRange, currentTypeface, null, out var count, out var script))
             {
                 if (script == Script.Common && previousTypeface is not null)
                 {
-                    if (TryGetShapeableLength(text, previousTypeface.Value, null, out var fallbackCount, out _))
+                    if (TryGetShapeableLength(characterBufferRange, previousTypeface.Value, null, out var fallbackCount, out _))
                     {
-                        return new ShapeableTextCharacters(text.Take(fallbackCount),
+                        return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, fallbackCount,
                             defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
                     }
                 }
 
-                return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
+                return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, count, defaultProperties.WithTypeface(currentTypeface),
                     biDiLevel);
             }
 
             if (previousTypeface is not null)
             {
-                if (TryGetShapeableLength(text, previousTypeface.Value, defaultTypeface, out count, out _))
+                if (TryGetShapeableLength(characterBufferRange, previousTypeface.Value, defaultTypeface, out count, out _))
                 {
-                    return new ShapeableTextCharacters(text.Take(count),
+                    return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, count,
                         defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
                 }
             }
 
             var codepoint = Codepoint.ReplacementCodepoint;
 
-            var codepointEnumerator = new CodepointEnumerator(text.Skip(count));
+            var codepointEnumerator = new CodepointEnumerator(characterBufferRange.Skip(count));
 
             while (codepointEnumerator.MoveNext())
             {
@@ -118,10 +173,10 @@ namespace Avalonia.Media.TextFormatting
                     defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
                     out currentTypeface);
 
-            if (matchFound && TryGetShapeableLength(text, currentTypeface, defaultTypeface, out count, out _))
+            if (matchFound && TryGetShapeableLength(characterBufferRange, currentTypeface, defaultTypeface, out count, out _))
             {
                 //Fallback found
-                return new ShapeableTextCharacters(text.Take(count), defaultProperties.WithTypeface(currentTypeface),
+                return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, count, defaultProperties.WithTypeface(currentTypeface),
                     biDiLevel);
             }
 
@@ -130,7 +185,7 @@ namespace Avalonia.Media.TextFormatting
 
             var glyphTypeface = currentTypeface.GlyphTypeface;
 
-            var enumerator = new GraphemeEnumerator(text);
+            var enumerator = new GraphemeEnumerator(characterBufferRange);
 
             while (enumerator.MoveNext())
             {
@@ -144,20 +199,20 @@ namespace Avalonia.Media.TextFormatting
                 count += grapheme.Text.Length;
             }
 
-            return new ShapeableTextCharacters(text.Take(count), defaultProperties, biDiLevel);
+            return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, count, defaultProperties, biDiLevel);
         }
 
         /// <summary>
         /// Tries to get a shapeable length that is supported by the specified typeface.
         /// </summary>
-        /// <param name="text">The text.</param>
+        /// <param name="characterBufferRange">The character buffer range to shape.</param>
         /// <param name="typeface">The typeface that is used to find matching characters.</param>
         /// <param name="defaultTypeface"></param>
         /// <param name="length">The shapeable length.</param>
         /// <param name="script"></param>
         /// <returns></returns>
-        protected static bool TryGetShapeableLength(
-            ReadOnlySlice<char> text,
+        internal static bool TryGetShapeableLength(
+            CharacterBufferRange characterBufferRange,
             Typeface typeface,
             Typeface? defaultTypeface,
             out int length,
@@ -166,7 +221,7 @@ namespace Avalonia.Media.TextFormatting
             length = 0;
             script = Script.Unknown;
 
-            if (text.Length == 0)
+            if (characterBufferRange.Length == 0)
             {
                 return false;
             }
@@ -174,7 +229,7 @@ namespace Avalonia.Media.TextFormatting
             var font = typeface.GlyphTypeface;
             var defaultFont = defaultTypeface?.GlyphTypeface;
 
-            var enumerator = new GraphemeEnumerator(text);
+            var enumerator = new GraphemeEnumerator(characterBufferRange);
 
             while (enumerator.MoveNext())
             {

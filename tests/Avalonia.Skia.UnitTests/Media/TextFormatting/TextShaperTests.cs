@@ -14,11 +14,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var text = "\n\r\n".AsMemory();
+                var text = "\n\r\n";
                 var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 12,0, CultureInfo.CurrentCulture);
                 var shapedBuffer = TextShaper.Current.ShapeText(text, options);
                 
-                Assert.Equal(shapedBuffer.Text.Length, text.Length);
+                Assert.Equal(shapedBuffer.CharacterBufferRange.Length, text.Length);
                 Assert.Equal(shapedBuffer.GlyphClusters.Count, text.Length);
                 Assert.Equal(0, shapedBuffer.GlyphClusters[0]);
                 Assert.Equal(1, shapedBuffer.GlyphClusters[1]);
@@ -31,7 +31,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var text = "\t".AsMemory();
+                var text = "\t";
                 var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 12, 0, CultureInfo.CurrentCulture, 100);
                 var shapedBuffer = TextShaper.Current.ShapeText(text, options);
 
