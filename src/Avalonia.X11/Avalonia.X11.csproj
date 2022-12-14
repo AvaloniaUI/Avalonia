@@ -10,7 +10,12 @@
         <ProjectReference Include="..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
         <ProjectReference Include="..\Avalonia.FreeDesktop\Avalonia.FreeDesktop.csproj" />
         <Compile Include="..\Shared\RawEventGrouping.cs" />
-    </ItemGroup>
-    <Import Project="..\..\build\SourceGenerators.props" />
-    <Import Project="..\..\build\TrimmingEnable.props" />
+  </ItemGroup>
+  <Import Project="..\..\build\SourceGenerators.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
+
+  <ItemGroup>
+    <Compile Remove="..\Shared\SourceGeneratorAttributes.cs"/>
+    <None Include="..\Shared\SourceGeneratorAttributes.cs" Visible="false"/>
+  </ItemGroup>
 </Project>
