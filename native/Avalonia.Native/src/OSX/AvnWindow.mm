@@ -280,6 +280,9 @@
 
 - (void)windowDidBecomeKey:(NSNotification *_Nonnull)notification
 {
+    if (_parent == nullptr)
+        return;
+        
     _parent->BringToFront();
     
     dispatch_async(dispatch_get_main_queue(), ^{
