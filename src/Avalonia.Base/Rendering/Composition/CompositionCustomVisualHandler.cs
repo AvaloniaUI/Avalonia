@@ -21,16 +21,45 @@ public abstract class CompositionCustomVisualHandler
     
     public abstract void OnRender(ImmediateDrawingContext drawingContext);
 
-    protected Vector2 EffectiveSize => _host?.Size ?? default;
+    void VerifyAccess()
+    {
+        if (_host == null)
+            throw new InvalidOperationException("Object is not yet attached to the compositor");
+        _host.Compositor.VerifyAccess();
+    }
 
-    protected TimeSpan CompositionNow => _host?.Compositor.ServerNow ?? default;
-    
+    protected Vector2 EffectiveSize
+    {
+        get
+        {
+            VerifyAccess();
+            return _host!.Size;
+        }
+    }
+
+    protected TimeSpan CompositionNow
+    {
+        get
+        {
+            VerifyAccess();
+            return _host!.Compositor.ServerNow;
+        }
+    }
+
     public virtual Rect GetRenderBounds() =>
         new(0, 0, EffectiveSize.X, EffectiveSize.Y);
 
     internal void Attach(ServerCompositionCustomVisual visual) => _host = visual;
 
-    protected void Invalidate() => _host?.HandlerInvalidate();
+    protected void Invalidate()
+    {
+        VerifyAccess();
+        _host!.HandlerInvalidate();
+    }
 
-    protected void RegisterForNextAnimationFrameUpdate() => _host?.HandlerRegisterForNextAnimationFrameUpdate();
+    protected void RegisterForNextAnimationFrameUpdate()
+    {
+        VerifyAccess();
+        _host!.HandlerRegisterForNextAnimationFrameUpdate();
+    }
 }

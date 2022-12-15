@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
@@ -31,6 +32,7 @@ namespace Avalonia.Rendering.Composition.Server
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
         private object _lock = new object();
+        private Thread? _safeThread;
         public PlatformRenderInterfaceContextManager RenderInterface { get; }
         internal static readonly object RenderThreadJobsStartMarker = new();
         internal static readonly object RenderThreadJobsEndMarker = new();
@@ -129,7 +131,15 @@ namespace Avalonia.Rendering.Composition.Server
         {
             lock (_lock)
             {
-                RenderCore();
+                try
+                {
+                    _safeThread = Thread.CurrentThread;
+                    RenderCore();
+                }
+                finally
+                {
+                    _safeThread = null;
+                }
             }
         }
         
@@ -179,6 +189,13 @@ namespace Avalonia.Rendering.Composition.Server
         {
             using (RenderInterface.EnsureCurrent())
                 return RenderInterface.CreateRenderTarget(surfaces);
+        }
+
+        public bool CheckAccess() => _safeThread == Thread.CurrentThread;
+        public void VerifyAccess()
+        {
+            if (!CheckAccess())
+                throw new InvalidOperationException("This object can be only accessed under compositor lock");
         }
     }
 }
