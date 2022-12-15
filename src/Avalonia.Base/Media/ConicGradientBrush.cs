@@ -47,7 +47,7 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        public IImmutableBrush ToImmutable()
+        public override IImmutableBrush ToImmutable()
         {
             return new ImmutableConicGradientBrush(this);
         }
