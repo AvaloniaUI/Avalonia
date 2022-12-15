@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
+using Avalonia.Platform;
 using Avalonia.Skia;
 
 namespace Avalonia.Browser.Skia
@@ -22,5 +25,28 @@ namespace Avalonia.Browser.Skia
         {
             return null;
         }
+
+        public void Dispose()
+        {
+            
+        }
+
+	public object? TryGetFeature(Type t) => null;
+        
+        public bool IsLost => false;
+        
+        public IDisposable EnsureCurrent()
+        {
+            return Disposable.Empty;
+        }
+    }
+
+    class BrowserSkiaGraphics : IPlatformGraphics
+    {
+        private BrowserSkiaGpu _skia = new();
+        public bool UsesSharedContext => true;
+        public IPlatformGraphicsContext CreateContext() => throw new NotSupportedException();
+
+        public IPlatformGraphicsContext GetSharedContext() => _skia;
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Globalization;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -45,9 +43,14 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <inheritdoc cref="ITextShaperImpl.ShapeText"/>
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
+        public ShapedBuffer ShapeText(CharacterBufferReference text, int length, TextShaperOptions options = default)
         {
-            return _platformImpl.ShapeText(text, options);
+            return _platformImpl.ShapeText(text, length, options);
+        }
+
+        public ShapedBuffer ShapeText(string text, TextShaperOptions options = default)
+        {
+            return ShapeText(new CharacterBufferReference(text), text.Length, options);
         }
     }
 }

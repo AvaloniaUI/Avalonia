@@ -11,7 +11,7 @@ namespace Avalonia.UnitTests
 {
     public class HarfBuzzTextShaperImpl : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
+        public ShapedBuffer ShapeText(CharacterBufferReference text, int textLength, TextShaperOptions options)
         {
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
@@ -20,7 +20,7 @@ namespace Avalonia.UnitTests
 
             using (var buffer = new Buffer())
             {
-                buffer.AddUtf16(text.Buffer.Span, text.Start, text.Length);
+                buffer.AddUtf16(text.CharacterBuffer.Span, text.OffsetToFirstChar, textLength);
 
                 MergeBreakPair(buffer);
                 
@@ -45,7 +45,9 @@ namespace Avalonia.UnitTests
 
                 var bufferLength = buffer.Length;
 
-                var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
+                var characterBufferRange = new CharacterBufferRange(text, textLength);
+
+                var shapedBuffer = new ShapedBuffer(characterBufferRange, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
 
                 var glyphInfos = buffer.GetGlyphInfoSpan();
 

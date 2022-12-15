@@ -3,7 +3,7 @@
     /// <summary>
     /// The font metrics is holding information about a font's ascent, descent, etc. in design em units.
     /// </summary>
-    public readonly struct FontMetrics
+    public readonly record struct FontMetrics
     {
         /// <summary>
         ///     Gets the font design units per em.

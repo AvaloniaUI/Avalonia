@@ -8,7 +8,7 @@ namespace Avalonia.Utilities
     /// A task-like operation that is guaranteed to finish continuations synchronously,
     /// can be used for parametrized one-shot events
     /// </summary>
-    public struct SynchronousCompletionAsyncResult<T> : INotifyCompletion
+    public record struct SynchronousCompletionAsyncResult<T> : INotifyCompletion
     {
         private readonly SynchronousCompletionAsyncResultSource<T>? _source;
         private readonly T? _result;

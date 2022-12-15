@@ -465,7 +465,7 @@ namespace Avalonia.Controls
 
             _pendingViewportShift = default;
             _unshiftableShift = default;
-            if (_visibleWindow.IsEmpty)
+            if (_visibleWindow.IsDefault)
             {
                 // We got cleared.
                 _layoutExtent = default;
@@ -551,7 +551,7 @@ namespace Avalonia.Controls
         private void TryInvalidateMeasure()
         {
             // Don't invalidate measure if we have an invalid window.
-            if (!_visibleWindow.IsEmpty)
+            if (!_visibleWindow.IsDefault)
             {
                 // We invalidate measure instead of just invalidating arrange because
                 // we don't invalidate measure in UpdateViewport if the view is changing to

@@ -229,8 +229,8 @@ namespace Avalonia.Controls
             s_setupWasAlreadyCalled = true;
             _optionsInitializers?.Invoke();
             RuntimePlatformServicesInitializer();
-            WindowingSubsystemInitializer();
             RenderingSubsystemInitializer();
+            WindowingSubsystemInitializer();
             AfterPlatformServicesSetupCallback(Self);
             Instance = _appFactory();
             Instance.ApplicationLifetime = _lifetime;

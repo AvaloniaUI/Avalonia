@@ -85,6 +85,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
             
             GroupTransformers = new()
             {
+                new XamlMergeResourceGroupTransformer(),
                 new AvaloniaXamlIncludeTransformer()
             };
         }

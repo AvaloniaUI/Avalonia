@@ -21,7 +21,7 @@ namespace Avalonia.Platform
     }
 
     [Unstable]
-    public struct RuntimePlatformInfo
+    public record struct RuntimePlatformInfo
     {
         public OperatingSystemType OperatingSystem { get; set; }
 

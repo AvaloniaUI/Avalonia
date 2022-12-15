@@ -30,7 +30,7 @@ namespace Avalonia.Skia.UnitTests
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -64,7 +64,7 @@ namespace Avalonia.Skia.UnitTests
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 

@@ -11,6 +11,10 @@ namespace Avalonia.Markup.Xaml.Styling
     /// <summary>
     /// Includes a style from a URL.
     /// </summary>
+    /// <remarks>
+    /// If used from the XAML code, it is replaced with direct style reference.
+    /// When used in runtime, this type might be unsafe with trimming and AOT.
+    /// </remarks>
     [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
     public class StyleInclude : IStyle, IResourceProvider
     {

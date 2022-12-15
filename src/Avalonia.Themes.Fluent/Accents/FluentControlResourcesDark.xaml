@@ -636,4 +636,8 @@
 
     <!-- BaseResources for ScrollViewer.xaml -->
     <SolidColorBrush x:Key="ScrollViewerScrollBarsSeparatorBackground" Color="{StaticResource SystemChromeMediumColor}" Opacity="0.9" />
+
+    <!-- BaseResources for RefreshVisualizer.xaml -->
+    <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="White"/>
+    <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent"/> 
 </ResourceDictionary>

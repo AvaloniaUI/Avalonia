@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
@@ -31,7 +32,7 @@ internal class FpsCounter
         {
             var s = new string((char)c, 1);
             var glyph = typeface.GetGlyph((uint)(s[0]));
-            _runs[c - FirstChar] = new GlyphRun(typeface, 18, new ReadOnlySlice<char>(s.AsMemory()), new ushort[] { glyph });
+            _runs[c - FirstChar] = new GlyphRun(typeface, 18, s.ToArray(), new ushort[] { glyph });
         }
     }
 
