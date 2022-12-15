@@ -643,12 +643,6 @@ namespace Avalonia.Win32
                 _hwnd = IntPtr.Zero;
             }
 
-            if (_className != null)
-            {
-                UnregisterClass(_className, GetModuleHandle(null));
-                _className = null;
-            }
-
             _framebuffer.Dispose();
         }
 
@@ -1141,6 +1135,15 @@ namespace Avalonia.Win32
                 {
                     SetActiveWindow(_parent._hwnd);
                 }
+            }
+        }
+
+        private void AfterCloseCleanup()
+        {
+            if (_className != null)
+            {
+                UnregisterClass(_className, GetModuleHandle(null));
+                _className = null;
             }
         }
 
