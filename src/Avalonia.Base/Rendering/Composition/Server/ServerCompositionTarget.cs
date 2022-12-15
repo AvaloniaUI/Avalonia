@@ -87,8 +87,6 @@ namespace Avalonia.Rendering.Composition.Server
             }
 
             _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
-
-            Compositor.UpdateServerTime();
             
             if(_dirtyRect.IsEmpty && !_redrawRequested)
                 return;

@@ -26,8 +26,8 @@ namespace Avalonia.Rendering.Composition.Server
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
         private List<ServerCompositionTarget> _activeTargets = new();
-        private HashSet<IAnimationInstance> _activeAnimations = new();
-        private List<IAnimationInstance> _animationsToUpdate = new();
+        private HashSet<IServerClockItem> _clockItems = new();
+        private List<IServerClockItem> _clockItemsToUpdate = new();
         internal BatchStreamObjectPool<object?> BatchObjectPool;
         internal BatchStreamMemoryPool BatchMemoryPool;
         private object _lock = new object();
@@ -135,16 +135,17 @@ namespace Avalonia.Rendering.Composition.Server
         
         private void RenderCore()
         {
+            UpdateServerTime();
             ApplyPendingBatches();
             CompletePendingBatches();
             
-            foreach(var animation in _activeAnimations)
-                _animationsToUpdate.Add(animation);
+            foreach(var animation in _clockItems)
+                _clockItemsToUpdate.Add(animation);
+
+            foreach (var animation in _clockItemsToUpdate)
+                animation.OnTick();
             
-            foreach(var animation in _animationsToUpdate)
-                animation.Invalidate();
-            
-            _animationsToUpdate.Clear();
+            _clockItemsToUpdate.Clear();
             
             try
             {
@@ -168,11 +169,11 @@ namespace Avalonia.Rendering.Composition.Server
             _activeTargets.Remove(target);
         }
         
-        public void AddToClock(IAnimationInstance animationInstance) =>
-            _activeAnimations.Add(animationInstance);
+        public void AddToClock(IServerClockItem item) =>
+            _clockItems.Add(item);
 
-        public void RemoveFromClock(IAnimationInstance animationInstance) =>
-            _activeAnimations.Remove(animationInstance);
+        public void RemoveFromClock(IServerClockItem item) =>
+            _clockItems.Remove(item);
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
