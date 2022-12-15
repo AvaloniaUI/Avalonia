@@ -63,7 +63,7 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
-        _isDialog = isDialog || _parent != nullptr;
+        _isDialog = isDialog;
 
         WindowBaseImpl::Show(activate, isDialog);
 
