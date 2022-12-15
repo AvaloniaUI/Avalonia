@@ -48,7 +48,6 @@ namespace Avalonia.Controls
         private const string DATAGRID_elementColumnHeadersPresenterName = "PART_ColumnHeadersPresenter";
         private const string DATAGRID_elementFrozenColumnScrollBarSpacerName = "PART_FrozenColumnScrollBarSpacer";
         private const string DATAGRID_elementHorizontalScrollbarName = "PART_HorizontalScrollbar";
-        private const string DATAGRID_elementRowHeadersPresenterName = "PART_RowHeadersPresenter";
         private const string DATAGRID_elementTopLeftCornerHeaderName = "PART_TopLeftCornerHeader";
         private const string DATAGRID_elementTopRightCornerHeaderName = "PART_TopRightCornerHeader";
         private const string DATAGRID_elementBottomRightCornerHeaderName = "PART_BottomRightCorner";
@@ -1124,7 +1123,7 @@ namespace Avalonia.Controls
                     EnsureColumnHeadersVisibility();
                     if (!newValueCols)
                     {
-                        _columnHeadersPresenter.Measure(Size.Empty);
+                        _columnHeadersPresenter.Measure(default(Size));
                     }
                     else
                     {
@@ -1165,7 +1164,7 @@ namespace Avalonia.Controls
                 _topLeftCornerHeader.IsVisible = newValueRows && newValueCols;
                 if (_topLeftCornerHeader.IsVisible)
                 {
-                    _topLeftCornerHeader.Measure(Size.Empty);
+                    _topLeftCornerHeader.Measure(default(Size));
                 }
             }
 

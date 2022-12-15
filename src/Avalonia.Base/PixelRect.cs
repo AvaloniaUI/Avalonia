@@ -12,6 +12,7 @@ namespace Avalonia
         /// <summary>
         /// An empty rectangle.
         /// </summary>
+        [Obsolete("Use the default keyword instead.")]
         public static readonly PixelRect Empty = default;
 
         /// <summary>
@@ -133,9 +134,13 @@ namespace Avalonia
         public PixelPoint Center => new PixelPoint(X + (Width / 2), Y + (Height / 2));
 
         /// <summary>
-        /// Gets a value that indicates whether the rectangle is empty.
+        /// Gets a value indicating whether the instance has default values (the rectangle is empty).
         /// </summary>
-        public bool IsEmpty => Width == 0 && Height == 0;
+        public bool IsDefault => Width == 0 && Height == 0;
+
+        /// <inheritdoc cref="IsDefault"/>
+        [Obsolete("Use IsDefault instead.")]
+        public bool IsEmpty => IsDefault;
 
         /// <summary>
         /// Checks for equality between two <see cref="PixelRect"/>s.
@@ -257,7 +262,7 @@ namespace Avalonia
             }
             else
             {
-                return Empty;
+                return default;
             }
         }
 
@@ -290,11 +295,11 @@ namespace Avalonia
         /// <returns>The union.</returns>
         public PixelRect Union(PixelRect rect)
         {
-            if (IsEmpty)
+            if (IsDefault)
             {
                 return rect;
             }
-            else if (rect.IsEmpty)
+            else if (rect.IsDefault)
             {
                 return this;
             }

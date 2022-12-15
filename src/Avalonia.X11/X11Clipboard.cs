@@ -18,8 +18,6 @@ namespace Avalonia.X11
         private TaskCompletionSource<object> _requestedDataTcs;
         private readonly IntPtr[] _textAtoms;
         private readonly IntPtr _avaloniaSaveTargetsAtom;
-        private readonly Dictionary<string, IntPtr> _formatAtoms = new Dictionary<string, IntPtr>();
-        private readonly Dictionary<IntPtr, string> _atomFormats = new Dictionary<IntPtr, string>();
 
         public X11Clipboard(AvaloniaX11Platform platform)
         {

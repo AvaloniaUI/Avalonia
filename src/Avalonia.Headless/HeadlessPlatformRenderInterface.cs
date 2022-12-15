@@ -215,7 +215,7 @@ namespace Avalonia.Headless
 
         class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
         {
-            public HeadlessStreamingGeometryStub() : base(Rect.Empty)
+            public HeadlessStreamingGeometryStub() : base(default)
             {
             }
 

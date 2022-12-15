@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
@@ -1143,6 +1144,24 @@ namespace Avalonia.Controls.UnitTests.Selection
                 Assert.Equal("foo", target.SelectedItem);
                 Assert.Equal(new[] { "foo" }, target.SelectedItems);
                 Assert.Equal(0, target.AnchorIndex);
+            }
+
+            [Fact]
+            public void SelectedItems_Indexer_Is_Correct()
+            {
+                // Issue #7974
+                var target = CreateTarget();
+                var raised = 0;
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Equal("bar", e.SelectedItems.First());
+                    Assert.Equal("bar", e.SelectedItems[0]);
+                    ++raised;
+                };
+
+                target.Select(1);
+                Assert.Equal(1, raised);
             }
         }
 
