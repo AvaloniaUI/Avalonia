@@ -138,15 +138,12 @@ namespace Avalonia.Win32.WinRT.Composition
             {
                 _manualResetEvent.WaitOne();
                 _renderCts = new CancellationTokenSource();
-                RunsInBackground = true;
                 while (!_renderCts.IsCancellationRequested && !cts.IsCancellationRequested)
                 {
                     UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
                     lock (_pumpLock)
                         UnmanagedMethods.DispatchMessage(ref msg);
                 }
-                RunsInBackground = false;
-                _manualResetEvent.Reset();
             }
         }
 
@@ -349,10 +346,11 @@ namespace Avalonia.Win32.WinRT.Composition
         
         private void Stop()
         {
+            _manualResetEvent.Reset();
             _renderCts.Cancel();
             _renderCts.Dispose();
         }
-        
-        public bool RunsInBackground { get; set; } 
+
+        public bool RunsInBackground => true;
     }
 }
