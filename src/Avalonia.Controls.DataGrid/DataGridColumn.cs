@@ -50,10 +50,13 @@ namespace Avalonia.Controls
             InheritsWidth = true;
         }
 
-        internal DataGrid OwningGrid
+        /// <summary>
+        /// Gets the <see cref="T:Avalonia.Controls.DataGrid"/> control that contains this column.
+        /// </summary>
+        protected internal DataGrid OwningGrid
         {
             get;
-            set;
+            internal set;
         }
 
         internal int Index
