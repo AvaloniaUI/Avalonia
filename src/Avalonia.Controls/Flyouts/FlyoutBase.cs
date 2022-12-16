@@ -435,7 +435,7 @@ namespace Avalonia.Controls.Primitives
         {
             Size sz;
             // Popup.Child can't be null here, it was set in ShowAtCore.
-            if (Popup.Child!.DesiredSize == Size.Empty)
+            if (Popup.Child!.DesiredSize.IsDefault)
             {
                 // Popup may not have been shown yet. Measure content
                 sz = LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
@@ -457,7 +457,7 @@ namespace Avalonia.Controls.Primitives
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
             }
 
-            var trgtBnds = Target?.Bounds ?? Rect.Empty;
+            var trgtBnds = Target?.Bounds ?? default;
 
             switch (Placement)
             {

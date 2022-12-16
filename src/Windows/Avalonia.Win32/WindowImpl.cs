@@ -643,12 +643,6 @@ namespace Avalonia.Win32
                 _hwnd = IntPtr.Zero;
             }
 
-            if (_className != null)
-            {
-                UnregisterClass(_className, GetModuleHandle(null));
-                _className = null;
-            }
-
             _framebuffer.Dispose();
         }
 
@@ -1144,6 +1138,15 @@ namespace Avalonia.Win32
             }
         }
 
+        private void AfterCloseCleanup()
+        {
+            if (_className != null)
+            {
+                UnregisterClass(_className, GetModuleHandle(null));
+                _className = null;
+            }
+        }
+
         private void MaximizeWithoutCoveringTaskbar()
         {
             IntPtr monitor = MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
@@ -1343,8 +1346,6 @@ namespace Avalonia.Win32
         }
 
         private const int MF_BYCOMMAND = 0x0;
-        private const int MF_BYPOSITION = 0x400;
-        private const int MF_REMOVE = 0x1000;
         private const int MF_ENABLED = 0x0;
         private const int MF_GRAYED = 0x1;
         private const int MF_DISABLED = 0x2;
