@@ -216,13 +216,29 @@ namespace Avalonia.Rendering.Composition.Server
         partial void OnRootChanging()
         {
             if (Root != null)
+            {
                 Root.RemoveVisual(this);
+                OnDetachedFromRoot(Root);
+            }
+        }
+
+        protected virtual void OnDetachedFromRoot(ServerCompositionTarget target)
+        {
+            
         }
         
         partial void OnRootChanged()
         {
             if (Root != null)
+            {
                 Root.AddVisual(this);
+                OnAttachedToRoot(Root);
+            }
+        }
+        
+        protected virtual void OnAttachedToRoot(ServerCompositionTarget target)
+        {
+            
         }
         
         protected override void ValuesInvalidated()
