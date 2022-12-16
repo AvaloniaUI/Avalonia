@@ -12,7 +12,7 @@ internal class ServerCompositionCustomVisual : ServerCompositionContainerVisual,
     private bool _wantsNextAnimationFrameAfterTick;
     internal ServerCompositionCustomVisual(ServerCompositor compositor, CompositionCustomVisualHandler handler) : base(compositor)
     {
-        _handler = handler;
+        _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         _handler.Attach(this);
     }
 
@@ -29,7 +29,7 @@ internal class ServerCompositionCustomVisual : ServerCompositionContainerVisual,
             catch (Exception e)
             {
                 Logger.TryGet(LogEventLevel.Error, LogArea.Visual)
-                    ?.Log(_handler, $"Exception in {nameof(CompositionCustomVisualHandler)} {{0}}", e);
+                    ?.Log(_handler, $"Exception in {_handler.GetType().Name}.{nameof(CompositionCustomVisualHandler.OnMessage)} {{0}}", e);
             }
         }
     }
@@ -68,7 +68,15 @@ internal class ServerCompositionCustomVisual : ServerCompositionContainerVisual,
 
     protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)
     {
-        var context = new ImmediateDrawingContext(canvas, false);
-        _handler.OnRender(context);
+        using var context = new ImmediateDrawingContext(canvas, false);
+        try
+        {
+            _handler.OnRender(context);
+        }
+        catch (Exception e)
+        {
+            Logger.TryGet(LogEventLevel.Error, LogArea.Visual)
+                ?.Log(_handler, $"Exception in {_handler.GetType().Name}.{nameof(CompositionCustomVisualHandler.OnRender)} {{0}}", e);
+        }
     }
 }
