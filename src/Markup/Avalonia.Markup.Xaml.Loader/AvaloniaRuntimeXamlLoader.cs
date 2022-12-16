@@ -56,8 +56,8 @@ namespace Avalonia.Markup.Xaml
         /// </summary>
         /// <param name="documents">Collection of documents.</param>
         /// <param name="configuration">Xaml loader configuration.</param>
-        /// <returns>The loaded objects per each input document.</returns>
-        public static IReadOnlyList<object> LoadGroup(IReadOnlyCollection<RuntimeXamlLoaderDocument> documents, RuntimeXamlLoaderConfiguration? configuration = null)
+        /// <returns>The loaded objects per each input document. If document was removed, the element by index is null.</returns>
+        public static IReadOnlyList<object?> LoadGroup(IReadOnlyCollection<RuntimeXamlLoaderDocument> documents, RuntimeXamlLoaderConfiguration? configuration = null)
             => AvaloniaXamlIlRuntimeCompiler.LoadGroup(documents, configuration ?? new RuntimeXamlLoaderConfiguration());
 
         /// <summary>

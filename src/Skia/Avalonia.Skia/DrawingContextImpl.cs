@@ -280,7 +280,7 @@ namespace Avalonia.Skia
             }
         }
 
-        SKRect AreaCastingShadowInHole(
+        static SKRect AreaCastingShadowInHole(
             SKRect hole_rect,
             float shadow_blur,
             float shadow_spread,
@@ -362,7 +362,7 @@ namespace Avalonia.Skia
 
             foreach (var boxShadow in boxShadows)
             {
-                if (!boxShadow.IsEmpty && !boxShadow.IsInset)
+                if (!boxShadow.IsDefault && !boxShadow.IsInset)
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
@@ -418,7 +418,7 @@ namespace Avalonia.Skia
 
             foreach (var boxShadow in boxShadows)
             {
-                if (!boxShadow.IsEmpty && boxShadow.IsInset)
+                if (!boxShadow.IsDefault && boxShadow.IsInset)
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
@@ -689,7 +689,7 @@ namespace Avalonia.Skia
         /// <param name="paintWrapper">Paint wrapper.</param>
         /// <param name="targetSize">Target size.</param>
         /// <param name="gradientBrush">Gradient brush.</param>
-        private void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
+        private static void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
         {
             var tileMode = gradientBrush.SpreadMethod.ToSKShaderTileMode();
             var stopColors = gradientBrush.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();
@@ -1137,11 +1137,14 @@ namespace Avalonia.Skia
             if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
             {
                 var srcDashes = pen.DashStyle.Dashes;
-                var dashesArray = new float[srcDashes.Count];
 
-                for (var i = 0; i < srcDashes.Count; ++i)
+                var count = srcDashes.Count % 2 == 0 ? srcDashes.Count : srcDashes.Count * 2;
+
+                var dashesArray = new float[count];
+
+                for (var i = 0; i < count; ++i)
                 {
-                    dashesArray[i] = (float) srcDashes[i] * paint.StrokeWidth;
+                    dashesArray[i] = (float) srcDashes[i % srcDashes.Count] * paint.StrokeWidth;
                 }
 
                 var offset = (float)(pen.DashStyle.Offset * pen.Thickness);

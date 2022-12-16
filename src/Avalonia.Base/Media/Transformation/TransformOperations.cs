@@ -165,7 +165,7 @@ namespace Avalonia.Media.Transformation
             return Math.Max(from._operations.Count, to._operations.Count);
         }
 
-        public readonly struct Builder
+        public readonly record struct Builder
         {
             private readonly List<TransformOperation> _operations;
 

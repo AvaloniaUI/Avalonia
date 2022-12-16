@@ -346,5 +346,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         public void MarkAsRendered() => _rendered.TrySetResult(true);
+
+        public List<Action>? RenderThreadJobs { get; set; }
     }
 }

@@ -13,4 +13,6 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\..\build\BuildTargets.targets" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

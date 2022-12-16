@@ -56,7 +56,7 @@ namespace Avalonia.Controls
             set => SetAndRaise(CellEditingTemplateProperty, ref _cellEditingCellTemplate, value);
         }
         
-        private void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+        private static void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
         {
             var oldValue = (IDataTemplate)e.OldValue;
             var value = (IDataTemplate)e.NewValue;
@@ -64,9 +64,11 @@ namespace Avalonia.Controls
 
         protected override Control GenerateElement(DataGridCell cell, object dataItem)
         {
-            if(CellTemplate != null)
+            if (CellTemplate != null)
             {
-                return CellTemplate.Build(dataItem);
+                return (CellTemplate is IRecyclingDataTemplate recyclingDataTemplate)
+                    ? recyclingDataTemplate.Build(dataItem, cell.Content as Control)
+                    : CellTemplate.Build(dataItem);
             }
             if (Design.IsDesignMode)
             {

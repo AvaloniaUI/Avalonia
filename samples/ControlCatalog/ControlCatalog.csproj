@@ -33,4 +33,14 @@
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />
+
+  <ItemGroup>
+    <None Remove="Pages\CustomDrawing.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Update="Pages\CustomDrawing.xaml">
+      <Generator></Generator>
+    </AvaloniaResource>
+  </ItemGroup>
 </Project>

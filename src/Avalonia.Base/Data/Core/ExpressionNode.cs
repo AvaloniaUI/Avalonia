@@ -4,8 +4,6 @@ namespace Avalonia.Data.Core
 {
     public abstract class ExpressionNode
     {
-        private static readonly object CacheInvalid = new object();
-
         protected static readonly WeakReference<object?> UnsetReference = 
             new WeakReference<object?>(AvaloniaProperty.UnsetValue);
 
@@ -159,7 +157,7 @@ namespace Avalonia.Data.Core
             _listening = false;
         }
 
-        private BindingNotification TargetNullNotification()
+        private static BindingNotification TargetNullNotification()
         {
             return new BindingNotification(
                 new MarkupBindingChainException("Null value"),

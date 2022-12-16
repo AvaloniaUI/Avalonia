@@ -66,6 +66,9 @@
       <TabItem Header="Cursor" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <pages:CursorPage />
       </TabItem>
+      <TabItem Header="Custom Drawing" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <pages:CustomDrawing/>
+      </TabItem>
       <TabItem Header="DataGrid"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
@@ -131,6 +134,9 @@
       </TabItem>
       <TabItem Header="RadioButton">
         <pages:RadioButtonPage />
+      </TabItem>
+      <TabItem Header="RefreshContainer">
+        <pages:RefreshContainerPage />
       </TabItem>
       <TabItem Header="RelativePanel">
         <pages:RelativePanelPage />

@@ -90,7 +90,7 @@ namespace RenderDemo.Pages
                     return new ControlRun(_control, _defaultProperties);
                 }
 
-                return new TextCharacters(_text.AsMemory(), _defaultProperties);
+                return new TextCharacters(_text, _defaultProperties);
             }
         }
 

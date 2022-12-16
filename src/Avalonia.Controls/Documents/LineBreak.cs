@@ -4,7 +4,7 @@ using System.Text;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 
-namespace Avalonia.Controls.Documents 
+namespace Avalonia.Controls.Documents
 {
     /// <summary>
     /// LineBreak element that forces a line breaking. 
@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Documents
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            var text = Environment.NewLine.AsMemory();
+            var text = Environment.NewLine;
 
             var textRunProperties = CreateTextRunProperties();
 

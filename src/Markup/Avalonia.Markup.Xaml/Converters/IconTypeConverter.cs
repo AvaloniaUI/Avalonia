@@ -32,7 +32,7 @@ namespace Avalonia.Markup.Xaml.Converters
             throw new NotSupportedException();
         }
 
-        private WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string s)
+        private static WindowIcon CreateIconFromPath(ITypeDescriptorContext context, string s)
         {
             var uri = s.StartsWith("/")
                 ? new Uri(s, UriKind.Relative)

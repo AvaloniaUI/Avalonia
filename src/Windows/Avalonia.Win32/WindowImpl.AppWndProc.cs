@@ -10,6 +10,7 @@ using Avalonia.Controls.Remote;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop.Automation;
@@ -21,6 +22,8 @@ namespace Avalonia.Win32
     {
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Using Win32 naming for consistency.")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We do .NET COM interop availability checks")]
+        [UnconditionalSuppressMessage("Trimming", "IL2050", Justification = "We do .NET COM interop availability checks")]
         protected virtual unsafe IntPtr AppWndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
             const double wheelDelta = 120.0;
@@ -83,7 +86,10 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_DESTROY:
                     {
-                        UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
+                        if (UiaCoreTypesApi.IsNetComInteropAvailable)
+                        {
+                            UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, IntPtr.Zero, IntPtr.Zero, null);
+                        }
 
                         // We need to release IMM context and state to avoid leaks.
                         if (Imm32InputMethod.Current.HWND == _hwnd)
@@ -101,6 +107,9 @@ namespace Avalonia.Win32
                         _touchDevice?.Dispose();
                         //Free other resources
                         Dispose();
+
+                        // Schedule cleanup of anything that requires window to be destroyed
+                        Dispatcher.UIThread.Post(AfterCloseCleanup);
                         return IntPtr.Zero;
                     }
 
@@ -129,13 +138,18 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYDOWN:
                 case WindowsMessage.WM_SYSKEYDOWN:
                     {
-                        e = new RawKeyEventArgs(
-                            WindowsKeyboardDevice.Instance,
-                            timestamp,
-                            _owner,
-                            RawKeyEventType.KeyDown,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
-                            WindowsKeyboardDevice.Instance.Modifiers);
+                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
+
+                        if (key != Key.None)
+                        {
+                            e = new RawKeyEventArgs(
+                                WindowsKeyboardDevice.Instance,
+                                timestamp,
+                                _owner,
+                                RawKeyEventType.KeyDown,
+                                key,
+                                WindowsKeyboardDevice.Instance.Modifiers);
+                        }
                         break;
                     }
 
@@ -154,13 +168,18 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_KEYUP:
                 case WindowsMessage.WM_SYSKEYUP:
                     {
-                        e = new RawKeyEventArgs(
+                        var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
+
+                        if (key != Key.None)
+                        {
+                            e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
                             _owner,
                             RawKeyEventType.KeyUp,
-                            KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam)),
+                            key,
                             WindowsKeyboardDevice.Instance.Modifiers);
+                        }
                         break;
                     }
                 case WindowsMessage.WM_CHAR:
@@ -377,7 +396,7 @@ namespace Avalonia.Win32
                                     RawPointerEventType.XButton1Down :
                                     RawPointerEventType.XButton2Down,
                             },
-                            PointToClient(PointFromLParam(lParam)), GetMouseModifiers(wParam));
+                            PointToClient(WindowImpl.PointFromLParam(lParam)), GetMouseModifiers(wParam));
                         break;
                     }
                 case WindowsMessage.WM_TOUCH:
@@ -707,7 +726,7 @@ namespace Avalonia.Win32
                     break;
 
                 case WindowsMessage.WM_GETOBJECT:
-                    if ((long)lParam == UiaRootObjectId)
+                    if ((long)lParam == UiaRootObjectId && UiaCoreTypesApi.IsNetComInteropAvailable)
                     {
                         var peer = ControlAutomationPeer.CreatePeerForElement((Control)_owner);
                         var node = AutomationNode.GetOrCreate(peer);
@@ -1035,7 +1054,7 @@ namespace Avalonia.Win32
             return new Point((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16)) / RenderScaling;
         }
 
-        private PixelPoint PointFromLParam(IntPtr lParam)
+        private static PixelPoint PointFromLParam(IntPtr lParam)
         {
             return new PixelPoint((short)(ToInt32(lParam) & 0xffff), (short)(ToInt32(lParam) >> 16));
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Data;
+using Avalonia.Threading;
 
 namespace Avalonia.PropertyStore
 {
@@ -40,20 +41,56 @@ namespace Avalonia.PropertyStore
 
         public void OnNext(T value)
         {
-            if (Property.ValidateValue?.Invoke(value) != false)
-                _owner.SetValue(Property, value, BindingPriority.LocalValue);
+            static void Execute(ValueStore owner, StyledPropertyBase<T> property, T value)
+            {
+                if (property.ValidateValue?.Invoke(value) != false)
+                    owner.SetValue(property, value, BindingPriority.LocalValue);
+                else
+                    owner.ClearLocalValue(property);
+            }
+
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Execute(_owner, Property, value);
+            }
             else
-                _owner.ClearLocalValue(Property);
+            {
+                // To avoid allocating closure in the outer scope we need to capture variables
+                // locally. This allows us to skip most of the allocations when on UI thread.
+                var instance = _owner;
+                var property = Property;
+                var newValue = value;
+                Dispatcher.UIThread.Post(() => Execute(instance, property, newValue));
+            }
         }
 
         public void OnNext(BindingValue<T> value)
         {
-            LoggingUtils.LogIfNecessary(_owner.Owner, Property, value);
+            static void Execute(LocalValueBindingObserver<T> instance, BindingValue<T> value)
+            {
+                var owner = instance._owner;
+                var property = instance.Property;
 
-            if (value.HasValue)
-                _owner.SetValue(Property, value.Value, BindingPriority.LocalValue);
-            else if (value.Type != BindingValueType.DataValidationError)
-                _owner.ClearLocalValue(Property);
+                LoggingUtils.LogIfNecessary(owner.Owner, property, value);
+
+                if (value.HasValue)
+                    owner.SetValue(property, value.Value, BindingPriority.LocalValue);
+                else if (value.Type != BindingValueType.DataValidationError)
+                    owner.ClearLocalValue(property);
+            }
+
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Execute(this, value);
+            }
+            else
+            {
+                // To avoid allocating closure in the outer scope we need to capture variables
+                // locally. This allows us to skip most of the allocations when on UI thread.
+                var instance = this;
+                var newValue = value;
+                Dispatcher.UIThread.Post(() => Execute(instance, newValue));
+            }
         }
     }
 }

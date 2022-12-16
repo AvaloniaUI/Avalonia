@@ -58,7 +58,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.Empty(target.GetLogicalChildren());
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<HeaderedItemsControl>((parent, scope) =>
             {

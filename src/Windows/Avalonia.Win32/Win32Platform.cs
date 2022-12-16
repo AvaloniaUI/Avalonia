@@ -19,6 +19,7 @@ using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using JetBrains.Annotations;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
@@ -59,11 +60,6 @@ namespace Avalonia
         /// GPU rendering will not be enabled if this is set to false.
         /// </remarks>
         public bool? AllowEglInitialization { get; set; }
-        
-        public IList<string> EglRendererBlacklist { get; set; } = new List<string>
-        {
-            "Microsoft Basic Render"
-        };
 
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.
@@ -96,6 +92,21 @@ namespace Avalonia
         /// This can be useful when you need a rounded-corner blurred Windows 10 app, or borderless Windows 11 app
         /// </summary>
         public float? CompositionBackdropCornerRadius { get; set; }
+
+        /// <summary>
+        /// When <see cref="UseLowLatencyDxgiSwapChain"/> is active, renders Avalonia through a low-latency Dxgi Swapchain.
+        /// Requires Feature Level 11_3 to be active, Windows 8.1+ Any Subversion. 
+        /// This is only recommended if low input latency is desirable, and there is no need for the transparency
+        /// and stylings / blurrings offered by <see cref="UseWindowsUIComposition"/><br/>
+        /// This is mutually exclusive with 
+        /// <see cref="UseWindowsUIComposition"/> which if active will override this setting. 
+        /// </summary>
+        public bool UseLowLatencyDxgiSwapChain { get; set; } = false;
+        
+        /// <summary>
+        /// Provides a way to use a custom-implemented graphics context such as a custom ISkiaGpu
+        /// </summary>
+        [CanBeNull] public IPlatformGraphics CustomPlatformGraphics { get; set; }
     }
 }
 
@@ -129,6 +140,7 @@ namespace Avalonia.Win32
         public static Win32PlatformOptions Options { get; private set; }
         
         internal static Compositor Compositor { get; private set; }
+        internal static PlatformRenderInterfaceContextManager RenderInterface { get; private set; }
 
         public static void Initialize()
         {
@@ -159,31 +171,34 @@ namespace Avalonia.Win32
                 .Bind<NonPumpingLockHelper.IHelperImpl>().ToConstant(new NonPumpingSyncContext.HelperImpl())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
-
-            var gl = Win32GlManager.Initialize();
-
+            
             _uiThread = Thread.CurrentThread;
 
+            var platformGraphics = options?.CustomPlatformGraphics
+                                   ?? Win32GlManager.Initialize();
+            
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
 
             if (Options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
+                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), platformGraphics);
+            else
+                RenderInterface = new PlatformRenderInterfaceContextManager(platformGraphics);
         }
 
         public bool HasMessages()
         {
             UnmanagedMethods.MSG msg;
-            return UnmanagedMethods.PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
+            return PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
         }
 
         public void ProcessMessage()
         {
 
-            if (UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
+            if (GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
             {
-                UnmanagedMethods.TranslateMessage(ref msg);
-                UnmanagedMethods.DispatchMessage(ref msg);
+                TranslateMessage(ref msg);
+                DispatchMessage(ref msg);
             }
             else
             {
@@ -197,10 +212,10 @@ namespace Avalonia.Win32
         {
             var result = 0;
             while (!cancellationToken.IsCancellationRequested 
-                && (result = UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
+                && (result = GetMessage(out var msg, IntPtr.Zero, 0, 0)) > 0)
             {
-                UnmanagedMethods.TranslateMessage(ref msg);
-                UnmanagedMethods.DispatchMessage(ref msg);
+                TranslateMessage(ref msg);
+                DispatchMessage(ref msg);
             }
             if (result < 0)
             {
@@ -214,7 +229,7 @@ namespace Avalonia.Win32
             UnmanagedMethods.TimerProc timerDelegate =
                 (hWnd, uMsg, nIDEvent, dwTime) => callback();
 
-            IntPtr handle = UnmanagedMethods.SetTimer(
+            IntPtr handle = SetTimer(
                 IntPtr.Zero,
                 IntPtr.Zero,
                 (uint)interval.TotalMilliseconds,
@@ -226,7 +241,7 @@ namespace Avalonia.Win32
             return Disposable.Create(() =>
             {
                 _delegates.Remove(timerDelegate);
-                UnmanagedMethods.KillTimer(IntPtr.Zero, handle);
+                KillTimer(IntPtr.Zero, handle);
             });
         }
 
@@ -235,9 +250,9 @@ namespace Avalonia.Win32
 
         public void Signal(DispatcherPriority prio)
         {
-            UnmanagedMethods.PostMessage(
+            PostMessage(
                 _hwnd,
-                (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM,
+                (int)WindowsMessage.WM_DISPATCH_WORK_ITEM,
                 new IntPtr(SignalW),
                 new IntPtr(SignalL));
         }
@@ -251,7 +266,7 @@ namespace Avalonia.Win32
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            if (msg == (int) UnmanagedMethods.WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
+            if (msg == (int)WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
             {
                 Signaled?.Invoke(null);
             }
@@ -273,7 +288,7 @@ namespace Avalonia.Win32
             
             TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
 
-            return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
+            return DefWindowProc(hWnd, msg, wParam, lParam);
         }
 
         private void CreateMessageWindow()
@@ -285,18 +300,18 @@ namespace Avalonia.Win32
             {
                 cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
                 lpfnWndProc = _wndProcDelegate,
-                hInstance = UnmanagedMethods.GetModuleHandle(null),
+                hInstance = GetModuleHandle(null),
                 lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
             };
 
-            ushort atom = UnmanagedMethods.RegisterClassEx(ref wndClassEx);
+            ushort atom = RegisterClassEx(ref wndClassEx);
 
             if (atom == 0)
             {
                 throw new Win32Exception();
             }
 
-            _hwnd = UnmanagedMethods.CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            _hwnd = CreateWindowEx(0, atom, null, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 
             if (_hwnd == IntPtr.Zero)
             {

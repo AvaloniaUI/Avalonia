@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
@@ -76,7 +74,7 @@ namespace Avalonia.X11
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
 
-            var glfeature = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            var glfeature = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
             XSetWindowAttributes attr = new XSetWindowAttributes();
             var valueMask = default(SetWindowValuemask);
 
@@ -98,13 +96,13 @@ namespace Avalonia.X11
             // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
             _useRenderWindow = glfeature != null;
             
-            var glx = glfeature as GlxPlatformOpenGlInterface;
+            var glx = glfeature as GlxPlatformGraphics;
             if (glx != null)
                 visualInfo = *glx.Display.VisualInfo;
             else if (glfeature == null)
                 visualInfo = _x11.TransparentVisualInfo;
 
-            var egl = glfeature as EglPlatformOpenGlInterface;
+            var egl = glfeature as EglPlatformGraphics;
             
             var visual = IntPtr.Zero;
             var depth = 24;
@@ -178,11 +176,9 @@ namespace Avalonia.X11
             
             if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface(egl,
-                        new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
+                    new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
             if (glx != null)
-                surfaces.Insert(0, new GlxGlPlatformSurface(glx.Display, glx.DeferredContext,
-                    new SurfaceInfo(this, _x11.Display, _handle, _renderHandle)));
+                surfaces.Insert(0, new GlxGlPlatformSurface(new SurfaceInfo(this, _x11.Display, _handle, _renderHandle)));
 
             surfaces.Add(Handle);
 
@@ -393,12 +389,14 @@ namespace Avalonia.X11
 
             return _platform.Options.UseDeferredRendering
                 ? _platform.Options.UseCompositor
-                    ? new CompositingRenderer(root, this._platform.Compositor)
-                    : new DeferredRenderer(root, loop)
+                    ? new CompositingRenderer(root, this._platform.Compositor, () => Surfaces)
+                    : new DeferredRenderer(root, loop, () => _platform.RenderInterface.CreateRenderTarget(Surfaces), _platform.RenderInterface)
                     {
                         RenderOnlyOnRenderThread = true
                     }
-                : (IRenderer)new X11ImmediateRendererProxy((Visual)root, loop);
+                : new X11ImmediateRendererProxy((Visual)root, loop,
+                    () => _platform.RenderInterface.CreateRenderTarget(Surfaces),
+                    _platform.RenderInterface);
         }
 
         void OnEvent(ref XEvent ev)
@@ -683,7 +681,7 @@ namespace Avalonia.X11
 
         }
 
-        RawInputModifiers TranslateModifiers(XModifierMask state)
+        static RawInputModifiers TranslateModifiers(XModifierMask state)
         {
             var rv = default(RawInputModifiers);
             if (state.HasAllFlags(XModifierMask.Button1Mask))

@@ -26,6 +26,8 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Collections.Pooled;
 using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
+using Avalonia.Win32.DirectX;
+using Avalonia.Win32.OpenGl.Angle;
 
 namespace Avalonia.Win32
 {
@@ -77,7 +79,7 @@ namespace Avalonia.Win32
         private readonly PenDevice _penDevice;
         private readonly ManagedDeferredRendererLock _rendererLock;
         private readonly FramebufferManager _framebuffer;
-        private readonly IGlPlatformSurface _gl;
+        private readonly object _gl;
         private readonly bool _wmPointerEnabled;
 
         private Win32NativeControlHost _nativeControlHost;
@@ -134,14 +136,21 @@ namespace Avalonia.Win32
             };
             _rendererLock = new ManagedDeferredRendererLock();
 
-            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            var glPlatform = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
 
-            var compositionConnector = AvaloniaLocator.Current.GetService<WinUICompositorConnection>();
+            var compositionConnector = AvaloniaLocator.Current.GetService<WinUiCompositorConnection>();
 
-            _isUsingComposition = compositionConnector is { } &&
-                glPlatform is EglPlatformOpenGlInterface egl &&
-                    egl.Display is AngleWin32EglDisplay angleDisplay &&
-                    angleDisplay.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+            var isUsingAngleDX11 = glPlatform is AngleWin32PlatformGraphics angle &&
+                          angle.PlatformApi == AngleOptions.PlatformApi.DirectX11;
+            _isUsingComposition = compositionConnector is { } && isUsingAngleDX11;
+
+            DxgiConnection dxgiConnection = null;
+            var isUsingDxgiSwapchain = false;
+            if (!_isUsingComposition)
+            {
+                dxgiConnection = AvaloniaLocator.Current.GetService<DxgiConnection>();
+                isUsingDxgiSwapchain = dxgiConnection is { } && isUsingAngleDX11;
+            }
 
             _wmPointerEnabled = Win32Platform.WindowsVersion >= PlatformConstants.Windows8;
 
@@ -152,19 +161,24 @@ namespace Avalonia.Win32
             {
                 if (_isUsingComposition)
                 {
-                    var cgl = new WinUiCompositedWindowSurface(compositionConnector, this);
+                    var cgl = compositionConnector.CreateSurface(this);
                     _blurHost = cgl;
 
                     _gl = cgl;
 
                     _isUsingComposition = true;
                 }
+                else if (isUsingDxgiSwapchain)
+                {
+                    var dxgigl = new DxgiSwapchainWindow(dxgiConnection, this);
+                    _gl = dxgigl;
+                }
                 else
                 {
-                    if (glPlatform is EglPlatformOpenGlInterface egl2)
-                        _gl = new EglGlPlatformSurface(egl2, this);
+                    if (glPlatform is AngleWin32PlatformGraphics egl2)
+                        _gl = new EglGlPlatformSurface(this);
                     else if (glPlatform is WglPlatformOpenGlInterface wgl)
-                        _gl = new WglGlPlatformSurface(wgl.PrimaryContext, this);
+                        _gl = new WglGlPlatformSurface(this);
                 }
             }
 
@@ -417,7 +431,7 @@ namespace Avalonia.Win32
                     _ => BlurEffect.None
                 };
 
-                if (Win32Platform.WindowsVersion >= WinUICompositorConnection.MinHostBackdropVersion)
+                if (Win32Platform.WindowsVersion >= WinUiCompositionShared.MinHostBackdropVersion)
                 {
                     unsafe
                     {
@@ -426,7 +440,7 @@ namespace Avalonia.Win32
                     }
                 }
 
-                if (Win32Platform.WindowsVersion < WinUICompositorConnection.MinHostBackdropVersion && effect == BlurEffect.Mica)
+                if (Win32Platform.WindowsVersion < WinUiCompositionShared.MinHostBackdropVersion && effect == BlurEffect.Mica)
                 {
                     effect = BlurEffect.Acrylic;
                 }
@@ -553,16 +567,22 @@ namespace Avalonia.Win32
                 return customRendererFactory.Create(root, loop);
 
             if (Win32Platform.Compositor != null)
-                return new CompositingRenderer(root, Win32Platform.Compositor);
-            
+                return new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
+
             return Win32Platform.UseDeferredRendering
                 ? _isUsingComposition
-                    ? new DeferredRenderer(root, loop)
+                    ? new DeferredRenderer(root, loop, 
+                        () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
+                        Win32Platform.RenderInterface)
                     {
                         RenderOnlyOnRenderThread = true
                     }
-                    : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock)
-                : new ImmediateRenderer((Visual)root);
+                    : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock,
+                        renderTargetFactory: () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
+                        renderInterface: Win32Platform.RenderInterface)
+                : new ImmediateRenderer((Visual)root, 
+                    () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
+                    Win32Platform.RenderInterface);
         }
 
         public void Resize(Size value, PlatformResizeReason reason)
@@ -623,12 +643,6 @@ namespace Avalonia.Win32
                 _hwnd = IntPtr.Zero;
             }
 
-            if (_className != null)
-            {
-                UnregisterClass(_className, GetModuleHandle(null));
-                _className = null;
-            }
-
             _framebuffer.Dispose();
         }
 
@@ -649,7 +663,7 @@ namespace Avalonia.Win32
         public Point PointToClient(PixelPoint point)
         {
             var p = new POINT { X = point.X, Y = point.Y };
-            UnmanagedMethods.ScreenToClient(_hwnd, ref p);
+            ScreenToClient(_hwnd, ref p);
             return new Point(p.X, p.Y) / RenderScaling;
         }
 
@@ -1124,6 +1138,15 @@ namespace Avalonia.Win32
             }
         }
 
+        private void AfterCloseCleanup()
+        {
+            if (_className != null)
+            {
+                UnregisterClass(_className, GetModuleHandle(null));
+                _className = null;
+            }
+        }
+
         private void MaximizeWithoutCoveringTaskbar()
         {
             IntPtr monitor = MonitorFromWindow(_hwnd, MONITOR.MONITOR_DEFAULTTONEAREST);
@@ -1323,19 +1346,18 @@ namespace Avalonia.Win32
         }
 
         private const int MF_BYCOMMAND = 0x0;
-        private const int MF_BYPOSITION = 0x400;
-        private const int MF_REMOVE = 0x1000;
         private const int MF_ENABLED = 0x0;
         private const int MF_GRAYED = 0x1;
         private const int MF_DISABLED = 0x2;
         private const int SC_CLOSE = 0xF060;
 
-        void DisableCloseButton(IntPtr hwnd)
+        static void DisableCloseButton(IntPtr hwnd)
         {
             EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
                            MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
         }
-        void EnableCloseButton(IntPtr hwnd)
+
+        static void EnableCloseButton(IntPtr hwnd)
         {
             EnableMenuItem(GetSystemMenu(hwnd, false), SC_CLOSE,
                            MF_BYCOMMAND | MF_ENABLED);

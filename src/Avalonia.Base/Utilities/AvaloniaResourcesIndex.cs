@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Utilities
 {
@@ -33,6 +34,7 @@ namespace Avalonia.Utilities
             return entries;
         }
 
+        [RequiresUnreferencedCode("AvaloniaResources uses Data Contract Serialization, which might require unreferenced code")]
         public static void Write(Stream stream, List<AvaloniaResourcesIndexEntry> entries)
         {
             new BinaryWriter(stream).Write(LastKnownVersion);
@@ -43,6 +45,7 @@ namespace Avalonia.Utilities
                 });
         }
 
+        [RequiresUnreferencedCode("AvaloniaResources uses Data Contract Serialization, which might require unreferenced code")]
         public static byte[] Create(Dictionary<string, byte[]> data)
         {
             var sources = data.ToList();

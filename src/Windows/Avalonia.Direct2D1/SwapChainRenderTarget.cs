@@ -35,6 +35,8 @@ namespace Avalonia.Direct2D1
             return new DrawingContextImpl(visualBrushRenderer, this, _deviceContext, _swapChain);
         }
 
+        public bool IsCorrupted => false;
+
         public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             if (_deviceContext == null)

@@ -3,7 +3,6 @@ using System.Globalization;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 using HarfBuzzSharp;
 using Buffer = HarfBuzzSharp.Buffer;
 using GlyphInfo = HarfBuzzSharp.GlyphInfo;
@@ -12,8 +11,9 @@ namespace Avalonia.Skia
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
+        public ShapedBuffer ShapeText(CharacterBufferReference characterBufferReference, int length, TextShaperOptions options)
         {
+            var text = new CharacterBufferRange(characterBufferReference, length);
             var typeface = options.Typeface;
             var fontRenderingEmSize = options.FontRenderingEmSize;
             var bidiLevel = options.BidiLevel;
@@ -21,21 +21,21 @@ namespace Avalonia.Skia
 
             using (var buffer = new Buffer())
             {
-                buffer.AddUtf16(text.Buffer.Span, text.BufferOffset, text.Length);
+                buffer.AddUtf16(characterBufferReference.CharacterBuffer.Span, characterBufferReference.OffsetToFirstChar, length);
 
                 MergeBreakPair(buffer);
-                
+
                 buffer.GuessSegmentProperties();
 
                 buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
 
-                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);              
+                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
 
                 var font = ((GlyphTypefaceImpl)typeface).Font;
 
                 font.Shape(buffer);
 
-                if(buffer.Direction == Direction.RightToLeft)
+                if (buffer.Direction == Direction.RightToLeft)
                 {
                     buffer.Reverse();
                 }
@@ -64,12 +64,12 @@ namespace Avalonia.Skia
 
                     var glyphOffset = GetGlyphOffset(glyphPositions, i, textScale);
 
-                    if(text.Buffer.Span[glyphCluster] == '\t')
+                    if (text[i] == '\t')
                     {
                         glyphIndex = typeface.GetGlyph(' ');
 
-                        glyphAdvance = options.IncrementalTabWidth > 0 ? 
-                            options.IncrementalTabWidth : 
+                        glyphAdvance = options.IncrementalTabWidth > 0 ?
+                            options.IncrementalTabWidth :
                             4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
                     }
 
@@ -87,7 +87,7 @@ namespace Avalonia.Skia
             var length = buffer.Length;
 
             var glyphInfos = buffer.GetGlyphInfoSpan();
-            
+
             var second = glyphInfos[length - 1];
 
             if (!new Codepoint(second.Codepoint).IsBreakChar)
@@ -98,7 +98,7 @@ namespace Avalonia.Skia
             if (length > 1 && glyphInfos[length - 2].Codepoint == '\r' && second.Codepoint == '\n')
             {
                 var first = glyphInfos[length - 2];
-                
+
                 first.Codepoint = '\u200C';
                 second.Codepoint = '\u200C';
                 second.Cluster = first.Cluster;
@@ -109,7 +109,7 @@ namespace Avalonia.Skia
                     {
                         *p = first;
                     }
-                
+
                     fixed (GlyphInfo* p = &glyphInfos[length - 1])
                     {
                         *p = second;

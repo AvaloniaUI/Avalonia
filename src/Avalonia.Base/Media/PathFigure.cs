@@ -126,7 +126,7 @@ namespace Avalonia.Media
         }
         
         public override string ToString()
-            => $"M {StartPoint} {string.Join(" ", _segments ?? Enumerable.Empty<PathSegment>())}{(IsClosed ? "Z" : "")}";
+            => FormattableString.Invariant($"M {StartPoint} {string.Join(" ", _segments ?? Enumerable.Empty<PathSegment>())}{(IsClosed ? "Z" : "")}");
 
         internal void ApplyTo(StreamGeometryContext ctx)
         {

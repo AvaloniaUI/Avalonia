@@ -368,7 +368,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
             : null;
     }
     
-    private IDisposable? CreateChildScene(IBrush? brush)
+    private static IDisposable? CreateChildScene(IBrush? brush)
     {
         if (brush is VisualBrush visualBrush)
         {

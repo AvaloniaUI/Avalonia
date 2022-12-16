@@ -15,6 +15,7 @@ using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 
+#nullable enable
 internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
 {
     public IXamlAstNode Transform(AstGroupTransformationContext context, IXamlAstNode node)
@@ -28,105 +29,158 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         }
 
         var nodeTypeName = objectNode.Type.GetClrType().Name;
+        var expectedLoadedType = objectNode.Type.GetClrType().GetAllProperties()
+            .FirstOrDefault(p => p.Name == "Loaded")?.PropertyType;
+        if (expectedLoadedType is null)
+        {
+            throw new InvalidOperationException($"\"{nodeTypeName}\".Loaded property is expected to be defined");
+        }
+
         if (valueNode.Manipulation is not XamlObjectInitializationNode
             {
                 Manipulation: XamlPropertyAssignmentNode { Property: { Name: "Source" } } sourceProperty
             })
         {
-            return context.ParseError($"Source property must be set on the \"{nodeTypeName}\" node.", node);
+            throw new XamlDocumentParseException(context.CurrentDocument,
+                $"Source property must be set on the \"{nodeTypeName}\" node.", valueNode);
         }
 
-        if (sourceProperty.Values.OfType<XamlAstNewClrObjectNode>().FirstOrDefault() is not { } sourceUriNode
-            || sourceUriNode.Type.GetClrType() != context.GetAvaloniaTypes().Uri
-            || sourceUriNode.Arguments.FirstOrDefault() is not XamlConstantNode { Constant: string originalAssetPath })
+        var (assetPathUri, sourceUriNode) = ResolveSourceFromXamlInclude(context, nodeTypeName, sourceProperty, false);
+        if (assetPathUri is null)
         {
-            // TODO: make it a compiler warning
-            // Source value can be set with markup extension instead of the Uri object node, we don't support it here yet.
             return node;
         }
-
-        if (originalAssetPath.StartsWith("/"))
+        else
         {
-            var baseUrl = context.CurrentDocument.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
-            originalAssetPath = baseUrl.Substring(0, baseUrl.LastIndexOf('/')) + originalAssetPath;
-        }
-        else if (!originalAssetPath.StartsWith("avares://"))
-        {
-            return context.ParseError(
-                $"Avalonia supports only \"avares://\" sources or relative sources starting with \"/\" on the \"{nodeTypeName}\" node.",
-                node);
+            sourceUriNode ??= valueNode;
         }
 
-        originalAssetPath = Uri.UnescapeDataString(new Uri(originalAssetPath).AbsoluteUri);
-        var assetPath = originalAssetPath.Replace("avares://", "");
+        var assetPath = assetPathUri.Replace("avares://", "");
         var assemblyNameSeparator = assetPath.IndexOf('/');
         var assembly = assetPath.Substring(0, assemblyNameSeparator);
         var fullTypeName = Path.GetFileNameWithoutExtension(assetPath.Replace('/', '.'));
 
-        if (context.Documents.FirstOrDefault(d => string.Equals(d.Uri, originalAssetPath, StringComparison.InvariantCultureIgnoreCase)) is {} targetDocument)
+        // Search file in the current assembly among other XAML resources.
+        if (context.Documents.FirstOrDefault(d => string.Equals(d.Uri, assetPathUri, StringComparison.InvariantCultureIgnoreCase)) is {} targetDocument)
         {
+            if (targetDocument.BuildMethod is not null)
+            {
+                return FromMethod(context, targetDocument.BuildMethod, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly);
+            }
+
             if (targetDocument.ClassType is not null)
             {
-                return FromType(context, targetDocument.ClassType, node);
+                return FromType(context, targetDocument.ClassType, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly);
             }
 
-            if (targetDocument.BuildMethod is null)
-            {
-                return context.ParseError($"\"{originalAssetPath}\" cannot be instantiated.", node);
-            }
-
-            return FromMethod(context, targetDocument.BuildMethod, node);
+            return context.ParseError(
+                $"Unable to resolve XAML resource \"{assetPathUri}\" in the current assembly.",
+                sourceUriNode, node);
         }
 
-
+        // If resource wasn't found in the current assembly, search in the others.
         if (context.Configuration.TypeSystem.FindAssembly(assembly) is not { } assetAssembly)
         {
-            return context.ParseError($"Assembly \"{assembly}\" was not found from the \"{originalAssetPath}\" source.", node);
+            return context.ParseError($"Assembly \"{assembly}\" was not found from the \"{assetPathUri}\" source.", sourceUriNode, node);
         }
 
-        if (assetAssembly.FindType(fullTypeName) is { } type
-            && type.FindMethod(m => m.Name == "!XamlIlPopulate") is not null)
+        var avaResType = assetAssembly.FindType("CompiledAvaloniaXaml.!AvaloniaResources");
+        if (avaResType is null)
         {
-            return FromType(context, type, node);
+            return context.ParseError(
+                $"Unable to resolve \"!AvaloniaResources\" type on \"{assembly}\" assembly.", sourceUriNode, node);
         }
-        else
+
+        var relativeName = "Build:" + assetPath.Substring(assemblyNameSeparator);
+        var buildMethod = avaResType.FindMethod(m => m.Name == relativeName);
+        if (buildMethod is not null)
         {
-            var avaResType = assetAssembly.FindType("CompiledAvaloniaXaml.!AvaloniaResources");
-            if (avaResType is null)
-            {
-                return context.ParseError(
-                    $"Unable to resolve \"!AvaloniaResources\" type on \"{assembly}\" assembly.", node);
-            }
-
-            var relativeName = "Build:" + assetPath.Substring(assemblyNameSeparator);
-            var buildMethod = avaResType.FindMethod(m => m.Name == relativeName);
-            if (buildMethod is null)
-            {
-                return context.ParseError(
-                    $"Unable to resolve build method \"{relativeName}\" resource on the \"{assembly}\" assembly.",
-                    node);
-            }
-
-            return FromMethod(context, buildMethod, node);
+            return FromMethod(context, buildMethod, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly);
         }
+        else if (assetAssembly.FindType(fullTypeName) is { } type)
+        {
+            return FromType(context, type, sourceUriNode, expectedLoadedType, node, assetPathUri, assembly);
+        }
+
+        return context.ParseError(
+            $"Unable to resolve XAML resource \"{assetPathUri}\" in the \"{assembly}\" assembly.",
+            sourceUriNode, node);
     }
 
-    private static IXamlAstNode FromType(AstTransformationContext context, IXamlType type, IXamlLineInfo li)
+    private static IXamlAstNode FromType(AstTransformationContext context, IXamlType type, IXamlAstNode li,
+        IXamlType expectedLoadedType, IXamlAstNode fallbackNode, string assetPathUri, string assembly)
     {
+        if (!expectedLoadedType.IsAssignableFrom(type))
+        {
+            return context.ParseError(
+                $"Resource \"{assetPathUri}\" is defined as \"{type}\" type in the \"{assembly}\" assembly, but expected \"{expectedLoadedType}\".",
+                li, fallbackNode);
+        }
+        
         IXamlAstNode newObjNode = new XamlAstObjectNode(li, new XamlAstClrTypeReference(li, type, false));
         newObjNode = new AvaloniaXamlIlConstructorServiceProviderTransformer().Transform(context, newObjNode);
         newObjNode = new ConstructableObjectTransformer().Transform(context, newObjNode);
         return new NewObjectTransformer().Transform(context, newObjNode);
     }
 
-    private static IXamlAstNode FromMethod(AstTransformationContext context, IXamlMethod method, IXamlLineInfo li)
+    private static IXamlAstNode FromMethod(AstTransformationContext context, IXamlMethod method, IXamlAstNode li,
+        IXamlType expectedLoadedType, IXamlAstNode fallbackNode, string assetPathUri, string assembly)
     {
+        if (!expectedLoadedType.IsAssignableFrom(method.ReturnType))
+        {
+            return context.ParseError(
+                $"Resource \"{assetPathUri}\" is defined as \"{method.ReturnType}\" type in the \"{assembly}\" assembly, but expected \"{expectedLoadedType}\".",
+                li, fallbackNode);
+        }
+        
         var sp = context.Configuration.TypeMappings.ServiceProvider;
         return new XamlStaticOrTargetedReturnMethodCallNode(li, method,
             new[] { new NewServiceProviderNode(sp, li) });
     }
     
-    internal class NewServiceProviderNode : XamlAstNode, IXamlAstValueNode,IXamlAstNodeNeedsParentStack,
+    internal static (string?, IXamlAstNode?) ResolveSourceFromXamlInclude(
+        AstGroupTransformationContext context, string nodeTypeName, XamlPropertyAssignmentNode sourceProperty,
+        bool strictSourceValueType)
+    {
+        // We expect that AvaloniaXamlIlLanguageParseIntrinsics has already parsed the Uri and created node like: `new Uri(assetPath, uriKind)`.
+        if (sourceProperty.Values.OfType<XamlAstNewClrObjectNode>().FirstOrDefault() is not { } sourceUriNode
+            || sourceUriNode.Type.GetClrType() != context.GetAvaloniaTypes().Uri
+            || sourceUriNode.Arguments.FirstOrDefault() is not XamlConstantNode { Constant: string originalAssetPath }
+            || sourceUriNode.Arguments.Skip(1).FirstOrDefault() is not XamlConstantNode { Constant: int uriKind })
+        {
+            // Source value can be set with markup extension instead of the Uri object node, we don't support it here yet.
+            var anyPropValue = sourceProperty.Values.FirstOrDefault();
+            if (strictSourceValueType)
+            {
+                context.Error(anyPropValue,
+                    new XamlDocumentParseException(context.CurrentDocument,
+                        $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri.", anyPropValue));
+            }
+            else
+            {
+                // TODO: make it a compiler warning
+            }
+            return (null, anyPropValue);
+        }
+
+        var uriPath = new Uri(originalAssetPath, (UriKind)uriKind);
+        if (!uriPath.IsAbsoluteUri)
+        {
+            var baseUrl = context.CurrentDocument.Uri ?? throw new InvalidOperationException("CurrentDocument URI is null.");
+            uriPath = new Uri(new Uri(baseUrl, UriKind.Absolute), uriPath);
+        }
+        else if (!uriPath.Scheme.Equals("avares", StringComparison.CurrentCultureIgnoreCase))
+        {
+            context.Error(sourceUriNode,
+                new XamlDocumentParseException(context.CurrentDocument,
+                    $"\"{nodeTypeName}.Source\" supports only \"avares://\" absolute or relative uri.", sourceUriNode));
+            return (null, sourceUriNode);
+        }
+
+        return (Uri.UnescapeDataString(uriPath.AbsoluteUri), sourceUriNode);
+    }
+    
+    private class NewServiceProviderNode : XamlAstNode, IXamlAstValueNode,IXamlAstNodeNeedsParentStack,
         IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
     {
         public NewServiceProviderNode(IXamlType type, IXamlLineInfo lineInfo) : base(lineInfo)
@@ -138,8 +192,9 @@ internal class AvaloniaXamlIncludeTransformer : IXamlAstGroupTransformer
         public bool NeedsParentStack => true;
         public XamlILNodeEmitResult Emit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
+            codeGen.Ldloc(context.ContextLocal);
             var method = context.GetAvaloniaTypes().RuntimeHelpers
-                .FindMethod(m => m.Name == "CreateRootServiceProviderV2");
+                .FindMethod(m => m.Name == "CreateRootServiceProviderV3");
             codeGen.EmitCall(method);
 
             return XamlILNodeEmitResult.Type(0, Type.GetClrType());

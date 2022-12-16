@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
@@ -16,9 +17,10 @@ namespace Avalonia.Themes.Simple
         /// <summary>
         /// Initializes a new instance of the <see cref="SimpleTheme"/> class.
         /// </summary>
-        public SimpleTheme()
+        /// <param name="sp">The parent's service provider.</param>
+        public SimpleTheme(IServiceProvider? sp = null)
         {
-            AvaloniaXamlLoader.Load(this);
+            AvaloniaXamlLoader.Load(sp, this);
 
             _simpleDark = (IResourceDictionary)GetAndRemove("BaseDark");
             _simpleLight = (IResourceDictionary)GetAndRemove("BaseLight");
@@ -56,13 +58,13 @@ namespace Avalonia.Themes.Simple
         {
             var themeVariantResource = Mode == SimpleThemeMode.Dark ? _simpleDark : _simpleLight;
             var dict = Resources.MergedDictionaries;
-            if (dict.Count == 1)
+            if (dict.Count == 0)
             {
                 dict.Add(themeVariantResource);
             }
             else
             {
-                dict[1] = themeVariantResource;
+                dict[0] = themeVariantResource;
             }
         }
     }

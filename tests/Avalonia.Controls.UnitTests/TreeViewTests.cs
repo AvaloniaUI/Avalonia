@@ -425,6 +425,587 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Double_Clicking_Item_Header_Should_Expand_It()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target);
+
+                var item = tree[0].Children[1];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                _mouse.DoubleClick(header);
+
+                Assert.True(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Double_Clicking_Item_Header_With_No_Children_Does_Not_Expand_It()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target);
+
+                var item = tree[0].Children[1].Children[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                _mouse.DoubleClick(header);
+
+                Assert.False(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Double_Clicking_Item_Header_Should_Collapse_It()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
+
+                var item = tree[0].Children[1];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                _mouse.DoubleClick(header);
+
+                Assert.False(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Enter_Key_Should_Collapse_TreeViewItem()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                });
+
+                Assert.False(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Enter_plus_Ctrl_Key_Should_Collapse_TreeViewItem_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                    KeyModifiers = KeyModifiers.Control,
+                });
+
+                Assert.False(container.IsExpanded);
+
+                AssertEachItemWithChildrenIsCollapsed(item);
+
+                void AssertEachItemWithChildrenIsCollapsed(Node node)
+                {
+                    var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.False(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsCollapsed(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.True(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Enter_Key_Should_Expand_TreeViewItem()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                });
+
+                Assert.True(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Enter_plus_Ctrl_Key_Should_Expand_TreeViewItem_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                    KeyModifiers = KeyModifiers.Control,
+                });
+
+                Assert.True(container.IsExpanded);
+
+                AssertEachItemWithChildrenIsExpanded(item);
+
+                void AssertEachItemWithChildrenIsExpanded(Node node)
+                {
+                    var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.True(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsExpanded(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.False(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Space_Key_Should_Collapse_TreeViewItem()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                });
+
+                Assert.False(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Space_plus_Ctrl_Key_Should_Collapse_TreeViewItem_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.True(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                    KeyModifiers = KeyModifiers.Control,
+                });
+
+                Assert.False(container.IsExpanded);
+
+                AssertEachItemWithChildrenIsCollapsed(item);
+
+                void AssertEachItemWithChildrenIsCollapsed(Node node)
+                {
+                    var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.False(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsCollapsed(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.True(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Space_Key_Should_Expand_TreeViewItem()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                });
+
+                Assert.True(container.IsExpanded);
+            }
+        }
+
+        [Fact]
+        public void Space_plus_Ctrl_Key_Should_Expand_TreeViewItem_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target); // NOTE this line
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                Assert.False(container.IsExpanded);
+                var header = container.Header as Interactive;
+                Assert.NotNull(header);
+
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Enter,
+                    KeyModifiers = KeyModifiers.Control,
+                });
+
+                Assert.True(container.IsExpanded);
+
+                AssertEachItemWithChildrenIsExpanded(item);
+
+                void AssertEachItemWithChildrenIsExpanded(Node node)
+                {
+                    var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.True(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsExpanded(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.False(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Numpad_Star_Should_Expand_All_Children_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                CollapseAll(target);
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Multiply,
+                });
+
+                AssertEachItemWithChildrenIsExpanded(item);
+
+                void AssertEachItemWithChildrenIsExpanded(Node node)
+                {
+                    var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.True(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsExpanded(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.False(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void Numpad_Slash_Should_Collapse_All_Children_Recursively()
+        {
+            using (Application())
+            {
+                var tree = CreateTestTreeData();
+                var target = new TreeView
+                {
+                    Template = CreateTreeViewTemplate(),
+                    Items = tree,
+                };
+
+                var visualRoot = new TestRoot();
+                visualRoot.Child = target;
+
+                CreateNodeDataTemplate(target);
+                ApplyTemplates(target);
+                ExpandAll(target);
+
+                var item = tree[0];
+                var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(item);
+
+                Assert.NotNull(container);
+                container.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Divide,
+                });
+
+                AssertEachItemWithChildrenIsCollapsed(item);
+
+                void AssertEachItemWithChildrenIsCollapsed(Node node)
+                {
+                    var container = (TreeViewItem)target.ItemContainerGenerator.Index.ContainerFromItem(node);
+                    Assert.NotNull(container);
+                    if (node.Children?.Count > 0)
+                    {
+                        Assert.False(container.IsExpanded);
+                        foreach (var c in node.Children)
+                        {
+                            AssertEachItemWithChildrenIsCollapsed(c);
+                        }
+                    }
+                    else
+                    {
+                        Assert.True(container.IsExpanded);
+                    }
+                }
+            }
+        }
+
+        [Fact]
         public void Setting_SelectedItem_Should_Set_Container_Selected()
         {
             using (Application())
@@ -1313,10 +1894,14 @@ namespace Avalonia.Controls.UnitTests
             {
                 Children =
                 {
-                    new ContentPresenter
+                    new Border
                     {
-                        Name = "PART_HeaderPresenter",
-                        [~ContentPresenter.ContentProperty] = parent[~TreeViewItem.HeaderProperty],
+                        Name = "PART_Header",
+                        Child = new ContentPresenter
+                        {
+                            Name = "PART_HeaderPresenter",
+                            [~ContentPresenter.ContentProperty] = parent[~TreeViewItem.HeaderProperty],
+                        }.RegisterInNameScope(scope)
                     }.RegisterInNameScope(scope),
                     new ItemsPresenter
                     {
@@ -1332,6 +1917,14 @@ namespace Avalonia.Controls.UnitTests
             foreach (var i in tree.ItemContainerGenerator.Containers)
             {
                 tree.ExpandSubTree((TreeViewItem)i.ContainerControl);
+            }
+        }
+
+        private void CollapseAll(TreeView tree)
+        {
+            foreach (var i in tree.ItemContainerGenerator.Containers)
+            {
+                tree.CollapseSubTree((TreeViewItem)i.ContainerControl);
             }
         }
 

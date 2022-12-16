@@ -1,6 +1,6 @@
 ﻿namespace Avalonia.Media;
 
-public readonly struct GlyphMetrics
+public readonly record struct GlyphMetrics
 {
     /// <summary>
     /// Distance from the x-origin to the left extremum of the glyph.

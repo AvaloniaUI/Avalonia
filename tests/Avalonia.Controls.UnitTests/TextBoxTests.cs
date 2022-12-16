@@ -60,6 +60,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBox_Should_Lose_Focus_When_Disabled()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate()
+                };
+
+                target.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target };
+
+                target.Focus();
+                Assert.True(target.IsFocused);
+                target.IsEnabled = false;
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsEnabled);
+            }
+        }
+
+        [Fact]
         public void Opening_Context_Flyout_Does_not_Lose_Selection()
         {
             using (UnitTestApplication.Start(FocusServices))
@@ -578,7 +600,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target1.Focus();
                 Assert.True(target1.IsFocused);
-                
+
                 RaiseKeyEvent(target1, key, KeyModifiers.None);
             }
         }
@@ -747,7 +769,7 @@ namespace Avalonia.Controls.UnitTests
                     
                     var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
                     clipboard.SetTextAsync(textInput).GetAwaiter().GetResult();
-                    
+
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
                     clipboard.ClearAsync().GetAwaiter().GetResult();
                 }
@@ -1074,7 +1096,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
+        private static void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
         {
             textBox.RaiseEvent(new KeyEventArgs
             {
@@ -1084,7 +1106,7 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        private void RaiseTextEvent(TextBox textBox, string text)
+        private static void RaiseTextEvent(TextBox textBox, string text)
         {
             textBox.RaiseEvent(new TextInputEventArgs
             {

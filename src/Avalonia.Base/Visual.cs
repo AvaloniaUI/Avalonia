@@ -90,6 +90,14 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, RelativePoint>(nameof(RenderTransformOrigin), defaultValue: RelativePoint.Center);
 
         /// <summary>
+        /// Defines the <see cref="FlowDirection"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
+            AvaloniaProperty.RegisterAttached<Visual, Visual, FlowDirection>(
+                nameof(FlowDirection),
+                inherits: true);
+
+        /// <summary>
         /// Defines the <see cref="VisualParent"/> property.
         /// </summary>
         public static readonly DirectProperty<Visual, Visual?> VisualParentProperty =
@@ -264,6 +272,15 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets or sets the text flow direction.
+        /// </summary>
+        public FlowDirection FlowDirection
+        {
+            get => GetValue(FlowDirectionProperty);
+            set => SetValue(FlowDirectionProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the Z index of the control.
         /// </summary>
         /// <remarks>
@@ -305,6 +322,36 @@ namespace Avalonia
         /// Gets the control's parent visual.
         /// </summary>
         internal Visual? VisualParent => _visualParent;
+
+        /// <summary>
+        /// Gets a value indicating whether control bypass FlowDirecton policies.
+        /// </summary>
+        /// <remarks>
+        /// Related to FlowDirection system and returns false as default, so if 
+        /// <see cref="FlowDirection"/> is RTL then control will get a mirror presentation. 
+        /// For controls that want to avoid this behavior, override this property and return true.
+        /// </remarks>
+        protected virtual bool BypassFlowDirectionPolicies => false;
+
+        /// <summary>
+        /// Gets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="visual">The control.</param>
+        /// <returns>The flow direction.</returns>
+        public static FlowDirection GetFlowDirection(Visual visual)
+        {
+            return visual.GetValue(FlowDirectionProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="visual">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetFlowDirection(Visual visual, FlowDirection value)
+        {
+            visual.SetValue(FlowDirectionProperty, value);
+        }
 
         /// <summary>
         /// Invalidates the visual and queues a repaint.
@@ -387,6 +434,22 @@ namespace Avalonia
             }
         }
 
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == FlowDirectionProperty)
+            {
+                InvalidateMirrorTransform();
+
+                foreach (var child in VisualChildren)
+                {
+                    child.InvalidateMirrorTransform();
+                }
+            }
+        }
+
         protected override void LogicalChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.LogicalChildrenCollectionChanged(sender, e);
@@ -417,6 +480,7 @@ namespace Avalonia
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
+            _visualRoot.Renderer?.RecalculateChildren(_visualParent!);
 
             if (ZIndex != 0 && VisualParent is Visual parent)
                 parent.HasNonUniformZIndexChildren = true;
@@ -680,6 +744,33 @@ namespace Avalonia
                 
                 visual.SetVisualParent(parent);
             }
+        }
+
+        /// <summary>
+        /// Computes the <see cref="HasMirrorTransform"/> value according to the 
+        /// <see cref="FlowDirection"/> and <see cref="BypassFlowDirectionPolicies"/>
+        /// </summary>
+        public virtual void InvalidateMirrorTransform()
+        {
+            var flowDirection = this.FlowDirection;
+            var parentFlowDirection = FlowDirection.LeftToRight;
+
+            bool bypassFlowDirectionPolicies = BypassFlowDirectionPolicies;
+            bool parentBypassFlowDirectionPolicies = false;
+
+            var parent = VisualParent;
+            if (parent != null)
+            {
+                parentFlowDirection = parent.FlowDirection;
+                parentBypassFlowDirectionPolicies = parent.BypassFlowDirectionPolicies;
+            }
+
+            bool thisShouldBeMirrored = flowDirection == FlowDirection.RightToLeft && !bypassFlowDirectionPolicies;
+            bool parentShouldBeMirrored = parentFlowDirection == FlowDirection.RightToLeft && !parentBypassFlowDirectionPolicies;
+
+            bool shouldApplyMirrorTransform = thisShouldBeMirrored != parentShouldBeMirrored;
+
+            HasMirrorTransform = shouldApplyMirrorTransform;
         }
     }
 }

@@ -1,3 +1,5 @@
+using System;
+
 namespace Avalonia.Media
 {
     public sealed class QuadraticBezierSegment : PathSegment
@@ -44,6 +46,6 @@ namespace Avalonia.Media
         }
 
         public override string ToString()
-            => $"Q {Point1} {Point2}";
+            => FormattableString.Invariant($"Q {Point1} {Point2}");
     }
 }

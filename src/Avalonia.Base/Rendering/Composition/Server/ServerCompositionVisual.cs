@@ -37,7 +37,7 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
 
             currentTransformedClip = currentTransformedClip.Intersect(_combinedTransformedClipBounds);
-            if(currentTransformedClip.IsEmpty)
+            if(currentTransformedClip.IsDefault)
                 return;
 
             Root!.RenderedVisuals++;
@@ -139,7 +139,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (ownBounds != _oldOwnContentBounds || positionChanged)
             {
                 _oldOwnContentBounds = ownBounds;
-                if (ownBounds.IsEmpty)
+                if (ownBounds.IsDefault)
                     TransformedOwnContentBounds = default;
                 else
                     TransformedOwnContentBounds =
@@ -163,7 +163,7 @@ namespace Avalonia.Rendering.Composition.Server
             EffectiveOpacity = Opacity * (Parent?.EffectiveOpacity ?? 1);
 
             IsVisibleInFrame = _parent?.IsVisibleInFrame != false && Visible && EffectiveOpacity > 0.04 && !_isBackface &&
-                               !_combinedTransformedClipBounds.IsEmpty;
+                               !_combinedTransformedClipBounds.IsDefault;
 
             if (wasVisible != IsVisibleInFrame || positionChanged)
             {
@@ -192,7 +192,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         void AddDirtyRect(Rect rc)
         {
-            if(rc == Rect.Empty)
+            if(rc == default)
                 return;
             Root?.AddDirtyRect(rc);
         }

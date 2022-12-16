@@ -7,9 +7,9 @@
     {
         public TextEndOfLine(int textSourceLength = DefaultTextSourceLength)
         {
-            TextSourceLength = textSourceLength;
+            Length = textSourceLength;
         }
 
-        public override int TextSourceLength { get; }
+        public override int Length { get; }
     }
 }

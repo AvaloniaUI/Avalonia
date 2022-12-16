@@ -1,0 +1,483 @@
+﻿@clr-namespace Avalonia.Win32.DirectX
+@clr-access internal
+@clr-map FLOAT float
+@clr-map HSTRING IntPtr
+@clr-map Vector2 System.Numerics.Vector2
+@clr-map Vector3 System.Numerics.Vector3
+@clr-map Quaternion System.Numerics.Quaternion
+@clr-map Matrix4x4 System.Numerics.Matrix4x4
+@clr-map RECT Avalonia.Win32.Interop.UnmanagedMethods.RECT
+@clr-map SIZE Avalonia.Win32.Interop.UnmanagedMethods.SIZE
+@clr-map POINT Avalonia.Win32.Interop.UnmanagedMethods.POINT
+@clr-map HWND IntPtr
+@clr-map BOOL int
+@clr-map DWORD int
+@clr-map SIZE_T IntPtr
+@clr-map boolean int
+@clr-map BYTE byte
+@clr-map INT16 short
+@clr-map INT32 int
+@clr-map INT64 long
+@clr-map UINT ushort
+@clr-map UINT16 ushort
+@clr-map ULONG uint
+@clr-map UINT32 uint
+@clr-map UINT64 ulong
+@clr-map DOUBLE double
+@clr-map GUID System.Guid
+@clr-map REFGUID System.Guid*
+@clr-map REFIID System.Guid*
+@clr-map WCHAR System.Char
+@clr-map HMODULE void*
+@clr-map DXGI_USAGE uint
+@clr-map LARGE_INTEGER ulong
+@clr-map INT int
+@clr-map DXGI_SHARED_RESOURCE void*
+@clr-map LUID ulong
+@clr-map LPSTR ushort*
+
+
+enum DXGI_FORMAT
+{
+    DXGI_FORMAT_UNKNOWN = 0,
+    DXGI_FORMAT_R32G32B32A32_TYPELESS = 1,
+    DXGI_FORMAT_R32G32B32A32_FLOAT = 2,
+    DXGI_FORMAT_R32G32B32A32_UINT = 3,
+    DXGI_FORMAT_R32G32B32A32_SINT = 4,
+    DXGI_FORMAT_R32G32B32_TYPELESS = 5,
+    DXGI_FORMAT_R32G32B32_FLOAT = 6,
+    DXGI_FORMAT_R32G32B32_UINT = 7,
+    DXGI_FORMAT_R32G32B32_SINT = 8,
+    DXGI_FORMAT_R16G16B16A16_TYPELESS = 9,
+    DXGI_FORMAT_R16G16B16A16_FLOAT = 10,
+    DXGI_FORMAT_R16G16B16A16_UNORM = 11,
+    DXGI_FORMAT_R16G16B16A16_UINT = 12,
+    DXGI_FORMAT_R16G16B16A16_SNORM = 13,
+    DXGI_FORMAT_R16G16B16A16_SINT = 14,
+    DXGI_FORMAT_R32G32_TYPELESS = 15,
+    DXGI_FORMAT_R32G32_FLOAT = 16,
+    DXGI_FORMAT_R32G32_UINT = 17,
+    DXGI_FORMAT_R32G32_SINT = 18,
+    DXGI_FORMAT_R32G8X24_TYPELESS = 19,
+    DXGI_FORMAT_D32_FLOAT_S8X24_UINT = 20,
+    DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS = 21,
+    DXGI_FORMAT_X32_TYPELESS_G8X24_UINT = 22,
+    DXGI_FORMAT_R10G10B10A2_TYPELESS = 23,
+    DXGI_FORMAT_R10G10B10A2_UNORM = 24,
+    DXGI_FORMAT_R10G10B10A2_UINT = 25,
+    DXGI_FORMAT_R11G11B10_FLOAT = 26,
+    DXGI_FORMAT_R8G8B8A8_TYPELESS = 27,
+    DXGI_FORMAT_R8G8B8A8_UNORM = 28,
+    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 29,
+    DXGI_FORMAT_R8G8B8A8_UINT = 30,
+    DXGI_FORMAT_R8G8B8A8_SNORM = 31,
+    DXGI_FORMAT_R8G8B8A8_SINT = 32,
+    DXGI_FORMAT_R16G16_TYPELESS = 33,
+    DXGI_FORMAT_R16G16_FLOAT = 34,
+    DXGI_FORMAT_R16G16_UNORM = 35,
+    DXGI_FORMAT_R16G16_UINT = 36,
+    DXGI_FORMAT_R16G16_SNORM = 37,
+    DXGI_FORMAT_R16G16_SINT = 38,
+    DXGI_FORMAT_R32_TYPELESS = 39,
+    DXGI_FORMAT_D32_FLOAT = 40,
+    DXGI_FORMAT_R32_FLOAT = 41,
+    DXGI_FORMAT_R32_UINT = 42,
+    DXGI_FORMAT_R32_SINT = 43,
+    DXGI_FORMAT_R24G8_TYPELESS = 44,
+    DXGI_FORMAT_D24_UNORM_S8_UINT = 45,
+    DXGI_FORMAT_R24_UNORM_X8_TYPELESS = 46,
+    DXGI_FORMAT_X24_TYPELESS_G8_UINT = 47,
+    DXGI_FORMAT_R8G8_TYPELESS = 48,
+    DXGI_FORMAT_R8G8_UNORM = 49,
+    DXGI_FORMAT_R8G8_UINT = 50,
+    DXGI_FORMAT_R8G8_SNORM = 51,
+    DXGI_FORMAT_R8G8_SINT = 52,
+    DXGI_FORMAT_R16_TYPELESS = 53,
+    DXGI_FORMAT_R16_FLOAT = 54,
+    DXGI_FORMAT_D16_UNORM = 55,
+    DXGI_FORMAT_R16_UNORM = 56,
+    DXGI_FORMAT_R16_UINT = 57,
+    DXGI_FORMAT_R16_SNORM = 58,
+    DXGI_FORMAT_R16_SINT = 59,
+    DXGI_FORMAT_R8_TYPELESS = 60,
+    DXGI_FORMAT_R8_UNORM = 61,
+    DXGI_FORMAT_R8_UINT = 62,
+    DXGI_FORMAT_R8_SNORM = 63,
+    DXGI_FORMAT_R8_SINT = 64,
+    DXGI_FORMAT_A8_UNORM = 65,
+    DXGI_FORMAT_R1_UNORM = 66,
+    DXGI_FORMAT_R9G9B9E5_SHAREDEXP = 67,
+    DXGI_FORMAT_R8G8_B8G8_UNORM = 68,
+    DXGI_FORMAT_G8R8_G8B8_UNORM = 69,
+    DXGI_FORMAT_BC1_TYPELESS = 70,
+    DXGI_FORMAT_BC1_UNORM = 71,
+    DXGI_FORMAT_BC1_UNORM_SRGB = 72,
+    DXGI_FORMAT_BC2_TYPELESS = 73,
+    DXGI_FORMAT_BC2_UNORM = 74,
+    DXGI_FORMAT_BC2_UNORM_SRGB = 75,
+    DXGI_FORMAT_BC3_TYPELESS = 76,
+    DXGI_FORMAT_BC3_UNORM = 77,
+    DXGI_FORMAT_BC3_UNORM_SRGB = 78,
+    DXGI_FORMAT_BC4_TYPELESS = 79,
+    DXGI_FORMAT_BC4_UNORM = 80,
+    DXGI_FORMAT_BC4_SNORM = 81,
+    DXGI_FORMAT_BC5_TYPELESS = 82,
+    DXGI_FORMAT_BC5_UNORM = 83,
+    DXGI_FORMAT_BC5_SNORM = 84,
+    DXGI_FORMAT_B5G6R5_UNORM = 85,
+    DXGI_FORMAT_B5G5R5A1_UNORM = 86,
+    DXGI_FORMAT_B8G8R8A8_UNORM = 87,
+    DXGI_FORMAT_B8G8R8X8_UNORM = 88,
+    DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM = 89,
+    DXGI_FORMAT_B8G8R8A8_TYPELESS = 90,
+    DXGI_FORMAT_B8G8R8A8_UNORM_SRGB = 91,
+    DXGI_FORMAT_B8G8R8X8_TYPELESS = 92,
+    DXGI_FORMAT_B8G8R8X8_UNORM_SRGB = 93,
+    DXGI_FORMAT_BC6H_TYPELESS = 94,
+    DXGI_FORMAT_BC6H_UF16 = 95,
+    DXGI_FORMAT_BC6H_SF16 = 96,
+    DXGI_FORMAT_BC7_TYPELESS = 97,
+    DXGI_FORMAT_BC7_UNORM = 98,
+    DXGI_FORMAT_BC7_UNORM_SRGB = 99,
+    DXGI_FORMAT_AYUV = 100,
+    DXGI_FORMAT_Y410 = 101,
+    DXGI_FORMAT_Y416 = 102,
+    DXGI_FORMAT_NV12 = 103,
+    DXGI_FORMAT_P010 = 104,
+    DXGI_FORMAT_P016 = 105,
+    DXGI_FORMAT_420_OPAQUE = 106,
+    DXGI_FORMAT_YUY2 = 107,
+    DXGI_FORMAT_Y210 = 108,
+    DXGI_FORMAT_Y216 = 109,
+    DXGI_FORMAT_NV11 = 110,
+    DXGI_FORMAT_AI44 = 111,
+    DXGI_FORMAT_IA44 = 112,
+    DXGI_FORMAT_P8 = 113,
+    DXGI_FORMAT_A8P8 = 114,
+    DXGI_FORMAT_B4G4R4A4_UNORM = 115,
+    DXGI_FORMAT_P208 = 130,
+    DXGI_FORMAT_V208 = 131,
+    DXGI_FORMAT_V408 = 132,
+    DXGI_FORMAT_FORCE_UINT = -1
+}
+
+enum DXGI_MODE_SCANLINE_ORDER
+{
+    DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED = 0,
+    DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE = 1,
+    DXGI_MODE_SCANLINE_ORDER_UPPER_FIELD_FIRST = 2,
+    DXGI_MODE_SCANLINE_ORDER_LOWER_FIELD_FIRST = 3
+}
+
+enum DXGI_MODE_SCALING
+{
+    DXGI_MODE_SCALING_UNSPECIFIED = 0,
+    DXGI_MODE_SCALING_CENTERED = 1,
+    DXGI_MODE_SCALING_STRETCHED = 2
+}
+
+[uuid(aec22fb8-76f3-4639-9be0-28eb43a67a2e)]
+interface IDXGIObject : IUnknown
+{
+    HRESULT SetPrivateData([in] REFGUID Name, [in] UINT DataSize, [in] void** pData);
+    HRESULT SetPrivateDataInterface([in] REFGUID Name, [in] IUnknown* pUnknown);
+    HRESULT GetPrivateData([in] REFGUID Name, [in, out] UINT* pDataSize, [out] void** pData);
+    HRESULT GetParent([in] REFIID riid, [out, retval] void** ppParent);
+}
+
+[uuid(7b7166ec-21c7-44ae-b21a-c9ae321ae369)]
+interface IDXGIFactory : IDXGIObject
+{
+    INT32 EnumAdapters([in] UINT Adapter, [out] void* ppAdapter);
+    HRESULT MakeWindowAssociation(HWND WindowHandle, UINT Flags);
+    HRESULT GetWindowAssociation([out, annotation("_Out_")] HWND* pWindowHandle);
+    HRESULT CreateSwapChain([in, annotation("_In_")] IUnknown* pDevice, [in, annotation("_In_")] DXGI_SWAP_CHAIN_DESC* pDesc, [out, annotation("_COM_Outptr_")] IDXGISwapChain** ppSwapChain);
+    HRESULT CreateSoftwareAdapter([in] HMODULE Module, [out, annotation("_COM_Outptr_")] IDXGIAdapter** ppAdapter);
+}
+
+[uuid(3d3e0379-f9de-4d58-bb6c-18d62992f1a6)]
+interface IDXGIDeviceSubObject : IDXGIObject
+{
+    HRESULT GetDevice([in, annotation("_In_")] REFIID riid, [out, retval, annotation("_COM_Outptr_")] void** ppDevice);
+}
+
+[uuid(2411e7e1-12ac-4ccf-bd14-9798e8534dc0)]
+interface IDXGIAdapter : IDXGIObject
+{
+    INT32 EnumOutputs([in] UINT Output, [in, out] void* ppOutput);
+    HRESULT GetDesc([out, annotation("_Out_")] DXGI_ADAPTER_DESC* pDesc);
+    HRESULT CheckInterfaceSupport([in, annotation("_In_")] REFGUID InterfaceName,[out, annotation("_Out_")] LARGE_INTEGER* pUMDVersion);
+};
+
+[uuid(310d36a0-d2e7-4c0a-aa04-6a9d23b8886a)]
+interface IDXGISwapChain : IDXGIDeviceSubObject
+{
+    HRESULT Present([in] UINT SyncInterval, [in] UINT Flags);
+    HRESULT GetBuffer([in] UINT Buffer, [in, annotation("_In_")] REFIID riid, [in, out, annotation("_COM_Outptr_")] void** ppSurface);
+    HRESULT SetFullscreenState([in] BOOL Fullscreen, [in, annotation("_In_opt_")] IDXGIOutput* pTarget);
+    HRESULT GetFullscreenState([out, annotation("_Out_opt_")] BOOL* pFullscreen, [out, annotation("_COM_Outptr_opt_result_maybenull_")] IDXGIOutput** ppTarget);
+    HRESULT GetDesc([out] DXGI_SWAP_CHAIN_DESC* pDesc);
+    HRESULT ResizeBuffers([in] UINT BufferCount, [in] UINT Width, [in] UINT Height, [in] DXGI_FORMAT NewFormat, [in] UINT SwapChainFlags);
+    HRESULT ResizeTarget([in, annotation("_In_")] DXGI_MODE_DESC* pNewTargetParameters);
+    HRESULT GetContainingOutput([out, annotation("_COM_Outptr_")] IDXGIOutput** ppOutput);
+    HRESULT GetFrameStatistics([out, annotation("_Out_")] DXGI_FRAME_STATISTICS* pStats);
+    HRESULT GetLastPresentCount([out, annotation("_Out_")] UINT* pLastPresentCount);
+}
+
+[uuid(54ec77fa-1377-44e6-8c32-88fd5f44c84c)]
+interface IDXGIDevice : IDXGIObject
+{
+    HRESULT GetAdapter([out] IDXGIAdapter** pAdapter);
+    HRESULT CreateSurface([in, annotation("_In_")] DXGI_SURFACE_DESC* pDesc, [in] UINT NumSurfaces, [in] DXGI_USAGE Usage, [in, annotation("_In_opt_")] DXGI_SHARED_RESOURCE* pSharedResource, [out] IDXGISurface** ppSurface);
+    HRESULT QueryResourceResidency([in] IUnknown* ppResources, [out] DXGI_RESIDENCY* pResidencyStatus, [in] UINT NumResources);
+    HRESULT SetGPUThreadPriority([in] INT Priority);
+    HRESULT GetGPUThreadPriority([out, retval] INT* pPriority);
+}
+
+[uuid(ae02eedb-c735-4690-8d52-5a8dc20213aa)]
+interface IDXGIOutput : IDXGIObject
+{
+    HRESULT GetDesc([out] DXGI_OUTPUT_DESC* pDesc);
+    HRESULT GetDisplayModeList([in] DXGI_FORMAT EnumFormat, [in] UINT Flags, [in, out] UINT* pNumModes, [out] DXGI_MODE_DESC* pDesc);
+    HRESULT FindClosestMatchingMode([in, annotation("_In_")] DXGI_MODE_DESC* pModeToMatch, [out] DXGI_MODE_DESC* pClosestMatch, [in] IUnknown* pConcernedDevice);
+    HRESULT WaitForVBlank();
+    HRESULT TakeOwnership([in, annotation("_In_")] IUnknown* pDevice, BOOL Exclusive);
+    void ReleaseOwnership();
+    HRESULT GetGammaControlCapabilities(IntPtr pGammaCaps);
+    HRESULT SetGammaControl([in, annotation("_In_")] void* pArray);
+    HRESULT GetGammaControl(IntPtr pArray);
+    HRESULT SetDisplaySurface([in, annotation("_In_")] IDXGISurface* pScanoutSurface);
+    HRESULT GetDisplaySurfaceData([in, annotation("_In_")] IDXGISurface* pDestination);
+    HRESULT GetFrameStatistics([out, annotation("_Out_")] DXGI_FRAME_STATISTICS* pStats);
+}
+
+[uuid(cafcb56c-6ac3-4889-bf47-9e23bbd260ec)]
+interface IDXGISurface : IDXGIDeviceSubObject
+{
+    HRESULT GetDesc([out, annotation("_Out_")] DXGI_SURFACE_DESC* pDesc);
+    HRESULT Map([out, annotation("_Out_")] DXGI_MAPPED_RECT* pLockedRect, [in] UINT MapFlags);
+    HRESULT Unmap();
+}
+
+[uuid(770aae78-f26f-4dba-a829-253c83d1b387)]
+interface IDXGIFactory1 : IDXGIFactory
+{
+    HRESULT EnumAdapters1([in] UINT Adapter, [out, annotation("_COM_Outptr_")] IDXGIAdapter1** ppAdapter);
+    BOOL IsCurrent();
+}
+
+[uuid(29038f61-3839-4626-91fd-086879011a05)]
+interface IDXGIAdapter1 : IDXGIAdapter
+{
+    HRESULT GetDesc1([out, annotation("_Out_")] DXGI_ADAPTER_DESC1* pDesc);
+}
+
+[uuid(50c83a1c-e072-4c48-87b0-3630fa36a6d0)]
+interface IDXGIFactory2 : IDXGIFactory1
+{
+    BOOL IsWindowedStereoEnabled();
+    HRESULT CreateSwapChainForHwnd([in, annotation("_In_")] IUnknown* pDevice, [in, annotation("_In_")] HWND hWnd, [in, annotation("_In_")] DXGI_SWAP_CHAIN_DESC1* pDesc, [in, annotation("_In_opt_")] DXGI_SWAP_CHAIN_FULLSCREEN_DESC* pFullscreenDesc, [in, annotation("_In_opt_")] IDXGIOutput* pRestrictToOutput, [out, annotation("_COM_Outptr_")] IDXGISwapChain1** ppSwapChain);
+    HRESULT CreateSwapChainForCoreWindow([in, annotation("_In_")] IUnknown* pDevice, [in, annotation("_In_")] IUnknown* pWindow, [in, annotation("_In_")] DXGI_SWAP_CHAIN_DESC1* pDesc, [in, annotation("_In_opt_")] IDXGIOutput* pRestrictToOutput, [out, annotation("_COM_Outptr_")] IDXGISwapChain1** ppSwapChain);
+    HRESULT GetSharedResourceAdapterLuid([annotation("_In_")] HANDLE hResource, [annotation("_Out_")] LUID* pLuid);
+    HRESULT RegisterStereoStatusWindow([in, annotation("_In_")] HWND WindowHandle, [in, annotation("_In_")] UINT wMsg, [out, annotation("_Out_")] DWORD* pdwCookie);
+    HRESULT RegisterStereoStatusEvent([in, annotation("_In_")] HANDLE hEvent, [out, annotation("_Out_")] DWORD* pdwCookie);
+    void UnregisterStereoStatus([in, annotation("_In_")] DWORD dwCookie);
+    HRESULT RegisterOcclusionStatusWindow([in, annotation("_In_")] HWND WindowHandle, [in, annotation("_In_")] UINT wMsg, [out, annotation("_Out_")] DWORD* pdwCookie);
+    HRESULT RegisterOcclusionStatusEvent([in, annotation("_In_")] HANDLE hEvent, [out, annotation("_Out_")] DWORD* pdwCookie);
+    void UnregisterOcclusionStatus([in, annotation("_In_")] DWORD dwCookie);
+    HRESULT CreateSwapChainForComposition([in, annotation("_In_")] IUnknown* pDevice, [in, annotation("_In_")] DXGI_SWAP_CHAIN_DESC1* pDesc, [in, annotation("_In_opt_")] IDXGIOutput* pRestrictToOutput, [out, annotation("_COM_Outptr_")] IDXGISwapChain1** ppSwapChain);
+}
+
+[uuid(790a45f7-0d42-4876-983a-0a55cfe6f4aa)]
+interface IDXGISwapChain1 : IDXGISwapChain
+{
+    HRESULT GetDesc1([out, annotation("_Out_")] DXGI_SWAP_CHAIN_DESC1* pDesc);
+    HRESULT GetFullscreenDesc([out, annotation("_Out_")] DXGI_SWAP_CHAIN_FULLSCREEN_DESC* pDesc);
+    HRESULT GetHwnd([out, annotation("_Out_")] HWND* pHwnd);
+    HRESULT GetCoreWindow([in, annotation("_In_")] REFIID refiid, [out, annotation("_COM_Outptr_")] void** ppUnk);
+    HRESULT Present1([in] UINT SyncInterval, [in] UINT PresentFlags, [in, annotation("_In_")] DXGI_PRESENT_PARAMETERS* pPresentParameters);
+    BOOL IsTemporaryMonoSupported();
+    HRESULT GetRestrictToOutput([out, annotation("_Out_")] IDXGIOutput** ppRestrictToOutput);
+    HRESULT SetBackgroundColor([in, annotation("_In_")] DXGI_RGBA* pColor);
+    HRESULT GetBackgroundColor([out, annotation("_Out_")] DXGI_RGBA* pColor);
+    HRESULT SetRotation([in, annotation("_In_")] DXGI_MODE_ROTATION Rotation);
+    HRESULT GetRotation([out, annotation("_Out_")] DXGI_MODE_ROTATION* pRotation);
+}
+
+enum D3D11_FEATURE
+{
+    D3D11_FEATURE_THREADING,
+    D3D11_FEATURE_DOUBLES,  
+    D3D11_FEATURE_FORMAT_SUPPORT,
+    D3D11_FEATURE_FORMAT_SUPPORT2,
+    D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS,
+    D3D11_FEATURE_D3D11_OPTIONS,
+    D3D11_FEATURE_ARCHITECTURE_INFO,
+    D3D11_FEATURE_D3D9_OPTIONS,
+    D3D11_FEATURE_SHADER_MIN_PRECISION_SUPPORT,
+    D3D11_FEATURE_D3D9_SHADOW_SUPPORT,
+    D3D11_FEATURE_D3D11_OPTIONS1,
+    D3D11_FEATURE_D3D9_SIMPLE_INSTANCING_SUPPORT,
+    D3D11_FEATURE_MARKER_SUPPORT,
+    D3D11_FEATURE_D3D9_OPTIONS1,
+    D3D11_FEATURE_D3D11_OPTIONS2,
+    D3D11_FEATURE_D3D11_OPTIONS3,
+    D3D11_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT,
+    D3D11_FEATURE_D3D11_OPTIONSS,
+    D3D11_FEATURE_SHADER_CACHE
+} 
+
+[uuid(db6f6ddb-ac77-4e88-8253-819df9bbf140)]
+interface ID3D11Device : IUnknown
+{
+    HRESULT CreateBuffer(
+        IntPtr pDesc,
+        IntPtr pInitialData,
+        [out, retval] IUnknown** ppBuffer );
+    HRESULT CreateTexture1D(
+        IntPtr pDesc,
+        IntPtr pInitialData,
+        [out, retval] IUnknown**  ppTexture1D );
+    HRESULT CreateTexture2D(
+        IntPtr  pDesc,
+        IntPtr pInitialData,
+        [out, retval] IUnknown**  ppTexture2D );
+    HRESULT CreateTexture3D(
+        IntPtr pDesc,
+        IntPtr pInitialData,
+        [out, retval] IUnknown**  ppTexture3D );
+    HRESULT CreateShaderResourceView(
+        IntPtr pResource,
+        IntPtr pDesc,
+        [out, retval] IUnknown**  ppSRView );
+    HRESULT CreateUnorderedAccessView(
+        IntPtr pResource,
+        IntPtr pDesc,
+        [out, retval] IUnknown**  ppUAView );
+    HRESULT CreateRenderTargetView(
+        IntPtr pResource,
+        IntPtr pDesc,
+        [out, retval] IUnknown**  ppRTView);
+    HRESULT CreateDepthStencilView(
+        IntPtr pResource,
+        IntPtr pDesc,
+        [out, retval] IUnknown**  ppDepthStencilView );
+    HRESULT CreateInputLayout(
+        IntPtr pInputElementDescs,
+        UINT NumElements,
+        void* pShaderBytecodeWithInputSignature,
+        IntPtr BytecodeLength,
+        [out, retval] IUnknown**  ppInputLayout );
+    HRESULT CreateVertexShader(
+        IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr pClassLinkage,
+        [out, retval] IUnknown**  ppVertexShader );
+    HRESULT CreateGeometryShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr pClassLinkage,
+        [out, retval] IUnknown**  ppGeometryShader );
+    HRESULT CreateGeometryShaderWithStreamOutput(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pSODeclaration,
+        UINT NumEntries,
+        UINT* pBufferStrides,
+        UINT NumStrides,
+        UINT RasterizedStream,
+        IntPtr pClassLinkage,
+        [out, retval] IUnknown**  ppGeometryShader );
+    HRESULT CreatePixelShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pClassLinkage,
+        [out, retval] IUnknown**  ppPixelShader );
+    HRESULT CreateHullShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pClassLinkage,
+        [out, retval] IUnknown**  ppHullShader );
+    HRESULT CreateDomainShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pClassLinkage,
+        [out, retval] IUnknown**  ppDomainShader );
+    HRESULT CreateComputeShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pClassLinkage,
+        [out, retval] IUnknown**  ppComputeShader );
+    HRESULT CreateClassLinkage([out, retval]IUnknown** ppLinkage);
+    HRESULT CreateBlendState(
+        IntPtr pBlendStateDesc,
+        [out, retval] IUnknown**  ppBlendState );
+    HRESULT CreateDepthStencilState(
+        IntPtr pDepthStencilDesc,
+        [out, retval] IUnknown**  ppDepthStencilState );
+    HRESULT CreateRasterizerState(
+        IntPtr pRasterizerDesc,
+        [out, retval] IUnknown**  ppRasterizerState );
+    HRESULT CreateSamplerState(
+        IntPtr pSamplerDesc,
+        [out, retval] IUnknown**  ppSamplerState );
+    HRESULT CreateQuery(
+        IntPtr pQueryDesc,
+        [out, retval] IUnknown**  ppQuery );
+    HRESULT CreatePredicate(
+        IntPtr pPredicateDesc,
+        [out, retval] IUnknown**  ppPredicate );
+    HRESULT CreateCounter(
+        IntPtr pCounterDesc,
+        [out, retval] IUnknown**  ppCounter );
+    HRESULT CreateDeferredContext(
+        UINT ContextFlags, // Reserved parameter; must be 0
+        [out, retval] IUnknown** ppDeferredContext );
+    HRESULT OpenSharedResource(
+        IntPtr hResource,
+        [out] Guid* ReturnedInterface,
+        [out, retval] IUnknown**  ppResource);
+
+    // Check*
+    HRESULT CheckFormatSupport(
+        [annotation("_In_")] DXGI_FORMAT Format,
+        [annotation("_Out_")] UINT* pFormatSupport );
+    HRESULT CheckMultisampleQualityLevels(
+        [annotation("_In_")] DXGI_FORMAT Format,
+        [annotation("_In_")] UINT        SampleCount,
+        [annotation("_Out_")] UINT* pNumQualityLevels );
+    void CheckCounterInfo(IntPtr pCounterInfo );
+    HRESULT CheckCounter(
+        IntPtr  pDesc,
+        IntPtr  pType,
+        IntPtr  pActiveCounters,
+        IntPtr  szName,
+        UINT* pNameLength,
+        IntPtr szUnits,
+        UINT* pUnitsLength,
+        IntPtr  szDescription,
+        UINT* pDescriptionLength );
+    HRESULT CheckFeatureSupport(
+        D3D11_FEATURE Feature,
+        void* pFeatureSupportData,
+        UINT FeatureSupportDataSize );
+
+    HRESULT GetPrivateData(
+        Guid* guid,
+        UINT* pDataSize,
+        void* pData );
+    HRESULT SetPrivateData(
+        Guid* guid,
+        UINT DataSize,
+        IntPtr* pData );
+    HRESULT SetPrivateDataInterface(
+        Guid* guid,
+        IUnknown* pData );
+
+    D3D_FEATURE_LEVEL GetFeatureLevel();
+    UINT GetCreationFlags();
+    int GetDeviceRemovedReason();
+    void GetImmediateContext(IntPtr* ppImmediateContext );
+    HRESULT SetExceptionMode( UINT RaiseFlags );
+    UINT GetExceptionMode();
+}

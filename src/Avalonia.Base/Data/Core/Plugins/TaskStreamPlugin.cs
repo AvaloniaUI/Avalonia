@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reflection;
@@ -9,6 +10,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Handles binding to <see cref="Task"/>s for the '^' stream binding operator.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
     public class TaskStreamPlugin : IStreamPlugin
     {
         /// <summary>
@@ -16,12 +18,13 @@ namespace Avalonia.Data.Core.Plugins
         /// </summary>
         /// <param name="reference">A weak reference to the value.</param>
         /// <returns>True if the plugin can handle the value; otherwise false.</returns>
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         public virtual bool Match(WeakReference<object?> reference)
         {
             reference.TryGetTarget(out var target);
 
             return target is Task;
-        } 
+        }
 
         /// <summary>
         /// Starts producing output based on the specified value.
@@ -30,6 +33,7 @@ namespace Avalonia.Data.Core.Plugins
         /// <returns>
         /// An observable that produces the output for the value.
         /// </returns>
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         public virtual IObservable<object?> Start(WeakReference<object?> reference)
         {
             reference.TryGetTarget(out var target);
@@ -59,7 +63,8 @@ namespace Avalonia.Data.Core.Plugins
             return Observable.Empty<object?>();
         }
 
-        private IObservable<object?> HandleCompleted(Task task)
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
+        private static IObservable<object?> HandleCompleted(Task task)
         {
             var resultProperty = task.GetType().GetRuntimeProperty("Result");
             

@@ -1,8 +1,10 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.OpenGL.Imaging;
+using Avalonia.VisualTree;
 using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.OpenGL.Controls
@@ -14,8 +16,10 @@ namespace Avalonia.OpenGL.Controls
         private OpenGlBitmap _bitmap;
         private IOpenGlBitmapAttachment _attachment;
         private PixelSize _depthBufferSize;
-        private bool _glFailed;
-        private bool _initialized;
+        
+        private Task<bool> _initialization;
+        private IOpenGlTextureSharingRenderInterfaceContextFeature _feature;
+
         protected GlVersion GlVersion { get; private set; }
         public sealed override void Render(DrawingContext context)
         {
@@ -38,13 +42,6 @@ namespace Avalonia.OpenGL.Controls
             base.Render(context);
         }
         
-        private void CheckError(GlInterface gl)
-        {
-            int err;
-            while ((err = gl.GetError()) != GL_NO_ERROR)
-                Console.WriteLine(err);
-        }
-
         void EnsureTextureAttachment()
         {
             _context.GlInterface.BindFramebuffer(GL_FRAMEBUFFER, _fb);
@@ -54,7 +51,7 @@ namespace Avalonia.OpenGL.Controls
                 _attachment = null;
                 _bitmap?.Dispose();
                 _bitmap = null;
-                _bitmap = new OpenGlBitmap(GetPixelSize(), new Vector(96, 96));
+                _bitmap = new OpenGlBitmap(_feature, GetPixelSize(), new Vector(96, 96));
                 _attachment = _bitmap.CreateFramebufferAttachment(_context);
             }
         }
@@ -87,9 +84,11 @@ namespace Avalonia.OpenGL.Controls
                     gl.ActiveTexture(GL_TEXTURE0);
                     gl.BindTexture(GL_TEXTURE_2D, 0);
                     gl.BindFramebuffer(GL_FRAMEBUFFER, 0);
-                    gl.DeleteFramebuffer(_fb);
+                    if (_fb != 0)
+                        gl.DeleteFramebuffer(_fb);
                     _fb = 0;
-                    gl.DeleteRenderbuffer(_depthBuffer);
+                    if (_depthBuffer != 0)
+                        gl.DeleteRenderbuffer(_depthBuffer);
                     _depthBuffer = 0;
                     _attachment?.Dispose();
                     _attachment = null;
@@ -98,10 +97,10 @@ namespace Avalonia.OpenGL.Controls
                     
                     try
                     {
-                        if (_initialized)
+                        if (_initialization is { Status: TaskStatus.RanToCompletion, Result: true })
                         {
-                            _initialized = false;
                             OnOpenGlDeinit(_context.GlInterface, _fb);
+                            _initialization = null;
                         }
                     }
                     finally
@@ -111,6 +110,11 @@ namespace Avalonia.OpenGL.Controls
                     }
                 }
             }
+
+            _fb = _depthBuffer = 0;
+            _attachment = null;
+            _bitmap = null;
+            _feature = null;
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -119,26 +123,12 @@ namespace Avalonia.OpenGL.Controls
             base.OnDetachedFromVisualTree(e);
         }
 
-        private bool EnsureInitializedCore()
+        private bool EnsureInitializedCore(IOpenGlTextureSharingRenderInterfaceContextFeature feature)
         {
-            if (_context != null)
-                return true;
-            
-            if (_glFailed)
-                return false;
-            
-            var feature = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
-            if (feature == null)
-                return false;
-            if (!feature.CanShareContexts)
-            {
-                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
-                    "Unable to initialize OpenGL: current platform does not support multithreaded context sharing");
-                return false;
-            }
             try
             {
                 _context = feature.CreateSharedContext();
+                _feature = feature;
             }
             catch (Exception e)
             {
@@ -157,7 +147,7 @@ namespace Avalonia.OpenGL.Controls
             GlVersion = _context.Version;
             try
             {
-                _bitmap = new OpenGlBitmap(GetPixelSize(), new Vector(96, 96));
+                _bitmap = new OpenGlBitmap(_feature, GetPixelSize(), new Vector(96, 96));
                 if (!_bitmap.SupportsContext(_context))
                 {
                     Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
@@ -197,7 +187,7 @@ namespace Avalonia.OpenGL.Controls
             }
         }
 
-        private bool CheckFramebufferStatus(GlInterface gl)
+        private static bool CheckFramebufferStatus(GlInterface gl)
         {
             var status = gl.CheckFramebufferStatus(GL_FRAMEBUFFER);
             if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -212,15 +202,68 @@ namespace Avalonia.OpenGL.Controls
             return true;
         }
 
+        void ContextLost()
+        {
+            _context = null;
+            _feature = null;
+            _initialization = null;
+            _attachment = null;
+            _bitmap = null;
+            _fb = 0;
+            _depthBuffer = 0;
+            _depthBufferSize = default;
+            OnOpenGlLost();
+        }
+
         private bool EnsureInitialized()
         {
-            if (_initialized)
-                return true;
-            _glFailed = !(_initialized = EnsureInitializedCore());
-            if (_glFailed)
+            if (_initialization != null)
+            {
+                // Check if we've previously failed to initialize OpenGL on this platform
+                if (_initialization is { IsCompleted: true, Result: false } ||
+                    _initialization?.IsFaulted == true)
+                    return false;
+
+                // Check if we are still waiting for init to complete
+                if (_initialization is { IsCompleted: false })
+                    return false;
+
+                if (_context.IsLost)
+                    ContextLost();
+                else 
+                    return true;
+            }
+
+            _initialization = InitializeAsync();
+            return false;
+
+        }
+
+        private async Task<bool> InitializeAsync()
+        {
+            var contextSharingFeature =
+                (IOpenGlTextureSharingRenderInterfaceContextFeature)
+                await this.GetVisualRoot()!.Renderer.TryGetRenderInterfaceFeature(
+                    typeof(IOpenGlTextureSharingRenderInterfaceContextFeature));
+
+            if (contextSharingFeature == null || !contextSharingFeature.CanCreateSharedContext)
+            {
+                Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("OpenGlControlBase",
+                    "Unable to initialize OpenGL: current platform does not support multithreaded context sharing");
                 return false;
+            }
+
+            if (!EnsureInitializedCore(contextSharingFeature))
+            {
+                DoCleanup();
+                return false;
+            }
+
             using (_context.MakeCurrent())
                 OnOpenGlInit(_context.GlInterface, _fb);
+
+            InvalidateVisual();
+            
             return true;
         }
         
@@ -238,6 +281,11 @@ namespace Avalonia.OpenGL.Controls
         }
 
         protected virtual void OnOpenGlDeinit(GlInterface gl, int fb)
+        {
+            
+        }
+        
+        protected virtual void OnOpenGlLost()
         {
             
         }

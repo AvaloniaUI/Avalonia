@@ -81,6 +81,7 @@ namespace Avalonia
         private Styles? _styles;
         private bool _stylesApplied;
         private bool _themeApplied;
+        private bool _templatedParentThemeApplied;
         private AvaloniaObject? _templatedParent;
         private bool _dataContextUpdating;
         private ControlTheme? _implicitTheme;
@@ -375,6 +376,12 @@ namespace Avalonia
                         _themeApplied = true;
                     }
 
+                    if (!_templatedParentThemeApplied)
+                    {
+                        ApplyTemplatedParentControlTheme();
+                        _templatedParentThemeApplied = true;
+                    }
+
                     if (!_stylesApplied)
                     {
                         ApplyStyles(this);
@@ -613,26 +620,38 @@ namespace Avalonia
             base.OnPropertyChanged(change);
 
             if (change.Property == ThemeProperty)
-            {
                 OnControlThemeChanged();
-                _themeApplied = false;
-            }
         }
 
         private protected virtual void OnControlThemeChanged()
         {
             var values = GetValueStore();
             values.BeginStyling();
-            try { values.RemoveFrames(FrameType.Theme); }
-            finally { values.EndStyling(); }
+
+            try 
+            { 
+                values.RemoveFrames(FrameType.Theme);
+            }
+            finally 
+            { 
+                values.EndStyling();
+                _themeApplied = false;
+            }
         }
 
         internal virtual void OnTemplatedParentControlThemeChanged()
         {
             var values = GetValueStore();
             values.BeginStyling();
-            try { values.RemoveFrames(FrameType.TemplatedParentTheme); }
-            finally { values.EndStyling(); }
+            try 
+            { 
+                values.RemoveFrames(FrameType.TemplatedParentTheme); 
+            }
+            finally 
+            { 
+                values.EndStyling();
+                _templatedParentThemeApplied = false;
+            }
         }
 
         internal ControlTheme? GetEffectiveTheme()
@@ -743,13 +762,13 @@ namespace Avalonia
 
         private void ApplyControlTheme()
         {
-            var theme = GetEffectiveTheme();
-
-            if (theme is not null)
+            if (GetEffectiveTheme() is { } theme)
                 ApplyControlTheme(theme, FrameType.Theme);
+        }
 
-            if (TemplatedParent is StyledElement styleableParent &&
-                styleableParent.GetEffectiveTheme() is { } parentTheme)
+        private void ApplyTemplatedParentControlTheme()
+        {
+            if ((TemplatedParent as StyledElement)?.GetEffectiveTheme() is { } parentTheme)
             {
                 ApplyControlTheme(parentTheme, FrameType.TemplatedParentTheme);
             }
@@ -793,6 +812,28 @@ namespace Avalonia
                 ApplyStyle(child, host, type);
         }
 
+        private void ReevaluateImplicitTheme()
+        {
+            // We only need to check if the theme has changed when Theme isn't set (i.e. when we
+            // have an implicit theme).
+            if (Theme is not null)
+                return;
+
+            // Refetch the implicit theme.
+            var oldImplicitTheme = _implicitTheme == s_invalidTheme ? null : _implicitTheme;
+            _implicitTheme = null;
+            GetEffectiveTheme();
+
+            var newImplicitTheme = _implicitTheme == s_invalidTheme ? null : _implicitTheme;
+
+            // If the implicit theme has changed, detach the existing theme.
+            if (newImplicitTheme != oldImplicitTheme)
+            {
+                OnControlThemeChanged();
+                _themeApplied = false;
+            }
+        }
+
         private void OnAttachedToLogicalTreeCore(LogicalTreeAttachmentEventArgs e)
         {
             if (this.GetLogicalParent() == null && !(this is ILogicalRoot))
@@ -811,6 +852,7 @@ namespace Avalonia
             {
                 _logicalRoot = e.Root;
 
+                ReevaluateImplicitTheme();
                 ApplyStyling();
                 NotifyResourcesChanged(propagate: false);
 
@@ -835,7 +877,6 @@ namespace Avalonia
             if (_logicalRoot != null)
             {
                 _logicalRoot = null;
-                _implicitTheme = null;
                 InvalidateStyles(recurse: false);
                 OnDetachedFromLogicalTree(e);
                 DetachedFromLogicalTree?.Invoke(this, e);

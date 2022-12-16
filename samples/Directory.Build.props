@@ -4,4 +4,7 @@
       <AvaloniaPreviewerNetCoreToolPath>$(MSBuildThisFileDirectory)..\src\tools\Avalonia.Designer.HostApp\bin\Debug\netcoreapp2.0\Avalonia.Designer.HostApp.dll</AvaloniaPreviewerNetCoreToolPath>
   </PropertyGroup>
   <Import Project="..\build\SharedVersion.props" />
+  <PropertyGroup>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+  </PropertyGroup>  
 </Project>

@@ -38,13 +38,12 @@ public class CompositingRenderer : IRendererWithCompositor
     /// </summary>
     public bool RenderOnlyOnRenderThread { get; set; } = true;
 
-    public CompositingRenderer(IRenderRoot root,
-        Compositor compositor)
+    public CompositingRenderer(IRenderRoot root, Compositor compositor, Func<IEnumerable<object>> surfaces)
     {
         _root = root;
         _compositor = compositor;
         _recordingContext = new DrawingContext(_recorder);
-        CompositionTarget = compositor.CreateCompositionTarget(root.CreateRenderTarget);
+        CompositionTarget = compositor.CreateCompositionTarget(surfaces);
         CompositionTarget.Root = ((Visual)root).AttachToCompositor(compositor);
         _update = Update;
     }
@@ -124,7 +123,7 @@ public class CompositingRenderer : IRendererWithCompositor
         QueueUpdate();
     }
 
-    private void SyncChildren(Visual v)
+    private static void SyncChildren(Visual v)
     {
         //TODO: Optimize by moving that logic to Visual itself
         if(v.CompositionVisual == null)
@@ -301,7 +300,9 @@ public class CompositingRenderer : IRendererWithCompositor
     {
         CompositionTarget.IsEnabled = false;
     }
-    
+
+    public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType) => Compositor.TryGetRenderInterfaceFeature(featureType);
+
     public void Dispose()
     {
         Stop();

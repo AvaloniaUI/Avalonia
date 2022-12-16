@@ -555,7 +555,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private IDisposable CreateServicesWithFocus()
+        private static IDisposable CreateServicesWithFocus()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
                 new MockWindowingPlatform(null,
@@ -567,7 +567,7 @@ namespace Avalonia.Controls.UnitTests
                     keyboardDevice: () => new KeyboardDevice()));
         }
 
-        private Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object content = null)
         {
             var renderer = new Mock<IRenderer>();
             var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
@@ -579,7 +579,7 @@ namespace Avalonia.Controls.UnitTests
             return w;
         }
 
-        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
+        private static PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             return new PointerPressedEventArgs(

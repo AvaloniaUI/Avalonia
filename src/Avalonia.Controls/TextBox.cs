@@ -961,7 +961,9 @@ namespace Avalonia.Controls
 
                 var length = 0;
 
-                var graphemeEnumerator = new GraphemeEnumerator(input.AsMemory());
+                var inputRange = new CharacterBufferRange(new CharacterBufferReference(input), input.Length);
+
+                var graphemeEnumerator = new GraphemeEnumerator(inputRange);
 
                 while (graphemeEnumerator.MoveNext())
                 {
@@ -1588,7 +1590,7 @@ namespace Avalonia.Controls
 
         private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text);
 
-        private int CoerceCaretIndex(int value, string? text)
+        private static int CoerceCaretIndex(int value, string? text)
         {
             if (text == null)
             {
