@@ -109,7 +109,7 @@ namespace Avalonia.Controls.Presenters
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty);
+            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, TextElement.ForegroundProperty);
         }
 
         public TextPresenter()
