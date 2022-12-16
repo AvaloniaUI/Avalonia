@@ -191,7 +191,7 @@ namespace Avalonia.Win32
 
         public Action Activated { get; set; }
 
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
 
         public Action Closed { get; set; }
 
