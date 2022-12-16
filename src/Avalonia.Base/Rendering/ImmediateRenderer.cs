@@ -30,6 +30,8 @@ namespace Avalonia.Rendering
         /// Initializes a new instance of the <see cref="ImmediateRenderer"/> class.
         /// </summary>
         /// <param name="root">The control to render.</param>
+        /// <param name="renderTargetFactory">The target render factory.</param>
+        /// <param name="renderContext">The render contex.</param>
         public ImmediateRenderer(Visual root, Func<IRenderTarget> renderTargetFactory, 
             PlatformRenderInterfaceContextManager? renderContext = null)
         {
@@ -136,7 +138,7 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         public void AddDirty(Visual visual)
         {
-            if (visual.Bounds != Rect.Empty)
+            if (!visual.Bounds.IsDefault)
             {
                 var m = visual.TransformToVisual(_root);
 
@@ -201,7 +203,7 @@ namespace Avalonia.Rendering
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
             (brush.Visual as IVisualBrushInitialize)?.EnsureInitialized();
-            return brush.Visual?.Bounds.Size ?? Size.Empty;
+            return brush.Visual?.Bounds.Size ?? default;
         }
 
         /// <inheritdoc/>

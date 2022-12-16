@@ -49,6 +49,8 @@ namespace Avalonia.Rendering
         /// </summary>
         /// <param name="root">The control to render.</param>
         /// <param name="renderLoop">The render loop.</param>
+        /// <param name="renderTargetFactory">The target render factory.</param>
+        /// <param name="renderInterface">The Platform Render Context.</param>
         /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
         /// <param name="dispatcher">The dispatcher to use. Optional.</param>
         /// <param name="rendererLock">Lock object used before trying to access render target</param>
@@ -309,7 +311,7 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
-            return TryGetChildScene(_currentDraw)?.Size ?? Size.Empty;
+            return TryGetChildScene(_currentDraw)?.Size ?? default;
         }
 
         /// <inheritdoc/>
@@ -461,7 +463,7 @@ namespace Avalonia.Rendering
             {
                 clipBounds = node.ClipBounds.Intersect(clipBounds);
 
-                if (!clipBounds.IsEmpty && node.Opacity > 0)
+                if (!clipBounds.IsDefault && node.Opacity > 0)
                 {
                     var isLayerRoot = node.Visual == layer;
 

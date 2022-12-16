@@ -5,7 +5,6 @@ namespace Avalonia.Media.TextFormatting.Unicode
     public ref struct CodepointEnumerator
     {
         private CharacterBufferRange _text;
-        private int _pos;
 
         public CodepointEnumerator(CharacterBufferRange text)
         {
