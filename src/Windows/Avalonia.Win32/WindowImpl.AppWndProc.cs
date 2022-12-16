@@ -10,6 +10,7 @@ using Avalonia.Controls.Remote;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Threading;
 using Avalonia.Win32.Automation;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop.Automation;
@@ -106,6 +107,9 @@ namespace Avalonia.Win32
                         _touchDevice?.Dispose();
                         //Free other resources
                         Dispose();
+
+                        // Schedule cleanup of anything that requires window to be destroyed
+                        Dispatcher.UIThread.Post(AfterCloseCleanup);
                         return IntPtr.Zero;
                     }
 

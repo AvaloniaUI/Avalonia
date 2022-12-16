@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Security.Cryptography;
 using Avalonia.Data;
+using Avalonia.Threading;
 
 namespace Avalonia.PropertyStore
 {
@@ -34,28 +36,47 @@ namespace Avalonia.PropertyStore
 
         public void OnNext(object? value)
         {
-            if (value is BindingNotification n)
+            static void Execute(LocalValueUntypedBindingObserver<T> instance, object? value)
             {
-                value = n.Value;
-                LoggingUtils.LogIfNecessary(_owner.Owner, Property, n);
+                var owner = instance._owner;
+                var property = instance.Property;
+
+                if (value is BindingNotification n)
+                {
+                    value = n.Value;
+                    LoggingUtils.LogIfNecessary(owner.Owner, property, n);
+                }
+
+                if (value == AvaloniaProperty.UnsetValue)
+                {
+                    owner.ClearLocalValue(property);
+                }
+                else if (value == BindingOperations.DoNothing)
+                {
+                    // Do nothing!
+                }
+                else if (UntypedValueUtils.TryConvertAndValidate(property, value, out var typedValue))
+                {
+                    owner.SetValue(property, typedValue, BindingPriority.LocalValue);
+                }
+                else
+                {
+                    owner.ClearLocalValue(property);
+                    LoggingUtils.LogInvalidValue(owner.Owner, property, typeof(T), value);
+                }
             }
 
-            if (value == AvaloniaProperty.UnsetValue)
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                _owner.ClearLocalValue(Property);
+                Execute(this, value);
             }
-            else if (value == BindingOperations.DoNothing)
+            else if (value != BindingOperations.DoNothing)
             {
-                // Do nothing!
-            }
-            else if (UntypedValueUtils.TryConvertAndValidate(Property, value, out var typedValue))
-            {
-                _owner.SetValue(Property, typedValue, BindingPriority.LocalValue);
-            }
-            else
-            {
-                _owner.ClearLocalValue(Property);
-                LoggingUtils.LogInvalidValue(_owner.Owner, Property, typeof(T), value);
+                // To avoid allocating closure in the outer scope we need to capture variables
+                // locally. This allows us to skip most of the allocations when on UI thread.
+                var instance = this;
+                var newValue = value;
+                Dispatcher.UIThread.Post(() => Execute(instance, newValue));
             }
         }
     }
