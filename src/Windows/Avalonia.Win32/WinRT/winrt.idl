@@ -844,3 +844,65 @@ interface ICompositor6 : IInspectable
     [overload("CreateGeometricClip")] HRESULT CreateGeometricClip([out] [retval] ICompositionGeometricClip** result);
     [overload("CreateGeometricClip")] HRESULT CreateGeometricClipWithGeometry([in] ICompositionGeometry* geometry, [out] [retval] ICompositionGeometricClip** result); 
 }
+
+[contract(Windows.Foundation.UniversalApiContract, 1.0)]
+[exclusiveto(Windows.UI.Notifications.ToastNotificationManager)]
+[uuid(50AC103F-D235-4598-BBEF-98FE4D1A3AD4)]
+interface IToastNotificationManagerStatics : IInspectable
+{
+    [overload("CreateToastNotifier")] HRESULT CreateToastNotifier([out] [retval] IToastNotifier** result);
+    [overload("CreateToastNotifier")] HRESULT CreateToastNotifierWithId([in] HSTRING applicationId, [out] [retval] IToastNotifier** result);
+//    HRESULT GetTemplateContent([in] Windows.UI.Notifications.ToastTemplateType type, [out] [retval] Windows.Data.Xml.Dom.XmlDocument** result);
+}
+
+[contract(Windows.Foundation.UniversalApiContract, 1.0)]
+[exclusiveto(Windows.UI.Notifications.ToastNotifier)]
+[uuid(75927B93-03F3-41EC-91D3-6E5BAC1B38E7)]
+interface IToastNotifier : IInspectable
+{
+    HRESULT Show([in] IToastNotification* notification);
+    HRESULT Hide([in] IToastNotification* notification);
+//    [propget] HRESULT Setting([out] [retval] void* value);
+//    HRESULT AddToSchedule([in] void* scheduledToast);
+//    HRESULT RemoveFromSchedule([in] void* scheduledToast);
+//    HRESULT GetScheduledToastNotifications([out] [retval] void** result);
+}
+
+[contract(Windows.Foundation.UniversalApiContract, 1.0)]
+[exclusiveto(Windows.UI.Notifications.ToastNotification)]
+[uuid(997E2675-059E-4E60-8B06-1760917C8B80)]
+interface IToastNotification : IInspectable
+{
+    [propget] HRESULT Content([out] [retval] IXmlDocumentIO** value);
+//    [propput] HRESULT ExpirationTime([in] Windows.Foundation.IReference<Windows.Foundation.DateTime>* value);
+//    [propget] HRESULT ExpirationTime([out] [retval] Windows.Foundation.IReference<Windows.Foundation.DateTime>** value);
+//    [eventadd] HRESULT Dismissed([in] Windows.Foundation.TypedEventHandler<Windows.UI.Notifications.ToastNotification*, Windows.UI.Notifications.ToastDismissedEventArgs*>* handler, [out] [retval] EventRegistrationToken* token);
+//    [eventremove] HRESULT Dismissed([in] EventRegistrationToken token);
+//    [eventadd] HRESULT Activated([in] Windows.Foundation.TypedEventHandler<Windows.UI.Notifications.ToastNotification*, IInspectable*>* handler, [out] [retval] EventRegistrationToken* token);
+//    [eventremove] HRESULT Activated([in] EventRegistrationToken token);
+//    [eventadd] HRESULT Failed([in] Windows.Foundation.TypedEventHandler<Windows.UI.Notifications.ToastNotification*, Windows.UI.Notifications.ToastFailedEventArgs*>* handler, [out] [retval] EventRegistrationToken* token);
+//    [eventremove] HRESULT Failed([in] EventRegistrationToken token);
+}
+
+[contract(Windows.Foundation.UniversalApiContract, 1.0)]
+[exclusiveto(Windows.UI.Notifications.ToastNotification)]
+[uuid(04124B20-82C6-4229-B109-FD9ED4662B53)]
+interface IToastNotificationFactory : IInspectable
+{
+    HRESULT CreateToastNotification([in] IXmlDocument* content, [out] [retval] IToastNotification** value);
+}
+
+[contract(Windows.Foundation.UniversalApiContract, 1.0)]
+[exclusiveto(Windows.Data.Xml.Dom.XmlDocument)]
+[uuid(F7F3A506-1E87-42D6-BCFB-B8C809FA5494)]
+interface IXmlDocument : IInspectable
+{
+}
+
+[contract(Windows.Foundation.UniversalApiContract, 1.0)]
+[exclusiveto(Windows.Data.Xml.Dom.XmlDocument)]
+[uuid(6CD0E74E-EE65-4489-9EBF-CA43E87BA637)]
+interface IXmlDocumentIO : IInspectable
+{
+    [overload("LoadXml")] HRESULT LoadXml([in] HSTRING xml);
+}

@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.WinRT;
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32
@@ -59,6 +60,29 @@ namespace Avalonia.Win32
                 throw new ArgumentNullException(nameof(text));
             }
 
+            var xml = $"""
+  <toast>
+    <visual>
+      <binding template="ToastGeneric">
+        <text>Title</text>
+        <text>{text}</text>
+      </binding>
+    </visual>
+  </toast>
+""";
+            using var xmlDoc = NativeWinRTMethods.CreateInstance<IXmlDocument>("Windows.Data.Xml.Dom.XmlDocument");
+            using var xmlIO = xmlDoc.QueryInterface<IXmlDocumentIO>();
+            var xmlIntPtr = NativeWinRTMethods.WindowsCreateString(xml);
+            xmlIO.LoadXml(xmlIntPtr);
+            NativeWinRTMethods.WindowsDeleteString(xmlIntPtr);
+            
+            using var factory = NativeWinRTMethods.CreateActivationFactory<IToastNotificationFactory>("Windows.UI.Notifications.ToastNotification");
+            using var notification = factory.CreateToastNotification(xmlDoc);
+
+            using var managerStatics = NativeWinRTMethods.CreateActivationFactory<IToastNotificationManagerStatics>("Windows.UI.Notifications.ToastNotificationManager");
+            using var notifier = managerStatics.CreateToastNotifier();
+            notifier.Show(notification);
+            
             using(await OpenClipboard())
             {
                 UnmanagedMethods.EmptyClipboard();
