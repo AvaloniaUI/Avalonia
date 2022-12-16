@@ -962,8 +962,11 @@ namespace Avalonia.X11
             get => _position ?? default;
             set
             {
-                _usePositioningFlags = true;
-                UpdateSizeHints(null);
+                if(!_usePositioningFlags)
+                {
+                    _usePositioningFlags = true;
+                    UpdateSizeHints(null);
+                }
                 
                 var changes = new XWindowChanges
                 {
