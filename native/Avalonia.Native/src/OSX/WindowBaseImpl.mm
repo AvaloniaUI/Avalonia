@@ -542,7 +542,7 @@ HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, Av
     return S_OK;
 }
 
-bool WindowBaseImpl::IsDialog() {
+bool WindowBaseImpl::IsModal() {
     return false;
 }
 
