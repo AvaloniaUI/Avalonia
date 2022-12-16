@@ -70,7 +70,7 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_CLOSE:
                     {
-                        bool? preventClosing = Closing?.Invoke();
+                        bool? preventClosing = Closing?.Invoke(WindowCloseReason.WindowClosing);
                         if (preventClosing == true)
                         {
                             return IntPtr.Zero;
