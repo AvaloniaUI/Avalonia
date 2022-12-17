@@ -95,10 +95,9 @@ namespace Avalonia.Controls
         {
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
-            SelectedItemProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.SelectedItemChanged(e));
-            KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), Interactivity.RoutingStrategies.Tunnel);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
-            IsDropDownOpenProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.DropdownChanged(e));
+
+            KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), Interactivity.RoutingStrategies.Tunnel);
         }
 
         /// <summary>
@@ -106,8 +105,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsDropDownOpen
         {
-            get { return _isDropDownOpen; }
-            set { SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value); }
+            get => _isDropDownOpen;
+            set => SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value);
         }
 
         /// <summary>
@@ -115,8 +114,8 @@ namespace Avalonia.Controls
         /// </summary>
         public double MaxDropDownHeight
         {
-            get { return GetValue(MaxDropDownHeightProperty); }
-            set { SetValue(MaxDropDownHeightProperty, value); }
+            get => GetValue(MaxDropDownHeightProperty);
+            set => SetValue(MaxDropDownHeightProperty, value);
         }
 
         /// <summary>
@@ -124,8 +123,8 @@ namespace Avalonia.Controls
         /// </summary>
         protected object? SelectionBoxItem
         {
-            get { return _selectionBoxItem; }
-            set { SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value); }
+            get => _selectionBoxItem;
+            set => SetAndRaise(SelectionBoxItemProperty, ref _selectionBoxItem, value);
         }
 
         /// <summary>
@@ -133,8 +132,8 @@ namespace Avalonia.Controls
         /// </summary>
         public string? PlaceholderText
         {
-            get { return GetValue(PlaceholderTextProperty); }
-            set { SetValue(PlaceholderTextProperty, value); }
+            get => GetValue(PlaceholderTextProperty);
+            set => SetValue(PlaceholderTextProperty, value);
         }
 
         /// <summary>
@@ -142,8 +141,8 @@ namespace Avalonia.Controls
         /// </summary>
         public IBrush? PlaceholderForeground
         {
-            get { return GetValue(PlaceholderForegroundProperty); }
-            set { SetValue(PlaceholderForegroundProperty, value); }
+            get => GetValue(PlaceholderForegroundProperty);
+            set => SetValue(PlaceholderForegroundProperty, value);
         }
 
         /// <summary>
@@ -151,8 +150,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ItemVirtualizationMode VirtualizationMode
         {
-            get { return GetValue(VirtualizationModeProperty); }
-            set { SetValue(VirtualizationModeProperty, value); }
+            get => GetValue(VirtualizationModeProperty);
+            set => SetValue(VirtualizationModeProperty, value);
         }
 
         /// <summary>
@@ -160,8 +159,8 @@ namespace Avalonia.Controls
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
         {
-            get { return GetValue(HorizontalContentAlignmentProperty); }
-            set { SetValue(HorizontalContentAlignmentProperty, value); }
+            get => GetValue(HorizontalContentAlignmentProperty);
+            set => SetValue(HorizontalContentAlignmentProperty, value);
         }
 
         /// <summary>
@@ -169,8 +168,8 @@ namespace Avalonia.Controls
         /// </summary>
         public VerticalAlignment VerticalContentAlignment
         {
-            get { return GetValue(VerticalContentAlignmentProperty); }
-            set { SetValue(VerticalContentAlignmentProperty, value); }
+            get => GetValue(VerticalContentAlignmentProperty);
+            set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
         /// <inheritdoc/>
@@ -182,6 +181,7 @@ namespace Avalonia.Controls
                 ComboBoxItem.ContentTemplateProperty);
         }
 
+        /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -234,7 +234,7 @@ namespace Avalonia.Controls
             }
             // This part of code is needed just to acquire initial focus, subsequent focus navigation will be done by ItemsControl.
             else if (IsDropDownOpen && SelectedIndex < 0 && ItemCount > 0 &&
-                      (e.Key == Key.Up || e.Key == Key.Down) && IsFocused == true)
+                     (e.Key == Key.Up || e.Key == Key.Down) && IsFocused == true)
             {
                 var firstChild = Presenter?.Panel?.Children.FirstOrDefault(c => CanFocus(c));
                 if (firstChild != null)
@@ -304,11 +304,10 @@ namespace Avalonia.Controls
                     e.Handled = true;
                 }
             }
+
             PseudoClasses.Set(pcPressed, false);
             base.OnPointerReleased(e);
-            
         }
-
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -322,6 +321,22 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            if (change.Property == SelectedItemProperty)
+            {
+                UpdateSelectionBoxItem(change.NewValue);
+                TryFocusSelectedItem();
+            }
+            else if (change.Property == IsDropDownOpenProperty)
+            {
+                PseudoClasses.Set(pcDropdownOpen, change.GetNewValue<bool>());
+            }
+
+            base.OnPropertyChanged(change);
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
@@ -382,12 +397,6 @@ namespace Avalonia.Controls
             {
                 IsDropDownOpen = false;
             }
-        }
-
-        private void SelectedItemChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            UpdateSelectionBoxItem(e.NewValue);
-            TryFocusSelectedItem();
         }
 
         private void TryFocusSelectedItem()
@@ -488,12 +497,6 @@ namespace Avalonia.Controls
             {
                 MoveSelection(NavigationDirection.Previous, WrapSelection);
             }
-        }
-
-        private void DropdownChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            bool newValue = e.GetNewValue<bool>();
-            PseudoClasses.Set(pcDropdownOpen, newValue);
         }
     }
 }
