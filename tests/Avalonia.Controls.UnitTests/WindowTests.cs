@@ -155,12 +155,16 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Closing += (sender, e) =>
                 {
+                    Assert.Equal(WindowCloseReason.WindowClosing, e.CloseReason);
+                    Assert.Equal(programaticClose, e.IsProgrammatic);
                     count++;
                     windowClosing = count;
                 };
                 
                 child.Closing += (sender, e) =>
                 {
+                    Assert.Equal(WindowCloseReason.OwnerWindowClosing, e.CloseReason);
+                    Assert.Equal(programaticClose, e.IsProgrammatic);
                     count++;
                     childClosing = count;
                 };
@@ -186,7 +190,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing();
+                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(false, cancel);
                 }
@@ -248,7 +252,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing();
+                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(true, cancel);
                 }
