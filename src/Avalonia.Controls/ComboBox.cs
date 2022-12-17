@@ -96,8 +96,6 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
-
-            KeyDownEvent.AddClassHandler<ComboBox>((x, e) => x.OnKeyDown(e), Interactivity.RoutingStrategies.Tunnel);
         }
 
         /// <summary>
