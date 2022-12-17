@@ -99,6 +99,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Occurs after the drop-down (popup) list of the <see cref="ComboBox"/> closes.
+        /// </summary>
+        public event EventHandler? DropDownClosed;
+
+        /// <summary>
+        /// Occurs after the drop-down (popup) list of the <see cref="ComboBox"/> opens.
+        /// </summary>
+        public event EventHandler? DropDownOpened;
+
+        /// <summary>
         /// Gets or sets a value indicating whether the dropdown is currently open.
         /// </summary>
         public bool IsDropDownOpen
@@ -358,6 +368,8 @@ namespace Avalonia.Controls
             {
                 Focus();
             }
+
+            DropDownClosed?.Invoke(this, EventArgs.Empty);
         }
 
         private void PopupOpened(object? sender, EventArgs e)
@@ -387,6 +399,8 @@ namespace Avalonia.Controls
             }
 
             UpdateFlowDirection();
+
+            DropDownOpened?.Invoke(this, EventArgs.Empty);
         }
 
         private void IsVisibleChanged(bool isVisible)
