@@ -16,6 +16,7 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
@@ -1231,7 +1232,7 @@ namespace Avalonia.X11
 
         public IStorageProvider StorageProvider { get; }
 
-        public class SurfacePlatformHandle : IPlatformNativeSurfaceHandle
+        public class SurfacePlatformHandle : INativeHandlePlatformSurface
         {
             private readonly X11Window _owner;
 

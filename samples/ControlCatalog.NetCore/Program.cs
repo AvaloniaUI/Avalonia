@@ -10,7 +10,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Headless;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
-
+using Avalonia.Vulkan;
 using ControlCatalog.Pages;
 
 namespace ControlCatalog.NetCore
@@ -122,7 +122,15 @@ namespace ControlCatalog.NetCore
                 {
                     EnableMultiTouch = true,
                     UseDBusMenu = true,
-                    EnableIme = true
+                    EnableIme = true,
+                    UseVulkan = true
+                })
+                .With(new VulkanOptions
+                {
+                    VulkanInstanceCreationOptions = new ()
+                    {
+                        UseDebug = true
+                    }
                 })
                 .UseSkia()
                 .AfterSetup(builder =>

@@ -14,8 +14,10 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
+using Avalonia.Vulkan;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
+using Avalonia.X11.Vulkan;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -94,7 +96,14 @@ namespace Avalonia.X11
                     XI2 = xi2;
             }
 
-            if (options.UseGpu)
+            if (options.UseVulkan)
+            {
+                var vulkan = VulkanSupport.TryInitialize(Info, AvaloniaLocator.Current.GetService<VulkanOptions>());
+                if (vulkan != null)
+                    AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(vulkan);
+            }
+
+            if (options.UseGpu && AvaloniaLocator.Current.GetService<IPlatformGraphics>() == null)
             {
                 if (options.UseEGL)
                     EglPlatformGraphics.TryInitialize();
@@ -102,12 +111,12 @@ namespace Avalonia.X11
                     GlxPlatformGraphics.TryInitialize(Info, Options.GlProfiles);
             }
 
-            var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
+            var graphics = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
             
             if (options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
+                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, graphics);
             else
-                RenderInterface = new(gl);
+                RenderInterface = new(graphics);
 
         }
 
@@ -289,6 +298,11 @@ namespace Avalonia
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
 
+        /// <summary>
+        /// Enables Vulkan rendering backend
+        /// </summary>
+        public bool UseVulkan { get; set; }
+        
         public X11PlatformOptions()
         {
             try

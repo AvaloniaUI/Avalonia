@@ -11,6 +11,8 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
+using Avalonia.Skia.Vulkan;
+using Avalonia.Vulkan;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -37,6 +39,8 @@ namespace Avalonia.Skia
                 return new SkiaContext(skiaGpu);
             if (graphicsContext is IGlContext gl)
                 return new SkiaContext(new GlSkiaGpu(gl, _maxResourceBytes));
+            if (graphicsContext is IVulkanPlatformGraphicsContext vulkanContext)
+                return new SkiaContext(new VulkanSkiaGpu(vulkanContext, _maxResourceBytes));
             throw new ArgumentException("Graphics context of type is not supported");
         }
 

@@ -1,10 +1,10 @@
 ﻿using System;
 using Avalonia.Metadata;
 
-namespace Avalonia.Platform
+namespace Avalonia.Platform.Surfaces
 {
     [Unstable]
-    public interface IPlatformNativeSurfaceHandle : IPlatformHandle
+    public interface INativeHandlePlatformSurface : IPlatformHandle
     {
         PixelSize Size { get; }
         double Scaling { get; }

@@ -26,6 +26,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 using Avalonia.Collections.Pooled;
 using Avalonia.Metadata;
 using Avalonia.Platform.Storage;
+using Avalonia.Platform.Surfaces;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.OpenGl.Angle;
 
@@ -503,7 +504,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public IEnumerable<object> Surfaces => new object[] { (IPlatformNativeSurfaceHandle)Handle, _gl, _framebuffer };
+        public IEnumerable<object> Surfaces => new object[] { Handle, _gl, _framebuffer };
 
         public PixelPoint Position
         {
@@ -1468,7 +1469,7 @@ namespace Avalonia.Win32
 
         public IStorageProvider StorageProvider { get; }
 
-        private class WindowImplPlatformHandle : IPlatformNativeSurfaceHandle
+        private class WindowImplPlatformHandle : INativeHandlePlatformSurface
         {
             private readonly WindowImpl _owner;
             public WindowImplPlatformHandle(WindowImpl owner) => _owner = owner;
