@@ -12,6 +12,7 @@ using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Moq;
+using Nito.AsyncEx;
 using Xunit;
 
 #nullable enable
@@ -918,6 +919,120 @@ namespace Avalonia.Base.UnitTests
                 Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
                 Assert.True(called);
             }
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        public void Typed_Bind_Executes_On_UIThread(BindingPriority priority)
+        {
+            AsyncContext.Run(async () =>
+            {
+                var target = new Class1();
+                var source = new Subject<string>();
+                var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+                var raised = 0;
+
+                var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
+                threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
+                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+
+                var services = new TestServices(
+                    threadingInterface: threadingInterfaceMock.Object);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
+                    ++raised;
+                };
+
+                using (UnitTestApplication.Start(services))
+                {
+                    target.Bind(Class1.FooProperty, source, priority);
+
+                    await Task.Run(() => source.OnNext("foobar"));
+                    Dispatcher.UIThread.RunJobs();
+
+                    Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
+                    Assert.Equal(1, raised);
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        public void Untyped_Bind_Executes_On_UIThread(BindingPriority priority)
+        {
+            AsyncContext.Run(async () =>
+            {
+                var target = new Class1();
+                var source = new Subject<object>();
+                var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+                var raised = 0;
+
+                var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
+                threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
+                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+
+                var services = new TestServices(
+                    threadingInterface: threadingInterfaceMock.Object);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
+                    ++raised;
+                };
+
+                using (UnitTestApplication.Start(services))
+                {
+                    target.Bind(Class1.FooProperty, source, priority);
+
+                    await Task.Run(() => source.OnNext("foobar"));
+                    Dispatcher.UIThread.RunJobs();
+
+                    Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
+                    Assert.Equal(1, raised);
+                }
+            });
+        }
+
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        public void BindingValue_Bind_Executes_On_UIThread(BindingPriority priority)
+        {
+            AsyncContext.Run(async () =>
+            {
+                var target = new Class1();
+                var source = new Subject<BindingValue<string>>();
+                var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+                var raised = 0;
+
+                var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
+                threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
+                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+
+                var services = new TestServices(
+                    threadingInterface: threadingInterfaceMock.Object);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
+                    ++raised;
+                };
+
+                using (UnitTestApplication.Start(services))
+                {
+                    target.Bind(Class1.FooProperty, source, priority);
+
+                    await Task.Run(() => source.OnNext("foobar"));
+                    Dispatcher.UIThread.RunJobs();
+
+                    Assert.Equal("foobar", target.GetValue(Class1.FooProperty));
+                    Assert.Equal(1, raised);
+                }
+            });
         }
 
         [Fact]

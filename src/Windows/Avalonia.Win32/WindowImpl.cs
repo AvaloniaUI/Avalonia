@@ -191,7 +191,7 @@ namespace Avalonia.Win32
 
         public Action Activated { get; set; }
 
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
 
         public Action Closed { get; set; }
 
@@ -641,12 +641,6 @@ namespace Avalonia.Win32
 
                 DestroyWindow(_hwnd);
                 _hwnd = IntPtr.Zero;
-            }
-
-            if (_className != null)
-            {
-                UnregisterClass(_className, GetModuleHandle(null));
-                _className = null;
             }
 
             _framebuffer.Dispose();
@@ -1141,6 +1135,15 @@ namespace Avalonia.Win32
                 {
                     SetActiveWindow(_parent._hwnd);
                 }
+            }
+        }
+
+        private void AfterCloseCleanup()
+        {
+            if (_className != null)
+            {
+                UnregisterClass(_className, GetModuleHandle(null));
+                _className = null;
             }
         }
 

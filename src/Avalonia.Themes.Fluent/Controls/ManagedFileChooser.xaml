@@ -153,8 +153,12 @@
           <DockPanel x:Name="NavBar" DockPanel.Dock="Top" Margin="8,5,8,0" VerticalAlignment="Center">
             <Rectangle Fill="{DynamicResource SystemControlHighlightAltBaseMediumLowBrush}" Height="1" Margin="0,5,0,0" DockPanel.Dock="Bottom"/>
             <DockPanel Margin="4,0">
-              <Button Command="{Binding GoUp}" DockPanel.Dock="Left">
+              <Button Command="{Binding GoUp}" DockPanel.Dock="Left" Margin="0,0,8,0">
                 <Path Data="M 0 7 L 7 0 L 14 7 M 7 0 L 7 16" Stroke="{CompiledBinding $parent[Button].Foreground}" StrokeThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,1,0,-1"/>
+              </Button>
+              <Button Command="{Binding Refresh}" DockPanel.Dock="Right" Margin="8,0,0,0">
+                <Path Data="M18.62 3.32c.39 0 .7.29.76.66v3c0 .39-.28.7-.66.76h-3a.77.77 0 0 1-.1-1.52h1.08a7.42 7.42 0 1 0 2.65 4.37.77.77 0 1 1 1.5-.3 8.94 8.94 0 1 1-3-5.12V4.09c0-.43.35-.77.77-.77Z" 
+                      Fill="{CompiledBinding $parent[Button].Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="-2,-4,0,0"/>
               </Button>
               <TextBox x:Name="Location" Text="{Binding Location}">
                 <TextBox.KeyBindings>
@@ -318,7 +322,6 @@
     <Style Selector="^ /template/ DockPanel#NavBar Button">
       <Setter Property="VerticalAlignment" Value="Stretch"/>
       <Setter Property="Width" Value="40"/>
-      <Setter Property="Margin" Value="0,0,8,0"/>
       <Setter Property="BorderThickness" Value="0"/>
     </Style>
     <Style Selector="^ /template/ DockPanel#NavBar Button:not(:pointerover):not(:pressed)">

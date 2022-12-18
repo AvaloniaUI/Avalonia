@@ -33,4 +33,6 @@ public partial class Compositor
 
     public CompositionSolidColorVisual CreateSolidColorVisual() =>
         new(this, new ServerCompositionSolidColorVisual(Server));
+
+    public CompositionCustomVisual CreateCustomVisual(CompositionCustomVisualHandler handler) => new(this, handler);
 }

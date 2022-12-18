@@ -140,6 +140,8 @@ dotnet_analyzer_diagnostic.category-Performance.severity = none #error - Uncomme
 # CS1591: Missing XML comment for publicly visible type or member
 dotnet_diagnostic.CS1591.severity = suggestion
 
+# CS0162: Remove unreachable code
+dotnet_diagnostic.CS0162.severity = error
 # CA1304: Specify CultureInfo
 dotnet_diagnostic.CA1304.severity = warning
 # CA1802: Use literals where appropriate

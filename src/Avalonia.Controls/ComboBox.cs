@@ -192,7 +192,12 @@ namespace Avalonia.Controls
                 IsDropDownOpen = false;
                 e.Handled = true;
             }
-            else if (IsDropDownOpen && e.Key == Key.Enter)
+            else if (!IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
+            {
+                IsDropDownOpen = true;
+                e.Handled = true;
+            }
+            else if (IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
             {
                 SelectFocusedItem();
                 IsDropDownOpen = false;
