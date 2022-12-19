@@ -4,7 +4,7 @@ namespace Avalonia.Input
 {
     public class TextInputEventArgs : RoutedEventArgs
     {
-        internal TextInputEventArgs()
+        public TextInputEventArgs()
         {
 
         }

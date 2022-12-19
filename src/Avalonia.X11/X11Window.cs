@@ -57,6 +57,7 @@ namespace Avalonia.X11
         private TransparencyHelper _transparencyHelper;
         private RawEventGrouper _rawEventGrouper;
         private bool _useRenderWindow = false;
+        private bool _usePositioningFlags = false;
 
         enum XSyncState
         {
@@ -298,7 +299,10 @@ namespace Avalonia.X11
                 min_height = min.Height
             };
             hints.height_inc = hints.width_inc = 1;
-            var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc | XSizeHintsFlags.PPosition | XSizeHintsFlags.PSize;
+            var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc;
+            if (_usePositioningFlags)
+                flags |= XSizeHintsFlags.PPosition | XSizeHintsFlags.PSize;
+            
             // People might be passing double.MaxValue
             if (max.Width < 100000 && max.Height < 100000)
             {
@@ -354,7 +358,7 @@ namespace Avalonia.X11
         public Action<double> ScalingChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged
@@ -542,7 +546,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (Closing?.Invoke() != true)
+                        if (Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
                             Dispose();
                     }
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms._NET_WM_SYNC_REQUEST)
@@ -958,6 +962,12 @@ namespace Avalonia.X11
             get => _position ?? default;
             set
             {
+                if(!_usePositioningFlags)
+                {
+                    _usePositioningFlags = true;
+                    UpdateSizeHints(null);
+                }
+                
                 var changes = new XWindowChanges
                 {
                     x = (int)value.X,

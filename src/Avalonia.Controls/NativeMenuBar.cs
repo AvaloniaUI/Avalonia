@@ -23,15 +23,6 @@ namespace Avalonia.Controls
             });
         }
 
-        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NativeMenu))]
-        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NativeMenuItem))]
-        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NativeMenuItemBase))]
-        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(NativeMenuItemSeparator))]
-        public NativeMenuBar()
-        {
-
-        }
-
         public static void SetEnableMenuItemClickForwarding(MenuItem menuItem, bool enable)
         {
             menuItem.SetValue(EnableMenuItemClickForwardingProperty, enable);

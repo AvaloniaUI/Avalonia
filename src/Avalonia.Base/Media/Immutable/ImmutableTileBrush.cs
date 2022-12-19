@@ -5,7 +5,7 @@ namespace Avalonia.Media.Immutable
     /// <summary>
     /// A brush which displays a repeating image.
     /// </summary>
-    public abstract class ImmutableTileBrush : ITileBrush
+    public abstract class ImmutableTileBrush : ITileBrush, IImmutableBrush
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ImageBrush"/> class.

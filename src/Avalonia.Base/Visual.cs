@@ -540,6 +540,9 @@ namespace Avalonia
             OnDetachedFromVisualTree(e);
             if (CompositionVisual != null)
             {
+                if (ChildCompositionVisual != null)
+                    CompositionVisual.Children.Remove(ChildCompositionVisual);
+                
                 CompositionVisual.DrawList = null;
                 CompositionVisual = null;
             }
