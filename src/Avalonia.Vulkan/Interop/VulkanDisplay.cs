@@ -201,9 +201,9 @@ internal class VulkanDisplay : IDisposable
         if (Size != _surface.Size)
         {
             Recreate();
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     public VulkanCommandBuffer StartPresentation()
