@@ -254,7 +254,8 @@ internal class VulkanDisplay : IDisposable
             dstOffsets2 =
             {
                 x = Size.Width,
-                y = Size.Height
+                y = Size.Height,
+                z = 1
             },
             srcSubresource =
             {
