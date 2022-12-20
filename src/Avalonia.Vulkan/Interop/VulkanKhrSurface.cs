@@ -8,20 +8,20 @@ internal class VulkanKhrSurface : IDisposable
 {
     private readonly IVulkanPlatformGraphicsContext _context;
     private readonly IVulkanKhrSurfacePlatformSurface _surfaceInfo;
-    private IntPtr _handle;
-    public IntPtr Handle => _handle;
+    private VkSurfaceKHR _handle;
+    public VkSurfaceKHR Handle => _handle;
 
     public VulkanKhrSurface(IVulkanPlatformGraphicsContext context, IVulkanKhrSurfacePlatformSurface surfaceInfo)
     {
         _context = context;
         _surfaceInfo = surfaceInfo;
-        _handle = surfaceInfo.CreateSurface(context);
+        _handle = new VkSurfaceKHR(surfaceInfo.CreateSurface(context));
     }
     
     internal bool CanSurfacePresent()
     {
-        _context.InstanceApi.GetPhysicalDeviceSurfaceSupportKHR(_context.Device.PhysicalDeviceHandle,
-            _context.Device.GraphicsQueueFamilyIndex, _handle, out var isSupported)
+        _context.InstanceApi.GetPhysicalDeviceSurfaceSupportKHR(_context.PhysicalDeviceHandle,
+            _context.GraphicsQueueFamilyIndex, _handle, out var isSupported)
             .ThrowOnError("vkGetPhysicalDeviceSurfaceSupportKHR");
         return isSupported != 0;
     }
@@ -29,7 +29,7 @@ internal class VulkanKhrSurface : IDisposable
     internal unsafe VkSurfaceFormatKHR GetSurfaceFormat()
     {
         uint surfaceFormatsCount = 0;
-        _context.InstanceApi.GetPhysicalDeviceSurfaceFormatsKHR(_context.Device.PhysicalDeviceHandle,
+        _context.InstanceApi.GetPhysicalDeviceSurfaceFormatsKHR(_context.PhysicalDeviceHandle,
             _handle, ref surfaceFormatsCount, null)
             .ThrowOnError("vkGetPhysicalDeviceSurfaceFormatsKHR");
 
@@ -37,7 +37,7 @@ internal class VulkanKhrSurface : IDisposable
             throw new VulkanException("vkGetPhysicalDeviceSurfaceFormatsKHR returned 0 formats");
 
         var surfaceFormats = stackalloc VkSurfaceFormatKHR[(int)surfaceFormatsCount];
-        _context.InstanceApi.GetPhysicalDeviceSurfaceFormatsKHR(_context.Device.PhysicalDeviceHandle,
+        _context.InstanceApi.GetPhysicalDeviceSurfaceFormatsKHR(_context.PhysicalDeviceHandle,
                 _handle, ref surfaceFormatsCount, surfaceFormats)
             .ThrowOnError("vkGetPhysicalDeviceSurfaceFormatsKHR");
         
@@ -62,8 +62,8 @@ internal class VulkanKhrSurface : IDisposable
 
     public void Dispose()
     {
-        if (_handle != IntPtr.Zero)
-            _context.InstanceApi.DestroySurfaceKHR(_context.Instance.Handle, _handle, IntPtr.Zero);
-        _handle = IntPtr.Zero;
+        if (_handle.Handle != IntPtr.Zero)
+            _context.InstanceApi.DestroySurfaceKHR(_context.InstanceHandle, _handle, IntPtr.Zero);
+        _handle = default;
     }
 }

@@ -6,42 +6,33 @@ namespace Avalonia.Vulkan;
 
 internal struct VulkanFence : IDisposable
 {
-    private readonly VulkanDeviceApi _api;
-    private readonly IVulkanDevice _device;
+    private readonly IVulkanPlatformGraphicsContext _context;
     private VkFence _handle;
-    
-    public VulkanFence(VulkanDeviceApi api, IVulkanDevice device, IntPtr handle)
-    {
-        _api = api;
-        _device = device;
-        _handle = handle;
-    }
 
-    public VulkanFence(IVulkanDevice device, VulkanDeviceApi api, VkFenceCreateFlags flags)
+    public VulkanFence(IVulkanPlatformGraphicsContext context, VkFenceCreateFlags flags)
     {
-        _device = device;
-        _api = api;
+        _context = context;
         var fenceCreateInfo = new VkFenceCreateInfo
         {
             sType = VkStructureType.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
             flags = flags
         };
         
-        _api.CreateFence(_device.Handle, ref fenceCreateInfo, IntPtr.Zero, out _handle)
+        _context.DeviceApi.CreateFence(_context.DeviceHandle, ref fenceCreateInfo, IntPtr.Zero, out _handle)
             .ThrowOnError("vkCreateFence");
     }
 
-    public IntPtr Handle => _handle;
+    public VkFence Handle => _handle;
     
     public void Dispose()
     {
-        _api.DestroyFence(_device.Handle, _handle, IntPtr.Zero);
-        _handle = IntPtr.Zero;
+        _context.DeviceApi.DestroyFence(_context.DeviceHandle, _handle, IntPtr.Zero);
+        _handle = default;
     }
 
     public unsafe void Wait(ulong timeout = ulong.MaxValue)
     {
         VkFence fence = _handle;
-        _api.WaitForFences(_device.Handle, 1, &fence, 1, timeout).ThrowOnError("vkWaitForFences");
+        _context.DeviceApi.WaitForFences(_context.DeviceHandle, 1, &fence, 1, timeout).ThrowOnError("vkWaitForFences");
     }
 }

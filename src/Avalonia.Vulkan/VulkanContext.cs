@@ -7,7 +7,9 @@ namespace Avalonia.Vulkan;
 internal class VulkanContext : IVulkanPlatformGraphicsContext
 {
     private readonly IVulkanKhrSurfacePlatformSurfaceFactory? _surfaceFactory;
-
+    public IVulkanDevice Device { get; }
+    public IVulkanInstance Instance => Device.Instance;
+    
     public VulkanContext(IVulkanDevice device, Dictionary<Type, object> platformFeatures)
     {
         Device = device;
@@ -30,8 +32,12 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     public bool IsLost => Device.IsLost;
     public IDisposable EnsureCurrent() => Device.Lock();
 
-    public IVulkanDevice Device { get; }
-    public IVulkanInstance Instance => Device.Instance;
+    public VkDevice DeviceHandle => new (Device.Handle);
+    public VkPhysicalDevice PhysicalDeviceHandle => new (Device.PhysicalDeviceHandle);
+    public VkInstance InstanceHandle => new(Instance.Handle);
+    public VkQueue MainQueueHandle => new(Device.MainQueueHandle);
+    public uint GraphicsQueueFamilyIndex => Device.GraphicsQueueFamilyIndex;
+
     public VulkanInstanceApi InstanceApi { get; }
     public VulkanDeviceApi DeviceApi { get; }
     public IVulkanRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)

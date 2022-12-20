@@ -14,7 +14,7 @@ internal unsafe partial class VulkanGlobalApi
         Initialize(name => vkGetProcAddress(IntPtr.Zero, name));
     }
 
-    public IntPtr GetProcAddress(VkInstance instance, string name) => _vkGetProcAddress(instance, name);
+    public IntPtr GetProcAddress(VkInstance instance, string name) => _vkGetProcAddress(instance.Handle, name);
 
 
     [GetProcAddress("vkEnumerateInstanceLayerProperties")]

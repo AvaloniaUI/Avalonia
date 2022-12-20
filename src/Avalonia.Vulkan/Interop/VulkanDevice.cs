@@ -7,29 +7,24 @@ using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Vulkan.Interop;
 using Avalonia.Vulkan.UnmanagedInterop;
-
-namespace Avalonia.Vulkan;
-
-
+namespace Avalonia.Vulkan.Interop;
 
 internal partial class VulkanDevice : IVulkanDevice
 {
-    private readonly IntPtr _handle;
-    private readonly IntPtr _physicalDeviceHandle;
-    private readonly IntPtr _mainQueue;
+    private readonly VkDevice _handle;
+    private readonly VkPhysicalDevice _physicalDeviceHandle;
+    private readonly VkQueue _mainQueue;
     private readonly uint _graphicsQueueIndex;
-    private readonly Dictionary<Type, object> _features;
     private readonly object _lock = new();
     private Thread? _lockedByThread;
 
-    private VulkanDevice(IVulkanInstance instance, IntPtr handle, VkPhysicalDevice physicalDeviceHandle,
-        IntPtr mainQueue, uint graphicsQueueIndex, Dictionary<Type, object> features)
+    private VulkanDevice(IVulkanInstance instance, VkDevice handle, VkPhysicalDevice physicalDeviceHandle,
+        VkQueue mainQueue, uint graphicsQueueIndex)
     {
         _handle = handle;
         _physicalDeviceHandle = physicalDeviceHandle;
         _mainQueue = mainQueue;
         _graphicsQueueIndex = graphicsQueueIndex;
-        _features = features;
         Instance = instance;
     }
 
@@ -43,7 +38,6 @@ internal partial class VulkanDevice : IVulkanDevice
     public IDisposable Lock()
     {
         Monitor.Enter(_lock);
-        var oldLockedBy = _lockedByThread;
         _lockedByThread = Thread.CurrentThread;
         return Disposable.Create(() =>
         {
@@ -53,9 +47,9 @@ internal partial class VulkanDevice : IVulkanDevice
     }
 
     public bool IsLost => false;
-    public IntPtr Handle => CheckAccess(_handle);
-    public IntPtr PhysicalDeviceHandle => CheckAccess(_physicalDeviceHandle);
-    public IntPtr MainQueueHandle => CheckAccess(_mainQueue);
+    public IntPtr Handle => CheckAccess(_handle).Handle;
+    public IntPtr PhysicalDeviceHandle => CheckAccess(_physicalDeviceHandle).Handle;
+    public IntPtr MainQueueHandle => CheckAccess(_mainQueue).Handle;
     public uint GraphicsQueueFamilyIndex => CheckAccess(_graphicsQueueIndex);
     public IVulkanInstance Instance { get; }
     public void Dispose()

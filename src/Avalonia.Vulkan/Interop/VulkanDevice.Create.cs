@@ -2,29 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Avalonia.Vulkan.Interop;
 using Avalonia.Vulkan.UnmanagedInterop;
 
-namespace Avalonia.Vulkan;
+namespace Avalonia.Vulkan.Interop;
 
 internal unsafe partial class VulkanDevice
 {
-    public static unsafe IVulkanDevice Create(IVulkanInstance instance,
+    public static IVulkanDevice Create(IVulkanInstance instance,
         VulkanDeviceCreationOptions options, VulkanPlatformSpecificOptions platformOptions)
     {
         uint deviceCount = 0;
         var api = new VulkanInstanceApi(instance);
-        api.EnumeratePhysicalDevices(api.Instance.Handle, ref deviceCount, null)
+        var vkInstance = new VkInstance(instance.Handle);
+        api.EnumeratePhysicalDevices(vkInstance, ref deviceCount, null)
             .ThrowOnError("vkEnumeratePhysicalDevices");
 
         if (deviceCount == 0)
             throw new VulkanException("No devices found");
 
-        var devices = stackalloc IntPtr[(int)deviceCount];
-        api.EnumeratePhysicalDevices(api.Instance.Handle, ref deviceCount, devices)
+        var devices = stackalloc VkPhysicalDevice[(int)deviceCount];
+        api.EnumeratePhysicalDevices(vkInstance, ref deviceCount, devices)
             .ThrowOnError("vkEnumeratePhysicalDevices");
 
-        var surfaceForProbe = platformOptions.DeviceCheckSurfaceFactory?.Invoke(api.Instance);
+        var surfaceForProbePtr = platformOptions.DeviceCheckSurfaceFactory?.Invoke(api.Instance);
+        var surfaceForProbe = surfaceForProbePtr.HasValue && surfaceForProbePtr.Value != IntPtr.Zero
+            ? new VkSurfaceKHR(surfaceForProbePtr.Value)
+            : (VkSurfaceKHR?)null;
 
         DeviceInfo? compatibleDevice = null, discreteDevice = null;
 
@@ -80,20 +83,20 @@ internal unsafe partial class VulkanDevice
         api.GetDeviceQueue(createdDevice, dev.QueueFamilyIndex, 0, out var createdQueue);
 
         return new VulkanDevice(api.Instance, createdDevice, dev.PhysicalDevice, createdQueue,
-            dev.QueueFamilyIndex, platformOptions.PlatformFeatures);
+            dev.QueueFamilyIndex);
 
     }
 
     struct DeviceInfo
     {
-        public IntPtr PhysicalDevice;
+        public VkPhysicalDevice PhysicalDevice;
         public uint QueueFamilyIndex;
         public VkPhysicalDeviceType Type;
         public List<string> Extensions;
         public uint QueueCount;
     }
 
-    static unsafe List<string> GetDeviceExtensions(VulkanInstanceApi instance, VkPhysicalDevice physicalDevice)
+    static List<string> GetDeviceExtensions(VulkanInstanceApi instance, VkPhysicalDevice physicalDevice)
     {
         uint propertyCount = 0;
         instance.EnumerateDeviceExtensionProperties(physicalDevice, null, ref propertyCount, null);
@@ -114,7 +117,7 @@ internal unsafe partial class VulkanDevice
     private const string VK_KHR_swapchain = "VK_KHR_swapchain";
 
     static unsafe DeviceInfo? CheckDevice(VulkanInstanceApi instance, VkPhysicalDevice physicalDevice,
-        VulkanDeviceCreationOptions options, IntPtr? surface)
+        VulkanDeviceCreationOptions options, VkSurfaceKHR? surface)
     {
         instance.GetPhysicalDeviceProperties(physicalDevice, out var properties);
 

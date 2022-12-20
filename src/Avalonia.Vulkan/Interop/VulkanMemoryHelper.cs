@@ -8,7 +8,7 @@ internal static class VulkanMemoryHelper
     internal static int FindSuitableMemoryTypeIndex(IVulkanPlatformGraphicsContext context, uint memoryTypeBits,
         VkMemoryPropertyFlags flags)
     {
-        context.InstanceApi.GetPhysicalDeviceMemoryProperties(context.Device.PhysicalDeviceHandle,
+        context.InstanceApi.GetPhysicalDeviceMemoryProperties(context.PhysicalDeviceHandle,
             out var properties);
         for (var i = 0; i < properties.memoryTypeCount; i++)
         {

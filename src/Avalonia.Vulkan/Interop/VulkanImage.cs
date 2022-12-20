@@ -21,7 +21,7 @@ internal class VulkanImage : IDisposable
     public PixelSize Size { get; }
     public ulong MemorySize { get; private set; }
     public VkImageLayout CurrentLayout { get; private set; }
-    public IntPtr MemoryHandle => _imageMemory;
+    public VkDeviceMemory MemoryHandle => _imageMemory;
 
     public VkImageTiling Tiling => VkImageTiling.VK_IMAGE_TILING_OPTIMAL;
 
@@ -44,7 +44,7 @@ internal class VulkanImage : IDisposable
 
     public unsafe void Initialize()
     {
-        if (Handle != IntPtr.Zero)
+        if (Handle.Handle != IntPtr.Zero)
             return;
         MipLevels = MipLevels != 0 ? MipLevels : (uint)Math.Floor(Math.Log(Math.Max(Size.Width, Size.Height), 2));
         var createInfo = new VkImageCreateInfo
@@ -68,10 +68,10 @@ internal class VulkanImage : IDisposable
             flags = VkImageCreateFlags.VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT
         };
         
-        _context.DeviceApi.CreateImage(_context.Device.Handle, ref createInfo, IntPtr.Zero, out _handle)
+        _context.DeviceApi.CreateImage(_context.DeviceHandle, ref createInfo, IntPtr.Zero, out _handle)
             .ThrowOnError("vkCreateImage");
 
-        _context.DeviceApi.GetImageMemoryRequirements(_context.Device.Handle, _handle, out var memoryRequirements);
+        _context.DeviceApi.GetImageMemoryRequirements(_context.DeviceHandle, _handle, out var memoryRequirements);
         var memoryAllocateInfo = new VkMemoryAllocateInfo
         {
             sType = VkStructureType.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -81,10 +81,10 @@ internal class VulkanImage : IDisposable
                 VkMemoryPropertyFlags.VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT),
         };
 
-        _context.DeviceApi.AllocateMemory(_context.Device.Handle, ref memoryAllocateInfo, IntPtr.Zero,
+        _context.DeviceApi.AllocateMemory(_context.DeviceHandle, ref memoryAllocateInfo, IntPtr.Zero,
             out _imageMemory).ThrowOnError("vkAllocateMemory");
 
-        _context.DeviceApi.BindImageMemory(_context.Device.Handle, _handle, _imageMemory, 0)
+        _context.DeviceApi.BindImageMemory(_context.DeviceHandle, _handle, _imageMemory, 0)
             .ThrowOnError("vkBindImageMemory");
 
         MemorySize = memoryRequirements.size;
@@ -104,7 +104,7 @@ internal class VulkanImage : IDisposable
             image = _handle,
             viewType = VkImageViewType.VK_IMAGE_VIEW_TYPE_2D
         };
-        _context.DeviceApi.CreateImageView(_context.Device.Handle, ref imageViewCreateInfo,
+        _context.DeviceApi.CreateImageView(_context.DeviceHandle, ref imageViewCreateInfo,
             IntPtr.Zero, out _imageView).ThrowOnError("vkCreateImageView");
         CurrentLayout = VkImageLayout.VK_IMAGE_LAYOUT_UNDEFINED;
 
@@ -132,21 +132,21 @@ internal class VulkanImage : IDisposable
     public void Dispose()
     {
         var api = _context.DeviceApi;
-        var d = _context.Device.Handle;
-        if (_imageView != IntPtr.Zero)
+        var d = _context.DeviceHandle;
+        if (_imageView.Handle != IntPtr.Zero)
         {
             api.DestroyImageView(d, _imageView, IntPtr.Zero);
-            _imageView = IntPtr.Zero;
+            _imageView = default;
         }
-        if (_handle != IntPtr.Zero)
+        if (_handle.Handle != IntPtr.Zero)
         {
             api.DestroyImage(d, _handle, IntPtr.Zero);
-            _handle = IntPtr.Zero;
+            _handle = default;
         }
-        if (_imageMemory != IntPtr.Zero)
+        if (_imageMemory.Handle != IntPtr.Zero)
         {
             api.FreeMemory(d, _imageMemory, IntPtr.Zero);
-            _imageMemory = IntPtr.Zero;
+            _imageMemory = default;
         }
     }
 }

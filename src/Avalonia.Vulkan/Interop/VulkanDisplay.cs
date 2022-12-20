@@ -21,7 +21,6 @@ internal class VulkanDisplay : IDisposable
     private VkImageView[] _swapchainImageViews = Array.Empty<VkImageView>();
     public VulkanCommandBufferPool CommandBufferPool { get; private set; }
     public PixelSize Size { get; private set; }
-    public uint QueueFamilyIndex => _context.Device.GraphicsQueueFamilyIndex;
     
     private VulkanDisplay(IVulkanPlatformGraphicsContext context, VulkanKhrSurface surface, VkSwapchainKHR swapchain,
         VkExtent2D swapchainExtent)
@@ -30,8 +29,8 @@ internal class VulkanDisplay : IDisposable
         _surface = surface;
         _swapchain = swapchain;
         _swapchainExtent = swapchainExtent;
-        _semaphorePair = new VulkanSemaphorePair(_context.Device, _context.DeviceApi);
-        CommandBufferPool = new VulkanCommandBufferPool(_context.Device, _context.DeviceApi);
+        _semaphorePair = new VulkanSemaphorePair(_context);
+        CommandBufferPool = new VulkanCommandBufferPool(_context);
         CreateSwapchainImages();
     }
 
@@ -45,22 +44,22 @@ internal class VulkanDisplay : IDisposable
         }
     }
 
-    private static unsafe IntPtr CreateSwapchain(IVulkanPlatformGraphicsContext context,
+    private static unsafe VkSwapchainKHR CreateSwapchain(IVulkanPlatformGraphicsContext context,
         VulkanKhrSurface surface, out VkExtent2D swapchainExtent, VulkanDisplay? oldDisplay = null)
     {
         while (!surface.CanSurfacePresent())
             Thread.Sleep(16);
-        context.InstanceApi.GetPhysicalDeviceSurfaceCapabilitiesKHR(context.Device.PhysicalDeviceHandle,
+        context.InstanceApi.GetPhysicalDeviceSurfaceCapabilitiesKHR(context.PhysicalDeviceHandle,
                 surface.Handle, out var capabilities)
             .ThrowOnError("vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
         uint presentModesCount = 0;
-        context.InstanceApi.GetPhysicalDeviceSurfacePresentModesKHR(context.Device.PhysicalDeviceHandle,
+        context.InstanceApi.GetPhysicalDeviceSurfacePresentModesKHR(context.PhysicalDeviceHandle,
                 surface.Handle, ref presentModesCount, null)
             .ThrowOnError("vkGetPhysicalDeviceSurfacePresentModesKHR");
 
         var modes = new VkPresentModeKHR[(int)presentModesCount];
         fixed (VkPresentModeKHR* pModes = modes)
-            context.InstanceApi.GetPhysicalDeviceSurfacePresentModesKHR(context.Device.PhysicalDeviceHandle,
+            context.InstanceApi.GetPhysicalDeviceSurfacePresentModesKHR(context.PhysicalDeviceHandle,
                     surface.Handle, ref presentModesCount, pModes)
                 .ThrowOnError("vkGetPhysicalDeviceSurfacePresentModesKHR");
         
@@ -123,7 +122,7 @@ internal class VulkanDisplay : IDisposable
             clipped = 1,
             oldSwapchain = oldDisplay?._swapchain ?? default
         };
-        context.DeviceApi.CreateSwapchainKHR(context.Device.Handle, ref swapchainCreateInfo, IntPtr.Zero,
+        context.DeviceApi.CreateSwapchainKHR(context.DeviceHandle, ref swapchainCreateInfo, IntPtr.Zero,
             out var swapchain).ThrowOnError("vkCreateSwapchainKHR");
         oldDisplay?.DestroySwapchain();
         return swapchain;
@@ -131,9 +130,9 @@ internal class VulkanDisplay : IDisposable
 
     private void DestroySwapchain()
     {
-        if(_swapchain != IntPtr.Zero)
-            _context.DeviceApi.DestroySwapchainKHR(_context.Device.Handle, _swapchain, IntPtr.Zero);
-        _swapchain = IntPtr.Zero;
+        if(_swapchain.Handle != IntPtr.Zero)
+            _context.DeviceApi.DestroySwapchainKHR(_context.DeviceHandle, _swapchain, IntPtr.Zero);
+        _swapchain = default;
     }
 
     internal static VulkanDisplay CreateDisplay(IVulkanPlatformGraphicsContext context, VulkanKhrSurface surface)
@@ -142,12 +141,13 @@ internal class VulkanDisplay : IDisposable
         return new VulkanDisplay(context, surface, swapchain, extent);
     }
 
-    private unsafe void DestroyCurrentImageViews()
+    private void DestroyCurrentImageViews()
     {
         if (_swapchainImageViews.Length <= 0) 
             return;
-        for (var i = 0; i < _swapchainImageViews.Length; i++)
-            _context.DeviceApi.DestroyImageView(_context.Device.Handle, _swapchainImageViews[i], IntPtr.Zero);
+        foreach (var imageView in _swapchainImageViews)
+            _context.DeviceApi.DestroyImageView(_context.DeviceHandle, imageView, IntPtr.Zero);
+
         _swapchainImageViews = Array.Empty<VkImageView>();
         
     }
@@ -157,18 +157,18 @@ internal class VulkanDisplay : IDisposable
         DestroyCurrentImageViews();
         Size = new PixelSize((int)_swapchainExtent.width, (int)_swapchainExtent.height);
         uint imageCount = 0;
-        _context.DeviceApi.GetSwapchainImagesKHR(_context.Device.Handle, _swapchain, ref imageCount, null)
+        _context.DeviceApi.GetSwapchainImagesKHR(_context.DeviceHandle, _swapchain, ref imageCount, null)
             .ThrowOnError("vkGetSwapchainImagesKHR");
         _swapchainImages = new VkImage[imageCount];
         fixed (VkImage* pImages = _swapchainImages)
-            _context.DeviceApi.GetSwapchainImagesKHR(_context.Device.Handle, _swapchain, ref imageCount,
+            _context.DeviceApi.GetSwapchainImagesKHR(_context.DeviceHandle, _swapchain, ref imageCount,
                 pImages).ThrowOnError("vkGetSwapchainImagesKHR");
         _swapchainImageViews = new VkImageView[imageCount];
         for (var c = 0; c < imageCount; c++)
             _swapchainImageViews[c] = CreateSwapchainImageView(_swapchainImages[c], SurfaceFormat.format);
     }
 
-    private unsafe IntPtr CreateSwapchainImageView(IntPtr swapchainImage, VkFormat format)
+    private VkImageView CreateSwapchainImageView(VkImage swapchainImage, VkFormat format)
     {
         var imageViewCreateInfo = new VkImageViewCreateInfo
         {
@@ -183,14 +183,14 @@ internal class VulkanDisplay : IDisposable
             image = swapchainImage,
             viewType = VkImageViewType.VK_IMAGE_VIEW_TYPE_2D,
         };
-        _context.DeviceApi.CreateImageView(_context.Device.Handle, ref imageViewCreateInfo,
+        _context.DeviceApi.CreateImageView(_context.DeviceHandle, ref imageViewCreateInfo,
             IntPtr.Zero, out var imageView).ThrowOnError("vkCreateImageView");
         return imageView;
     }
     
     private void Recreate()
     {
-        _context.DeviceApi.DeviceWaitIdle(_context.Device.Handle);
+        _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
         _swapchain = CreateSwapchain(_context, _surface, out var extent, this);
         _swapchainExtent = extent;
         CreateSwapchainImages();
@@ -206,13 +206,13 @@ internal class VulkanDisplay : IDisposable
         return true;
     }
 
-    public unsafe VulkanCommandBuffer StartPresentation()
+    public VulkanCommandBuffer StartPresentation()
     {
         _nextImage = 0;
         while (true)
         {
             var acquireResult = _context.DeviceApi.AcquireNextImageKHR(
-                _context.Device.Handle,
+                _context.DeviceHandle,
                 _swapchain,
                 ulong.MaxValue,
                 _semaphorePair.ImageAvailableSemaphore.Handle,
@@ -293,7 +293,7 @@ internal class VulkanDisplay : IDisposable
             new[] { VkPipelineStageFlags.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT },
             new[] { _semaphorePair.RenderFinishedSemaphore });
         
-        var semaphore = (VkSemaphore)_semaphorePair.RenderFinishedSemaphore.Handle;
+        var semaphore = _semaphorePair.RenderFinishedSemaphore.Handle;
         var swapchain = _swapchain;
         var nextImage = _nextImage;
 
@@ -309,15 +309,15 @@ internal class VulkanDisplay : IDisposable
             pResults = &result
         };
         
-        _context.DeviceApi.vkQueuePresentKHR(_context.Device.MainQueueHandle, ref presentInfo)
+        _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo)
             .ThrowOnError("vkQueuePresentKHR");
         result.ThrowOnError("vkQueuePresentKHR");
         CommandBufferPool.FreeUsedCommandBuffers();
     }
     
-    public unsafe void Dispose()
+    public void Dispose()
     {
-        _context.DeviceApi.DeviceWaitIdle(_context.Device.Handle);
+        _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
         _semaphorePair?.Dispose();
         DestroyCurrentImageViews();
         DestroySwapchain();

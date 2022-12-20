@@ -6,29 +6,28 @@ namespace Avalonia.Vulkan;
 
 class VulkanSemaphore : IDisposable
 {
-    private readonly IVulkanDevice _device;
-    private readonly VulkanDeviceApi _api;
+    private readonly IVulkanPlatformGraphicsContext _context;
+
     private VkSemaphore _handle;
     public VkSemaphore Handle => _handle;
 
-    public VulkanSemaphore(IVulkanDevice device, VulkanDeviceApi api)
+    public VulkanSemaphore(IVulkanPlatformGraphicsContext context)
     {
-        _device = device;
-        _api = api;
+        _context = context;
         var info = new VkSemaphoreCreateInfo
         {
             sType = VkStructureType.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO
         };
-        _api.CreateSemaphore(device.Handle, ref info, IntPtr.Zero, out _handle)
+        _context.DeviceApi.CreateSemaphore(context.DeviceHandle, ref info, IntPtr.Zero, out _handle)
             .ThrowOnError("vkCreateSemaphore");
     }
 
     public void Dispose()
     {
-        if (_handle != IntPtr.Zero)
+        if (_handle.Handle != IntPtr.Zero)
         {
-            _api.DestroySemaphore(_device.Handle, _handle, IntPtr.Zero);
-            _handle = IntPtr.Zero;
+            _context.DeviceApi.DestroySemaphore(_context.DeviceHandle, _handle, IntPtr.Zero);
+            _handle = default;
         }
     }
 }
@@ -36,10 +35,10 @@ class VulkanSemaphore : IDisposable
 internal class VulkanSemaphorePair : IDisposable
 {
 
-    public unsafe VulkanSemaphorePair(IVulkanDevice device, VulkanDeviceApi api)
+    public unsafe VulkanSemaphorePair(IVulkanPlatformGraphicsContext context)
     {   
-        ImageAvailableSemaphore = new VulkanSemaphore(device, api);
-        RenderFinishedSemaphore = new VulkanSemaphore(device, api);
+        ImageAvailableSemaphore = new VulkanSemaphore(context);
+        RenderFinishedSemaphore = new VulkanSemaphore(context);
     }
 
     internal VulkanSemaphore ImageAvailableSemaphore { get; }

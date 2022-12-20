@@ -7,18 +7,17 @@ namespace Avalonia.Vulkan;
 
 internal class VulkanKhrRenderTarget : IVulkanRenderTarget
 {
-    private IVulkanKhrSurfacePlatformSurface _surface;
-    private readonly VulkanKhrSurface _khrSurface;
+    private VulkanKhrSurface _khrSurface;
     private readonly IVulkanPlatformGraphicsContext _context;
     private VulkanDisplay _display;
-    private PixelSize _size;
     private VulkanImage? _image;
+    private readonly IVulkanKhrSurfacePlatformSurface _platformSurface;
     public VkFormat Format { get; }
     public bool IsRgba { get; }
 
     public VulkanKhrRenderTarget(IVulkanKhrSurfacePlatformSurface surface, IVulkanPlatformGraphicsContext context)
     {
-        _surface = surface;
+        _platformSurface = surface;
         _khrSurface = new(context, surface);
         _display = VulkanDisplay.CreateDisplay(context, _khrSurface);
         _context = context;
@@ -31,25 +30,25 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
 
     private void CreateImage()
     {
-        _size = _display.Size;
+
         _image = new VulkanImage(_context, _display.CommandBufferPool, Format, _display.Size);
     }
 
     private void DestroyImage()
     {
-        _context.DeviceApi.DeviceWaitIdle(_context.Device.Handle);
+        _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
         _image?.Dispose();
         _image = null;
     }
 
     public void Dispose()
     {
-        _context.DeviceApi.DeviceWaitIdle(_context.Device.Handle);
+        _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
         DestroyImage();
         _display?.Dispose();
         _display = null!;
-        _surface?.Dispose();
-        _surface = null!;
+        _khrSurface?.Dispose();
+        _khrSurface = null!;
     }
 
 
@@ -65,7 +64,7 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
             _image.TransitionLayout(VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                 VkAccessFlags.VK_ACCESS_NONE);
 
-        return new RenderingSession(_display, _image!, IsRgba, _surface.Scaling, l);
+        return new RenderingSession(_display, _image!, IsRgba, _platformSurface.Scaling, l);
     }
 
     public class RenderingSession : IVulkanRenderSession
@@ -89,12 +88,12 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
         public bool IsYFlipped => true;
 
         public uint ImageFormat => (uint)_image.Format;
-        public IntPtr ImageHandle => _image.Handle;
+        public IntPtr ImageHandle => _image.Handle.Handle;
         public uint ImageLayout => (uint)_image.CurrentLayout;
         public uint ImageTiling => (uint)_image.Tiling;
         public uint ImageUsageFlags => (uint)_image.UsageFlags;
-        public uint LevelCount => (uint)_image.MipLevels;
-        public IntPtr ImageMemoryHandle => _image.MemoryHandle;
+        public uint LevelCount => _image.MipLevels;
+        public IntPtr ImageMemoryHandle => _image.MemoryHandle.Handle;
         public ulong ImageMemorySize => _image.MemorySize;
         public bool IsRgba { get; }
 

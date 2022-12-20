@@ -12,7 +12,7 @@ internal class VulkanInstance : IVulkanInstance
     private readonly VkGetInstanceProcAddressDelegate _getProcAddress;
     private readonly VulkanInstanceApi _api;
 
-    public VulkanInstance(IntPtr handle, VkGetInstanceProcAddressDelegate getProcAddress)
+    public VulkanInstance(VkInstance handle, VkGetInstanceProcAddressDelegate getProcAddress)
     {
         Handle = handle;
         _getProcAddress = getProcAddress;
@@ -124,11 +124,13 @@ internal class VulkanInstance : IVulkanInstance
         return false;
     }
 
-    public IntPtr Handle { get; }
+    public VkInstance Handle { get; }
+    IntPtr IVulkanInstance.Handle => Handle.Handle;
+    
     public IntPtr GetInstanceProcAddress(IntPtr instance, string name) => _getProcAddress(instance, name);
     public IntPtr GetDeviceProcAddress(IntPtr device, string name)
     {
         using var buf = new Utf8Buffer(name);
-        return _api.GetDeviceProcAddr(device, buf);
+        return _api.GetDeviceProcAddr(new(device), buf);
     }
 }

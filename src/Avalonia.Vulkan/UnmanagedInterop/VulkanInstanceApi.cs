@@ -22,7 +22,7 @@ internal unsafe partial class VulkanInstanceApi
 
     [GetProcAddress("vkEnumeratePhysicalDevices")]
     public partial VkResult EnumeratePhysicalDevices(VkInstance instance, ref uint32_t pPhysicalDeviceCount,
-        IntPtr* pPhysicalDevices);
+        VkPhysicalDevice* pPhysicalDevices);
 
     [GetProcAddress("vkGetPhysicalDeviceProperties")]
     public partial void GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice,

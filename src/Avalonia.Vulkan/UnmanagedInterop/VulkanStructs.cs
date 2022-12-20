@@ -20,99 +20,93 @@ namespace Avalonia.Vulkan.UnmanagedInterop
     struct VkInstance
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkInstance d) => d.Handle;
-        public static implicit operator VkInstance(IntPtr d) => new() { Handle = d };
+        public VkInstance(IntPtr handle)
+        {
+            Handle = handle;
+        }
     }
 
     struct VkPhysicalDevice
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkPhysicalDevice d) => d.Handle;
-        public static implicit operator VkPhysicalDevice(IntPtr d) => new() { Handle = d };
+        public VkPhysicalDevice(IntPtr handle)
+        {
+            Handle = handle;
+        }
     }
 
     struct VkDevice
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkDevice d) => d.Handle;
-        public static implicit operator VkDevice(IntPtr d) => new() { Handle = d };
+
+        public VkDevice(IntPtr handle)
+        {
+            Handle = handle;
+        }
     }
 
     struct VkSwapchainKHR
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkSwapchainKHR d) => d.Handle;
-        public static implicit operator VkSwapchainKHR(IntPtr d) => new() { Handle = d };
     }
 
     struct VkSemaphore
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkSemaphore d) => d.Handle;
-        public static implicit operator VkSemaphore(IntPtr d) => new() { Handle = d };
     }
 
     struct VkFence
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkFence d) => d.Handle;
-        public static implicit operator VkFence(IntPtr d) => new() { Handle = d };
     }
 
     struct VkImage
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkImage d) => d.Handle;
-        public static implicit operator VkImage(IntPtr d) => new() { Handle = d };
     }
     
     struct VkImageView
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkImageView d) => d.Handle;
-        public static implicit operator VkImageView(IntPtr d) => new() { Handle = d };
     }
     
     struct VkDeviceMemory
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkDeviceMemory d) => d.Handle;
-        public static implicit operator VkDeviceMemory(IntPtr d) => new() { Handle = d };
     }
 
     struct VkQueue
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkQueue d) => d.Handle;
-        public static implicit operator VkQueue(IntPtr d) => new() { Handle = d };
+        public VkQueue(IntPtr handle)
+        {
+            Handle = handle;
+        }
     }
 
     struct VkCommandPool
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkCommandPool d) => d.Handle;
-        public static implicit operator VkCommandPool(IntPtr d) => new() { Handle = d };
     }
     
     struct VkCommandBuffer
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkCommandBuffer d) => d.Handle;
-        public static implicit operator VkCommandBuffer(IntPtr d) => new() { Handle = d };
     }
 
     struct VkSurfaceKHR
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkSurfaceKHR d) => d.Handle;
-        public static implicit operator VkSurfaceKHR(IntPtr d) => new() { Handle = d };
+
+        public VkSurfaceKHR(IntPtr handle)
+        {
+            Handle = handle;
+        }
     }
     
     struct VkDebugUtilsMessengerEXT
     {
         public IntPtr Handle;
-        public static implicit operator IntPtr(VkDebugUtilsMessengerEXT d) => d.Handle;
-        public static implicit operator VkDebugUtilsMessengerEXT(IntPtr d) => new() { Handle = d };
     }
 
     unsafe struct VkLayerProperties
@@ -425,12 +419,12 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkStructureType sType;
         public IntPtr pNext;
         public uint32_t waitSemaphoreCount;
-        public IntPtr* pWaitSemaphores;
+        public VkSemaphore* pWaitSemaphores;
         public VkPipelineStageFlags* pWaitDstStageMask;
         public uint32_t commandBufferCount;
-        public IntPtr* pCommandBuffers;
+        public VkCommandBuffer* pCommandBuffers;
         public uint32_t signalSemaphoreCount;
-        public IntPtr* pSignalSemaphores;
+        public VkSemaphore* pSignalSemaphores;
     }
 
 
@@ -608,7 +602,7 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkStructureType sType;
         public IntPtr pNext;
         public VkImageViewCreateFlags flags;
-        public IntPtr image;
+        public VkImage image;
         public VkImageViewType viewType;
         public VkFormat format;
         public VkComponentMapping components;
@@ -625,7 +619,7 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkImageLayout newLayout;
         public uint32_t srcQueueFamilyIndex;
         public uint32_t dstQueueFamilyIndex;
-        public IntPtr image;
+        public VkImage image;
         public VkImageSubresourceRange subresourceRange;
     }
 
@@ -648,7 +642,7 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkStructureType sType;
         public IntPtr pNext;
         public VkSwapchainCreateFlagsKHR flags;
-        public IntPtr surface;
+        public VkSurfaceKHR surface;
         public uint32_t minImageCount;
         public VkFormat imageFormat;
         public VkColorSpaceKHR imageColorSpace;
@@ -662,7 +656,7 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkCompositeAlphaFlagsKHR compositeAlpha;
         public VkPresentModeKHR presentMode;
         public VkBool32 clipped;
-        public IntPtr oldSwapchain;
+        public VkSwapchainKHR oldSwapchain;
     }
 
     struct VkOffset3D

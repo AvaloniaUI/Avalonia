@@ -6,33 +6,31 @@ namespace Avalonia.Vulkan.Interop;
 internal class VulkanCommandBuffer : IDisposable
 {
     private readonly VulkanCommandBufferPool _pool;
-    private IntPtr _handle;
-    private readonly IVulkanDevice _device;
-    private readonly VulkanDeviceApi _api;
+    private VkCommandBuffer _handle;
+    private readonly IVulkanPlatformGraphicsContext _context;
     private VulkanFence _fence;
     private bool _hasEnded;
     private bool _hasStarted;
-    public IntPtr Handle => _handle;
+    public VkCommandBuffer Handle => _handle;
 
-    public VulkanCommandBuffer(VulkanCommandBufferPool pool, IntPtr handle, IVulkanDevice device, VulkanDeviceApi api)
+    public VulkanCommandBuffer(VulkanCommandBufferPool pool, VkCommandBuffer handle, IVulkanPlatformGraphicsContext context)
     {
         _pool = pool;
         _handle = handle;
-        _device = device;
-        _api = api;
-        _fence = new VulkanFence(_device, _api, VkFenceCreateFlags.VK_FENCE_CREATE_SIGNALED_BIT);
+        _context = context;
+        _fence = new VulkanFence(context, VkFenceCreateFlags.VK_FENCE_CREATE_SIGNALED_BIT);
     }
 
     public unsafe void Dispose()
     {
-        if (_fence.Handle != IntPtr.Zero)
+        if (_fence.Handle.Handle != IntPtr.Zero)
             _fence.Wait();
         _fence.Dispose();
-        if (_handle != IntPtr.Zero)
+        if (_handle.Handle != IntPtr.Zero)
         {
             VkCommandBuffer buf = _handle;
-            _api.FreeCommandBuffers(_device.Handle, _handle, 1, &buf);
-            _handle = IntPtr.Zero;
+            _context.DeviceApi.FreeCommandBuffers(_context.DeviceHandle, _pool.Handle, 1, &buf);
+            _handle = default;
         }
 
         _pool.OnCommandBufferDisposed(this);
@@ -49,7 +47,7 @@ internal class VulkanCommandBuffer : IDisposable
             flags = VkCommandBufferUsageFlags.VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
         };
 
-        _api.BeginCommandBuffer(_handle, ref beginInfo).ThrowOnError("vkBeginCommandBuffer");
+        _context.DeviceApi.BeginCommandBuffer(_handle, ref beginInfo).ThrowOnError("vkBeginCommandBuffer");
         _hasStarted = true;
     }
 
@@ -57,7 +55,7 @@ internal class VulkanCommandBuffer : IDisposable
     {
         if (_hasStarted && !_hasEnded)
         {
-            _api.EndCommandBuffer(_handle).ThrowOnError("vkEndCommandBuffer");
+            _context.DeviceApi.EndCommandBuffer(_handle).ThrowOnError("vkEndCommandBuffer");
             _hasEnded = true;
         }
     }
@@ -76,18 +74,18 @@ internal class VulkanCommandBuffer : IDisposable
         
         EndRecording();
         VkFence fenceHandle = (fence ?? _fence).Handle;
-        _api.ResetFences(_device.Handle, 1, &fenceHandle)
+        _context.DeviceApi.ResetFences(_context.DeviceHandle, 1, &fenceHandle)
             .ThrowOnError("vkResetFences");
         
-        var pWaitSempaphores = stackalloc IntPtr[waitSemaphores.Length];
+        var pWaitSempaphores = stackalloc VkSemaphore[waitSemaphores.Length];
         for (var c = 0; c < waitSemaphores.Length; c++)
             pWaitSempaphores[c] = waitSemaphores[c].Handle;
         
-        var pSignalSemaphores = stackalloc IntPtr[signalSemaphores.Length];
+        var pSignalSemaphores = stackalloc VkSemaphore[signalSemaphores.Length];
         for (var c = 0; c < signalSemaphores.Length; c++)
             pSignalSemaphores[c] = signalSemaphores[c].Handle;
 
-        IntPtr commandBuffer = _handle;
+        VkCommandBuffer commandBuffer = _handle;
         fixed (VkPipelineStageFlags* flags = waitDstStageMask)
         {
             var submitInfo = new VkSubmitInfo
@@ -101,7 +99,7 @@ internal class VulkanCommandBuffer : IDisposable
                 pCommandBuffers = &commandBuffer,
                 pWaitDstStageMask = flags
             };
-            _api.QueueSubmit(_device.MainQueueHandle, 1, &submitInfo, fenceHandle)
+            _context.DeviceApi.QueueSubmit(_context.MainQueueHandle, 1, &submitInfo, fenceHandle)
                 .ThrowOnError("vkQueueSubmit");
         }
     }

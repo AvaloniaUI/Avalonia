@@ -23,6 +23,11 @@ public interface IVulkanPlatformGraphicsContext : IPlatformGraphicsContext
     IVulkanInstance Instance { get; }
     internal VulkanInstanceApi InstanceApi { get; }
     internal VulkanDeviceApi DeviceApi { get; }
+    internal VkDevice DeviceHandle { get; }
+    internal VkPhysicalDevice PhysicalDeviceHandle { get; }
+    internal VkInstance InstanceHandle { get; }
+    internal VkQueue MainQueueHandle { get; }
+    uint GraphicsQueueFamilyIndex { get; }
     IVulkanRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
 }
 
