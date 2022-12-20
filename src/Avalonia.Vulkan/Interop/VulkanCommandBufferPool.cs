@@ -10,7 +10,6 @@ internal class VulkanCommandBufferPool : IDisposable
     private readonly List<VulkanCommandBuffer> _commandBuffers = new();
     private VkCommandPool _handle;
     public VkCommandPool Handle => _handle;
-    private bool _clearingCommandBuffers = false;
 
     public VulkanCommandBufferPool(IVulkanPlatformGraphicsContext context)
     {
@@ -27,19 +26,11 @@ internal class VulkanCommandBufferPool : IDisposable
 
     public void FreeUsedCommandBuffers()
     {
-        try
-        {
-            _clearingCommandBuffers = true;
-            foreach (var usedCommandBuffer in _commandBuffers)
-                usedCommandBuffer.Dispose();
-            _commandBuffers.Clear();
-        }
-        finally
-        {
-            _clearingCommandBuffers = false;
-        }
+        foreach (var usedCommandBuffer in _commandBuffers)
+            usedCommandBuffer.Dispose();
+        _commandBuffers.Clear();
     }
-    
+
     public void Dispose()
     {
         FreeUsedCommandBuffers();
@@ -62,14 +53,8 @@ internal class VulkanCommandBufferPool : IDisposable
         _context.DeviceApi.AllocateCommandBuffers(_context.DeviceHandle, ref commandBufferAllocateInfo,
             &bufferHandle).ThrowOnError("vkAllocateCommandBuffers");
 
-        var rv = new VulkanCommandBuffer(this, bufferHandle, _context);
-        _commandBuffers.Add(rv);
-        return rv;
+        return new VulkanCommandBuffer(this, bufferHandle, _context);
     }
-
-    internal void OnCommandBufferDisposed(VulkanCommandBuffer buffer)
-    {
-        if (!_clearingCommandBuffers)
-            _commandBuffers.Remove(buffer);
-    }
+    
+    public void AddSubmittedCommandBuffer(VulkanCommandBuffer buffer) => _commandBuffers.Add(buffer);
 }

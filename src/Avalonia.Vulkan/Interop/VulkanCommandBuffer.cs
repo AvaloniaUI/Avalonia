@@ -32,8 +32,6 @@ internal class VulkanCommandBuffer : IDisposable
             _context.DeviceApi.FreeCommandBuffers(_context.DeviceHandle, _pool.Handle, 1, &buf);
             _handle = default;
         }
-
-        _pool.OnCommandBufferDisposed(this);
     }
 
     public void BeginRecording()
@@ -102,5 +100,6 @@ internal class VulkanCommandBuffer : IDisposable
             _context.DeviceApi.QueueSubmit(_context.MainQueueHandle, 1, &submitInfo, fenceHandle)
                 .ThrowOnError("vkQueueSubmit");
         }
+        _pool.AddSubmittedCommandBuffer(this);
     }
 }
