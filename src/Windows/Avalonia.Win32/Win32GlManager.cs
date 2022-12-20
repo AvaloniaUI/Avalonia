@@ -2,9 +2,11 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
+using Avalonia.Vulkan;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.OpenGl;
 using Avalonia.Win32.OpenGl.Angle;
+using Avalonia.Win32.Vulkan;
 using Avalonia.Win32.WinRT.Composition;
 
 namespace Avalonia.Win32
@@ -24,6 +26,14 @@ namespace Avalonia.Win32
         {
 
             var opts = AvaloniaLocator.Current.GetService<Win32PlatformOptions>() ?? new Win32PlatformOptions();
+
+            if (opts.UseVulkan)
+            {
+                var vulkan = VulkanSupport.TryInitialize(AvaloniaLocator.Current.GetService<VulkanOptions>());
+                if (vulkan != null)
+                    return vulkan;
+            }
+            
             if (opts.UseWgl)
             {
                 var wgl = WglPlatformOpenGlInterface.TryCreate();

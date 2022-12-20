@@ -60,6 +60,11 @@ namespace Avalonia
         /// GPU rendering will not be enabled if this is set to false.
         /// </remarks>
         public bool? AllowEglInitialization { get; set; }
+        
+        /// <summary>
+        /// Enables Vulkan rendering backend
+        /// </summary>
+        public bool UseVulkan { get; set; }
 
         /// <summary>
         /// Embeds popups to the window when set to true. The default value is false.

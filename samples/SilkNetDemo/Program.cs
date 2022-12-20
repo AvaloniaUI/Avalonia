@@ -22,6 +22,10 @@ namespace SilkNetDemo
                 {
                     UseVulkan = true
                 })
+                .With(new Win32PlatformOptions
+                {
+                    UseVulkan = true
+                })
                 .With(new VulkanOptions
                 {
                     VulkanInstanceCreationOptions =

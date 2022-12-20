@@ -125,6 +125,10 @@ namespace ControlCatalog.NetCore
                     EnableIme = true,
                     UseVulkan = true
                 })
+                .With(new Win32PlatformOptions()
+                {
+                    UseVulkan = true
+                })
                 .With(new VulkanOptions
                 {
                     VulkanInstanceCreationOptions = new ()
