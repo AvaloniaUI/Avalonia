@@ -102,6 +102,7 @@ public abstract class VulkanControlBase : Control
         private readonly VulkanContext _ctx;
         private VulkanCommandBufferPool _pool;
         private VulkanImage? _frontBuffer;
+        private Bitmap? _frontBufferBitmap;
 
         
         public IVulkanSharedDevice SharedDevice { get; }
@@ -118,10 +119,19 @@ public abstract class VulkanControlBase : Control
             }
         }
 
-
+        static Bitmap WrapToBitmap(IVulkanSharedDeviceGraphicsContextFeature feature, VulkanImage image, double scaling, IVulkanDevice device)
+        {
+            using var wrapped = RefCountable.Create(feature.CreateBitmapFromVulkanImage(image.ImageInfo, scaling, () =>
+            {
+                using (device.Lock())
+                    image.Dispose();
+            }));
+            return new Bitmap(wrapped);
+        }
+        
         public void Render(DrawingContext drawingContext)
         {
-            var pixelSize = _parent.GetPixelSize();
+            var (pixelSize, scaling) = _parent.GetSizeInfo();
             if (pixelSize.Width < 1 || pixelSize.Height < 1)
                 return;
             using (_ctx.Device.Lock())
@@ -131,15 +141,16 @@ public abstract class VulkanControlBase : Control
 
                 if (_frontBuffer == null || _frontBuffer.Size != pixelSize)
                 {
-                    _frontBuffer?.Dispose();
+                    _frontBufferBitmap?.Dispose();
+                    _frontBufferBitmap = null;
                     _frontBuffer = null;
                     _frontBuffer = new VulkanImage(_ctx, _pool, VkFormat.VK_FORMAT_B8G8R8A8_UNORM,
-                        pixelSize,
-                        1);
-                    
+                        pixelSize, 1);
+                    _frontBufferBitmap = WrapToBitmap(_feature, _frontBuffer, scaling, _ctx.Device);
                 }
-                _frontBuffer.TransitionLayout(VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                    VkAccessFlags.VK_ACCESS_COLOR_ATTACHMENT_READ_BIT);
+                else
+                    _frontBuffer.TransitionLayout(VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                        VkAccessFlags.VK_ACCESS_COLOR_ATTACHMENT_READ_BIT);
             }
             
             // User code is expected to take their own device locks (right now for _everything_)
@@ -149,10 +160,7 @@ public abstract class VulkanControlBase : Control
             {
                 _frontBuffer.TransitionLayout(VkImageLayout.VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     VkAccessFlags.VK_ACCESS_NONE);
-                using var wrapped =
-                    new Bitmap(RefCountable.Create(_feature.CreateBitmapFromVulkanImage(_frontBuffer.ImageInfo, 1)));
-                
-                drawingContext.DrawImage(wrapped, new Rect(_parent.Bounds.Size));
+                drawingContext.DrawImage(_frontBufferBitmap!, new Rect(_parent.Bounds.Size));
             }
         }
 
@@ -161,16 +169,16 @@ public abstract class VulkanControlBase : Control
             using (_ctx.Device.Lock())
             {
                 _ctx.DeviceApi.DeviceWaitIdle(_ctx.DeviceHandle);
-                _frontBuffer?.Dispose();
+                _frontBufferBitmap?.Dispose();
                 _pool.Dispose();
             }
         }
     }
 
-    private PixelSize GetPixelSize()
+    private (PixelSize size, double scaling) GetSizeInfo()
     {
         var scaling = this.GetVisualRoot()!.RenderScaling;
-        return new PixelSize(Math.Max(1, (int)(Bounds.Width * scaling)),
-            Math.Max(1, (int)(Bounds.Height * scaling)));
+        return (new PixelSize(Math.Max(1, (int)(Bounds.Width * scaling)),
+            Math.Max(1, (int)(Bounds.Height * scaling))), scaling);
     }
 }

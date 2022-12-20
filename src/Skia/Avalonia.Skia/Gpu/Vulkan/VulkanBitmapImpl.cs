@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Avalonia.Platform;
 using Avalonia.Vulkan;
@@ -8,18 +9,21 @@ namespace Avalonia.Skia.Vulkan;
 internal class VulkanBitmapImpl : IDrawableBitmapImpl
 {
     private readonly VulkanSkiaGpu _gpu;
-    private readonly VulkanImageInfo _info;
+    private VulkanImageInfo _info;
+    private readonly Action _dispose;
 
-    public VulkanBitmapImpl(VulkanSkiaGpu gpu, VulkanImageInfo info, double scaling)
+    public VulkanBitmapImpl(VulkanSkiaGpu gpu, VulkanImageInfo info, double scaling, Action dispose)
     {
         _gpu = gpu;
         _info = info;
+        _dispose = dispose;
         Dpi = new Vector(96 * scaling, 96 * scaling);
     }
 
     public void Dispose()
     {
-        
+        _dispose();
+        _info = default;
     }
 
     public Vector Dpi { get; }
@@ -30,6 +34,8 @@ internal class VulkanBitmapImpl : IDrawableBitmapImpl
     public void Save(Stream stream, int? quality = null) => throw new System.NotSupportedException();
     public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
     {
+        if (_info.Handle == 0)
+            return;
         _gpu.Vulkan.MainQueueWaitIdle();
         var imageInfo = new GRVkImageInfo
         {
