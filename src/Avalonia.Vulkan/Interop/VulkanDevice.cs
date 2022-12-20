@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Vulkan.Interop;
+using Avalonia.Vulkan.UnmanagedInterop;
 
 namespace Avalonia.Vulkan;
 
@@ -21,7 +22,7 @@ internal partial class VulkanDevice : IVulkanDevice
     private readonly object _lock = new();
     private Thread? _lockedByThread;
 
-    private VulkanDevice(IVulkanInstance instance, IntPtr handle, IntPtr physicalDeviceHandle,
+    private VulkanDevice(IVulkanInstance instance, IntPtr handle, VkPhysicalDevice physicalDeviceHandle,
         IntPtr mainQueue, uint graphicsQueueIndex, Dictionary<Type, object> features)
     {
         _handle = handle;

@@ -30,7 +30,7 @@ internal class VulkanCommandBuffer : IDisposable
         _fence.Dispose();
         if (_handle != IntPtr.Zero)
         {
-            IntPtr buf = _handle;
+            VkCommandBuffer buf = _handle;
             _api.FreeCommandBuffers(_device.Handle, _handle, 1, &buf);
             _handle = IntPtr.Zero;
         }
@@ -75,7 +75,7 @@ internal class VulkanCommandBuffer : IDisposable
     {
         
         EndRecording();
-        var fenceHandle = (fence ?? _fence).Handle;
+        VkFence fenceHandle = (fence ?? _fence).Handle;
         _api.ResetFences(_device.Handle, 1, &fenceHandle)
             .ThrowOnError("vkResetFences");
         

@@ -93,7 +93,7 @@ internal unsafe partial class VulkanDevice
         public uint QueueCount;
     }
 
-    static unsafe List<string> GetDeviceExtensions(VulkanInstanceApi instance, IntPtr physicalDevice)
+    static unsafe List<string> GetDeviceExtensions(VulkanInstanceApi instance, VkPhysicalDevice physicalDevice)
     {
         uint propertyCount = 0;
         instance.EnumerateDeviceExtensionProperties(physicalDevice, null, ref propertyCount, null);
@@ -113,7 +113,7 @@ internal unsafe partial class VulkanDevice
 
     private const string VK_KHR_swapchain = "VK_KHR_swapchain";
 
-    static unsafe DeviceInfo? CheckDevice(VulkanInstanceApi instance, IntPtr physicalDevice,
+    static unsafe DeviceInfo? CheckDevice(VulkanInstanceApi instance, VkPhysicalDevice physicalDevice,
         VulkanDeviceCreationOptions options, IntPtr? surface)
     {
         instance.GetPhysicalDeviceProperties(physicalDevice, out var properties);

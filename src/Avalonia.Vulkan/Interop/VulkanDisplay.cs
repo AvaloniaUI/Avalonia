@@ -17,8 +17,8 @@ internal class VulkanDisplay : IDisposable
     private VkSurfaceFormatKHR _surfaceFormat;
     private VkSwapchainKHR _swapchain;
     private VkExtent2D _swapchainExtent;
-    private IntPtr[] _swapchainImages = Array.Empty<IntPtr>();
-    private IntPtr[] _swapchainImageViews = Array.Empty<IntPtr>();
+    private VkImage[] _swapchainImages = Array.Empty<VkImage>();
+    private VkImageView[] _swapchainImageViews = Array.Empty<VkImageView>();
     public VulkanCommandBufferPool CommandBufferPool { get; private set; }
     public PixelSize Size { get; private set; }
     public uint QueueFamilyIndex => _context.Device.GraphicsQueueFamilyIndex;
@@ -148,7 +148,7 @@ internal class VulkanDisplay : IDisposable
             return;
         for (var i = 0; i < _swapchainImageViews.Length; i++)
             _context.DeviceApi.DestroyImageView(_context.Device.Handle, _swapchainImageViews[i], IntPtr.Zero);
-        _swapchainImageViews = Array.Empty<IntPtr>();
+        _swapchainImageViews = Array.Empty<VkImageView>();
         
     }
     
@@ -159,11 +159,11 @@ internal class VulkanDisplay : IDisposable
         uint imageCount = 0;
         _context.DeviceApi.GetSwapchainImagesKHR(_context.Device.Handle, _swapchain, ref imageCount, null)
             .ThrowOnError("vkGetSwapchainImagesKHR");
-        _swapchainImages = new IntPtr[imageCount];
-        fixed (IntPtr* pImages = _swapchainImages)
+        _swapchainImages = new VkImage[imageCount];
+        fixed (VkImage* pImages = _swapchainImages)
             _context.DeviceApi.GetSwapchainImagesKHR(_context.Device.Handle, _swapchain, ref imageCount,
                 pImages).ThrowOnError("vkGetSwapchainImagesKHR");
-        _swapchainImageViews = new IntPtr[imageCount];
+        _swapchainImageViews = new VkImageView[imageCount];
         for (var c = 0; c < imageCount; c++)
             _swapchainImageViews[c] = CreateSwapchainImageView(_swapchainImages[c], SurfaceFormat.format);
     }

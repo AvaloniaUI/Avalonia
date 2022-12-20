@@ -10,7 +10,7 @@ internal class VulkanCommandBufferPool : IDisposable
     private readonly IVulkanDevice _device;
     private readonly VulkanDeviceApi _api;
     private readonly List<VulkanCommandBuffer> _commandBuffers = new();
-    private IntPtr _handle;
+    private VkCommandPool _handle;
 
     public VulkanCommandBufferPool(IVulkanDevice device, VulkanDeviceApi api)
     {
@@ -51,7 +51,7 @@ internal class VulkanCommandBufferPool : IDisposable
             commandBufferCount = 1,
             level = VkCommandBufferLevel.VK_COMMAND_BUFFER_LEVEL_PRIMARY
         };
-        var bufferHandle = IntPtr.Zero;
+        VkCommandBuffer bufferHandle = default;
         _api.AllocateCommandBuffers(_device.Handle, ref commandBufferAllocateInfo,
             &bufferHandle).ThrowOnError("vkAllocateCommandBuffers");
 

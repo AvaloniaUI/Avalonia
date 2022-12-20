@@ -17,34 +17,48 @@ using VkDeviceSize = System.UInt64;
 
 namespace Avalonia.Vulkan.UnmanagedInterop
 {
+    struct VkInstance
+    {
+        public IntPtr Handle;
+        public static implicit operator IntPtr(VkInstance d) => d.Handle;
+        public static implicit operator VkInstance(IntPtr d) => new() { Handle = d };
+    }
+
+    struct VkPhysicalDevice
+    {
+        public IntPtr Handle;
+        public static implicit operator IntPtr(VkPhysicalDevice d) => d.Handle;
+        public static implicit operator VkPhysicalDevice(IntPtr d) => new() { Handle = d };
+    }
+
     struct VkDevice
     {
         public IntPtr Handle;
         public static implicit operator IntPtr(VkDevice d) => d.Handle;
         public static implicit operator VkDevice(IntPtr d) => new() { Handle = d };
     }
-    
+
     struct VkSwapchainKHR
     {
         public IntPtr Handle;
         public static implicit operator IntPtr(VkSwapchainKHR d) => d.Handle;
         public static implicit operator VkSwapchainKHR(IntPtr d) => new() { Handle = d };
     }
-    
+
     struct VkSemaphore
     {
         public IntPtr Handle;
         public static implicit operator IntPtr(VkSemaphore d) => d.Handle;
         public static implicit operator VkSemaphore(IntPtr d) => new() { Handle = d };
     }
-    
+
     struct VkFence
     {
         public IntPtr Handle;
         public static implicit operator IntPtr(VkFence d) => d.Handle;
         public static implicit operator VkFence(IntPtr d) => new() { Handle = d };
     }
-    
+
     struct VkImage
     {
         public IntPtr Handle;
@@ -52,6 +66,20 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public static implicit operator VkImage(IntPtr d) => new() { Handle = d };
     }
     
+    struct VkImageView
+    {
+        public IntPtr Handle;
+        public static implicit operator IntPtr(VkImageView d) => d.Handle;
+        public static implicit operator VkImageView(IntPtr d) => new() { Handle = d };
+    }
+    
+    struct VkDeviceMemory
+    {
+        public IntPtr Handle;
+        public static implicit operator IntPtr(VkDeviceMemory d) => d.Handle;
+        public static implicit operator VkDeviceMemory(IntPtr d) => new() { Handle = d };
+    }
+
     struct VkQueue
     {
         public IntPtr Handle;
@@ -59,6 +87,13 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public static implicit operator VkQueue(IntPtr d) => new() { Handle = d };
     }
 
+    struct VkCommandPool
+    {
+        public IntPtr Handle;
+        public static implicit operator IntPtr(VkCommandPool d) => d.Handle;
+        public static implicit operator VkCommandPool(IntPtr d) => new() { Handle = d };
+    }
+    
     struct VkCommandBuffer
     {
         public IntPtr Handle;
@@ -66,6 +101,19 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public static implicit operator VkCommandBuffer(IntPtr d) => new() { Handle = d };
     }
 
+    struct VkSurfaceKHR
+    {
+        public IntPtr Handle;
+        public static implicit operator IntPtr(VkSurfaceKHR d) => d.Handle;
+        public static implicit operator VkSurfaceKHR(IntPtr d) => new() { Handle = d };
+    }
+    
+    struct VkDebugUtilsMessengerEXT
+    {
+        public IntPtr Handle;
+        public static implicit operator IntPtr(VkDebugUtilsMessengerEXT d) => d.Handle;
+        public static implicit operator VkDebugUtilsMessengerEXT(IntPtr d) => new() { Handle = d };
+    }
 
     unsafe struct VkLayerProperties
     {
@@ -299,14 +347,14 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public uint32_t width;
         public uint32_t height;
     }
-   
+
     struct VkExtent3D
     {
         public uint32_t width;
         public uint32_t height;
         public uint32_t depth;
     }
-    
+
     unsafe struct VkDeviceQueueCreateInfo
     {
         public VkStructureType sType;
@@ -345,14 +393,12 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public VkCommandPoolCreateFlags flags;
         public uint32_t queueFamilyIndex;
     }
-
-
-
+    
     struct VkCommandBufferAllocateInfo
     {
         public VkStructureType sType;
         IntPtr pNext;
-        public IntPtr commandPool;
+        public VkCommandPool commandPool;
         public VkCommandBufferLevel level;
         public uint32_t commandBufferCount;
     }
@@ -466,6 +512,7 @@ namespace Avalonia.Vulkan.UnmanagedInterop
                 }
             }
         }
+
         public struct VkMemoryHeapsBuffer
         {
             public VkMemoryHeap Element0;
@@ -632,7 +679,7 @@ namespace Avalonia.Vulkan.UnmanagedInterop
         public uint32_t baseArrayLayer;
         public uint32_t layerCount;
     }
-    
+
     struct VkImageBlit
     {
         public VkImageSubresourceLayers srcSubresource;

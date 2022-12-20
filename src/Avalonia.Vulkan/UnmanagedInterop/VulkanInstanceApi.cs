@@ -17,59 +17,61 @@ internal unsafe partial class VulkanInstanceApi
     }
 
     [GetProcAddress("vkCreateDebugUtilsMessengerEXT", true)]
-    public partial VkResult CreateDebugUtilsMessengerEXT(IntPtr instance,
-        ref VkDebugUtilsMessengerCreateInfoEXT pCreateInfo, IntPtr pAllocator, out IntPtr pMessenger);
-    
+    public partial VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
+        ref VkDebugUtilsMessengerCreateInfoEXT pCreateInfo, IntPtr pAllocator, out VkDebugUtilsMessengerEXT pMessenger);
+
     [GetProcAddress("vkEnumeratePhysicalDevices")]
-    public partial VkResult EnumeratePhysicalDevices(IntPtr instance, ref uint32_t pPhysicalDeviceCount,
+    public partial VkResult EnumeratePhysicalDevices(VkInstance instance, ref uint32_t pPhysicalDeviceCount,
         IntPtr* pPhysicalDevices);
 
     [GetProcAddress("vkGetPhysicalDeviceProperties")]
-    public partial void GetPhysicalDeviceProperties(IntPtr physicalDevice, out VkPhysicalDeviceProperties pProperties);
+    public partial void GetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice,
+        out VkPhysicalDeviceProperties pProperties);
 
     [GetProcAddress("vkEnumerateDeviceExtensionProperties")]
-    public partial VkResult EnumerateDeviceExtensionProperties(IntPtr physicalDevice, byte* pLayerName,
+    public partial VkResult EnumerateDeviceExtensionProperties(VkPhysicalDevice physicalDevice, byte* pLayerName,
         ref uint32_t pPropertyCount, VkExtensionProperties* pProperties);
 
     [GetProcAddress("vkGetPhysicalDeviceSurfaceSupportKHR")]
-    public partial VkResult GetPhysicalDeviceSurfaceSupportKHR(IntPtr physicalDevice, uint32_t queueFamilyIndex,
-        IntPtr surface, out VkBool32 pSupported);
+    public partial VkResult GetPhysicalDeviceSurfaceSupportKHR(VkPhysicalDevice physicalDevice,
+        uint32_t queueFamilyIndex,
+        VkSurfaceKHR surface, out VkBool32 pSupported);
 
 
     [GetProcAddress("vkGetPhysicalDeviceQueueFamilyProperties")]
-    public partial void GetPhysicalDeviceQueueFamilyProperties(IntPtr physicalDevice,
+    public partial void GetPhysicalDeviceQueueFamilyProperties(VkPhysicalDevice physicalDevice,
         ref uint32_t pQueueFamilyPropertyCount, VkQueueFamilyProperties* pQueueFamilyProperties);
 
     [GetProcAddress("vkCreateDevice")]
-    public partial VkResult CreateDevice(IntPtr physicalDevice, ref VkDeviceCreateInfo pCreateInfo,
-        IntPtr pAllocator, out IntPtr pDevice);
+    public partial VkResult CreateDevice(VkPhysicalDevice physicalDevice, ref VkDeviceCreateInfo pCreateInfo,
+        IntPtr pAllocator, out VkDevice pDevice);
 
     [GetProcAddress("vkGetDeviceQueue")]
-    public partial void GetDeviceQueue(IntPtr device, uint32_t queueFamilyIndex, uint32_t queueIndex,
-        out IntPtr pQueue);
+    public partial void GetDeviceQueue(VkDevice device, uint32_t queueFamilyIndex, uint32_t queueIndex,
+        out VkQueue pQueue);
 
     [GetProcAddress("vkGetDeviceProcAddr")]
-    public partial IntPtr GetDeviceProcAddr(IntPtr device, IntPtr pName);
-    
+    public partial IntPtr GetDeviceProcAddr(VkDevice device, IntPtr pName);
+
     [GetProcAddress("vkDestroySurfaceKHR")]
-    public partial void DestroySurfaceKHR(IntPtr instance, IntPtr surface, IntPtr pAllocator);
-    
+    public partial void DestroySurfaceKHR(VkInstance instance, VkSurfaceKHR surface, IntPtr pAllocator);
+
     [GetProcAddress("vkGetPhysicalDeviceSurfaceFormatsKHR")]
     public partial VkResult GetPhysicalDeviceSurfaceFormatsKHR(
-        IntPtr                            physicalDevice,
-        IntPtr                                surface,
-        ref uint32_t                                   pSurfaceFormatCount,
-        VkSurfaceFormatKHR*                         pSurfaceFormats);
+        VkPhysicalDevice physicalDevice,
+        VkSurfaceKHR surface,
+        ref uint32_t pSurfaceFormatCount,
+        VkSurfaceFormatKHR* pSurfaceFormats);
 
     [GetProcAddress("vkGetPhysicalDeviceMemoryProperties")]
-    public partial void GetPhysicalDeviceMemoryProperties(IntPtr physicalDevice,
+    public partial void GetPhysicalDeviceMemoryProperties(VkPhysicalDevice physicalDevice,
         out VkPhysicalDeviceMemoryProperties pMemoryProperties);
 
     [GetProcAddress("vkGetPhysicalDeviceSurfaceCapabilitiesKHR")]
-    public partial VkResult GetPhysicalDeviceSurfaceCapabilitiesKHR(IntPtr physicalDevice, IntPtr surface,
+    public partial VkResult GetPhysicalDeviceSurfaceCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
         out VkSurfaceCapabilitiesKHR pSurfaceCapabilities);
 
     [GetProcAddress("vkGetPhysicalDeviceSurfacePresentModesKHR")]
-    public partial VkResult GetPhysicalDeviceSurfacePresentModesKHR(IntPtr physicalDevice, IntPtr surface,
+    public partial VkResult GetPhysicalDeviceSurfacePresentModesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface,
         ref uint32_t pPresentModeCount, VkPresentModeKHR* pPresentModes);
 }

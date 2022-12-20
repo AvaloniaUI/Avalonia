@@ -10,11 +10,11 @@ internal class VulkanImage : IDisposable
 
     private VkAccessFlags _currentAccessFlags;
     public VkImageUsageFlags UsageFlags { get; }
-    private IntPtr _imageView;
-    private IntPtr _imageMemory;
-    private IntPtr _handle;
+    private VkImageView _imageView;
+    private VkDeviceMemory _imageMemory;
+    private VkImage _handle;
     private VulkanCommandBufferPool _commandBufferPool;
-    internal IntPtr Handle => _handle;
+    internal VkImage Handle => _handle;
     internal VkFormat Format { get; }
     internal VkImageAspectFlags AspectFlags { get; private set; }
     public uint MipLevels { get; private set; }

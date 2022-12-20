@@ -20,88 +20,88 @@ internal unsafe partial class VulkanDeviceApi
                 return addr;
             return device.Instance.GetInstanceProcAddress(device.Instance.Handle, name);
         });
-
     }
 
     [GetProcAddress("vkCreateFence")]
-    public partial VkResult CreateFence(IntPtr device,
+    public partial VkResult CreateFence(VkDevice device,
         ref VkFenceCreateInfo pCreateInfo,
         IntPtr pAllocator,
-        out IntPtr pFence);
+        out VkFence pFence);
 
     [GetProcAddress("vkDestroyFence")]
-    public partial void DestroyFence(IntPtr device, IntPtr fence, IntPtr pAllocator);
+    public partial void DestroyFence(VkDevice device, VkFence fence, IntPtr pAllocator);
 
     [GetProcAddress("vkCreateCommandPool")]
-    public partial VkResult CreateCommandPool(IntPtr device, ref VkCommandPoolCreateInfo pCreateInfo,
-        IntPtr pAllocator, out IntPtr pCommandPool);
+    public partial VkResult CreateCommandPool(VkDevice device, ref VkCommandPoolCreateInfo pCreateInfo,
+        IntPtr pAllocator, out VkCommandPool pCommandPool);
 
     [GetProcAddress("vkDestroyCommandPool")]
-    public partial void DestroyCommandPool(IntPtr device, IntPtr pool, IntPtr pAllocator);
+    public partial void DestroyCommandPool(VkDevice device, VkCommandPool pool, IntPtr pAllocator);
 
     [GetProcAddress("vkAllocateCommandBuffers")]
-    public partial VkResult AllocateCommandBuffers(IntPtr device,
-        ref VkCommandBufferAllocateInfo pAllocateInfo, IntPtr* pCommandBuffers);
+    public partial VkResult AllocateCommandBuffers(VkDevice device,
+        ref VkCommandBufferAllocateInfo pAllocateInfo, VkCommandBuffer* pCommandBuffers);
 
     [GetProcAddress("vkFreeCommandBuffers")]
-    public partial void FreeCommandBuffers(IntPtr device, IntPtr commandPool, uint32_t commandBufferCount,
-        IntPtr* pCommandBuffers);
+    public partial void FreeCommandBuffers(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount,
+        VkCommandBuffer* pCommandBuffers);
 
     [GetProcAddress("vkWaitForFences")]
-    public partial VkResult WaitForFences(IntPtr device, uint32_t fenceCount, IntPtr* pFences, VkBool32 waitAll,
+    public partial VkResult WaitForFences(VkDevice device, uint32_t fenceCount, VkFence* pFences, VkBool32 waitAll,
         uint64_t timeout);
 
     [GetProcAddress("vkBeginCommandBuffer")]
-    public partial VkResult BeginCommandBuffer(IntPtr commandBuffer, ref VkCommandBufferBeginInfo pBeginInfo);
+    public partial VkResult BeginCommandBuffer(VkCommandBuffer commandBuffer, ref VkCommandBufferBeginInfo pBeginInfo);
 
     [GetProcAddress("vkEndCommandBuffer")]
-    public partial VkResult EndCommandBuffer(IntPtr commandBuffer);
+    public partial VkResult EndCommandBuffer(VkCommandBuffer commandBuffer);
 
     [GetProcAddress("vkCreateSemaphore")]
-    public partial VkResult CreateSemaphore(IntPtr device, ref VkSemaphoreCreateInfo pCreateInfo,
-        IntPtr pAllocator, out IntPtr pSemaphore);
+    public partial VkResult CreateSemaphore(VkDevice device, ref VkSemaphoreCreateInfo pCreateInfo,
+        IntPtr pAllocator, out VkSemaphore pSemaphore);
 
     [GetProcAddress("vkDestroySemaphore")]
-    public partial void DestroySemaphore(IntPtr device, IntPtr semaphore, IntPtr pAllocator);
+    public partial void DestroySemaphore(VkDevice device, VkSemaphore semaphore, IntPtr pAllocator);
 
     [GetProcAddress("vkResetFences")]
-    public partial VkResult ResetFences(IntPtr device, uint32_t fenceCount, IntPtr* pFences);
+    public partial VkResult ResetFences(VkDevice device, uint32_t fenceCount, VkFence* pFences);
 
     [GetProcAddress("vkQueueSubmit")]
-    public partial VkResult QueueSubmit(IntPtr queue, uint32_t submitCount, VkSubmitInfo* pSubmits,
-        IntPtr fence);
+    public partial VkResult QueueSubmit(VkQueue queue, uint32_t submitCount, VkSubmitInfo* pSubmits,
+        VkFence fence);
 
     [GetProcAddress("vkCreateImage")]
-    public partial VkResult CreateImage(IntPtr device, ref VkImageCreateInfo pCreateInfo, IntPtr pAllocator,
-        out IntPtr pImage);
+    public partial VkResult CreateImage(VkDevice device, ref VkImageCreateInfo pCreateInfo, IntPtr pAllocator,
+        out VkImage pImage);
     
     [GetProcAddress("vkDestroyImage")]
-    public partial void DestroyImage(IntPtr device, IntPtr image, IntPtr pAllocator);
+    public partial void DestroyImage(VkDevice device, VkImage image, IntPtr pAllocator);
 
     [GetProcAddress("vkGetImageMemoryRequirements")]
-    public partial void GetImageMemoryRequirements(IntPtr device, IntPtr image,
+    public partial void GetImageMemoryRequirements(VkDevice device, VkImage image,
         out VkMemoryRequirements pMemoryRequirements);
 
     [GetProcAddress("vkAllocateMemory")]
-    public partial VkResult AllocateMemory(IntPtr device, ref VkMemoryAllocateInfo pAllocateInfo, IntPtr pAllocator,
-        out IntPtr pMemory);
+    public partial VkResult AllocateMemory(VkDevice device, ref VkMemoryAllocateInfo pAllocateInfo, IntPtr pAllocator,
+        out VkDeviceMemory pMemory);
     
     [GetProcAddress("vkFreeMemory")]
-    public partial void FreeMemory(IntPtr device, IntPtr memory, IntPtr pAllocator);
+    public partial void FreeMemory(VkDevice device, VkDeviceMemory memory, IntPtr pAllocator);
 
     [GetProcAddress("vkBindImageMemory")]
-    public partial VkResult BindImageMemory(IntPtr device, IntPtr image, IntPtr memory, VkDeviceSize memoryOffset);
+    public partial VkResult BindImageMemory(VkDevice device, VkImage image, VkDeviceMemory memory,
+        VkDeviceSize memoryOffset);
 
     [GetProcAddress("vkCreateImageView")]
-    public partial VkResult CreateImageView(IntPtr device, ref VkImageViewCreateInfo pCreateInfo, IntPtr pAllocator,
-        out IntPtr pView);
+    public partial VkResult CreateImageView(VkDevice device, ref VkImageViewCreateInfo pCreateInfo, IntPtr pAllocator,
+        out VkImageView pView);
     
     [GetProcAddress("vkDestroyImageView")]
-    public partial void DestroyImageView(IntPtr device, IntPtr imageView, IntPtr pAllocator);
+    public partial void DestroyImageView(VkDevice device, VkImageView imageView, IntPtr pAllocator);
     
 
     [GetProcAddress("vkCmdPipelineBarrier")]
-    public partial void CmdPipelineBarrier(IntPtr commandBuffer,
+    public partial void CmdPipelineBarrier(VkCommandBuffer commandBuffer,
         VkPipelineStageFlags srcStageMask,
         VkPipelineStageFlags dstStageMask,
         VkDependencyFlags dependencyFlags,
@@ -113,18 +113,18 @@ internal unsafe partial class VulkanDeviceApi
         VkImageMemoryBarrier* pImageMemoryBarriers);
     
     [GetProcAddress("vkCreateSwapchainKHR")]
-    public partial VkResult CreateSwapchainKHR(IntPtr device, ref VkSwapchainCreateInfoKHR pCreateInfo,
-        IntPtr pAllocator, out IntPtr pSwapchain);
+    public partial VkResult CreateSwapchainKHR(VkDevice device, ref VkSwapchainCreateInfoKHR pCreateInfo,
+        IntPtr pAllocator, out VkSwapchainKHR pSwapchain);
     
     [GetProcAddress("vkDestroySwapchainKHR")]
-    public partial void DestroySwapchainKHR(IntPtr device, IntPtr swapchain, IntPtr pAllocator);
+    public partial void DestroySwapchainKHR(VkDevice device, VkSwapchainKHR swapchain, IntPtr pAllocator);
 
     [GetProcAddress("vkGetSwapchainImagesKHR")]
-    public partial VkResult GetSwapchainImagesKHR(IntPtr device, IntPtr swapchain, ref uint32_t pSwapchainImageCount,
-        IntPtr* pSwapchainImages);
+    public partial VkResult GetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain, ref uint32_t pSwapchainImageCount,
+        VkImage* pSwapchainImages);
 
     [GetProcAddress("vkDeviceWaitIdle")]
-    public partial VkResult DeviceWaitIdle(IntPtr device);
+    public partial VkResult DeviceWaitIdle(VkDevice device);
 
     [GetProcAddress("vkAcquireNextImageKHR")]
     public partial VkResult AcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout,

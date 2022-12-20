@@ -8,7 +8,7 @@ internal struct VulkanFence : IDisposable
 {
     private readonly VulkanDeviceApi _api;
     private readonly IVulkanDevice _device;
-    private IntPtr _handle;
+    private VkFence _handle;
     
     public VulkanFence(VulkanDeviceApi api, IVulkanDevice device, IntPtr handle)
     {
@@ -17,14 +17,14 @@ internal struct VulkanFence : IDisposable
         _handle = handle;
     }
 
-    public VulkanFence(IVulkanDevice device, VulkanDeviceApi api, VkFenceCreateFlags vkFenceCreateSignaledBit)
+    public VulkanFence(IVulkanDevice device, VulkanDeviceApi api, VkFenceCreateFlags flags)
     {
         _device = device;
         _api = api;
         var fenceCreateInfo = new VkFenceCreateInfo
         {
             sType = VkStructureType.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-            flags = VkFenceCreateFlags.VK_FENCE_CREATE_SIGNALED_BIT
+            flags = flags
         };
         
         _api.CreateFence(_device.Handle, ref fenceCreateInfo, IntPtr.Zero, out _handle)
@@ -41,7 +41,7 @@ internal struct VulkanFence : IDisposable
 
     public unsafe void Wait(ulong timeout = ulong.MaxValue)
     {
-        IntPtr fence = _handle;
+        VkFence fence = _handle;
         _api.WaitForFences(_device.Handle, 1, &fence, 1, timeout).ThrowOnError("vkWaitForFences");
     }
 }

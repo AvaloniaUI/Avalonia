@@ -8,8 +8,8 @@ class VulkanSemaphore : IDisposable
 {
     private readonly IVulkanDevice _device;
     private readonly VulkanDeviceApi _api;
-    private IntPtr _handle;
-    public IntPtr Handle => _handle;
+    private VkSemaphore _handle;
+    public VkSemaphore Handle => _handle;
 
     public VulkanSemaphore(IVulkanDevice device, VulkanDeviceApi api)
     {
