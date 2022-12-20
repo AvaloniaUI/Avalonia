@@ -30,7 +30,6 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
 
     private void CreateImage()
     {
-
         _image = new VulkanImage(_context, _display.CommandBufferPool, Format, _display.Size);
     }
 
@@ -92,10 +91,16 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
 
         public void Dispose()
         {
-            var commandBuffer = Display.StartPresentation();
-            Display.BlitImageToCurrentImage(commandBuffer, _image);
-            Display.EndPresentation(commandBuffer);
-            _dispose.Dispose();
+            try
+            {
+                var commandBuffer = Display.StartPresentation();
+                Display.BlitImageToCurrentImage(commandBuffer, _image);
+                Display.EndPresentation(commandBuffer);
+            }
+            finally
+            {
+                _dispose.Dispose();
+            }
         }
     }
 }
