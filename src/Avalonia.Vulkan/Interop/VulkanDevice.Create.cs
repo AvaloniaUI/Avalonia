@@ -25,7 +25,7 @@ internal unsafe partial class VulkanDevice
             .ThrowOnError("vkEnumeratePhysicalDevices");
 
         var surfaceForProbePtr = platformOptions.DeviceCheckSurfaceFactory?.Invoke(api.Instance);
-        var surfaceForProbe = surfaceForProbePtr.HasValue && surfaceForProbePtr.Value != IntPtr.Zero
+        var surfaceForProbe = surfaceForProbePtr.HasValue && surfaceForProbePtr.Value != 0
             ? new VkSurfaceKHR(surfaceForProbePtr.Value)
             : (VkSurfaceKHR?)null;
 

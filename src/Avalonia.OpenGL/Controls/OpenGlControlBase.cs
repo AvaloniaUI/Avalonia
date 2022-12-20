@@ -236,7 +236,6 @@ namespace Avalonia.OpenGL.Controls
 
             _initialization = InitializeAsync();
             return false;
-
         }
 
         private async Task<bool> InitializeAsync()

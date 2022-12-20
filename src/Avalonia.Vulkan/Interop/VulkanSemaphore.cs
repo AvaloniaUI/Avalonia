@@ -24,7 +24,7 @@ class VulkanSemaphore : IDisposable
 
     public void Dispose()
     {
-        if (_handle.Handle != IntPtr.Zero)
+        if (_handle.Handle != 0)
         {
             _context.DeviceApi.DestroySemaphore(_context.DeviceHandle, _handle, IntPtr.Zero);
             _handle = default;

@@ -25,6 +25,22 @@ internal class VulkanImage : IDisposable
 
     public VkImageTiling Tiling => VkImageTiling.VK_IMAGE_TILING_OPTIMAL;
 
+    public VulkanImageInfo ImageInfo => new()
+    {
+        Handle = Handle.Handle,
+        PixelSize = Size,
+        Format = (uint)Format,
+        MemoryHandle = MemoryHandle.Handle,
+        MemorySize = MemorySize,
+        ViewHandle = _imageView.Handle,
+        UsageFlags = (uint)UsageFlags,
+        Layout = (uint)CurrentLayout,
+        Tiling = (uint)Tiling,
+        LevelCount = MipLevels,
+        SampleCount = 1,
+        IsProtected = false
+    };
+
 
     public VulkanImage(IVulkanPlatformGraphicsContext context,
         VulkanCommandBufferPool commandBufferPool,
@@ -44,7 +60,7 @@ internal class VulkanImage : IDisposable
 
     public unsafe void Initialize()
     {
-        if (Handle.Handle != IntPtr.Zero)
+        if (Handle.Handle != 0)
             return;
         MipLevels = MipLevels != 0 ? MipLevels : (uint)Math.Floor(Math.Log(Math.Max(Size.Width, Size.Height), 2));
         var createInfo = new VkImageCreateInfo
@@ -133,17 +149,17 @@ internal class VulkanImage : IDisposable
     {
         var api = _context.DeviceApi;
         var d = _context.DeviceHandle;
-        if (_imageView.Handle != IntPtr.Zero)
+        if (_imageView.Handle != 0)
         {
             api.DestroyImageView(d, _imageView, IntPtr.Zero);
             _imageView = default;
         }
-        if (_handle.Handle != IntPtr.Zero)
+        if (_handle.Handle != 0)
         {
             api.DestroyImage(d, _handle, IntPtr.Zero);
             _handle = default;
         }
-        if (_imageMemory.Handle != IntPtr.Zero)
+        if (_imageMemory.Handle != 0)
         {
             api.FreeMemory(d, _imageMemory, IntPtr.Zero);
             _imageMemory = default;

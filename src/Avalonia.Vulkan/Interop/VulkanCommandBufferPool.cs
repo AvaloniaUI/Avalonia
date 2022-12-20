@@ -44,7 +44,7 @@ internal class VulkanCommandBufferPool : IDisposable
     {
         FreeUsedCommandBuffers();
         
-        if (_handle.Handle != IntPtr.Zero)
+        if (_handle.Handle != 0)
             _context.DeviceApi.DestroyCommandPool(_context.DeviceHandle, _handle, IntPtr.Zero);
         _handle = default;
     }

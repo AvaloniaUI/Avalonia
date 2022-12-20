@@ -126,6 +126,9 @@ internal unsafe partial class VulkanDeviceApi
     [GetProcAddress("vkDeviceWaitIdle")]
     public partial VkResult DeviceWaitIdle(VkDevice device);
 
+    [GetProcAddress("vkQueueWaitIdle")]
+    public partial VkResult QueueWaitIdle(VkQueue queue);
+
     [GetProcAddress("vkAcquireNextImageKHR")]
     public partial VkResult AcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout,
         VkSemaphore semaphore, VkFence fence, out uint32_t pImageIndex);

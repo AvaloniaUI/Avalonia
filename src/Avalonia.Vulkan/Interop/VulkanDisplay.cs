@@ -130,7 +130,7 @@ internal class VulkanDisplay : IDisposable
 
     private void DestroySwapchain()
     {
-        if(_swapchain.Handle != IntPtr.Zero)
+        if(_swapchain.Handle != 0)
             _context.DeviceApi.DestroySwapchainKHR(_context.DeviceHandle, _swapchain, IntPtr.Zero);
         _swapchain = default;
     }

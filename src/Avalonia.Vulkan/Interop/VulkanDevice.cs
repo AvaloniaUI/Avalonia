@@ -17,6 +17,7 @@ internal partial class VulkanDevice : IVulkanDevice
     private readonly uint _graphicsQueueIndex;
     private readonly object _lock = new();
     private Thread? _lockedByThread;
+    private int _lockCount;
 
     private VulkanDevice(IVulkanInstance instance, VkDevice handle, VkPhysicalDevice physicalDeviceHandle,
         VkQueue mainQueue, uint graphicsQueueIndex)
@@ -38,10 +39,13 @@ internal partial class VulkanDevice : IVulkanDevice
     public IDisposable Lock()
     {
         Monitor.Enter(_lock);
+        _lockCount++;
         _lockedByThread = Thread.CurrentThread;
         return Disposable.Create(() =>
         {
-            _lockedByThread = null;
+            _lockCount--;
+            if (_lockCount == 0)
+                _lockedByThread = null;
             Monitor.Exit(_lock);
         });
     }

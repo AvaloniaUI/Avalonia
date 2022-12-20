@@ -86,15 +86,8 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
         public PixelSize Size => _image.Size;
         public double Scaling { get; }
         public bool IsYFlipped => true;
+        public VulkanImageInfo ImageInfo => _image.ImageInfo;
 
-        public uint ImageFormat => (uint)_image.Format;
-        public IntPtr ImageHandle => _image.Handle.Handle;
-        public uint ImageLayout => (uint)_image.CurrentLayout;
-        public uint ImageTiling => (uint)_image.Tiling;
-        public uint ImageUsageFlags => (uint)_image.UsageFlags;
-        public uint LevelCount => _image.MipLevels;
-        public IntPtr ImageMemoryHandle => _image.MemoryHandle.Handle;
-        public ulong ImageMemorySize => _image.MemorySize;
         public bool IsRgba { get; }
 
         public void Dispose()

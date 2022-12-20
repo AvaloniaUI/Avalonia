@@ -66,7 +66,7 @@ public class VulkanPlatformSpecificOptions
 {
     public IList<string> RequiredInstanceExtensions { get; set; } = new List<string>();
     public VkGetInstanceProcAddressDelegate? GetProcAddressDelegate { get; set; }
-    public Func<IVulkanInstance, IntPtr>? DeviceCheckSurfaceFactory { get; set; }
+    public Func<IVulkanInstance, ulong>? DeviceCheckSurfaceFactory { get; set; }
     public Dictionary<Type, object> PlatformFeatures { get; set; } = new();
 }
 

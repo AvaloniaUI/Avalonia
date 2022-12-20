@@ -150,7 +150,7 @@ namespace Avalonia.Rendering.Composition
         /// </summary>
         public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType)
         {
-            var tcs = new TaskCompletionSource<object?>();
+            var tcs = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
             _pendingServerCompositorJobs.Add(() =>
             {
                 try

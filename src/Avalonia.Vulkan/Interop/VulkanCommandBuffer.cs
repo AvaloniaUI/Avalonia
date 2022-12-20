@@ -23,7 +23,7 @@ internal class VulkanCommandBuffer : IDisposable
 
     public unsafe void Dispose()
     {
-        if (_fence.Handle.Handle != IntPtr.Zero)
+        if (_fence.Handle.Handle != 0)
             _fence.Wait();
         _fence.Dispose();
         if (_handle.Handle != IntPtr.Zero)

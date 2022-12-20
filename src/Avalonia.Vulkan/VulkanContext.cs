@@ -24,7 +24,7 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     
     public void Dispose()
     {
-        throw new NotImplementedException();
+        
     }
 
     public object? TryGetFeature(Type featureType) => null;
@@ -37,6 +37,8 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     public VkInstance InstanceHandle => new(Instance.Handle);
     public VkQueue MainQueueHandle => new(Device.MainQueueHandle);
     public uint GraphicsQueueFamilyIndex => Device.GraphicsQueueFamilyIndex;
+
+    public void MainQueueWaitIdle() => DeviceApi.QueueWaitIdle(MainQueueHandle);
 
     public VulkanInstanceApi InstanceApi { get; }
     public VulkanDeviceApi DeviceApi { get; }

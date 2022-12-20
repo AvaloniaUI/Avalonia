@@ -36,21 +36,22 @@ class VulkanSkiaRenderTarget : ISkiaGpuRenderTarget
                     $"Can't create drawing context for surface with {size} size and {scaling} scaling");
             }
             _gpu.GrContext.ResetContext();
+            var sessionImageInfo = session.ImageInfo;
             var imageInfo = new GRVkImageInfo
             {
                 CurrentQueueFamily = _gpu.Vulkan.Device.GraphicsQueueFamilyIndex,
-                Format = session.ImageFormat,
-                Image = (ulong)session.ImageHandle,
-                ImageLayout = session.ImageLayout,
-                ImageTiling = session.ImageTiling,
-                ImageUsageFlags = session.ImageUsageFlags,
-                LevelCount = session.LevelCount,
-                SampleCount = 1,
-                Protected = false,
+                Format = sessionImageInfo.Format,
+                Image = (ulong)sessionImageInfo.Handle,
+                ImageLayout = sessionImageInfo.Layout,
+                ImageTiling = sessionImageInfo.Tiling,
+                ImageUsageFlags = sessionImageInfo.UsageFlags,
+                LevelCount = sessionImageInfo.LevelCount,
+                SampleCount = sessionImageInfo.SampleCount,
+                Protected = sessionImageInfo.IsProtected,
                 Alloc = new GRVkAlloc
                 {
-                    Memory = (ulong)session.ImageMemoryHandle,
-                    Size = session.ImageMemorySize
+                    Memory = (ulong)sessionImageInfo.MemoryHandle,
+                    Size = sessionImageInfo.MemorySize
                 }
             };
             using var renderTarget = new GRBackendRenderTarget(size.Width, size.Height, 1, imageInfo);

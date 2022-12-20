@@ -21,13 +21,14 @@ public interface IVulkanPlatformGraphicsContext : IPlatformGraphicsContext
 {
     IVulkanDevice Device { get; }
     IVulkanInstance Instance { get; }
+    void MainQueueWaitIdle();
     internal VulkanInstanceApi InstanceApi { get; }
     internal VulkanDeviceApi DeviceApi { get; }
     internal VkDevice DeviceHandle { get; }
     internal VkPhysicalDevice PhysicalDeviceHandle { get; }
     internal VkInstance InstanceHandle { get; }
     internal VkQueue MainQueueHandle { get; }
-    uint GraphicsQueueFamilyIndex { get; }
+    internal uint GraphicsQueueFamilyIndex { get; }
     IVulkanRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
 }
 
