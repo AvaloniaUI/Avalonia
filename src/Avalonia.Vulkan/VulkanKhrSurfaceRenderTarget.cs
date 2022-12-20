@@ -54,6 +54,7 @@ internal class VulkanKhrRenderTarget : IVulkanRenderTarget
     public IVulkanRenderSession BeginDraw()
     {
         var l = _context.EnsureCurrent();
+        _display.CommandBufferPool.FreeUsedCommandBuffers();
         if (_display.EnsureSwapchainAvailable() || _image == null)
         {
             DestroyImage();

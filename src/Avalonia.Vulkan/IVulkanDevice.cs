@@ -21,7 +21,6 @@ public interface IVulkanPlatformGraphicsContext : IPlatformGraphicsContext
 {
     IVulkanDevice Device { get; }
     IVulkanInstance Instance { get; }
-    void MainQueueWaitIdle();
     internal VulkanInstanceApi InstanceApi { get; }
     internal VulkanDeviceApi DeviceApi { get; }
     internal VkDevice DeviceHandle { get; }

@@ -38,8 +38,6 @@ internal class VulkanContext : IVulkanPlatformGraphicsContext
     public VkQueue MainQueueHandle => new(Device.MainQueueHandle);
     public uint GraphicsQueueFamilyIndex => Device.GraphicsQueueFamilyIndex;
 
-    public void MainQueueWaitIdle() => DeviceApi.QueueWaitIdle(MainQueueHandle);
-
     public VulkanInstanceApi InstanceApi { get; }
     public VulkanDeviceApi DeviceApi { get; }
     public IVulkanRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)

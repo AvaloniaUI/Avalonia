@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Avalonia.Vulkan.Interop;
 using Avalonia.Vulkan.UnmanagedInterop;
 

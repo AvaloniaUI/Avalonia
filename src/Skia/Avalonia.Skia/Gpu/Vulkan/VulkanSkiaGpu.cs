@@ -92,8 +92,8 @@ internal class VulkanSkiaGpu : ISkiaGpu, IVulkanSharedDeviceGraphicsContextFeatu
     }
     
     public IVulkanSharedDevice SharedDevice { get; }
-    public IBitmapImpl CreateBitmapFromVulkanImage(VulkanImageInfo image, double scaling, Action dispose)
+    public IBitmapImpl CreateBitmapFromVulkanImage(IVulkanBitmapSourceImage image)
     {
-        return new VulkanBitmapImpl(this, image, scaling, dispose);
+        return new VulkanBitmapImpl(this, image);
     }
 }

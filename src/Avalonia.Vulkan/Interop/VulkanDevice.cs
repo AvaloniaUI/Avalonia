@@ -51,10 +51,10 @@ internal partial class VulkanDevice : IVulkanDevice
     }
 
     public bool IsLost => false;
-    public IntPtr Handle => CheckAccess(_handle).Handle;
-    public IntPtr PhysicalDeviceHandle => CheckAccess(_physicalDeviceHandle).Handle;
+    public IntPtr Handle => _handle.Handle;
+    public IntPtr PhysicalDeviceHandle => _physicalDeviceHandle.Handle;
     public IntPtr MainQueueHandle => CheckAccess(_mainQueue).Handle;
-    public uint GraphicsQueueFamilyIndex => CheckAccess(_graphicsQueueIndex);
+    public uint GraphicsQueueFamilyIndex => _graphicsQueueIndex;
     public IVulkanInstance Instance { get; }
     public void Dispose()
     {

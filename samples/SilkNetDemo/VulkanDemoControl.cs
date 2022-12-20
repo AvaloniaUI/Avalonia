@@ -91,7 +91,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
     private DeviceMemory _vertexBufferMemory;
     private Silk.NET.Vulkan.Buffer _indexBuffer;
     private DeviceMemory _indexBufferMemory;
-    private Framebuffer _framebuffer;
+    private Framebuffer[] _framebuffers;
 
     private Image _depthImage;
     private DeviceMemory _depthImageMemory;
@@ -114,9 +114,9 @@ public unsafe class VulkanDemoControl : VulkanControlBase
         }
     }
 
-    private PixelSize _previousImageSize = PixelSize.Empty;
+    private ISwapchain? _previousSwapchain;
 
-    protected override void OnVulkanRender(IVulkanSharedDevice sharedDevice, VulkanImageInfo info)
+    protected override void OnVulkanRender(IVulkanSharedDevice sharedDevice, ISwapchain swapchain)
     {
         using (sharedDevice.Device.Lock())
         {
@@ -124,10 +124,10 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             var device = new Device(sharedDevice.Device.Handle);
             var physicalDevice = new PhysicalDevice(sharedDevice.Device.PhysicalDeviceHandle);
             _commandPool?.FreeUsedCommandBuffers();
-            if (info.PixelSize != _previousImageSize)
-                CreateTemporalObjects(api, device, physicalDevice, info);
+            if (_previousSwapchain != swapchain)
+                CreateTemporalObjects(api, device, physicalDevice, swapchain);
 
-            _previousImageSize = info.PixelSize;
+            _previousSwapchain = swapchain;
 
             var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
             var model = Matrix4x4.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
@@ -185,7 +185,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
                 {
                     SType = StructureType.RenderPassBeginInfo,
                     RenderPass = _renderPass,
-                    Framebuffer = _framebuffer,
+                    Framebuffer = _framebuffers[swapchain.CurrentImageIndex],
                     RenderArea =
                         new Rect2D(new Offset2D(0, 0), new Extent2D((uint?)Bounds.Width, (uint?)Bounds.Height)),
                     ClearValueCount = 2,
@@ -209,11 +209,8 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             api.CmdDrawIndexed(commandBufferHandle, (uint)_indices.Length, 1, 0, 0, 0);
 
             api.CmdEndRenderPass(commandBufferHandle);
-
-            api.ResetFences(device, 1, _fence);
-            commandBuffer.Submit(null, null, null, _fence);
-
-            api.WaitForFences(device, 1, _fence, true, ulong.MaxValue);
+            
+            commandBuffer.Submit();
 
             if (_disco > 0.01)
                 Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Background);
@@ -260,7 +257,8 @@ public unsafe class VulkanDemoControl : VulkanControlBase
                 api.DestroyImage(device, _depthImage, null);
                 api.FreeMemory(device, _depthImageMemory, null);
 
-                api.DestroyFramebuffer(device, _framebuffer, null);
+                foreach (var fb in _framebuffers)
+                    api.DestroyFramebuffer(device, fb, null);
                 api.DestroyPipeline(device, _pipeline, null);
                 api.DestroyPipelineLayout(device, _pipelineLayout, null);
                 api.DestroyRenderPass(device, _renderPass, null);
@@ -268,7 +266,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
                 _depthImage = default;
                 _depthImageView = default;
                 _depthImageView = default;
-                _framebuffer = default;
+                _framebuffers = Array.Empty<Framebuffer>();
                 _pipeline = default;
                 _renderPass = default;
                 _pipelineLayout = default;
@@ -341,21 +339,22 @@ public unsafe class VulkanDemoControl : VulkanControlBase
     }
 
     private unsafe void CreateTemporalObjects(Vk api, Device device, PhysicalDevice physicalDevice,
-        VulkanImageInfo info)
+        ISwapchain swapchain)
     {
         DestroyTemporalObjects(api, device);
 
         CreateDepthAttachment(api, device, physicalDevice);
 
+        var current = swapchain.GetImage(swapchain.CurrentImageIndex);
         // create renderpasses
         var colorAttachment = new AttachmentDescription()
         {
-            Format = (Format)info.Format,
+            Format = (Format)current.Format,
             Samples = SampleCountFlags.SampleCount1Bit,
             LoadOp = AttachmentLoadOp.Clear,
             StoreOp = AttachmentStoreOp.Store,
-            InitialLayout = (ImageLayout)info.Layout,
-            FinalLayout = (ImageLayout)info.Layout,
+            InitialLayout = (ImageLayout)current.Layout,
+            FinalLayout = (ImageLayout)current.Layout,
             StencilLoadOp = AttachmentLoadOp.DontCare,
             StencilStoreOp = AttachmentStoreOp.DontCare
         };
@@ -418,23 +417,28 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             api.CreateRenderPass(device, renderPassCreateInfo, null, out _renderPass).ThrowOnError();
 
 
-            // create framebuffer
-            var frameBufferAttachments = new[] { new ImageView((ulong)info.ViewHandle), _depthImageView };
-
-            fixed (ImageView* frAtPtr = frameBufferAttachments)
+            _framebuffers = new Framebuffer[swapchain.ImageCount];
+            for (var c = 0; c < _framebuffers.Length; c++)
             {
-                var framebufferCreateInfo = new FramebufferCreateInfo()
-                {
-                    SType = StructureType.FramebufferCreateInfo,
-                    RenderPass = _renderPass,
-                    AttachmentCount = (uint)frameBufferAttachments.Length,
-                    PAttachments = frAtPtr,
-                    Width = (uint)info.PixelSize.Width,
-                    Height = (uint)info.PixelSize.Height,
-                    Layers = 1
-                };
+                // create framebuffer
+                var frameBufferAttachments = new[] { new ImageView((ulong)swapchain.GetImage(c).ViewHandle), _depthImageView };
 
-                api.CreateFramebuffer(device, framebufferCreateInfo, null, out _framebuffer).ThrowOnError();
+                fixed (ImageView* frAtPtr = frameBufferAttachments)
+                {
+                    var framebufferCreateInfo = new FramebufferCreateInfo()
+                    {
+                        SType = StructureType.FramebufferCreateInfo,
+                        RenderPass = _renderPass,
+                        AttachmentCount = (uint)frameBufferAttachments.Length,
+                        PAttachments = frAtPtr,
+                        Width = (uint)current.PixelSize.Width,
+                        Height = (uint)current.PixelSize.Height,
+                        Layers = 1
+                    };
+
+                    api.CreateFramebuffer(device, framebufferCreateInfo, null, out var fb).ThrowOnError();
+                    _framebuffers[c] = fb;
+                }
             }
         }
 

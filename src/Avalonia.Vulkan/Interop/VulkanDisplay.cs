@@ -313,7 +313,6 @@ internal class VulkanDisplay : IDisposable
         _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo)
             .ThrowOnError("vkQueuePresentKHR");
         result.ThrowOnError("vkQueuePresentKHR");
-        CommandBufferPool.FreeUsedCommandBuffers();
     }
     
     public void Dispose()

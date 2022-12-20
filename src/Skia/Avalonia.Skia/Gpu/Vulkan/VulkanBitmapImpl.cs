@@ -9,53 +9,49 @@ namespace Avalonia.Skia.Vulkan;
 internal class VulkanBitmapImpl : IDrawableBitmapImpl
 {
     private readonly VulkanSkiaGpu _gpu;
-    private VulkanImageInfo _info;
-    private readonly Action _dispose;
+    private readonly IVulkanBitmapSourceImage _image;
 
-    public VulkanBitmapImpl(VulkanSkiaGpu gpu, VulkanImageInfo info, double scaling, Action dispose)
+    public VulkanBitmapImpl(VulkanSkiaGpu gpu, IVulkanBitmapSourceImage image)
     {
         _gpu = gpu;
-        _info = info;
-        _dispose = dispose;
-        Dpi = new Vector(96 * scaling, 96 * scaling);
+        _image = image;
     }
 
     public void Dispose()
     {
-        _dispose();
-        _info = default;
+        _image.Dispose();
     }
 
-    public Vector Dpi { get; }
-    public PixelSize PixelSize => _info.PixelSize;
+    public Vector Dpi => new Vector(96 * _image.Scaling, 96 * _image.Scaling);
+    public PixelSize PixelSize => _image.Info.PixelSize;
     public int Version => 1;
     public void Save(string fileName, int? quality = null) => throw new System.NotSupportedException();
 
     public void Save(Stream stream, int? quality = null) => throw new System.NotSupportedException();
     public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
     {
-        if (_info.Handle == 0)
+        var info = _image.Info;
+        if (info.Handle == 0)
             return;
-        _gpu.Vulkan.MainQueueWaitIdle();
         var imageInfo = new GRVkImageInfo
         {
             CurrentQueueFamily = _gpu.Vulkan.Device.GraphicsQueueFamilyIndex,
-            Format = _info.Format,
-            Image = (ulong)_info.Handle,
-            ImageLayout = _info.Layout,
-            ImageTiling = _info.Tiling,
-            ImageUsageFlags = _info.UsageFlags,
-            LevelCount = _info.LevelCount,
-            SampleCount = _info.SampleCount,
-            Protected = _info.IsProtected,
+            Format = info.Format,
+            Image = (ulong)info.Handle,
+            ImageLayout = info.Layout,
+            ImageTiling = info.Tiling,
+            ImageUsageFlags = info.UsageFlags,
+            LevelCount = info.LevelCount,
+            SampleCount = info.SampleCount,
+            Protected = info.IsProtected,
             Alloc = new GRVkAlloc
             {
-                Memory = (ulong)_info.MemoryHandle,
-                Size = _info.MemorySize
+                Memory = (ulong)info.MemoryHandle,
+                Size = info.MemorySize
             }
         };
-        using (var backendTexture = new GRBackendRenderTarget(_info.PixelSize.Width,
-                   _info.PixelSize.Height, (int)_info.SampleCount, imageInfo))
+        using (var backendTexture = new GRBackendRenderTarget(info.PixelSize.Width,
+                   info.PixelSize.Height, (int)info.SampleCount, imageInfo))
         using (var surface = SKSurface.Create(_gpu.GrContext, backendTexture, GRSurfaceOrigin.TopLeft,
                    SKColorType.Bgra8888, SKColorSpace.CreateSrgb()))
         {

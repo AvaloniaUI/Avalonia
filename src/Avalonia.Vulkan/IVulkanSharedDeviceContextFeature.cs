@@ -9,7 +9,14 @@ public interface IVulkanSharedDeviceGraphicsContextFeature
 {
     public IVulkanSharedDevice? SharedDevice { get; }
     [Unstable]
-    public IBitmapImpl CreateBitmapFromVulkanImage(VulkanImageInfo image, double scaling, Action dispose);
+    public IBitmapImpl CreateBitmapFromVulkanImage(IVulkanBitmapSourceImage image);
+}
+
+[Unstable, NotClientImplementable]
+public interface IVulkanBitmapSourceImage : IDisposable
+{
+    VulkanImageInfo Info { get; }
+    double Scaling { get; }
 }
 
 [Unstable, NotClientImplementable]

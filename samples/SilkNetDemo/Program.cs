@@ -30,7 +30,7 @@ namespace SilkNetDemo
                 {
                     VulkanInstanceCreationOptions =
                     {
-                        UseDebug = true
+                        //UseDebug = true
                     }
                 })
                 .UsePlatformDetect()
