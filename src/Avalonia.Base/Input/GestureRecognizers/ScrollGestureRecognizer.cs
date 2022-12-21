@@ -68,7 +68,7 @@ namespace Avalonia.Input.GestureRecognizers
         }
 
         /// <summary>
-        /// Gets or sets a value indicating the distance to move the pointer before scrolling is started
+        /// Gets or sets a value indicating the distance the pointer moves before scrolling is started
         /// </summary>
         public int ScrollStartDistance
         {
@@ -96,7 +96,7 @@ namespace Avalonia.Input.GestureRecognizers
         }
         
         // Pixels per second speed that is considered to be the stop of inertial scroll
-        private const double InertialScrollSpeedEnd = 5;
+        private const double InertialScrollSpeedEnd = 0;
         
         public void PointerMoved(PointerEventArgs e)
         {
