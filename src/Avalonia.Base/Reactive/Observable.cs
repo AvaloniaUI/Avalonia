@@ -44,6 +44,15 @@ internal static class Observable
                 }, obs.OnError, obs.OnCompleted));
         });
     }
+
+    public static IObservable<TSource> StartWith<TSource>(this IObservable<TSource> source, TSource value)
+    {
+        return Create<TSource>(obs =>
+        {
+            obs.OnNext(value);
+            return source.Subscribe(obs);
+        });
+    }
     
     public static IObservable<TSource> Where<TSource>(this IObservable<TSource> source, Func<TSource, bool> predicate)
     {

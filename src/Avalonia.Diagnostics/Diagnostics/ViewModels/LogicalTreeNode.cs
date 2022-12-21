@@ -1,10 +1,10 @@
 using System;
-using System.Reactive.Disposables;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 using System.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
