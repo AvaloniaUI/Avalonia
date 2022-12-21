@@ -17,9 +17,6 @@ namespace Avalonia.Input
         {
             _target = target;
             _actions = actions;
-
-            _target?.AddHandler(InputElement.PointerPressedEvent, OnPointerPressed, Interactivity.RoutingStrategies.Tunnel | Interactivity.RoutingStrategies.Bubble);
-            _target?.AddHandler(InputElement.PointerReleasedEvent, OnPointerReleased, Interactivity.RoutingStrategies.Tunnel | Interactivity.RoutingStrategies.Bubble);
         }
 
         private void OnPointerPressed(object? sender, PointerPressedEventArgs e)

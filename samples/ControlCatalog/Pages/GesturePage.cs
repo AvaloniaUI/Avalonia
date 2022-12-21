@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Numerics;
 using Avalonia;
 using Avalonia.Controls;
@@ -7,7 +6,6 @@ using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Rendering.Composition;
-using Avalonia.VisualTree;
 
 namespace ControlCatalog.Pages
 {
