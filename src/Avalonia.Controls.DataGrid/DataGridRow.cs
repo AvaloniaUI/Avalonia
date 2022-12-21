@@ -15,6 +15,7 @@ using Avalonia.Utilities;
 using Avalonia.VisualTree;
 using System;
 using System.Diagnostics;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -1021,11 +1022,11 @@ namespace Avalonia.Controls
                         {
                             layoutableContent.LayoutUpdated += DetailsContent_LayoutUpdated;
 
-                            _detailsContentSizeSubscription =
-                                System.Reactive.Disposables.StableCompositeDisposable.Create(
-                                    System.Reactive.Disposables.Disposable.Create(() => layoutableContent.LayoutUpdated -= DetailsContent_LayoutUpdated),
-                                    _detailsContent.GetObservable(MarginProperty)
-                                                   .Subscribe(DetailsContent_MarginChanged));
+                            _detailsContentSizeSubscription = new CompositeDisposable(2)
+                            {
+                                Disposable.Create(() => layoutableContent.LayoutUpdated -= DetailsContent_LayoutUpdated),
+                                _detailsContent.GetObservable(MarginProperty).Subscribe(DetailsContent_MarginChanged)
+                            };
 
 
                         }

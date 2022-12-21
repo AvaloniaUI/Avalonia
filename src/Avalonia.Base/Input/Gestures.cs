@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input

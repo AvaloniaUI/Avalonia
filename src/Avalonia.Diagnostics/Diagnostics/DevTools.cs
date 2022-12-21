@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Views;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics
 {
@@ -90,7 +90,7 @@ namespace Avalonia.Diagnostics
                 {
                     s_attachedToApplication = true;
 
-                    application.InputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(e =>
+                    ObservableExtensions.Subscribe(application.InputManager.PreProcess.OfType<RawKeyEventArgs>(), e =>
                     {
                         if (options.Gesture.Matches(e))
                         {

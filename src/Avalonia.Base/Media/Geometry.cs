@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 
 namespace Avalonia.Media
 {

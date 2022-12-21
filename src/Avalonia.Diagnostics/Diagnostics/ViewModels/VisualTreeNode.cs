@@ -188,7 +188,7 @@ namespace Avalonia.Diagnostics.ViewModels
                         }
                         nodes.Add(new VisualTreeNode(window, Owner));
                     }
-                    _subscriptions = new System.Reactive.Disposables.CompositeDisposable()
+                    _subscriptions = new CompositeDisposable(2)
                     {
                         Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (s,e)=>
                             {

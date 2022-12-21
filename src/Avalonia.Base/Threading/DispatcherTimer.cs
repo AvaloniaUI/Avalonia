@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Platform;
 
 namespace Avalonia.Threading

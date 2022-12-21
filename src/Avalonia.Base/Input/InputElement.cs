@@ -7,6 +7,7 @@ using Avalonia.Data;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Input.TextInput;
 using Avalonia.Interactivity;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
 #nullable enable

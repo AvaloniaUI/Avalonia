@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
-using System.Reactive;
-using System.Reactive.Linq;
 using Avalonia.Data.Core.Parsers;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Reactive;
@@ -99,14 +97,14 @@ namespace Avalonia.Data.Core
         /// </summary>
         /// <param name="rootGetter">A function which gets the root object.</param>
         /// <param name="node">The expression.</param>
-        /// <param name="update">An observable which triggers a re-read of the getter.</param>
+        /// <param name="update">An observable which triggers a re-read of the getter. Generic argument value is not used.</param>
         /// <param name="description">
         /// A description of the expression.
         /// </param>
         public ExpressionObserver(
             Func<object?> rootGetter,
             ExpressionNode node,
-            IObservable<Unit> update,
+            IObservable<object> update,
             string? description)
         {
             Description = description;
@@ -164,7 +162,7 @@ namespace Avalonia.Data.Core
         /// </summary>
         /// <param name="rootGetter">A function which gets the root object.</param>
         /// <param name="expression">The expression.</param>
-        /// <param name="update">An observable which triggers a re-read of the getter.</param>
+        /// <param name="update">An observable which triggers a re-read of the getter. Generic argument value is not used.</param>
         /// <param name="enableDataValidation">Whether or not to track data validation</param>
         /// <param name="description">
         /// A description of the expression. If null, <paramref name="expression"/>'s string representation will be used.
@@ -173,7 +171,7 @@ namespace Avalonia.Data.Core
         public static ExpressionObserver Create<T, U>(
             Func<T> rootGetter,
             Expression<Func<T, U>> expression,
-            IObservable<Unit> update,
+            IObservable<object> update,
             bool enableDataValidation = false,
             string? description = null)
         {
@@ -296,9 +294,10 @@ namespace Avalonia.Data.Core
             if (_root is IObservable<object> observable)
             {
                 _rootSubscription = observable.Subscribe(
-                    x => _node.Target = new WeakReference<object?>(x != AvaloniaProperty.UnsetValue ? x : null),
-                    x => PublishCompleted(),
-                    () => PublishCompleted());
+                    new AnonymousObserver<object>(
+                        x => _node.Target = new WeakReference<object?>(x != AvaloniaProperty.UnsetValue ? x : null),
+                        x => PublishCompleted(),
+                        PublishCompleted));
             }
             else
             {

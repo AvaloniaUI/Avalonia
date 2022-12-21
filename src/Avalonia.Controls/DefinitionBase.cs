@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls

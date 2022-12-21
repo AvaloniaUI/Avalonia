@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;

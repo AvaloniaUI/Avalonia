@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls

@@ -2,7 +2,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;

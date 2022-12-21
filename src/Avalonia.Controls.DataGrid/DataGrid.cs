@@ -27,6 +27,7 @@ using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Styling;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

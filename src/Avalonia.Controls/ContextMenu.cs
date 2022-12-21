@@ -15,6 +15,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Automation;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

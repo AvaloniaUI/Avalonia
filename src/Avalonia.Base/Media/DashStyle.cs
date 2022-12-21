@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using Avalonia.Animation;
 using Avalonia.Collections;
 using Avalonia.Media.Immutable;
+using Avalonia.Reactive;
 
 #nullable enable
 
