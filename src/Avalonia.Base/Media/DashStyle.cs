@@ -52,13 +52,11 @@ namespace Avalonia.Media
 
         static DashStyle()
         {
-            void RaiseInvalidated(AvaloniaPropertyChangedEventArgs e)
-            {
-                ((DashStyle)e.Sender).Invalidated?.Invoke(e.Sender, EventArgs.Empty);
-            }
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e => ((DashStyle)e.Sender).Invalidated?.Invoke(e.Sender, EventArgs.Empty));
 
-            DashesProperty.Changed.Subscribe(RaiseInvalidated);
-            OffsetProperty.Changed.Subscribe(RaiseInvalidated);
+            DashesProperty.Changed.Subscribe(invalidateObserver);
+            OffsetProperty.Changed.Subscribe(invalidateObserver);
         }
 
         /// <summary>

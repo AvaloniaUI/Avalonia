@@ -470,14 +470,12 @@ namespace Avalonia.Layout
         protected static void AffectsMeasure<T>(params AvaloniaProperty[] properties)
             where T : Layoutable
         {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
-            {
-                (e.Sender as T)?.InvalidateMeasure();
-            }
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e => (e.Sender as T)?.InvalidateMeasure());
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(Invalidate);
+                property.Changed.Subscribe(invalidateObserver);
             }
         }
 
@@ -493,14 +491,12 @@ namespace Avalonia.Layout
         protected static void AffectsArrange<T>(params AvaloniaProperty[] properties)
             where T : Layoutable
         {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
-            {
-                (e.Sender as T)?.InvalidateArrange();
-            }
+            var invalidate = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e => (e.Sender as T)?.InvalidateArrange());
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(Invalidate);
+                property.Changed.Subscribe(invalidate);
             }
         }
 

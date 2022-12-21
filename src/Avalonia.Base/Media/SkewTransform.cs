@@ -26,8 +26,6 @@ namespace Avalonia.Media
         /// </summary>
         public SkewTransform()
         {
-            this.GetObservable(AngleXProperty).Subscribe(_ => RaiseChanged());
-            this.GetObservable(AngleYProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -63,5 +61,15 @@ namespace Avalonia.Media
         /// Gets the transform's <see cref="Matrix"/>.
         /// </summary>
         public override Matrix Value => Matrix.CreateSkew(Matrix.ToRadians(AngleX), Matrix.ToRadians(AngleY));
+        
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == AngleXProperty || change.Property == AngleYProperty)
+            {
+                RaiseChanged();
+            }
+        }
     }
 }

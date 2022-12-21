@@ -26,8 +26,6 @@ namespace Avalonia.Media
         /// </summary>
         public ScaleTransform()
         {
-            this.GetObservable(ScaleXProperty).Subscribe(_ => RaiseChanged());
-            this.GetObservable(ScaleYProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -64,5 +62,15 @@ namespace Avalonia.Media
         /// Gets the transform's <see cref="Matrix"/>.
         /// </summary>
         public override Matrix Value => Matrix.CreateScale(ScaleX, ScaleY);
+        
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == ScaleXProperty || change.Property == ScaleYProperty)
+            {
+                RaiseChanged();
+            }
+        }
     }
 }
