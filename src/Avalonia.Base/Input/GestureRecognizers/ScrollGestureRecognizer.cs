@@ -16,6 +16,7 @@ namespace Avalonia.Input.GestureRecognizers
         private bool _canHorizontallyScroll;
         private bool _canVerticallyScroll;
         private int _gestureId;
+        private int _scrollStartDistance = 30;
         
         // Movement per second
         private Vector _inertia;
@@ -38,6 +39,15 @@ namespace Avalonia.Input.GestureRecognizers
                 nameof(CanVerticallyScroll),
                 o => o.CanVerticallyScroll,
                 (o, v) => o.CanVerticallyScroll = v);
+
+        /// <summary>
+        /// Defines the <see cref="ScrollStartDistance"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollGestureRecognizer, int> ScrollStartDistanceProperty =
+            AvaloniaProperty.RegisterDirect<ScrollGestureRecognizer, int>(
+                nameof(ScrollStartDistance),
+                o => o.ScrollStartDistance,
+                (o, v) => o.ScrollStartDistance = v);
         
         /// <summary>
         /// Gets or sets a value indicating whether the content can be scrolled horizontally.
@@ -55,6 +65,15 @@ namespace Avalonia.Input.GestureRecognizers
         {
             get => _canVerticallyScroll;
             set => SetAndRaise(CanVerticallyScrollProperty, ref _canVerticallyScroll, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating the distance to move the pointer before scrolling is started
+        /// </summary>
+        public int ScrollStartDistance
+        {
+            get => _scrollStartDistance;
+            set => SetAndRaise(ScrollStartDistanceProperty, ref _scrollStartDistance, value);
         }
         
 
@@ -75,9 +94,6 @@ namespace Avalonia.Input.GestureRecognizers
                 _trackedRootPoint = e.GetPosition((Visual?)_target);
             }
         }
-
-        // Arbitrary chosen value, probably need to move that to platform settings or something
-        private const double ScrollStartDistance = 30;
         
         // Pixels per second speed that is considered to be the stop of inertial scroll
         private const double InertialScrollSpeedEnd = 5;
