@@ -1,15 +1,19 @@
-﻿using Avalonia.Input.GestureRecognizers;
+﻿using System;
+using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Input
 {
     public class PullGestureRecognizer : StyledElement, IGestureRecognizer
     {
+        internal static int MinPullDetectionSize = 50;
+
         private IInputElement? _target;
         private IGestureRecognizerActionsDispatcher? _actions;
         private Point _initialPosition;
         private int _gestureId;
         private IPointer? _tracking;
         private PullDirection _pullDirection;
+        private bool _pullInProgress;
 
         /// <summary>
         /// Defines the <see cref="PullDirection"/> property.
@@ -31,23 +35,12 @@ namespace Avalonia.Input
             PullDirection = pullDirection;
         }
 
+        public PullGestureRecognizer() { }
+
         public void Initialize(IInputElement target, IGestureRecognizerActionsDispatcher actions)
         {
             _target = target;
             _actions = actions;
-
-            _target?.AddHandler(InputElement.PointerPressedEvent, OnPointerPressed, Interactivity.RoutingStrategies.Tunnel | Interactivity.RoutingStrategies.Bubble);
-            _target?.AddHandler(InputElement.PointerReleasedEvent, OnPointerReleased, Interactivity.RoutingStrategies.Tunnel | Interactivity.RoutingStrategies.Bubble);
-        }
-
-        private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            PointerPressed(e);
-        }
-
-        private void OnPointerReleased(object? sender, PointerReleasedEventArgs e)
-        {
-            PointerReleased(e);
         }
 
         public void PointerCaptureLost(IPointer pointer)
@@ -94,6 +87,7 @@ namespace Avalonia.Input
                         break;
                 }
 
+                _pullInProgress = true;
                 _target?.RaiseEvent(new PullGestureEventArgs(_gestureId, delta, PullDirection));
             }
         }
@@ -111,16 +105,16 @@ namespace Avalonia.Input
                 switch (PullDirection)
                 {
                     case PullDirection.TopToBottom:
-                        canPull = position.Y < bounds.Height * 0.1;
+                        canPull = position.Y < Math.Max(MinPullDetectionSize, bounds.Height * 0.1);
                         break;
                     case PullDirection.BottomToTop:
-                        canPull = position.Y > bounds.Height - (bounds.Height * 0.1);
+                        canPull = position.Y > Math.Min(bounds.Height - MinPullDetectionSize, bounds.Height - (bounds.Height * 0.1));
                         break;
                     case PullDirection.LeftToRight:
-                        canPull = position.X < bounds.Width * 0.1;
+                        canPull = position.X < Math.Max(MinPullDetectionSize, bounds.Width * 0.1);
                         break;
                     case PullDirection.RightToLeft:
-                        canPull = position.X > bounds.Width - (bounds.Width * 0.1);
+                        canPull = position.X > Math.Min(bounds.Width - MinPullDetectionSize, bounds.Width - (bounds.Width * 0.1));
                         break;
                 }
 
@@ -135,7 +129,7 @@ namespace Avalonia.Input
 
         public void PointerReleased(PointerReleasedEventArgs e)
         {
-            if (_tracking == e.Pointer)
+            if (_tracking == e.Pointer && _pullInProgress)
             {
                 EndPull();
             }
@@ -145,6 +139,7 @@ namespace Avalonia.Input
         {
             _tracking = null;
             _initialPosition = default;
+            _pullInProgress = false;
 
             _target?.RaiseEvent(new PullGestureEndedEventArgs(_gestureId, PullDirection));
         }
