@@ -148,14 +148,18 @@ namespace Avalonia.Input
                     s_holdCancellationToken = new CancellationTokenSource();
                     var token = s_holdCancellationToken.Token;
                     var settings = AvaloniaLocator.Current.GetService<IPlatformSettings>();
-                    DispatcherTimer.RunOnce(() =>
+
+                    if (settings != null)
                     {
-                        if (!token.IsCancellationRequested && e.Source is InputElement i && i.IsHoldingEnabled && ( e.Pointer.Type != PointerType.Mouse || i.IsHoldWithMouseEnabled))
+                        DispatcherTimer.RunOnce(() =>
                         {
-                            s_isHolding = true;
-                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_lastPointer.Type));
-                        }
-                    }, TimeSpan.FromMilliseconds(300));
+                            if (!token.IsCancellationRequested && e.Source is InputElement i && i.IsHoldingEnabled && (e.Pointer.Type != PointerType.Mouse || i.IsHoldWithMouseEnabled))
+                            {
+                                s_isHolding = true;
+                                i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_lastPointer.Type));
+                            }
+                        }, settings.HoldWaitDuration);
+                    }
                 }
                 else if (e.ClickCount % 2 == 0 && e.GetCurrentPoint(visual).Properties.IsLeftButtonPressed)
                 {
