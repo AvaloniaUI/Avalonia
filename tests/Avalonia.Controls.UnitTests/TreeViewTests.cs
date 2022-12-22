@@ -17,7 +17,6 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
-using JetBrains.Annotations;
 using Moq;
 using Xunit;
 

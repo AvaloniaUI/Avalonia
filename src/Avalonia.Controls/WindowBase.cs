@@ -8,7 +8,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Platform;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {

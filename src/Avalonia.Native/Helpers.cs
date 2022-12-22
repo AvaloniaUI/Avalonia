@@ -1,5 +1,4 @@
 ﻿using Avalonia.Native.Interop;
-using JetBrains.Annotations;
 
 namespace Avalonia.Native
 {

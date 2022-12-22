@@ -7,7 +7,6 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Platform.Interop;
-using JetBrains.Annotations;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -206,7 +205,7 @@ namespace Avalonia.X11
         // This class is used to attach the text value of the key to an asynchronously dispatched KeyDown event
         class RawKeyEventArgsWithText : RawKeyEventArgs
         {
-            public RawKeyEventArgsWithText([NotNull] IKeyboardDevice device, ulong timestamp, [NotNull] IInputRoot root,
+            public RawKeyEventArgsWithText(IKeyboardDevice device, ulong timestamp, IInputRoot root,
                 RawKeyEventType type, Key key, RawInputModifiers modifiers, string text) :
                 base(device, timestamp, root, type, key, modifiers)
             {

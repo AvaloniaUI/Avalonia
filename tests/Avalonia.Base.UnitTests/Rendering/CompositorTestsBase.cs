@@ -18,7 +18,6 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
-using JetBrains.Annotations;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Rendering;
