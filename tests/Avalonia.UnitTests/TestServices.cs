@@ -51,8 +51,7 @@ namespace Avalonia.UnitTests
             inputManager: new InputManager(),
             assetLoader: new AssetLoader(),
             renderInterface: new MockPlatformRenderInterface(),
-            fontManagerImpl: new MockFontManagerImpl(),           
-            threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true),
+            fontManagerImpl: new MockFontManagerImpl(),
             textShaperImpl: new MockTextShaperImpl());
 
         public static readonly TestServices TextServices = new TestServices(

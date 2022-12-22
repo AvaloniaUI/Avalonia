@@ -11,8 +11,6 @@ using Avalonia.Media;
 using Avalonia.VisualTree;
 using Avalonia.UnitTests;
 using Xunit;
-using Moq;
-using Avalonia.Platform;
 
 namespace Avalonia.Controls.UnitTests
 {
@@ -23,7 +21,6 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_On_Control_Toggles_IsDropDownOpen()
         {
-            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             var target = new ComboBox
             {
                 Items = new[] { "Foo", "Bar" },
@@ -44,7 +41,6 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Clicking_On_Control_PseudoClass()
         {
-            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             var target = new ComboBox
             {
                 Items = new[] { "Foo", "Bar" },

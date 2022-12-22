@@ -1118,7 +1118,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Setting_SelectedItem_With_Pointer_Should_Set_TabOnceActiveElement()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
+            using (UnitTestApplication.Start())
             {
                 var target = new ListBox
                 {
@@ -1140,7 +1140,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Removing_SelectedItem_Should_Clear_TabOnceActiveElement()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
+            using (UnitTestApplication.Start())
             {
                 var items = new ObservableCollection<string>(new[] { "Foo", "Bar", "Baz " });
 
@@ -1239,7 +1239,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Should_Select_Correct_Item_When_Duplicate_Items_Are_Present()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
+            using (UnitTestApplication.Start())
             {
                 var target = new ListBox
                 {
@@ -1257,7 +1257,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         [Fact]
         public void Should_Apply_Selected_Pseudoclass_To_Correct_Item_When_Duplicate_Items_Are_Present()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true))))
+            using (UnitTestApplication.Start())
             {
                 var target = new ListBox
                 {

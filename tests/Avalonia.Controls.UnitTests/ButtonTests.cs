@@ -134,7 +134,6 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Raises_Click()
         {
-            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             var renderer = Mock.Of<IRenderer>();
             var pt = new Point(50, 50);
             Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
@@ -167,7 +166,6 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Does_Not_Raise_Click_When_PointerReleased_Outside()
         {
-            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             var renderer = Mock.Of<IRenderer>();
             
             Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
@@ -201,7 +199,6 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_With_RenderTransform_Raises_Click()
         {
-            using var app = UnitTestApplication.Start(new TestServices(threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             var renderer = Mock.Of<IRenderer>();
             var pt = new Point(150, 50);
             Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
