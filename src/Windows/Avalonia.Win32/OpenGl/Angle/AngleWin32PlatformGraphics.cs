@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using Avalonia.Logging;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Angle;
@@ -87,8 +86,6 @@ internal class AngleWin32PlatformGraphics : IPlatformGraphics
                 ?.Log(null, "Unable to load ANGLE: {0}", e);
             return null;
         }
-
-        return new AngleWin32PlatformGraphics(egl, AngleWin32EglDisplay.CreateSharedD3D11Display(egl));
 
         foreach (var api in (options?.AllowedPlatformApis ?? new []
                  {

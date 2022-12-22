@@ -175,7 +175,7 @@ namespace Avalonia.Headless
 
         }
 
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
 
         class FramebufferProxy : ILockedFramebuffer
         {
