@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
+using Moq;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
@@ -166,6 +169,35 @@ namespace Avalonia.Base.UnitTests.Input
 
             _mouse.Click(border, MouseButton.Right);
             _mouse.Down(border, MouseButton.Right, clickCount: 2);
+
+            Assert.False(raised);
+        }
+
+        [Fact]
+        public void Hold_Should_Not_Be_Raised_For_Multiple_Contact()
+        {
+            using var app = UnitTestApplication.Start(TestServices.MockThreadingInterface);
+
+            var iSettingsMock = new Mock<IPlatformSettings>();
+            iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+               .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
+            Border border = new Border();
+            border.IsHoldWithMouseEnabled = true;
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var raised = false;
+
+            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => raised = true);
+
+            var secondMouse = new MouseTestHelper();
+
+            _mouse.Down(border, MouseButton.Left);
+
+            Thread.Sleep(1000);
+            secondMouse.Down(border, MouseButton.Left);
 
             Assert.False(raised);
         }
