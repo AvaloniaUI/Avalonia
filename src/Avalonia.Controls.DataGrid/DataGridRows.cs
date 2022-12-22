@@ -16,7 +16,6 @@ using System.Diagnostics;
 using System.Linq;
 using Avalonia.Data;
 using Avalonia.Styling;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls
 {

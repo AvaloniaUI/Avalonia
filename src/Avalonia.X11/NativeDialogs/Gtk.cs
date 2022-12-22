@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Platform.Interop;
-using JetBrains.Annotations;
 
 // ReSharper disable IdentifierTypo
 namespace Avalonia.X11.NativeDialogs
