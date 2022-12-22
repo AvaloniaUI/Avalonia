@@ -96,7 +96,7 @@ namespace Avalonia.Input.GestureRecognizers
         }
         
         // Pixels per second speed that is considered to be the stop of inertial scroll
-        private const double InertialScrollSpeedEnd = 0;
+        private const double InertialScrollSpeedEnd = 5;
         
         public void PointerMoved(PointerEventArgs e)
         {

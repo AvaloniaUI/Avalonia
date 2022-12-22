@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
+using Avalonia.Media;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -200,6 +202,102 @@ namespace Avalonia.Base.UnitTests.Input
             decorator.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("ddt"));
             border.AddHandler(Gestures.TappedEvent, (s, e) => result.Add("bt"));
             border.AddHandler(Gestures.DoubleTappedEvent, (s, e) => result.Add("bdt"));
+        }
+
+        [Fact]
+        public void Pinched_Should_Not_Be_Raised_For_Same_Pointer()
+        {
+            var touch = new TouchTestHelper();
+
+            Border border = new Border()
+            {
+                Width = 100,
+                Height = 100,
+                Background = new SolidColorBrush(Colors.Red)
+            };
+            border.GestureRecognizers.Add(new PinchGestureRecognizer());
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var raised = false;
+
+            decorator.AddHandler(Gestures.PinchEvent, (s, e) => raised = true);
+
+            var firstPoint = new Point(5, 5);
+            var secondPoint = new Point(10, 10);
+
+            touch.Down(border, position: firstPoint);
+            touch.Down(border, position: secondPoint);
+            touch.Down(border, position: new Point(20, 20));
+
+            Assert.False(raised);
+        }
+
+        [Fact]
+        public void Pinched_Should_Be_Raised_For_Two_Pointers_Moving()
+        {
+            Border border = new Border()
+            {
+                Width = 100,
+                Height = 100,
+                Background = new SolidColorBrush(Colors.Red)
+            };
+            border.GestureRecognizers.Add(new PinchGestureRecognizer());
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var raised = false;
+
+            decorator.AddHandler(Gestures.PinchEvent, (s, e) => raised = true);
+
+            var firstPoint = new Point(5, 5);
+            var secondPoint = new Point(10, 10);
+
+            var firstTouch = new TouchTestHelper();
+            var secondTouch = new TouchTestHelper();
+
+            firstTouch.Down(border, position: firstPoint);
+            secondTouch.Down(border, position: secondPoint);
+            secondTouch.Move(border, position: new Point(20, 20));
+
+            Assert.True(raised);
+        }
+
+        [Fact]
+        public void Scrolling_Should_Start_After_Start_Distance_Is_Exceded()
+        {
+            Border border = new Border()
+            {
+                Width = 100,
+                Height = 100,
+                Background = new SolidColorBrush(Colors.Red)
+            };
+            border.GestureRecognizers.Add(new ScrollGestureRecognizer()
+            {
+                CanHorizontallyScroll = true,
+                CanVerticallyScroll = true,
+                ScrollStartDistance = 50
+            });
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var raised = false;
+
+            decorator.AddHandler(Gestures.ScrollGestureEvent, (s, e) => raised = true);
+
+            var firstTouch = new TouchTestHelper();
+
+            firstTouch.Down(border, position: new Point(5, 5));
+            firstTouch.Move(border, position: new Point(20, 20));
+
+            Assert.False(raised);
+
+            firstTouch.Move(border, position: new Point(70, 20));
+
+            Assert.True(raised);
         }
     }
 }
