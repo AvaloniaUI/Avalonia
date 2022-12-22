@@ -14,7 +14,6 @@
   </ItemGroup>
   <Import Project="..\..\build\Base.props" />
   <Import Project="..\..\build\Binding.props" />
-  <Import Project="..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\build\System.Memory.props" />
   <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\NullableEnable.props" />

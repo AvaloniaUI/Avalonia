@@ -47,6 +47,14 @@ namespace Avalonia.Input
         private static readonly WeakReference<object?> s_lastPress = new WeakReference<object?>(null);
         private static Point s_lastPressPoint;
 
+        public static readonly RoutedEvent<PinchEventArgs> PinchEvent =
+            RoutedEvent.Register<PinchEventArgs>(
+                "PinchEvent", RoutingStrategies.Bubble, typeof(Gestures));
+
+        public static readonly RoutedEvent<PinchEndedEventArgs> PinchEndedEvent =
+            RoutedEvent.Register<PinchEndedEventArgs>(
+                "PinchEndedEvent", RoutingStrategies.Bubble, typeof(Gestures));
+
         public static readonly RoutedEvent<PullGestureEventArgs> PullGestureEvent =
             RoutedEvent.Register<PullGestureEventArgs>(
                 "PullGesture", RoutingStrategies.Bubble, typeof(Gestures));

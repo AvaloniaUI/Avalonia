@@ -16,7 +16,6 @@
   </ItemGroup>
   <Import Project="..\..\..\build\SharpDX.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
-  <Import Project="..\..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
 

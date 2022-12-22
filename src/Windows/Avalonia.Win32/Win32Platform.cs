@@ -19,11 +19,11 @@ using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
-using JetBrains.Annotations;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
 {
+#nullable enable
     public static class Win32ApplicationExtensions
     {
         public static T UseWin32<T>(
@@ -106,9 +106,10 @@ namespace Avalonia
         /// <summary>
         /// Provides a way to use a custom-implemented graphics context such as a custom ISkiaGpu
         /// </summary>
-        [CanBeNull] public IPlatformGraphics CustomPlatformGraphics { get; set; }
+        public IPlatformGraphics? CustomPlatformGraphics { get; set; }
     }
 }
+#nullable restore
 
 namespace Avalonia.Win32
 {

@@ -461,9 +461,10 @@ namespace Avalonia.Media
 
                 if (_rootDrawing == null)
                 {
-                    // When a DrawingGroup is set, it should be made the root if
-                    // a root drawing didnt exist.
-                    Contract.Requires<NotSupportedException>(_currentDrawingGroup == null);
+                    if (_currentDrawingGroup != null)
+                    {
+                        throw new NotSupportedException("When a DrawingGroup is set, it should be made the root if a root drawing didnt exist.");
+                    }
 
                     // If this is the first Drawing being added, avoid creating a DrawingGroup
                     // and set this drawing as the root drawing.  This optimizes the common
