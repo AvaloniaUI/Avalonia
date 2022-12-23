@@ -100,7 +100,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Props", "Props", "{F3AC8BC1
 		build\EmbedXaml.props = build\EmbedXaml.props
 		build\HarfBuzzSharp.props = build\HarfBuzzSharp.props
 		build\ImageSharp.props = build\ImageSharp.props
-		build\JetBrains.Annotations.props = build\JetBrains.Annotations.props
 		build\JetBrains.dotMemoryUnit.props = build\JetBrains.dotMemoryUnit.props
 		build\Microsoft.CSharp.props = build\Microsoft.CSharp.props
 		build\Microsoft.Reactive.Testing.props = build\Microsoft.Reactive.Testing.props
@@ -135,8 +134,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.LinuxFramebuffer", "src\Linux\Avalonia.LinuxFramebuffer\Avalonia.LinuxFramebuffer.csproj", "{854568D5-13D1-4B4F-B50D-534DC7EFD3C9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Direct3DInteropSample", "samples\interop\Direct3DInteropSample\Direct3DInteropSample.csproj", "{638580B0-7910-40EF-B674-DCB34DA308CD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Win32.Interop", "src\Windows\Avalonia.Win32.Interop\Avalonia.Win32.Interop.csproj", "{CBC4FF2F-92D4-420B-BE21-9FE0B930B04E}"
 EndProject
@@ -228,9 +225,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Browser", "src\Bro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Browser.Blazor", "src\Browser\Avalonia.Browser.Blazor\Avalonia.Browser.Blazor.csproj", "{47F8530C-F19B-4B1A-B4D6-EB231522AE5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Browser", "samples\ControlCatalog.Browser\ControlCatalog.Browser.csproj", "{15B93A4C-1B46-43F6-B534-7B25B6E99932}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Browser", "samples\ControlCatalog.Browser\ControlCatalog.Browser.csproj", "{15B93A4C-1B46-43F6-B534-7B25B6E99932}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlCatalog.Browser.Blazor", "samples\ControlCatalog.Browser.Blazor\ControlCatalog.Browser.Blazor.csproj", "{90B08091-9BBD-4362-B712-E9F2CC62B218}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Browser.Blazor", "samples\ControlCatalog.Browser.Blazor\ControlCatalog.Browser.Blazor.csproj", "{90B08091-9BBD-4362-B712-E9F2CC62B218}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactiveUIDemo", "samples\ReactiveUIDemo\ReactiveUIDemo.csproj", "{75C47156-C5D8-44BC-A5A7-E8657C2248D6}"
 EndProject
@@ -366,10 +363,6 @@ Global
 		{854568D5-13D1-4B4F-B50D-534DC7EFD3C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{854568D5-13D1-4B4F-B50D-534DC7EFD3C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{854568D5-13D1-4B4F-B50D-534DC7EFD3C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{638580B0-7910-40EF-B674-DCB34DA308CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{638580B0-7910-40EF-B674-DCB34DA308CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{638580B0-7910-40EF-B674-DCB34DA308CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{638580B0-7910-40EF-B674-DCB34DA308CD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CBC4FF2F-92D4-420B-BE21-9FE0B930B04E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CBC4FF2F-92D4-420B-BE21-9FE0B930B04E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CBC4FF2F-92D4-420B-BE21-9FE0B930B04E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -580,7 +573,6 @@ Global
 		{7D2D3083-71DD-4CC9-8907-39A0D86FB322} = {3743B0F2-CC41-4F14-A8C8-267F579BF91E}
 		{39D7B147-1A5B-47C2-9D01-21FB7C47C4B3} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{854568D5-13D1-4B4F-B50D-534DC7EFD3C9} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
-		{638580B0-7910-40EF-B674-DCB34DA308CD} = {A0CC0258-D18C-4AB3-854F-7101680FC3F9}
 		{CBC4FF2F-92D4-420B-BE21-9FE0B930B04E} = {B39A8919-9F95-48FE-AD7B-76E08B509888}
 		{E1582370-37B3-403C-917F-8209551B1634} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{E2999E4A-9086-401F-898C-AEB0AD38E676} = {9B9E3891-2366-4253-A952-D08BCEB71098}

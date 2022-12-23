@@ -38,15 +38,13 @@ namespace Avalonia.Media.Immutable
         /// <param name="lineJoin">The line join.</param>
         /// <param name="miterLimit">The miter limit.</param>
         public ImmutablePen(
-            IBrush? brush,
+            IImmutableBrush? brush,
             double thickness = 1.0,
             ImmutableDashStyle? dashStyle = null,
             PenLineCap lineCap = PenLineCap.Flat,
             PenLineJoin lineJoin = PenLineJoin.Miter,
             double miterLimit = 10.0)
         {
-            Debug.Assert(!(brush is IMutableBrush));
-
             Brush = brush;
             Thickness = thickness;
             LineCap = lineCap;

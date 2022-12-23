@@ -5,7 +5,7 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// Options to customize text shaping.
     /// </summary>
-    public readonly struct TextShaperOptions
+    public readonly record struct TextShaperOptions
     {
         public TextShaperOptions(
             IGlyphTypeface typeface, 

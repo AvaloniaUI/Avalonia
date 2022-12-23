@@ -305,7 +305,7 @@ namespace Avalonia.Controls.Primitives
             }
             if (!OwningGrid.AreColumnHeadersVisible)
             {
-                return Size.Empty;
+                return default;
             }
             double height = OwningGrid.ColumnHeaderHeight;
             bool autoSizeHeight;

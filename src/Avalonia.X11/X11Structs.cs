@@ -1768,7 +1768,9 @@ namespace Avalonia.X11 {
 	}
     
     [StructLayout(LayoutKind.Sequential)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
     public unsafe struct XImage
+#pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public int width, height; /* size of image */
         public int xoffset; /* number of pixels offset in X direction */
@@ -1799,7 +1801,7 @@ namespace Avalonia.X11 {
         internal IntPtr green_mask;
         internal IntPtr blue_mask;
         internal int colormap_size;
-        internal int bits_per_rgb;		
+        internal int bits_per_rgb;
     }
 	
 	internal enum XIMFeedback

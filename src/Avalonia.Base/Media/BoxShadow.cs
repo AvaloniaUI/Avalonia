@@ -45,7 +45,14 @@ namespace Avalonia.Media
             }
         }
 
-        public bool IsEmpty => OffsetX == 0 && OffsetY == 0 && Blur == 0 && Spread == 0;
+        /// <summary>
+        /// Gets a value indicating whether the instance has default values.
+        /// </summary>
+        public bool IsDefault => OffsetX == 0 && OffsetY == 0 && Blur == 0 && Spread == 0;
+
+        /// <inheritdoc cref="IsDefault"/>
+        [Obsolete("Use IsDefault instead.")]
+        public bool IsEmpty => IsDefault;
 
         private readonly static char[] s_Separator = new char[] { ' ', '\t' };
 
@@ -82,7 +89,7 @@ namespace Avalonia.Media
         {
             var sb = StringBuilderCache.Acquire();
 
-            if (IsEmpty)
+            if (IsDefault)
             {
                 return "none";
             }
@@ -171,5 +178,11 @@ namespace Avalonia.Media
 
         public Rect TransformBounds(in Rect rect)
             => IsInset ? rect : rect.Translate(new Vector(OffsetX, OffsetY)).Inflate(Spread + Blur);
+
+        public static bool operator ==(BoxShadow left, BoxShadow right) =>
+            left.Equals(right);
+
+        public static bool operator !=(BoxShadow left, BoxShadow right) => 
+            !(left == right);
     }
 }

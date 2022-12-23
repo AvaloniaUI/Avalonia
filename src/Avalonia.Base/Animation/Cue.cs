@@ -8,7 +8,7 @@ namespace Avalonia.Animation
     /// Determines the time index for a <see cref="KeyFrame"/>. 
     /// </summary>
     [TypeConverter(typeof(CueTypeConverter))]
-    public readonly struct Cue : IEquatable<Cue>, IEquatable<double>
+    public readonly record struct Cue : IEquatable<Cue>, IEquatable<double>
     {
         /// <summary>
         /// The normalized percent value, ranging from 0.0 to 1.0
@@ -47,15 +47,6 @@ namespace Avalonia.Animation
             {
                 throw new FormatException($"Invalid Cue string \"{value}\"");
             }
-        }
-
-        /// <summary>
-        /// Checks for equality between two <see cref="Cue"/>s.
-        /// </summary>
-        /// <param name="other">The second cue.</param>
-        public bool Equals(Cue other)
-        {
-            return CueValue == other.CueValue;
         }
 
         /// <summary>

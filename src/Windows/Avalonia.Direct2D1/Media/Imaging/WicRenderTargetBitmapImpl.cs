@@ -39,6 +39,8 @@ namespace Avalonia.Direct2D1.Media
         public virtual IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
             => CreateDrawingContext(visualBrushRenderer, null);
 
+        public bool IsCorrupted => false;
+
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer, Action finishedCallback)
         {
             return new DrawingContextImpl(visualBrushRenderer, null, _renderTarget, finishedCallback: () =>

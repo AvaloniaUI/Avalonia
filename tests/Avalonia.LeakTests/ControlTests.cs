@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
-
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -1060,6 +1060,8 @@ namespace Avalonia.LeakTests
             public void Stop()
             {
             }
+
+            public ValueTask<object> TryGetRenderInterfaceFeature(Type featureType) => new(null);
         }
     }
 }

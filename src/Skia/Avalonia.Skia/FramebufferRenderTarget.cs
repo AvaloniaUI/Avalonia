@@ -61,6 +61,8 @@ namespace Avalonia.Skia
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
 
+        public bool IsCorrupted => false;
+
         /// <summary>
         /// Check if two images info are compatible.
         /// </summary>

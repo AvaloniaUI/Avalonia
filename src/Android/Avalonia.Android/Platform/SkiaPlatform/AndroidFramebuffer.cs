@@ -96,12 +96,14 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             public IntPtr bits;
 
             // Do not touch.
+#pragma warning disable CA1823 // Avoid unused private fields
             uint reserved1;
             uint reserved2;
             uint reserved3;
             uint reserved4;
             uint reserved5;
             uint reserved6;
+#pragma warning restore CA1823 // Avoid unused private fields
         }
     }
 }

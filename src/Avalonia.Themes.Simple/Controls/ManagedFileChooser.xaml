@@ -11,6 +11,12 @@
     <GeometryDrawing Brush="#FF00529C" Geometry="F1M8,11L5,8 2,11 2,13 4,11 4,15 6,15 6,11 8,13z" />
     <GeometryDrawing Brush="#FFF0EFF1" Geometry="F1M8.0001,1.9996L7.5001,3.0006 14.0001,3.0006 14.0001,1.9996z" />
   </DrawingGroup>
+  <DrawingGroup x:Key="Refresh">
+    <GeometryDrawing Brush="#FFF6F6F6"
+                     Geometry="F1M13.5049,7.3896L13.2339,6.2646 9.9299,7.5886 10.0729,8.3896C10.0909,8.4906 10.1079,8.5926 10.1079,8.6976 10.1079,9.8596 9.1619,10.8046 7.9999,10.8046 6.8369,10.8046 5.8909,9.8596 5.8909,8.6976 5.8909,7.8966 6.3399,7.1996 6.9999,6.8426L6.9999,9.4986 12.6789,4.8156 8.0569,0.9996 6.9999,0.9996 6.9999,3.1266C4.3539,3.6006 2.3389,5.9176 2.3389,8.6976 2.3389,11.8186 4.8789,14.3586 7.9999,14.3586 11.1209,14.3586 13.6609,11.8186 13.6609,8.6976 13.6609,8.2626 13.6089,7.8226 13.5049,7.3896" />
+    <GeometryDrawing Brush="#FF414141"
+                     Geometry="F1M12.5322,7.623L11.0572,8.214C11.0862,8.372 11.1072,8.533 11.1072,8.697 11.1072,10.415 9.7172,11.805 8.0002,11.805 6.2852,11.805 4.8912,10.415 4.8912,8.697 4.8912,6.983 6.2852,5.59 8.0002,5.59L8.0002,7.378 11.1072,4.815 8.0002,2.25 8.0002,4.039C5.4262,4.039 3.3392,6.123 3.3392,8.697 3.3392,11.27 5.4262,13.358 8.0002,13.358 10.5762,13.358 12.6612,11.27 12.6612,8.697 12.6612,8.327 12.6152,7.969 12.5322,7.623" />
+  </DrawingGroup>
   <internal:ResourceSelectorConverter x:Key="Icons">
     <DrawingGroup x:Key="Icon_Folder">
       <GeometryDrawing Brush="#00FFFFFF" Geometry="F1M0,0L16,0 16,16 0,16z" />
@@ -51,6 +57,14 @@
               <Button Command="{Binding GoUp}">
                 <Image Stretch="Fill">
                   <DrawingImage Drawing="{StaticResource LevelUp}" />
+                </Image>
+              </Button>
+            </internal:ChildFitter>
+            <internal:ChildFitter Width="{Binding ElementName=Location, Path=Bounds.Height}"
+                                 DockPanel.Dock="Right">
+              <Button Command="{Binding Refresh}">
+                <Image Stretch="Fill">
+                  <DrawingImage Drawing="{StaticResource Refresh}" />
                 </Image>
               </Button>
             </internal:ChildFitter>

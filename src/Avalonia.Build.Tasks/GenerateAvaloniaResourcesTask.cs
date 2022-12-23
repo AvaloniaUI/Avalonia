@@ -7,7 +7,7 @@ using System.Text;
 using Avalonia.Markup.Xaml.PortableXaml;
 using Avalonia.Utilities;
 using Microsoft.Build.Framework;
-using SPath=System.IO.Path;
+using SPath = System.IO.Path;
 namespace Avalonia.Build.Tasks
 {
     public class GenerateAvaloniaResourcesTask : ITask
@@ -30,12 +30,17 @@ namespace Avalonia.Build.Tasks
             private byte[] _data;
             private string _sourcePath;
 
-            public Source(string relativePath, string root)
+            public Source(ITaskItem avaloniaResourceItem, string root)
             {
                 root = SPath.GetFullPath(root);
-                Path = "/" + relativePath.Replace('\\', '/');
+                var relativePath = avaloniaResourceItem.ItemSpec;
                 _sourcePath = SPath.Combine(root, relativePath);
                 Size = (int)new FileInfo(_sourcePath).Length;
+                var link = avaloniaResourceItem.GetMetadata("Link");
+                var path = !string.IsNullOrEmpty(link)
+                    ? link
+                    : relativePath;
+                Path = "/" + path.Replace('\\', '/');
             }
 
             public string SystemPath => _sourcePath ?? Path;
@@ -65,8 +70,7 @@ namespace Avalonia.Build.Tasks
         List<Source> BuildResourceSources()
            => Resources.Select(r =>
            {
-              
-               var src = new Source(r.ItemSpec, Root);
+               var src = new Source(r, Root);
                BuildEngine.LogMessage(FormattableString.Invariant($"avares -> name:{src.Path}, path: {src.SystemPath}, size:{src.Size}, ItemSpec:{r.ItemSpec}"), _reportImportance);
                return src;
            }).ToList();
@@ -93,15 +97,15 @@ namespace Avalonia.Build.Tasks
             ms.CopyTo(output);
             foreach (var s in sources)
             {
-                using(var input = s.Open())
+                using (var input = s.Open())
                     input.CopyTo(output);
             }
         }
 
         private bool PreProcessXamlFiles(List<Source> sources)
         {
-            var typeToXamlIndex = new Dictionary<string, string>(); 
-            
+            var typeToXamlIndex = new Dictionary<string, string>();
+
             foreach (var s in sources.ToArray())
             {
                 if (s.Path.ToLowerInvariant().EndsWith(".xaml") || s.Path.ToLowerInvariant().EndsWith(".paml") || s.Path.ToLowerInvariant().EndsWith(".axaml"))
@@ -111,7 +115,7 @@ namespace Avalonia.Build.Tasks
                     {
                         info = XamlFileInfo.Parse(s.ReadAsString());
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         BuildEngine.LogError(BuildEngineErrorCode.InvalidXAML, s.SystemPath, "File doesn't contain valid XAML: " + e);
                         return false;
@@ -121,7 +125,7 @@ namespace Avalonia.Build.Tasks
                     {
                         if (typeToXamlIndex.ContainsKey(info.XClass))
                         {
-                            
+
                             BuildEngine.LogError(BuildEngineErrorCode.DuplicateXClass, s.SystemPath,
                                 $"Duplicate x:Class directive, {info.XClass} is already used in {typeToXamlIndex[info.XClass]}");
                             return false;

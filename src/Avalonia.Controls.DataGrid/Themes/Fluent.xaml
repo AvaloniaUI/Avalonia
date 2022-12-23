@@ -6,8 +6,8 @@
 
     <StreamGeometry x:Key="DataGridSortIconDescendingPath">M1875 1011l-787 787v-1798h-128v1798l-787 -787l-90 90l941 941l941 -941z</StreamGeometry>
     <StreamGeometry x:Key="DataGridSortIconAscendingPath">M1965 947l-941 -941l-941 941l90 90l787 -787v1798h128v-1798l787 787z</StreamGeometry>
-    <StreamGeometry x:Key="DataGridRowGroupHeaderIconOpenedPath">M515 93l930 931l-930 931l90 90l1022 -1021l-1022 -1021z</StreamGeometry>
-    <StreamGeometry x:Key="DataGridRowGroupHeaderIconClosedPath">M109 486 19 576 1024 1581 2029 576 1939 486 1024 1401z</StreamGeometry>
+    <StreamGeometry x:Key="DataGridRowGroupHeaderIconClosedPath">M515 93l930 931l-930 931l90 90l1022 -1021l-1022 -1021z</StreamGeometry>
+    <StreamGeometry x:Key="DataGridRowGroupHeaderIconOpenedPath">M109 486 19 576 1024 1581 2029 576 1939 486 1024 1401z</StreamGeometry>
 
     <SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush" Color="{DynamicResource SystemBaseMediumColor}" />
     <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="{DynamicResource SystemAltHighColor}" />
@@ -379,7 +379,7 @@
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center">
             <Path Fill="{TemplateBinding Foreground}"
-                  Data="{StaticResource DataGridRowGroupHeaderIconOpenedPath}"
+                  Data="{StaticResource DataGridRowGroupHeaderIconClosedPath}"
                   HorizontalAlignment="Right"
                   VerticalAlignment="Center"
                   Stretch="Uniform" />
@@ -387,7 +387,7 @@
         </ControlTemplate>
       </Setter>
       <Style Selector="^:checked /template/ Path">
-        <Setter Property="Data" Value="{StaticResource DataGridRowGroupHeaderIconClosedPath}" />
+        <Setter Property="Data" Value="{StaticResource DataGridRowGroupHeaderIconOpenedPath}" />
       </Style>
     </ControlTheme>
 

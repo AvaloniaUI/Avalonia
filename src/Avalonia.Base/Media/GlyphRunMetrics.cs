@@ -1,6 +1,6 @@
 ﻿namespace Avalonia.Media
 {
-    public readonly struct GlyphRunMetrics
+    public readonly record struct GlyphRunMetrics
     {
         public GlyphRunMetrics(double width, double widthIncludingTrailingWhitespace, double height,
             int trailingWhitespaceLength, int newLineLength, int firstCluster, int lastCluster)

@@ -1,6 +1,8 @@
 ﻿namespace Avalonia.Media.TextFormatting
 {
+#pragma warning disable CA1815 // Override equals and operator equals on value types
     public readonly struct SplitResult<T>
+#pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public SplitResult(T first, T? second)
         {

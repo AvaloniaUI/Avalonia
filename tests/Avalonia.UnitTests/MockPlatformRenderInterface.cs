@@ -9,7 +9,7 @@ using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class MockPlatformRenderInterface : IPlatformRenderInterface
+    public class MockPlatformRenderInterface : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
@@ -48,12 +48,16 @@ namespace Avalonia.UnitTests
                 return m.Object;
 
             }
+
+            public bool IsCorrupted => false;
         }
         
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             return new MockRenderTarget();
         }
+
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -147,6 +151,8 @@ namespace Avalonia.UnitTests
             return Mock.Of<IGlyphRunImpl>();
         }
 
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
+
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
             return Mock.Of<IGeometryImpl>();
@@ -172,5 +178,8 @@ namespace Avalonia.UnitTests
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public void Dispose()
+        {
+        }
     }
 }

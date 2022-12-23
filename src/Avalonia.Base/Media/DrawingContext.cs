@@ -261,7 +261,7 @@ namespace Avalonia.Media
             DrawRectangle(brush, null, rect, cornerRadius, cornerRadius);
         }
 
-        public readonly struct PushedState : IDisposable
+        public readonly record struct PushedState : IDisposable
         {
             private readonly int _level;
             private readonly DrawingContext _context;

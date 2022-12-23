@@ -5,7 +5,7 @@
     /// It controls the base opacity level of the 'tracing paper' layer that compensates
     /// for low blur radius.
     /// </summary>
-    public struct AcrylicPlatformCompensationLevels
+    public record struct AcrylicPlatformCompensationLevels
     {
         public AcrylicPlatformCompensationLevels(double transparent, double blurred, double acrylic)
         {

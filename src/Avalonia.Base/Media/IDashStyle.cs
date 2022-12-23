@@ -12,7 +12,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the length of alternating dashes and gaps.
         /// </summary>
-        IReadOnlyList<double> Dashes { get; }
+        IReadOnlyList<double>? Dashes { get; }
 
         /// <summary>
         /// Gets or sets how far in the dash sequence the stroke will start.

@@ -14,14 +14,14 @@ namespace Avalonia.Native
     internal class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
     {
         private readonly AvaloniaNativePlatformOptions _opts;
-        private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
+        private readonly AvaloniaNativeGlPlatformGraphics _glFeature;
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            AvaloniaNativePlatformOpenGlInterface glFeature) : base(factory, opts, glFeature)
+            AvaloniaNativeGlPlatformGraphics glFeature) : base(factory, opts, glFeature)
         {
             _opts = opts;
             _glFeature = glFeature;
@@ -29,8 +29,7 @@ namespace Avalonia.Native
             
             using (var e = new WindowEvents(this))
             {
-                var context = _opts.UseGpu ? glFeature?.MainContext : null;
-                Init(_native = factory.CreateWindow(e, context?.Context), factory.CreateScreens(), context);
+                Init(_native = factory.CreateWindow(e, glFeature.SharedContext.Context), factory.CreateScreens());
             }
 
             NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
@@ -49,7 +48,7 @@ namespace Avalonia.Native
             {
                 if (_parent.Closing != null)
                 {
-                    return _parent.Closing().AsComBool();
+                    return _parent.Closing(WindowCloseReason.WindowClosing).AsComBool();
                 }
 
                 return true.AsComBool();
@@ -208,7 +207,7 @@ namespace Avalonia.Native
             // NO OP on OSX
         }
 
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
 
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
 
