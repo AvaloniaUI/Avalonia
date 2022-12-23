@@ -84,7 +84,8 @@
                        IsVisible="{TemplateBinding SelectionBoxItem, Converter={x:Static ObjectConverters.IsNull}}" />
             <ContentControl x:Name="ContentPresenter"
                             Content="{TemplateBinding SelectionBoxItem}"
-                            ContentTemplate="{TemplateBinding DisplaySelectedItemTemplate}"
+                            ContentTemplate="{Binding Path=SelectedItemTemplate, RelativeSource={RelativeSource TemplatedParent},
+                                              FallbackValue={TemplateBinding ItemTemplate}}"
                             Grid.Column="0"
                             Margin="{TemplateBinding Padding}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"

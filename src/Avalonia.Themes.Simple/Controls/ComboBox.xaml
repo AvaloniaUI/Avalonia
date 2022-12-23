@@ -32,7 +32,8 @@
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             Content="{TemplateBinding SelectionBoxItem}"
-                            ContentTemplate="{TemplateBinding DisplaySelectedItemTemplate}" />
+                            ContentTemplate="{Binding Path=SelectedItemTemplate, RelativeSource={RelativeSource TemplatedParent},
+                                              FallbackValue={TemplateBinding ItemTemplate}}" />
             <ToggleButton Name="toggle"
                           Grid.Column="1"
                           Background="Transparent"

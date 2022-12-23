@@ -90,12 +90,6 @@ namespace Avalonia.Controls
         public static StyledProperty<IDataTemplate?> SelectedItemTemplateProperty =
             AvaloniaProperty.Register<ComboBox, IDataTemplate?>(nameof(SelectedItemTemplate));
 
-        /// <summary>
-        /// Defines the <see cref="DisplaySelectedItemTemplate"/> property.
-        /// </summary>
-        public static DirectProperty<ComboBox, IDataTemplate?> DisplaySelectedItemTemplateProperty =
-        AvaloniaProperty.RegisterDirect<ComboBox, IDataTemplate?>(nameof(DisplaySelectedItemTemplate), o => o.DisplaySelectedItemTemplate);
-
         private bool _isDropDownOpen;
         private Popup? _popup;
         private object? _selectionBoxItem;
@@ -110,8 +104,6 @@ namespace Avalonia.Controls
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
             IsDropDownOpenProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.IsDropDownOpenChanged(e));
-            ItemTemplateProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.This_ItemTemplateChanged(e));
-            SelectedItemTemplateProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.SelectedItemTemplateChanged(e));
         }
 
         /// <summary>
@@ -203,15 +195,6 @@ namespace Avalonia.Controls
         {
             get => GetValue(SelectedItemTemplateProperty);
             set => SetValue(SelectedItemTemplateProperty, value);
-        }
-
-        /// <summary>
-        /// Get the template for the combo box (not the dropdown). 
-        /// Falls back to <seealso cref="ItemsControl.ItemTemplate"/> if not set
-        /// </summary>
-        public IDataTemplate? DisplaySelectedItemTemplate
-        {
-            get => GetValue(SelectedItemTemplateProperty) ?? GetValue(ItemTemplateProperty);
         }
 
         /// <inheritdoc/>
@@ -555,24 +538,5 @@ namespace Avalonia.Controls
             bool newValue = e.GetNewValue<bool>();
             PseudoClasses.Set(pcDropdownOpen, newValue);
         }
-
-        private void This_ItemTemplateChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            //we only care about a change if we are not using a different template for selected items
-            if (SelectedItemTemplate != null)
-                return;
-
-            RaisePropertyChanged(DisplaySelectedItemTemplateProperty,
-                new Optional<IDataTemplate?>(e.GetOldValue<IDataTemplate?>()),
-                new BindingValue<IDataTemplate?>(e.GetNewValue<IDataTemplate?>()));
-        }
-
-        private void SelectedItemTemplateChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            RaisePropertyChanged(DisplaySelectedItemTemplateProperty,
-                new Optional<IDataTemplate?>(e.GetOldValue<IDataTemplate?>()),
-                new BindingValue<IDataTemplate?>(e.GetNewValue<IDataTemplate?>()));
-        }
-
     }
 }
