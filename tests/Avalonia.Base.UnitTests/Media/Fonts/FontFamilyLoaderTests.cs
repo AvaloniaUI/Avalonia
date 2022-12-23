@@ -117,7 +117,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         private static IDisposable StartWithResources(params (string, string)[] assets)
         {
             var assetLoader = new MockAssetLoader(assets);
-            var services = new TestServices(assetLoader: assetLoader, platform: new AppBuilder().RuntimePlatform);
+            var services = new TestServices(assetLoader: assetLoader, platform: new StandardRuntimePlatform());
             return UnitTestApplication.Start(services);
         }
     }

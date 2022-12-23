@@ -1,6 +1,6 @@
 using Android.OS;
 using AndroidX.AppCompat.App;
-using AndroidX.Lifecycle;
+using Avalonia.Controls;
 
 namespace Avalonia.Android
 {
