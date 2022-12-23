@@ -17,8 +17,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Dashes"/> property.
         /// </summary>
-        public static readonly StyledProperty<AvaloniaList<double>> DashesProperty =
-            AvaloniaProperty.Register<DashStyle, AvaloniaList<double>>(nameof(Dashes));
+        public static readonly StyledProperty<AvaloniaList<double>?> DashesProperty =
+            AvaloniaProperty.Register<DashStyle, AvaloniaList<double>?>(nameof(Dashes));
 
         /// <summary>
         /// Defines the <see cref="Offset"/> property.
@@ -83,7 +83,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the length of alternating dashes and gaps.
         /// </summary>
-        public AvaloniaList<double> Dashes
+        public AvaloniaList<double>? Dashes
         {
             get => GetValue(DashesProperty);
             set => SetValue(DashesProperty, value);
@@ -98,7 +98,7 @@ namespace Avalonia.Media
             set => SetValue(OffsetProperty, value);
         }
 
-        IReadOnlyList<double> IDashStyle.Dashes => Dashes;
+        IReadOnlyList<double>? IDashStyle.Dashes => Dashes;
 
         /// <summary>
         /// Raised when the dash style changes.

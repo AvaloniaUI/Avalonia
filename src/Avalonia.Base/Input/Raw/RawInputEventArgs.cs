@@ -21,11 +21,9 @@ namespace Avalonia.Input.Raw
         /// <param name="root">The root from which the event originates.</param>
         public RawInputEventArgs(IInputDevice device, ulong timestamp, IInputRoot root)
         {
-            device = device ?? throw new ArgumentNullException(nameof(device));
-
-            Device = device;
+            Device = device ?? throw new ArgumentNullException(nameof(device));
             Timestamp = timestamp;
-            Root = root;
+            Root = root ?? throw new ArgumentNullException(nameof(root));
         }
 
         /// <summary>

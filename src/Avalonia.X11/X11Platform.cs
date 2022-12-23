@@ -30,6 +30,7 @@ namespace Avalonia.X11
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
         public Compositor Compositor { get; private set; }
+        public PlatformRenderInterfaceContextManager RenderInterface { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
@@ -96,17 +97,17 @@ namespace Avalonia.X11
             if (options.UseGpu)
             {
                 if (options.UseEGL)
-                    EglPlatformOpenGlInterface.TryInitialize();
+                    EglPlatformGraphics.TryInitialize();
                 else
-                    GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
+                    GlxPlatformGraphics.TryInitialize(Info, Options.GlProfiles);
             }
 
-            var gl = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
-            if (gl != null)
-                AvaloniaLocator.CurrentMutable.Bind<IPlatformGpu>().ToConstant(gl);
-
+            var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
+            
             if (options.UseCompositor)
                 Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
+            else
+                RenderInterface = new(gl);
 
         }
 

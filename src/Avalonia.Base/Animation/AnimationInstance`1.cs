@@ -5,7 +5,6 @@ using Avalonia.Animation.Animators;
 using Avalonia.Animation.Utils;
 using Avalonia.Data;
 using Avalonia.Reactive;
-using JetBrains.Annotations;
 
 namespace Avalonia.Animation
 {

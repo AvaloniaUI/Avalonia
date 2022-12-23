@@ -641,4 +641,8 @@
     <StaticResource x:Key="NavigationControlNavBarBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
     <x:Double x:Key="NavigationControlNavBarHeight" >45</x:Double>
     <Thickness x:Key="NavigationControlPageMargin">0,5</Thickness>
+
+    <!-- BaseResources for RefreshVisualizer.xaml -->
+    <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="White"/>
+    <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent"/> 
 </ResourceDictionary>

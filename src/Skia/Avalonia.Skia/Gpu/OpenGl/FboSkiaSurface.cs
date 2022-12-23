@@ -1,11 +1,13 @@
 using System;
 using Avalonia.OpenGL;
+using Avalonia.Platform;
 using SkiaSharp;
 using static Avalonia.OpenGL.GlConsts;
 namespace Avalonia.Skia
 {
-    public class FboSkiaSurface : ISkiaSurface
+    internal class FboSkiaSurface : ISkiaSurface
     {
+        private readonly GlSkiaGpu _gpu;
         private readonly GRContext _grContext;
         private readonly IGlContext _glContext;
         private readonly PixelSize _pixelSize;
@@ -14,8 +16,9 @@ namespace Avalonia.Skia
         private int _texture;
 
         private static readonly bool[] TrueFalse = new[] { true, false };
-        public FboSkiaSurface(GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
+        public FboSkiaSurface(GlSkiaGpu gpu, GRContext grContext, IGlContext glContext, PixelSize pixelSize, GRSurfaceOrigin surfaceOrigin)
         {
+            _gpu = gpu;
             _grContext = grContext;
             _glContext = glContext;
             _pixelSize = pixelSize;
@@ -93,18 +96,32 @@ namespace Avalonia.Skia
         
         public void Dispose()
         {
-            using (_glContext.EnsureCurrent())
+            try
             {
-                Surface?.Dispose();
-                Surface = null;
-                var gl = _glContext.GlInterface;
-                if (_fbo != 0)
+                using (_glContext.EnsureCurrent())
                 {
-                    gl.DeleteFramebuffer(_fbo);
-                    gl.DeleteTexture(_texture);
-                    gl.DeleteRenderbuffer(_depthStencil);
-                    _fbo = _texture = _depthStencil = 0;
+                    Surface?.Dispose();
+                    Surface = null;
+                    var gl = _glContext.GlInterface;
+                    if (_fbo != 0)
+                    {
+                        gl.DeleteFramebuffer(_fbo);
+                        gl.DeleteTexture(_texture);
+                        gl.DeleteRenderbuffer(_depthStencil);
+                    }
                 }
+            }
+            catch (PlatformGraphicsContextLostException)
+            {
+                if (Surface != null)
+                    // We need to dispose SKSurface _after_ GRContext.Abandon was called,
+                    // otherwise it will try to do OpenGL calls without a proper context 
+                    _gpu.AddPostDispose(Surface.Dispose);
+                Surface = null;
+            }
+            finally
+            {
+                _fbo = _texture = _depthStencil = 0;
             }
         }
 

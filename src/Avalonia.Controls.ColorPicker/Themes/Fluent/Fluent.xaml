@@ -50,13 +50,13 @@
       <ResourceDictionary.MergedDictionaries>
 
         <!-- Primitives -->
-        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorPreviewer.xaml" />
-        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorSlider.xaml" />
-        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorSpectrum.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorPreviewer.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorSlider.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorSpectrum.xaml" />
 
         <!-- Controls -->
-        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorPicker.xaml" />
-        <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorView.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorPicker.xaml" />
+        <MergeResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorView.xaml" />
 
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>

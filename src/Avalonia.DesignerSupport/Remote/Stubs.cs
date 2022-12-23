@@ -32,7 +32,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<Rect> Paint { get; set; }
         public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
         public Action Closed { get; set; }
         public Action LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
@@ -61,7 +61,10 @@ namespace Avalonia.DesignerSupport.Remote
                     }));
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer((Visual)root);
+        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer((Visual)root, () =>
+            new PlatformRenderInterfaceContextManager(null)
+                .CreateRenderTarget(Surfaces));
+        
         public void Dispose()
         {
         }

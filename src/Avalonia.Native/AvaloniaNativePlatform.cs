@@ -9,22 +9,23 @@ using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using JetBrains.Annotations;
 using MicroCom.Runtime;
+#nullable enable
 
 namespace Avalonia.Native
 {
     class AvaloniaNativePlatform : IWindowingPlatform
     {
         private readonly IAvaloniaNativeFactory _factory;
-        private AvaloniaNativePlatformOptions _options;
-        private AvaloniaNativePlatformOpenGlInterface _platformGl;
+        private AvaloniaNativePlatformOptions? _options;
+        private AvaloniaNativeGlPlatformGraphics? _platformGl;
 
         [DllImport("libAvaloniaNative")]
         static extern IntPtr CreateAvaloniaNative();
 
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
-        [CanBeNull] internal static Compositor Compositor { get; private set; }
+        internal static Compositor? Compositor { get; private set; }
+        internal static PlatformRenderInterfaceContextManager? RenderInterface { get; private set; }
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
@@ -62,7 +63,7 @@ namespace Avalonia.Native
 
         public void SetupApplicationName()
         {
-            if (!string.IsNullOrWhiteSpace(Application.Current.Name))
+            if (!string.IsNullOrWhiteSpace(Application.Current!.Name))
             {
                 _factory.MacOptions.SetApplicationTitle(Application.Current.Name);
             }
@@ -117,19 +118,21 @@ namespace Avalonia.Native
             AvaloniaLocator.CurrentMutable.Bind<IRenderLoop>().ToConstant(renderLoop);
 
             var hotkeys = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
-            hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
-            hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
-            hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
-            hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+            if (hotkeys is not null)
+            {
+                hotkeys.MoveCursorToTheStartOfLine.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheStartOfLineWithSelection.Add(new KeyGesture(Key.Left, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+                hotkeys.MoveCursorToTheEndOfLine.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers));
+                hotkeys.MoveCursorToTheEndOfLineWithSelection.Add(new KeyGesture(Key.Right, hotkeys.CommandModifiers | hotkeys.SelectionModifiers));
+            }
             
             if (_options.UseGpu)
             {
                 try
                 {
-                    _platformGl = new AvaloniaNativePlatformOpenGlInterface(_factory.ObtainGlDisplay());
+                    _platformGl = new AvaloniaNativeGlPlatformGraphics(_factory.ObtainGlDisplay());
                     AvaloniaLocator.CurrentMutable
-                        .Bind<IPlatformOpenGlInterface>().ToConstant(_platformGl)
-                        .Bind<IPlatformGpu>().ToConstant(_platformGl);
+                        .Bind<IPlatformGraphics>().ToConstant(_platformGl);
 
                 }
                 catch (Exception)
@@ -137,12 +140,14 @@ namespace Avalonia.Native
                     // ignored
                 }
             }
-            
+
 
             if (_options.UseDeferredRendering && _options.UseCompositor)
             {
                 Compositor = new Compositor(renderLoop, _platformGl);
             }
+            else
+                RenderInterface = new PlatformRenderInterfaceContextManager(_platformGl);
         }
 
         public ITrayIconImpl CreateTrayIcon()

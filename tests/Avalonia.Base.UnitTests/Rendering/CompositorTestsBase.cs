@@ -18,7 +18,6 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
-using JetBrains.Annotations;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Rendering;
@@ -76,7 +75,7 @@ public class CompositorTestsBase
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return Renderer = new CompositingRenderer(root, _compositor);
+            return Renderer = new CompositingRenderer(root, _compositor, () => Surfaces);
         }
 
         public void Invalidate(Rect rect)

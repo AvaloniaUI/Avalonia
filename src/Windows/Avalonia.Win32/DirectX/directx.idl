@@ -1,4 +1,4 @@
-﻿@clr-namespace Avalonia.Win32.DxgiSwapchain
+﻿@clr-namespace Avalonia.Win32.DirectX
 @clr-access internal
 @clr-map FLOAT float
 @clr-map HSTRING IntPtr
@@ -12,6 +12,7 @@
 @clr-map HWND IntPtr
 @clr-map BOOL int
 @clr-map DWORD int
+@clr-map SIZE_T IntPtr
 @clr-map boolean int
 @clr-map BYTE byte
 @clr-map INT16 short
@@ -242,9 +243,9 @@ interface IDXGIOutput : IDXGIObject
     HRESULT WaitForVBlank();
     HRESULT TakeOwnership([in, annotation("_In_")] IUnknown* pDevice, BOOL Exclusive);
     void ReleaseOwnership();
-    HRESULT GetGammaControlCapabilities([out, annotation("_Out_")] DXGI_GAMMA_CONTROL_CAPABILITIES* pGammaCaps);
-    HRESULT SetGammaControl([in, annotation("_In_")] DXGI_GAMMA_CONTROL* pArray);
-    HRESULT GetGammaControl([out, annotation("_Out_")] DXGI_GAMMA_CONTROL* pArray);
+    HRESULT GetGammaControlCapabilities(IntPtr pGammaCaps);
+    HRESULT SetGammaControl([in, annotation("_In_")] void* pArray);
+    HRESULT GetGammaControl(IntPtr pArray);
     HRESULT SetDisplaySurface([in, annotation("_In_")] IDXGISurface* pScanoutSurface);
     HRESULT GetDisplaySurfaceData([in, annotation("_In_")] IDXGISurface* pDestination);
     HRESULT GetFrameStatistics([out, annotation("_Out_")] DXGI_FRAME_STATISTICS* pStats);
@@ -303,3 +304,180 @@ interface IDXGISwapChain1 : IDXGISwapChain
     HRESULT GetRotation([out, annotation("_Out_")] DXGI_MODE_ROTATION* pRotation);
 }
 
+enum D3D11_FEATURE
+{
+    D3D11_FEATURE_THREADING,
+    D3D11_FEATURE_DOUBLES,  
+    D3D11_FEATURE_FORMAT_SUPPORT,
+    D3D11_FEATURE_FORMAT_SUPPORT2,
+    D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS,
+    D3D11_FEATURE_D3D11_OPTIONS,
+    D3D11_FEATURE_ARCHITECTURE_INFO,
+    D3D11_FEATURE_D3D9_OPTIONS,
+    D3D11_FEATURE_SHADER_MIN_PRECISION_SUPPORT,
+    D3D11_FEATURE_D3D9_SHADOW_SUPPORT,
+    D3D11_FEATURE_D3D11_OPTIONS1,
+    D3D11_FEATURE_D3D9_SIMPLE_INSTANCING_SUPPORT,
+    D3D11_FEATURE_MARKER_SUPPORT,
+    D3D11_FEATURE_D3D9_OPTIONS1,
+    D3D11_FEATURE_D3D11_OPTIONS2,
+    D3D11_FEATURE_D3D11_OPTIONS3,
+    D3D11_FEATURE_GPU_VIRTUAL_ADDRESS_SUPPORT,
+    D3D11_FEATURE_D3D11_OPTIONSS,
+    D3D11_FEATURE_SHADER_CACHE
+} 
+
+[uuid(db6f6ddb-ac77-4e88-8253-819df9bbf140)]
+interface ID3D11Device : IUnknown
+{
+    HRESULT CreateBuffer(
+        IntPtr pDesc,
+        IntPtr pInitialData,
+        [out, retval] IUnknown** ppBuffer );
+    HRESULT CreateTexture1D(
+        IntPtr pDesc,
+        IntPtr pInitialData,
+        [out, retval] IUnknown**  ppTexture1D );
+    HRESULT CreateTexture2D(
+        IntPtr  pDesc,
+        IntPtr pInitialData,
+        [out, retval] IUnknown**  ppTexture2D );
+    HRESULT CreateTexture3D(
+        IntPtr pDesc,
+        IntPtr pInitialData,
+        [out, retval] IUnknown**  ppTexture3D );
+    HRESULT CreateShaderResourceView(
+        IntPtr pResource,
+        IntPtr pDesc,
+        [out, retval] IUnknown**  ppSRView );
+    HRESULT CreateUnorderedAccessView(
+        IntPtr pResource,
+        IntPtr pDesc,
+        [out, retval] IUnknown**  ppUAView );
+    HRESULT CreateRenderTargetView(
+        IntPtr pResource,
+        IntPtr pDesc,
+        [out, retval] IUnknown**  ppRTView);
+    HRESULT CreateDepthStencilView(
+        IntPtr pResource,
+        IntPtr pDesc,
+        [out, retval] IUnknown**  ppDepthStencilView );
+    HRESULT CreateInputLayout(
+        IntPtr pInputElementDescs,
+        UINT NumElements,
+        void* pShaderBytecodeWithInputSignature,
+        IntPtr BytecodeLength,
+        [out, retval] IUnknown**  ppInputLayout );
+    HRESULT CreateVertexShader(
+        IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr pClassLinkage,
+        [out, retval] IUnknown**  ppVertexShader );
+    HRESULT CreateGeometryShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr pClassLinkage,
+        [out, retval] IUnknown**  ppGeometryShader );
+    HRESULT CreateGeometryShaderWithStreamOutput(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pSODeclaration,
+        UINT NumEntries,
+        UINT* pBufferStrides,
+        UINT NumStrides,
+        UINT RasterizedStream,
+        IntPtr pClassLinkage,
+        [out, retval] IUnknown**  ppGeometryShader );
+    HRESULT CreatePixelShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pClassLinkage,
+        [out, retval] IUnknown**  ppPixelShader );
+    HRESULT CreateHullShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pClassLinkage,
+        [out, retval] IUnknown**  ppHullShader );
+    HRESULT CreateDomainShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pClassLinkage,
+        [out, retval] IUnknown**  ppDomainShader );
+    HRESULT CreateComputeShader(
+       IntPtr pShaderBytecode,
+        [annotation("_In_")] SIZE_T BytecodeLength,
+        IntPtr  pClassLinkage,
+        [out, retval] IUnknown**  ppComputeShader );
+    HRESULT CreateClassLinkage([out, retval]IUnknown** ppLinkage);
+    HRESULT CreateBlendState(
+        IntPtr pBlendStateDesc,
+        [out, retval] IUnknown**  ppBlendState );
+    HRESULT CreateDepthStencilState(
+        IntPtr pDepthStencilDesc,
+        [out, retval] IUnknown**  ppDepthStencilState );
+    HRESULT CreateRasterizerState(
+        IntPtr pRasterizerDesc,
+        [out, retval] IUnknown**  ppRasterizerState );
+    HRESULT CreateSamplerState(
+        IntPtr pSamplerDesc,
+        [out, retval] IUnknown**  ppSamplerState );
+    HRESULT CreateQuery(
+        IntPtr pQueryDesc,
+        [out, retval] IUnknown**  ppQuery );
+    HRESULT CreatePredicate(
+        IntPtr pPredicateDesc,
+        [out, retval] IUnknown**  ppPredicate );
+    HRESULT CreateCounter(
+        IntPtr pCounterDesc,
+        [out, retval] IUnknown**  ppCounter );
+    HRESULT CreateDeferredContext(
+        UINT ContextFlags, // Reserved parameter; must be 0
+        [out, retval] IUnknown** ppDeferredContext );
+    HRESULT OpenSharedResource(
+        IntPtr hResource,
+        [out] Guid* ReturnedInterface,
+        [out, retval] IUnknown**  ppResource);
+
+    // Check*
+    HRESULT CheckFormatSupport(
+        [annotation("_In_")] DXGI_FORMAT Format,
+        [annotation("_Out_")] UINT* pFormatSupport );
+    HRESULT CheckMultisampleQualityLevels(
+        [annotation("_In_")] DXGI_FORMAT Format,
+        [annotation("_In_")] UINT        SampleCount,
+        [annotation("_Out_")] UINT* pNumQualityLevels );
+    void CheckCounterInfo(IntPtr pCounterInfo );
+    HRESULT CheckCounter(
+        IntPtr  pDesc,
+        IntPtr  pType,
+        IntPtr  pActiveCounters,
+        IntPtr  szName,
+        UINT* pNameLength,
+        IntPtr szUnits,
+        UINT* pUnitsLength,
+        IntPtr  szDescription,
+        UINT* pDescriptionLength );
+    HRESULT CheckFeatureSupport(
+        D3D11_FEATURE Feature,
+        void* pFeatureSupportData,
+        UINT FeatureSupportDataSize );
+
+    HRESULT GetPrivateData(
+        Guid* guid,
+        UINT* pDataSize,
+        void* pData );
+    HRESULT SetPrivateData(
+        Guid* guid,
+        UINT DataSize,
+        IntPtr* pData );
+    HRESULT SetPrivateDataInterface(
+        Guid* guid,
+        IUnknown* pData );
+
+    D3D_FEATURE_LEVEL GetFeatureLevel();
+    UINT GetCreationFlags();
+    int GetDeviceRemovedReason();
+    void GetImmediateContext(IntPtr* ppImmediateContext );
+    HRESULT SetExceptionMode( UINT RaiseFlags );
+    UINT GetExceptionMode();
+}

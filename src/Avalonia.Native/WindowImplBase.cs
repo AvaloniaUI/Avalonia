@@ -63,10 +63,9 @@ namespace Avalonia.Native
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
-        private IGlContext _glContext;
 
         internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            AvaloniaNativePlatformOpenGlInterface glFeature)
+            AvaloniaNativeGlPlatformGraphics glFeature)
         {
             _factory = factory;
             _gpu = opts.UseGpu && glFeature != null;
@@ -78,14 +77,13 @@ namespace Avalonia.Native
             StorageProvider = new SystemDialogs(this, _factory.CreateSystemDialogs());
         }
 
-        protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext glContext)
+        protected void Init(IAvnWindowBase window, IAvnScreens screens)
         {
             _native = window;
-            _glContext = glContext;
 
             Handle = new MacOSTopLevelWindowHandle(window);
             if (_gpu)
-                _glSurface = new GlPlatformSurface(window, _glContext);
+                _glSurface = new GlPlatformSurface(window);
             Screen = new ScreenImpl(screens);
 
             _savedLogicalSize = ClientSize;
@@ -375,14 +373,17 @@ namespace Avalonia.Native
             if (_deferredRendering)
             {
                 if (AvaloniaNativePlatform.Compositor != null)
-                    return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor)
+                    return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor, () => Surfaces)
                     {
                         RenderOnlyOnRenderThread = false
                     };
-                return new DeferredRenderer(root, loop);
+                return new DeferredRenderer(root, loop,
+                    () => AvaloniaNativePlatform.RenderInterface!.CreateRenderTarget(Surfaces),
+                    AvaloniaNativePlatform.RenderInterface);
             }
 
-            return new ImmediateRenderer((Visual)root);
+            return new ImmediateRenderer((Visual)root,
+                () => AvaloniaNativePlatform.RenderInterface!.CreateRenderTarget(Surfaces), AvaloniaNativePlatform.RenderInterface);
         }
 
         public virtual void Dispose()

@@ -167,7 +167,7 @@ namespace Avalonia.Android
         }
     }
 
-    public readonly struct ComposingRegion
+    public readonly record struct ComposingRegion
     {
         private readonly int _start = -1;
         private readonly int _end = -1;

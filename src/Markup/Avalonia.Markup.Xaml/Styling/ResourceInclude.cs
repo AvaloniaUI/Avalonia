@@ -9,6 +9,10 @@ namespace Avalonia.Markup.Xaml.Styling
     /// <summary>
     /// Loads a resource dictionary from a specified URL.
     /// </summary>
+    /// <remarks>
+    /// If used from the XAML code, it is replaced with direct resource dictionary reference.
+    /// When used in runtime, this type might be unsafe with trimming and AOT.
+    /// </remarks>
     [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
     public class ResourceInclude : IResourceProvider
     {
