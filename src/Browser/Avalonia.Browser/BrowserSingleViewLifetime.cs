@@ -2,8 +2,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using System.Runtime.Versioning;
-using Avalonia.Browser.Skia;
-using Avalonia.Platform;
 
 namespace Avalonia.Browser;
 
@@ -27,9 +25,8 @@ public class BrowserPlatformOptions
 [SupportedOSPlatform("browser")]
 public static class WebAppBuilder
 {
-    public static T SetupBrowserApp<T>(
-        this T builder, string mainDivId)
-        where T : AppBuilderBase<T>, new()
+    public static AppBuilder SetupBrowserApp(
+        this AppBuilder builder, string mainDivId)
     {
         var lifetime = new BrowserSingleViewLifetime();
 
@@ -42,9 +39,8 @@ public static class WebAppBuilder
             .SetupWithLifetime(lifetime);
     }
 
-    public static T UseBrowser<T>(
-        this T builder)
-        where T : AppBuilderBase<T>, new()
+    public static AppBuilder UseBrowser(
+        this AppBuilder builder)
     {
         return builder
             .UseWindowingSubsystem(BrowserWindowingPlatform.Register)

@@ -5,8 +5,7 @@ namespace Avalonia
 {
     public static class AppBuilderDesktopExtensions
     {
-        public static TAppBuilder UsePlatformDetect<TAppBuilder>(this TAppBuilder builder)
-            where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
+        public static AppBuilder UsePlatformDetect(this AppBuilder builder)
         {
             var os = builder.RuntimePlatform.GetRuntimeInfo().OperatingSystem;
 
@@ -35,19 +34,15 @@ namespace Avalonia
             return builder;
         }
 
-        static void LoadAvaloniaNative<TAppBuilder>(TAppBuilder builder)
-            where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
+        static void LoadAvaloniaNative(AppBuilder builder)
              => builder.UseAvaloniaNative();
-        static void LoadWin32<TAppBuilder>(TAppBuilder builder)
-            where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
+        static void LoadWin32(AppBuilder builder)
              => builder.UseWin32();
 
-        static void LoadX11<TAppBuilder>(TAppBuilder builder)
-            where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
+        static void LoadX11(AppBuilder builder)
              => builder.UseX11();
 
-        static void LoadSkia<TAppBuilder>(TAppBuilder builder)
-            where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
+        static void LoadSkia(AppBuilder builder)
              => builder.UseSkia();
     }
 }
