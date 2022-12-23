@@ -26,9 +26,7 @@ namespace Avalonia
 #nullable enable
     public static class Win32ApplicationExtensions
     {
-        public static T UseWin32<T>(
-            this T builder) 
-                where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseWin32(this AppBuilder builder)
         {
             return builder.UseWindowingSubsystem(
                 () => Win32.Win32Platform.Initialize(

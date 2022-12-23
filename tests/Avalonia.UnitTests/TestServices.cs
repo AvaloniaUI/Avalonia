@@ -20,7 +20,7 @@ namespace Avalonia.UnitTests
     {
         public static readonly TestServices StyledWindow = new TestServices(
             assetLoader: new AssetLoader(),
-            platform: new AppBuilder().RuntimePlatform,
+            platform: new StandardRuntimePlatform(),
             renderInterface: new MockPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             theme: () => CreateSimpleTheme(),
@@ -164,17 +164,5 @@ namespace Avalonia.UnitTests
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
                     y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }
-    }
-
-    public class AppBuilder : AppBuilderBase<AppBuilder>
-    {
-        public AppBuilder()
-            : base(new StandardRuntimePlatform(),
-                  builder => StandardRuntimePlatformServices.Register(builder.Instance?.GetType()
-                      ?.GetTypeInfo().Assembly))
-        {
-        }
-
-        protected override bool CheckSetup => false;
     }
 }
