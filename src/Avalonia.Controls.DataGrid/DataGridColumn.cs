@@ -50,10 +50,13 @@ namespace Avalonia.Controls
             InheritsWidth = true;
         }
 
-        internal DataGrid OwningGrid
+        /// <summary>
+        /// Gets the <see cref="T:Avalonia.Controls.DataGrid"/> control that contains this column.
+        /// </summary>
+        protected internal DataGrid OwningGrid
         {
             get;
-            set;
+            internal set;
         }
 
         internal int Index
@@ -638,7 +641,7 @@ namespace Avalonia.Controls
 
         public Control GetCellContent(DataGridRow dataGridRow)
         {
-            Contract.Requires<ArgumentNullException>(dataGridRow != null);
+            dataGridRow = dataGridRow ?? throw new ArgumentNullException(nameof(dataGridRow));
             if (OwningGrid == null)
             {
                 throw DataGridError.DataGrid.NoOwningGrid(GetType());
@@ -656,7 +659,7 @@ namespace Avalonia.Controls
 
         public Control GetCellContent(object dataItem)
         {
-            Contract.Requires<ArgumentNullException>(dataItem != null);
+            dataItem = dataItem ?? throw new ArgumentNullException(nameof(dataItem));
             if (OwningGrid == null)
             {
                 throw DataGridError.DataGrid.NoOwningGrid(GetType());

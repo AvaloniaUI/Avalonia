@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Animation.Animators;
 using Avalonia.Data;
 using Avalonia.Reactive;
@@ -66,7 +67,8 @@ namespace Avalonia.Animation
             }
         }
 
-        public T GetTypedValue<T>()
+        [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+        public T GetTypedValue<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var typeConv = TypeDescriptor.GetConverter(typeof(T));
 

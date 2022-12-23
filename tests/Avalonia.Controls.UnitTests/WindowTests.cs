@@ -155,12 +155,16 @@ namespace Avalonia.Controls.UnitTests
 
                 window.Closing += (sender, e) =>
                 {
+                    Assert.Equal(WindowCloseReason.WindowClosing, e.CloseReason);
+                    Assert.Equal(programaticClose, e.IsProgrammatic);
                     count++;
                     windowClosing = count;
                 };
                 
                 child.Closing += (sender, e) =>
                 {
+                    Assert.Equal(WindowCloseReason.OwnerWindowClosing, e.CloseReason);
+                    Assert.Equal(programaticClose, e.IsProgrammatic);
                     count++;
                     childClosing = count;
                 };
@@ -186,7 +190,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing();
+                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(false, cancel);
                 }
@@ -248,7 +252,7 @@ namespace Avalonia.Controls.UnitTests
                 }
                 else
                 {
-                    var cancel = window.PlatformImpl.Closing();
+                    var cancel = window.PlatformImpl.Closing(WindowCloseReason.WindowClosing);
 
                     Assert.Equal(true, cancel);
                 }
@@ -403,7 +407,7 @@ namespace Avalonia.Controls.UnitTests
                 parent.Close();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(parent));
-                Assert.Equal("Cannot show a window with a closed parent.", ex.Message);
+                Assert.Equal("Cannot show a window with a closed owner.", ex.Message);
             }
         }
 
@@ -431,7 +435,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(parent));
-                Assert.Equal("Cannot show window with non-visible parent.", ex.Message);
+                Assert.Equal("Cannot show window with non-visible owner.", ex.Message);
             }
         }
 
@@ -444,7 +448,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window();
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => target.ShowDialog(parent));
-                Assert.Equal("Cannot show window with non-visible parent.", ex.Message);
+                Assert.Equal("Cannot show window with non-visible owner.", ex.Message);
             }
         }
 
@@ -456,7 +460,7 @@ namespace Avalonia.Controls.UnitTests
                 var target = new Window();
 
                 var ex = Assert.Throws<InvalidOperationException>(() => target.Show(target));
-                Assert.Equal("A Window cannot be its own parent.", ex.Message);
+                Assert.Equal("A Window cannot be its own owner.", ex.Message);
             }
         }
 
@@ -986,7 +990,46 @@ namespace Avalonia.Controls.UnitTests
                     Assert.Equal(SizeToContent.WidthAndHeight, target.SizeToContent);
                 }
             }
+            
+            [Fact]
+            public void IsVisible_Should_Open_Window()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var target = new Window();
+                    var raised = false;
+                    
+                    target.Opened += (s, e) => raised = true;
+                    target.IsVisible = true;
 
+                    Assert.True(raised);
+                }
+            }
+            
+            [Fact]
+            public void IsVisible_Should_Close_DialogWindow()
+            {
+                using (UnitTestApplication.Start(TestServices.StyledWindow))
+                {
+                    var parent = new Window();
+                    parent.Show();
+                    
+                    var target = new Window();
+                    
+                    var raised = false;
+
+                    var task = target.ShowDialog<bool>(parent);
+                    
+                    target.Closed += (sender, args) => raised = true;
+
+                    target.IsVisible = false;
+
+                    Assert.True(raised);
+                    
+                    Assert.False(task.Result);
+                }
+            }
+            
             protected virtual void Show(Window window)
             {
                 window.Show();
@@ -1003,7 +1046,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private IWindowImpl CreateImpl(Mock<IRenderer> renderer)
+        private static IWindowImpl CreateImpl(Mock<IRenderer> renderer)
         {
             return Mock.Of<IWindowImpl>(x =>
                 x.RenderScaling == 1 &&

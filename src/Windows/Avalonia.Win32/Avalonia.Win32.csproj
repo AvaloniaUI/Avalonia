@@ -16,13 +16,15 @@
     <MicroComIdl Include="Win32Com\win32.idl" CSharpInteropPath="Win32Com\Win32.Generated.cs" />
     <MicroComIdl Include="DirectX\directx.idl" CSharpInteropPath="DirectX\directx.Generated.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="..\..\Shared\ModuleInitializer.cs" />
-  </ItemGroup>
   <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\SourceGenerators.props" />
+  <ItemGroup>
+    <Compile Remove="..\..\Shared\ModuleInitializer.cs" />
+    <Compile Remove="..\..\Shared\SourceGeneratorAttributes.cs" />
+  </ItemGroup>
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
   <PropertyGroup Label="Warnings">
-    <NoWarn Condition="'$(NoWarn)' == ''">CA1416</NoWarn>
-    <NoWarn Condition="'$(NoWarn)' != ''">$(NoWarn),CA1416</NoWarn>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
 </Project>

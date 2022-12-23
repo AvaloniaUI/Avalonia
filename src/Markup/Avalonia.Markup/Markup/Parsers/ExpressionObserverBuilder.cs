@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
@@ -8,6 +9,7 @@ namespace Avalonia.Markup.Parsers
 {
     public static class ExpressionObserverBuilder
     {
+        [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
         internal static (ExpressionNode Node, SourceMode Mode) Parse(string expression, bool enableValidation = false, Func<string, string, Type>? typeResolver = null,
             INameScope? nameScope = null)
         {
@@ -28,6 +30,7 @@ namespace Avalonia.Markup.Parsers
             return node;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
         public static ExpressionObserver Build(
             object root,
             string expression,
@@ -41,6 +44,7 @@ namespace Avalonia.Markup.Parsers
                 description ?? expression);
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
         public static ExpressionObserver Build(
             IObservable<object> rootObservable,
             string expression,
@@ -56,7 +60,7 @@ namespace Avalonia.Markup.Parsers
                 description ?? expression);
         }
 
-
+        [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
         public static ExpressionObserver Build(
             Func<object> rootGetter,
             string expression,

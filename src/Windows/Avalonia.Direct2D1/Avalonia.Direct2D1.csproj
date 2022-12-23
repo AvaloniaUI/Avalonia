@@ -17,8 +17,8 @@
   <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\SharpDX.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
-  <Import Project="..\..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Direct2D1.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
@@ -28,5 +28,4 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-  
 </Project>

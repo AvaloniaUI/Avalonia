@@ -16,7 +16,7 @@ namespace Avalonia.Win32
         private const int OleRetryCount = 10;
         private const int OleRetryDelay = 100;
 
-        private async Task<IDisposable> OpenClipboard()
+        private static async Task<IDisposable> OpenClipboard()
         {
             var i = OleRetryCount;
 

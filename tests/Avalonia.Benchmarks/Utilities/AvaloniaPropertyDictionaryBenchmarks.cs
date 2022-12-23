@@ -91,7 +91,7 @@ internal sealed class AvaloniaPropertyValueStoreOld<TValue>
         return (0, false);
     }
 
-    public bool TryGetValue(AvaloniaProperty property, [MaybeNullWhen(false)] out TValue value)
+    public bool TryGetValue(AvaloniaProperty property, out TValue value)
     {
         (var index, var found) = TryFindEntry(property.Id);
         if (!found)
@@ -172,7 +172,7 @@ internal sealed class AvaloniaPropertyValueStoreOld<TValue>
 
 internal class MockProperty : StyledProperty<int>
 {
-    public MockProperty([JetBrains.Annotations.NotNull] string name) : base(name, typeof(object), new StyledPropertyMetadata<int>())
+    public MockProperty(string name) : base(name, typeof(object), new StyledPropertyMetadata<int>())
     {
     }
 }

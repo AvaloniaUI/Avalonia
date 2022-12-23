@@ -39,7 +39,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
         }
 
-        private TextLayout Create(string text,
+        private static TextLayout Create(string text,
             string fontFamily,
             double fontSize,
             FontStyle fontStyle,
@@ -56,7 +56,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             return formattedText;
         }
 
-        private TextLayout Create(string text, double fontSize)
+        private static TextLayout Create(string text, double fontSize)
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, TextAlignment.Left,
@@ -64,7 +64,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 -1);
         }
 
-        private TextLayout Create(string text, double fontSize, TextAlignment alignment, double widthConstraint)
+        private static TextLayout Create(string text, double fontSize, TextAlignment alignment, double widthConstraint)
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, alignment,
@@ -72,7 +72,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 widthConstraint);
         }
 
-        private TextLayout Create(string text, double fontSize, TextWrapping wrap, double widthConstraint)
+        private static TextLayout Create(string text, double fontSize, TextWrapping wrap, double widthConstraint)
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, TextAlignment.Left,

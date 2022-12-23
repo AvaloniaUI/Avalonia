@@ -421,7 +421,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private IControlTemplate TabControlTemplate()
+        private static IControlTemplate TabControlTemplate()
         {
             return new FuncControlTemplate<TabControl>((parent, scope) =>
                 new StackPanel
@@ -444,7 +444,7 @@ namespace Avalonia.Controls.UnitTests
                 });
         }
 
-        private IControlTemplate TabItemTemplate()
+        private static IControlTemplate TabItemTemplate()
         {
             return new FuncControlTemplate<TabItem>((parent, scope) =>
                 new ContentPresenter
@@ -455,14 +455,14 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope));
         }
 
-        private void Prepare(TabControl target)
+        private static void Prepare(TabControl target)
         {
             ApplyTemplate(target);
             target.Measure(Size.Infinity);
             target.Arrange(new Rect(target.DesiredSize));
         }
 
-        private void ApplyTemplate(TabControl target)
+        private static void ApplyTemplate(TabControl target)
         {
             target.ApplyTemplate();
 

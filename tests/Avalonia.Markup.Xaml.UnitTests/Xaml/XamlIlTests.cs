@@ -9,12 +9,12 @@ using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Markup.Xaml.UnitTests.Xaml;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
-using JetBrains.Annotations;
 using Xunit;
 
 namespace Avalonia.Markup.Xaml.UnitTests
@@ -162,7 +162,7 @@ namespace Avalonia.Markup.Xaml.UnitTests
             
         }
 
-        void AssertThrows(Action callback, Func<Exception, bool> check)
+        static void AssertThrows(Action callback, Func<Exception, bool> check)
         {
             try
             {
@@ -314,6 +314,26 @@ namespace Avalonia.Markup.Xaml.UnitTests
 
             Assert.NotNull(parsed.ItemTemplate);
         }
+        
+        [Fact]
+        public void Runtime_Loader_Should_Pass_Parents_From_ServiceProvider()
+        {
+            var sp = new TestServiceProvider
+            {
+                Parents = new List<object>
+                {
+                    new UserControl { Resources = { ["Resource1"] = new SolidColorBrush(Colors.Blue) } }
+                }
+            };
+            var document = new RuntimeXamlLoaderDocument(@"
+<Button xmlns='https://github.com/avaloniaui' Background='{StaticResource Resource1}' />")
+            {
+                ServiceProvider = sp
+            };
+            
+            var parsed = (Button)AvaloniaRuntimeXamlLoader.Load(document);
+            Assert.Equal(Colors.Blue, ((ISolidColorBrush)parsed.Background!).Color);
+        }
     }
 
     public class XamlIlBugTestsEventHandlerCodeBehind : Window
@@ -368,7 +388,6 @@ namespace Avalonia.Markup.Xaml.UnitTests
         public bool IsPressed { get; set; }
         public event PropertyChangedEventHandler PropertyChanged;
 
-        [NotifyPropertyChangedInvocator]
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

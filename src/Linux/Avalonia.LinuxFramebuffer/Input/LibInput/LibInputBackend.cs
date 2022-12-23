@@ -11,7 +11,6 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
     {
         private IScreenInfoProvider _screen;
         private IInputRoot _inputRoot;
-        private readonly Queue<Action> _inputThreadActions = new Queue<Action>();
         private TouchDevice _touch = new TouchDevice();
         private const string LibInput = nameof(Avalonia.LinuxFramebuffer) + "/" + nameof(Avalonia.LinuxFramebuffer.Input) + "/" + nameof(LibInput);
         private readonly RawEventGroupingThreadingHelper _inputQueue;

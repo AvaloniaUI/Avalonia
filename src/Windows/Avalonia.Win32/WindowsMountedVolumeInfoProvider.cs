@@ -8,7 +8,6 @@ namespace Avalonia.Win32
     {
         public IDisposable Listen(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {
-            Contract.Requires<ArgumentNullException>(mountedDrives != null);
             return new WindowsMountedVolumeInfoListener(mountedDrives);
         }
     }

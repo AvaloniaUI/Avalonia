@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -13,6 +14,7 @@ namespace Avalonia.Data.Core
     /// Binds to an expression on an object using a type value converter to convert the values
     /// that are sent and received.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
     public class BindingExpression : LightweightObservableBase<object?>, ISubject<object?>, IDescription
     {
         private readonly ExpressionObserver _inner;

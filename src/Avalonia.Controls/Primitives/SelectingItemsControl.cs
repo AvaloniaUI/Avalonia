@@ -119,8 +119,6 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly StyledProperty<bool> WrapSelectionProperty =
             AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
-
-        private static readonly IList Empty = Array.Empty<object>();
         private string _textSearchTerm = string.Empty;
         private DispatcherTimer? _textSearchTimer;
         private ISelectionModel? _selection;
@@ -588,7 +586,7 @@ namespace Avalonia.Controls.Primitives
                 }
                 else if (e.Key == Key.Space || e.Key == Key.Enter)
                 {
-                    e.Handled = UpdateSelectionFromEventSource(
+                    UpdateSelectionFromEventSource(
                           e.Source,
                           true,
                           e.KeyModifiers.HasFlag(KeyModifiers.Shift),

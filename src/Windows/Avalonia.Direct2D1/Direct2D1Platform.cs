@@ -16,7 +16,7 @@ namespace Avalonia
 {
     public static class Direct2DApplicationExtensions
     {
-        public static T UseDirect2D1<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseDirect2D1(this AppBuilder builder)
         {
             builder.UseRenderingSubsystem(Direct2D1.Direct2D1Platform.Initialize, "Direct2D1");
             return builder;
@@ -113,7 +113,7 @@ namespace Avalonia.Direct2D1
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
-        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+        private IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             foreach (var s in surfaces)
             {
@@ -222,6 +222,26 @@ namespace Avalonia.Direct2D1
 
             return new GlyphRunImpl(run);
         }
+
+        class D2DApi : IPlatformRenderInterfaceContext
+        {
+            private readonly Direct2D1Platform _platform;
+
+            public D2DApi(Direct2D1Platform platform)
+            {
+                _platform = platform;
+            }
+            public object TryGetFeature(Type featureType) => null;
+
+            public void Dispose()
+            {
+            }
+
+            public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => _platform.CreateRenderTarget(surfaces);
+        }
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) =>
+            new D2DApi(this);
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {

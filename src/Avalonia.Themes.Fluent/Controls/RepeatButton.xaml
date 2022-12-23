@@ -10,8 +10,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
-
   <ControlTheme x:Key="{x:Type RepeatButton}" TargetType="RepeatButton">
     <Setter Property="Background" Value="{DynamicResource RepeatButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource RepeatButtonForeground}" />

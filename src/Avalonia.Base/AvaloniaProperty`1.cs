@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reactive.Subjects;
 using Avalonia.Data;
 using Avalonia.Utilities;
@@ -67,6 +68,7 @@ namespace Avalonia
 
         protected override IObservable<AvaloniaPropertyChangedEventArgs> GetChanged() => Changed;
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
         protected BindingValue<object?> TryConvert(object? value)
         {
             if (value == UnsetValue)

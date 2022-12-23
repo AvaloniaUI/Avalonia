@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
 using Avalonia.Utilities;
@@ -22,14 +21,11 @@ namespace Avalonia.Media
         private Point? _baselineOrigin;
         private GlyphRunMetrics? _glyphRunMetrics;
 
-        private ReadOnlySlice<char> _characters;
-
+        private IReadOnlyList<char> _characters;
         private IReadOnlyList<ushort> _glyphIndices;
         private IReadOnlyList<double>? _glyphAdvances;
         private IReadOnlyList<Vector>? _glyphOffsets;
         private IReadOnlyList<int>? _glyphClusters;
-
-        private int _offsetToFirstCharacter;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GlyphRun"/> class by specifying properties of the class.
@@ -45,7 +41,7 @@ namespace Avalonia.Media
         public GlyphRun(
             IGlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
-            ReadOnlySlice<char> characters,
+            IReadOnlyList<char> characters,
             IReadOnlyList<ushort> glyphIndices,
             IReadOnlyList<double>? glyphAdvances = null,
             IReadOnlyList<Vector>? glyphOffsets = null,
@@ -54,19 +50,19 @@ namespace Avalonia.Media
         {
             _glyphTypeface = glyphTypeface;
 
-            FontRenderingEmSize = fontRenderingEmSize;
+            _fontRenderingEmSize = fontRenderingEmSize;
 
-            Characters = characters;
+            _characters = characters;
 
             _glyphIndices = glyphIndices;
 
-            GlyphAdvances = glyphAdvances;
+            _glyphAdvances = glyphAdvances;
 
-            GlyphOffsets = glyphOffsets;
+            _glyphOffsets = glyphOffsets;
 
-            GlyphClusters = glyphClusters;
+            _glyphClusters = glyphClusters;
 
-            BiDiLevel = biDiLevel;
+            _biDiLevel = biDiLevel;
         }
 
         /// <summary>
@@ -145,7 +141,7 @@ namespace Avalonia.Media
         /// <summary>
         ///     Gets or sets the list of UTF16 code points that represent the Unicode content of the <see cref="GlyphRun"/>.
         /// </summary>
-        public ReadOnlySlice<char> Characters
+        public IReadOnlyList<char> Characters
         {
             get => _characters;
             set => Set(ref _characters, value);
@@ -219,7 +215,7 @@ namespace Avalonia.Media
         /// </returns>
         public double GetDistanceFromCharacterHit(CharacterHit characterHit)
         {
-            var characterIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength - _offsetToFirstCharacter;
+            var characterIndex = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
             var distance = 0.0;
 
@@ -227,12 +223,12 @@ namespace Avalonia.Media
             {
                 if (GlyphClusters != null)
                 {
-                    if (characterIndex < GlyphClusters[0])
+                    if (characterIndex < Metrics.FirstCluster)
                     {
                         return 0;
                     }
 
-                    if (characterIndex > GlyphClusters[GlyphClusters.Count - 1])
+                    if (characterIndex > Metrics.LastCluster)
                     {
                         return Metrics.WidthIncludingTrailingWhitespace;
                     }
@@ -268,12 +264,12 @@ namespace Avalonia.Media
 
                 if (GlyphClusters != null && GlyphClusters.Count > 0)
                 {
-                    if (characterIndex > GlyphClusters[0])
+                    if (characterIndex > Metrics.LastCluster)
                     {
                         return 0;
                     }
 
-                    if (characterIndex <= GlyphClusters[GlyphClusters.Count - 1])
+                    if (characterIndex <= Metrics.FirstCluster)
                     {
                         return Size.Width;
                     }
@@ -299,19 +295,12 @@ namespace Avalonia.Media
         /// </returns>
         public CharacterHit GetCharacterHitFromDistance(double distance, out bool isInside)
         {
-            var characterIndex = 0;
-
             // Before
             if (distance <= 0)
             {
                 isInside = false;
 
-                if (GlyphClusters != null)
-                {
-                    characterIndex = GlyphClusters[characterIndex];
-                }
-
-                var firstCharacterHit = FindNearestCharacterHit(characterIndex, out _);
+                var firstCharacterHit = FindNearestCharacterHit(IsLeftToRight ? Metrics.FirstCluster : Metrics.LastCluster, out _);
 
                 return IsLeftToRight ? new CharacterHit(firstCharacterHit.FirstCharacterIndex) : firstCharacterHit;
             }
@@ -321,17 +310,12 @@ namespace Avalonia.Media
             {
                 isInside = false;
 
-                characterIndex = GlyphIndices.Count - 1;
-
-                if (GlyphClusters != null)
-                {
-                    characterIndex = GlyphClusters[characterIndex];
-                }
-
-                var lastCharacterHit = FindNearestCharacterHit(characterIndex, out _);
+                var lastCharacterHit = FindNearestCharacterHit(IsLeftToRight ? Metrics.LastCluster : Metrics.FirstCluster, out _);
 
                 return IsLeftToRight ? lastCharacterHit : new CharacterHit(lastCharacterHit.FirstCharacterIndex);
             }
+
+            var characterIndex = 0;
 
             //Within
             var currentX = 0d;
@@ -378,7 +362,7 @@ namespace Avalonia.Media
             var characterHit = FindNearestCharacterHit(characterIndex, out var width);
 
             var delta = width / 2;
-            
+
             var offset = IsLeftToRight ? Math.Round(distance - currentX, 3) : Math.Round(currentX - distance, 3);
 
             var isTrailing = offset > delta;
@@ -400,24 +384,15 @@ namespace Avalonia.Media
             {
                 characterHit = FindNearestCharacterHit(characterHit.FirstCharacterIndex, out _);
 
-                var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
+                if (characterHit.FirstCharacterIndex == Metrics.LastCluster)
+                {
+                    return characterHit;
+                }
 
-                return textPosition > _characters.End ?
-                    characterHit :
-                    new CharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+                return new CharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength);
             }
 
-            var nextCharacterHit =
-                FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
-
-            if (characterHit == nextCharacterHit)
-            {
-                return characterHit;
-            }
-
-            return characterHit.TrailingLength > 0 ?
-                nextCharacterHit :
-                new CharacterHit(nextCharacterHit.FirstCharacterIndex);
+            return FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
         }
 
         /// <summary>
@@ -454,29 +429,24 @@ namespace Avalonia.Media
                 return characterIndex;
             }
 
-            if (IsLeftToRight)
+            if (characterIndex > Metrics.LastCluster)
             {
-                if (characterIndex < GlyphClusters[0])
+                if (IsLeftToRight)
                 {
-                    return 0;
+                    return GlyphIndices.Count - 1;
                 }
 
-                if (characterIndex > GlyphClusters[GlyphClusters.Count - 1])
-                {
-                    return GlyphClusters.Count - 1;
-                }
+                return 0;
             }
-            else
-            {
-                if (characterIndex < GlyphClusters[GlyphClusters.Count - 1])
-                {
-                    return GlyphClusters.Count - 1;
-                }
 
-                if (characterIndex > GlyphClusters[0])
+            if (characterIndex < Metrics.FirstCluster)
+            {
+                if (IsLeftToRight)
                 {
                     return 0;
                 }
+
+                return GlyphIndices.Count - 1;
             }
 
             var comparer = IsLeftToRight ? s_ascendingComparer : s_descendingComparer;
@@ -498,7 +468,7 @@ namespace Avalonia.Media
 
                 if (start < 0)
                 {
-                    return -1;
+                    goto result;
                 }
             }
 
@@ -517,6 +487,18 @@ namespace Avalonia.Media
                 }
             }
 
+        result:
+
+            if (start < 0)
+            {
+                return 0;
+            }
+
+            if (start > GlyphIndices.Count - 1)
+            {
+                return GlyphIndices.Count - 1;
+            }
+
             return start;
         }
 
@@ -532,20 +514,20 @@ namespace Avalonia.Media
         {
             width = 0.0;
 
-            var start = FindGlyphIndex(index);
+            var glyphIndex = FindGlyphIndex(index);
 
             if (GlyphClusters == null)
             {
                 width = GetGlyphAdvance(index, out _);
 
-                return new CharacterHit(start, 1);
+                return new CharacterHit(glyphIndex, 1);
             }
 
-            var cluster = GlyphClusters[start];
+            var cluster = GlyphClusters[glyphIndex];
 
             var nextCluster = cluster;
 
-            var currentIndex = start;
+            var currentIndex = glyphIndex;
 
             while (nextCluster == cluster)
             {
@@ -571,20 +553,64 @@ namespace Avalonia.Media
                 }
 
                 nextCluster = GlyphClusters[currentIndex];
-            }           
-
-            int trailingLength;
-
-            if (nextCluster == cluster)
-            {
-                trailingLength = Characters.Start + Characters.Length - _offsetToFirstCharacter - cluster;
-            }
-            else
-            {
-                trailingLength = nextCluster - cluster;
             }
 
-            return new CharacterHit(_offsetToFirstCharacter + cluster, trailingLength);
+            var clusterLength = Math.Max(0, nextCluster - cluster);
+
+            if (cluster == Metrics.LastCluster && clusterLength == 0)
+            {
+                var characterLength = 0;
+
+                var currentCluster = Metrics.FirstCluster;
+
+                if (IsLeftToRight)
+                {
+                    for (int i = 1; i < GlyphClusters.Count; i++)
+                    {
+                        nextCluster = GlyphClusters[i];
+
+                        if (currentCluster > cluster)
+                        {
+                            break;
+                        }
+
+                        var length = nextCluster - currentCluster;
+
+                        characterLength += length;
+
+                        currentCluster = nextCluster;
+                    }
+                }
+                else
+                {
+                    for (int i = GlyphClusters.Count - 1; i >= 0; i--)
+                    {
+                        nextCluster = GlyphClusters[i];
+
+                        if (currentCluster > cluster)
+                        {
+                            break;
+                        }
+
+                        var length = nextCluster - currentCluster;
+
+                        characterLength += length;
+
+                        currentCluster = nextCluster;
+                    }
+                }
+
+                if (Characters != null)
+                {
+                    clusterLength = Characters.Count - characterLength;
+                }
+                else
+                {
+                    clusterLength = 1;
+                }
+            }
+
+            return new CharacterHit(cluster, clusterLength);
         }
 
         /// <summary>
@@ -618,22 +644,25 @@ namespace Avalonia.Media
 
         private GlyphRunMetrics CreateGlyphRunMetrics()
         {
-            var firstCluster = 0;
-            var lastCluster = Characters.Length - 1;
+            int firstCluster = 0, lastCluster = 0;
+
+            if (_glyphClusters != null && _glyphClusters.Count > 0)
+            {
+                firstCluster = _glyphClusters[0];
+                lastCluster = _glyphClusters[_glyphClusters.Count - 1];
+            }
+            else
+            {
+                if (Characters != null && Characters.Count > 0)
+                {
+                    firstCluster = 0;
+                    lastCluster = Characters.Count - 1;
+                }
+            }
 
             if (!IsLeftToRight)
             {
-                var cluster = firstCluster;
-                firstCluster = lastCluster;
-                lastCluster = cluster;
-            }
-
-            if (GlyphClusters != null && GlyphClusters.Count > 0)
-            {
-                firstCluster = GlyphClusters[0];
-                lastCluster = GlyphClusters[GlyphClusters.Count - 1];
-
-                _offsetToFirstCharacter = Math.Max(0, Characters.Start - firstCluster);
+                (lastCluster, firstCluster) = (firstCluster, lastCluster);
             }
 
             var isReversed = firstCluster > lastCluster;
@@ -666,12 +695,19 @@ namespace Avalonia.Media
                 }
             }
 
-            return new GlyphRunMetrics(width, widthIncludingTrailingWhitespace, trailingWhitespaceLength, newLineLength,
-                height);
+            return new GlyphRunMetrics(
+                width,
+                widthIncludingTrailingWhitespace,
+                height,
+                trailingWhitespaceLength,
+                newLineLength,
+                firstCluster,
+                lastCluster
+            );
         }
 
         private int GetTrailingWhitespaceLength(bool isReversed, out int newLineLength, out int glyphCount)
-        {          
+        {
             if (isReversed)
             {
                 return GetTralingWhitespaceLengthRightToLeft(out newLineLength, out glyphCount);
@@ -681,66 +717,82 @@ namespace Avalonia.Media
             newLineLength = 0;
             var trailingWhitespaceLength = 0;
 
-            if (GlyphClusters == null)
+            if (Characters != null)
             {
-                for (var i = _characters.Length - 1; i >= 0;)
+                if (GlyphClusters == null)
                 {
-                    var codepoint = Codepoint.ReadAt(_characters, i, out var count);
-
-                    if (!codepoint.IsWhiteSpace)
+                    for (var i = _characters.Count - 1; i >= 0;)
                     {
-                        break;
-                    }
+                        var codepoint = Codepoint.ReadAt(_characters, i, out var count);
 
-                    if (codepoint.IsBreakChar)
-                    {
-                        newLineLength++;
-                    }
-
-                    trailingWhitespaceLength++;
-
-                    i -= count;
-                    glyphCount++;
-                }
-            }
-            else
-            {
-                for (var i = GlyphClusters.Count - 1; i >= 0; i--)
-                {
-                    var currentCluster = GlyphClusters[i];
-                    var characterIndex = Math.Max(0, currentCluster - _characters.BufferOffset);
-                    var codepoint = Codepoint.ReadAt(_characters, characterIndex, out _);
-
-                    if (!codepoint.IsWhiteSpace)
-                    {
-                        break;
-                    }
-
-                    var clusterLength = 1;
-
-                    while(i - 1 >= 0)
-                    {
-                        var nextCluster = GlyphClusters[i - 1];
-
-                        if(currentCluster == nextCluster)
+                        if (!codepoint.IsWhiteSpace)
                         {
-                            clusterLength++;
-                            i--;
-
-                            continue;
+                            break;
                         }
 
-                        break;
-                    }
+                        if (codepoint.IsBreakChar)
+                        {
+                            newLineLength++;
+                        }
 
-                    if (codepoint.IsBreakChar)
+                        trailingWhitespaceLength++;
+
+                        i -= count;
+                        glyphCount++;
+                    }
+                }
+                else
+                {
+                    if (Characters.Count > 0)
                     {
-                        newLineLength += clusterLength;
-                    }
+                        var characterIndex = Characters.Count - 1;
 
-                    trailingWhitespaceLength += clusterLength;
-                   
-                    glyphCount++;                   
+                        for (var i = GlyphClusters.Count - 1; i >= 0; i--)
+                        {
+                            var currentCluster = GlyphClusters[i];
+                            var codepoint = Codepoint.ReadAt(_characters, characterIndex, out var characterLength);
+
+                            characterIndex -= characterLength;
+
+                            if (!codepoint.IsWhiteSpace)
+                            {
+                                break;
+                            }
+
+                            var clusterLength = 1;
+
+                            while (i - 1 >= 0)
+                            {
+                                var nextCluster = GlyphClusters[i - 1];
+
+                                if (currentCluster == nextCluster)
+                                {
+                                    clusterLength++;
+                                    i--;
+
+                                    if(characterIndex >= 0)
+                                    {
+                                        codepoint = Codepoint.ReadAt(_characters, characterIndex, out characterLength);
+
+                                        characterIndex -= characterLength;
+                                    }
+
+                                    continue;
+                                }
+
+                                break;
+                            }
+
+                            if (codepoint.IsBreakChar)
+                            {
+                                newLineLength += clusterLength;
+                            }
+
+                            trailingWhitespaceLength += clusterLength;
+
+                            glyphCount++;
+                        }
+                    }
                 }
             }
 
@@ -753,67 +805,73 @@ namespace Avalonia.Media
             newLineLength = 0;
             var trailingWhitespaceLength = 0;
 
-            if (GlyphClusters == null)
+            if (Characters != null)
             {
-                for (var i = 0; i < Characters.Length;)
+                if (GlyphClusters == null)
                 {
-                    var codepoint = Codepoint.ReadAt(_characters, i, out var count);
-
-                    if (!codepoint.IsWhiteSpace)
+                    for (var i = 0; i < Characters.Count;)
                     {
-                        break;
-                    }
+                        var codepoint = Codepoint.ReadAt(_characters, i, out var count);
 
-                    if (codepoint.IsBreakChar)
-                    {
-                        newLineLength++;
-                    }
-
-                    trailingWhitespaceLength++;
-
-                    i += count;
-                    glyphCount++;
-                }
-            }
-            else
-            {
-                for (var i = 0; i < GlyphClusters.Count; i++)
-                {
-                    var currentCluster = GlyphClusters[i];
-                    var characterIndex = Math.Max(0, currentCluster - _characters.BufferOffset);
-                    var codepoint = Codepoint.ReadAt(_characters, characterIndex, out _);
-
-                    if (!codepoint.IsWhiteSpace)
-                    {
-                        break;
-                    }
-
-                    var clusterLength = 1;
-
-                    var j = i;
-
-                    while (j - 1 >= 0)
-                    {
-                        var nextCluster = GlyphClusters[--j];
-
-                        if (currentCluster == nextCluster)
+                        if (!codepoint.IsWhiteSpace)
                         {
-                            clusterLength++;                        
-
-                            continue;
+                            break;
                         }
 
-                        break;
-                    }
+                        if (codepoint.IsBreakChar)
+                        {
+                            newLineLength++;
+                        }
 
-                    if (codepoint.IsBreakChar)
+                        trailingWhitespaceLength++;
+
+                        i += count;
+                        glyphCount++;
+                    }
+                }
+                else
+                {
+                    var characterIndex = 0;
+
+                    for (var i = 0; i < GlyphClusters.Count; i++)
                     {
-                        newLineLength += clusterLength;
+                        var currentCluster = GlyphClusters[i];
+                        var codepoint = Codepoint.ReadAt(_characters, characterIndex, out var characterLength);
+
+                        characterIndex += characterLength;
+
+                        if (!codepoint.IsWhiteSpace)
+                        {
+                            break;
+                        }
+
+                        var clusterLength = 1;
+
+                        var j = i;
+
+                        while (j - 1 >= 0)
+                        {
+                            var nextCluster = GlyphClusters[--j];
+
+                            if (currentCluster == nextCluster)
+                            {
+                                clusterLength++;
+
+                                continue;
+                            }
+
+                            break;
+                        }
+
+                        if (codepoint.IsBreakChar)
+                        {
+                            newLineLength += clusterLength;
+                        }
+
+                        trailingWhitespaceLength += clusterLength;
+
+                        glyphCount += clusterLength;
                     }
-
-                    trailingWhitespaceLength += clusterLength;
-
-                    glyphCount += clusterLength;
                 }
             }
 
@@ -855,14 +913,9 @@ namespace Avalonia.Media
                 throw new InvalidOperationException();
             }
 
-            _glyphRunImpl = CreateGlyphRunImpl();
-        }
-
-        private IGlyphRunImpl CreateGlyphRunImpl()
-        {
             var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
 
-            return platformRenderInterface.CreateGlyphRun(GlyphTypeface, FontRenderingEmSize, GlyphIndices, GlyphAdvances, GlyphOffsets);
+            _glyphRunImpl = platformRenderInterface.CreateGlyphRun(GlyphTypeface, FontRenderingEmSize, GlyphIndices, GlyphAdvances, GlyphOffsets);
         }
 
         void IDisposable.Dispose()

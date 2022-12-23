@@ -35,7 +35,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -63,7 +63,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -100,7 +100,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -129,7 +129,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -173,7 +173,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
@@ -227,7 +227,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
@@ -276,7 +276,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 container.Measure(Size.Infinity);
                 container.Arrange(new Rect(container.DesiredSize));
 
@@ -324,7 +324,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
 
@@ -399,11 +399,11 @@ namespace Avalonia.Base.UnitTests.Rendering
 
                 scroll.UpdateChild();
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(container.DesiredSize));
                 
-                root.Renderer.Paint(Rect.Empty);
+                root.Renderer.Paint(default);
                 var result = root.Renderer.HitTest(new Point(50, 150), root, null).First();
 
                 Assert.Equal(item1, result);
@@ -419,7 +419,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                 container.InvalidateArrange();
                 container.Arrange(new Rect(container.DesiredSize));
 
-                root.Renderer.Paint(Rect.Empty);
+                root.Renderer.Paint(default);
                 result = root.Renderer.HitTest(new Point(50, 150), root, null).First();
                 Assert.Equal(item2, result);
 
@@ -447,7 +447,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -486,7 +486,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
                 Assert.Equal(new Rect(100, 100, 200, 200), border.Bounds);
@@ -522,7 +522,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 }; 
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -560,7 +560,7 @@ namespace Avalonia.Base.UnitTests.Rendering
                     }
                 }; 
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null);
+                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
                 root.Measure(Size.Infinity);
                 root.Arrange(new Rect(root.DesiredSize));
 
@@ -569,7 +569,7 @@ namespace Avalonia.Base.UnitTests.Rendering
             }
         }
 
-        private IDisposable TestApplication()
+        private static IDisposable TestApplication()
         {
             return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
         }

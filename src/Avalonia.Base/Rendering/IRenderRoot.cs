@@ -26,12 +26,6 @@ namespace Avalonia.Rendering
         double RenderScaling { get; }
 
         /// <summary>
-        /// Creates a render target for the window.
-        /// </summary>
-        /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderTarget();
-
-        /// <summary>
         /// Adds a rectangle to the window's dirty region.
         /// </summary>
         /// <param name="rect">The rectangle.</param>

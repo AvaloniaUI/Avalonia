@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 
@@ -21,7 +22,7 @@ namespace Avalonia.Controls
                     item.Click -= OnMenuItemClick;
             });
         }
-        
+
         public static void SetEnableMenuItemClickForwarding(MenuItem menuItem, bool enable)
         {
             menuItem.SetValue(EnableMenuItemClickForwardingProperty, enable);
