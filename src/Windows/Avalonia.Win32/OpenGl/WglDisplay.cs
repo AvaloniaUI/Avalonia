@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
+using Avalonia.Threading;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.OpenGl.WglConsts;
@@ -9,8 +10,6 @@ namespace Avalonia.Win32.OpenGl
     internal class WglDisplay
     {
         private static bool? _initialized;
-        private static ushort _windowClass;
-        private static readonly WndProc _wndProcDelegate = WndProc;
         private static readonly DebugCallbackDelegate _debugCallback = DebugCallback;
 
         private static IntPtr _bootstrapContext;
@@ -44,18 +43,9 @@ namespace Avalonia.Win32.OpenGl
         }
         static bool InitializeCore()
         {
-            var wndClassEx = new WNDCLASSEX
-            {
-                cbSize = Marshal.SizeOf<WNDCLASSEX>(),
-                hInstance = GetModuleHandle(null),
-                lpfnWndProc = _wndProcDelegate,
-                lpszClassName = "AvaloniaGlWindow-" + Guid.NewGuid(),
-                style = (int)ClassStyles.CS_OWNDC
-            };
-            
-            _windowClass = RegisterClassEx(ref wndClassEx);
-            _bootstrapWindow = CreateOffscreenWindow();
-            _bootstrapDc = GetDC(_bootstrapWindow);
+            Dispatcher.UIThread.VerifyAccess();
+            _bootstrapWindow = WglGdiResourceManager.CreateOffscreenWindow();
+            _bootstrapDc = WglGdiResourceManager.GetDC(_bootstrapWindow);
             _defaultPfd = new PixelFormatDescriptor
             {
                 Size = (ushort)Marshal.SizeOf<PixelFormatDescriptor>(),
@@ -105,17 +95,11 @@ namespace Avalonia.Win32.OpenGl
                 DescribePixelFormat(_bootstrapDc, formats[0], Marshal.SizeOf<PixelFormatDescriptor>(), ref _defaultPfd);
                 _defaultPixelFormat = formats[0];
             }
-
-
+            
             wglMakeCurrent(IntPtr.Zero, IntPtr.Zero);
             return true;
         }
-        
-        static IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
-        {
-            return DefWindowProc(hWnd, msg, wParam, lParam);
-        }
-        
+
         private static void DebugCallback(int source, int type, int id, int severity, int len, IntPtr message, IntPtr userparam)
         {
             var err = Marshal.PtrToStringAnsi(message, len);
@@ -131,27 +115,32 @@ namespace Avalonia.Win32.OpenGl
 
             using (new WglRestoreContext(_bootstrapDc, _bootstrapContext, null))
             {
-                var window = CreateOffscreenWindow();
-                var dc = GetDC(window);
+                var window = WglGdiResourceManager.CreateOffscreenWindow();
+                var dc = WglGdiResourceManager.GetDC(window);
                 SetPixelFormat(dc, _defaultPixelFormat, ref _defaultPfd);
                 foreach (var version in versions)
                 {
                     if(version.Type != GlProfileType.OpenGL)
                         continue;
-                    var context = WglCreateContextAttribsArb(dc, shareContext?.Handle ?? IntPtr.Zero,
-                        new[]
-                        {
-                            // major
-                            WGL_CONTEXT_MAJOR_VERSION_ARB, version.Major,
-                            // minor
-                            WGL_CONTEXT_MINOR_VERSION_ARB,  version.Minor,
-                            // core profile
-                            WGL_CONTEXT_PROFILE_MASK_ARB, 1, 
-                            // debug 
-                            // WGL_CONTEXT_FLAGS_ARB, 1,
-                            // end
-                            0, 0
-                        });
+                    IntPtr context;
+                    using (shareContext?.Lock())
+                    {
+                        context = WglCreateContextAttribsArb(dc, shareContext?.Handle ?? IntPtr.Zero,
+                            new[]
+                            {
+                                // major
+                                WGL_CONTEXT_MAJOR_VERSION_ARB, version.Major,
+                                // minor
+                                WGL_CONTEXT_MINOR_VERSION_ARB, version.Minor,
+                                // core profile
+                                WGL_CONTEXT_PROFILE_MASK_ARB, 1,
+                                // debug 
+                                // WGL_CONTEXT_FLAGS_ARB, 1,
+                                // end
+                                0, 0
+                            });
+                    }
+
                     using(new WglRestoreContext(dc, context, null))
                         GlDebugMessageCallback(Marshal.GetFunctionPointerForDelegate(_debugCallback), IntPtr.Zero);
                     if (context != IntPtr.Zero)
@@ -159,26 +148,13 @@ namespace Avalonia.Win32.OpenGl
                             _defaultPixelFormat, _defaultPfd);
                 }
 
-                ReleaseDC(window, dc);
-                DestroyWindow(window);
+                WglGdiResourceManager.ReleaseDC(window, dc);
+                WglGdiResourceManager.DestroyWindow(window);
                 return null;
             }
         }
 
 
-        static IntPtr CreateOffscreenWindow() =>
-            CreateWindowEx(
-                0,
-                _windowClass,
-                null,
-                (int)WindowStyles.WS_OVERLAPPEDWINDOW,
-                0,
-                0,
-                640,
-                480,
-                IntPtr.Zero, 
-                IntPtr.Zero,
-                IntPtr.Zero,
-                IntPtr.Zero);
+
     }
 }

@@ -6,7 +6,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Paints an area with an <see cref="Visual"/>.
     /// </summary>
-    public class VisualBrush : TileBrush, IVisualBrush
+    public class VisualBrush : TileBrush, IVisualBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
@@ -45,7 +45,7 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        public override IBrush ToImmutable()
+        IImmutableBrush IMutableBrush.ToImmutable()
         {
             return new ImmutableVisualBrush(this);
         }

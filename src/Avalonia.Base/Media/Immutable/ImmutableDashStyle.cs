@@ -17,7 +17,7 @@ namespace Avalonia.Media.Immutable
         /// </summary>
         /// <param name="dashes">The dashes collection.</param>
         /// <param name="offset">The dash sequence offset.</param>
-        public ImmutableDashStyle(IEnumerable<double> dashes, double offset)
+        public ImmutableDashStyle(IEnumerable<double>? dashes, double offset)
         {
             _dashes = dashes?.ToArray() ?? Array.Empty<double>();
             Offset = offset;
@@ -69,7 +69,7 @@ namespace Avalonia.Media.Immutable
             return hashCode;
         }
 
-        private static bool SequenceEqual(IReadOnlyList<double> left, IReadOnlyList<double> right)
+        private static bool SequenceEqual(IReadOnlyList<double> left, IReadOnlyList<double>? right)
         {
             if (ReferenceEquals(left, right))
             {

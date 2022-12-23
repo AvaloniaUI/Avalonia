@@ -3,29 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 
-namespace Avalonia.Win32.DxgiSwapchain
+namespace Avalonia.Win32.DirectX
 {
     public class DxgiSwapchainWindow : EglGlPlatformSurfaceBase
     {
         private DxgiConnection _connection;
-        private EglPlatformOpenGlInterface _egl;
-        private IEglWindowGlPlatformSurfaceInfo _window;
+        private EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _window;
 
-        public DxgiSwapchainWindow(DxgiConnection connection, IEglWindowGlPlatformSurfaceInfo window)
+        public DxgiSwapchainWindow(DxgiConnection connection, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo window)
         {
             _connection = connection;
             _window = window;
-            _egl = connection.Egl;
         }
 
-        public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
+        public override IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
-            using (_egl.PrimaryContext.EnsureCurrent())
+            var eglContext = (EglContext)context;
+            using (eglContext.EnsureCurrent())
             {
-                return new DxgiRenderTarget(_window, _egl, _connection);
+                return new DxgiRenderTarget(_window, eglContext, _connection);
             }
         }
     }

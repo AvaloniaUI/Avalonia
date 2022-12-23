@@ -69,8 +69,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
             var testName = nameof(FramebufferRenderResultsShouldBeUsableAsBitmap) + "_" + fmt;
             var fb = new Framebuffer(fmt, new PixelSize(80, 80));
-            var r = Avalonia.AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            using (var target = r.CreateRenderTarget(new object[] { fb }))
+            var r = Avalonia.AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+            using(var cpuContext = r.CreateBackendContext(null))
+            using (var target = cpuContext.CreateRenderTarget(new object[] { fb }))
             using (var ctx = target.CreateDrawingContext(null))
             {
                 ctx.Clear(Colors.Transparent);

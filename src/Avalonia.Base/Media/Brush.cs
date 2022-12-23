@@ -10,7 +10,7 @@ namespace Avalonia.Media
     /// Describes how an area is painted.
     /// </summary>
     [TypeConverter(typeof(BrushConverter))]
-    public abstract class Brush : Animatable, IMutableBrush
+    public abstract class Brush : Animatable
     {
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.
@@ -91,9 +91,6 @@ namespace Avalonia.Media
 
             throw new FormatException($"Invalid brush string: '{s}'.");
         }
-
-        /// <inheritdoc/>
-        public abstract IBrush ToImmutable();
 
         /// <summary>
         /// Marks a property as affecting the brush's visual representation.

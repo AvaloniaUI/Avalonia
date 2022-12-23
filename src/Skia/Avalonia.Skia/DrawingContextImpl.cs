@@ -10,7 +10,6 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
-using JetBrains.Annotations;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -362,7 +361,7 @@ namespace Avalonia.Skia
 
             foreach (var boxShadow in boxShadows)
             {
-                if (!boxShadow.IsEmpty && !boxShadow.IsInset)
+                if (!boxShadow.IsDefault && !boxShadow.IsInset)
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
@@ -418,7 +417,7 @@ namespace Avalonia.Skia
 
             foreach (var boxShadow in boxShadows)
             {
-                if (!boxShadow.IsEmpty && boxShadow.IsInset)
+                if (!boxShadow.IsDefault && boxShadow.IsInset)
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
@@ -675,13 +674,14 @@ namespace Avalonia.Skia
             }
         }
 
-        [CanBeNull]
-        public object GetFeature(Type t)
+#nullable enable
+        public object? GetFeature(Type t)
         {
             if (t == typeof(ISkiaSharpApiLeaseFeature))
                 return new SkiaLeaseFeature(this);
             return null;
         }
+#nullable restore
 
         /// <summary>
         /// Configure paint wrapper for using gradient brush.
@@ -1137,11 +1137,14 @@ namespace Avalonia.Skia
             if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
             {
                 var srcDashes = pen.DashStyle.Dashes;
-                var dashesArray = new float[srcDashes.Count];
 
-                for (var i = 0; i < srcDashes.Count; ++i)
+                var count = srcDashes.Count % 2 == 0 ? srcDashes.Count : srcDashes.Count * 2;
+
+                var dashesArray = new float[count];
+
+                for (var i = 0; i < count; ++i)
                 {
-                    dashesArray[i] = (float) srcDashes[i] * paint.StrokeWidth;
+                    dashesArray[i] = (float) srcDashes[i % srcDashes.Count] * paint.StrokeWidth;
                 }
 
                 var offset = (float)(pen.DashStyle.Offset * pen.Thickness);

@@ -181,9 +181,7 @@ namespace Avalonia.Base.UnitTests.Media
             var count = glyphAdvances.Length;
             var glyphIndices = new ushort[count];
 
-            var start = bidiLevel == 0 ? glyphClusters[0] : glyphClusters[^1];
-
-            var characters = new ReadOnlySlice<char>(Enumerable.Repeat('a', count).ToArray(), start, count);
+            var characters = Enumerable.Repeat('a', count).ToArray();
 
             return new GlyphRun(new MockGlyphTypeface(), 10, characters, glyphIndices, glyphAdvances,
                 glyphClusters: glyphClusters, biDiLevel: bidiLevel);

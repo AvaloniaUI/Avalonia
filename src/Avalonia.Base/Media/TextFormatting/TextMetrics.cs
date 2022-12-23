@@ -3,11 +3,11 @@
     /// <summary>
     /// A metric that holds information about text specific measurements.
     /// </summary>
-    public readonly struct TextMetrics
+    public readonly record struct TextMetrics
     {
-        public TextMetrics(Typeface typeface, double fontRenderingEmSize)
+        public TextMetrics(IGlyphTypeface glyphTypeface, double fontRenderingEmSize)
         {
-            var fontMetrics = typeface.GlyphTypeface.Metrics;
+            var fontMetrics = glyphTypeface.Metrics;
 
             var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
 

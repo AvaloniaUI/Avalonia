@@ -16,11 +16,11 @@ namespace Avalonia.Media
         /// The result of calling <see cref="IMutableBrush.ToImmutable"/> if the brush is mutable,
         /// otherwise <paramref name="brush"/>.
         /// </returns>
-        public static IBrush ToImmutable(this IBrush brush)
+        public static IImmutableBrush ToImmutable(this IBrush brush)
         {
             _ = brush ?? throw new ArgumentNullException(nameof(brush));
 
-            return (brush as IMutableBrush)?.ToImmutable() ?? brush;
+            return (brush as IMutableBrush)?.ToImmutable() ?? (IImmutableBrush)brush;
         }
 
         /// <summary>

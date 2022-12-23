@@ -4,7 +4,6 @@ using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Styling;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Embedding
 {
@@ -12,7 +11,6 @@ namespace Avalonia.Controls.Embedding
     {
         public EmbeddableControlRoot(ITopLevelImpl impl) : base(impl)
         {
-            
         }
 
         public EmbeddableControlRoot() : base(PlatformManager.CreateEmbeddableWindow())

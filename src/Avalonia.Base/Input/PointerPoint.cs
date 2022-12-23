@@ -5,7 +5,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Provides basic properties for the input pointer associated with a single mouse, pen/stylus, or touch contact.
     /// </summary>
-    public struct PointerPoint
+    public record struct PointerPoint
     {
         public PointerPoint(IPointer pointer, Point position, PointerPointProperties properties)
         {
@@ -33,7 +33,7 @@ namespace Avalonia.Input
     /// <summary>
     /// Provides extended properties for a PointerPoint object.
     /// </summary>
-    public struct PointerPointProperties
+    public record struct PointerPointProperties
     {
         /// <summary>
         /// Gets a value that indicates whether the pointer input was triggered by the primary action mode of an input device.

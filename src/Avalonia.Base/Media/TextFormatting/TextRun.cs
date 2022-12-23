@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -14,12 +13,12 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         ///  Gets the text source length.
         /// </summary>
-        public virtual int TextSourceLength => DefaultTextSourceLength;
+        public virtual int Length => DefaultTextSourceLength;
 
         /// <summary>
         /// Gets the text run's text.
         /// </summary>
-        public virtual ReadOnlySlice<char> Text => default;
+        public virtual CharacterBufferReference CharacterBufferReference => default;
 
         /// <summary>
         /// A set of properties shared by every characters in the run
@@ -41,9 +40,11 @@ namespace Avalonia.Media.TextFormatting
                 {
                     unsafe
                     {
-                        fixed (char* charsPtr = _textRun.Text.Span)
+                        var characterBuffer = _textRun.CharacterBufferReference.CharacterBuffer;
+
+                        fixed (char* charsPtr = characterBuffer.Span)
                         {
-                            return new string(charsPtr, 0, _textRun.Text.Length);
+                            return new string(charsPtr, 0, characterBuffer.Span.Length);
                         }
                     }
                 }

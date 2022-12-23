@@ -55,7 +55,7 @@ namespace Avalonia.Media.TextFormatting
                 CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
                     textDecorations, flowDirection, lineHeight, letterSpacing);
 
-            _textSource = new FormattedTextSource(text.AsMemory(), _paragraphProperties.DefaultTextRunProperties, textStyleOverrides);
+            _textSource = new FormattedTextSource(text ?? "", _paragraphProperties.DefaultTextRunProperties, textStyleOverrides);
 
             _textTrimming = textTrimming ?? TextTrimming.None;
 

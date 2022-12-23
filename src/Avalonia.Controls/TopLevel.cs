@@ -328,17 +328,7 @@ namespace Avalonia.Controls
         public IShareProvider? ShareProvider => _shareProvider
             ??= (PlatformImpl as ITopLevelImplWithShareProvider)?.ShareProvider
             ?? null;
-
-        IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
-
-        /// <inheritdoc/>
-        protected virtual IRenderTarget CreateRenderTarget()
-        {
-            if(PlatformImpl == null)
-                throw new InvalidOperationException("Can't create render target, PlatformImpl is null (might be already disposed)");
-            return _renderInterface!.CreateRenderTarget(PlatformImpl.Surfaces);
-        }
-
+            
         /// <inheritdoc/>
         void IRenderRoot.Invalidate(Rect rect)
         {
