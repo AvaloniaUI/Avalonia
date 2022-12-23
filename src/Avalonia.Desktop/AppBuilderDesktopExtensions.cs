@@ -1,5 +1,6 @@
+using Avalonia.Compatibility;
 using Avalonia.Controls;
-using Avalonia.Platform;
+using Avalonia.Logging;
 
 namespace Avalonia
 {
@@ -7,8 +8,6 @@ namespace Avalonia
     {
         public static AppBuilder UsePlatformDetect(this AppBuilder builder)
         {
-            var os = builder.RuntimePlatform.GetRuntimeInfo().OperatingSystem;
-
             // We don't have the ability to load every assembly right now, so we are
             // stuck with manual configuration  here
             // Helpers are extracted to separate methods to take the advantage of the fact
@@ -16,21 +15,27 @@ namespace Avalonia
             // Additionally, by having a hard reference to each assembly,
             // we verify that the assemblies are in the final .deps.json file
             //  so .NET Core knows where to load the assemblies from,.
-            if (os == OperatingSystemType.WinNT)
+            if (OperatingSystemEx.IsWindows())
             {
                 LoadWin32(builder);
                 LoadSkia(builder);
             }
-            else if(os==OperatingSystemType.OSX)
+            else if(OperatingSystemEx.IsMacOS())
             {
                 LoadAvaloniaNative(builder);
                 LoadSkia(builder);
             }
-            else
+            else if (OperatingSystemEx.IsLinux())
             {
                 LoadX11(builder);
                 LoadSkia(builder);
             }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Platform)?.Log(builder,
+                    "Avalonia.Desktop package was referenced on non-desktop platform or it isn't supported");
+            }
+
             return builder;
         }
 
