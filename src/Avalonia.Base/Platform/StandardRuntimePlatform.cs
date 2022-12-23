@@ -14,13 +14,13 @@ namespace Avalonia.Platform
 
         public IUnmanagedBlob AllocBlob(int size) => new UnmanagedBlob(size);
         
-        private static readonly Lazy<RuntimePlatformInfo> Info = new(() => new RuntimePlatformInfo
+        private static readonly RuntimePlatformInfo s_info = new()
         {
             IsDesktop = OperatingSystemEx.IsWindows() || OperatingSystemEx.IsMacOS() || OperatingSystemEx.IsLinux(),
             IsMobile = OperatingSystemEx.IsAndroid() || OperatingSystemEx.IsAndroid()
-        });
+        };
 
 
-        public virtual RuntimePlatformInfo GetRuntimeInfo() => Info.Value;
+        public virtual RuntimePlatformInfo GetRuntimeInfo() => s_info;
     }
 }
