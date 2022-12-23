@@ -17,7 +17,7 @@ namespace Avalonia.Platform
         private static readonly RuntimePlatformInfo s_info = new()
         {
             IsDesktop = OperatingSystemEx.IsWindows() || OperatingSystemEx.IsMacOS() || OperatingSystemEx.IsLinux(),
-            IsMobile = OperatingSystemEx.IsAndroid() || OperatingSystemEx.IsAndroid()
+            IsMobile = OperatingSystemEx.IsAndroid() || OperatingSystemEx.IsIOS()
         };
 
 
