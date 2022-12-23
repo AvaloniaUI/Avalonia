@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.GestureRecognizers;
@@ -243,6 +242,78 @@ namespace Avalonia.Base.UnitTests.Input
             timer.action();
 
             Assert.False(raised);
+        }
+
+        [Fact]
+        public void Hold_Is_Cancelled_When_Second_Contact_Is_Detected()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            var iSettingsMock = new Mock<IPlatformSettings>();
+            iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
+
+            var scheduledTimers = new List<(TimeSpan time, Action action)>();
+            using var app = UnitTestApplication.Start(new TestServices(
+                threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
+
+            Border border = new Border();
+            border.IsHoldWithMouseEnabled = true;
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var cancelled = false;
+
+            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => cancelled = e.HoldingState == HoldingState.Cancelled);
+            
+            _mouse.Down(border);
+            Assert.False(cancelled);
+
+            var timer = Assert.Single(scheduledTimers);
+            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
+            timer.action();
+
+            var secondMouse = new MouseTestHelper();
+
+            secondMouse.Down(border);
+
+            Assert.True(cancelled);
+        }
+
+        [Fact]
+        public void Hold_Is_Cancelled_When_Pointer_Moves()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            var iSettingsMock = new Mock<IPlatformSettings>();
+            iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
+
+            var scheduledTimers = new List<(TimeSpan time, Action action)>();
+            using var app = UnitTestApplication.Start(new TestServices(
+                threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
+
+            Border border = new Border();
+            border.IsHoldWithMouseEnabled = true;
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            var cancelled = false;
+
+            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => cancelled = e.HoldingState == HoldingState.Cancelled);
+            
+            _mouse.Down(border);
+            Assert.False(cancelled);
+
+            var timer = Assert.Single(scheduledTimers);
+            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
+            timer.action();
+
+            _mouse.Move(border, position: new Point(10, 10));
+
+            Assert.True(cancelled);
         }
         
         [Fact]
