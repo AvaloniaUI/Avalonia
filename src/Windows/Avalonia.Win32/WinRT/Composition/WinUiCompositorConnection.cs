@@ -17,7 +17,7 @@ namespace Avalonia.Win32.WinRT.Composition;
 internal class WinUiCompositorConnection : IRenderTimer
 {
     private readonly WinUiCompositionShared _shared;
-    private Action<TimeSpan>? _tick;
+    private Action<TimeSpan> _tick;
     private int _subscriberCount;
     private CancellationTokenSource _renderCts;
     private readonly ManualResetEvent _manualResetEvent = new(false);
@@ -44,18 +44,7 @@ internal class WinUiCompositorConnection : IRenderTimer
             _tick -= value;
         }
     }
-        
-    private void Start()
-    {
-        _manualResetEvent.Set();
-    }
-        
-    private void Stop()
-    {
-        _manualResetEvent.Reset();
-        _renderCts.Cancel();
-        _renderCts.Dispose();
-    }
+    
     public bool RunsInBackground => true;
     
     public unsafe WinUiCompositorConnection()
@@ -191,4 +180,16 @@ internal class WinUiCompositorConnection : IRenderTimer
     }
 
     public WinUiCompositedWindowSurface CreateSurface(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info) => new(_shared, info);
+    
+    private void Start()
+    {
+        _manualResetEvent.Set();
+    }
+        
+    private void Stop()
+    {
+        _manualResetEvent.Reset();
+        _renderCts.Cancel();
+        _renderCts.Dispose();
+    }
 }
