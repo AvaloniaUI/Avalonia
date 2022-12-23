@@ -13,6 +13,18 @@ namespace Avalonia.Input
         private static bool s_isHolding;
         private static CancellationTokenSource? s_holdCancellationToken;
 
+        /// <summary>
+        /// Defines the IsHoldingEnabled attached property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsHoldingEnabledProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldingEnabled", typeof(Gestures), true);
+
+        /// <summary>
+        /// Defines the IsHoldWithMouseEnabled attached property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsHoldWithMouseEnabledProperty =
+            AvaloniaProperty.RegisterAttached<StyledElement, bool>("IsHoldWithMouseEnabled", typeof(Gestures), false);
+
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = RoutedEvent.Register<TappedEventArgs>(
             "Tapped",
             RoutingStrategies.Bubble,
@@ -74,6 +86,24 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<PullGestureEndedEventArgs> PullGestureEndedEvent =
             RoutedEvent.Register<PullGestureEndedEventArgs>(
                 "PullGestureEnded", RoutingStrategies.Bubble, typeof(Gestures));
+
+        public static bool GetIsHoldingEnabled(StyledElement element)
+        {
+            return element.GetValue(IsHoldingEnabledProperty);
+        }
+        public static void SetIsHoldingEnabled(StyledElement element, bool value)
+        {
+            element.SetValue(IsHoldingEnabledProperty, value);
+        }
+
+        public static bool GetIsHoldWithMouseEnabled(StyledElement element)
+        {
+            return element.GetValue(IsHoldWithMouseEnabledProperty);
+        }
+        public static void SetIsHoldWithMouseEnabled(StyledElement element, bool value)
+        {
+            element.SetValue(IsHoldWithMouseEnabledProperty, value);
+        }
 
         static Gestures()
         {

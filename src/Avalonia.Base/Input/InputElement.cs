@@ -46,18 +46,6 @@ namespace Avalonia.Input
             AvaloniaProperty.Register<InputElement, Cursor?>(nameof(Cursor), null, true);
 
         /// <summary>
-        /// Defines the <see cref="IsHoldingEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsHoldingEnabledProperty =
-            AvaloniaProperty.Register<InputElement, bool>(nameof(IsHoldingEnabled), true);
-
-        /// <summary>
-        /// Defines the <see cref="IsHoldWithMouseEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsHoldWithMouseEnabledProperty =
-            AvaloniaProperty.Register<InputElement, bool>(nameof(IsHoldWithMouseEnabled), false);
-
-        /// <summary>
         /// Defines the <see cref="IsKeyboardFocusWithin"/> property.
         /// </summary>
         public static readonly DirectProperty<InputElement, bool> IsKeyboardFocusWithinProperty =
@@ -209,7 +197,19 @@ namespace Avalonia.Input
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
         public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
-        
+
+        /// <summary>
+        /// Defines the <see cref="IsHoldingEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsHoldingEnabledProperty =
+            Gestures.IsHoldingEnabledProperty.AddOwner<InputElement>();
+
+        /// <summary>
+        /// Defines the <see cref="IsHoldWithMouseEnabled"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> IsHoldWithMouseEnabledProperty =
+            Gestures.IsHoldWithMouseEnabledProperty.AddOwner<InputElement>();
+
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
         private bool _isKeyboardFocusWithin;
