@@ -17,7 +17,45 @@ namespace Avalonia.Win32.WinRT.Composition;
 internal class WinUiCompositorConnection : IRenderTimer
 {
     private readonly WinUiCompositionShared _shared;
-    public event Action<TimeSpan> Tick;
+    private Action<TimeSpan>? _tick;
+    private int _subscriberCount;
+    private CancellationTokenSource _renderCts;
+    private readonly ManualResetEvent _manualResetEvent = new(false);
+
+    public event Action<TimeSpan> Tick
+    {
+        add
+        {
+            _tick += value;
+
+            if (_subscriberCount++ == 0)
+            {
+                Start();
+            }
+        }
+
+        remove
+        {
+            if (--_subscriberCount == 0)
+            {
+                Stop();
+            }
+
+            _tick -= value;
+        }
+    }
+        
+    private void Start()
+    {
+        _manualResetEvent.Set();
+    }
+        
+    private void Stop()
+    {
+        _manualResetEvent.Reset();
+        _renderCts.Cancel();
+        _renderCts.Dispose();
+    }
     public bool RunsInBackground => true;
     
     public unsafe WinUiCompositorConnection()
@@ -92,7 +130,7 @@ internal class WinUiCompositorConnection : IRenderTimer
         
         public void Invoke(IAsyncAction asyncInfo, AsyncStatus asyncStatus)
         { 
-            _parent.Tick?.Invoke(_st.Elapsed);
+            _parent._tick?.Invoke(_st.Elapsed);
             using var act = _parent._shared.Compositor5.RequestCommitAsync();
             act.SetCompleted(this);
         }
@@ -110,9 +148,14 @@ internal class WinUiCompositorConnection : IRenderTimer
 
         while (!cts.IsCancellationRequested)
         {
-            UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
-            lock (_shared.SyncRoot)
-                UnmanagedMethods.DispatchMessage(ref msg);
+            _manualResetEvent.WaitOne();
+            _renderCts = new CancellationTokenSource();
+            while (!_renderCts.IsCancellationRequested && !cts.IsCancellationRequested)
+            {
+                UnmanagedMethods.GetMessage(out var msg, IntPtr.Zero, 0, 0);
+                lock (_shared.SyncRoot)
+                    UnmanagedMethods.DispatchMessage(ref msg);
+            }
         }
     }
 
