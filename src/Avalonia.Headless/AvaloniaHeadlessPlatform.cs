@@ -94,8 +94,7 @@ namespace Avalonia.Headless
 
     public static class AvaloniaHeadlessPlatformExtensions
     {
-        public static T UseHeadless<T>(this T builder, AvaloniaHeadlessPlatformOptions opts) 
-            where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseHeadless(this AppBuilder builder, AvaloniaHeadlessPlatformOptions opts)
         {
             if(opts.UseHeadlessDrawing)
                 builder.UseRenderingSubsystem(HeadlessPlatformRenderInterface.Initialize, "Headless");

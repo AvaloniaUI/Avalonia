@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Platform;
 using MiniMvvm;
@@ -13,7 +15,7 @@ public class PlatformInformationViewModel : ViewModelBase
 
         if (runtimeInfo is { } info)
         {
-            if (info.IsBrowser)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
             {
                 if (info.IsDesktop)
                 {
