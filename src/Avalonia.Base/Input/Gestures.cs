@@ -267,11 +267,11 @@ namespace Avalonia.Input
                         {
                             return;
                         }
-                    }
 
-                    if (s_isHolding && ev.Source is Interactive i)
-                    {
-                        i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer!.Type));
+                        if (s_isHolding && ev.Source is Interactive i)
+                        {
+                            i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Cancelled, s_lastPressPoint, s_lastPointer!.Type));
+                        }
                     }
                 }
 

@@ -174,7 +174,46 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
-        public void Hold_Is_Raised_When_Pointer_Pressed()
+        public void Hold_Should_Be_Raised_After_Hold_Duration()
+        {
+            using var scope = AvaloniaLocator.EnterScope();
+            var iSettingsMock = new Mock<IPlatformSettings>();
+            iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
+            iSettingsMock.Setup(x => x.GetTapSize(It.IsAny<PointerType>())).Returns(new Size(16, 16));
+            AvaloniaLocator.CurrentMutable.BindToSelf(this)
+                .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
+
+            var scheduledTimers = new List<(TimeSpan time, Action action)>();
+            using var app = UnitTestApplication.Start(new TestServices(
+                threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
+
+            Border border = new Border();
+            border.IsHoldWithMouseEnabled = true;
+            var decorator = new Decorator
+            {
+                Child = border
+            };
+            HoldingState holding = HoldingState.Cancelled;
+
+            decorator.AddHandler(Gestures.HoldingEvent, (s, e) => holding = e.HoldingState);
+            
+            _mouse.Down(border);
+            Assert.False(holding != HoldingState.Cancelled);
+            
+            // Verify timer duration, but execute it immediately.
+            var timer = Assert.Single(scheduledTimers);
+            Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
+            timer.action();
+
+            Assert.True(holding == HoldingState.Started);
+
+            _mouse.Up(border);
+
+            Assert.True(holding == HoldingState.Completed);
+        }
+       
+        [Fact]
+        public void Hold_Should_Not_Raised_When_Pointer_Released_Before_Timer()
         {
             using var scope = AvaloniaLocator.EnterScope();
             var iSettingsMock = new Mock<IPlatformSettings>();
@@ -199,16 +238,19 @@ namespace Avalonia.Base.UnitTests.Input
             _mouse.Down(border);
             Assert.False(raised);
             
+            _mouse.Up(border);
+            Assert.False(raised);
+            
             // Verify timer duration, but execute it immediately.
             var timer = Assert.Single(scheduledTimers);
             Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
             timer.action();
 
-            Assert.True(raised);
+            Assert.False(raised);
         }
         
         [Fact]
-        public void Hold_Is_Not_Raised_When_Pointer_Released_Before_Timer()
+        public void Hold_Should_Not_Raised_When_Pointer_Is_Moved_Before_Timer()
         {
             using var scope = AvaloniaLocator.EnterScope();
             var iSettingsMock = new Mock<IPlatformSettings>();
@@ -232,8 +274,8 @@ namespace Avalonia.Base.UnitTests.Input
             
             _mouse.Down(border);
             Assert.False(raised);
-            
-            _mouse.Up(border);
+
+            _mouse.Move(border, position: new Point(20, 20));
             Assert.False(raised);
             
             // Verify timer duration, but execute it immediately.
@@ -245,7 +287,7 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
-        public void Hold_Is_Cancelled_When_Second_Contact_Is_Detected()
+        public void Hold_Should_Be_Cancelled_When_Second_Contact_Is_Detected()
         {
             using var scope = AvaloniaLocator.EnterScope();
             var iSettingsMock = new Mock<IPlatformSettings>();
@@ -282,11 +324,12 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
-        public void Hold_Is_Cancelled_When_Pointer_Moves()
+        public void Hold_Should_Be_Cancelled_When_Pointer_Moves_Too_Far()
         {
             using var scope = AvaloniaLocator.EnterScope();
             var iSettingsMock = new Mock<IPlatformSettings>();
             iSettingsMock.Setup(x => x.HoldWaitDuration).Returns(TimeSpan.FromMilliseconds(300));
+            iSettingsMock.Setup(x => x.GetTapSize(It.IsAny<PointerType>())).Returns(new Size(16, 16));
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IPlatformSettings>().ToConstant(iSettingsMock.Object);
 
@@ -305,19 +348,22 @@ namespace Avalonia.Base.UnitTests.Input
             decorator.AddHandler(Gestures.HoldingEvent, (s, e) => cancelled = e.HoldingState == HoldingState.Cancelled);
             
             _mouse.Down(border);
-            Assert.False(cancelled);
 
             var timer = Assert.Single(scheduledTimers);
             Assert.Equal(iSettingsMock.Object.HoldWaitDuration, timer.time);
             timer.action();
 
-            _mouse.Move(border, position: new Point(10, 10));
+            _mouse.Move(border, position: new Point(3, 3));
+
+            Assert.False(cancelled);
+
+            _mouse.Move(border, position: new Point(20, 20));
 
             Assert.True(cancelled);
         }
-        
+
         [Fact]
-        public void Hold_Should_Not_Be_Raised_For_Multiple_Contact()
+        public void Hold_Should_Not_Be_Raised_For_Multiple_Contacts()
         {
             using var scope = AvaloniaLocator.EnterScope();
             var iSettingsMock = new Mock<IPlatformSettings>();
