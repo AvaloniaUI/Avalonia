@@ -303,7 +303,7 @@ namespace Avalonia
     }
     public static class AvaloniaX11PlatformExtensions
     {
-        public static T UseX11<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseX11(this AppBuilder builder)
         {
             builder.UseWindowingSubsystem(() =>
                 new AvaloniaX11Platform().Initialize(AvaloniaLocator.Current.GetService<X11PlatformOptions>() ??

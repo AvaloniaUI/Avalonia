@@ -16,7 +16,7 @@ namespace Avalonia
 {
     public static class Direct2DApplicationExtensions
     {
-        public static T UseDirect2D1<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseDirect2D1(this AppBuilder builder)
         {
             builder.UseRenderingSubsystem(Direct2D1.Direct2D1Platform.Initialize, "Direct2D1");
             return builder;

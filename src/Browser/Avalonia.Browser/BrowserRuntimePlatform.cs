@@ -11,12 +11,11 @@ internal class BrowserRuntimePlatform : StandardRuntimePlatform
 {
     private static readonly Lazy<RuntimePlatformInfo> Info = new(() =>
     {
+        var isMobile = AvaloniaModule.IsMobile();
         var result = new RuntimePlatformInfo
         {
-            IsCoreClr = true, // WASM browser is always CoreCLR
-            IsBrowser = true, // BrowserRuntimePlatform only runs on Browser.
-            OperatingSystem = OperatingSystemType.Browser,
-            IsMobile = AvaloniaModule.IsMobile()
+            IsMobile = isMobile,
+            IsDesktop = !isMobile
         };
         
         return result;
