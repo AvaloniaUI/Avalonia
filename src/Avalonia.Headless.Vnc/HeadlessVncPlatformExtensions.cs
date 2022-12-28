@@ -11,11 +11,10 @@ namespace Avalonia
 {
     public static class HeadlessVncPlatformExtensions
     {
-        public static int StartWithHeadlessVncPlatform<T>(
-            this T builder,
+        public static int StartWithHeadlessVncPlatform(
+            this AppBuilder builder,
             string host, int port,
             string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
-            where T : AppBuilderBase<T>, new()
         {
             var tcpServer = new TcpListener(host == null ? IPAddress.Loopback : IPAddress.Parse(host), port);
             tcpServer.Start();    
