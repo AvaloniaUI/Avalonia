@@ -71,6 +71,11 @@ public class TransitioningContentControl : ContentControl
         }
     }
 
+    protected override void ContentChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        // We do nothing becuse we should not remove old Content until the animation is over
+    }
+
     /// <summary>
     /// Updates the content with transitions.
     /// </summary>
@@ -88,6 +93,8 @@ public class TransitioningContentControl : ContentControl
 
         if (PageTransition != null)
             await PageTransition.Start(this, null, true, localToken);
+
+        UpdateLogicalTree(CurrentContent, content);
 
         if (localToken.IsCancellationRequested)
         {
