@@ -13,7 +13,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Old_Content_Shuold_Be_Removed__From_Logical_Tree_After_Out_Animation()
         {
-            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var testTransition = new TestTransition();
 
