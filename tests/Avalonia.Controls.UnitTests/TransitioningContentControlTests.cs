@@ -13,40 +13,43 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Old_Content_Shuold_Be_Removed__From_Logical_Tree_After_Out_Animation()
         {
-            var testTransition = new TestTransition();
-
-            var target = new TransitioningContentControl();
-            target.PageTransition = testTransition;
-
-            var root = new TestRoot() { Child = target };
-
-            var oldControl = new Control();
-            var newControl = new Control();
-
-            target.Content = oldControl;
-            Threading.Dispatcher.UIThread.RunJobs();
-
-            Assert.Equal(target, oldControl.GetLogicalParent());
-            Assert.Equal(null, newControl.GetLogicalParent());
-
-            testTransition.BeginTransition += isFrom =>
+            using (UnitTestApplication.Start(TestServices.MockThreadingInterface))
             {
-                // Old out
-                if (isFrom)
-                {
-                    Assert.Equal(target, oldControl.GetLogicalParent());
-                    Assert.Equal(null, newControl.GetLogicalParent());
-                }
-                // New in
-                else
-                {
-                    Assert.Equal(null, oldControl.GetLogicalParent());
-                    Assert.Equal(target, newControl.GetLogicalParent());
-                }
-            };
+                var testTransition = new TestTransition();
 
-            target.Content = newControl;
-            Threading.Dispatcher.UIThread.RunJobs();
+                var target = new TransitioningContentControl();
+                target.PageTransition = testTransition;
+
+                var root = new TestRoot() { Child = target };
+
+                var oldControl = new Control();
+                var newControl = new Control();
+
+                target.Content = oldControl;
+                Threading.Dispatcher.UIThread.RunJobs();
+
+                Assert.Equal(target, oldControl.GetLogicalParent());
+                Assert.Equal(null, newControl.GetLogicalParent());
+
+                testTransition.BeginTransition += isFrom =>
+                {
+                    // Old out
+                    if (isFrom)
+                    {
+                        Assert.Equal(target, oldControl.GetLogicalParent());
+                        Assert.Equal(null, newControl.GetLogicalParent());
+                    }
+                    // New in
+                    else
+                    {
+                        Assert.Equal(null, oldControl.GetLogicalParent());
+                        Assert.Equal(target, newControl.GetLogicalParent());
+                    }
+                };
+
+                target.Content = newControl;
+                Threading.Dispatcher.UIThread.RunJobs();
+            }
         }
     }
     public class TestTransition : IPageTransition
