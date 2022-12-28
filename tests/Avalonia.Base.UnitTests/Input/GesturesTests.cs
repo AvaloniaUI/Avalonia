@@ -188,7 +188,7 @@ namespace Avalonia.Base.UnitTests.Input
                 threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
 
             Border border = new Border();
-            border.IsHoldWithMouseEnabled = true;
+            Gestures.SetIsHoldWithMouseEnabled(border, true);
             var decorator = new Decorator
             {
                 Child = border
@@ -226,7 +226,7 @@ namespace Avalonia.Base.UnitTests.Input
                 threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
 
             Border border = new Border();
-            border.IsHoldWithMouseEnabled = true;
+            Gestures.SetIsHoldWithMouseEnabled(border, true);
             var decorator = new Decorator
             {
                 Child = border
@@ -263,7 +263,7 @@ namespace Avalonia.Base.UnitTests.Input
                 threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
 
             Border border = new Border();
-            border.IsHoldWithMouseEnabled = true;
+            Gestures.SetIsHoldWithMouseEnabled(border, true);
             var decorator = new Decorator
             {
                 Child = border
@@ -300,7 +300,7 @@ namespace Avalonia.Base.UnitTests.Input
                 threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
 
             Border border = new Border();
-            border.IsHoldWithMouseEnabled = true;
+            Gestures.SetIsHoldWithMouseEnabled(border, true);
             var decorator = new Decorator
             {
                 Child = border
@@ -338,7 +338,7 @@ namespace Avalonia.Base.UnitTests.Input
                 threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
 
             Border border = new Border();
-            border.IsHoldWithMouseEnabled = true;
+            Gestures.SetIsHoldWithMouseEnabled(border, true);
             var decorator = new Decorator
             {
                 Child = border
@@ -376,7 +376,7 @@ namespace Avalonia.Base.UnitTests.Input
                 threadingInterface: CreatePlatformThreadingInterface(t => scheduledTimers.Add(t))));
             
             Border border = new Border();
-            border.IsHoldWithMouseEnabled = true;
+            Gestures.SetIsHoldWithMouseEnabled(border, true);
             var decorator = new Decorator
             {
                 Child = border

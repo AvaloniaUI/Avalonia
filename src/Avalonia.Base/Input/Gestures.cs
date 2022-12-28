@@ -183,7 +183,7 @@ namespace Avalonia.Input
                     {
                         DispatcherTimer.RunOnce(() =>
                         {
-                            if (!token.IsCancellationRequested && e.Source is InputElement i && i.IsHoldingEnabled && (e.Pointer.Type != PointerType.Mouse || i.IsHoldWithMouseEnabled))
+                            if (!token.IsCancellationRequested && e.Source is InputElement i && GetIsHoldingEnabled(i) && (e.Pointer.Type != PointerType.Mouse || GetIsHoldWithMouseEnabled(i)))
                             {
                                 s_isHolding = true;
                                 i.RaiseEvent(new HoldingRoutedEventArgs(HoldingState.Started, s_lastPressPoint, s_lastPointer.Type));

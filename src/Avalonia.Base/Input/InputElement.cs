@@ -198,18 +198,6 @@ namespace Avalonia.Input
         /// </summary>
         public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
 
-        /// <summary>
-        /// Defines the <see cref="IsHoldingEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsHoldingEnabledProperty =
-            Gestures.IsHoldingEnabledProperty.AddOwner<InputElement>();
-
-        /// <summary>
-        /// Defines the <see cref="IsHoldWithMouseEnabled"/> property.
-        /// </summary>
-        public static readonly StyledProperty<bool> IsHoldWithMouseEnabledProperty =
-            Gestures.IsHoldWithMouseEnabledProperty.AddOwner<InputElement>();
-
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
         private bool _isKeyboardFocusWithin;
@@ -413,25 +401,6 @@ namespace Avalonia.Input
         {
             get { return GetValue(CursorProperty); }
             set { SetValue(CursorProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value that determines whether the Holding event can originate
-        /// from that element.
-        /// </summary>
-        public bool IsHoldingEnabled
-        {
-            get { return GetValue(IsHoldingEnabledProperty); }
-            set { SetValue(IsHoldingEnabledProperty, value); }
-        }
-
-        /// <summary>
-        /// Enables or disables support for the press and hold gesture through the left button on a mouse.
-        /// </summary>
-        public bool IsHoldWithMouseEnabled
-        {
-            get { return GetValue(IsHoldWithMouseEnabledProperty); }
-            set { SetValue(IsHoldWithMouseEnabledProperty, value); }
         }
         
         /// <summary>
