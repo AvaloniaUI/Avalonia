@@ -26,5 +26,7 @@ namespace Avalonia.Platform
             };
         }
         public TimeSpan GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(500);
+
+        public TimeSpan HoldWaitDuration { get; set; } = TimeSpan.FromMilliseconds(300);
     }
 }
