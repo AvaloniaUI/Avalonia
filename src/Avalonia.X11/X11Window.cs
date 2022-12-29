@@ -212,10 +212,10 @@ namespace Avalonia.X11
                     _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
             }
 
-            StorageProvider = new CompositeStorageProvider(new Func<Task<IStorageProvider>>[]
+            StorageProvider = new CompositeStorageProvider(new[]
             {
-                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreate(Handle) : Task.FromResult<IStorageProvider>(null),
-                () => GtkSystemDialog.TryCreate(this),
+                () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreateAsync(Handle) : Task.FromResult<IStorageProvider>(null),
+                () => GtkSystemDialog.TryCreate(this)
             });
         }
 

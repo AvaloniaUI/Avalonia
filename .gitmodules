@@ -7,3 +7,6 @@
 [submodule "nukebuild/il-repack"]
 	path = nukebuild/il-repack
 	url = https://github.com/Gillibald/il-repack
+[submodule "Tmds.DBus"]
+	path = src/Linux/Tmds.DBus
+	url = https://github.com/affederaffe/Tmds.DBus
