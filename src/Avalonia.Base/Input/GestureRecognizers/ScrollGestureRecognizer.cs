@@ -113,7 +113,7 @@ namespace Avalonia.Input.GestureRecognizers
                         _scrolling = true;
                     if (_scrolling)
                     {
-                        _velocityTracker = new VelocityTracker(); // TODO: Should be platform specific -- this default tracker is for Android.
+                        _velocityTracker = new VelocityTracker();
                         
                         // Correct _trackedRootPoint with ScrollStartDistance, so scrolling does not start with a skip of ScrollStartDistance
                         _trackedRootPoint = new Point(
