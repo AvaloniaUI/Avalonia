@@ -236,7 +236,7 @@ namespace Avalonia.Input.GestureRecognizers
             int n = degree + 1;
 
             // Expand the X vector to a matrix A, pre-multiplied by the weights.
-            _Matrix a = new _Matrix(n, m);
+            _Matrix a = new _Matrix(m, stackalloc double[n * m]);
             for (int h = 0; h < m; h += 1)
             {
                 a[0, h] = w[h];
@@ -249,9 +249,9 @@ namespace Avalonia.Input.GestureRecognizers
             // Apply the Gram-Schmidt process to A to obtain its QR decomposition.
 
             // Orthonormal basis, column-major order Vector.
-            _Matrix q = new _Matrix(n, m);
+            _Matrix q = new _Matrix(m, stackalloc double[n * m]);
             // Upper triangular matrix, row-major order.
-            _Matrix r = new _Matrix(n, n);
+            _Matrix r = new _Matrix(n, stackalloc double[n * n]);
             for (int j = 0; j < n; j += 1)
             {
                 for (int h = 0; h < m; h += 1)
@@ -352,15 +352,15 @@ namespace Avalonia.Input.GestureRecognizers
             return Math.Sqrt(Multiply(v, v));
         }
 
-        private readonly struct _Matrix
+        private readonly ref struct _Matrix
         {
             private readonly int _columns;
-            private readonly double[] _elements;
+            private readonly Span<double> _elements;
 
-            internal _Matrix(int rows, int cols)
+            internal _Matrix(int cols, Span<double> elements)
             {
                 _columns = cols;
-                _elements = new double[rows * cols];
+                _elements = elements;// new double[rows * cols];
             }
 
             public double this[int row, int col]
@@ -369,7 +369,7 @@ namespace Avalonia.Input.GestureRecognizers
                 set => _elements[row * _columns + col] = value;
             }
 
-            public Span<double> GetRow(int row) => _elements.AsSpan(row * _columns, _columns);
+            public Span<double> GetRow(int row) => _elements.Slice(row * _columns, _columns);
         }
     }
 }
