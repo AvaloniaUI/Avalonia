@@ -266,10 +266,10 @@ namespace Avalonia.Input.GestureRecognizers
             _Matrix a = new _Matrix(n, m);
             for (int h = 0; h < m; h += 1)
             {
-                a.Set(0, h, w[h]);
+                a[0, h] = w[h];
                 for (int i = 1; i < n; i += 1)
                 {
-                    a.Set(i, h, a.Get(i - 1, h) * x[h]);
+                    a[i, h] = a[i - 1, h] * x[h];
                 }
             }
 
@@ -283,14 +283,14 @@ namespace Avalonia.Input.GestureRecognizers
             {
                 for (int h = 0; h < m; h += 1)
                 {
-                    q.Set(j, h, a.Get(j, h));
+                    q[j, h] = a[j, h];
                 }
                 for (int i = 0; i < j; i += 1)
                 {
                     double dot = q.GetRow(j) * q.GetRow(i);
                     for (int h = 0; h < m; h += 1)
                     {
-                        q.Set(j, h, q.Get(j, h) - dot * q.Get(i, h));
+                        q[j, h] = q[j, h] - dot * q[i, h];
                     }
                 }
 
@@ -304,7 +304,7 @@ namespace Avalonia.Input.GestureRecognizers
                 double inverseNorm = 1.0 / norm;
                 for (int h = 0; h < m; h += 1)
                 {
-                    q.Set(j, h, q.Get(j, h) * inverseNorm);
+                    q[j, h] = q[j, h] * inverseNorm;
                 }
                 for (int i = 0; i < n; i += 1)
                 {
@@ -324,9 +324,9 @@ namespace Avalonia.Input.GestureRecognizers
                 result.Coefficients[i] = q.GetRow(i) * wy;
                 for (int j = n - 1; j > i; j -= 1)
                 {
-                    result.Coefficients[i] -= r.Get(i, j) * result.Coefficients[j];
+                    result.Coefficients[i] -= r[i, j] * result.Coefficients[j];
                 }
-                result.Coefficients[i] /= r.Get(i, i);
+                result.Coefficients[i] /= r[i, i];
             }
 
             // Calculate the coefficient of determination (confidence) as:
@@ -413,10 +413,10 @@ namespace Avalonia.Input.GestureRecognizers
                 _elements = new double[rows * cols];
             }
 
-            public double Get(int row, int col) => _elements[row * _columns + col];
-            public void Set(int row, int col, double value)
+            public double this[int row, int col]
             {
-                _elements[row * _columns + col] = value;
+                get => _elements[row * _columns + col];
+                set => _elements[row * _columns + col] = value;
             }
 
             public _Vector GetRow(int row) => new(_elements, row * _columns, _columns);
