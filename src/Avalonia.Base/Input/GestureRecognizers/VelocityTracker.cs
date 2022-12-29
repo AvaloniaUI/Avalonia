@@ -30,6 +30,7 @@
 
 using System;
 using System.Diagnostics;
+using Avalonia.Utilities;
 
 namespace Avalonia.Input.GestureRecognizers
 {
@@ -94,11 +95,6 @@ namespace Avalonia.Input.GestureRecognizers
         private const double MinFlingVelocity = 50.0; // Logical pixels / second (defined in flutter\lib\src\gesture\constants.dart)
         private const double MaxFlingVelocity = 8000.0;
 
-        private static double[] x = new double[HistorySize];
-        private static double[] y = new double[HistorySize];
-        private static double[] w = new double[HistorySize];
-        private static double[] time = new double[HistorySize];
-        
         private readonly PointAtTime[] _samples = new PointAtTime[HistorySize];
         private int _index = 0;
 
@@ -125,6 +121,10 @@ namespace Avalonia.Input.GestureRecognizers
         /// Returns null if there is no data on which to base an estimate.
         protected virtual VelocityEstimate? GetVelocityEstimate()
         {
+            Span<double> x = stackalloc double[HistorySize];
+            Span<double> y = stackalloc double[HistorySize];
+            Span<double> w = stackalloc double[HistorySize];
+            Span<double> time = stackalloc double[HistorySize];
             int sampleCount = 0;
             int index = _index;
 
@@ -168,10 +168,10 @@ namespace Avalonia.Input.GestureRecognizers
 
             if (sampleCount >= MinSampleSize)
             {
-                var xFit = LeastSquaresSolver.Solve(2, time.AsSpan(0, sampleCount), x.AsSpan(0, sampleCount), w.AsSpan(0, sampleCount));
+                var xFit = LeastSquaresSolver.Solve(2, time.Slice(0, sampleCount), x.Slice(0, sampleCount), w.Slice(0, sampleCount));
                 if (xFit != null)
                 {
-                    var yFit = LeastSquaresSolver.Solve(2, time.AsSpan(0, sampleCount), y.AsSpan(0, sampleCount), w.AsSpan(0, sampleCount));
+                    var yFit = LeastSquaresSolver.Solve(2, time.Slice(0, sampleCount), y.Slice(0, sampleCount), w.Slice(0, sampleCount));
                     if (yFit != null)
                     {
                         return new VelocityEstimate( // convert from pixels/ms to pixels/s
