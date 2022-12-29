@@ -94,6 +94,11 @@ namespace Avalonia.Input.GestureRecognizers
         private const double MinFlingVelocity = 50.0; // Logical pixels / second (defined in flutter\lib\src\gesture\constants.dart)
         private const double MaxFlingVelocity = 8000.0;
 
+        private static double[] x = new double[HistorySize];
+        private static double[] y = new double[HistorySize];
+        private static double[] w = new double[HistorySize];
+        private static double[] time = new double[HistorySize];
+        
         private readonly PointAtTime[] _samples = new PointAtTime[HistorySize];
         private int _index = 0;
 
@@ -120,10 +125,6 @@ namespace Avalonia.Input.GestureRecognizers
         /// Returns null if there is no data on which to base an estimate.
         protected virtual VelocityEstimate? GetVelocityEstimate()
         {
-            double[] x = new double[HistorySize];
-            double[] y = new double[HistorySize];
-            double[] w = new double[HistorySize];
-            double[] time = new double[HistorySize];
             int sampleCount = 0;
             int index = _index;
 
