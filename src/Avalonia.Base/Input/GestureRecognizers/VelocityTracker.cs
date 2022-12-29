@@ -9,7 +9,7 @@ namespace Avalonia.Input.GestureRecognizers
 {
     // Possible enhancement: add Flutter's 'IOSScrollViewFlingVelocityTracker' and 'MacOSScrollViewFlingVelocityTracker'?
 
-    public readonly record struct Velocity(Vector PixelsPerSecond)
+    internal readonly record struct Velocity(Vector PixelsPerSecond)
     {
         public Velocity ClampMagnitude(double minValue, double maxValue)
         {
@@ -45,7 +45,7 @@ namespace Avalonia.Input.GestureRecognizers
     ///  * [VelocityTracker], which computes [VelocityEstimate]s.
     ///  * [Velocity], which encapsulates (just) a velocity vector and provides some
     ///    useful velocity operations.
-    public record VelocityEstimate(Vector PixelsPerSecond, double Confidence, TimeSpan Duration, Vector Offset);
+    internal record VelocityEstimate(Vector PixelsPerSecond, double Confidence, TimeSpan Duration, Vector Offset);
 
     internal record struct PointAtTime(bool Valid, Vector Point, TimeSpan Time);
 
@@ -59,7 +59,7 @@ namespace Avalonia.Input.GestureRecognizers
     ///
     /// The quality of the velocity estimation will be better if more data points
     /// have been received.
-    public class VelocityTracker
+    internal class VelocityTracker
     {
         private const int AssumePointerMoveStoppedMilliseconds = 40;
         private const int HistorySize = 20;
@@ -177,7 +177,7 @@ namespace Avalonia.Input.GestureRecognizers
         /// estimate or if the estimated velocity is zero./// 
         /// </summary>
         /// <returns></returns>
-        public Velocity GetVelocity()
+        internal Velocity GetVelocity()
         {
             var estimate = GetVelocityEstimate();
             if (estimate == null || estimate.PixelsPerSecond.IsDefault)
@@ -187,7 +187,7 @@ namespace Avalonia.Input.GestureRecognizers
             return new Velocity(estimate.PixelsPerSecond);
         }
 
-        public virtual Velocity GetFlingVelocity()
+        internal virtual Velocity GetFlingVelocity()
         {
             return GetVelocity().ClampMagnitude(MinFlingVelocity, MaxFlingVelocity);
         }
