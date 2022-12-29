@@ -275,7 +275,7 @@ namespace Avalonia.Input.GestureRecognizers
 
             // Apply the Gram-Schmidt process to A to obtain its QR decomposition.
 
-            // Orthonormal basis, column-major ordVectorer.
+            // Orthonormal basis, column-major order Vector.
             _Matrix q = new _Matrix(n, m);
             // Upper triangular matrix, row-major order.
             _Matrix r = new _Matrix(n, n);
@@ -287,14 +287,14 @@ namespace Avalonia.Input.GestureRecognizers
                 }
                 for (int i = 0; i < j; i += 1)
                 {
-                    double dot = q.GetRow(j) * q.GetRow(i);
+                    double dot = Multiply(q.GetRow(j), q.GetRow(i));
                     for (int h = 0; h < m; h += 1)
                     {
                         q[j, h] = q[j, h] - dot * q[i, h];
                     }
                 }
 
-                double norm = q.GetRow(j).Norm();
+                double norm = Norm(q.GetRow(j));
                 if (norm < PrecisionErrorTolerance)
                 {
                     // Vectors are linearly dependent or zero so no solution.
@@ -308,20 +308,21 @@ namespace Avalonia.Input.GestureRecognizers
                 }
                 for (int i = 0; i < n; i += 1)
                 {
-                    r.Set(j, i, i < j ? 0.0 : q.GetRow(j) * a.GetRow(i));
+                    r[j, i] = i < j ? 0.0 : Multiply(q.GetRow(j), a.GetRow(i));
                 }
             }
 
             // Solve R B = Qt W Y to find B. This is easy because R is upper triangular.
             // We just work from bottom-right to top-left calculating B's coefficients.
-            _Vector wy = new _Vector(m);
+            // "m" isn't expected to be bigger than HistorySize=20, so allocation on stack is safe.
+            Span<double> wy = stackalloc double[m];  
             for (int h = 0; h < m; h += 1)
             {
                 wy[h] = y[h] * w[h];
             }
             for (int i = n - 1; i >= 0; i -= 1)
             {
-                result.Coefficients[i] = q.GetRow(i) * wy;
+                result.Coefficients[i] = Multiply(q.GetRow(i), wy);
                 for (int j = n - 1; j > i; j -= 1)
                 {
                     result.Coefficients[i] -= r[i, j] * result.Coefficients[j];
@@ -363,43 +364,19 @@ namespace Avalonia.Input.GestureRecognizers
             return result;
         }
 
-        private readonly struct _Vector
+        private static double Multiply(Span<double> v1, Span<double> v2)
         {
-            private readonly int _offset;
-            private readonly int _length;
-            private readonly double[] _elements;
-
-            internal _Vector(int size)
+            double result = 0.0;
+            for (int i = 0; i < v1.Length; i += 1)
             {
-                _offset = 0;
-                _length = size;
-                _elements = new double[size];
+                result += v1[i] * v2[i];
             }
-
-            internal _Vector(double[] values, int offset, int length)
-            {
-                _offset = offset;
-                _length = length;
-                _elements = values;
-            }
-
-            public double this[int i]
-            {
-                get => _elements[i + _offset];
-                set => _elements[i + _offset] = value;
-            }
-
-            public static double operator *(_Vector a, _Vector b)
-            {
-                double result = 0.0;
-                for (int i = 0; i < a._length; i += 1)
-                {
-                    result += a[i] * b[i];
-                }
-                return result;
-            }
-
-            public double Norm() => Math.Sqrt(this * this);
+            return result;
+        }
+        
+        private static double Norm(Span<double> v)
+        {
+            return Math.Sqrt(Multiply(v, v));
         }
 
         private readonly struct _Matrix
@@ -419,7 +396,7 @@ namespace Avalonia.Input.GestureRecognizers
                 set => _elements[row * _columns + col] = value;
             }
 
-            public _Vector GetRow(int row) => new(_elements, row * _columns, _columns);
+            public Span<double> GetRow(int row) => _elements.AsSpan(row * _columns, _columns);
         }
     }
 }
