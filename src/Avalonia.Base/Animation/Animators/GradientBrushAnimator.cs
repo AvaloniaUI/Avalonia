@@ -84,7 +84,7 @@ namespace Avalonia.Animation.Animators
                     .Interpolate(oldTransformOperations, newTransformOperations, progress).Value);
             }
 
-            if (oldTransform is { })
+            if (oldTransform is not null)
             {
                 return new ImmutableTransform(oldTransform.Value);
             }
