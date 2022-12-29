@@ -360,7 +360,7 @@ namespace Avalonia.Input.GestureRecognizers
             internal _Matrix(int cols, Span<double> elements)
             {
                 _columns = cols;
-                _elements = elements;// new double[rows * cols];
+                _elements = elements;
             }
 
             public double this[int row, int col]
