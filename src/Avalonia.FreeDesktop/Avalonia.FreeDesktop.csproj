@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <Import Project="..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\build\NetAnalyzers.props" />
+
   <ItemGroup>
     <Compile Include="..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
   </ItemGroup>
@@ -15,7 +18,9 @@
     <ProjectReference Include="..\Linux\Tmds.DBus\src\Tmds.DBus.Protocol\Tmds.DBus.Protocol.csproj" />
     <!--<PackageReference Include="Tmds.DBus.Protocol" Version="0.11.1-151-9f126c13809fceab8388328aff84b0d8e89b2aae" />-->
   </ItemGroup>
+
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
+
 </Project>
