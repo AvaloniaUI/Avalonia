@@ -113,7 +113,7 @@ internal class BatchStreamWriter : IDisposable
         if (RuntimeInformation.ProcessArchitecture == Architecture.Arm)
             UnalignedMemoryHelper.WriteUnaligned(ptr, item);
         else
-            *(T*)ptr = item;
+            Unsafe.WriteUnaligned(ptr, item);
         
         _currentDataSegment.ElementCount += size;
     }
@@ -173,7 +173,7 @@ internal class BatchStreamReader : IDisposable
         if (RuntimeInformation.ProcessArchitecture == Architecture.Arm)
             rv = UnalignedMemoryHelper.ReadUnaligned<T>(ptr);
         else
-            rv = *(T*)ptr;
+            rv = Unsafe.ReadUnaligned<T>(ptr);
         
         _memoryOffset += size;
         if (_memoryOffset == _currentDataSegment.ElementCount)
