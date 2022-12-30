@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
 
@@ -25,6 +26,37 @@ public record struct BatchStreamSegment<TData>
 {
     public TData Data { get; set; }
     public int ElementCount { get; set; }
+}
+
+
+// Unsafe.ReadUnaligned/Unsafe.WriteUnaligned are broken on arm,
+// see https://github.com/dotnet/runtime/issues/80068
+static unsafe class UnalignedMemoryHelper
+{
+    public static T ReadUnaligned<T>(byte* src) where T : unmanaged
+    {
+#if NET6_0_OR_GREATER
+        Unsafe.SkipInit<T>(out var rv);
+#else
+        T rv;
+#endif
+        UnalignedMemcpy((byte*)&rv, src, Unsafe.SizeOf<T>());
+        return rv;
+    }
+    
+    public static void WriteUnaligned<T>(byte* dst, T value) where T : unmanaged
+    {
+        UnalignedMemcpy(dst, (byte*)&value, Unsafe.SizeOf<T>());
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    static unsafe void UnalignedMemcpy(byte* dst, byte* src, int count)
+    {
+        for (var c = 0; c < count; c++)
+        {
+            dst[c] = src[c];
+        }
+    }
 }
 
 internal class BatchStreamWriter : IDisposable
@@ -74,7 +106,15 @@ internal class BatchStreamWriter : IDisposable
         var size = Unsafe.SizeOf<T>();
         if (_currentDataSegment.Data == IntPtr.Zero || _currentDataSegment.ElementCount + size > _memoryPool.BufferSize)
             NextDataSegment();
-        Unsafe.WriteUnaligned<T>((byte*)_currentDataSegment.Data + _currentDataSegment.ElementCount, item);
+        var ptr = (byte*)_currentDataSegment.Data + _currentDataSegment.ElementCount;
+        
+        // Unsafe.ReadUnaligned/Unsafe.WriteUnaligned are broken on arm32,
+        // see https://github.com/dotnet/runtime/issues/80068
+        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm)
+            UnalignedMemoryHelper.WriteUnaligned(ptr, item);
+        else
+            *(T*)ptr = item;
+        
         _currentDataSegment.ElementCount += size;
     }
 
@@ -125,7 +165,16 @@ internal class BatchStreamReader : IDisposable
         if (_memoryOffset + size > _currentDataSegment.ElementCount)
             throw new InvalidOperationException("Attempted to read more memory then left in the current segment");
 
-        var rv = Unsafe.ReadUnaligned<T>((byte*)_currentDataSegment.Data + _memoryOffset);
+        var ptr = (byte*)_currentDataSegment.Data + _memoryOffset;
+        T rv;
+        
+        // Unsafe.ReadUnaligned/Unsafe.WriteUnaligned are broken on arm32,
+        // see https://github.com/dotnet/runtime/issues/80068
+        if (RuntimeInformation.ProcessArchitecture == Architecture.Arm)
+            rv = UnalignedMemoryHelper.ReadUnaligned<T>(ptr);
+        else
+            rv = *(T*)ptr;
+        
         _memoryOffset += size;
         if (_memoryOffset == _currentDataSegment.ElementCount)
         {
