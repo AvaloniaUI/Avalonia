@@ -145,10 +145,10 @@ namespace Avalonia.FreeDesktop
 
         public Task<StatusNotifierWatcherProperties> GetPropertiesAsync()
         {
-            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), static (m, s)
-                    => ReadMessage(m, (StatusNotifierWatcherObject)s!), this);
+            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), static (m, _)
+                    => ReadMessage(m), this);
 
-            static StatusNotifierWatcherProperties ReadMessage(Message message, StatusNotifierWatcherObject _)
+            static StatusNotifierWatcherProperties ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 return ReadProperties(ref reader);
@@ -157,9 +157,9 @@ namespace Avalonia.FreeDesktop
 
         public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<StatusNotifierWatcherProperties>> handler, bool emitOnCapturedContext = true)
         {
-            return base.WatchPropertiesChangedAsync(Interface, static (m, s) => ReadMessage(m, (StatusNotifierWatcherObject)s!), handler, emitOnCapturedContext);
+            return base.WatchPropertiesChangedAsync(Interface, static (m, _) => ReadMessage(m), handler, emitOnCapturedContext);
 
-            static PropertyChanges<StatusNotifierWatcherProperties> ReadMessage(Message message, StatusNotifierWatcherObject _)
+            static PropertyChanges<StatusNotifierWatcherProperties> ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 reader.ReadString(); // interface
@@ -194,7 +194,7 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private static StatusNotifierWatcherProperties ReadProperties(ref Reader reader, List<string>? changedList = null)
+        private static StatusNotifierWatcherProperties ReadProperties(ref Reader reader, ICollection<string>? changedList = null)
         {
             var props = new StatusNotifierWatcherProperties();
             var headersEnd = reader.ReadArrayStart(DBusType.Struct);
@@ -245,8 +245,8 @@ namespace Avalonia.FreeDesktop
             (Service, Path) = (service, path);
         }
 
-        public StatusNotifierWatcherService Service { get; }
-        public ObjectPath Path { get; }
+        protected StatusNotifierWatcherService Service { get; }
+        protected ObjectPath Path { get; }
         protected Connection Connection => Service.Connection;
 
         protected MessageBuffer CreateGetPropertyMessage(string @interface, string property)
@@ -291,7 +291,7 @@ namespace Avalonia.FreeDesktop
                     ((Action<Exception?, PropertyChanges<TProperties>>)hs!).Invoke(ex, changes), this, handler, emitOnCapturedContext);
         }
 
-        public ValueTask<IDisposable> WatchSignalAsync<TArg>(string sender, string @interface, ObjectPath path, string signal, MessageValueReader<TArg> reader, Action<Exception?, TArg> handler, bool emitOnCapturedContext)
+        protected ValueTask<IDisposable> WatchSignalAsync<TArg>(string sender, string @interface, ObjectPath path, string signal, MessageValueReader<TArg> reader, Action<Exception?, TArg> handler, bool emitOnCapturedContext)
         {
             var rule = new MatchRule
             {
@@ -301,12 +301,11 @@ namespace Avalonia.FreeDesktop
                 Member = signal,
                 Interface = @interface
             };
-            return Connection.AddMatchAsync(rule, reader,
-                (ex, arg, _, hs) => ((Action<Exception?, TArg>)hs!).Invoke(ex, arg),
-                this, handler, emitOnCapturedContext);
+            return Connection.AddMatchAsync(rule, reader, static (ex, arg, _, hs)
+                    => ((Action<Exception?, TArg>)hs!).Invoke(ex, arg), this, handler, emitOnCapturedContext);
         }
 
-        public ValueTask<IDisposable> WatchSignalAsync(string sender, string @interface, ObjectPath path, string signal, Action<Exception?> handler, bool emitOnCapturedContext)
+        protected ValueTask<IDisposable> WatchSignalAsync(string sender, string @interface, ObjectPath path, string signal, Action<Exception?> handler, bool emitOnCapturedContext)
         {
             var rule = new MatchRule
             {

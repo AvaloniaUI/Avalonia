@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
-
 using Tmds.DBus.Protocol;
-
 
 namespace Avalonia.FreeDesktop
 {
@@ -52,7 +50,7 @@ namespace Avalonia.FreeDesktop
 
         public Task<(string Service, ObjectPath MenuObjectPath)> GetMenuForWindowAsync(uint windowId)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (Message m, object? s) => ReadMessage_so(m, (AppMenuRegistrarObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s) => ReadMessage_so(m, (AppMenuRegistrarObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -76,7 +74,7 @@ namespace Avalonia.FreeDesktop
 
         public Connection Connection { get; }
         public string Destination { get; }
-        public Registrar CreateRegistrar(string path) => new Registrar(this, path);
+        public Registrar CreateRegistrar(string path) => new(this, path);
     }
 
     internal class AppMenuRegistrarObject
@@ -84,8 +82,8 @@ namespace Avalonia.FreeDesktop
         protected AppMenuRegistrarObject(RegistrarService service, ObjectPath path)
             => (Service, Path) = (service, path);
 
-        public RegistrarService Service { get; }
-        public ObjectPath Path { get; }
+        protected RegistrarService Service { get; }
+        protected ObjectPath Path { get; }
         protected Connection Connection => Service.Connection;
 
         protected MessageBuffer CreateGetPropertyMessage(string @interface, string property)
@@ -128,9 +126,8 @@ namespace Avalonia.FreeDesktop
                 Member = "PropertiesChanged",
                 Arg0 = @interface
             };
-            return Connection.AddMatchAsync(rule, reader,
-                (Exception? ex, PropertyChanges<TProperties> changes, object? rs, object? hs) =>
-                    ((Action<Exception?, PropertyChanges<TProperties>>)hs!).Invoke(ex, changes),
+            return Connection.AddMatchAsync(rule, reader, static (ex, changes, _, hs)
+                    => ((Action<Exception?, PropertyChanges<TProperties>>)hs!).Invoke(ex, changes),
                 this, handler, emitOnCapturedContext);
         }
 
@@ -145,9 +142,8 @@ namespace Avalonia.FreeDesktop
                 Member = signal,
                 Interface = @interface
             };
-            return Connection.AddMatchAsync(rule, reader,
-                (Exception? ex, TArg arg, object? rs, object? hs) => ((Action<Exception?, TArg>)hs!).Invoke(ex, arg),
-                this, handler, emitOnCapturedContext);
+            return Connection.AddMatchAsync(rule, reader, static (ex, arg, _, hs) =>
+                    ((Action<Exception?, TArg>)hs!).Invoke(ex, arg), this, handler, emitOnCapturedContext);
         }
 
         public ValueTask<IDisposable> WatchSignalAsync(string sender, string @interface, ObjectPath path, string signal, Action<Exception?> handler,
@@ -161,8 +157,9 @@ namespace Avalonia.FreeDesktop
                 Member = signal,
                 Interface = @interface
             };
-            return Connection.AddMatchAsync<object>(rule, (Message message, object? state) => null!,
-                (Exception? ex, object v, object? rs, object? hs) => ((Action<Exception?>)hs!).Invoke(ex), this, handler, emitOnCapturedContext);
+            return Connection.AddMatchAsync<object>(rule, static (_, _)
+                => null!, static (ex, _, _, hs)
+                => ((Action<Exception?>)hs!).Invoke(ex), this, handler, emitOnCapturedContext);
         }
 
         protected static (string, ObjectPath) ReadMessage_so(Message message, AppMenuRegistrarObject _)

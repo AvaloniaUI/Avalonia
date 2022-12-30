@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using Tmds.DBus.Protocol;
-
 
 namespace Avalonia.FreeDesktop
 {
@@ -417,10 +415,10 @@ namespace Avalonia.FreeDesktop
 
         public Task<DBusProperties> GetPropertiesAsync()
         {
-            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), static (m, s) =>
-                ReadMessage(m, (DBusObject)s!), this);
+            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), static (m, _) =>
+                ReadMessage(m), this);
 
-            static DBusProperties ReadMessage(Message message, DBusObject _)
+            static DBusProperties ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 return ReadProperties(ref reader);
@@ -429,10 +427,10 @@ namespace Avalonia.FreeDesktop
 
         public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<DBusProperties>> handler, bool emitOnCapturedContext = true)
         {
-            return base.WatchPropertiesChangedAsync(Interface, static (m, s) =>
-                ReadMessage(m, (DBusObject)s!), handler, emitOnCapturedContext);
+            return base.WatchPropertiesChangedAsync(Interface, static (m, _) =>
+                ReadMessage(m), handler, emitOnCapturedContext);
 
-            static PropertyChanges<DBusProperties> ReadMessage(Message message, DBusObject _)
+            static PropertyChanges<DBusProperties> ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 reader.ReadString(); // interface

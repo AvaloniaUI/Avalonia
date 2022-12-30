@@ -18,9 +18,9 @@ namespace Avalonia.FreeDesktop
             if (DBusHelper.Connection is null)
                 return null;
             var services = await DBusHelper.Connection.ListServicesAsync();
-            if (!services.Contains("org.freedesktop.portal.Desktop", StringComparer.Ordinal))
-                return null;
-            return new DBusSystemDialog(new DesktopService(DBusHelper.Connection, "org.freedesktop.portal.Desktop"), handle);
+            return services.Contains("org.freedesktop.portal.Desktop", StringComparer.Ordinal)
+                ? new DBusSystemDialog(new DesktopService(DBusHelper.Connection, "org.freedesktop.portal.Desktop"), handle)
+                : null;
         }
 
         private readonly DesktopService _desktopService;
@@ -140,15 +140,15 @@ namespace Avalonia.FreeDesktop
             var filters = new List<(string name, (uint style, string extension)[])>();
             foreach (var fileType in fileTypes)
             {
-                const uint globStyle = 0u;
-                const uint mimeStyle = 1u;
+                const uint GlobStyle = 0u;
+                const uint MimeStyle = 1u;
 
                 var extensions = Enumerable.Empty<(uint, string)>();
 
-                if (fileType.Patterns is { } patterns)
-                    extensions = extensions.Concat(patterns.Select(static x => (globStyle, x)));
-                else if (fileType.MimeTypes is { } mimeTypes)
-                    extensions = extensions.Concat(mimeTypes.Select(static x => (mimeStyle, x)));
+                if (fileType.Patterns is not null)
+                    extensions = extensions.Concat(fileType.Patterns.Select(static x => (globStyle: GlobStyle, x)));
+                else if (fileType.MimeTypes is not null)
+                    extensions = extensions.Concat(fileType.MimeTypes.Select(static x => (mimeStyle: MimeStyle, x)));
                 if (extensions.Any())
                     filters.Add((fileType.Name, extensions.ToArray()));
             }

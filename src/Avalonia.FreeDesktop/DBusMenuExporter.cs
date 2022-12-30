@@ -96,8 +96,7 @@ namespace Avalonia.FreeDesktop
 
             public void SetNativeMenu(NativeMenu? menu)
             {
-                if (menu is null)
-                    menu = new NativeMenu();
+                menu ??= new NativeMenu();
 
                 if (_menu is not null)
                     ((INotifyCollectionChanged)_menu.Items).CollectionChanged -= OnMenuItemsChanged;

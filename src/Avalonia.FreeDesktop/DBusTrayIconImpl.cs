@@ -72,7 +72,7 @@ namespace Avalonia.FreeDesktop
             if (!services.Contains("org.kde.StatusNotifierWatcher", StringComparer.Ordinal))
                 return;
 
-            _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((e, x) => { OnNameChange(x.A2); });
+            _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.A2) );
             var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
             OnNameChange(nameOwner);
         }
@@ -128,7 +128,7 @@ namespace Avalonia.FreeDesktop
             if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierItemDbusObj is null || _sysTrayServiceName is null)
                 return;
 
-            _dBus.ReleaseNameAsync(_sysTrayServiceName);
+            _dBus!.ReleaseNameAsync(_sysTrayServiceName);
         }
 
         public void Dispose()
@@ -147,7 +147,7 @@ namespace Avalonia.FreeDesktop
 
             if (icon is null)
             {
-                _statusNotifierItemDbusObj?.SetIcon((1, 1, new byte[] { 255, 0, 0, 0 }));
+                _statusNotifierItemDbusObj?.SetIcon(StatusNotifierItemDbusObj.StatusNotifierItemProperties.EmptyPixmap);
                 return;
             }
 
@@ -238,7 +238,7 @@ namespace Avalonia.FreeDesktop
             EmitVoidSignal("NewAttentionIcon");
             EmitVoidSignal("NewOverlayIcon");
             EmitVoidSignal("NewToolTip");
-            EmitStringSignal("NewStatus", _backingProperties.Status ?? string.Empty);
+            EmitStringSignal("NewStatus", _backingProperties.Status);
         }
 
         public void SetIcon((int, int, byte[]) dbusPixmap)
@@ -287,7 +287,7 @@ namespace Avalonia.FreeDesktop
                         case ("Get", "ss"):
                         {
                             var reader = context.Request.GetBodyReader();
-                            var interfaceName = reader.ReadString();
+                            _ = reader.ReadString();
                             var member = reader.ReadString();
                             switch (member)
                             {
@@ -349,10 +349,10 @@ namespace Avalonia.FreeDesktop
                             var writer = context.CreateReplyWriter("a{sv}");
                             var dict = new Dictionary<string, object>
                             {
-                                { "Category", _backingProperties.Category ?? string.Empty },
-                                { "Id", _backingProperties.Id ?? string.Empty },
-                                { "Title", _backingProperties.Title ?? string.Empty },
-                                { "Status", _backingProperties.Status ?? string.Empty },
+                                { "Category", _backingProperties.Category },
+                                { "Id", _backingProperties.Id },
+                                { "Title", _backingProperties.Title },
+                                { "Status", _backingProperties.Status },
                                 { "Menu", _backingProperties.Menu },
                                 { "IconPixmap", _backingProperties.IconPixmap  },
                                 { "ToolTip", _backingProperties.ToolTip }
@@ -385,24 +385,26 @@ namespace Avalonia.FreeDesktop
             _connection.TrySendMessage(writer.CreateMessage());
         }
 
-        private record StatusNotifierItemProperties
+        internal record StatusNotifierItemProperties
         {
-            public string? Category { get; set; }
-            public string? Id { get; set; }
-            public string? Title { get; set; }
-            public string? Status { get; set; }
+            public string Category { get; set; } = string.Empty;
+            public string Id { get; set; } = string.Empty;
+            public string Title { get; set; } = string.Empty;
+            public string Status { get; set; } = string.Empty;
             public int WindowId { get; set; }
             public string? IconThemePath { get; set; }
             public ObjectPath Menu { get; set; }
             public bool ItemIsMenu { get; set; }
             public string? IconName { get; set; }
-            public (int, int, byte[])[]? IconPixmap { get; set; }
+            public (int, int, byte[])[] IconPixmap { get; set; } = { EmptyPixmap };
             public string? OverlayIconName { get; set; }
             public (int, int, byte[])[]? OverlayIconPixmap { get; set; }
             public string? AttentionIconName { get; set; }
             public (int, int, byte[])[]? AttentionIconPixmap { get; set; }
             public string? AttentionMovieName { get; set; }
             public (string, (int, int, byte[])[], string, string) ToolTip { get; set; }
+
+            public static (int, int, byte[]) EmptyPixmap = (1, 1, new byte[] { 255, 0, 0, 0 });
         }
     }
 }

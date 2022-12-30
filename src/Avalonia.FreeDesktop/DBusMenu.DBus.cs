@@ -16,11 +16,12 @@ namespace Avalonia.FreeDesktop
     internal class DBusMenu : DBusMenuObject
     {
         private const string Interface = "com.canonical.dbusmenu";
-        public DBusMenu(DBusMenuService service, ObjectPath path) : base(service, path)
-        { }
+
+        public DBusMenu(DBusMenuService service, ObjectPath path) : base(service, path) { }
+
         public Task<(uint Revision, (int, Dictionary<string, object>, object[]) Layout)> GetLayoutAsync(int parentId, int recursionDepth, string[] propertyNames)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_uriaesvavz(m, (DBusMenuObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, _) => ReadMessage_uriaesvavz(m), this);
             MessageBuffer CreateMessage()
             {
                 using var writer = Connection.GetMessageWriter();
@@ -36,9 +37,10 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task<(int, Dictionary<string, object>)[]> GetGroupPropertiesAsync(int[] ids, string[] propertyNames)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_ariaesvz(m, (DBusMenuObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, _) => ReadMessage_ariaesvz(m), this);
             MessageBuffer CreateMessage()
             {
                 using var writer = Connection.GetMessageWriter();
@@ -53,9 +55,10 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task<object> GetPropertyAsync(int id, string name)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_v(m, (DBusMenuObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, _) => ReadMessage_v(m), this);
             MessageBuffer CreateMessage()
             {
                 using var writer = Connection.GetMessageWriter();
@@ -70,6 +73,7 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task EventAsync(int id, string eventId, object data, uint timestamp)
         {
             return Connection.CallMethodAsync(CreateMessage());
@@ -89,9 +93,10 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task<int[]> EventGroupAsync((int, string, object, uint)[] events)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_ai(m, (DBusMenuObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, _) => ReadMessage_ai(m), this);
             MessageBuffer CreateMessage()
             {
                 using var writer = Connection.GetMessageWriter();
@@ -105,9 +110,10 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task<bool> AboutToShowAsync(int id)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_b(m, (DBusMenuObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, _) => ReadMessage_b(m), this);
             MessageBuffer CreateMessage()
             {
                 using var writer = Connection.GetMessageWriter();
@@ -121,9 +127,10 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task<(int[] UpdatesNeeded, int[] IdErrors)> AboutToShowGroupAsync(int[] ids)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_aiai(m, (DBusMenuObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, _) => ReadMessage_aiai(m), this);
             MessageBuffer CreateMessage()
             {
                 using var writer = Connection.GetMessageWriter();
@@ -137,12 +144,16 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public ValueTask<IDisposable> WatchItemsPropertiesUpdatedAsync(Action<Exception?, ((int, Dictionary<string, object>)[] UpdatedProps, (int, string[])[] RemovedProps)> handler, bool emitOnCapturedContext = true)
-            => WatchSignalAsync(Service.Destination, Interface, Path, "ItemsPropertiesUpdated", (m, s) => ReadMessage_ariaesvzariasz(m, (DBusMenuObject)s!), handler, emitOnCapturedContext);
+            => WatchSignalAsync(Service.Destination, Interface, Path, "ItemsPropertiesUpdated", static (m, _) => ReadMessage_ariaesvzariasz(m), handler, emitOnCapturedContext);
+
         public ValueTask<IDisposable> WatchLayoutUpdatedAsync(Action<Exception?, (uint Revision, int Parent)> handler, bool emitOnCapturedContext = true)
-            => WatchSignalAsync(Service.Destination, Interface, Path, "LayoutUpdated", (m, s) => ReadMessage_ui(m, (DBusMenuObject)s!), handler, emitOnCapturedContext);
+            => WatchSignalAsync(Service.Destination, Interface, Path, "LayoutUpdated", static (m, _) => ReadMessage_ui(m), handler, emitOnCapturedContext);
+
         public ValueTask<IDisposable> WatchItemActivationRequestedAsync(Action<Exception?, (int Id, uint Timestamp)> handler, bool emitOnCapturedContext = true)
-            => WatchSignalAsync(Service.Destination, Interface, Path, "ItemActivationRequested", (m, s) => ReadMessage_iu(m, (DBusMenuObject)s!), handler, emitOnCapturedContext);
+            => WatchSignalAsync(Service.Destination, Interface, Path, "ItemActivationRequested", static (m, _) => ReadMessage_iu(m), handler, emitOnCapturedContext);
+
         public Task SetVersionAsync(uint value)
         {
             return Connection.CallMethodAsync(CreateMessage());
@@ -162,6 +173,7 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task SetTextDirectionAsync(string value)
         {
             return Connection.CallMethodAsync(CreateMessage());
@@ -181,6 +193,7 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task SetStatusAsync(string value)
         {
             return Connection.CallMethodAsync(CreateMessage());
@@ -200,6 +213,7 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task SetIconThemePathAsync(string[] value)
         {
             return Connection.CallMethodAsync(CreateMessage());
@@ -219,40 +233,46 @@ namespace Avalonia.FreeDesktop
                 return writer.CreateMessage();
             }
         }
+
         public Task<uint> GetVersionAsync()
-            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "Version"), (m, s) => ReadMessage_v_u(m, (DBusMenuObject)s!), this);
+            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "Version"), static (m, _) => ReadMessage_v_u(m), this);
+
         public Task<string> GetTextDirectionAsync()
-            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "TextDirection"), (m, s) => ReadMessage_v_s(m, (DBusMenuObject)s!), this);
+            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "TextDirection"), static (m, _) => ReadMessage_v_s(m), this);
+
         public Task<string> GetStatusAsync()
-            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "Status"), (m, s) => ReadMessage_v_s(m, (DBusMenuObject)s!), this);
+            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "Status"), static (m, _) => ReadMessage_v_s(m), this);
+
         public Task<string[]> GetIconThemePathAsync()
-            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "IconThemePath"), (m, s) => ReadMessage_v_as(m, (DBusMenuObject)s!), this);
+            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "IconThemePath"), static (m, _) => ReadMessage_v_as(m), this);
+
         public Task<DBusMenuProperties> GetPropertiesAsync()
         {
-            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), (m, s) => ReadMessage(m, (DBusMenuObject)s!), this);
-            static DBusMenuProperties ReadMessage(Message message, DBusMenuObject _)
+            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), static (m, _) => ReadMessage(m), this);
+            static DBusMenuProperties ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 return ReadProperties(ref reader);
             }
         }
+
         public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<DBusMenuProperties>> handler, bool emitOnCapturedContext = true)
         {
-            return base.WatchPropertiesChangedAsync(Interface, (m, s) => ReadMessage(m, (DBusMenuObject)s!), handler, emitOnCapturedContext);
-            static PropertyChanges<DBusMenuProperties> ReadMessage(Message message, DBusMenuObject _)
+            return base.WatchPropertiesChangedAsync(Interface, static (m, _) => ReadMessage(m), handler, emitOnCapturedContext);
+            static PropertyChanges<DBusMenuProperties> ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 reader.ReadString(); // interface
-                List<string> changed = new(), invalidated = new();
+                List<string> changed = new();
                 return new PropertyChanges<DBusMenuProperties>(ReadProperties(ref reader, changed), changed.ToArray(), ReadInvalidated(ref reader));
             }
             static string[] ReadInvalidated(ref Reader reader)
             {
                 List<string>? invalidated = null;
-                ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.String);
+                var headersEnd = reader.ReadArrayStart(DBusType.String);
                 while (reader.HasNext(headersEnd))
                 {
-                    invalidated ??= new();
+                    invalidated ??= new List<string>();
                     var property = reader.ReadString();
                     switch (property)
                     {
@@ -265,10 +285,11 @@ namespace Avalonia.FreeDesktop
                 return invalidated?.ToArray() ?? Array.Empty<string>();
             }
         }
-        private static DBusMenuProperties ReadProperties(ref Reader reader, List<string>? changedList = null)
+
+        private static DBusMenuProperties ReadProperties(ref Reader reader, ICollection<string>? changedList = null)
         {
             var props = new DBusMenuProperties();
-            ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.Struct);
+            var headersEnd = reader.ReadArrayStart(DBusType.Struct);
             while (reader.HasNext(headersEnd))
             {
                 var property = reader.ReadString();
@@ -309,7 +330,7 @@ namespace Avalonia.FreeDesktop
         public string Destination { get; }
         public DBusMenuService(Connection connection, string destination)
             => (Connection, Destination) = (connection, destination);
-        public DBusMenu CreateDbusmenu(string path) => new DBusMenu(this, path);
+        public DBusMenu CreateDbusmenu(string path) => new(this, path);
     }
 
     internal class DBusMenuObject
@@ -319,6 +340,7 @@ namespace Avalonia.FreeDesktop
         protected Connection Connection => Service.Connection;
         protected DBusMenuObject(DBusMenuService service, ObjectPath path)
             => (Service, Path) = (service, path);
+
         protected MessageBuffer CreateGetPropertyMessage(string @interface, string property)
         {
             using var writer = Connection.GetMessageWriter();
@@ -332,6 +354,7 @@ namespace Avalonia.FreeDesktop
             writer.WriteString(property);
             return writer.CreateMessage();
         }
+
         protected MessageBuffer CreateGetAllPropertiesMessage(string @interface)
         {
             using var writer = Connection.GetMessageWriter();
@@ -344,6 +367,7 @@ namespace Avalonia.FreeDesktop
             writer.WriteString(@interface);
             return writer.CreateMessage();
         }
+
         protected ValueTask<IDisposable> WatchPropertiesChangedAsync<TProperties>(string @interface, MessageValueReader<PropertyChanges<TProperties>> reader, Action<Exception?, PropertyChanges<TProperties>> handler, bool emitOnCapturedContext)
         {
             var rule = new MatchRule
@@ -355,11 +379,11 @@ namespace Avalonia.FreeDesktop
                 Member = "PropertiesChanged",
                 Arg0 = @interface
             };
-            return Connection.AddMatchAsync(rule, reader,
-                                                    (ex, changes, rs, hs) => ((Action<Exception?, PropertyChanges<TProperties>>)hs!).Invoke(ex, changes),
-                                                    this, handler, emitOnCapturedContext);
+            return Connection.AddMatchAsync(rule, reader, static (ex, changes, _, hs)
+                    => ((Action<Exception?, PropertyChanges<TProperties>>)hs!).Invoke(ex, changes), this, handler, emitOnCapturedContext);
         }
-        public ValueTask<IDisposable> WatchSignalAsync<TArg>(string sender, string @interface, ObjectPath path, string signal, MessageValueReader<TArg> reader, Action<Exception?, TArg> handler, bool emitOnCapturedContext)
+
+        protected ValueTask<IDisposable> WatchSignalAsync<TArg>(string sender, string @interface, ObjectPath path, string signal, MessageValueReader<TArg> reader, Action<Exception?, TArg> handler, bool emitOnCapturedContext)
         {
             var rule = new MatchRule
             {
@@ -369,11 +393,11 @@ namespace Avalonia.FreeDesktop
                 Member = signal,
                 Interface = @interface
             };
-            return Connection.AddMatchAsync(rule, reader,
-                                                    (ex, arg, rs, hs) => ((Action<Exception?, TArg>)hs!).Invoke(ex, arg),
-                                                    this, handler, emitOnCapturedContext);
+            return Connection.AddMatchAsync(rule, reader, static (ex, arg, _, hs)
+                    => ((Action<Exception?, TArg>)hs!).Invoke(ex, arg), this, handler, emitOnCapturedContext);
         }
-        public ValueTask<IDisposable> WatchSignalAsync(string sender, string @interface, ObjectPath path, string signal, Action<Exception?> handler, bool emitOnCapturedContext)
+
+        protected ValueTask<IDisposable> WatchSignalAsync(string sender, string @interface, ObjectPath path, string signal, Action<Exception?> handler, bool emitOnCapturedContext)
         {
             var rule = new MatchRule
             {
@@ -383,77 +407,90 @@ namespace Avalonia.FreeDesktop
                 Member = signal,
                 Interface = @interface
             };
-            return Connection.AddMatchAsync<object>(rule, (message, state) => null!,
-                                                            (ex, v, rs, hs) => ((Action<Exception?>)hs!).Invoke(ex), this, handler, emitOnCapturedContext);
+            return Connection.AddMatchAsync<object>(rule, static (_, _)
+                => null!, static (ex, _, _, hs)
+                => ((Action<Exception?>)hs!).Invoke(ex), this, handler, emitOnCapturedContext);
         }
-        protected static (uint, (int, Dictionary<string, object>, object[])) ReadMessage_uriaesvavz(Message message, DBusMenuObject _)
+
+        protected static (uint, (int, Dictionary<string, object>, object[])) ReadMessage_uriaesvavz(Message message)
         {
             var reader = message.GetBodyReader();
             var arg0 = reader.ReadUInt32();
             var arg1 = reader.ReadStruct<int, Dictionary<string, object>, object[]>();
             return (arg0, arg1);
         }
-        protected static (int, Dictionary<string, object>)[] ReadMessage_ariaesvz(Message message, DBusMenuObject _)
+
+        protected static (int, Dictionary<string, object>)[] ReadMessage_ariaesvz(Message message)
         {
             var reader = message.GetBodyReader();
             return reader.ReadArray<(int, Dictionary<string, object>)>();
         }
-        protected static object ReadMessage_v(Message message, DBusMenuObject _)
+
+        protected static object ReadMessage_v(Message message)
         {
             var reader = message.GetBodyReader();
             return reader.ReadVariant();
         }
-        protected static int[] ReadMessage_ai(Message message, DBusMenuObject _)
+
+        protected static int[] ReadMessage_ai(Message message)
         {
             var reader = message.GetBodyReader();
             return reader.ReadArray<int>();
         }
-        protected static bool ReadMessage_b(Message message, DBusMenuObject _)
+
+        protected static bool ReadMessage_b(Message message)
         {
             var reader = message.GetBodyReader();
             return reader.ReadBool();
         }
-        protected static (int[], int[]) ReadMessage_aiai(Message message, DBusMenuObject _)
+
+        protected static (int[], int[]) ReadMessage_aiai(Message message)
         {
             var reader = message.GetBodyReader();
             var arg0 = reader.ReadArray<int>();
             var arg1 = reader.ReadArray<int>();
             return (arg0, arg1);
         }
-        protected static ((int, Dictionary<string, object>)[], (int, string[])[]) ReadMessage_ariaesvzariasz(Message message, DBusMenuObject _)
+
+        protected static ((int, Dictionary<string, object>)[], (int, string[])[]) ReadMessage_ariaesvzariasz(Message message)
         {
             var reader = message.GetBodyReader();
             var arg0 = reader.ReadArray<(int, Dictionary<string, object>)>();
             var arg1 = reader.ReadArray<(int, string[])>();
             return (arg0, arg1);
         }
-        protected static (uint, int) ReadMessage_ui(Message message, DBusMenuObject _)
+
+        protected static (uint, int) ReadMessage_ui(Message message)
         {
             var reader = message.GetBodyReader();
             var arg0 = reader.ReadUInt32();
             var arg1 = reader.ReadInt32();
             return (arg0, arg1);
         }
-        protected static (int, uint) ReadMessage_iu(Message message, DBusMenuObject _)
+
+        protected static (int, uint) ReadMessage_iu(Message message)
         {
             var reader = message.GetBodyReader();
             var arg0 = reader.ReadInt32();
             var arg1 = reader.ReadUInt32();
             return (arg0, arg1);
         }
-        protected static uint ReadMessage_v_u(Message message, DBusMenuObject _)
+
+        protected static uint ReadMessage_v_u(Message message)
         {
             var reader = message.GetBodyReader();
             reader.ReadSignature("u");
             return reader.ReadUInt32();
         }
-        protected static string ReadMessage_v_s(Message message, DBusMenuObject _)
+
+        protected static string ReadMessage_v_s(Message message)
         {
             var reader = message.GetBodyReader();
             reader.ReadSignature("s");
             return reader.ReadString();
         }
-        protected static string[] ReadMessage_v_as(Message message, DBusMenuObject _)
+
+        protected static string[] ReadMessage_v_as(Message message)
         {
             var reader = message.GetBodyReader();
             reader.ReadSignature("as");

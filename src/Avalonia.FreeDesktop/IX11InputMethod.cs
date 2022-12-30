@@ -19,7 +19,7 @@ namespace Avalonia.FreeDesktop
         public KeyModifiers Modifiers { get; set; }
         public RawKeyEventType Type { get; set; }
     }
-    
+
     public interface IX11InputMethodControl : IDisposable
     {
         void SetWindowActive(bool active);
@@ -27,7 +27,7 @@ namespace Avalonia.FreeDesktop
         ValueTask<bool> HandleEventAsync(RawKeyEventArgs args, int keyVal, int keyCode);
         event Action<string> Commit;
         event Action<X11InputMethodForwardedKey> ForwardKey;
-        
+
         void UpdateWindowInfo(PixelPoint position, double scaling);
     }
 }

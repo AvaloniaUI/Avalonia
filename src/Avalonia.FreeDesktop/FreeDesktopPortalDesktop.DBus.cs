@@ -56,8 +56,8 @@ namespace Avalonia.FreeDesktop
 
         public ValueTask<IDisposable> WatchActionInvokedAsync(Action<Exception?, (string Id, string Action, object[] Parameter)> handler,
             bool emitOnCapturedContext = true)
-            => WatchSignalAsync(Service.Destination, Interface, Path, "ActionInvoked",
-                (m, s) => ReadMessage_ssav(m, (DesktopObject)s!), handler, emitOnCapturedContext);
+            => WatchSignalAsync(Service.Destination, Interface, Path, "ActionInvoked", static (m, s)
+                => ReadMessage_ssav(m, (DesktopObject)s!), handler, emitOnCapturedContext);
 
         public Task SetVersionAsync(uint value)
         {
@@ -81,15 +81,15 @@ namespace Avalonia.FreeDesktop
         }
 
         public Task<uint> GetVersionAsync()
-            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "version"),
-                (m, s) => ReadMessage_v_u(m, (DesktopObject)s!), this);
+            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "version"), static (m, s)
+                => ReadMessage_v_u(m, (DesktopObject)s!), this);
 
         public Task<NotificationProperties> GetPropertiesAsync()
         {
-            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface),
-                (m, s) => ReadMessage(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), static (m, _)
+                => ReadMessage(m), this);
 
-            static NotificationProperties ReadMessage(Message message, DesktopObject _)
+            static NotificationProperties ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 return ReadProperties(ref reader);
@@ -99,10 +99,10 @@ namespace Avalonia.FreeDesktop
         public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<NotificationProperties>> handler,
             bool emitOnCapturedContext = true)
         {
-            return base.WatchPropertiesChangedAsync(Interface, (m, s) => ReadMessage(m, (DesktopObject)s!), handler,
-                emitOnCapturedContext);
+            return base.WatchPropertiesChangedAsync(Interface, static (m, _)
+                    => ReadMessage(m), handler, emitOnCapturedContext);
 
-            static PropertyChanges<NotificationProperties> ReadMessage(Message message, DesktopObject _)
+            static PropertyChanges<NotificationProperties> ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 reader.ReadString(); // interface
@@ -114,10 +114,10 @@ namespace Avalonia.FreeDesktop
             static string[] ReadInvalidated(ref Reader reader)
             {
                 List<string>? invalidated = null;
-                ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.String);
+                var headersEnd = reader.ReadArrayStart(DBusType.String);
                 while (reader.HasNext(headersEnd))
                 {
-                    invalidated ??= new();
+                    invalidated ??= new List<string>();
                     var property = reader.ReadString();
                     switch (property)
                     {
@@ -131,10 +131,10 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private static NotificationProperties ReadProperties(ref Reader reader, List<string>? changedList = null)
+        private static NotificationProperties ReadProperties(ref Reader reader, ICollection<string>? changedList = null)
         {
             var props = new NotificationProperties();
-            ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.Struct);
+            var headersEnd = reader.ReadArrayStart(DBusType.Struct);
             while (reader.HasNext(headersEnd))
             {
                 var property = reader.ReadString();
@@ -168,7 +168,7 @@ namespace Avalonia.FreeDesktop
 
         public Task<ObjectPath> OpenUriAsync(string parentWindow, string uri, Dictionary<string, object> options)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -188,7 +188,7 @@ namespace Avalonia.FreeDesktop
 
         public Task<ObjectPath> OpenFileAsync(string parentWindow, SafeHandle fd, Dictionary<string, object> options)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -208,7 +208,7 @@ namespace Avalonia.FreeDesktop
 
         public Task<ObjectPath> OpenDirectoryAsync(string parentWindow, SafeHandle fd, Dictionary<string, object> options)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -248,15 +248,15 @@ namespace Avalonia.FreeDesktop
         }
 
         public Task<uint> GetVersionAsync()
-            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "version"),
-                (m, s) => ReadMessage_v_u(m, (DesktopObject)s!), this);
+            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "version"), static (m, s)
+                => ReadMessage_v_u(m, (DesktopObject)s!), this);
 
         public Task<OpenURIProperties> GetPropertiesAsync()
         {
-            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface),
-                (m, s) => ReadMessage(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), static (m, _)
+                => ReadMessage(m), this);
 
-            static OpenURIProperties ReadMessage(Message message, DesktopObject _)
+            static OpenURIProperties ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 return ReadProperties(ref reader);
@@ -266,10 +266,10 @@ namespace Avalonia.FreeDesktop
         public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<OpenURIProperties>> handler,
             bool emitOnCapturedContext = true)
         {
-            return base.WatchPropertiesChangedAsync(Interface, (m, s) => ReadMessage(m, (DesktopObject)s!), handler,
-                emitOnCapturedContext);
+            return base.WatchPropertiesChangedAsync(Interface, static (m, _)
+                    => ReadMessage(m), handler, emitOnCapturedContext);
 
-            static PropertyChanges<OpenURIProperties> ReadMessage(Message message, DesktopObject _)
+            static PropertyChanges<OpenURIProperties> ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 reader.ReadString(); // interface
@@ -280,10 +280,10 @@ namespace Avalonia.FreeDesktop
             static string[] ReadInvalidated(ref Reader reader)
             {
                 List<string>? invalidated = null;
-                ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.String);
+                var headersEnd = reader.ReadArrayStart(DBusType.String);
                 while (reader.HasNext(headersEnd))
                 {
-                    invalidated ??= new();
+                    invalidated ??= new List<string>();
                     var property = reader.ReadString();
                     switch (property)
                     {
@@ -297,10 +297,10 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private static OpenURIProperties ReadProperties(ref Reader reader, List<string>? changedList = null)
+        private static OpenURIProperties ReadProperties(ref Reader reader, ICollection<string>? changedList = null)
         {
             var props = new OpenURIProperties();
-            ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.Struct);
+            var headersEnd = reader.ReadArrayStart(DBusType.Struct);
             while (reader.HasNext(headersEnd))
             {
                 var property = reader.ReadString();
@@ -356,7 +356,7 @@ namespace Avalonia.FreeDesktop
 
         public Task<ObjectPath> PrepareInstallAsync(string parentWindow, string name, object iconV, Dictionary<string, object> options)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -377,7 +377,8 @@ namespace Avalonia.FreeDesktop
 
         public Task<string> RequestInstallTokenAsync(string name, object iconV, Dictionary<string, object> options)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_s(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s)
+                => ReadMessage_s(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -416,7 +417,8 @@ namespace Avalonia.FreeDesktop
 
         public Task<string> GetDesktopEntryAsync(string desktopFileId)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_s(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s)
+                => ReadMessage_s(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -434,7 +436,8 @@ namespace Avalonia.FreeDesktop
 
         public Task<(object IconV, string IconFormat, uint IconSize)> GetIconAsync(string desktopFileId)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_vsu(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s)
+                => ReadMessage_vsu(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -512,19 +515,19 @@ namespace Avalonia.FreeDesktop
         }
 
         public Task<uint> GetSupportedLauncherTypesAsync()
-            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "SupportedLauncherTypes"),
-                (m, s) => ReadMessage_v_u(m, (DesktopObject)s!), this);
+            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "SupportedLauncherTypes"), static (m, s)
+                => ReadMessage_v_u(m, (DesktopObject)s!), this);
 
         public Task<uint> GetVersionAsync()
-            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "version"),
-                (m, s) => ReadMessage_v_u(m, (DesktopObject)s!), this);
+            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "version"), static (m, s)
+                => ReadMessage_v_u(m, (DesktopObject)s!), this);
 
         public Task<DynamicLauncherProperties> GetPropertiesAsync()
         {
-            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface),
-                (m, s) => ReadMessage(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), static (m, _)
+                => ReadMessage(m), this);
 
-            static DynamicLauncherProperties ReadMessage(Message message, DesktopObject _)
+            static DynamicLauncherProperties ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 return ReadProperties(ref reader);
@@ -534,10 +537,11 @@ namespace Avalonia.FreeDesktop
         public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<DynamicLauncherProperties>> handler,
             bool emitOnCapturedContext = true)
         {
-            return base.WatchPropertiesChangedAsync(Interface, (m, s) => ReadMessage(m, (DesktopObject)s!), handler,
+            return base.WatchPropertiesChangedAsync(Interface, static (m, _)
+                    => ReadMessage(m), handler,
                 emitOnCapturedContext);
 
-            static PropertyChanges<DynamicLauncherProperties> ReadMessage(Message message, DesktopObject _)
+            static PropertyChanges<DynamicLauncherProperties> ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 reader.ReadString(); // interface
@@ -549,10 +553,10 @@ namespace Avalonia.FreeDesktop
             static string[] ReadInvalidated(ref Reader reader)
             {
                 List<string>? invalidated = null;
-                ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.String);
+                var headersEnd = reader.ReadArrayStart(DBusType.String);
                 while (reader.HasNext(headersEnd))
                 {
-                    invalidated ??= new();
+                    invalidated ??= new List<string>();
                     var property = reader.ReadString();
                     switch (property)
                     {
@@ -569,10 +573,10 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private static DynamicLauncherProperties ReadProperties(ref Reader reader, List<string>? changedList = null)
+        private static DynamicLauncherProperties ReadProperties(ref Reader reader, ICollection<string>? changedList = null)
         {
             var props = new DynamicLauncherProperties();
-            ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.Struct);
+            var headersEnd = reader.ReadArrayStart(DBusType.Struct);
             while (reader.HasNext(headersEnd))
             {
                 var property = reader.ReadString();
@@ -611,7 +615,7 @@ namespace Avalonia.FreeDesktop
 
         public Task<ObjectPath> OpenFileAsync(string parentWindow, string title, Dictionary<string, object> options)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -631,7 +635,7 @@ namespace Avalonia.FreeDesktop
 
         public Task<ObjectPath> SaveFileAsync(string parentWindow, string title, Dictionary<string, object> options)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -651,7 +655,7 @@ namespace Avalonia.FreeDesktop
 
         public Task<ObjectPath> SaveFilesAsync(string parentWindow, string title, Dictionary<string, object> options)
         {
-            return Connection.CallMethodAsync(CreateMessage(), (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateMessage(), static (m, s) => ReadMessage_o(m, (DesktopObject)s!), this);
 
             MessageBuffer CreateMessage()
             {
@@ -691,15 +695,15 @@ namespace Avalonia.FreeDesktop
         }
 
         public Task<uint> GetVersionAsync()
-            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "version"),
-                (m, s) => ReadMessage_v_u(m, (DesktopObject)s!), this);
+            => Connection.CallMethodAsync(CreateGetPropertyMessage(Interface, "version"), static (m, s)
+                => ReadMessage_v_u(m, (DesktopObject)s!), this);
 
         public Task<FileChooserProperties> GetPropertiesAsync()
         {
-            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface),
-                (m, s) => ReadMessage(m, (DesktopObject)s!), this);
+            return Connection.CallMethodAsync(CreateGetAllPropertiesMessage(Interface), static (m, _)
+                => ReadMessage(m), this);
 
-            static FileChooserProperties ReadMessage(Message message, DesktopObject _)
+            static FileChooserProperties ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 return ReadProperties(ref reader);
@@ -709,10 +713,10 @@ namespace Avalonia.FreeDesktop
         public ValueTask<IDisposable> WatchPropertiesChangedAsync(Action<Exception?, PropertyChanges<FileChooserProperties>> handler,
             bool emitOnCapturedContext = true)
         {
-            return base.WatchPropertiesChangedAsync(Interface, (m, s) => ReadMessage(m, (DesktopObject)s!), handler,
-                emitOnCapturedContext);
+            return base.WatchPropertiesChangedAsync(Interface, static (m, _)
+                    => ReadMessage(m), handler, emitOnCapturedContext);
 
-            static PropertyChanges<FileChooserProperties> ReadMessage(Message message, DesktopObject _)
+            static PropertyChanges<FileChooserProperties> ReadMessage(Message message)
             {
                 var reader = message.GetBodyReader();
                 reader.ReadString(); // interface
@@ -724,10 +728,10 @@ namespace Avalonia.FreeDesktop
             static string[] ReadInvalidated(ref Reader reader)
             {
                 List<string>? invalidated = null;
-                ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.String);
+                var headersEnd = reader.ReadArrayStart(DBusType.String);
                 while (reader.HasNext(headersEnd))
                 {
-                    invalidated ??= new();
+                    invalidated ??= new List<string>();
                     var property = reader.ReadString();
                     switch (property)
                     {
@@ -741,10 +745,10 @@ namespace Avalonia.FreeDesktop
             }
         }
 
-        private static FileChooserProperties ReadProperties(ref Reader reader, List<string>? changedList = null)
+        private static FileChooserProperties ReadProperties(ref Reader reader, ICollection<string>? changedList = null)
         {
             var props = new FileChooserProperties();
-            ArrayEnd headersEnd = reader.ReadArrayStart(DBusType.Struct);
+            var headersEnd = reader.ReadArrayStart(DBusType.Struct);
             while (reader.HasNext(headersEnd))
             {
                 var property = reader.ReadString();
@@ -811,8 +815,8 @@ namespace Avalonia.FreeDesktop
         protected DesktopObject(DesktopService service, ObjectPath path)
             => (Service, Path) = (service, path);
 
-        public DesktopService Service { get; }
-        public ObjectPath Path { get; }
+        protected DesktopService Service { get; }
+        protected ObjectPath Path { get; }
         protected Connection Connection => Service.Connection;
 
         protected MessageBuffer CreateGetPropertyMessage(string @interface, string property)
@@ -855,13 +859,11 @@ namespace Avalonia.FreeDesktop
                 Member = "PropertiesChanged",
                 Arg0 = @interface
             };
-            return Connection.AddMatchAsync(rule, reader,
-                (ex, changes, rs, hs) =>
-                    ((Action<Exception?, PropertyChanges<TProperties>>)hs!).Invoke(ex, changes),
-                this, handler, emitOnCapturedContext);
+            return Connection.AddMatchAsync(rule, reader, static (ex, changes, _, hs)
+                    => ((Action<Exception?, PropertyChanges<TProperties>>)hs!).Invoke(ex, changes), this, handler, emitOnCapturedContext);
         }
 
-        public ValueTask<IDisposable> WatchSignalAsync<TArg>(string sender, string @interface, ObjectPath path, string signal,
+        protected ValueTask<IDisposable> WatchSignalAsync<TArg>(string sender, string @interface, ObjectPath path, string signal,
             MessageValueReader<TArg> reader, Action<Exception?, TArg> handler, bool emitOnCapturedContext)
         {
             var rule = new MatchRule
@@ -872,9 +874,8 @@ namespace Avalonia.FreeDesktop
                 Member = signal,
                 Interface = @interface
             };
-            return Connection.AddMatchAsync(rule, reader,
-                (ex, arg, rs, hs) => ((Action<Exception?, TArg>)hs!).Invoke(ex, arg),
-                this, handler, emitOnCapturedContext);
+            return Connection.AddMatchAsync(rule, reader, static (ex, arg, _, hs) =>
+                    ((Action<Exception?, TArg>)hs!).Invoke(ex, arg), this, handler, emitOnCapturedContext);
         }
 
         protected static ObjectPath ReadMessage_o(Message message, DesktopObject _)
