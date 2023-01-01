@@ -156,7 +156,8 @@ namespace Avalonia.Direct2D1.RenderTests
             public ILockedFramebuffer Lock() => _bitmap.Lock();
         }
 
-        protected void CompareImages([CallerMemberName] string testName = "")
+        protected void CompareImages([CallerMemberName] string testName = "",
+            bool skipImmediate = false, bool skipDeferred = false, bool skipCompositor = false)
         {
             var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
@@ -172,17 +173,17 @@ namespace Avalonia.Direct2D1.RenderTests
                 var deferredError = CompareImages(deferred, expected);
                 var compositedError = CompareImages(composited, expected);
 
-                if (immediateError > 0.022)
+                if (immediateError > 0.022 && !skipImmediate)
                 {
                     Assert.True(false, immediatePath + ": Error = " + immediateError);
                 }
 
-                if (deferredError > 0.022)
+                if (deferredError > 0.022 && !skipDeferred)
                 {
                     Assert.True(false, deferredPath + ": Error = " + deferredError);
                 }
                 
-                if (compositedError > 0.022)
+                if (compositedError > 0.022 && !skipCompositor)
                 {
                     Assert.True(false, compositedPath + ": Error = " + compositedError);
                 }
