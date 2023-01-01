@@ -42,11 +42,18 @@ namespace Avalonia.Rendering.Composition.Server
 
             Root!.RenderedVisuals++;
             
+            if (Opacity != 1)
+                canvas.PushOpacity(Opacity);
+            if (AdornedVisual != null)
+            {
+                canvas.PostTransform = Matrix.Identity;
+                canvas.Transform = Matrix.Identity;
+                canvas.PushClip(AdornedVisual._combinedTransformedClipBounds);
+            }
             var transform = GlobalTransformMatrix;
             canvas.PostTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
-            if (Opacity != 1)
-                canvas.PushOpacity(Opacity);
+            
             var boundsRect = new Rect(new Size(Size.X, Size.Y));
             if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PushClip(Root!.SnapToDevicePixels(boundsRect));
@@ -66,6 +73,8 @@ namespace Avalonia.Rendering.Composition.Server
             if (Clip != null)
                 canvas.PopGeometryClip();
             if (ClipToBounds && !HandlesClipToBounds)
+                canvas.PopClip();
+            if (AdornedVisual != null)
                 canvas.PopClip();
             if(Opacity != 1)
                 canvas.PopOpacity();
@@ -155,8 +164,12 @@ namespace Avalonia.Rendering.Composition.Server
                 
                 _clipSizeDirty = false;
             }
+
+            _combinedTransformedClipBounds =
+                AdornedVisual?._combinedTransformedClipBounds
+                ?? Parent?._combinedTransformedClipBounds
+                ?? new Rect(Root!.Size);
             
-            _combinedTransformedClipBounds = Parent?._combinedTransformedClipBounds ?? new Rect(Root!.Size);
             if (_transformedClipBounds != null)
                 _combinedTransformedClipBounds = _combinedTransformedClipBounds.Intersect(_transformedClipBounds.Value);
             
