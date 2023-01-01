@@ -162,8 +162,14 @@ namespace Avalonia.Rendering.Composition.Server
             
             EffectiveOpacity = Opacity * (Parent?.EffectiveOpacity ?? 1);
 
-            IsVisibleInFrame = _parent?.IsVisibleInFrame != false && Visible && EffectiveOpacity > 0.04 && !_isBackface &&
-                               !_combinedTransformedClipBounds.IsDefault;
+            IsHitTestVisibleInFrame = _parent?.IsHitTestVisibleInFrame != false
+                                      && Visible
+                                      && !_isBackface
+                                      && !_combinedTransformedClipBounds.IsDefault;
+
+            IsVisibleInFrame = IsHitTestVisibleInFrame
+                               && _parent?.IsVisibleInFrame != false
+                               && EffectiveOpacity > 0.04;
 
             if (wasVisible != IsVisibleInFrame || positionChanged)
             {
@@ -187,7 +193,7 @@ namespace Avalonia.Rendering.Composition.Server
             readback.Revision = root.Revision;
             readback.Matrix = GlobalTransformMatrix;
             readback.TargetId = Root.Id;
-            readback.Visible = IsVisibleInFrame;
+            readback.Visible = IsHitTestVisibleInFrame;
         }
 
         void AddDirtyRect(Rect rc)
@@ -248,6 +254,7 @@ namespace Avalonia.Rendering.Composition.Server
         }
 
         public bool IsVisibleInFrame { get; set; }
+        public bool IsHitTestVisibleInFrame { get; set; }
         public double EffectiveOpacity { get; set; }
         public Rect TransformedOwnContentBounds { get; set; }
         public virtual Rect OwnContentBounds => new Rect(0, 0, Size.X, Size.Y);
