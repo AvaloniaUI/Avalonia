@@ -50,7 +50,8 @@
                       Opacity="0"
                       Fill="{DynamicResource CheckBoxCheckGlyphForegroundUnchecked}"
                       Stretch="Uniform"
-                      VerticalAlignment="Center" />
+                      VerticalAlignment="Center"
+                      FlowDirection="LeftToRight" />
               </Panel>
             </Viewbox>
           </Grid>
@@ -146,7 +147,6 @@
         <Setter Property="Data" Value="M1507 31L438 1101L-119 543L-29 453L438 919L1417 -59L1507 31Z" />
         <Setter Property="Width" Value="9" />
         <Setter Property="Opacity" Value="1" />
-        <Setter Property="FlowDirection" Value="LeftToRight" />
       </Style>
 
       <!-- Checked PointerOver State -->

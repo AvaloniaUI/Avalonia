@@ -27,5 +27,7 @@ namespace Avalonia.Platform
         /// tap gesture.
         /// </summary>
         TimeSpan GetDoubleTapTime(PointerType type);
+
+        TimeSpan HoldWaitDuration { get; set; }
     }
 }
