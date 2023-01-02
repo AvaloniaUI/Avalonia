@@ -28,11 +28,9 @@ namespace Avalonia.Data
         /// </remarks>
         public InstancedBinding(ISubject<object?> subject, BindingMode mode, BindingPriority priority)
         {
-            Contract.Requires<ArgumentNullException>(subject != null);
-
             Mode = mode;
             Priority = priority;
-            Value = subject;
+            Value = subject ?? throw new ArgumentNullException(nameof(subject));
         }
 
         private InstancedBinding(object? value, BindingMode mode, BindingPriority priority)

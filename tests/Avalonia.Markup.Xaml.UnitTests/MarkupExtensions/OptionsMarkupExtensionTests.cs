@@ -434,7 +434,7 @@ public class OptionsMarkupExtensionTests : XamlTestBase
 <TextBlock xmlns='https://github.com/avaloniaui'
            xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.MarkupExtensions;assembly=Avalonia.Markup.Xaml.UnitTests'
            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-           Text='{local:OptionsMarkupExtensionNoServiceProvider OptionB=""Im Option 2""}' />";
+           Text='{local:OptionsMarkupExtensionNoServiceProvider OptionB=""Im Option 2"", OptionA=""Im Option 1""}' />";
 
         var textBlock = (TextBlock)AvaloniaRuntimeXamlLoader.Load(xaml);
 

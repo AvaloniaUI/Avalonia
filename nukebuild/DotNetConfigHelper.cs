@@ -1,5 +1,4 @@
 using System.Globalization;
-using JetBrains.Annotations;
 using Nuke.Common.Tools.DotNet;
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 
