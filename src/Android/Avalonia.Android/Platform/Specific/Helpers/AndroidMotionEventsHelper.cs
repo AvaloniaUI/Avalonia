@@ -38,7 +38,7 @@ namespace Avalonia.Android.Platform.Specific.Helpers
                 return null;
             }
 
-            var eventTime = (ulong)DateTime.Now.Millisecond;
+            var eventTime = (ulong)e.EventTime;
             var inputRoot = _view.InputRoot;
             var actionMasked = e.ActionMasked;
             var modifiers = GetModifiers(e.MetaState, e.ButtonState);
