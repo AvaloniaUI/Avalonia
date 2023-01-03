@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
@@ -76,6 +77,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
             AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
 
+        /// <summary>
+        /// Defines the <see cref="BackRequested"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> BackRequestedEvent = 
+            RoutedEvent.Register<TopLevel, RoutedEventArgs>(nameof(BackRequested), RoutingStrategies.Bubble);
+
         private static readonly WeakEvent<IResourceHost, ResourcesChangedEventArgs>
             ResourcesChangedWeakEvent = WeakEvent.Register<IResourceHost, ResourcesChangedEventArgs>(
                 (s, h) => s.ResourcesChanged += h,
@@ -89,6 +96,7 @@ namespace Avalonia.Controls
         private readonly IGlobalStyles? _globalStyles;
         private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
         private readonly IDisposable? _pointerOverPreProcessorSubscription;
+        private readonly IDisposable? _backGestureSubscription;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
@@ -205,6 +213,44 @@ namespace Avalonia.Controls
 
             _pointerOverPreProcessor = new PointerOverPreProcessor(this);
             _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
+
+            if(impl is ITopLevelWithSystemNavigationManager topLevelWithSystemNavigation)
+            {
+                topLevelWithSystemNavigation.SystemNavigationManager.BackRequested += (s, e) =>
+                {
+                    e.RoutedEvent = BackRequestedEvent;
+                    RaiseEvent(e);
+                };
+            }
+
+            var backKeyGesture = new KeyGesture(Key.Left, KeyModifiers.Alt);
+            _backGestureSubscription = _inputManager?.PreProcess.OfType<RawInputEventArgs>().Subscribe(e =>
+            {
+                bool backRequested = false;
+
+                if (e is RawKeyEventArgs rawKeyEventArgs && rawKeyEventArgs.Type == RawKeyEventType.KeyDown)
+                {
+                    var keyEvent = new KeyEventArgs()
+                    {
+                        KeyModifiers = (KeyModifiers)rawKeyEventArgs.Modifiers,
+                        Key = rawKeyEventArgs.Key
+                    };
+
+                    backRequested = backKeyGesture.Matches(keyEvent);
+                }
+                else if(e is RawPointerEventArgs pointerEventArgs)
+                {
+                    backRequested = pointerEventArgs.Type == RawPointerEventType.XButton1Down;
+                }
+
+                if (backRequested)
+                {
+                    var backRequestedEventArgs = new RoutedEventArgs(BackRequestedEvent);
+                    RaiseEvent(backRequestedEventArgs);
+
+                    e.Handled = backRequestedEventArgs.Handled;
+                }
+            });
         }
 
         /// <summary>
@@ -261,6 +307,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(TransparencyBackgroundFallbackProperty);
             set => SetValue(TransparencyBackgroundFallbackProperty, value);
+        }
+
+        /// <summary>
+        /// Occurs when physical Back Button is pressed or a back navigation has been requested.
+        /// </summary>
+        public event EventHandler<RoutedEvent> BackRequested
+        {
+            add { AddHandler(BackRequestedEvent, value); }
+            remove { RemoveHandler(BackRequestedEvent, value); }
         }
 
         public ILayoutManager LayoutManager
@@ -382,6 +437,7 @@ namespace Avalonia.Controls
 
             _pointerOverPreProcessor?.OnCompleted();
             _pointerOverPreProcessorSubscription?.Dispose();
+            _backGestureSubscription?.Dispose();
 
             PlatformImpl = null;
 
