@@ -1,11 +1,14 @@
 using System;
 using Avalonia.Platform;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace Avalonia.Media
 {
     /// <summary>
     /// Defines a geometric shape.
-    /// </summary>    
+    /// </summary>
+    [TypeConverter(typeof(GeometryConverter))]
     public abstract class Geometry : AvaloniaObject
     {
         /// <summary>
@@ -197,6 +200,34 @@ namespace Avalonia.Media
         public static Geometry Combine(Geometry geometry1, RectangleGeometry geometry2, GeometryCombineMode combineMode, Transform? transform = null)
         {
             return new CombinedGeometry(combineMode, geometry1, geometry2, transform);
+        }
+    }
+
+    public class GeometryConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
+        {
+            if (sourceType == typeof(string))
+            {
+                return true;
+            }
+            return base.CanConvertFrom(context, sourceType);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+        {
+            if (value is null)
+            {
+                throw GetConvertFromException(value);
+            }
+            string source = value as string;
+
+            if (source != null)
+            {
+                return Geometry.Parse(source);
+            }
+
+            return base.ConvertFrom(context, culture, value);
         }
     }
 }
