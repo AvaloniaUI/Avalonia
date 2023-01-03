@@ -13,9 +13,9 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.401'
+    displayName: 'Use .NET Core SDK 6.0.404'
     inputs:
-      version: 6.0.401
+      version: 6.0.404
 
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 7.0.100'
@@ -51,9 +51,9 @@ jobs:
 
   steps:
   - task: UseDotNet@2
-    displayName: 'Use .NET Core SDK 6.0.401'
+    displayName: 'Use .NET Core SDK 6.0.404'
     inputs:
-      version: 6.0.401
+      version: 6.0.404
 
   - task: UseDotNet@2
     displayName: 'Use .NET Core SDK 7.0.100'
