@@ -3299,7 +3299,7 @@ namespace Avalonia.Controls
                 newCell.IsVisible = column.IsVisible;
                 if (row.OwningGrid.CellTheme is {} cellTheme)
                 {
-                    newCell.SetValue(ThemeProperty, cellTheme, BindingPriority.TemplatedParent);
+                    newCell.SetValue(ThemeProperty, cellTheme, BindingPriority.Template);
                 }
             }
             row.Cells.Insert(column.Index, newCell);
