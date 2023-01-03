@@ -17,7 +17,6 @@
   </ItemGroup>
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\EmbedXaml.props" />
-  <Import Project="..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
   <!--<Import Project="..\..\build\ApiDiff.props" />-->
   <Import Project="..\..\build\NullableEnable.props" />

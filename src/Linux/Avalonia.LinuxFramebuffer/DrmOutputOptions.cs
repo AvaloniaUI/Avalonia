@@ -1,6 +1,5 @@
 using Avalonia.LinuxFramebuffer.Output;
 using Avalonia.Media;
-using JetBrains.Annotations;
 
 namespace Avalonia.LinuxFramebuffer
 {

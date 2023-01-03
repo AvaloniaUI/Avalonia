@@ -12,7 +12,7 @@ namespace Avalonia
 {
     public static class IOSApplicationExtensions
     {
-        public static T UseiOS<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseiOS(this AppBuilder builder)
         {
             return builder
                 .UseWindowingSubsystem(iOS.Platform.Register, "iOS")
