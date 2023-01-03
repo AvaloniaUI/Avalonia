@@ -51,15 +51,10 @@ namespace Avalonia.Controls
         private const string DATAGRID_elementTopLeftCornerHeaderName = "PART_TopLeftCornerHeader";
         private const string DATAGRID_elementTopRightCornerHeaderName = "PART_TopRightCornerHeader";
         private const string DATAGRID_elementBottomRightCornerHeaderName = "PART_BottomRightCorner";
-        private const string DATAGRID_elementValidationSummary = "PART_ValidationSummary";
         private const string DATAGRID_elementVerticalScrollbarName = "PART_VerticalScrollbar";
-
-        private const bool DATAGRID_defaultAutoGenerateColumns = true;
         internal const bool DATAGRID_defaultCanUserReorderColumns = true;
         internal const bool DATAGRID_defaultCanUserResizeColumns = true;
         internal const bool DATAGRID_defaultCanUserSortColumns = true;
-        private const DataGridRowDetailsVisibilityMode DATAGRID_defaultRowDetailsVisibility = DataGridRowDetailsVisibilityMode.VisibleWhenSelected;
-        private const DataGridSelectionMode DATAGRID_defaultSelectionMode = DataGridSelectionMode.Extended;
 
         /// <summary>
         /// The default order to use for columns when there is no <see cref="DisplayAttribute.Order"/>
