@@ -63,9 +63,9 @@ class CompositionBorderVisual : CompositionDrawListVisual
             
         }
 
-        protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
+        protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
         {
-            base.DeserializeChangesCore(reader, commitedAt);
+            base.DeserializeChangesCore(reader, committedAt);
             if (reader.Read<bool>())
                 _cornerRadius = reader.Read<CornerRadius>();
         }
