@@ -289,8 +289,10 @@ namespace Avalonia.Controls
         };
 
         // See: https://htmlcolorcodes.com/assets/downloads/flat-design-colors/flat-design-color-chart.png
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         protected static Color[,]? _colorChart = null;
-        protected static object _colorChartMutex = new object();
+#pragma warning restore CA2211 // Non-constant fields should not be visible
+        protected static readonly object _colorChartMutex = new();
 
         /// <summary>
         /// Initializes all color chart colors.

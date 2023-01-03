@@ -10,8 +10,10 @@ namespace Avalonia.Controls
     /// <inheritdoc cref="FlatColorPalette"/>
     public class FlatHalfColorPalette : IColorPalette
     {
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         protected static Color[,]? _colorChart = null;
-        protected static object _colorChartMutex = new object();
+#pragma warning restore CA2211 // Non-constant fields should not be visible
+        protected static readonly object _colorChartMutex = new();
 
         /// <summary>
         /// Initializes all color chart colors.

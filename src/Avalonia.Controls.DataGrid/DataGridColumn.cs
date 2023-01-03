@@ -185,7 +185,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsVisible"/> property.
         /// </summary>
-        public static StyledProperty<bool> IsVisibleProperty =
+        public static readonly StyledProperty<bool> IsVisibleProperty =
              Control.IsVisibleProperty.AddOwner<DataGridColumn>();
 
         /// <summary>
