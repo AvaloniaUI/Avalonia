@@ -94,7 +94,6 @@ public abstract class VulkanControlBase : Control
     
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        DoCleanup();
         base.OnDetachedFromVisualTree(e);
     }
 
