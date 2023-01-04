@@ -47,7 +47,7 @@ public abstract class VulkanControlBase : Control
                 typeof(IVulkanSharedDeviceGraphicsContextFeature));
         if (feature?.SharedDevice == null)
         {
-            Logger.TryGet(LogEventLevel.Error, "OpenGL")?.Log("VulkanControlBase",
+            Logger.TryGet(LogEventLevel.Error, "Vulkan")?.Log("VulkanControlBase",
                 "Unable to obtain Vulkan device from the renderer");
             return false;
         }
