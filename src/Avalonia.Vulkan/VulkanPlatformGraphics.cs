@@ -26,12 +26,12 @@ public class VulkanPlatformGraphics : IPlatformGraphics
             new VulkanContext(_factory.GetSharedDevice(_platformOptions), _platformOptions.PlatformFeatures);
     }
     
-    public bool UsesSharedContext => _factory.UsesShadedDevice;
+    public bool UsesSharedContext => _factory.UsesSharedDevice;
 
     
     public interface IVulkanDeviceFactory
     {
-        bool UsesShadedDevice { get; }
+        bool UsesSharedDevice { get; }
         IVulkanDevice GetSharedDevice(VulkanPlatformSpecificOptions platformOptions);
         IVulkanDevice CreateDevice(VulkanPlatformSpecificOptions platformOptions);
     }
@@ -48,7 +48,7 @@ public class VulkanPlatformGraphics : IPlatformGraphics
             _deviceOptions = deviceOptions;
         }
 
-        public bool UsesShadedDevice => false;
+        public bool UsesSharedDevice => false;
         
         public IVulkanDevice GetSharedDevice(VulkanPlatformSpecificOptions platformOptions) => throw new NotSupportedException();
 
@@ -67,7 +67,7 @@ public class VulkanPlatformGraphics : IPlatformGraphics
             _device = device;
         }
 
-        public bool UsesShadedDevice => true;
+        public bool UsesSharedDevice => true;
         public IVulkanDevice GetSharedDevice(VulkanPlatformSpecificOptions platformOptions) => _device;
 
         public IVulkanDevice CreateDevice(VulkanPlatformSpecificOptions platformOptions) =>
