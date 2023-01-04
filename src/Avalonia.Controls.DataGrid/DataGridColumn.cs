@@ -897,7 +897,7 @@ namespace Avalonia.Controls
             result[!ContentControl.ContentTemplateProperty] = this[!HeaderTemplateProperty];
             if (OwningGrid.ColumnHeaderTheme is {} columnTheme)
             {
-                result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.TemplatedParent);
+                result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.Template);
             }
 
             return result;
