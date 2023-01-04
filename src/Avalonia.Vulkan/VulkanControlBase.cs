@@ -15,7 +15,7 @@ using Avalonia.Vulkan.UnmanagedInterop;
 
 namespace Avalonia.Vulkan;
 
-public abstract class VulkanControlBase : Control
+public abstract class VulkanControlBase : Control, IDisposable
 {
     private Task<bool>? _initialization;
     private VulkanControlContext? _currentContext;
@@ -81,7 +81,7 @@ public abstract class VulkanControlBase : Control
         _currentContext!.Render(context);
     }
 
-    void DoCleanup()
+    public void Dispose()
     {
         if (_currentContext != null)
         {
@@ -90,11 +90,6 @@ public abstract class VulkanControlBase : Control
             _currentContext = null;
             _initialization = null;
         }
-    }
-    
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-    {
-        base.OnDetachedFromVisualTree(e);
     }
 
 

@@ -6,5 +6,5 @@
         x:Class="SilkNetDemo.MainWindow"
         Title="SilkNetDemo"
         xmlns:local="clr-namespace:SilkNetDemo">
-    <local:VulkanDemo />
+    <local:VulkanDemo x:Name="VulkanDemo1"/>
 </Window>
