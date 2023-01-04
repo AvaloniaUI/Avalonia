@@ -193,7 +193,11 @@ public abstract class VulkanControlBase : Control
             var bitmap = _chain.GetConsumerBitmap();
             if (bitmap == null)
                 return;
-            context.DrawBitmap(RefCountable.CreateUnownedNotClonable(bitmap), 1, Bounds, Bounds);
+
+            context.DrawBitmap(source: RefCountable.CreateUnownedNotClonable(bitmap), 
+                               opacity: 1, 
+                               sourceRect: new Rect(0, 0, _chain.Size.Width, _chain.Size.Height), 
+                               destRect: Bounds);
         }
 
         public bool Equals(ICustomDrawOperation? other) => false;
@@ -203,6 +207,7 @@ public abstract class VulkanControlBase : Control
     {
         public int ImageCount { get; }
         public int CurrentImageIndex { get; }
+        public PixelSize Size { get; }
         public VulkanImageInfo GetImage(int index);
     }
 

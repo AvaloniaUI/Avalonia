@@ -129,10 +129,12 @@ public unsafe class VulkanDemoControl : VulkanControlBase
 
             _previousSwapchain = swapchain;
 
+            var pixelSize = swapchain.Size;
+
             var view = Matrix4x4.CreateLookAt(new Vector3(25, 25, 25), new Vector3(), new Vector3(0, -1, 0));
             var model = Matrix4x4.CreateFromYawPitchRoll(_yaw, _pitch, _roll);
             var projection =
-                Matrix4x4.CreatePerspectiveFieldOfView((float)(Math.PI / 4), (float)(Bounds.Width / Bounds.Height),
+                Matrix4x4.CreatePerspectiveFieldOfView((float)Math.PI / 4f, (float)pixelSize.Width / (float)pixelSize.Height,
                     0.01f, 1000);
 
             var vertexConstant = new VertextPushConstant()
@@ -159,8 +161,8 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             api.CmdSetViewport(commandBufferHandle, 0, 1,
                 new Viewport()
                 {
-                    Width = (float)Bounds.Width,
-                    Height = (float)Bounds.Height,
+                    Width = (float)pixelSize.Width,
+                    Height = (float)pixelSize.Height,
                     MaxDepth = 1,
                     MinDepth = 0,
                     X = 0,
@@ -169,7 +171,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
 
             var scissor = new Rect2D
             {
-                Extent = new Extent2D((uint?)Bounds.Width, (uint?)Bounds.Height)
+                Extent = new Extent2D((uint?)pixelSize.Width, (uint?)pixelSize.Height)
             };
 
             api.CmdSetScissor(commandBufferHandle, 0, 1, &scissor);
@@ -187,7 +189,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
                     RenderPass = _renderPass,
                     Framebuffer = _framebuffers[swapchain.CurrentImageIndex],
                     RenderArea =
-                        new Rect2D(new Offset2D(0, 0), new Extent2D((uint?)Bounds.Width, (uint?)Bounds.Height)),
+                        new Rect2D(new Offset2D(0, 0), new Extent2D((uint?)pixelSize.Width, (uint?)pixelSize.Height)),
                     ClearValueCount = 2,
                     PClearValues = clearValue
                 };
@@ -274,7 +276,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
         }
     }
 
-    private unsafe void CreateDepthAttachment(Vk api, Device device, PhysicalDevice physicalDevice)
+    private unsafe void CreateDepthAttachment(Vk api, Device device, PhysicalDevice physicalDevice, PixelSize size)
     {
         var imageCreateInfo = new ImageCreateInfo
         {
@@ -282,8 +284,8 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             ImageType = ImageType.ImageType2D,
             Format = Format.D32Sfloat,
             Extent =
-                new Extent3D((uint?)Bounds.Width,
-                    (uint?)Bounds.Height, 1),
+                new Extent3D((uint?)size.Width,
+                    (uint?)size.Height, 1),
             MipLevels = 1,
             ArrayLayers = 1,
             Samples = SampleCountFlags.SampleCount1Bit,
@@ -343,7 +345,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
     {
         DestroyTemporalObjects(api, device);
 
-        CreateDepthAttachment(api, device, physicalDevice);
+        CreateDepthAttachment(api, device, physicalDevice, swapchain.Size);
 
         var current = swapchain.GetImage(swapchain.CurrentImageIndex);
         // create renderpasses
@@ -486,8 +488,8 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             {
                 X = 0,
                 Y = 0,
-                Width = (float)Bounds.Width,
-                Height = (float)Bounds.Height,
+                Width = (float)swapchain.Size.Width,
+                Height = (float)swapchain.Size.Height,
                 MinDepth = 0,
                 MaxDepth = 1
             };
