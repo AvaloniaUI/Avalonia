@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="using:System">
+                    xmlns:sys="using:System"
+                    xmlns:avaloniaData="using:Avalonia.Data">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="10">
@@ -84,13 +85,18 @@
                        IsVisible="{TemplateBinding SelectionBoxItem, Converter={x:Static ObjectConverters.IsNull}}" />
             <ContentControl x:Name="ContentPresenter"
                             Content="{TemplateBinding SelectionBoxItem}"
-                            ContentTemplate="{Binding Path=SelectedItemTemplate, RelativeSource={RelativeSource TemplatedParent},
-                                              FallbackValue={TemplateBinding ItemTemplate}}"
                             Grid.Column="0"
                             Margin="{TemplateBinding Padding}"
                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+              <ContentControl.ContentTemplate>
+                <PriorityBinding>
+                  <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="SelectedItemTemplate"
+                           TargetNullValue="{x:Static avaloniaData:BindingOperations.DoNothing}" />
+                  <TemplateBinding Property="ItemTemplate" />
+                </PriorityBinding>
+              </ContentControl.ContentTemplate>
+            </ContentControl>
             <Border x:Name="DropDownOverlay"
                     Grid.Column="1"
                     Background="Transparent"
