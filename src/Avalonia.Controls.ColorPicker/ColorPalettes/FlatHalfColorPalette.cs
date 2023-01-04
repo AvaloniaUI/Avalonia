@@ -10,8 +10,8 @@ namespace Avalonia.Controls
     /// <inheritdoc cref="FlatColorPalette"/>
     public class FlatHalfColorPalette : IColorPalette
     {
-        protected static Color[,]? _colorChart = null;
-        protected static object _colorChartMutex = new object();
+        private static Color[,]? _colorChart = null;
+        private static readonly object _colorChartMutex = new();
 
         /// <summary>
         /// Initializes all color chart colors.

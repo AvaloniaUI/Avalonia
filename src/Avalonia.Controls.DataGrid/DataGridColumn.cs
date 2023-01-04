@@ -50,10 +50,13 @@ namespace Avalonia.Controls
             InheritsWidth = true;
         }
 
-        internal DataGrid OwningGrid
+        /// <summary>
+        /// Gets the <see cref="T:Avalonia.Controls.DataGrid"/> control that contains this column.
+        /// </summary>
+        protected internal DataGrid OwningGrid
         {
             get;
-            set;
+            internal set;
         }
 
         internal int Index
@@ -182,7 +185,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsVisible"/> property.
         /// </summary>
-        public static StyledProperty<bool> IsVisibleProperty =
+        public static readonly StyledProperty<bool> IsVisibleProperty =
              Control.IsVisibleProperty.AddOwner<DataGridColumn>();
 
         /// <summary>
@@ -638,7 +641,7 @@ namespace Avalonia.Controls
 
         public Control GetCellContent(DataGridRow dataGridRow)
         {
-            Contract.Requires<ArgumentNullException>(dataGridRow != null);
+            dataGridRow = dataGridRow ?? throw new ArgumentNullException(nameof(dataGridRow));
             if (OwningGrid == null)
             {
                 throw DataGridError.DataGrid.NoOwningGrid(GetType());
@@ -656,7 +659,7 @@ namespace Avalonia.Controls
 
         public Control GetCellContent(object dataItem)
         {
-            Contract.Requires<ArgumentNullException>(dataItem != null);
+            dataItem = dataItem ?? throw new ArgumentNullException(nameof(dataItem));
             if (OwningGrid == null)
             {
                 throw DataGridError.DataGrid.NoOwningGrid(GetType());
@@ -894,7 +897,7 @@ namespace Avalonia.Controls
             result[!ContentControl.ContentTemplateProperty] = this[!HeaderTemplateProperty];
             if (OwningGrid.ColumnHeaderTheme is {} columnTheme)
             {
-                result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.TemplatedParent);
+                result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.Template);
             }
 
             return result;

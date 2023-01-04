@@ -15,7 +15,7 @@ namespace Avalonia
 {
     public static class AndroidApplicationExtensions
     {
-        public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseAndroid(this AppBuilder builder)
         {
             return builder
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
@@ -32,6 +32,7 @@ namespace Avalonia.Android
         public static AndroidPlatformOptions Options { get; private set; }
 
         internal static Compositor Compositor { get; private set; }
+        internal static PlatformRenderInterfaceContextManager RenderInterface { get; private set; }
 
         public static void Initialize()
         {
@@ -51,15 +52,19 @@ namespace Avalonia.Android
 
             if (Options.UseGpu)
             {
-                EglPlatformOpenGlInterface.TryInitialize();
+                EglPlatformGraphics.TryInitialize();
             }
             
             if (Options.UseCompositor)
             {
                 Compositor = new Compositor(
                     AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                    AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>());
+                    AvaloniaLocator.Current.GetService<IPlatformGraphics>());
             }
+            else
+                RenderInterface =
+                    new PlatformRenderInterfaceContextManager(AvaloniaLocator.Current
+                        .GetService<IPlatformGraphics>());
         }
     }
 

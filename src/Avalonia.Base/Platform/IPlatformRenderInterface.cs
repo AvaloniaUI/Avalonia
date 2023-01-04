@@ -66,15 +66,6 @@ namespace Avalonia.Platform
         IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun);
 
         /// <summary>
-        /// Creates a renderer.
-        /// </summary>
-        /// <param name="surfaces">
-        /// The list of native platform surfaces that can be used for output.
-        /// </param>
-        /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
-
-        /// <summary>
         /// Creates a render target bitmap implementation.
         /// </summary>
         /// <param name="size">The size of the bitmap in device pixels.</param>
@@ -182,6 +173,13 @@ namespace Avalonia.Platform
         IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double>? glyphAdvances, IReadOnlyList<Vector>? glyphOffsets);
 
         /// <summary>
+        /// Creates a backend-specific object using a low-level API graphics context
+        /// </summary>
+        /// <param name="graphicsApiContext">An underlying low-level graphics context (e. g. wrapped OpenGL context, Vulkan device, D3DDevice, etc)</param>
+        /// <returns></returns>
+        IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext? graphicsApiContext);
+        
+        /// <summary>
         /// Gets a value indicating whether the platform directly supports rectangles with rounded corners.
         /// </summary>
         /// <remarks>
@@ -199,5 +197,18 @@ namespace Avalonia.Platform
         /// Default <see cref="PixelFormat"/> used on this platform.
         /// </summary>
         public PixelFormat DefaultPixelFormat { get; }
+    }
+
+    [Unstable]
+    public interface IPlatformRenderInterfaceContext : IOptionalFeatureProvider, IDisposable
+    {
+        /// <summary>
+        /// Creates a renderer.
+        /// </summary>
+        /// <param name="surfaces">
+        /// The list of native platform surfaces that can be used for output.
+        /// </param>
+        /// <returns>An <see cref="IRenderTarget"/>.</returns>
+        IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
     }
 }

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Xunit;
 using Xunit.Abstractions;
@@ -36,7 +37,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             var text = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.CodePoints).ToArray());
 
             // Append
-            bidiData.Append(text.AsMemory());
+            bidiData.Append(new CharacterBufferRange(text));
 
             // Act
             for (int i = 0; i < 10; i++)

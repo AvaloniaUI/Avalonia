@@ -19,10 +19,10 @@ namespace Avalonia.Platform
         /// to be drawn.
         /// </param>
         IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer? visualBrushRenderer);
-    }
-
-    public interface IRenderTargetWithCorruptionInfo : IRenderTarget
-    {
-        bool IsCorrupted { get; }
+        
+        /// <summary>
+        /// Indicates if the render target is no longer usable and needs to be recreated
+        /// </summary>
+        public bool IsCorrupted { get; }
     }
 }

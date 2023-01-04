@@ -80,7 +80,7 @@ namespace Avalonia.Data
     /// - For an unset value, use <see cref="Unset"/> or simply `default`
     /// - For other types, call one of the static factory methods
     /// </remarks>
-    public readonly struct BindingValue<T>
+    public readonly record struct BindingValue<T>
     {
         private readonly T _value;
 

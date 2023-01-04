@@ -8,8 +8,6 @@
       </StackPanel>
     </Border>
   </Design.PreviewWith>
-  
-  <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
 
   <ControlTheme x:Key="{x:Type Button}" TargetType="Button">
     <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />

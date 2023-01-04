@@ -7,14 +7,13 @@ namespace Avalonia.Browser.Blazor;
 
 public static class WebAppBuilder
 {
-    public static T SetupWithSingleViewLifetime<T>(
-        this T builder)
-        where T : AppBuilderBase<T>, new()
+    public static AppBuilder SetupWithSingleViewLifetime(
+        this AppBuilder builder)
     {
         return builder.SetupWithLifetime(new BlazorSingleViewLifetime());
     }
 
-    public static T UseBlazor<T>(this T builder) where T : AppBuilderBase<T>, new()
+    public static AppBuilder UseBlazor(this AppBuilder builder)
     {
         return builder
             .UseBrowser()

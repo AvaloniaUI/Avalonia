@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
+using Avalonia.Platform;
 using Avalonia.Platform.Interop;
-using JetBrains.Annotations;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm.GbmColorFormats;
@@ -25,10 +25,22 @@ namespace Avalonia.LinuxFramebuffer.Output
             get => _outputOptions.Scaling;
             set => _outputOptions.Scaling = value;
         }
-        public IGlContext PrimaryContext => _deferredContext;
 
-        private EglPlatformOpenGlInterface _platformGl;
-        public IPlatformOpenGlInterface PlatformOpenGlInterface => _platformGl;
+        class SharedContextGraphics : IPlatformGraphics
+        {
+            private readonly IPlatformGraphicsContext _context;
+
+            public SharedContextGraphics(IPlatformGraphicsContext context)
+            {
+                _context = context;
+            }
+            public bool UsesSharedContext => true;
+            public IPlatformGraphicsContext CreateContext() => throw new NotSupportedException();
+
+            public IPlatformGraphicsContext GetSharedContext() => _context;
+        }
+        
+        public IPlatformGraphics PlatformGraphics { get; private set; }
 
         public DrmOutput(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo,
             DrmOutputOptions? options = null)
@@ -37,7 +49,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 _outputOptions = options;
             Init(card, resources, connector, modeInfo);
         }
-        public DrmOutput(string path = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
+        public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions? options = null)
         {
             if(options != null) 
                 _outputOptions = options;
@@ -161,11 +173,22 @@ namespace Avalonia.LinuxFramebuffer.Output
             if(_gbmTargetSurface == IntPtr.Zero)
                 throw new InvalidOperationException("Unable to create GBM surface");
 
-            _eglDisplay = new EglDisplay(new EglInterface(eglGetProcAddress), false, 0x31D7, device, null);
-            _platformGl = new EglPlatformOpenGlInterface(_eglDisplay);
-            _eglSurface =  _platformGl.CreateWindowSurface(_gbmTargetSurface);
+            _eglDisplay = new EglDisplay(
+                new EglDisplayCreationOptions
+                {
+                    Egl = new EglInterface(eglGetProcAddress),
+                    PlatformType = 0x31D7,
+                    PlatformDisplay = device,
+                    SupportsMultipleContexts = true,
+                    SupportsContextSharing = true
+                });
 
-            _deferredContext = _platformGl.PrimaryEglContext;
+            var surface = _eglDisplay.EglInterface.CreateWindowSurface(_eglDisplay.Handle, _eglDisplay.Config, _gbmTargetSurface, new[] { EglConsts.EGL_NONE, EglConsts.EGL_NONE });
+
+            _eglSurface = new EglSurface(_eglDisplay, surface);
+
+            _deferredContext = _eglDisplay.CreateContext(null);
+            PlatformGraphics = new SharedContextGraphics(_deferredContext);
 
             var initialBufferSwappingColorR = _outputOptions.InitialBufferSwappingColor.R / 255.0f;
             var initialBufferSwappingColorG = _outputOptions.InitialBufferSwappingColor.G / 255.0f;
@@ -206,11 +229,17 @@ namespace Avalonia.LinuxFramebuffer.Output
             
         }
 
-        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
-        {
-            return new RenderTarget(this);
-        }
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget() => new RenderTarget(this);
+        
 
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
+        {
+            if (context != _deferredContext)
+                throw new InvalidOperationException(
+                    "This platform backend can only create render targets for its primary context");
+            return CreateGlRenderTarget();
+        }
+    
         class RenderTarget : IGlPlatformSurfaceRenderTarget
         {
             private readonly DrmOutput _parent;

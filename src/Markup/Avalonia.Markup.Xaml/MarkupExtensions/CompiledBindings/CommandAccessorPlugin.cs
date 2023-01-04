@@ -44,9 +44,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
             public CommandAccessor(WeakReference<object> reference, Action<object, object> execute, Func<object, object, bool> canExecute, ISet<string> dependsOnProperties)
             {
-                Contract.Requires<ArgumentNullException>(reference != null);
-
-                _reference = reference;
+                _reference = reference ?? throw new ArgumentNullException(nameof(reference));
                 _dependsOnProperties = dependsOnProperties;
                 _command = new Command(reference, execute, canExecute);
 

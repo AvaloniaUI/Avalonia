@@ -78,10 +78,12 @@ namespace Avalonia.iOS
                 throw new InvalidOperationException("Invalid thread, go away");
         }
         
-        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget()
+        public IGlPlatformSurfaceRenderTarget CreateGlRenderTarget(IGlContext context)
         {
             CheckThread();
             var ctx = Platform.GlFeature.Context;
+            if (ctx != context)
+                throw new InvalidOperationException("Platform surface is only usable with tha main context");
             using (ctx.MakeCurrent())
             {
                 var fbo = new SizeSynchronizedLayerFbo(ctx.Context, ctx.GlInterface, _layer);

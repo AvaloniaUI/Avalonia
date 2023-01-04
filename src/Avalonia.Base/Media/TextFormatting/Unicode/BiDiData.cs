@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/
 
+using System;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -63,7 +64,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Appends text to the bidi data.
         /// </summary>
         /// <param name="text">The text to process.</param>
-        public void Append(ReadOnlySlice<char> text)
+        public void Append(CharacterBufferRange text)
         {
             _classes.Add(text.Length);
             _pairedBracketTypes.Add(text.Length);

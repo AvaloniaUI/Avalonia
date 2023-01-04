@@ -169,10 +169,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> WindowOpenedEvent =
             RoutedEvent.Register<Window, RoutedEventArgs>("WindowOpened", RoutingStrategies.Direct);
-
-
-
-        private readonly NameScope _nameScope = new NameScope();
         private object? _dialogResult;
         private readonly Size _maxPlatformClientSize;
         private WindowStartupLocation _windowStartupLocation;
@@ -235,7 +231,7 @@ namespace Avalonia.Controls
             impl.GotInputWhenDisabled = OnGotInputWhenDisabled;
             impl.WindowStateChanged = HandleWindowStateChanged;
             _maxPlatformClientSize = PlatformImpl?.MaxAutoSizeHint ?? default(Size);
-            impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;            
+            impl.ExtendClientAreaToDecorationsChanged = ExtendClientAreaToDecorationsChanged;
             this.GetObservable(ClientSizeProperty).Skip(1).Subscribe(x => PlatformImpl?.Resize(x, PlatformResizeReason.Application));
 
             PlatformImpl?.ShowTaskbarIcon(ShowInTaskbar);
@@ -434,14 +430,14 @@ namespace Avalonia.Controls
         /// <summary>
         /// Fired before a window is closed.
         /// </summary>
-        public event EventHandler<CancelEventArgs>? Closing;
+        public event EventHandler<WindowClosingEventArgs>? Closing;
 
         /// <summary>
         /// Closes the window.
         /// </summary>
         public void Close()
         {
-            Close(false);
+            CloseCore(WindowCloseReason.WindowClosing, true);
         }
 
         /// <summary>
@@ -457,16 +453,16 @@ namespace Avalonia.Controls
         public void Close(object dialogResult)
         {
             _dialogResult = dialogResult;
-            Close(false);
+            CloseCore(WindowCloseReason.WindowClosing, true);
         }
 
-        internal void Close(bool ignoreCancel)
+        internal void CloseCore(WindowCloseReason reason, bool isProgrammatic)
         {
             bool close = true;
 
             try
             {
-                if (!ignoreCancel && ShouldCancelClose())
+                if (ShouldCancelClose(new WindowClosingEventArgs(reason, isProgrammatic)))
                 {
                     close = false;
                 }
@@ -484,9 +480,10 @@ namespace Avalonia.Controls
         /// Handles a closing notification from <see cref="IWindowImpl.Closing"/>.
         /// <returns>true if closing is cancelled. Otherwise false.</returns>
         /// </summary>
-        protected virtual bool HandleClosing()
+        /// <param name="reason">The reason the window is closing.</param>
+        private protected virtual bool HandleClosing(WindowCloseReason reason)
         {
-            if (!ShouldCancelClose())
+            if (!ShouldCancelClose(new WindowClosingEventArgs(reason, false)))
             {
                 CloseInternal();
                 return false;
@@ -514,20 +511,22 @@ namespace Avalonia.Controls
             _showingAsDialog = false;
         }
 
-        private bool ShouldCancelClose(CancelEventArgs? args = null)
+        private bool ShouldCancelClose(WindowClosingEventArgs args)
         {
-            if (args is null)
-            {
-                args = new CancelEventArgs();
-            }
-            
             bool canClose = true;
 
-            foreach (var (child, _) in _children.ToArray())
+            if (_children.Count > 0)
             {
-                if (child.ShouldCancelClose(args))
+                var childArgs = args.CloseReason == WindowCloseReason.WindowClosing ?
+                    new WindowClosingEventArgs(WindowCloseReason.OwnerWindowClosing, args.IsProgrammatic) :
+                    args;
+
+                foreach (var (child, _) in _children.ToArray())
                 {
-                    canClose = false;
+                    if (child.ShouldCancelClose(childArgs))
+                    {
+                        canClose = false;
+                    }
                 }
             }
 
@@ -1037,7 +1036,7 @@ namespace Avalonia.Controls
         /// overridden method must call <see cref="OnClosing"/> on the base class if the
         /// <see cref="Closing"/> event needs to be raised.
         /// </remarks>
-        protected virtual void OnClosing(CancelEventArgs e) => Closing?.Invoke(this, e);
+        protected virtual void OnClosing(WindowClosingEventArgs e) => Closing?.Invoke(this, e);
 
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {

@@ -303,7 +303,7 @@ namespace Avalonia.Rendering.SceneGraph
             if (ClipToBounds)
             {
                 context.Transform = Matrix.Identity;
-                if (ClipToBoundsRadius.IsEmpty)
+                if (ClipToBoundsRadius.IsDefault)
                     context.PushClip(ClipBounds);
                 else
                     context.PushClip(new RoundedRect(ClipBounds, ClipToBoundsRadius));

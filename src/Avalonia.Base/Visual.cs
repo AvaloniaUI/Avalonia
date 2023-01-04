@@ -367,7 +367,10 @@ namespace Avalonia
         /// <param name="context">The drawing context.</param>
         public virtual void Render(DrawingContext context)
         {
-            Contract.Requires<ArgumentNullException>(context != null);
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
         }
 
         /// <summary>
@@ -540,6 +543,9 @@ namespace Avalonia
             OnDetachedFromVisualTree(e);
             if (CompositionVisual != null)
             {
+                if (ChildCompositionVisual != null)
+                    CompositionVisual.Children.Remove(ChildCompositionVisual);
+                
                 CompositionVisual.DrawList = null;
                 CompositionVisual = null;
             }
