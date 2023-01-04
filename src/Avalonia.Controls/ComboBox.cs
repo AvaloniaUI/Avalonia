@@ -14,7 +14,6 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Avalonia.Controls.Metadata;
-using Avalonia.Data;
 
 namespace Avalonia.Controls
 {
@@ -22,6 +21,7 @@ namespace Avalonia.Controls
     /// A drop-down list control.
     /// </summary>
     [TemplatePart("PART_Popup", typeof(Popup))]
+    [TemplatePart("PART_InputText", typeof(TextBox))]
     [PseudoClasses(pcDropdownOpen, pcPressed)]
     public class ComboBox : SelectingItemsControl
     {
@@ -41,6 +41,15 @@ namespace Avalonia.Controls
                 nameof(IsDropDownOpen),
                 o => o.IsDropDownOpen,
                 (o, v) => o.IsDropDownOpen = v);
+
+        /// <summary>
+        /// Defines the <see cref="IsEditable"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ComboBox, bool> IsEditableProperty =
+            AvaloniaProperty.RegisterDirect<ComboBox, bool>(
+                nameof(IsEditable),
+                o => o.IsEditable,
+                (o, v) => o.IsEditable = v);
 
         /// <summary>
         /// Defines the <see cref="MaxDropDownHeight"/> property.
@@ -85,14 +94,28 @@ namespace Avalonia.Controls
             ContentControl.VerticalContentAlignmentProperty.AddOwner<ComboBox>();
 
         /// <summary>
+        /// Defines the <see cref="Text"/> property
+        /// </summary>
+        public static readonly DirectProperty<ComboBox, string?> TextProperty =
+            TextBlock.TextProperty.AddOwner<ComboBox>(
+                x => x.Text,
+                (x, v) => x.Text = v,
+                unsetValue: string.Empty,
+                defaultBindingMode: Data.BindingMode.TwoWay);
+
+        /// <summary>
         /// Defines the <see cref="SelectedItemTemplate"/> property.
         /// </summary>
         public static StyledProperty<IDataTemplate?> SelectedItemTemplateProperty =
             AvaloniaProperty.Register<ComboBox, IDataTemplate?>(nameof(SelectedItemTemplate));
 
         private bool _isDropDownOpen;
+        private bool _isEditable;
         private Popup? _popup;
+        private TextBox? _inputText;
         private object? _selectionBoxItem;
+        private string? _text;
+        private bool _ignoreNextInputTextUpdate;
         private readonly CompositeDisposable _subscriptionsOnOpen = new CompositeDisposable();
 
         /// <summary>
@@ -103,7 +126,10 @@ namespace Avalonia.Controls
             ItemsPanelProperty.OverrideDefaultValue<ComboBox>(DefaultPanel);
             FocusableProperty.OverrideDefaultValue<ComboBox>(true);
             IsTextSearchEnabledProperty.OverrideDefaultValue<ComboBox>(true);
-            IsDropDownOpenProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.IsDropDownOpenChanged(e));
+            TextProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.TextChanged(e));
+            //when the items change we need to simulate a text change to validate the text being an item or not and selecting it
+            ItemsProperty.Changed.AddClassHandler<ComboBox>((x, e) => x.TextChanged(
+                new AvaloniaPropertyChangedEventArgs<string?>(e.Sender, TextProperty, x.Text, x.Text, e.Priority)));
         }
 
         /// <summary>
@@ -123,6 +149,15 @@ namespace Avalonia.Controls
         {
             get => _isDropDownOpen;
             set => SetAndRaise(IsDropDownOpenProperty, ref _isDropDownOpen, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the control is editable
+        /// </summary>
+        public bool IsEditable
+        {
+            get => _isEditable;
+            set => SetAndRaise(IsEditableProperty, ref _isEditable, value);
         }
 
         /// <summary>
@@ -189,7 +224,16 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the data template used to display the item in the combo box (not the dropdown)
+        /// Gets or sets the text used when <see cref="IsEditable"/> is true.
+        /// </summary>
+        public string? Text
+        {
+            get => _text;
+            set => SetAndRaise(TextProperty, ref _text, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the data template used to display the item in the combo box when closed
         /// </summary>
         public IDataTemplate? SelectedItemTemplate
         {
@@ -238,7 +282,7 @@ namespace Avalonia.Controls
                 IsDropDownOpen = false;
                 e.Handled = true;
             }
-            else if (!IsDropDownOpen && (e.Key == Key.Enter || e.Key == Key.Space))
+            else if (!IsDropDownOpen && !IsEditable && (e.Key == Key.Enter || e.Key == Key.Space))
             {
                 IsDropDownOpen = true;
                 e.Handled = true;
@@ -318,6 +362,10 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
+            //if the user clicked in the input text we don't want to open the dropdown
+            if (!e.Handled && e.Source is StyledElement styledSource && styledSource.TemplatedParent == _inputText)
+                return;
+
             if (!e.Handled && e.Source is Visual source)
             {
                 if (_popup?.IsInsidePopup(source) == true)
@@ -351,6 +399,8 @@ namespace Avalonia.Controls
             _popup = e.NameScope.Get<Popup>("PART_Popup");
             _popup.Opened += PopupOpened;
             _popup.Closed += PopupClosed;
+
+            _inputText = e.NameScope.Get<TextBox>("PART_InputText");
         }
 
         /// <inheritdoc/>
@@ -360,6 +410,7 @@ namespace Avalonia.Controls
             {
                 UpdateSelectionBoxItem(change.NewValue);
                 TryFocusSelectedItem();
+                UpdateInputTextFromSelection(change.NewValue);
             }
             else if (change.Property == IsDropDownOpenProperty)
             {
@@ -493,6 +544,19 @@ namespace Avalonia.Controls
             }
         }
 
+        private void UpdateInputTextFromSelection(object? item)
+        {
+            if (_ignoreNextInputTextUpdate)
+                return;
+
+            _ignoreNextInputTextUpdate = true;
+            if (item is IContentControl cbItem)
+                Text = cbItem.Content?.ToString() ?? string.Empty;
+            else
+                Text = item?.ToString() ?? string.Empty;
+            _ignoreNextInputTextUpdate = false;
+        }
+
         private void UpdateFlowDirection()
         {
             if (SelectionBoxItem is Rectangle rectangle)
@@ -533,10 +597,40 @@ namespace Avalonia.Controls
             }
         }
 
-        private void IsDropDownOpenChanged(AvaloniaPropertyChangedEventArgs e)
+        private void TextChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            bool newValue = e.GetNewValue<bool>();
-            PseudoClasses.Set(pcDropdownOpen, newValue);
+            //don't check for an item if there are no items or if we are already processing a change
+            if (Items == null || _ignoreNextInputTextUpdate)
+                return;
+
+            string newVal = e.GetNewValue<string>();
+            int selectedIdx = -1;
+            object? selectedItem = null;
+            string? selectedItemText = null;
+            int i = -1;
+            foreach (object o in Items)
+            {
+                i++;
+                string? text = o is IContentControl contentControl 
+                    ? contentControl.Content?.ToString() 
+                    : o.ToString();
+
+                if (string.Equals(newVal, text, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    selectedIdx = i;
+                    selectedItem = o;
+                    selectedItemText = text;
+                    break;
+                }
+            }
+            bool settingSelectedItem = selectedIdx > -1 && SelectedIndex != selectedIdx;
+
+            _ignoreNextInputTextUpdate = true;
+            SelectedIndex = selectedIdx;
+            SelectedItem = selectedItem;
+            if (settingSelectedItem)
+                Text = selectedItemText ?? newVal;
+            _ignoreNextInputTextUpdate = false;
         }
     }
 }
