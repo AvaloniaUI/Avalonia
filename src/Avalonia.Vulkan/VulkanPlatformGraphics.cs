@@ -86,8 +86,6 @@ public class VulkanPlatformGraphics : IPlatformGraphics
                 platformOptions);
 
             var devOpts = options.VulkanDeviceCreationOptions ?? new();
-            Interop.VulkanDevice.Create(instance, devOpts, platformOptions)
-                .Dispose();
 
             return new VulkanPlatformGraphics(new DefaultDeviceFactory(instance, devOpts), platformOptions);
         }
