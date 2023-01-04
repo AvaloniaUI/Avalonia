@@ -344,10 +344,8 @@ namespace Avalonia.Controls
 
         // See: https://material.io/design/color/the-color-system.html#tools-for-picking-colors
         // This is a reduced palette for uniformity
-#pragma warning disable CA2211 // Non-constant fields should not be visible
-        protected static Color[,]? _colorChart = null;
-#pragma warning restore CA2211 // Non-constant fields should not be visible
-        protected static readonly object _colorChartMutex = new();
+        private static Color[,]? _colorChart = null;
+        private static readonly object _colorChartMutex = new();
 
         /// <summary>
         /// Initializes all color chart colors.

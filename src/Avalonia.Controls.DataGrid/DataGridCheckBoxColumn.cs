@@ -31,7 +31,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsThreeState"/> property.
         /// </summary>
-        public readonly static StyledProperty<bool> IsThreeStateProperty =
+        public static readonly StyledProperty<bool> IsThreeStateProperty =
             CheckBox.IsThreeStateProperty.AddOwner<DataGridCheckBoxColumn>();
 
         /// <summary>
