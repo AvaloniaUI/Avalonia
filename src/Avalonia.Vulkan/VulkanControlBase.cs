@@ -20,8 +20,13 @@ public abstract class VulkanControlBase : Control, IDisposable
     private Task<bool>? _initialization;
     private VulkanControlContext? _currentContext;
 
+    public bool IsDisposed { get; private set; }
+
     private bool EnsureInitialized()
     {
+        if (IsDisposed)
+            return false;
+
         if (_initialization != null)
         {
             // Check if we've previously failed to initialize on this platform
@@ -76,19 +81,21 @@ public abstract class VulkanControlBase : Control, IDisposable
 
     public sealed override void Render(DrawingContext context)
     {
-        if(!EnsureInitialized())
+        if(IsDisposed || !EnsureInitialized())
             return;
         _currentContext!.Render(context);
     }
 
     public void Dispose()
     {
-        if (_currentContext != null)
+        if (_currentContext != null && !IsDisposed)
         {
             OnVulkanDeInit(_currentContext.SharedDevice);
             _currentContext.Dispose();
             _currentContext = null;
             _initialization = null;
+
+            IsDisposed = true;
         }
     }
 

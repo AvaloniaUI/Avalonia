@@ -31,8 +31,18 @@ internal partial class VulkanDevice : IVulkanDevice
 
     T CheckAccess<T>(T f)
     {
+        CheckIsDisposed(f);
+
         if (_lockedByThread != Thread.CurrentThread)
             throw new InvalidOperationException("This class is only usable when locked");
+        return f;
+    }
+
+    private T CheckIsDisposed<T>(T f)
+    {
+        if (IsDisposed)
+            throw new VulkanException("Cannot access a disposed VulkanDevice");
+
         return f;
     }
 
@@ -51,15 +61,27 @@ internal partial class VulkanDevice : IVulkanDevice
     }
 
     public bool IsLost => false;
-    public IntPtr Handle => _handle.Handle;
-    public IntPtr PhysicalDeviceHandle => _physicalDeviceHandle.Handle;
+    public IntPtr Handle => CheckIsDisposed(_handle).Handle;
+    public IntPtr PhysicalDeviceHandle => CheckIsDisposed(_physicalDeviceHandle).Handle;
     public IntPtr MainQueueHandle => CheckAccess(_mainQueue).Handle;
     public uint GraphicsQueueFamilyIndex => _graphicsQueueIndex;
     public IVulkanInstance Instance { get; }
-    public void Dispose()
-    {
-        // TODO
-    }
+    public bool IsDisposed { get; private set; }
 
     public object? TryGetFeature(Type featureType) => null;
+
+
+    public void Dispose()
+    {
+        if (IsDisposed)
+            return;
+
+        if (_handle.Handle != IntPtr.Zero)
+        {
+            var api = new VulkanInstanceApi(Instance);
+            api.DestroyDevice(_handle, IntPtr.Zero);
+        }
+
+        IsDisposed = true;
+    }
 }

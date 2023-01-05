@@ -56,6 +56,9 @@ internal unsafe partial class VulkanInstanceApi
     [GetProcAddress("vkDestroySurfaceKHR")]
     public partial void DestroySurfaceKHR(VkInstance instance, VkSurfaceKHR surface, IntPtr pAllocator);
 
+    [GetProcAddress("vkDestroyDevice")]
+    public partial void DestroyDevice(VkDevice device, IntPtr pAllocator);
+
     [GetProcAddress("vkGetPhysicalDeviceSurfaceFormatsKHR")]
     public partial VkResult GetPhysicalDeviceSurfaceFormatsKHR(
         VkPhysicalDevice physicalDevice,
