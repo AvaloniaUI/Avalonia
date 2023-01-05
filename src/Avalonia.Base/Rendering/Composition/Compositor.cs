@@ -111,7 +111,7 @@ namespace Avalonia.Rendering.Composition
                 }
             }
             
-            batch.CommitedAt = Server.Clock.Elapsed;
+            batch.CommittedAt = Server.Clock.Elapsed;
             _server.EnqueueBatch(batch);
             
             lock (_pendingBatchLock)
