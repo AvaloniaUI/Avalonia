@@ -309,9 +309,15 @@ internal class VulkanDisplay : IDisposable
             pImageIndices = &nextImage,
             pResults = &result
         };
-        
-        _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo)
-            .ThrowOnError("vkQueuePresentKHR");
+
+        var presentResult = _context.DeviceApi.vkQueuePresentKHR(_context.MainQueueHandle, ref presentInfo);
+
+        // It can happen that size is changed after calling StartPresentation and before calling vkQueuePresentKHR
+        // In this case VK_ERROR_OUT_OF_DATE_KHR is returned. We cannot do much here - we will get new size in next call to EnsureSwapchainAvailable (there the size change will be noticed).
+        if (presentResult == VkResult.VK_ERROR_OUT_OF_DATE_KHR || result == VkResult.VK_ERROR_OUT_OF_DATE_KHR) 
+            return;
+
+        presentResult.ThrowOnError("vkQueuePresentKHR");
         result.ThrowOnError("vkQueuePresentKHR");
     }
     
