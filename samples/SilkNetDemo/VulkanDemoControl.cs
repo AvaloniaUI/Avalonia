@@ -97,7 +97,6 @@ public unsafe class VulkanDemoControl : VulkanControlBase
     private DeviceMemory _depthImageMemory;
     private ImageView _depthImageView;
     private VulkanCommandBufferPool _commandPool;
-    private Fence _fence;
     private Vk _vk;
 
     private byte[] GetShader(bool fragment)
@@ -240,7 +239,6 @@ public unsafe class VulkanDemoControl : VulkanControlBase
 
                 api.DestroyBuffer(device, _indexBuffer, null);
                 api.FreeMemory(device, _indexBufferMemory, null);
-                api.DestroyFence(device, _fence, null);
                 
                 _commandPool.Dispose();
             }
@@ -786,7 +784,6 @@ public unsafe class VulkanDemoControl : VulkanControlBase
                 Flags = FenceCreateFlags.FenceCreateSignaledBit
             };
 
-            api.CreateFence(device, fenceCreateInfo, null, out _fence);
             _commandPool = new VulkanCommandBufferPool(api, device, new Queue(sharedDevice.Device.MainQueueHandle),
                 sharedDevice.Device.GraphicsQueueFamilyIndex);
         }
