@@ -3,8 +3,16 @@
              x:Class="SilkNetDemo.VulkanDemo"
              xmlns:local="clr-namespace:SilkNetDemo">
     <Grid>
-        <local:VulkanDemoControl x:Name="Vulkan"/>
-        <StackPanel>
+      
+      <TabControl>
+        <TabItem Header="Tab1">
+          <local:VulkanDemoControl x:Name="Vulkan"/>
+        </TabItem>
+        <TabItem Header="Tab2">
+        </TabItem>
+      </TabControl>
+
+      <StackPanel>
             <TextBlock Text="{Binding Info, ElementName=Vulkan}"/>
         </StackPanel>
         <Grid ColumnDefinitions="*,Auto" Margin="20">

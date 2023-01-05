@@ -76,7 +76,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
         get => _info;
         private set => SetAndRaise(InfoProperty, ref _info, value);
     }
-    
+
     static VulkanDemoControl()
     {
         AffectsRender<VulkanDemoControl>(YawProperty, PitchProperty, RollProperty, DiscoProperty);
@@ -96,8 +96,9 @@ public unsafe class VulkanDemoControl : VulkanControlBase
     private Image _depthImage;
     private DeviceMemory _depthImageMemory;
     private ImageView _depthImageView;
-    private VulkanCommandBufferPool _commandPool;
+    private VulkanCommandBufferPool? _commandPool;
     private Vk _vk;
+    private Device _device;
 
     private byte[] GetShader(bool fragment)
     {
@@ -157,6 +158,18 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             commandBuffer.BeginRecording();
             var commandBufferHandle = new CommandBuffer(commandBuffer.Handle);
 
+            // Set Viewport with negative height to correct vertical orientation of the view (by default Vulkan flips vertical orientation)
+            //api.CmdSetViewport(commandBufferHandle, 0, 1,
+            //    new Viewport()
+            //    {
+            //        Width = (float)pixelSize.Width,
+            //        Height = -(float)pixelSize.Height,
+            //        MaxDepth = 1,
+            //        MinDepth = 0,
+            //        X = 0,
+            //        Y = (float)pixelSize.Height
+            //    });
+
             api.CmdSetViewport(commandBufferHandle, 0, 1,
                 new Viewport()
                 {
@@ -210,7 +223,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             api.CmdDrawIndexed(commandBufferHandle, (uint)_indices.Length, 1, 0, 0, 0);
 
             api.CmdEndRenderPass(commandBufferHandle);
-            
+
             commandBuffer.Submit();
 
             if (_disco > 0.01)
@@ -218,60 +231,89 @@ public unsafe class VulkanDemoControl : VulkanControlBase
         }
     }
 
-    protected override void OnVulkanDeInit(IVulkanSharedDevice sharedDevice)
+    protected override void OnSwapchainDisposing(IVulkanSharedDevice sharedDevice)
     {
-
-        if (_isInit)
+        lock (sharedDevice.Device.Lock())
         {
-            lock (sharedDevice.Device.Lock())
-            {
-                var api = _vk;
-                var device = new Device(sharedDevice.Device.Handle);
-                _vk.DeviceWaitIdle(device);
+            var api = _vk;
+            var device = new Device(sharedDevice.Device.Handle);
+            _vk.DeviceWaitIdle(device);
 
-                DestroyTemporalObjects(api, device);
-
-                api.DestroyShaderModule(device, _vertShader, null);
-                api.DestroyShaderModule(device, _fragShader, null);
-
-                api.DestroyBuffer(device, _vertexBuffer, null);
-                api.FreeMemory(device, _vertexBufferMemory, null);
-
-                api.DestroyBuffer(device, _indexBuffer, null);
-                api.FreeMemory(device, _indexBufferMemory, null);
-                
-                _commandPool.Dispose();
-            }
+            DestroyTemporalObjects(api, device);
         }
-        
-        _isInit = false;
     }
 
     public unsafe void DestroyTemporalObjects(Vk api, Device device)
     {
-        if (_isInit)
+        if (_depthImageView.Handle != 0)
         {
-            if (_renderPass.Handle != 0)
-            {
-                api.DestroyImageView(device, _depthImageView, null);
-                api.DestroyImage(device, _depthImage, null);
-                api.FreeMemory(device, _depthImageMemory, null);
+            foreach (var fb in _framebuffers)
+                api.DestroyFramebuffer(device, fb, null);
 
-                foreach (var fb in _framebuffers)
-                    api.DestroyFramebuffer(device, fb, null);
-                api.DestroyPipeline(device, _pipeline, null);
-                api.DestroyPipelineLayout(device, _pipelineLayout, null);
-                api.DestroyRenderPass(device, _renderPass, null);
+            api.DestroyImageView(device, _depthImageView, null);
+            api.DestroyImage(device, _depthImage, null);
+            api.FreeMemory(device, _depthImageMemory, null);
 
-                _depthImage = default;
-                _depthImageView = default;
-                _depthImageView = default;
-                _framebuffers = Array.Empty<Framebuffer>();
-                _pipeline = default;
-                _renderPass = default;
-                _pipelineLayout = default;
-            }
+            _depthImage = default;
+            _depthImageView = default;
+            _depthImageMemory = default;
+            _framebuffers = Array.Empty<Framebuffer>();
         }
+    }
+
+    public unsafe void DestroyVulkanResources()
+    {
+        var api = _vk;
+        var device = _device;
+
+        if (device.Handle == 0)
+            return;
+
+        _vk.DeviceWaitIdle(device);
+
+        DestroyTemporalObjects(api, device);
+        
+        if (_renderPass.Handle != 0)
+        {
+            api.DestroyPipeline(device, _pipeline, null);
+            api.DestroyPipelineLayout(device, _pipelineLayout, null);
+            api.DestroyRenderPass(device, _renderPass, null);
+
+            _pipeline = default;
+            _renderPass = default;
+            _pipelineLayout = default;
+        }
+        
+        if (_vertShader.Handle != 0)
+        {
+            api.DestroyShaderModule(device, _vertShader, null);
+            api.DestroyShaderModule(device, _fragShader, null);
+
+            _vertShader = default;
+            _fragShader = default;
+        }
+
+        if (_vertexBuffer.Handle != 0)
+        {
+            api.DestroyBuffer(device, _vertexBuffer, null);
+            api.FreeMemory(device, _vertexBufferMemory, null);
+
+            api.DestroyBuffer(device, _indexBuffer, null);
+            api.FreeMemory(device, _indexBufferMemory, null);
+
+            _vertexBuffer = default;
+            _vertexBufferMemory = default;
+            _indexBuffer = default;
+            _indexBufferMemory = default;
+        }
+
+        if (_commandPool != null)
+        {
+            _commandPool.Dispose();
+            _commandPool = null;
+        }
+
+        _device = default;
     }
 
     private unsafe void CreateDepthAttachment(Vk api, Device device, PhysicalDevice physicalDevice, PixelSize size)
@@ -343,10 +385,48 @@ public unsafe class VulkanDemoControl : VulkanControlBase
     {
         DestroyTemporalObjects(api, device);
 
+        if (_pipeline.Handle == 0)
+            CreatePipeline(api, device, physicalDevice, swapchain);
+
         CreateDepthAttachment(api, device, physicalDevice, swapchain.Size);
 
+        // create framebuffers
         var current = swapchain.GetImage(swapchain.CurrentImageIndex);
+
+        _framebuffers = new Framebuffer[swapchain.ImageCount];
+        for (var c = 0; c < _framebuffers.Length; c++)
+        {
+            var frameBufferAttachments = new[] { new ImageView((ulong)swapchain.GetImage(c).ViewHandle), _depthImageView };
+
+            fixed (ImageView* frAtPtr = frameBufferAttachments)
+            {
+                var framebufferCreateInfo = new FramebufferCreateInfo()
+                {
+                    SType = StructureType.FramebufferCreateInfo,
+                    RenderPass = _renderPass,
+                    AttachmentCount = (uint)frameBufferAttachments.Length,
+                    PAttachments = frAtPtr,
+                    Width = (uint)current.PixelSize.Width,
+                    Height = (uint)current.PixelSize.Height,
+                    Layers = 1
+                };
+
+                api.CreateFramebuffer(device, framebufferCreateInfo, null, out var fb).ThrowOnError();
+                _framebuffers[c] = fb;
+            }
+        }
+    }
+
+    private void CreatePipeline(Vk api, Device device, PhysicalDevice physicalDevice,
+        ISwapchain swapchain)
+    {
+        if (_pipeline.Handle != 0) // already created?
+            return;
+
+
         // create renderpasses
+        var current = swapchain.GetImage(swapchain.CurrentImageIndex);
+
         var colorAttachment = new AttachmentDescription()
         {
             Format = (Format)current.Format,
@@ -383,12 +463,14 @@ public unsafe class VulkanDemoControl : VulkanControlBase
 
         var colorAttachmentReference = new AttachmentReference()
         {
-            Attachment = 0, Layout = ImageLayout.ColorAttachmentOptimal
+            Attachment = 0,
+            Layout = ImageLayout.ColorAttachmentOptimal
         };
 
         var depthAttachmentReference = new AttachmentReference()
         {
-            Attachment = 1, Layout = ImageLayout.DepthStencilAttachmentOptimal
+            Attachment = 1,
+            Layout = ImageLayout.DepthStencilAttachmentOptimal
         };
 
         var subpassDescription = new SubpassDescription()
@@ -415,32 +497,8 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             };
 
             api.CreateRenderPass(device, renderPassCreateInfo, null, out _renderPass).ThrowOnError();
-
-
-            _framebuffers = new Framebuffer[swapchain.ImageCount];
-            for (var c = 0; c < _framebuffers.Length; c++)
-            {
-                // create framebuffer
-                var frameBufferAttachments = new[] { new ImageView((ulong)swapchain.GetImage(c).ViewHandle), _depthImageView };
-
-                fixed (ImageView* frAtPtr = frameBufferAttachments)
-                {
-                    var framebufferCreateInfo = new FramebufferCreateInfo()
-                    {
-                        SType = StructureType.FramebufferCreateInfo,
-                        RenderPass = _renderPass,
-                        AttachmentCount = (uint)frameBufferAttachments.Length,
-                        PAttachments = frAtPtr,
-                        Width = (uint)current.PixelSize.Width,
-                        Height = (uint)current.PixelSize.Height,
-                        Layers = 1
-                    };
-
-                    api.CreateFramebuffer(device, framebufferCreateInfo, null, out var fb).ThrowOnError();
-                    _framebuffers[c] = fb;
-                }
-            }
         }
+
 
         // Create pipeline
         var pname = Marshal.StringToHGlobalAnsi("main");
@@ -494,7 +552,8 @@ public unsafe class VulkanDemoControl : VulkanControlBase
 
             var scissor = new Rect2D()
             {
-                Offset = new Offset2D(0, 0), Extent = new Extent2D((uint)viewport.Width, (uint)viewport.Height)
+                Offset = new Offset2D(0, 0),
+                Extent = new Extent2D((uint)viewport.Width, (uint)viewport.Height)
             };
 
             var pipelineViewPortCreateInfo = new PipelineViewportStateCreateInfo()
@@ -622,7 +681,6 @@ public unsafe class VulkanDemoControl : VulkanControlBase
         }
 
         Marshal.FreeHGlobal(pname);
-        _isInit = true;
     }
 
     private unsafe void CreateBuffers(Vk api, Device device, IVulkanSharedDevice sharedDevice)
@@ -714,7 +772,8 @@ public unsafe class VulkanDemoControl : VulkanControlBase
         {
             var type = properties.MemoryTypes[i];
 
-            if ((memoryTypeBits & (1 << i)) != 0 && type.PropertyFlags.HasFlag(flags)) return i;
+            if ((memoryTypeBits & (1 << i)) != 0 && type.PropertyFlags.HasFlag(flags))
+                return i;
         }
 
         return -1;
@@ -740,9 +799,9 @@ public unsafe class VulkanDemoControl : VulkanControlBase
             _vk = GetApi(sharedDevice.Device);
 
             var api = _vk;
-            var device = new Device(sharedDevice.Device.Handle);
-            api.DeviceWaitIdle(device);
-            
+            _device = new Device(sharedDevice.Device.Handle);
+            api.DeviceWaitIdle(_device);
+
 
             /*var deviceName = platformInterface.PhysicalDevice.DeviceName;
             var version = platformInterface.PhysicalDevice.ApiVersion;
@@ -761,7 +820,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
                     PCode = (uint*)ptr,
                 };
 
-                api.CreateShaderModule(device, shaderCreateInfo, null, out _vertShader);
+                api.CreateShaderModule(_device, shaderCreateInfo, null, out _vertShader);
             }
 
             fixed (byte* ptr = fragShaderData)
@@ -773,18 +832,18 @@ public unsafe class VulkanDemoControl : VulkanControlBase
                     PCode = (uint*)ptr,
                 };
 
-                api.CreateShaderModule(device, shaderCreateInfo, null, out _fragShader);
+                api.CreateShaderModule(_device, shaderCreateInfo, null, out _fragShader);
             }
 
-            CreateBuffers(api, device, sharedDevice);
-            
+            CreateBuffers(api, _device, sharedDevice);
+
             var fenceCreateInfo = new FenceCreateInfo()
             {
                 SType = StructureType.FenceCreateInfo,
                 Flags = FenceCreateFlags.FenceCreateSignaledBit
             };
 
-            _commandPool = new VulkanCommandBufferPool(api, device, new Queue(sharedDevice.Device.MainQueueHandle),
+            _commandPool = new VulkanCommandBufferPool(api, _device, new Queue(sharedDevice.Device.MainQueueHandle),
                 sharedDevice.Device.GraphicsQueueFamilyIndex);
         }
     }
@@ -836,7 +895,6 @@ public unsafe class VulkanDemoControl : VulkanControlBase
 
 
     static Stopwatch St = Stopwatch.StartNew();
-    private bool _isInit;
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     private struct VertextPushConstant

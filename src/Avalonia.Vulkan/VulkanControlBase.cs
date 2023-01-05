@@ -15,18 +15,13 @@ using Avalonia.Vulkan.UnmanagedInterop;
 
 namespace Avalonia.Vulkan;
 
-public abstract class VulkanControlBase : Control, IDisposable
+public abstract class VulkanControlBase : Control
 {
     private Task<bool>? _initialization;
     private VulkanControlContext? _currentContext;
 
-    public bool IsDisposed { get; private set; }
-
     private bool EnsureInitialized()
     {
-        if (IsDisposed)
-            return false;
-
         if (_initialization != null)
         {
             // Check if we've previously failed to initialize on this platform
@@ -69,7 +64,7 @@ public abstract class VulkanControlBase : Control, IDisposable
         
     }
     
-    protected virtual void OnVulkanDeInit(IVulkanSharedDevice device)
+    protected virtual void OnSwapchainDisposing(IVulkanSharedDevice device)
     {
         
     }
@@ -81,21 +76,26 @@ public abstract class VulkanControlBase : Control, IDisposable
 
     public sealed override void Render(DrawingContext context)
     {
-        if(IsDisposed || !EnsureInitialized())
+        if(!EnsureInitialized())
             return;
         _currentContext!.Render(context);
     }
 
-    public void Dispose()
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        if (_currentContext != null && !IsDisposed)
+        DoCleanup();
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void DoCleanup()
+    {
+        if (_currentContext != null)
         {
-            OnVulkanDeInit(_currentContext.SharedDevice);
+            OnSwapchainDisposing(_currentContext.SharedDevice);
+
             _currentContext.Dispose();
             _currentContext = null;
             _initialization = null;
-
-            IsDisposed = true;
         }
     }
 
@@ -228,8 +228,8 @@ public abstract class VulkanControlBase : Control, IDisposable
     {
         private readonly IVulkanPlatformGraphicsContext _context;
         private readonly IVulkanSharedDeviceGraphicsContextFeature _feature;
-        private readonly SourceImage[] _images;
-        private readonly IBitmapImpl[] _bitmaps;
+        private SourceImage[] _images;
+        private IBitmapImpl[] _bitmaps;
         private int? _lastUsedBitmap, _lastSubmittedBitmap, _lastObtainedProducerBitmap;
         private object _lock = new();
         public PixelSize Size { get; }
@@ -310,7 +310,18 @@ public abstract class VulkanControlBase : Control, IDisposable
         public void Dispose()
         {
             using (_context.Device.Lock())
+            {
                 _context.DeviceApi.DeviceWaitIdle(_context.DeviceHandle);
+
+                foreach (var bitmap in _bitmaps)
+                    bitmap.Dispose();
+
+                foreach (var image in _images)
+                    image.Dispose();
+
+                _images = Array.Empty<SourceImage>();
+                _bitmaps = Array.Empty<IBitmapImpl>();
+            }
         }
 
         public int ImageCount => _images.Length;
