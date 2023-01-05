@@ -506,7 +506,7 @@ namespace Avalonia.Base.UnitTests.Input
         }
 
         [Fact]
-        public void Scrolling_Should_Start_After_Start_Distance_Is_Exceded()
+        public void Scrolling_Should_Start_After_Start_Distance_Is_Exceeded()
         {
             Border border = new Border()
             {

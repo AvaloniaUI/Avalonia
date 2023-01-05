@@ -59,7 +59,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Attached_Property_Is_Set_On_Control_Outside_Avalonia_Namspace()
+        public void Attached_Property_Is_Set_On_Control_Outside_Avalonia_Namespace()
         {
             // Test for issue #1548
             var xaml =
@@ -729,7 +729,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void DeferedXamlLoader_Should_Preserve_NamespacesContext()
+        public void DeferredXamlLoader_Should_Preserve_NamespacesContext()
         {
             var xaml =
 @"<ContentControl xmlns='https://github.com/avaloniaui'

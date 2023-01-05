@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
-                var listBoxHierarchyLine = button.GetVisualChildren().ElementAt(0) as ListBoxHierachyLine;
+                var listBoxHierarchyLine = button.GetVisualChildren().ElementAt(0) as ListBoxHierarchyLine;
                 Assert.Equal(1, listBoxHierarchyLine.LineDashStyle.Offset);
                 Assert.Equal(2, listBoxHierarchyLine.LineDashStyle.Dashes.Count);
                 Assert.Equal(2, listBoxHierarchyLine.LineDashStyle.Dashes[0]);
@@ -309,10 +309,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("Bar", bar.Name);
         }
     }
-    public class ListBoxHierachyLine : Panel
+    public class ListBoxHierarchyLine : Panel
     {
         public static readonly StyledProperty<DashStyle> LineDashStyleProperty =
-        AvaloniaProperty.Register<ListBoxHierachyLine, DashStyle>(nameof(LineDashStyle));
+        AvaloniaProperty.Register<ListBoxHierarchyLine, DashStyle>(nameof(LineDashStyle));
 
         public DashStyle LineDashStyle
         {
