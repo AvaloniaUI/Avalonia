@@ -124,7 +124,7 @@ namespace Avalonia.Media.TextFormatting
 
                     var second = new List<DrawableTextRun>(secondCount);
 
-                    if (currentRun is ShapedTextCharacters shapedTextCharacters)
+                    if (currentRun is ShapedTextRun shapedTextCharacters)
                     {
                         var split = shapedTextCharacters.Split(length - currentLength);
 
@@ -206,16 +206,16 @@ namespace Avalonia.Media.TextFormatting
                             break;
                         }
 
-                    case ShapeableTextCharacters shapeableRun:
+                    case UnshapedTextRun shapeableRun:
                         {
-                            var groupedRuns = new List<ShapeableTextCharacters>(2) { shapeableRun };
+                            var groupedRuns = new List<UnshapedTextRun>(2) { shapeableRun };
                             var characterBufferReference = currentRun.CharacterBufferReference;
                             var length = currentRun.Length;
                             var offsetToFirstCharacter = characterBufferReference.OffsetToFirstChar;
 
                             while (index + 1 < processedRuns.Count)
                             {
-                                if (processedRuns[index + 1] is not ShapeableTextCharacters nextRun)
+                                if (processedRuns[index + 1] is not UnshapedTextRun nextRun)
                                 {
                                     break;
                                 }
@@ -258,10 +258,10 @@ namespace Avalonia.Media.TextFormatting
             return drawableTextRuns;
         }
 
-        private static IReadOnlyList<ShapedTextCharacters> ShapeTogether(
-            IReadOnlyList<ShapeableTextCharacters> textRuns, CharacterBufferReference text, int length, TextShaperOptions options)
+        private static IReadOnlyList<ShapedTextRun> ShapeTogether(
+            IReadOnlyList<UnshapedTextRun> textRuns, CharacterBufferReference text, int length, TextShaperOptions options)
         {
-            var shapedRuns = new List<ShapedTextCharacters>(textRuns.Count);
+            var shapedRuns = new List<ShapedTextRun>(textRuns.Count);
 
             var shapedBuffer = TextShaper.Current.ShapeText(text, length, options);
 
@@ -271,7 +271,7 @@ namespace Avalonia.Media.TextFormatting
 
                 var splitResult = shapedBuffer.Split(currentRun.Length);
 
-                shapedRuns.Add(new ShapedTextCharacters(splitResult.First, currentRun.Properties));
+                shapedRuns.Add(new ShapedTextRun(splitResult.First, currentRun.Properties));
 
                 shapedBuffer = splitResult.Second!;
             }
@@ -280,9 +280,9 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <summary>
-        /// Coalesces ranges of the same bidi level to form <see cref="ShapeableTextCharacters"/>
+        /// Coalesces ranges of the same bidi level to form <see cref="UnshapedTextRun"/>
         /// </summary>
-        /// <param name="textCharacters">The text characters to form <see cref="ShapeableTextCharacters"/> from.</param>
+        /// <param name="textCharacters">The text characters to form <see cref="UnshapedTextRun"/> from.</param>
         /// <param name="levels">The bidi levels.</param>
         /// <returns></returns>
         private static IEnumerable<IReadOnlyList<TextRun>> CoalesceLevels(IReadOnlyList<TextRun> textCharacters, ArraySlice<sbyte> levels)
@@ -474,7 +474,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 switch (currentRun)
                 {
-                    case ShapedTextCharacters shapedTextCharacters:
+                    case ShapedTextRun shapedTextCharacters:
                         {
                             if(shapedTextCharacters.ShapedBuffer.Length > 0)
                             {
@@ -538,7 +538,7 @@ namespace Avalonia.Media.TextFormatting
             var shapedBuffer = new ShapedBuffer(characterBufferRange, glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
                 (sbyte)flowDirection);
 
-            var textRuns = new List<DrawableTextRun> { new ShapedTextCharacters(shapedBuffer, properties) };
+            var textRuns = new List<DrawableTextRun> { new ShapedTextRun(shapedBuffer, properties) };
 
             return new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection).FinalizeLine();
         }
@@ -744,7 +744,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The shaped symbol.
         /// </returns>
-        internal static ShapedTextCharacters CreateSymbol(TextRun textRun, FlowDirection flowDirection)
+        internal static ShapedTextRun CreateSymbol(TextRun textRun, FlowDirection flowDirection)
         {
             var textShaper = TextShaper.Current;
 
@@ -760,7 +760,7 @@ namespace Avalonia.Media.TextFormatting
 
             var shapedBuffer = textShaper.ShapeText(characterBuffer, textRun.Length, shaperOptions);
 
-            return new ShapedTextCharacters(shapedBuffer, textRun.Properties);
+            return new ShapedTextRun(shapedBuffer, textRun.Properties);
         }
     }
 }
