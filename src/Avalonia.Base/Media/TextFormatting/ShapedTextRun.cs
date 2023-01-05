@@ -8,8 +8,6 @@ namespace Avalonia.Media.TextFormatting
     /// </summary>
     public sealed class ShapedTextRun : SymbolTextRun
     {
-        private GlyphRun? _glyphRun;
-
         public ShapedTextRun(ShapedBuffer shapedBuffer, TextRunProperties properties) 
             : base(shapedBuffer.CharacterBufferRange.CharacterBufferReference, 
                 properties, 
@@ -18,35 +16,14 @@ namespace Avalonia.Media.TextFormatting
         {
             ShapedBuffer = shapedBuffer;
         }
-
-
+        
         public ShapedBuffer ShapedBuffer { get; }
-        
-        /// <inheritdoc/>
-        public override CharacterBufferReference CharacterBufferReference { get; }
 
-        public override GlyphRun GlyphRun
+        internal override void ReverseInternal()
         {
-            get
-            {
-                if(_glyphRun is null)
-                {
-                    _glyphRun = CreateGlyphRun();
-                }
-
-                return _glyphRun;
-            }
-        }
-
-        internal override void Reverse()
-        {
-            _glyphRun = null;
-
             ShapedBuffer.GlyphInfos.Span.Reverse();
-
-            IsReversed = !IsReversed;
         }
-        
+
         /// <summary>
         /// Measures the number of characters that fit into available width.
         /// </summary>
@@ -133,7 +110,7 @@ namespace Avalonia.Media.TextFormatting
             return new SplitResult<SymbolTextRun>(first, second);
         }
 
-        internal GlyphRun CreateGlyphRun()
+        internal override GlyphRun CreateGlyphRun()
         {
             return new GlyphRun(
                 ShapedBuffer.GlyphTypeface,

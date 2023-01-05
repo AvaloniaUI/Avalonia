@@ -5,6 +5,8 @@ namespace Avalonia.Media.TextFormatting;
 /// </summary>
 public abstract class SymbolTextRun : DrawableTextRun
 {
+    private GlyphRun? _glyphRun;
+    
     protected SymbolTextRun(CharacterBufferReference characterBufferReference, TextRunProperties properties, 
         int length, sbyte biDiLevel)
     {
@@ -28,12 +30,23 @@ public abstract class SymbolTextRun : DrawableTextRun
     public override double Baseline => -TextMetrics.Ascent;
 
     public override Size Size => GlyphRun.Size;
-        
-    public abstract GlyphRun GlyphRun { get; }
 
     public bool IsLeftToRight => (BidiLevel & 1) == 0;
 
-    public bool IsReversed { get; protected set; }
+    public bool IsReversed { get; private set; }
+    
+    public GlyphRun GlyphRun
+    {
+        get
+        {
+            if(_glyphRun is null)
+            {
+                _glyphRun = CreateGlyphRun();
+            }
+
+            return _glyphRun;
+        }
+    }
 
     /// <inheritdoc/>
     public override TextRunProperties Properties { get; }
@@ -77,11 +90,22 @@ public abstract class SymbolTextRun : DrawableTextRun
         }
     }
 
-    internal abstract void Reverse();
+    internal void Reverse()
+    {
+        _glyphRun = null;
+
+        ReverseInternal();
+
+        IsReversed = !IsReversed;
+    }
+
+    internal abstract void ReverseInternal();
     
     internal abstract SplitResult<SymbolTextRun> Split(int length);
     
     internal abstract bool TryMeasureCharacters(double availableWidth, out int length);
     
     internal abstract bool TryMeasureCharactersBackwards(double availableWidth, out int length, out double width);
+
+    internal abstract GlyphRun CreateGlyphRun();
 }
