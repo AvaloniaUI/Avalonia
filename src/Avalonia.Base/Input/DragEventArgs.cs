@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -32,7 +33,9 @@ namespace Avalonia.Input
             return point;
         }
 
-        internal DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, KeyModifiers keyModifiers)
+        [Unstable]
+        [Obsolete("This constructor may be removed in 12.0. Consider replacing it with RawDragEvent.")]
+        public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, KeyModifiers keyModifiers)
             : base(routedEvent)
         {
             Data = data;
