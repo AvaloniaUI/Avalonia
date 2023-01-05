@@ -128,7 +128,10 @@ namespace Avalonia.Vulkan
             {
                 if (!_hasStarted)
                 {
-                    _hasStarted = true;
+                    _api.WaitForFences(_device, 1, _fence, true, ulong.MaxValue);
+
+                    _api.ResetFences(_device, 1, _fence);
+
 
                     var beginInfo = new CommandBufferBeginInfo
                     {
@@ -137,6 +140,8 @@ namespace Avalonia.Vulkan
                     };
 
                     _api.BeginCommandBuffer(InternalHandle, beginInfo);
+
+                    _hasStarted = true;
                 }
             }
 
@@ -152,19 +157,15 @@ namespace Avalonia.Vulkan
 
             public void Submit()
             {
-                Submit(null, null, null, _fence);
+                Submit(null, null, null);
             }
 
             public unsafe void Submit(
                 ReadOnlySpan<Semaphore> waitSemaphores,
                 ReadOnlySpan<PipelineStageFlags> waitDstStageMask,
-                ReadOnlySpan<Semaphore> signalSemaphores,
-                Fence? fence = null)
+                ReadOnlySpan<Semaphore> signalSemaphores)
             {
                 EndRecording();
-
-                if (!fence.HasValue)
-                    fence = _fence;
 
                 fixed (Semaphore* pWaitSemaphores = waitSemaphores, pSignalSemaphores = signalSemaphores)
                 {
@@ -182,10 +183,8 @@ namespace Avalonia.Vulkan
                             SignalSemaphoreCount = signalSemaphores != null ? (uint)signalSemaphores.Length : 0,
                             PSignalSemaphores = pSignalSemaphores,
                         };
-
-                        _api.ResetFences(_device, 1, fence.Value);
-
-                        _api.QueueSubmit(_queue, 1, submitInfo, fence.Value);
+                        
+                        _api.QueueSubmit(_queue, 1, submitInfo, _fence);
                     }
                 }
 
