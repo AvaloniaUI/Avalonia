@@ -67,8 +67,6 @@ namespace Avalonia.Native
             }
         }
 
-        public IAvnWindow Native => _native;
-
         public void CanResize(bool value)
         {
             _native.SetCanResize(value.AsComBool());
