@@ -18,7 +18,6 @@ using SkiaSharp;
 
 namespace Avalonia.Browser
 {
-    [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
     public partial class AvaloniaView : ITextInputMethodImpl
     {
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
