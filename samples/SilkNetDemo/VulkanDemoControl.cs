@@ -233,7 +233,7 @@ public unsafe class VulkanDemoControl : VulkanControlBase
 
     protected override void OnSwapchainDisposing(IVulkanSharedDevice sharedDevice)
     {
-        lock (sharedDevice.Device.Lock())
+        using (sharedDevice.Device.Lock())
         {
             var api = _vk;
             var device = new Device(sharedDevice.Device.Handle);
