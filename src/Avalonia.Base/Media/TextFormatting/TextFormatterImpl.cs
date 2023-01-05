@@ -124,7 +124,7 @@ namespace Avalonia.Media.TextFormatting
 
                     var second = new List<DrawableTextRun>(secondCount);
 
-                    if (currentRun is ShapedTextRun shapedTextCharacters)
+                    if (currentRun is SymbolTextRun shapedTextCharacters)
                     {
                         var split = shapedTextCharacters.Split(length - currentLength);
 
@@ -199,13 +199,6 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case DrawableTextRun drawableRun:
-                        {
-                            drawableTextRuns.Add(drawableRun);
-
-                            break;
-                        }
-
                     case UnshapedTextRun shapeableRun:
                         {
                             var groupedRuns = new List<UnshapedTextRun>(2) { shapeableRun };
@@ -249,6 +242,12 @@ namespace Avalonia.Media.TextFormatting
                                          paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
                             drawableTextRuns.AddRange(ShapeTogether(groupedRuns, characterBufferReference, length, shaperOptions));
+
+                            break;
+                        }
+                    case DrawableTextRun drawableRun:
+                        {
+                            drawableTextRuns.Add(drawableRun);
 
                             break;
                         }
@@ -501,6 +500,11 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
+                    case SymbolTextRun symbolTextRun:
+                        {
+                            //todo gillibald - implement this when you will add shaping skip logic.
+                            throw new NotSupportedException("This will not invoke until shaping skip logic will be created");
+                        }
 
                     case { } drawableTextRun:
                         {
@@ -538,6 +542,7 @@ namespace Avalonia.Media.TextFormatting
             var shapedBuffer = new ShapedBuffer(characterBufferRange, glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
                 (sbyte)flowDirection);
 
+            //todo gillibald use UnshapedTextRun
             var textRuns = new List<DrawableTextRun> { new ShapedTextRun(shapedBuffer, properties) };
 
             return new TextLineImpl(textRuns, firstTextSourceIndex, 0, paragraphWidth, paragraphProperties, flowDirection).FinalizeLine();
@@ -744,7 +749,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The shaped symbol.
         /// </returns>
-        internal static ShapedTextRun CreateSymbol(TextRun textRun, FlowDirection flowDirection)
+        internal static SymbolTextRun CreateSymbol(TextRun textRun, FlowDirection flowDirection)
         {
             var textShaper = TextShaper.Current;
 
@@ -760,6 +765,8 @@ namespace Avalonia.Media.TextFormatting
 
             var shapedBuffer = textShaper.ShapeText(characterBuffer, textRun.Length, shaperOptions);
 
+            //todo gillibald this method should have unshaped shortcut
+            
             return new ShapedTextRun(shapedBuffer, textRun.Properties);
         }
     }

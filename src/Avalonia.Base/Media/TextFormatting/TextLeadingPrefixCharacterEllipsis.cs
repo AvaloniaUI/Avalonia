@@ -65,7 +65,7 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case ShapedTextRun shapedRun:
+                    case SymbolTextRun shapedRun:
                     {
                         currentWidth += currentRun.Size.Width;
 
@@ -118,7 +118,7 @@ namespace Avalonia.Media.TextFormatting
 
                                     switch (run)
                                     {
-                                        case ShapedTextRun endShapedRun:
+                                        case SymbolTextRun endShapedRun:
                                         {
                                             if (endShapedRun.TryMeasureCharactersBackwards(availableSuffixWidth,
                                                     out var suffixCount, out var suffixWidth))

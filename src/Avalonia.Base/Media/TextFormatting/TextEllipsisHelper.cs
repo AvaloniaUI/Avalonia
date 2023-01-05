@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Media.TextFormatting
@@ -15,15 +16,15 @@ namespace Avalonia.Media.TextFormatting
             var runIndex = 0;
             var currentWidth = 0.0;
             var collapsedLength = 0;
-            var shapedSymbol = TextFormatterImpl.CreateSymbol(properties.Symbol, FlowDirection.LeftToRight);
+            var symbolTextRun = TextFormatterImpl.CreateSymbol(properties.Symbol, FlowDirection.LeftToRight);
 
-            if (properties.Width < shapedSymbol.GlyphRun.Size.Width)
+            if (properties.Width < symbolTextRun.GlyphRun.Size.Width)
             {
                 //Not enough space to fit in the symbol
                 return new List<DrawableTextRun>(0);
             }
 
-            var availableWidth = properties.Width - shapedSymbol.Size.Width;
+            var availableWidth = properties.Width - symbolTextRun.Size.Width;
 
             while (runIndex < textRuns.Count)
             {
@@ -31,7 +32,7 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case ShapedTextRun shapedRun:
+                    case SymbolTextRun shapedRun:
                         {
                             currentWidth += shapedRun.Size.Width;
 
@@ -79,7 +80,7 @@ namespace Avalonia.Media.TextFormatting
                                     collapsedRuns.AddRange(splitResult.First);
                                 }
 
-                                collapsedRuns.Add(shapedSymbol);
+                                collapsedRuns.Add(symbolTextRun);
 
                                 return collapsedRuns;
                             }
@@ -89,7 +90,6 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
-
                     case { } drawableRun:
                         {
                             //The whole run needs to fit into available space
@@ -104,7 +104,7 @@ namespace Avalonia.Media.TextFormatting
                                     collapsedRuns.AddRange(splitResult.First);
                                 }
 
-                                collapsedRuns.Add(shapedSymbol);
+                                collapsedRuns.Add(symbolTextRun);
 
                                 return collapsedRuns;
                             }

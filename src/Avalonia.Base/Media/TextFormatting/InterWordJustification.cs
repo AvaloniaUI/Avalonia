@@ -113,6 +113,11 @@ namespace Avalonia.Media.TextFormatting
 
                     glyphRun.GlyphAdvances = shapedBuffer.GlyphAdvances;
                 }
+                else if (textRun is UnshapedTextRun)
+                {
+                    //todo gillibald - implement this when you will add shaping skip logic.
+                    throw new NotSupportedException("This will not invoke until shaping skip logic will be created");
+                }
 
                 currentPosition += textRun.Length;
             }

@@ -6,41 +6,26 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// A text run that holds shaped characters.
     /// </summary>
-    public sealed class ShapedTextRun : DrawableTextRun
+    public sealed class ShapedTextRun : SymbolTextRun
     {
         private GlyphRun? _glyphRun;
 
-        public ShapedTextRun(ShapedBuffer shapedBuffer, TextRunProperties properties)
+        public ShapedTextRun(ShapedBuffer shapedBuffer, TextRunProperties properties) 
+            : base(shapedBuffer.CharacterBufferRange.CharacterBufferReference, 
+                properties, 
+                shapedBuffer.CharacterBufferRange.Length, 
+                shapedBuffer.BidiLevel)
         {
             ShapedBuffer = shapedBuffer;
-            CharacterBufferReference = shapedBuffer.CharacterBufferRange.CharacterBufferReference;
-            Length = shapedBuffer.CharacterBufferRange.Length;
-            Properties = properties;
-            TextMetrics = new TextMetrics(properties.Typeface.GlyphTypeface, properties.FontRenderingEmSize);
         }
 
-        public bool IsReversed { get; private set; }
-
-        public sbyte BidiLevel => ShapedBuffer.BidiLevel;
 
         public ShapedBuffer ShapedBuffer { get; }
-
+        
         /// <inheritdoc/>
         public override CharacterBufferReference CharacterBufferReference { get; }
 
-        /// <inheritdoc/>
-        public override TextRunProperties Properties { get; }
-
-        /// <inheritdoc/>
-        public override int Length { get; }
-
-        public TextMetrics TextMetrics { get; }
-
-        public override double Baseline => -TextMetrics.Ascent;
-
-        public override Size Size => GlyphRun.Size;
-
-        public GlyphRun GlyphRun
+        public override GlyphRun GlyphRun
         {
             get
             {
@@ -53,46 +38,7 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        /// <inheritdoc/>
-        public override void Draw(DrawingContext drawingContext, Point origin)
-        {
-            using (drawingContext.PushPreTransform(Matrix.CreateTranslation(origin)))
-            {
-                if (GlyphRun.GlyphIndices.Count == 0)
-                {
-                    return;
-                }
-
-                if (Properties.Typeface == default)
-                {
-                    return;
-                }
-
-                if (Properties.ForegroundBrush == null)
-                {
-                    return;
-                }
-
-                if (Properties.BackgroundBrush != null)
-                {
-                    drawingContext.DrawRectangle(Properties.BackgroundBrush, null, new Rect(Size));
-                }
-
-                drawingContext.DrawGlyphRun(Properties.ForegroundBrush, GlyphRun);
-
-                if (Properties.TextDecorations == null)
-                {
-                    return;
-                }
-
-                foreach (var textDecoration in Properties.TextDecorations)
-                {
-                    textDecoration.Draw(drawingContext, GlyphRun, TextMetrics, Properties.ForegroundBrush);
-                }
-            }
-        }
-
-        internal void Reverse()
+        internal override void Reverse()
         {
             _glyphRun = null;
 
@@ -100,7 +46,7 @@ namespace Avalonia.Media.TextFormatting
 
             IsReversed = !IsReversed;
         }
-
+        
         /// <summary>
         /// Measures the number of characters that fit into available width.
         /// </summary>
@@ -109,7 +55,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// <c>true</c> if characters fit into the available width; otherwise, <c>false</c>.
         /// </returns>
-        internal bool TryMeasureCharacters(double availableWidth, out int length)
+        internal override bool TryMeasureCharacters(double availableWidth, out int length)
         {
             length = 0;
             var currentWidth = 0.0;
@@ -132,7 +78,7 @@ namespace Avalonia.Media.TextFormatting
             return length > 0;
         }
 
-        internal bool TryMeasureCharactersBackwards(double availableWidth, out int length, out double width)
+        internal override bool TryMeasureCharactersBackwards(double availableWidth, out int length, out double width)
         {
             length = 0;
             width = 0;
@@ -155,7 +101,7 @@ namespace Avalonia.Media.TextFormatting
             return length > 0;
         }
 
-        internal SplitResult<ShapedTextRun> Split(int length)
+        internal override SplitResult<SymbolTextRun> Split(int length)
         {
             if (IsReversed)
             {
@@ -184,7 +130,7 @@ namespace Avalonia.Media.TextFormatting
 
             var second = new ShapedTextRun(splitBuffer.Second!, Properties);
 
-            return new SplitResult<ShapedTextRun>(first, second);
+            return new SplitResult<SymbolTextRun>(first, second);
         }
 
         internal GlyphRun CreateGlyphRun()

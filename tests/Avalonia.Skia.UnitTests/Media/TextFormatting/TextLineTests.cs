@@ -308,7 +308,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 foreach (var run in textLine.TextRuns)
                 {
-                    var textRun = (ShapedTextRun)run;
+                    var textRun = (SymbolTextRun)run;
 
                     var glyphRun = textRun.GlyphRun;
 
@@ -634,7 +634,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
-                var textRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
+                var textRuns = textLine.TextRuns.Cast<SymbolTextRun>().ToList();
 
                 var lineWidth = textLine.WidthIncludingTrailingWhitespace;
 
@@ -885,14 +885,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(0, 3);
 
-                var firstRun = textLine.TextRuns[0] as ShapedTextRun;
+                var firstRun = textLine.TextRuns[0] as SymbolTextRun;
 
                 Assert.Equal(1, textBounds.Count);
                 Assert.Equal(firstRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(3, 4);
 
-                var secondRun = textLine.TextRuns[1] as ShapedTextRun;
+                var secondRun = textLine.TextRuns[1] as SymbolTextRun;
 
                 Assert.Equal(1, textBounds.Count);
                 Assert.Equal(secondRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
@@ -932,14 +932,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(0, 4);
 
-                var secondRun = textLine.TextRuns[1] as ShapedTextRun;
+                var secondRun = textLine.TextRuns[1] as SymbolTextRun;
 
                 Assert.Equal(1, textBounds.Count);
                 Assert.Equal(secondRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(4, 3);
 
-                var firstRun = textLine.TextRuns[0] as ShapedTextRun;
+                var firstRun = textLine.TextRuns[0] as SymbolTextRun;
 
                 Assert.Equal(1, textBounds.Count);
 
