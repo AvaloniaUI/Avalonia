@@ -11,7 +11,6 @@ namespace Avalonia.OpenGL
         GlInterface GlInterface { get; }
         int SampleCount { get; }
         IDisposable MakeCurrent();
-        IDisposable EnsureCurrent();
         bool IsSharedWith(IGlContext context);
         bool CanCreateSharedContext { get; }
         IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null);
