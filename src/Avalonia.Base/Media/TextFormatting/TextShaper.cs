@@ -29,10 +29,7 @@ namespace Avalonia.Media.TextFormatting
                     return current;
                 }
 
-                var textShaperImpl = AvaloniaLocator.Current.GetService<ITextShaperImpl>();
-
-                if (textShaperImpl == null)
-                    throw new InvalidOperationException("No text shaper implementation was registered.");
+                var textShaperImpl = AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>();
 
                 current = new TextShaper(textShaperImpl);
 
