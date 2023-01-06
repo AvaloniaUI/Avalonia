@@ -4,7 +4,6 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputType>Library</OutputType>
     <IsPackable>false</IsPackable>
-    <LangVersion>latest</LangVersion>
     <AssemblyOriginatorKeyFile>..\..\build\avalonia.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>false</SignAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
