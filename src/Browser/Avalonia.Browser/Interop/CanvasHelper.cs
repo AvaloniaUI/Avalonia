@@ -6,7 +6,6 @@ namespace Avalonia.Browser.Interop;
 
 internal record GLInfo(int ContextId, uint FboId, int Stencils, int Samples, int Depth);
 
-[System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
 internal static partial class CanvasHelper
 {
 

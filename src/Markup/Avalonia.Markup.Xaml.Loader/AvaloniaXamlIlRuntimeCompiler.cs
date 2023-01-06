@@ -179,7 +179,7 @@ namespace Avalonia.Markup.Xaml.XamlIl
             }
             finally
             {
-                if( _sreCanSave)
+                if(!success &&  _sreCanSave)
                     DumpRuntimeCompilationResults();
             }
         }
