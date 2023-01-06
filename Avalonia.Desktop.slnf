@@ -38,6 +38,7 @@
       "src\\Skia\\Avalonia.Skia\\Avalonia.Skia.csproj",
       "src\\tools\\DevAnalyzers\\DevAnalyzers.csproj",
       "src\\tools\\DevGenerators\\DevGenerators.csproj",
+      "src\\tools\\Tmds.DBus.SourceGenerator\\Tmds.DBus.SourceGenerator\\Tmds.DBus.SourceGenerator.csproj",
       "src\\Windows\\Avalonia.Direct2D1\\Avalonia.Direct2D1.csproj",
       "src\\Windows\\Avalonia.Win32.Interop\\Avalonia.Win32.Interop.csproj",
       "src\\Windows\\Avalonia.Win32\\Avalonia.Win32.csproj",

@@ -10,3 +10,6 @@
 [submodule "Tmds.DBus"]
 	path = src/Linux/Tmds.DBus
 	url = https://github.com/affederaffe/Tmds.DBus
+[submodule "src/tools/Tmds.DBus.SourceGenerator"]
+	path = src/tools/Tmds.DBus.SourceGenerator
+	url = https://github.com/affederaffe/Tmds.DBus.SourceGenerator

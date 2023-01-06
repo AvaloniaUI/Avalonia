@@ -17,10 +17,15 @@
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
     <ProjectReference Include="..\Linux\Tmds.DBus\src\Tmds.DBus.Protocol\Tmds.DBus.Protocol.csproj" />
     <!--<PackageReference Include="Tmds.DBus.Protocol" Version="0.11.1-151-9f126c13809fceab8388328aff84b0d8e89b2aae" />-->
+    <ProjectReference Include="..\tools\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="obj" />
   </ItemGroup>
 
 </Project>

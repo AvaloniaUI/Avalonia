@@ -9,17 +9,17 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 {
     internal class IBusX11TextInputMethod : DBusTextInputMethodBase
     {
-        private Service? _service;
-        private InputContext? _context;
+        private OrgFreedesktopIBusService? _service;
+        private OrgFreedesktopIBusInputContext? _context;
 
         public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
 
         protected override async Task<bool> Connect(string name)
         {
-            var service = new IBusService(Connection, name);
-            var path = await service.CreatePortal("/org/freedesktop/IBus").CreateInputContextAsync(GetAppName());
-            _context = service.CreateInputContext(path);
-            _service = service.CreateService(path);
+            var portal = new OrgFreedesktopIBusPortal(Connection, name, "/org/freedesktop/IBus");
+            var path = await portal.CreateInputContextAsync(GetAppName());
+            _service = new OrgFreedesktopIBusService(Connection, name, path);
+            _context = new OrgFreedesktopIBusInputContext(Connection, name, path);
             AddDisposable(await _context.WatchCommitTextAsync(OnCommitText));
             AddDisposable(await _context.WatchForwardKeyEventAsync(OnForwardKey));
             Enqueue(() => _context.SetCapabilitiesAsync((uint)IBusCapability.CapFocus));

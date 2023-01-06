@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
@@ -13,14 +11,15 @@ namespace Avalonia.FreeDesktop
     internal class DBusTrayIconImpl : ITrayIconImpl
     {
         private static int s_trayIconInstanceId;
+        public static readonly (int, int, byte[]) EmptyPixmap = (1, 1, new byte[] { 255, 0, 0, 0 });
 
         private readonly ObjectPath _dbusMenuPath;
         private readonly Connection? _connection;
-        private readonly DBus? _dBus;
+        private readonly OrgFreedesktopDBus? _dBus;
 
         private IDisposable? _serviceWatchDisposable;
         private StatusNotifierItemDbusObj? _statusNotifierItemDbusObj;
-        private StatusNotifierWatcher? _statusNotifierWatcher;
+        private OrgKdeStatusNotifierWatcher? _statusNotifierWatcher;
         private (int, int, byte[]) _icon;
 
         private string? _sysTrayServiceName;
@@ -48,7 +47,7 @@ namespace Avalonia.FreeDesktop
 
             IsActive = true;
 
-            _dBus = new DBusService(_connection, "org.freedesktop.DBus").CreateDBus("/org/freedesktop/DBus");
+            _dBus = new OrgFreedesktopDBus(_connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
             _dbusMenuPath = DBusMenuExporter.GenerateDBusMenuObjPath;
 
             MenuExporter = DBusMenuExporter.TryCreateDetachedNativeMenu(_dbusMenuPath, _connection);
@@ -61,8 +60,7 @@ namespace Avalonia.FreeDesktop
             if (_connection is null || _isDisposed)
                 return;
 
-            _statusNotifierWatcher = new StatusNotifierWatcherService(_connection, "org.kde.StatusNotifierWatcher")
-                .CreateStatusNotifierWatcher("/StatusNotifierWatcher");
+            _statusNotifierWatcher = new OrgKdeStatusNotifierWatcher(_connection, "org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher");
             _serviceConnected = true;
         }
 
@@ -72,7 +70,7 @@ namespace Avalonia.FreeDesktop
             if (!services.Contains("org.kde.StatusNotifierWatcher", StringComparer.Ordinal))
                 return;
 
-            _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.A2) );
+            _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.Item2) );
             var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
             OnNameChange(nameOwner);
         }
@@ -147,7 +145,7 @@ namespace Avalonia.FreeDesktop
 
             if (icon is null)
             {
-                _statusNotifierItemDbusObj?.SetIcon(StatusNotifierItemDbusObj.StatusNotifierItemProperties.EmptyPixmap);
+                _statusNotifierItemDbusObj?.SetIcon(EmptyPixmap);
                 return;
             }
 
@@ -210,26 +208,36 @@ namespace Avalonia.FreeDesktop
     /// <remarks>
     /// Useful guide: https://web.archive.org/web/20210818173850/https://www.notmart.org/misc/statusnotifieritem/statusnotifieritem.html
     /// </remarks>
-    internal class StatusNotifierItemDbusObj : IMethodHandler
+    internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItem
     {
         private readonly Connection _connection;
-        private readonly StatusNotifierItemProperties _backingProperties;
 
         public StatusNotifierItemDbusObj(Connection connection, ObjectPath dbusMenuPath)
         {
             _connection = connection;
-            _backingProperties = new StatusNotifierItemProperties
-            {
-                Menu = dbusMenuPath, // Needs a dbus menu somehow
-                ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), string.Empty, string.Empty)
-            };
-
+            BackingProperties.Menu = dbusMenuPath;
+            BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), string.Empty, string.Empty);
+            BackingProperties.IconName = string.Empty;
+            BackingProperties.AttentionIconName = string.Empty;
+            BackingProperties.AttentionIconPixmap = new []{ DBusTrayIconImpl.EmptyPixmap };
+            BackingProperties.AttentionMovieName = string.Empty;
+            BackingProperties.IconThemePath = string.Empty;
+            BackingProperties.OverlayIconName = string.Empty;
+            BackingProperties.OverlayIconPixmap = new []{ DBusTrayIconImpl.EmptyPixmap };
             InvalidateAll();
         }
 
-        public string Path => "/StatusNotifierItem";
+        public override string Path => "/StatusNotifierItem";
 
         public event Action? ActivationDelegate;
+
+        protected override void OnContextMenu(int x, int y) { }
+
+        protected override void OnActivate(int x, int y) => ActivationDelegate?.Invoke();
+
+        protected override void OnSecondaryActivate(int x, int y) { }
+
+        protected override void OnScroll(int delta, string orientation) { }
 
         public void InvalidateAll()
         {
@@ -238,12 +246,12 @@ namespace Avalonia.FreeDesktop
             EmitVoidSignal("NewAttentionIcon");
             EmitVoidSignal("NewOverlayIcon");
             EmitVoidSignal("NewToolTip");
-            EmitStringSignal("NewStatus", _backingProperties.Status);
+            EmitStringSignal("NewStatus", BackingProperties.Status);
         }
 
         public void SetIcon((int, int, byte[]) dbusPixmap)
         {
-            _backingProperties.IconPixmap = new[] { dbusPixmap };
+            BackingProperties.IconPixmap = new[] { dbusPixmap };
             InvalidateAll();
         }
 
@@ -252,122 +260,12 @@ namespace Avalonia.FreeDesktop
             if (text is null)
                 return;
 
-            _backingProperties.Id = text;
-            _backingProperties.Category = "ApplicationStatus";
-            _backingProperties.Status = text;
-            _backingProperties.Title = text;
-            _backingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), text, string.Empty);
+            BackingProperties.Id = text;
+            BackingProperties.Category = "ApplicationStatus";
+            BackingProperties.Status = text;
+            BackingProperties.Title = text;
+            BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), text, string.Empty);
             InvalidateAll();
-        }
-
-        public bool RunMethodHandlerSynchronously(Message message) => false;
-
-        public ValueTask HandleMethodAsync(MethodContext context)
-        {
-            switch (context.Request.InterfaceAsString)
-            {
-                case "org.kde.StatusNotifierItem":
-                    switch (context.Request.MemberAsString, context.Request.SignatureAsString)
-                    {
-                        case ("ContextMenu", "ii"):
-                            break;
-                        case ("Activate", "ii"):
-                            ActivationDelegate?.Invoke();
-                            break;
-                        case ("SecondaryActivate", "ii"):
-                            break;
-                        case ("Scroll", "is"):
-                            break;
-                    }
-
-                    break;
-                case "org.freedesktop.DBus.Properties":
-                    switch (context.Request.MemberAsString, context.Request.SignatureAsString)
-                    {
-                        case ("Get", "ss"):
-                        {
-                            var reader = context.Request.GetBodyReader();
-                            _ = reader.ReadString();
-                            var member = reader.ReadString();
-                            switch (member)
-                            {
-                                case "Category":
-                                {
-                                    using var writer = context.CreateReplyWriter("s");
-                                    writer.WriteString(_backingProperties.Category);
-                                    context.Reply(writer.CreateMessage());
-                                    break;
-                                }
-                                case "Id":
-                                {
-                                    using var writer = context.CreateReplyWriter("s");
-                                    writer.WriteString(_backingProperties.Id);
-                                    context.Reply(writer.CreateMessage());
-                                    break;
-                                }
-                                case "Title":
-                                {
-                                    using var writer = context.CreateReplyWriter("s");
-                                    writer.WriteString(_backingProperties.Title);
-                                    context.Reply(writer.CreateMessage());
-                                    break;
-                                }
-                                case "Status":
-                                {
-                                    using var writer = context.CreateReplyWriter("s");
-                                    writer.WriteString(_backingProperties.Status);
-                                    context.Reply(writer.CreateMessage());
-                                    break;
-                                }
-                                case "Menu":
-                                {
-                                    using var writer = context.CreateReplyWriter("o");
-                                    writer.WriteObjectPath(_backingProperties.Menu);
-                                    context.Reply(writer.CreateMessage());
-                                    break;
-                                }
-                                case "IconPixmap":
-                                {
-                                    using var writer = context.CreateReplyWriter("a(iiay)");
-                                    writer.WriteArray(_backingProperties.IconPixmap);
-                                    context.Reply(writer.CreateMessage());
-                                    break;
-                                }
-                                case "ToolTip":
-                                {
-                                    using var writer = context.CreateReplyWriter("(sa(iiay)ss)");
-                                    writer.WriteStruct(_backingProperties.ToolTip);
-                                    context.Reply(writer.CreateMessage());
-                                    break;
-                                }
-                            }
-
-                            break;
-                        }
-                        case ("GetAll", "s"):
-                        {
-                            var writer = context.CreateReplyWriter("a{sv}");
-                            var dict = new Dictionary<string, object>
-                            {
-                                { "Category", _backingProperties.Category },
-                                { "Id", _backingProperties.Id },
-                                { "Title", _backingProperties.Title },
-                                { "Status", _backingProperties.Status },
-                                { "Menu", _backingProperties.Menu },
-                                { "IconPixmap", _backingProperties.IconPixmap  },
-                                { "ToolTip", _backingProperties.ToolTip }
-                            };
-
-                            writer.WriteDictionary(dict);
-                            context.Reply(writer.CreateMessage());
-                            break;
-                        }
-                    }
-
-                    break;
-            }
-
-            return default;
         }
 
         private void EmitVoidSignal(string member)
@@ -383,28 +281,6 @@ namespace Avalonia.FreeDesktop
             writer.WriteSignalHeader(null, Path, "org.kde.StatusNotifierItem", member, "s");
             writer.WriteString(value);
             _connection.TrySendMessage(writer.CreateMessage());
-        }
-
-        internal record StatusNotifierItemProperties
-        {
-            public string Category { get; set; } = string.Empty;
-            public string Id { get; set; } = string.Empty;
-            public string Title { get; set; } = string.Empty;
-            public string Status { get; set; } = string.Empty;
-            public int WindowId { get; set; }
-            public string? IconThemePath { get; set; }
-            public ObjectPath Menu { get; set; }
-            public bool ItemIsMenu { get; set; }
-            public string? IconName { get; set; }
-            public (int, int, byte[])[] IconPixmap { get; set; } = { EmptyPixmap };
-            public string? OverlayIconName { get; set; }
-            public (int, int, byte[])[]? OverlayIconPixmap { get; set; }
-            public string? AttentionIconName { get; set; }
-            public (int, int, byte[])[]? AttentionIconPixmap { get; set; }
-            public string? AttentionMovieName { get; set; }
-            public (string, (int, int, byte[])[], string, string) ToolTip { get; set; }
-
-            public static (int, int, byte[]) EmptyPixmap = (1, 1, new byte[] { 255, 0, 0, 0 });
         }
     }
 }

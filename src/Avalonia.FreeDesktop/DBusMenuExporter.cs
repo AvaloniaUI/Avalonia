@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -25,16 +24,15 @@ namespace Avalonia.FreeDesktop
 
         public static string GenerateDBusMenuObjPath => $"/net/avaloniaui/dbusmenu/{Guid.NewGuid():N}";
 
-        private class DBusMenuExporterImpl : ITopLevelNativeMenuExporter, IMethodHandler, IDisposable
+        private class DBusMenuExporterImpl : ComCanonicalDbusmenu, ITopLevelNativeMenuExporter, IDisposable
         {
             private readonly Connection _connection;
-            private readonly DBusMenuProperties _dBusMenuProperties = new() { Version = 2, Status = "normal" };
             private readonly Dictionary<int, NativeMenuItemBase> _idsToItems = new();
             private readonly Dictionary<NativeMenuItemBase, int> _itemsToIds = new();
             private readonly HashSet<NativeMenu> _menus = new();
             private readonly uint _xid;
             private readonly bool _appMenu = true;
-            private Registrar? _registrar;
+            private ComCanonicalAppMenuRegistrar? _registrar;
             private NativeMenu? _menu;
             private bool _disposed;
             private uint _revision = 1;
@@ -59,7 +57,40 @@ namespace Avalonia.FreeDesktop
                 Init();
             }
 
-            public string Path { get; }
+            public override string Path { get; }
+
+            protected override (uint revision, (int, Dictionary<string, object>, object[]) layout) OnGetLayout(int parentId, int recursionDepth, string[] propertyNames)
+            {
+                var menu = GetMenu(parentId);
+                var layout = GetLayout(menu.item, menu.menu, recursionDepth, propertyNames);
+                if (!IsNativeMenuExported)
+                {
+                    IsNativeMenuExported = true;
+                    Dispatcher.UIThread.Post(() => OnIsNativeMenuExportedChanged?.Invoke(this, EventArgs.Empty));
+                }
+
+                return (_revision, layout);
+            }
+
+            protected override (int, Dictionary<string, object>)[] OnGetGroupProperties(int[] ids, string[] propertyNames) =>
+                ids.Select(id => (id, GetProperties(GetMenu(id), propertyNames))).ToArray();
+
+            protected override object OnGetProperty(int id, string name) => GetProperty(GetMenu(id), name) ?? 0;
+
+            protected override void OnEvent(int id, string eventId, object data, uint timestamp) =>
+                Dispatcher.UIThread.Post(() => HandleEvent(id, eventId, data, timestamp));
+
+            protected override int[] OnEventGroup((int, string, object, uint)[] events)
+            {
+                foreach (var e in events)
+                    Dispatcher.UIThread.Post(() => HandleEvent(e.Item1, e.Item2, e.Item3, e.Item4));
+                return Array.Empty<int>();
+            }
+
+            protected override bool OnAboutToShow(int id) => false;
+
+            protected override (int[] updatesNeeded, int[] idErrors) OnAboutToShowGroup(int[] ids) =>
+                (Array.Empty<int>(), Array.Empty<int>());
 
             private async void Init()
             {
@@ -69,8 +100,7 @@ namespace Avalonia.FreeDesktop
                 var services = await _connection.ListServicesAsync();
                 if (!services.Contains("com.canonical.AppMenu.Registrar"))
                     return;
-                _registrar = new RegistrarService(_connection, "com.canonical.AppMenu.Registrar")
-                    .CreateRegistrar("/com/canonical/AppMenu/Registrar");
+                _registrar = new ComCanonicalAppMenuRegistrar(_connection, "com.canonical.AppMenu.Registrar", "/com/canonical/AppMenu/Registrar");
                 if (!_disposed)
                     await _registrar.RegisterWindowAsync(_xid, Path);
                 // It's not really important if this code succeeds,
@@ -296,140 +326,6 @@ namespace Avalonia.FreeDesktop
                         bridge.RaiseClicked();
                 }
             }
-
-            public ValueTask HandleMethodAsync(MethodContext context)
-            {
-                switch (context.Request.InterfaceAsString)
-                {
-                    case "com.canonical.dbusmenu":
-                        switch (context.Request.MemberAsString, context.Request.SignatureAsString)
-                        {
-                            case ("GetLayout", "iias"):
-                            {
-                                using var writer = context.CreateReplyWriter("u(ia{sv}av)");
-                                var reader = context.Request.GetBodyReader();
-                                var parentId = reader.ReadInt32();
-                                var recursionDepth = reader.ReadInt32();
-                                var propertyNames = reader.ReadArray<string>();
-                                var menu = GetMenu(parentId);
-                                var layout = GetLayout(menu.item, menu.menu, recursionDepth, propertyNames);
-                                writer.WriteUInt32(_revision);
-                                writer.WriteStruct(layout);
-                                if (!IsNativeMenuExported)
-                                {
-                                    IsNativeMenuExported = true;
-                                    Dispatcher.UIThread.Post(() => OnIsNativeMenuExportedChanged?.Invoke(this, EventArgs.Empty));
-                                }
-
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                            case ("GetGroupProperties", "aias"):
-                            {
-                                using var writer = context.CreateReplyWriter("a(ia{sv})");
-                                var reader = context.Request.GetBodyReader();
-                                var ids = reader.ReadArray<int>();
-                                var propertyNames = reader.ReadArray<string>();
-                                var arrayStart = writer.WriteArrayStart(DBusType.Struct);
-                                foreach (var id in ids)
-                                {
-                                    var item = GetMenu(id);
-                                    var props = GetProperties(item, propertyNames);
-                                    writer.WriteStruct((id, props));
-                                }
-
-                                writer.WriteArrayEnd(arrayStart);
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                            case ("GetProperty", "is"):
-                            {
-                                using var writer = context.CreateReplyWriter("v");
-                                var reader = context.Request.GetBodyReader();
-                                var id = reader.ReadInt32();
-                                var name = reader.ReadString();
-                                writer.WriteVariant(GetProperty(GetMenu(id), name) ?? 0);
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                            case ("Event", "isvu"):
-                            {
-                                var reader = context.Request.GetBodyReader();
-                                var id = reader.ReadInt32();
-                                var eventId = reader.ReadString();
-                                var data = reader.ReadVariant();
-                                var timestamp = reader.ReadUInt32();
-                                Dispatcher.UIThread.Post(() => HandleEvent(id, eventId, data, timestamp));
-                                break;
-                            }
-                            case ("EventGroup", "a(isvu)"):
-                            {
-                                using var writer = context.CreateReplyWriter("ai");
-                                var reader = context.Request.GetBodyReader();
-                                var events = reader.ReadArray<(int Id, string EventId, object Data, uint Timestamp)>();
-                                foreach (var e in events)
-                                    Dispatcher.UIThread.Post(() => HandleEvent(e.Id, e.EventId, e.Data, e.Timestamp));
-                                writer.WriteArray(Array.Empty<int>());
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                            case ("AboutToShow", "i"):
-                            {
-                                using var writer = context.CreateReplyWriter("b");
-                                writer.WriteBool(false);
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                            case ("AboutToShowGroup", "ai"):
-                            {
-                                using var writer = context.CreateReplyWriter("aiai");
-                                writer.WriteStruct((Array.Empty<int>(), Array.Empty<int>()));
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                        }
-
-                        break;
-                    case "org.freedesktop.DBus.Properties":
-                        switch (context.Request.MemberAsString, context.Request.SignatureAsString)
-                        {
-                            case ("Version", "u"):
-                            {
-                                using var writer = context.CreateReplyWriter("u");
-                                writer.WriteUInt32(_dBusMenuProperties.Version);
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                            case ("TextDirection", "s"):
-                            {
-                                using var writer = context.CreateReplyWriter("s");
-                                writer.WriteString(_dBusMenuProperties.TextDirection);
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                            case ("Status", "s"):
-                            {
-                                using var writer = context.CreateReplyWriter("s");
-                                writer.WriteString(_dBusMenuProperties.Status);
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                            case ("IconThemePath", "as"):
-                            {
-                                using var writer = context.CreateReplyWriter("as");
-                                writer.WriteArray(_dBusMenuProperties.IconThemePath);
-                                context.Reply(writer.CreateMessage());
-                                break;
-                            }
-                        }
-
-                        break;
-                }
-
-                return default;
-            }
-
-            public bool RunMethodHandlerSynchronously(Message message) => true;
 
             private void EmitUIntIntSignal(string member, uint arg0, int arg1)
             {

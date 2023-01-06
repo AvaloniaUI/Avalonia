@@ -19,18 +19,18 @@ namespace Avalonia.FreeDesktop
                 return null;
             var services = await DBusHelper.Connection.ListServicesAsync();
             return services.Contains("org.freedesktop.portal.Desktop", StringComparer.Ordinal)
-                ? new DBusSystemDialog(new DesktopService(DBusHelper.Connection, "org.freedesktop.portal.Desktop"), handle)
+                ? new DBusSystemDialog(DBusHelper.Connection, handle)
                 : null;
         }
 
-        private readonly DesktopService _desktopService;
-        private readonly FileChooser _fileChooser;
+        private readonly Connection _connection;
+        private readonly OrgFreedesktopPortalFileChooser _fileChooser;
         private readonly IPlatformHandle _handle;
 
-        private DBusSystemDialog(DesktopService desktopService, IPlatformHandle handle)
+        private DBusSystemDialog(Connection connection, IPlatformHandle handle)
         {
-            _desktopService = desktopService;
-            _fileChooser = desktopService.CreateFileChooser("/org/freedesktop/portal/desktop");
+            _connection = connection;
+            _fileChooser = new OrgFreedesktopPortalFileChooser(connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
             _handle = handle;
         }
 
@@ -53,7 +53,7 @@ namespace Avalonia.FreeDesktop
 
             objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
 
-            var request = _desktopService.CreateRequest(objectPath);
+            var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
@@ -82,7 +82,7 @@ namespace Avalonia.FreeDesktop
                 chooserOptions.Add("current_folder", Encoding.UTF8.GetBytes(currentFolder.ToString()));
 
             objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
-            var request = _desktopService.CreateRequest(objectPath);
+            var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
@@ -113,7 +113,7 @@ namespace Avalonia.FreeDesktop
             };
 
             var objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
-            var request = _desktopService.CreateRequest(objectPath);
+            var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
             var tsc = new TaskCompletionSource<string[]?>();
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
