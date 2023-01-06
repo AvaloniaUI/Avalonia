@@ -8,7 +8,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
-using Avalonia.Styling;
 using Avalonia.VisualTree;
 using ControlCatalog.Models;
 using ControlCatalog.Pages;
