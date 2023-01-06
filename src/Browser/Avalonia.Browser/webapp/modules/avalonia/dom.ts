@@ -3,6 +3,19 @@ export class AvaloniaDOM {
         element.classList.add(className);
     }
 
+    static observeDarkMode(observer: (isDarkMode: boolean) => boolean): boolean {
+        if (globalThis.matchMedia === undefined) {
+            return false;
+        }
+
+        const media = globalThis.matchMedia("(prefers-color-scheme: dark)");
+        media.addEventListener("change", (args: MediaQueryListEvent) => {
+            observer(args.matches);
+        });
+
+        return media.matches;
+    }
+
     static createAvaloniaHost(host: HTMLElement) {
         const randomIdPart = Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 10);
 

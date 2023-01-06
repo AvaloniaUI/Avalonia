@@ -25,4 +25,9 @@ internal static partial class DomHelper
     public static partial double ObserveDpi(
        [JSMarshalAs<JSType.Function<JSType.Number, JSType.Number>>]
         Action<double, double> onDpiChanged);
+    
+    [JSImport("AvaloniaDOM.observeDarkMode", AvaloniaModule.MainModuleName)]
+    public static partial bool ObserveDarkMode(
+        [JSMarshalAs<JSType.Function<JSType.Boolean>>]
+        Action<bool> onDpiChanged);
 }
