@@ -97,7 +97,7 @@ namespace Avalonia.Skia
             SKColorType colorType = format.ToSkColorType();
             SKAlphaType alphaType = alphaFormat.ToSkAlphaType();
 
-            var runtimePlatform = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>();
+            var runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
 
             if (runtimePlatform != null)
             {
