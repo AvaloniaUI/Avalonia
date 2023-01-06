@@ -17,7 +17,7 @@ namespace ControlCatalog.Pages
             this.Get<TextBlock>("TimePickerDesc").Text = "Use a TimePicker to let users set a time in your app, for example " +
                 "to set a reminder. The TimePicker displays three controls for hour, minute, and AM / PM(if necessary).These controls " +
                 "are easy to use with touch or mouse, and they can be styled and configured in several different ways. " +
-                "12 - hour or 24 - hour clock and visiblility of AM / PM is dynamically set based on user time settings, or can be overridden.";
+                "12 - hour or 24 - hour clock and visibility of AM / PM is dynamically set based on user time settings, or can be overridden.";
 
 
         }

@@ -5,7 +5,6 @@ using System.Runtime.Versioning;
 
 namespace Avalonia.Browser;
 
-[SupportedOSPlatform("browser")]
 public class BrowserSingleViewLifetime : ISingleViewApplicationLifetime
 {
     public AvaloniaView? View;
@@ -22,7 +21,6 @@ public class BrowserPlatformOptions
     public Func<string, string> FrameworkAssetPathResolver { get; set; } = new(fileName => $"./{fileName}");
 }
 
-[SupportedOSPlatform("browser")]
 public static class WebAppBuilder
 {
     public static AppBuilder SetupBrowserApp(

@@ -24,6 +24,8 @@ namespace Avalonia.Android
 
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
+
+            this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
         }
 
         internal TopLevelImpl TopLevelImpl => _view;
