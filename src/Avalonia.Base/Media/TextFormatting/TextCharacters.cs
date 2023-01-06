@@ -91,12 +91,12 @@ namespace Avalonia.Media.TextFormatting
         public override TextRunProperties Properties { get; }
 
         /// <summary>
-        /// Gets a list of <see cref="ShapeableTextCharacters"/>.
+        /// Gets a list of <see cref="UnshapedTextRun"/>.
         /// </summary>
         /// <returns>The shapeable text characters.</returns>
-        internal IReadOnlyList<ShapeableTextCharacters> GetShapeableCharacters(CharacterBufferRange characterBufferRange, sbyte biDiLevel, ref TextRunProperties? previousProperties)
+        internal IReadOnlyList<UnshapedTextRun> GetShapeableCharacters(CharacterBufferRange characterBufferRange, sbyte biDiLevel, ref TextRunProperties? previousProperties)
         {
-            var shapeableCharacters = new List<ShapeableTextCharacters>(2);
+            var shapeableCharacters = new List<UnshapedTextRun>(2);
 
             while (characterBufferRange.Length > 0)
             {
@@ -120,7 +120,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="biDiLevel">The bidi level of the run.</param>
         /// <param name="previousProperties"></param>
         /// <returns>A list of shapeable text runs.</returns>
-        private static ShapeableTextCharacters CreateShapeableRun(CharacterBufferRange characterBufferRange,
+        private static UnshapedTextRun CreateShapeableRun(CharacterBufferRange characterBufferRange,
             TextRunProperties defaultProperties, sbyte biDiLevel, ref TextRunProperties? previousProperties)
         {
             var defaultTypeface = defaultProperties.Typeface;
@@ -133,12 +133,12 @@ namespace Avalonia.Media.TextFormatting
                 {
                     if (TryGetShapeableLength(characterBufferRange, previousTypeface.Value, null, out var fallbackCount, out _))
                     {
-                        return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, fallbackCount,
+                        return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, fallbackCount,
                             defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
                     }
                 }
 
-                return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, count, defaultProperties.WithTypeface(currentTypeface),
+                return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, count, defaultProperties.WithTypeface(currentTypeface),
                     biDiLevel);
             }
 
@@ -146,7 +146,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 if (TryGetShapeableLength(characterBufferRange, previousTypeface.Value, defaultTypeface, out count, out _))
                 {
-                    return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, count,
+                    return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, count,
                         defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
                 }
             }
@@ -176,7 +176,7 @@ namespace Avalonia.Media.TextFormatting
             if (matchFound && TryGetShapeableLength(characterBufferRange, currentTypeface, defaultTypeface, out count, out _))
             {
                 //Fallback found
-                return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, count, defaultProperties.WithTypeface(currentTypeface),
+                return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, count, defaultProperties.WithTypeface(currentTypeface),
                     biDiLevel);
             }
 
@@ -199,7 +199,7 @@ namespace Avalonia.Media.TextFormatting
                 count += grapheme.Text.Length;
             }
 
-            return new ShapeableTextCharacters(characterBufferRange.CharacterBufferReference, count, defaultProperties, biDiLevel);
+            return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, count, defaultProperties, biDiLevel);
         }
 
         /// <summary>
