@@ -27,7 +27,7 @@ namespace Avalonia.Controls
 
             if (result == null)
             {
-                return (T?)result;
+                return null;
             }
 
             if (result is T typed)
