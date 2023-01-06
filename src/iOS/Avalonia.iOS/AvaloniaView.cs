@@ -52,6 +52,14 @@ namespace Avalonia.iOS
 
         public override bool CanResignFirstResponder => true;
 
+        public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+        {
+            base.TraitCollectionDidChange(previousTraitCollection);
+            
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
+            settings?.TraitCollectionDidChange();
+        }
+
         internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost,
             ITopLevelImplWithStorageProvider
         {
@@ -120,7 +128,24 @@ namespace Avalonia.iOS
             // legacy no-op
             public IMouseDevice MouseDevice { get; } = new MouseDevice();
             public WindowTransparencyLevel TransparencyLevel { get; }
-
+            
+            public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+            {
+                // TODO adjust status bar depending on full screen mode.
+                if (OperatingSystem.IsIOSVersionAtLeast(13))
+                {
+                    var uiStatusBarStyle = themeVariant switch
+                    {
+                        PlatformThemeVariant.Light => UIStatusBarStyle.DarkContent,
+                        PlatformThemeVariant.Dark => UIStatusBarStyle.LightContent,
+                        _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null)
+                    };
+                    
+                    // Consider using UIViewController.PreferredStatusBarStyle in the future.
+                    UIApplication.SharedApplication.SetStatusBarStyle(uiStatusBarStyle, true);
+                }
+            }
+            
             public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } =
                 new AcrylicPlatformCompensationLevels();
 

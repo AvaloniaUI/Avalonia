@@ -26,6 +26,7 @@ using Avalonia.Rendering.Composition;
 using Java.Lang;
 using Math = System.Math;
 using AndroidRect = Android.Graphics.Rect;
+using Window = Android.Views.Window;
 using Android.Graphics.Drawables;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
@@ -285,6 +286,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            // TODO adjust status bar depending on full screen mode.
+        }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
 
