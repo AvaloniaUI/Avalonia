@@ -473,6 +473,12 @@ enum AvnWindowTransparencyMode
     Blur
 }
 
+enum AvnPlatformThemeVariant
+{
+    Light,
+    Dark
+}
+
 [uuid(809c652e-7396-11d2-9771-00a0c9b4d50c)]
 interface IAvaloniaNativeFactory : IUnknown
 {
@@ -494,6 +500,7 @@ interface IAvaloniaNativeFactory : IUnknown
      HRESULT CreateMenuItemSeparator(IAvnMenuItem** ppv);
      HRESULT CreateTrayIcon(IAvnTrayIcon** ppv);
      HRESULT CreateApplicationCommands(IAvnApplicationCommands** ppv);
+     HRESULT CreatePlatformSettings(IAvnPlatformSettings** ppv);
 }
 
 [uuid(233e094f-9b9f-44a3-9a6e-6948bbdd9fb1)]
@@ -535,6 +542,7 @@ interface IAvnWindowBase : IUnknown
      HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
      HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
+     HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant mode);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]
@@ -905,4 +913,12 @@ interface IAvnAutomationNode : IUnknown
     void ChildrenChanged();
     void PropertyChanged(AvnAutomationProperty property);
     void FocusChanged();
+}
+
+[uuid(d1f009cc-9d2d-493b-845d-90d2c104baae)]
+interface IAvnPlatformSettings : IUnknown
+{
+    AvnPlatformThemeVariant GetPlatformTheme();
+    uint GetAccentColor();
+    void RegisterColorsChange(IAvnActionCallback* callback);
 }
