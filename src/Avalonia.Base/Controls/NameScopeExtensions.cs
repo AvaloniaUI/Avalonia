@@ -25,13 +25,18 @@ namespace Avalonia.Controls
 
             var result = nameScope.Find(name);
 
-            if (result != null && !(result is T))
+            if (result == null)
             {
-                throw new InvalidOperationException(
-                    $"Expected control '{name}' to be '{typeof(T)} but it was '{result.GetType()}'.");
+                return (T?)result;
             }
 
-            return (T?)result;
+            if (result is T typed)
+            {
+                return typed;
+            }
+
+            throw new InvalidOperationException(
+                $"Expected control '{name}' to be '{typeof(T)} but it was '{result.GetType()}'.");
         }
 
         /// <summary>
@@ -74,13 +79,13 @@ namespace Avalonia.Controls
                 throw new KeyNotFoundException($"Could not find control '{name}'.");
             }
 
-            if (!(result is T))
+            if (result is T typed)
             {
-                throw new InvalidOperationException(
-                    $"Expected control '{name}' to be '{typeof(T)} but it was '{result.GetType()}'.");
+                return typed;
             }
 
-            return (T)result;
+            throw new InvalidOperationException(
+                $"Expected control '{name}' to be '{typeof(T)} but it was '{result.GetType()}'.");
         }
 
         /// <summary>
