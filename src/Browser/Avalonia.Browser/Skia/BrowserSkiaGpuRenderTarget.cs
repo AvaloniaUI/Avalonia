@@ -14,14 +14,12 @@ namespace Avalonia.Browser.Skia
             _size = browserSkiaSurface.Size;
 
             var glFbInfo = new GRGlFramebufferInfo(browserSkiaSurface.GlInfo.FboId, browserSkiaSurface.ColorType.ToGlSizedFormat());
-            {
-                _browserSkiaSurface = browserSkiaSurface;
-                _renderTarget = new GRBackendRenderTarget(
-                    (int)(browserSkiaSurface.Size.Width * browserSkiaSurface.Scaling),
-                    (int)(browserSkiaSurface.Size.Height * browserSkiaSurface.Scaling),
-                    browserSkiaSurface.GlInfo.Samples,
-                    browserSkiaSurface.GlInfo.Stencils, glFbInfo);
-            }
+            _browserSkiaSurface = browserSkiaSurface;
+            _renderTarget = new GRBackendRenderTarget(
+                (int)(browserSkiaSurface.Size.Width * browserSkiaSurface.Scaling),
+                (int)(browserSkiaSurface.Size.Height * browserSkiaSurface.Scaling),
+                browserSkiaSurface.GlInfo.Samples,
+                browserSkiaSurface.GlInfo.Stencils, glFbInfo);
         }
 
         public void Dispose()

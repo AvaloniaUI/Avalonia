@@ -673,7 +673,7 @@ namespace Avalonia.Controls
             };
             if (OwningGrid.ColumnHeaderTheme is {} columnHeaderTheme)
             {
-                dragIndicator.SetValue(ThemeProperty, columnHeaderTheme, BindingPriority.TemplatedParent);
+                dragIndicator.SetValue(ThemeProperty, columnHeaderTheme, BindingPriority.Template);
             }
 
             dragIndicator.PseudoClasses.Add(":dragIndicator");

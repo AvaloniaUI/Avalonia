@@ -552,7 +552,8 @@ namespace Avalonia.Markup.Parsers
 
             public override bool Equals(object? obj)
             {
-                return obj is ClassSyntax && ((ClassSyntax)obj).Class == Class;
+                return obj is ClassSyntax syntax &&
+                       syntax.Class == Class;
             }
         }
 
@@ -562,7 +563,8 @@ namespace Avalonia.Markup.Parsers
 
             public override bool Equals(object? obj)
             {
-                return obj is NameSyntax && ((NameSyntax)obj).Name == Name;
+                return obj is NameSyntax syntax &&
+                       syntax.Name == Name;
             }
         }
 
@@ -574,9 +576,9 @@ namespace Avalonia.Markup.Parsers
 
             public override bool Equals(object? obj)
             {
-                return obj is PropertySyntax && 
-                    ((PropertySyntax)obj).Property == Property && 
-                    ((PropertySyntax)obj).Value == Value;
+                return obj is PropertySyntax syntax &&
+                       syntax.Property == Property &&
+                       syntax.Value == Value;
             }
         }
 

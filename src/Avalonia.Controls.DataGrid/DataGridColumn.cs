@@ -185,7 +185,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsVisible"/> property.
         /// </summary>
-        public static StyledProperty<bool> IsVisibleProperty =
+        public static readonly StyledProperty<bool> IsVisibleProperty =
              Control.IsVisibleProperty.AddOwner<DataGridColumn>();
 
         /// <summary>
@@ -897,7 +897,7 @@ namespace Avalonia.Controls
             result[!ContentControl.ContentTemplateProperty] = this[!HeaderTemplateProperty];
             if (OwningGrid.ColumnHeaderTheme is {} columnTheme)
             {
-                result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.TemplatedParent);
+                result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.Template);
             }
 
             return result;

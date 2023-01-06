@@ -5,7 +5,7 @@ using Avalonia.Android;
 
 namespace ControlCatalog.Android
 {
-    [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.NoActionBar", Icon = "@drawable/icon", LaunchMode = LaunchMode.SingleTop, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
+    [Activity(Label = "ControlCatalog.Android", Theme = "@style/MyTheme.Main", Icon = "@drawable/icon", LaunchMode = LaunchMode.SingleTop, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
     public class MainActivity : AvaloniaMainActivity
     {
     }
