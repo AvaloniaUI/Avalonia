@@ -45,6 +45,7 @@ namespace Avalonia.Skia
             }
             public void Dispose()
             {
+                _surface.Canvas.Clear(new SKColorF(1,1,1,1));
                 _surface.Canvas.Flush();
                 _surface.Dispose();
                 _backendRenderTarget.Dispose();

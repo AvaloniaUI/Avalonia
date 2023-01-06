@@ -79,7 +79,7 @@ namespace Avalonia.Win32.WinRT.Composition
                 _compositionDevice = _interop.CreateGraphicsDevice(_d3dDevice);
                 _compositionDevice2 = _compositionDevice.QueryInterface<ICompositionGraphicsDevice2>();
                 _drawingSurface = _compositionDevice2.CreateDrawingSurface2(new UnmanagedMethods.SIZE(),
-                    DirectXPixelFormat.B8G8R8A8UIntNormalized, DirectXAlphaMode.Premultiplied);
+                    DirectXPixelFormat.R16G16B16A16Float, DirectXAlphaMode.Premultiplied);
                 _surface = _drawingSurface.QueryInterface<ICompositionSurface>();
                 _surfaceInterop = _drawingSurface.QueryInterface<ICompositionDrawingSurfaceInterop>();
             }

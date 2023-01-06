@@ -1168,6 +1168,7 @@ namespace Avalonia.Skia
         private SurfaceRenderTarget CreateRenderTarget(Size size, bool isLayer, PixelFormat? format = null)
         {
             var pixelSize = PixelSize.FromSizeWithDpi(size, _dpi);
+            format = PixelFormat.RgbaF16;
             var createInfo = new SurfaceRenderTarget.CreateInfo
             {
                 Width = pixelSize.Width,

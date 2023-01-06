@@ -75,8 +75,10 @@ namespace Avalonia.Skia
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return null;
 
+            return null;
+
             // Blit feature requires glBlitFramebuffer
-            if (!_glContext.GlInterface.IsBlitFramebufferAvailable)
+            /*if (!_glContext.GlInterface.IsBlitFramebufferAvailable)
                 return null;
             
             size = new PixelSize(Math.Max(size.Width, 1), Math.Max(size.Height, 1));
@@ -95,7 +97,7 @@ namespace Avalonia.Skia
                     ?.Log(this, "Unable to create a Skia-compatible FBO manually");
                 _canCreateSurfaces ??= false;
                 return null;
-            }
+            }*/
         }
 
         public bool CanCreateSharedContext => _glContext.CanCreateSharedContext;

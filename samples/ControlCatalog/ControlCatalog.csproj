@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>    
   </PropertyGroup>
@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
+    <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.0.0" />
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />
