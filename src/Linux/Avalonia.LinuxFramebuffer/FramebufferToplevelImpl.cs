@@ -83,6 +83,8 @@ namespace Avalonia.LinuxFramebuffer
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 }
