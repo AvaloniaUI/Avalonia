@@ -257,7 +257,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             if (cl.Properties.Count > 0)
             {
                 server = server.AddMembers(((MethodDeclarationSyntax)ParseMemberDeclaration(
-                            $"protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt){{}}")
+                            $"protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt){{}}")
                         !)
                     .WithBody(ApplyDeserializeChangesEpilogue(deserializeMethodBody, cl)));
                 server = server.AddMembers(MethodDeclaration(ParseTypeName("void"), "OnFieldsDeserialized")
@@ -481,7 +481,7 @@ return;
         private static BlockSyntax DeserializeChangesPrologue(GClass cl)
         {
             return Block(ParseStatement($@"
-base.DeserializeChangesCore(reader, commitedAt);
+base.DeserializeChangesCore(reader, committedAt);
 DeserializeChangesExtra(reader);
 var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
 "));
@@ -500,7 +500,7 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
             {
                 code = $@"
     if((changed & {changedFieldsType}.{prop.Name}Animated) == {changedFieldsType}.{prop.Name}Animated)
-            SetAnimatedValue({CompositionPropertyField(prop)}, ref {PropertyBackingFieldName(prop)}, commitedAt, reader.ReadObject<IAnimationInstance>());
+            SetAnimatedValue({CompositionPropertyField(prop)}, ref {PropertyBackingFieldName(prop)}, committedAt, reader.ReadObject<IAnimationInstance>());
     else ";
             }
 

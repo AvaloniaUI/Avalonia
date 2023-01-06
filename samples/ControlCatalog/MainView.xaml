@@ -209,8 +209,7 @@
               </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="TransparencyLevels"
-                      HorizontalAlignment="Stretch"
-                      SelectedIndex="{Binding TransparencyLevel}">
+                      HorizontalAlignment="Stretch">
               <ComboBox.Items>
                 <WindowTransparencyLevel>None</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>

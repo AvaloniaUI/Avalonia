@@ -11,12 +11,5 @@
     <CheckBox Content="Title Bar" IsChecked="{Binding SystemTitleBarEnabled}" />    
     <CheckBox Content="Prefer System Chrome" IsChecked="{Binding PreferSystemChromeEnabled}" />
     <Slider Minimum="-1" Maximum="200" Value="{Binding TitleBarHeight}" />
-    <ComboBox x:Name="TransparencyLevels" SelectedIndex="{Binding TransparencyLevel}">
-      <ComboBoxItem>None</ComboBoxItem>
-      <ComboBoxItem>Transparent</ComboBoxItem>
-      <ComboBoxItem>Blur</ComboBoxItem>
-      <ComboBoxItem>AcrylicBlur</ComboBoxItem>
-      <ComboBoxItem>Mica</ComboBoxItem>
-    </ComboBox>
   </StackPanel>
 </UserControl>

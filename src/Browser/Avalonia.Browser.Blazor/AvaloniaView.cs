@@ -8,9 +8,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using BrowserView = Avalonia.Browser.AvaloniaView;
 
+[assembly: SupportedOSPlatform("browser")]
+
 namespace Avalonia.Browser.Blazor;
 
-[SupportedOSPlatform("browser")]
 public class AvaloniaView : ComponentBase
 {
     private Browser.AvaloniaView? _browserView;
