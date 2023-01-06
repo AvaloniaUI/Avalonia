@@ -107,6 +107,7 @@ namespace ControlCatalog
                 decorations.SelectedIndex = (int)window.SystemDecorations;
             
             _platformSettings.ColorValuesChanged += PlatformSettingsOnColorValuesChanged;
+            PlatformSettingsOnColorValuesChanged(_platformSettings, _platformSettings.GetColorValues());
         }
 
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
