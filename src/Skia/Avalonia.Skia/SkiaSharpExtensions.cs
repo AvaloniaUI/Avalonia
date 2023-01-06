@@ -124,6 +124,8 @@ namespace Avalonia.Skia
                 return SKColorType.Bgra8888;
             if (fmt == PixelFormat.Rgba8888)
                 return SKColorType.Rgba8888;
+            if (fmt == PixelFormat.RgbaF16)
+                return SKColorType.RgbaF16;
             throw new ArgumentException("Unknown pixel format: " + fmt);
         }
 
@@ -135,6 +137,8 @@ namespace Avalonia.Skia
                 return PixelFormat.Bgra8888;
             if (fmt == SKColorType.Rgba8888)
                 return PixelFormat.Rgba8888;
+            if (fmt == SKColorType.RgbaF16)
+                return PixelFormat.RgbaF16;
             throw new ArgumentException("Unknown pixel format: " + fmt);
         }
 
