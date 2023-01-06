@@ -21,7 +21,7 @@ namespace Avalonia.Controls.Platform
         }
 
         public static ITrayIconImpl? CreateTrayIcon() =>
-            s_designerMode ? null : AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>().CreateTrayIcon();
+            s_designerMode ? null : AvaloniaLocator.Current.GetService<IWindowingPlatform>()?.CreateTrayIcon();
 
 
         public static IWindowImpl CreateWindow()
