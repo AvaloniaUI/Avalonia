@@ -52,11 +52,6 @@ namespace ControlCatalog.Pages
 
         private void LayoutChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (_repeater == null)
-            {
-                return;
-            }
-
             var comboBox = (ComboBox)sender;
 
             switch (comboBox.SelectedIndex)
