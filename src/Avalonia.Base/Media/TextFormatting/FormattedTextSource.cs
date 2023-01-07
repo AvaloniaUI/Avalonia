@@ -132,7 +132,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 var grapheme = graphemeEnumerator.Current;
 
-                finalLength += grapheme.Text.Length;
+                finalLength += grapheme.Length;
 
                 if (finalLength >= length)
                 {
