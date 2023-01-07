@@ -13,7 +13,6 @@ namespace Avalonia.Browser.Storage;
 
 internal record FilePickerAcceptType(string Description, IReadOnlyDictionary<string, IReadOnlyList<string>> Accept);
 
-[SupportedOSPlatform("browser")]
 internal class BrowserStorageProvider : IStorageProvider
 {
     internal const string PickerCancelMessage = "The user aborted a request";

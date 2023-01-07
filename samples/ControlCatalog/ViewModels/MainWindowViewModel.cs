@@ -12,12 +12,9 @@ namespace ControlCatalog.ViewModels
 {
     class MainWindowViewModel : ViewModelBase
     {
-        private IManagedNotificationManager _notificationManager;
-
         private bool _isMenuItemChecked = true;
         private WindowState _windowState;
         private WindowState[] _windowStates = Array.Empty<WindowState>();
-        private int _transparencyLevel;
         private ExtendClientAreaChromeHints _chromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
         private bool _extendClientAreaEnabled;
         private bool _systemTitleBarEnabled;
@@ -75,12 +72,6 @@ namespace ControlCatalog.ViewModels
 
             SystemTitleBarEnabled = true;            
             TitleBarHeight = -1;
-        }        
-
-        public int TransparencyLevel
-        {
-            get { return _transparencyLevel; }
-            set { this.RaiseAndSetIfChanged(ref _transparencyLevel, value); }
         }        
 
         public ExtendClientAreaChromeHints ChromeHints

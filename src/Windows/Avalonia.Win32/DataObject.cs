@@ -205,7 +205,7 @@ namespace Avalonia.Win32
             if (string.IsNullOrEmpty(fmt) || !_wrapped.Contains(fmt))
                 return DV_E_FORMATETC;
 
-            * medium = default(Interop.STGMEDIUM);
+            * medium = default;
             medium->tymed = TYMED.TYMED_HGLOBAL;
             return WriteDataToHGlobal(fmt, ref medium->unionmember);
         }
