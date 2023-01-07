@@ -800,9 +800,20 @@ namespace Avalonia.Controls
         protected internal virtual void RefreshCellContent(Control element, string propertyName)
         { }
 
+        /// <summary>
+        /// When overridden in a derived class, called when a cell in the column exits editing mode.
+        /// </summary>
+        protected virtual void EndCellEdit()
+        { }
+
         internal void CancelCellEditInternal(Control editingElement, object uneditedValue)
         {
             CancelCellEdit(editingElement, uneditedValue);
+        }
+
+        internal void EndCellEditInternal()
+        {
+            EndCellEdit();
         }
 
         /// <summary>

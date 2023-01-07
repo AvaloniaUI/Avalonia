@@ -91,7 +91,7 @@ namespace Avalonia.Direct2D1.RenderTests
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
             var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
             var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
             var size = new Size(target.Width, target.Height);
             var dpiVector = new Vector(dpi, dpi);

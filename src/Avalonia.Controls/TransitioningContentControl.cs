@@ -69,6 +69,10 @@ public class TransitioningContentControl : ContentControl
         {
             Dispatcher.UIThread.Post(() => UpdateContentWithTransition(Content));
         }
+        else if (change.Property == CurrentContentProperty)
+        {
+            UpdateLogicalTree(change.OldValue, change.NewValue);
+        }
     }
 
     protected override void ContentChanged(AvaloniaPropertyChangedEventArgs e)
@@ -93,8 +97,6 @@ public class TransitioningContentControl : ContentControl
 
         if (PageTransition != null)
             await PageTransition.Start(this, null, true, localToken);
-
-        UpdateLogicalTree(CurrentContent, content);
 
         if (localToken.IsCancellationRequested)
         {

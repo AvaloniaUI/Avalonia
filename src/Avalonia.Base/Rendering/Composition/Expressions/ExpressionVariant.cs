@@ -654,7 +654,7 @@ namespace Avalonia.Rendering.Composition.Expressions
                 }
             }
 
-            res = default(T);
+            res = default;
             return false;
         }
 

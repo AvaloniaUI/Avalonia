@@ -12,8 +12,6 @@ namespace ControlCatalog.ViewModels
 {
     class MainWindowViewModel : ViewModelBase
     {
-        private IManagedNotificationManager _notificationManager;
-
         private bool _isMenuItemChecked = true;
         private WindowState _windowState;
         private WindowState[] _windowStates = Array.Empty<WindowState>();
