@@ -25,7 +25,7 @@ namespace Avalonia.X11
             RowBytes = width * 4;
             Dpi = new Vector(96, 96) * factor;
             Format = PixelFormat.Bgra8888;
-            _blob = AvaloniaLocator.Current.GetService<IRuntimePlatform>().AllocBlob(RowBytes * height);
+            _blob = AvaloniaLocator.Current.GetRequiredService<IRuntimePlatform>().AllocBlob(RowBytes * height);
             Address = _blob.Address;
         }
         

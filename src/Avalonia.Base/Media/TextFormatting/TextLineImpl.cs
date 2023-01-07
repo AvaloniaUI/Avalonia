@@ -192,14 +192,14 @@ namespace Avalonia.Media.TextFormatting
             {
                 var currentRun = _textRuns[i];
 
-                if (currentRun is ShapedTextCharacters shapedRun && !shapedRun.ShapedBuffer.IsLeftToRight)
+                if (currentRun is ShapedTextRun shapedRun && !shapedRun.ShapedBuffer.IsLeftToRight)
                 {
                     var rightToLeftIndex = i;
                     currentPosition += currentRun.Length;
 
                     while (rightToLeftIndex + 1 <= _textRuns.Count - 1)
                     {
-                        var nextShaped = _textRuns[++rightToLeftIndex] as ShapedTextCharacters;
+                        var nextShaped = _textRuns[++rightToLeftIndex] as ShapedTextRun;
 
                         if (nextShaped == null || nextShaped.ShapedBuffer.IsLeftToRight)
                         {
@@ -255,7 +255,7 @@ namespace Avalonia.Media.TextFormatting
 
             switch (run)
             {
-                case ShapedTextCharacters shapedRun:
+                case ShapedTextRun shapedRun:
                     {
                         characterHit = shapedRun.GlyphRun.GetCharacterHitFromDistance(distance, out _);
 
@@ -303,7 +303,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var currentRun = _textRuns[index];
 
-                    if (currentRun is ShapedTextCharacters shapedRun && !shapedRun.ShapedBuffer.IsLeftToRight)
+                    if (currentRun is ShapedTextRun shapedRun && !shapedRun.ShapedBuffer.IsLeftToRight)
                     {
                         var i = index;
 
@@ -313,7 +313,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             var nextRun = _textRuns[i + 1];
 
-                            if (nextRun is ShapedTextCharacters nextShapedRun && !nextShapedRun.ShapedBuffer.IsLeftToRight)
+                            if (nextRun is ShapedTextRun nextShapedRun && !nextShapedRun.ShapedBuffer.IsLeftToRight)
                             {
                                 i++;
 
@@ -407,7 +407,7 @@ namespace Avalonia.Media.TextFormatting
 
             switch (currentRun)
             {
-                case ShapedTextCharacters shapedTextCharacters:
+                case ShapedTextRun shapedTextCharacters:
                     {
                         currentGlyphRun = shapedTextCharacters.GlyphRun;
 
@@ -476,7 +476,7 @@ namespace Avalonia.Media.TextFormatting
 
             switch (currentRun)
             {
-                case ShapedTextCharacters shapedRun:
+                case ShapedTextRun shapedRun:
                     {
                         nextCharacterHit = shapedRun.GlyphRun.GetNextCaretCharacterHit(characterHit);
                         break;
@@ -550,7 +550,7 @@ namespace Avalonia.Media.TextFormatting
 
                 double combinedWidth;
 
-                if (currentRun is ShapedTextCharacters currentShapedRun)
+                if (currentRun is ShapedTextRun currentShapedRun)
                 {
                     var firstCluster = currentShapedRun.GlyphRun.Metrics.FirstCluster;
 
@@ -592,7 +592,7 @@ namespace Avalonia.Media.TextFormatting
                         var rightToLeftIndex = index;
                         var rightToLeftWidth = currentShapedRun.Size.Width;
 
-                        while (rightToLeftIndex + 1 <= _textRuns.Count - 1 && _textRuns[rightToLeftIndex + 1] is ShapedTextCharacters nextShapedRun)
+                        while (rightToLeftIndex + 1 <= _textRuns.Count - 1 && _textRuns[rightToLeftIndex + 1] is ShapedTextRun nextShapedRun)
                         {
                             if (nextShapedRun == null || nextShapedRun.ShapedBuffer.IsLeftToRight)
                             {
@@ -624,12 +624,12 @@ namespace Avalonia.Media.TextFormatting
 
                         for (int i = rightToLeftIndex - 1; i >= index; i--)
                         {
-                            if (TextRuns[i] is not ShapedTextCharacters)
+                            if (TextRuns[i] is not ShapedTextRun)
                             {
                                 continue;
                             }
 
-                            currentShapedRun = (ShapedTextCharacters)TextRuns[i];
+                            currentShapedRun = (ShapedTextRun)TextRuns[i];
 
                             currentRunBounds = GetRightToLeftTextRunBounds(currentShapedRun, startX, firstTextSourceIndex, characterIndex, currentPosition, remainingLength);
 
@@ -769,7 +769,7 @@ namespace Avalonia.Media.TextFormatting
                 var characterLength = 0;
                 var endX = startX;
 
-                if (currentRun is ShapedTextCharacters currentShapedRun)
+                if (currentRun is ShapedTextRun currentShapedRun)
                 {
                     var offset = Math.Max(0, firstTextSourceIndex - currentPosition);
 
@@ -883,7 +883,7 @@ namespace Avalonia.Media.TextFormatting
             return result;
         }
 
-        private TextRunBounds GetRightToLeftTextRunBounds(ShapedTextCharacters currentRun, double endX, int firstTextSourceIndex, int characterIndex, int currentPosition, int remainingLength)
+        private TextRunBounds GetRightToLeftTextRunBounds(ShapedTextRun currentRun, double endX, int firstTextSourceIndex, int characterIndex, int currentPosition, int remainingLength)
         {
             var startX = endX;
 
@@ -945,7 +945,7 @@ namespace Avalonia.Media.TextFormatting
 
         private static sbyte GetRunBidiLevel(DrawableTextRun run, FlowDirection flowDirection)
         {
-            if (run is ShapedTextCharacters shapedTextCharacters)
+            if (run is ShapedTextRun shapedTextCharacters)
             {
                 return shapedTextCharacters.BidiLevel;
             }
@@ -1027,7 +1027,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     if (current.Level >= minLevelToReverse && current.Level % 2 != 0)
                     {
-                        if (current.Run is ShapedTextCharacters { IsReversed: false } shapedTextCharacters)
+                        if (current.Run is ShapedTextRun { IsReversed: false } shapedTextCharacters)
                         {
                             shapedTextCharacters.Reverse();
                         }
@@ -1145,7 +1145,7 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case ShapedTextCharacters shapedRun:
+                    case ShapedTextRun shapedRun:
                         {
                             var foundCharacterHit = shapedRun.GlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex + characterHit.TrailingLength, out _);
 
@@ -1230,7 +1230,7 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case ShapedTextCharacters shapedRun:
+                    case ShapedTextRun shapedRun:
                         {
                             var foundCharacterHit = shapedRun.GlyphRun.FindNearestCharacterHit(characterHit.FirstCharacterIndex - 1, out _);
 
@@ -1294,7 +1294,7 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case ShapedTextCharacters shapedRun:
+                    case ShapedTextRun shapedRun:
                         {
                             var firstCluster = shapedRun.GlyphRun.Metrics.FirstCluster;
 
@@ -1303,7 +1303,7 @@ namespace Avalonia.Media.TextFormatting
                                 break;
                             }
 
-                            if (previousRun is ShapedTextCharacters previousShaped && !previousShaped.ShapedBuffer.IsLeftToRight)
+                            if (previousRun is ShapedTextRun previousShaped && !previousShaped.ShapedBuffer.IsLeftToRight)
                             {
                                 if (shapedRun.ShapedBuffer.IsLeftToRight)
                                 {
@@ -1394,7 +1394,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 switch (_textRuns[index])
                 {
-                    case ShapedTextCharacters textRun:
+                    case ShapedTextRun textRun:
                         {
                             var textMetrics =
                                 new TextMetrics(textRun.Properties.Typeface.GlyphTypeface, textRun.Properties.FontRenderingEmSize);

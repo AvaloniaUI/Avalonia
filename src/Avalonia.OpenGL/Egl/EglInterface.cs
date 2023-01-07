@@ -35,7 +35,7 @@ namespace Avalonia.OpenGL.Egl
 
         static Func<string, IntPtr> Load(string library)
         {
-            var dyn = AvaloniaLocator.Current.GetService<IDynamicLibraryLoader>();
+            var dyn = AvaloniaLocator.Current.GetRequiredService<IDynamicLibraryLoader>();
             var lib = dyn.LoadLibrary(library);
             return (s) => dyn.GetProcAddress(lib, s, true);
         }

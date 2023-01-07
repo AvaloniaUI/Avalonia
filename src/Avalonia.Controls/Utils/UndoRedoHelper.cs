@@ -49,7 +49,7 @@ namespace Avalonia.Controls.Utils
 
         public bool TryGetLastState(out TState? _state)
         {
-            _state = default(TState);
+            _state = default;
             if (!IsLastState)
                 return false;
 

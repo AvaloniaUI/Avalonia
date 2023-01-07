@@ -480,6 +480,7 @@ namespace Avalonia
             {
                 AttachToCompositor(compositingRenderer.Compositor);
             }
+            InvalidateMirrorTransform();
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
