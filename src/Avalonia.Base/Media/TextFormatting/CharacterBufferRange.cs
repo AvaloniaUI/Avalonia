@@ -147,12 +147,12 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Gets a reference to the character buffer
         /// </summary>
-        public readonly CharacterBufferReference CharacterBufferReference;
+        public CharacterBufferReference CharacterBufferReference { get; }
 
         /// <summary>
         /// Gets the number of characters in text source character store
         /// </summary>
-        public readonly int Length;
+        public int Length { get; }
 
         /// <summary>
         /// Gets a span from the character buffer range
