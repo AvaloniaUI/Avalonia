@@ -54,7 +54,7 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
             using var highContrastScheme = new HStringInterop(accessibilitySettings.HighContrastScheme);
             return _lastColorValues = new PlatformColorValues
             {
-                ThemeVariant = highContrastScheme.Value?.Contains("White", StringComparison.OrdinalIgnoreCase) == true ?
+                ThemeVariant = highContrastScheme.Value?.Contains("White") == true ?
                     PlatformThemeVariant.Light :
                     PlatformThemeVariant.Dark,
                 ContrastPreference = ColorContrastPreference.High,
