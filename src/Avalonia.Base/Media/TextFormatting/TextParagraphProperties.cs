@@ -63,14 +63,11 @@
         {
             get { return 0; }
         }
-        
+
         /// <summary>
         /// Gets the default incremental tab width.
         /// </summary>
-        public virtual double DefaultIncrementalTab
-        {
-            get { return 4 * DefaultTextRunProperties.FontRenderingEmSize; }
-        }
+        public virtual double DefaultIncrementalTab => 0;
 
         /// <summary>
         /// Gets the letter spacing.
