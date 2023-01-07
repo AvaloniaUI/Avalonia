@@ -864,3 +864,10 @@ interface IUISettings3 : IInspectable
 {
     HRESULT GetColorValue([in] UIColorType desiredColor, [out][retval] Color* value);
 }
+
+[uuid(FE0E8147-C4C0-4562-B962-1327B52AD5B9)]
+interface IAccessibilitySettings : IInspectable
+{
+    [propget] HRESULT HighContrast([out] [retval] boolean* value);
+    [propget] HRESULT HighContrastScheme([out] [retval] HSTRING* value);
+}

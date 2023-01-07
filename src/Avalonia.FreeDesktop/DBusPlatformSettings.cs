@@ -41,7 +41,7 @@ internal class DBusPlatformSettings : DefaultPlatformSettings
             {
                 var value = await colorSchemeTask;
                 _lastColorValues = GetColorValuesFromSetting(value);
-                OnColorValuesChanged(_lastColorValues.Value);
+                OnColorValuesChanged(_lastColorValues);
             }
             catch (Exception ex)
             {
@@ -62,13 +62,16 @@ internal class DBusPlatformSettings : DefaultPlatformSettings
             <member>2: Prefer light appearance</member>
             */
             _lastColorValues = GetColorValuesFromSetting(tuple.value);
-            OnColorValuesChanged(_lastColorValues.Value);
+            OnColorValuesChanged(_lastColorValues);
         }
     }
     
     private static PlatformColorValues GetColorValuesFromSetting(object value)
     {
         var isDark = value?.ToString() == "1";
-        return new PlatformColorValues(isDark ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light);
+        return new PlatformColorValues
+        {
+            ThemeVariant = isDark ? PlatformThemeVariant.Dark : PlatformThemeVariant.Light
+        };
     }
 }

@@ -17,15 +17,17 @@ public:
             if (@available(macOS 10.14, *))
             {
                 if (NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameAqua
-                    || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameVibrantLight
-                    || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameAccessibilityHighContrastAqua
-                    || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameAccessibilityHighContrastVibrantLight) {
+                    || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameVibrantLight) {
                     return AvnPlatformThemeVariant::Light;
                 } else if (NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameDarkAqua
-                           || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameVibrantDark
-                           || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameAccessibilityHighContrastDarkAqua
-                           || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameAccessibilityHighContrastVibrantDark) {
+                    || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameVibrantDark) {
                     return AvnPlatformThemeVariant::Dark;
+                } else if (NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameAccessibilityHighContrastAqua
+                    || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameAccessibilityHighContrastVibrantLight) {
+                    return AvnPlatformThemeVariant::HighContrastLight;
+                } else if (|| NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameAccessibilityHighContrastDarkAqua
+                    || NSApplication.sharedApplication.effectiveAppearance.name == NSAppearanceNameAccessibilityHighContrastVibrantDark) {
+                    return AvnPlatformThemeVariant::HighContrastDark;
                 }
             }
             return AvnPlatformThemeVariant::Light;

@@ -287,6 +287,17 @@ namespace Avalonia.Win32
                     }
                 }
             }
+
+            if (msg == (uint)WindowsMessage.WM_SETTINGCHANGE 
+                && PlatformSettings is Win32PlatformSettings win32PlatformSettings)
+            {
+                var changedSetting = Marshal.PtrToStringAuto(lParam);
+                if (changedSetting == "ImmersiveColorSet" // dark/light mode
+                    || changedSetting == "WindowsThemeElement") // high contrast mode
+                {
+                    win32PlatformSettings.OnColorValuesChanged();   
+                }
+            }
             
             TrayIconImpl.ProcWnd(hWnd, msg, wParam, lParam);
 

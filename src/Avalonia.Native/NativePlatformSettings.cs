@@ -18,16 +18,32 @@ internal class NativePlatformSettings : DefaultPlatformSettings
 
     public override PlatformColorValues GetColorValues()
     {
-        var theme = (PlatformThemeVariant)_platformSettings.PlatformTheme;
+        var (theme, contrast) = _platformSettings.PlatformTheme switch
+        {
+            AvnPlatformThemeVariant.Dark => (PlatformThemeVariant.Dark, ColorContrastPreference.NoPreference),
+            AvnPlatformThemeVariant.Light => (PlatformThemeVariant.Light, ColorContrastPreference.NoPreference),
+            AvnPlatformThemeVariant.HighContrastDark => (PlatformThemeVariant.Dark, ColorContrastPreference.High),
+            AvnPlatformThemeVariant.HighContrastLight => (PlatformThemeVariant.Dark, ColorContrastPreference.High),
+            _ => throw new ArgumentOutOfRangeException()
+        };
         var color = _platformSettings.AccentColor;
 
         if (color > 0)
         {
-            _lastColorValues = new PlatformColorValues(theme, Color.FromUInt32(color));
+            _lastColorValues = new PlatformColorValues
+            {
+                ThemeVariant = theme,
+                ContrastPreference = contrast,
+                AccentColor1 = Color.FromUInt32(color)
+            };
         }
         else
         {
-            _lastColorValues = new PlatformColorValues(theme);
+            _lastColorValues = new PlatformColorValues
+            {
+                ThemeVariant = theme,
+                ContrastPreference = contrast
+            };
         }
 
         return _lastColorValues;

@@ -17,8 +17,17 @@ internal class PlatformSettings : DefaultPlatformSettings
         var themeVariant = UITraitCollection.CurrentTraitCollection.UserInterfaceStyle == UIUserInterfaceStyle.Dark ?
             PlatformThemeVariant.Dark :
             PlatformThemeVariant.Light;
+
+
+        var contrastPreference = UITraitCollection.CurrentTraitCollection.AccessibilityContrast == UIAccessibilityContrast.High ?
+            ColorContrastPreference.High :
+            ColorContrastPreference.NoPreference;
         
-        return _lastColorValues = new PlatformColorValues(themeVariant);
+        return _lastColorValues = new PlatformColorValues
+        {
+            ThemeVariant = themeVariant,
+            ContrastPreference = contrastPreference
+        };
     }
 
     public void TraitCollectionDidChange()

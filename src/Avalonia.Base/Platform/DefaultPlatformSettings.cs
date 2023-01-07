@@ -31,7 +31,10 @@ namespace Avalonia.Platform
         
         public virtual PlatformColorValues GetColorValues()
         {
-            return new PlatformColorValues(PlatformThemeVariant.Light);
+            return new PlatformColorValues
+            {
+                ThemeVariant = PlatformThemeVariant.Light
+            };
         }
 
         public event EventHandler<PlatformColorValues>? ColorValuesChanged;

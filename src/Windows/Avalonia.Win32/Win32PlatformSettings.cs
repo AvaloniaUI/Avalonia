@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop;
@@ -38,18 +39,44 @@ internal class Win32PlatformSettings : DefaultPlatformSettings
             return base.GetColorValues();
         }
 
-        var settings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
-        var accent = settings.GetColorValue(UIColorType.Accent).ToAvalonia();
-        var background = settings.GetColorValue(UIColorType.Background).ToAvalonia();
+        var uiSettings = NativeWinRTMethods.CreateInstance<IUISettings3>("Windows.UI.ViewManagement.UISettings");
+        var accent = uiSettings.GetColorValue(UIColorType.Accent).ToAvalonia();
 
-        return _lastColorValues = new PlatformColorValues(
-            background.R + background.G + background.B < (255 * 3 - background.R - background.G - background.B)
-                ? PlatformThemeVariant.Dark
-                : PlatformThemeVariant.Light,
-            accent, accent, accent);
+        var accessibilitySettings = NativeWinRTMethods.CreateInstance<IAccessibilitySettings>("Windows.UI.ViewManagement.AccessibilitySettings");
+        if (accessibilitySettings.HighContrast == 1)
+        {
+            // Windows 11 has 4 different high contrast schemes:
+            // - Aquatic - High Contrast Black
+            // - Desert - High Contrast White
+            // - Dusk - High Contrast #1
+            // - Night sky - High Contrast #2
+            // Only "Desert" one can be considered a "light" preference. 
+            using var highContrastScheme = new HStringInterop(accessibilitySettings.HighContrastScheme);
+            return _lastColorValues = new PlatformColorValues
+            {
+                ThemeVariant = highContrastScheme.Value?.Contains("White", StringComparison.OrdinalIgnoreCase) == true ?
+                    PlatformThemeVariant.Light :
+                    PlatformThemeVariant.Dark,
+                ContrastPreference = ColorContrastPreference.High,
+                // Windows provides more than one accent color for the HighContrast themes, but with no API for that (at least not in the WinRT)
+                AccentColor1 = accent
+            };
+        }
+        else
+        {
+            var background = uiSettings.GetColorValue(UIColorType.Background).ToAvalonia();
+            return _lastColorValues = new PlatformColorValues
+            {
+                ThemeVariant = background.R + background.G + background.B < (255 * 3 - background.R - background.G - background.B) ?
+                    PlatformThemeVariant.Dark :
+                    PlatformThemeVariant.Light,
+                ContrastPreference = ColorContrastPreference.NoPreference,
+                AccentColor1 = accent
+            };   
+        }
     }
     
-    internal void OnColorValuesChanged(IntPtr handle)
+    internal void OnColorValuesChanged()
     {
         var oldColorValues = _lastColorValues;
         var colorValues = GetColorValues();

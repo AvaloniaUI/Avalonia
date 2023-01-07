@@ -12,31 +12,57 @@ public enum PlatformThemeVariant
 }
 
 /// <summary>
+/// System high contrast preference.
+/// </summary>
+public enum ColorContrastPreference
+{
+    NoPreference,
+    High
+}
+
+/// <summary>
 /// Information about current system color values, including information about dark mode and accent colors.
 /// </summary>
-/// <param name="ThemeVariant">System theme variant or mode.</param>
-/// <param name="AccentColor1">Primary system accent color.</param>
-/// <param name="AccentColor2">Secondary system accent color. On some platforms can return the same value as AccentColor1.</param>
-/// <param name="AccentColor3">Tertiary system accent color. On some platforms can return the same value as AccentColor1.</param>
-public record struct PlatformColorValues(
-    PlatformThemeVariant ThemeVariant,
-    Color AccentColor1,
-    Color AccentColor2,
-    Color AccentColor3)
+public record PlatformColorValues
 {
-    public PlatformColorValues(
-        PlatformThemeVariant ThemeVariant,
-        Color AccentColor1)
-        : this(ThemeVariant, AccentColor1, AccentColor1, AccentColor1)
-    {
-            
-    }
-        
-    public PlatformColorValues(PlatformThemeVariant ThemeVariant)
-        : this(ThemeVariant, DefaultAccent)
-    {
-
-    }
-        
     private static Color DefaultAccent => new(255, 0, 120, 215);
+    private Color _accentColor2, _accentColor3;
+
+    /// <summary>
+    /// System theme variant or mode.
+    /// </summary>
+    public PlatformThemeVariant ThemeVariant { get; init; }
+
+    /// <summary>
+    /// System high contrast preference.
+    /// </summary>
+    public ColorContrastPreference ContrastPreference { get; init; }
+    
+    /// <summary>
+    /// Primary system accent color.
+    /// </summary>
+    public Color AccentColor1 { get; init; }
+
+    /// <summary>
+    /// Secondary system accent color. On some platforms can return the same value as <see cref="AccentColor1"/>.
+    /// </summary>
+    public Color AccentColor2
+    {
+        get => _accentColor2 != default ? _accentColor2 : AccentColor1;
+        init => _accentColor2 = value;
+    }
+
+    /// <summary>
+    /// Tertiary system accent color. On some platforms can return the same value as <see cref="AccentColor1"/>.
+    /// </summary>
+    public Color AccentColor3
+    {
+        get => _accentColor3 != default ? _accentColor3 : AccentColor1;
+        init => _accentColor3 = value;
+    }
+
+    public PlatformColorValues()
+    {
+        AccentColor1 = DefaultAccent;
+    }
 }

@@ -3,17 +3,25 @@ export class AvaloniaDOM {
         element.classList.add(className);
     }
 
-    static observeDarkMode(observer: (isDarkMode: boolean) => boolean): boolean {
+    static observeDarkMode(observer: (isDarkMode: boolean, isHighContrast: boolean) => boolean) {
         if (globalThis.matchMedia === undefined) {
             return false;
         }
 
-        const media = globalThis.matchMedia("(prefers-color-scheme: dark)");
-        media.addEventListener("change", (args: MediaQueryListEvent) => {
-            observer(args.matches);
+        const colorShemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
+        const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
+
+        colorShemeMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+            observer(args.matches, prefersContrastMedia.matches);
+        });
+        prefersContrastMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+            observer(colorShemeMedia.matches, args.matches);
         });
 
-        return media.matches;
+        return {
+            isDarkMode: colorShemeMedia.matches,
+            isHighContrast: prefersContrastMedia.matches
+        };
     }
 
     static createAvaloniaHost(host: HTMLElement) {

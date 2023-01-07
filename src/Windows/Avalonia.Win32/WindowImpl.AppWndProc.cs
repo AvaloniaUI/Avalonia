@@ -733,14 +733,6 @@ namespace Avalonia.Win32
                         return UiaCoreProviderApi.UiaReturnRawElementProvider(_hwnd, wParam, lParam, node);
                     }
                     break;
-                case WindowsMessage.WM_SETTINGCHANGE:
-                    if (Marshal.PtrToStringAuto(lParam) == "ImmersiveColorSet"
-                        && Win32Platform.PlatformSettings is Win32PlatformSettings win32PlatformSettings)
-                    {
-                        win32PlatformSettings.OnColorValuesChanged(_hwnd);
-                    }
-
-                    break;
             }
 
 #if USE_MANAGED_DRAG

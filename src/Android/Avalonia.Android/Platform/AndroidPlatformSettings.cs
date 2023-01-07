@@ -3,6 +3,8 @@ using Android;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
+using Android.Provider;
+using Android.Views.Accessibility;
 using AndroidX.Core.Content.Resources;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -46,11 +48,14 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
             var accent2 = context.Resources.GetColor(17170507, context.Theme); // Resource.Color.SystemAccent2500
             var accent3 = context.Resources.GetColor(17170520, context.Theme); // Resource.Color.SystemAccent3500
 
-            _latestValues = new PlatformColorValues(
-                systemTheme,
-                new Color(accent1.A, accent1.R, accent1.G, accent1.B),
-                new Color(accent2.A, accent2.R, accent2.G, accent2.B),
-                new Color(accent3.A, accent3.R, accent3.G, accent3.B));
+            _latestValues = new PlatformColorValues
+            {
+                ThemeVariant = systemTheme,
+                ContrastPreference = IsHighContrast(context),
+                AccentColor1 = new Color(accent1.A, accent1.R, accent1.G, accent1.B),
+                AccentColor2 = new Color(accent2.A, accent2.R, accent2.G, accent2.B),
+                AccentColor3 = new Color(accent3.A, accent3.R, accent3.G, accent3.B),
+            };
         }
         else if (OperatingSystem.IsAndroidVersionAtLeast(23))
         {
@@ -58,9 +63,12 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
             var array = context.Theme.ObtainStyledAttributes(new[] { 16843829 }); // Resource.Attribute.ColorAccent
             var accent = array.GetColor(0, 0);
 
-            _latestValues = new PlatformColorValues(
-                systemTheme,
-                new Color(accent.A, accent.R, accent.G, accent.B));
+            _latestValues = new PlatformColorValues
+            {
+                ThemeVariant = systemTheme,
+                ContrastPreference = IsHighContrast(context),
+                AccentColor1 = new Color(accent.A, accent.R, accent.G, accent.B)
+            };
             array.Recycle();
         }
         else
@@ -69,5 +77,18 @@ internal class AndroidPlatformSettings : DefaultPlatformSettings
         }
 
         OnColorValuesChanged(_latestValues);
+    }
+
+    private static ColorContrastPreference IsHighContrast(Context context)
+    {
+        try
+        {
+            return Settings.Secure.GetInt(context.ContentResolver, "high_text_contrast_enabled", 0) == 1
+                ? ColorContrastPreference.High : ColorContrastPreference.NoPreference;
+        }
+        catch
+        {
+            return ColorContrastPreference.NoPreference;
+        }
     }
 }
