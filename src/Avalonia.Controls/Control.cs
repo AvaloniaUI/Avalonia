@@ -393,14 +393,6 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-
-            InvalidateMirrorTransform();
-        }
-
-        /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             base.OnGotFocus(e);
