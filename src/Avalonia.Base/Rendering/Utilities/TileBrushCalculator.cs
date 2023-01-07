@@ -109,7 +109,7 @@ namespace Avalonia.Rendering.Utilities
             {
                 if (IntermediateTransform != Matrix.Identity)
                     return true;
-                if (SourceRect.Position != default(Point))
+                if (SourceRect.Position != default)
                     return true;
                 if (SourceRect.Size.AspectRatio == _imageSize.AspectRatio)
                     return false;
