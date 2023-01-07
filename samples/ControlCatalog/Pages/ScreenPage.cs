@@ -36,44 +36,44 @@ namespace ControlCatalog.Pages
 
             var drawBrush = Brushes.Black;
             Pen p = new Pen(drawBrush);
-            if (screens != null)
-                foreach (Screen screen in screens)
+
+            foreach (Screen screen in screens)
+            {
+                if (screen.Bounds.X / 10f < _leftMost)
                 {
-                    if (screen.Bounds.X / 10f < _leftMost)
-                    {
-                        _leftMost = screen.Bounds.X / 10f;
-                        Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
-                        return;
-                    }
-
-                    Rect boundsRect = new Rect(screen.Bounds.X / 10f + Math.Abs(_leftMost), screen.Bounds.Y / 10f, screen.Bounds.Width / 10f,
-                                      screen.Bounds.Height / 10f);
-                    Rect workingAreaRect = new Rect(screen.WorkingArea.X / 10f + Math.Abs(_leftMost), screen.WorkingArea.Y / 10f, screen.WorkingArea.Width / 10f,
-                                       screen.WorkingArea.Height / 10f);
-                    
-                    context.DrawRectangle(p, boundsRect);
-                    context.DrawRectangle(p, workingAreaRect);
-
-
-                    var formattedText = CreateFormattedText($"Bounds: {screen.Bounds.Width}:{screen.Bounds.Height}");
-                    context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height));
-
-                    formattedText =
-                        CreateFormattedText($"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}");
-                    context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 20));
-
-                    formattedText = CreateFormattedText($"Scaling: {screen.Scaling * 100}%");
-                    context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 40));
-
-                    formattedText = CreateFormattedText($"IsPrimary: {screen.IsPrimary}");
-
-                    context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 60));
-
-                    formattedText =
-                        CreateFormattedText(
-                            $"Current: {screen.Equals(w.Screens.ScreenFromBounds(new PixelRect(w.Position, PixelSize.FromSize(w.Bounds.Size, scaling))))}");
-                    context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 80));
+                    _leftMost = screen.Bounds.X / 10f;
+                    Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
+                    return;
                 }
+
+                Rect boundsRect = new Rect(screen.Bounds.X / 10f + Math.Abs(_leftMost), screen.Bounds.Y / 10f, screen.Bounds.Width / 10f,
+                                  screen.Bounds.Height / 10f);
+                Rect workingAreaRect = new Rect(screen.WorkingArea.X / 10f + Math.Abs(_leftMost), screen.WorkingArea.Y / 10f, screen.WorkingArea.Width / 10f,
+                                   screen.WorkingArea.Height / 10f);
+
+                context.DrawRectangle(p, boundsRect);
+                context.DrawRectangle(p, workingAreaRect);
+
+
+                var formattedText = CreateFormattedText($"Bounds: {screen.Bounds.Width}:{screen.Bounds.Height}");
+                context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height));
+
+                formattedText =
+                    CreateFormattedText($"WorkArea: {screen.WorkingArea.Width}:{screen.WorkingArea.Height}");
+                context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 20));
+
+                formattedText = CreateFormattedText($"Scaling: {screen.Scaling * 100}%");
+                context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 40));
+
+                formattedText = CreateFormattedText($"IsPrimary: {screen.IsPrimary}");
+
+                context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 60));
+
+                formattedText =
+                    CreateFormattedText(
+                        $"Current: {screen.Equals(w.Screens.ScreenFromBounds(new PixelRect(w.Position, PixelSize.FromSize(w.Bounds.Size, scaling))))}");
+                context.DrawText(formattedText, boundsRect.Position.WithY(boundsRect.Size.Height + 80));
+            }
 
             context.DrawRectangle(p, new Rect(w.Position.X / 10f + Math.Abs(_leftMost), w.Position.Y / 10f, w.Bounds.Width / 10, w.Bounds.Height / 10));
         }
