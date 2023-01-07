@@ -76,13 +76,8 @@ namespace Avalonia.UnitTests
 
             var asset = fontAssets.First();
             
-            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
-            if (assetLoader == null)
-            {
-                throw new NotSupportedException("IAssetLoader is not registered.");
-            }
-            
             var stream = assetLoader.Open(asset);
             
             return new HarfBuzzGlyphTypefaceImpl(stream);
