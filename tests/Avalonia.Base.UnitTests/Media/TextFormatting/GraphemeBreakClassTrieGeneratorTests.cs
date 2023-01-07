@@ -42,7 +42,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             enumerator.MoveNext();
 
-            var actual = enumerator.Current.Text;
+            var actual = text.AsSpan(enumerator.Current.Offset, enumerator.Current.Length);
 
             var pass = true;
 
@@ -93,7 +93,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             while (enumerator.MoveNext())
             {
-                Assert.Equal(1, enumerator.Current.Text.Length);
+                Assert.Equal(1, enumerator.Current.Length);
 
                 count++;
             }
