@@ -97,7 +97,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
                 var fontFamily = new FontFamily("resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests#Noto Mono");
 

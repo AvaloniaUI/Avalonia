@@ -22,7 +22,7 @@ namespace Avalonia.Direct2D1.Media
         {
             var factory1 = factory;
 
-            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
             foreach (var asset in fontAssets)
             {
