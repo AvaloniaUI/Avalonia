@@ -196,7 +196,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                count += grapheme.Text.Length;
+                count += grapheme.Length;
             }
 
             return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, count, defaultProperties, biDiLevel);
@@ -264,7 +264,7 @@ namespace Avalonia.Media.TextFormatting
                     }
                 }
 
-                length += currentGrapheme.Text.Length;
+                length += currentGrapheme.Length;
             }
 
             return length > 0;
