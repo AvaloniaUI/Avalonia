@@ -245,7 +245,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                     if (CurrentCodeUnitOffset < _buffer.Length)
                     {
-                        CurrentCodepoint = Codepoint.ReadAt(_buffer.Span, CurrentCodeUnitOffset,
+                        CurrentCodepoint = Codepoint.ReadAt(_buffer, CurrentCodeUnitOffset,
                             out _codeUnitLengthOfCurrentScalar);
                     }
                     else
