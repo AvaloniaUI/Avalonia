@@ -30,7 +30,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 return false;
             }
 
-            Current = Codepoint.ReadAt(_text, 0, out var count);
+            Current = Codepoint.ReadAt(_text.Span, 0, out var count);
 
             _text = _text.Skip(count);
 

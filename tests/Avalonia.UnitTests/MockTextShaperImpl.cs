@@ -18,7 +18,7 @@ namespace Avalonia.UnitTests
             {
                 var glyphCluster = i + text.OffsetToFirstChar;
 
-                var codepoint = Codepoint.ReadAt(characterBufferRange, i, out var count);
+                var codepoint = Codepoint.ReadAt(characterBufferRange.Span, i, out var count);
 
                 var glyphIndex = typeface.GetGlyph(codepoint);
 
