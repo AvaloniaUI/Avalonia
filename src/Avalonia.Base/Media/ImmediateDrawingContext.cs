@@ -218,7 +218,7 @@ namespace Avalonia.Media
                 OpacityMask,
             }
 
-            internal PushedState(ImmediateDrawingContext context, PushedStateType type, Matrix matrix = default(Matrix))
+            internal PushedState(ImmediateDrawingContext context, PushedStateType type, Matrix matrix = default)
             {
                 if (context._states is null)
                     throw new ObjectDisposedException(nameof(ImmediateDrawingContext));

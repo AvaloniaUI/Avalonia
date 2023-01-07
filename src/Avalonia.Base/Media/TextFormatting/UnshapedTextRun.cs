@@ -5,9 +5,9 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// A group of characters that can be shaped.
     /// </summary>
-    public sealed class ShapeableTextCharacters : TextRun
+    public sealed class UnshapedTextRun : TextRun
     {
-        public ShapeableTextCharacters(CharacterBufferReference characterBufferReference, int length,
+        public UnshapedTextRun(CharacterBufferReference characterBufferReference, int length,
             TextRunProperties properties, sbyte biDiLevel)
         {
             CharacterBufferReference = characterBufferReference;
@@ -24,30 +24,30 @@ namespace Avalonia.Media.TextFormatting
 
         public sbyte BidiLevel { get; }
 
-        public bool CanShapeTogether(ShapeableTextCharacters shapeableTextCharacters)
+        public bool CanShapeTogether(UnshapedTextRun unshapedTextRun)
         {
-            if (!CharacterBufferReference.Equals(shapeableTextCharacters.CharacterBufferReference))
+            if (!CharacterBufferReference.Equals(unshapedTextRun.CharacterBufferReference))
             {
                 return false;
             }
 
-            if (BidiLevel != shapeableTextCharacters.BidiLevel)
+            if (BidiLevel != unshapedTextRun.BidiLevel)
             {
                 return false;
             }
 
             if (!MathUtilities.AreClose(Properties.FontRenderingEmSize,
-                    shapeableTextCharacters.Properties.FontRenderingEmSize))
+                    unshapedTextRun.Properties.FontRenderingEmSize))
             {
                 return false;
             }
 
-            if (Properties.Typeface != shapeableTextCharacters.Properties.Typeface)
+            if (Properties.Typeface != unshapedTextRun.Properties.Typeface)
             {
                 return false;
             }
 
-            if (Properties.BaselineAlignment != shapeableTextCharacters.Properties.BaselineAlignment)
+            if (Properties.BaselineAlignment != unshapedTextRun.Properties.BaselineAlignment)
             {
                 return false;
             }
