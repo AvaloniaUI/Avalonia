@@ -41,7 +41,7 @@ namespace Avalonia.Platform
             {
                 _draggedData = data;
                 _lastRoot = null;
-                _lastPosition = default(Point);
+                _lastPosition = default;
                 _allowedEffects = allowedEffects;
 
                 using (_inputManager.PreProcess.OfType<RawPointerEventArgs>().Subscribe(ProcessMouseEvents))

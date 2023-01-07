@@ -1118,7 +1118,7 @@ namespace Avalonia.Controls
                     EnsureColumnHeadersVisibility();
                     if (!newValueCols)
                     {
-                        _columnHeadersPresenter.Measure(default(Size));
+                        _columnHeadersPresenter.Measure(default);
                     }
                     else
                     {
@@ -1159,7 +1159,7 @@ namespace Avalonia.Controls
                 _topLeftCornerHeader.IsVisible = newValueRows && newValueCols;
                 if (_topLeftCornerHeader.IsVisible)
                 {
-                    _topLeftCornerHeader.Measure(default(Size));
+                    _topLeftCornerHeader.Measure(default);
                 }
             }
 
@@ -4152,6 +4152,7 @@ namespace Avalonia.Controls
 
             if (exitEditingMode)
             {
+                CurrentColumn.EndCellEditInternal();
                 _editingColumnIndex = -1;
                 editingCell.UpdatePseudoClasses();
 
