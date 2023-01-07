@@ -25,7 +25,7 @@ namespace Avalonia.LinuxFramebuffer
 
             Surfaces = new object[] { _outputBackend };
 
-            Invalidate(default(Rect));
+            Invalidate(default);
             _inputBackend.Initialize(this, e => Input?.Invoke(e));
         }
 
