@@ -22,12 +22,34 @@ internal class PlatformSettings : DefaultPlatformSettings
         var contrastPreference = UITraitCollection.CurrentTraitCollection.AccessibilityContrast == UIAccessibilityContrast.High ?
             ColorContrastPreference.High :
             ColorContrastPreference.NoPreference;
-        
-        return _lastColorValues = new PlatformColorValues
+
+        UIColor? tintColor = null;
+        if (OperatingSystem.IsIOSVersionAtLeast(14))
         {
-            ThemeVariant = themeVariant,
-            ContrastPreference = contrastPreference
-        };
+            tintColor = UIConfigurationColorTransformer.PreferredTint(UIColor.Clear);
+        }
+
+        if (tintColor is not null)
+        {
+            tintColor.GetRGBA(out var red, out var green, out var blue, out var alpha);
+            return _lastColorValues = new PlatformColorValues
+            {
+                ThemeVariant = themeVariant,
+                ContrastPreference = contrastPreference,
+                AccentColor1 = new Color(
+                    (byte)(alpha * 255),
+                    (byte)(red * 255),
+                    (byte)(green * 255),
+                    (byte)(blue * 255))
+            };
+        }
+        else
+        {
+            return _lastColorValues = new PlatformColorValues
+            {
+                ThemeVariant = themeVariant, ContrastPreference = contrastPreference
+            };
+        }
     }
 
     public void TraitCollectionDidChange()

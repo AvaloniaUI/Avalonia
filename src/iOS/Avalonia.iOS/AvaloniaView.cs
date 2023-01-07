@@ -60,6 +60,14 @@ namespace Avalonia.iOS
             settings?.TraitCollectionDidChange();
         }
 
+        public override void TintColorDidChange()
+        {
+            base.TintColorDidChange();
+            
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
+            settings?.TraitCollectionDidChange();
+        }
+
         internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost,
             ITopLevelImplWithStorageProvider
         {
