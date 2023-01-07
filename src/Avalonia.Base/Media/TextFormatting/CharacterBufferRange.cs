@@ -140,7 +140,7 @@ namespace Avalonia.Media.TextFormatting
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 #endif
-                return Span[index];
+                return CharacterBufferReference.CharacterBuffer.Span[CharacterBufferReference.OffsetToFirstChar + index];
             }
         }
 
