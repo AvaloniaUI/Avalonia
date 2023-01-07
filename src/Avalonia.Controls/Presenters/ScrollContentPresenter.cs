@@ -94,6 +94,7 @@ namespace Avalonia.Controls.Presenters
         {
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
             AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
+            AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }

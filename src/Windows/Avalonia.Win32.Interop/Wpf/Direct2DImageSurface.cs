@@ -127,7 +127,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 DeviceWindowHandle = GetDesktopWindow(),
                 PresentationInterval = PresentInterval.Default
             };
-            s_dxDevice = s_dxDevice ?? AvaloniaLocator.Current.GetService<SharpDX.DXGI.Device>()
+            s_dxDevice = s_dxDevice ?? AvaloniaLocator.Current.GetRequiredService<SharpDX.DXGI.Device>()
                              .QueryInterface<SharpDX.Direct3D11.Device>();
             s_d3DDevice = new DeviceEx(s_d3DContext, 0, DeviceType.Hardware, IntPtr.Zero, CreateFlags.HardwareVertexProcessing | CreateFlags.Multithreaded | CreateFlags.FpuPreserve, presentparams);
 

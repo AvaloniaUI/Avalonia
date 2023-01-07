@@ -47,10 +47,7 @@ namespace Avalonia.Media
                     return current;
                 }
 
-                var fontManagerImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
-
-                if (fontManagerImpl == null)
-                    throw new InvalidOperationException("No font manager implementation was registered.");
+                var fontManagerImpl = AvaloniaLocator.Current.GetRequiredService<IFontManagerImpl>();
 
                 current = new FontManager(fontManagerImpl);
 

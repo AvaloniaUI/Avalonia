@@ -47,7 +47,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             using (var lifetime = new ClassicDesktopStyleApplicationLifetime())
             {
                 var isLaunchingReceived = false;
-                var application = AvaloniaLocator.Current.GetService<Application>();
+                var application = AvaloniaLocator.Current.GetRequiredService<Application>();
                 application.ApplicationLifetime = lifetime;
 
                 // Initialize ReactiveUI Suspension as in real-world scenario.
@@ -65,7 +65,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             using (UnitTestApplication.Start(TestServices.MockWindowingPlatform))
             using (var lifetime = new ExoticApplicationLifetimeWithoutLifecycleEvents()) 
             {
-                var application = AvaloniaLocator.Current.GetService<Application>();
+                var application = AvaloniaLocator.Current.GetRequiredService<Application>();
                 application.ApplicationLifetime = lifetime;
                 Assert.Throws<NotSupportedException>(() => new AutoSuspendHelper(application.ApplicationLifetime));
             }
@@ -88,7 +88,7 @@ namespace Avalonia.ReactiveUI.UnitTests
             using (var lifetime = new ClassicDesktopStyleApplicationLifetime()) 
             {
                 var shouldPersistReceived = false;
-                var application = AvaloniaLocator.Current.GetService<Application>();
+                var application = AvaloniaLocator.Current.GetRequiredService<Application>();
                 application.ApplicationLifetime = lifetime;
 
                 // Initialize ReactiveUI Suspension as in real-world scenario.
