@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
@@ -10,9 +11,18 @@ namespace Avalonia.Benchmarks.Text;
 public class HugeTextLayout : IDisposable
 {
     private readonly IDisposable _app;
+    private string[] _manySmallStrings;
+    private static Random _rand = new Random();
+    
+    private static string RandomString(int length)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&?%$@";
+        return new string(Enumerable.Repeat(chars, length).Select(s => s[_rand.Next(s.Length)]).ToArray());
+    }
 
     public HugeTextLayout()
     {
+        _manySmallStrings = Enumerable.Range(0, 1000).Select(x => RandomString(_rand.Next(2, 15))).ToArray();
         _app = UnitTestApplication.Start(
             TestServices.StyledWindow.With(
                 renderInterface: new NullRenderingPlatform(),
@@ -29,11 +39,13 @@ One should, however, not forget that concentration of violations of the strategi
 In a loose sense concentration of the center of the critical thinking provides a deep insight into the emergency planning. The comparison is quite a powerful matter.  
 Resulting from review or analysis of threats and opportunities, we can presume that either significant improvement or basics of planning and scheduling reveals the patterns of the final draft. Therefore, the concept of the crucial component can be treated as the only solution.  
 One should, nevertheless, consider that the exceptional results of the diverse sources of information gives an overview of the production cycle. It should rather be regarded as an integral part of the direct access to key resources.  
-Admitting that the possibility of achieving the results of the constructive criticism, as far as the strategic management is questionable, cannot rely only on the critical thinking. It may reveal how the systems approach partially the comprehensive project management. We must be ready for outline design stage and network development investigation of every contradiction between the effective time management and the efficient decision the network development. Everyone understands what it takes to the draft analysis and prior decisions and early design solutions. In any case, we can systematically change the mechanism of the sources and influences of the continuing financing doctrine. This could exceedingly be a result of a task analysis the hardware maintenance. The real reason of the strategic planning seemingly the influence on eventual productivity. Everyone understands what it takes to the well-known practice. Therefore, the concept of the productivity boost can be treated as the only solution the driving factor. It may reveal how the matters of peculiar interest slowly the goals and objectives or the diverse sources of information the positive influence of any major outcomes complete failure of the supposed theory.  
+Admitting that the possibility of achieving the results of the constructive criticism, as far as the strategic management is questionable, cannot rely only on the critical thinking. It may reveal how the systems approach partially the comprehensive project management. We must be ready for outline design stage and network development investigation of every contradiction between the effective time management and the efficient decision the network development. 
+Everyone understands what it takes to the draft analysis and prior decisions and early design solutions. In any case, we can systematically change the mechanism of the sources and influences of the continuing financing doctrine. This could exceedingly be a result of a task analysis the hardware maintenance. The real reason of the strategic planning seemingly the influence on eventual productivity. Everyone understands what it takes to the well-known practice. Therefore, the concept of the productivity boost can be treated as the only solution the driving factor. 
+It may reveal how the matters of peculiar interest slowly the goals and objectives or the diverse sources of information the positive influence of any major outcomes complete failure of the supposed theory.  
 In respect that the structure of the sufficient amount poses problems and challenges for both the set of related commands and controls and the ability bias.";
     
     [Benchmark]
-    public TextLayout BuildTextLayout() => new TextLayout(Text, Typeface.Default, 12d, Brushes.Black);
+    public TextLayout BuildTextLayout() => MakeLayout(Text);
 
     private const string Emojis = @"😀 😁 😂 🤣 😃 😄 😅 😆 😉 😊 😋 😎 😍 😘 🥰 😗 😙 😚 ☺️ 🙂 🤗 🤩 🤔 🤨 😐 😑 😶 🙄 😏 😣 😥 😮 🤐 😯 😪 😫 😴 😌 😛 😜 😝 🤤 😒 😓 😔 😕 🙃 🤑 😲 ☹️ 🙁 😖 😞 😟 😤 😢 😭 😦 😧 😨 😩 🤯 😬 😰 😱 🥵 🥶 😳 🤪 😵 😡 😠 🤬 😷 🤒 🤕 🤢 🤮 🤧 😇 🤠 🤡 🥳 🥴 🥺 🤥 🤫 🤭 🧐 🤓 😈 👿 👹 👺 💀 👻 👽 🤖 💩 😺 😸 😹 😻 😼 😽 🙀 😿 😾
 👶 👧 🧒 👦 👩 🧑 👨 👵 🧓 👴 👲 👳‍♀️ 👳‍♂️ 🧕 🧔 👱‍♂️ 👱‍♀️ 👨‍🦰 👩‍🦰 👨‍🦱 👩‍🦱 👨‍🦲 👩‍🦲 👨‍🦳 👩‍🦳 🦸‍♀️ 🦸‍♂️ 🦹‍♀️ 🦹‍♂️ 👮‍♀️ 👮‍♂️ 👷‍♀️ 👷‍♂️ 💂‍♀️ 💂‍♂️ 🕵️‍♀️ 🕵️‍♂️ 👩‍⚕️ 👨‍⚕️ 👩‍🌾 👨‍🌾 👩‍🍳 👨‍🍳 👩‍🎓 👨‍🎓 👩‍🎤 👨‍🎤 👩‍🏫 👨‍🏫 👩‍🏭 👨‍🏭 👩‍💻 👨‍💻 👩‍💼 👨‍💼 👩‍🔧 👨‍🔧 👩‍🔬 👨‍🔬 👩‍🎨 👨‍🎨 👩‍🚒 👨‍🚒 👩‍✈️ 👨‍✈️ 👩‍🚀 👨‍🚀 👩‍⚖️ 👨‍⚖️ 👰 🤵 👸 🤴 🤶 🎅 🧙‍♀️ 🧙‍♂️ 🧝‍♀️ 🧝‍♂️ 🧛‍♀️ 🧛‍♂️ 🧟‍♀️ 🧟‍♂️ 🧞‍♀️ 🧞‍♂️ 🧜‍♀️ 🧜‍♂️ 🧚‍♀️ 🧚‍♂️ 👼 🤰 🤱 🙇‍♀️ 🙇‍♂️ 💁‍♀️ 💁‍♂️ 🙅‍♀️ 🙅‍♂️ 🙆‍♀️ 🙆‍♂️ 🙋‍♀️ 🙋‍♂️ 🤦‍♀️ 🤦‍♂️ 🤷‍♀️ 🤷‍♂️ 🙎‍♀️ 🙎‍♂️ 🙍‍♀️ 🙍‍♂️ 💇‍♀️ 💇‍♂️ 💆‍♀️ 💆‍♂️ 🧖‍♀️ 🧖‍♂️ 💅 🤳 💃 🕺 👯‍♀️ 👯‍♂️ 🕴 🚶‍♀️ 🚶‍♂️ 🏃‍♀️ 🏃‍♂️ 👫 👭 👬 💑 👩‍❤️‍👩 👨‍❤️‍👨 💏 👩‍❤️‍💋‍👩 👨‍❤️‍💋‍👨 👪 👨‍👩‍👧 👨‍👩‍👧‍👦 👨‍👩‍👦‍👦 👨‍👩‍👧‍👧 👩‍👩‍👦 👩‍👩‍👧 👩‍👩‍👧‍👦 👩‍👩‍👦‍👦 👩‍👩‍👧‍👧 👨‍👨‍👦 👨‍👨‍👧 👨‍👨‍👧‍👦 👨‍👨‍👦‍👦 👨‍👨‍👧‍👧 👩‍👦 👩‍👧 👩‍👧‍👦 👩‍👦‍👦 👩‍👧‍👧 👨‍👦 👨‍👧 👨‍👧‍👦 👨‍👦‍👦 👨‍👧‍👧 🤲 👐 🙌 👏 🤝 👍 👎 👊 ✊ 🤛 🤜 🤞 ✌️ 🤟 🤘 👌 👈 👉 👆 👇 ☝️ ✋ 🤚 🖐 🖖 👋 🤙 💪 🦵 🦶 🖕 ✍️ 🙏 💍 💄 💋 👄 👅 👂 👃 👣 👁 👀 🧠 🦴 🦷 🗣 👤 👥
@@ -53,7 +65,13 @@ In respect that the structure of the sufficient amount poses problems and challe
 🥱 🤏 🦾 🦿 🦻 🧏 🧏‍♂️ 🧏‍♀️ 🧍 🧍‍♂️ 🧍‍♀️ 🧎 🧎‍♂️ 🧎‍♀️ 👨‍🦯 👩‍🦯 👨‍🦼 👩‍🦼 👨‍🦽 👩‍🦽 🦧 🦮 🐕‍🦺 🦥 🦦 🦨 🦩 🧄 🧅 🧇 🧆 🧈 🦪 🧃 🧉 🧊 🛕 🦽 🦼 🛺 🪂 🪐 🤿 🪀 🪁 🦺 🥻 🩱 🩲 🩳 🩰 🪕 🪔 🪓 🦯 🩸 🩹 🩺 🪑 🪒 🤎 🤍 🟠 🟡 🟢 🟣 🟤 🟥 🟧 🟨 🟩 🟦 🟪 🟫";
     
     [Benchmark]
-    public TextLayout BuildEmojisTextLayout() => new TextLayout(Emojis, Typeface.Default, 12d, Brushes.Black);
+    public TextLayout BuildEmojisTextLayout() => MakeLayout(Emojis);
+
+    [Benchmark]
+    public TextLayout[] BuildManySmallTexts() => _manySmallStrings.Select(MakeLayout).ToArray();
+
+    private static TextLayout MakeLayout(string str) 
+        => new TextLayout(str, Typeface.Default, 12d, Brushes.Black, maxWidth:120);
 
     public void Dispose()
     {
