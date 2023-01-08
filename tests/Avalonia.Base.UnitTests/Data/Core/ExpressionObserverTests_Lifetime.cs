@@ -41,7 +41,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         [Fact]
         public void Should_Complete_When_Update_Observable_Completes()
         {
-            var update = new Subject<object>();
+            var update = new Subject<ValueTuple>();
             var target = ExpressionObserver.Create(() => 1, o => o, update);
             var completed = false;
 
@@ -54,7 +54,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         [Fact]
         public void Should_Complete_When_Update_Observable_Errors()
         {
-            var update = new Subject<object>();
+            var update = new Subject<ValueTuple>();
             var target = ExpressionObserver.Create(() => 1, o => o, update);
             var completed = false;
 
@@ -87,7 +87,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Should_Unsubscribe_From_Update_Observable()
         {
             var scheduler = new TestScheduler();
-            var update = scheduler.CreateColdObservable<object>();
+            var update = scheduler.CreateColdObservable<ValueTuple>();
             var data = new { Foo = "foo" };
             var target = ExpressionObserver.Create(() => data, o => o.Foo, update);
             var result = new List<object>();

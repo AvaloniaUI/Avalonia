@@ -3,6 +3,8 @@ using System.Threading;
 
 namespace Avalonia.Reactive.Operators;
 
+// Code based on https://github.com/dotnet/reactive/blob/main/Rx.NET/Source/src/System.Reactive/Internal/Sink.cs
+
 internal abstract class Sink<TTarget> : IDisposable
 {
     private IDisposable? _upstream;

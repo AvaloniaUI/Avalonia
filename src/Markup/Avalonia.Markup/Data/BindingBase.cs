@@ -252,9 +252,8 @@ namespace Avalonia.Data
                 }).Switch();
         }
 
-        private class UpdateSignal : SingleSubscriberObservableBase<object>
+        private class UpdateSignal : SingleSubscriberObservableBase<ValueTuple>
         {
-            private static readonly object s_val = new(); 
             private readonly AvaloniaObject _target;
             private readonly AvaloniaProperty _property;
 
@@ -278,7 +277,7 @@ namespace Avalonia.Data
             {
                 if (e.Property == _property)
                 {
-                    PublishNext(s_val);
+                    PublishNext(default);
                 }
             }
         }

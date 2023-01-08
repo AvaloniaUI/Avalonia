@@ -104,7 +104,7 @@ namespace Avalonia.Data.Core
         public ExpressionObserver(
             Func<object?> rootGetter,
             ExpressionNode node,
-            IObservable<object> update,
+            IObservable<ValueTuple> update,
             string? description)
         {
             Description = description;
@@ -171,7 +171,7 @@ namespace Avalonia.Data.Core
         public static ExpressionObserver Create<T, U>(
             Func<T> rootGetter,
             Expression<Func<T, U>> expression,
-            IObservable<object> update,
+            IObservable<ValueTuple> update,
             bool enableDataValidation = false,
             string? description = null)
         {

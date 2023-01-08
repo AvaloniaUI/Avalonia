@@ -63,7 +63,7 @@ namespace Avalonia.Markup.Parsers
         public static ExpressionObserver Build(
             Func<object> rootGetter,
             string expression,
-            IObservable<object> update,
+            IObservable<ValueTuple> update,
             bool enableDataValidation = false,
             string? description = null,
             Func<string, string, Type>? typeResolver = null)
