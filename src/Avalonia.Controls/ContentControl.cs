@@ -116,14 +116,19 @@ namespace Avalonia.Controls
             return false;
         }
 
-        private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
+        protected virtual void ContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.OldValue is ILogical oldChild)
+            UpdateLogicalTree(e.OldValue, e.NewValue);
+        }
+
+        protected void UpdateLogicalTree(object? toRemove, object? toAdd)
+        {
+            if (toRemove is ILogical oldChild)
             {
                 LogicalChildren.Remove(oldChild);
             }
 
-            if (e.NewValue is ILogical newChild)
+            if (toAdd is ILogical newChild)
             {
                 LogicalChildren.Add(newChild);
             }

@@ -279,7 +279,7 @@ namespace Avalonia.Media
                 OpacityMask,
             }
 
-            public PushedState(DrawingContext context, PushedStateType type, Matrix matrix = default(Matrix))
+            public PushedState(DrawingContext context, PushedStateType type, Matrix matrix = default)
             {
                 if (context._states is null)
                     throw new ObjectDisposedException(nameof(DrawingContext));

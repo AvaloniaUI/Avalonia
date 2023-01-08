@@ -981,7 +981,7 @@ namespace Avalonia.Controls
                         }
                     }
 
-                    length += grapheme.Text.Length;
+                    length += grapheme.Length;
                 }
 
                 if (length < input.Length)
@@ -1475,7 +1475,11 @@ namespace Avalonia.Controls
 
                         _wordSelectionStart = SelectionStart;
 
-                        SelectionEnd = StringUtils.NextWord(text, index);
+                        if (!StringUtils.IsEndOfWord(text, index))
+                        {
+                            SelectionEnd = StringUtils.NextWord(text, index);
+                        }
+
                         break;
                     case 3:
                         _wordSelectionStart = -1;

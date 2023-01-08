@@ -7,7 +7,6 @@ using Avalonia.Browser.Interop;
 
 namespace Avalonia.Browser.Storage;
 
-[System.Runtime.Versioning.SupportedOSPlatform("browser")]
 // Loose wrapper implementaion of a stream on top of FileAPI FileSystemWritableFileStream
 internal sealed class WriteableStream : Stream
 {

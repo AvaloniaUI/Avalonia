@@ -7,7 +7,6 @@ using Avalonia.Browser.Interop;
 
 namespace Avalonia.Browser.Storage;
 
-[System.Runtime.Versioning.SupportedOSPlatform("browser")]
 internal class BlobReadableStream : Stream
 {
     private JSObject? _jSReference;

@@ -190,10 +190,15 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<TappedEventArgs> TappedEvent = Gestures.TappedEvent;
 
         /// <summary>
+        /// Defines the <see cref="Holding"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<HoldingRoutedEventArgs> HoldingEvent = Gestures.HoldingEvent;
+
+        /// <summary>
         /// Defines the <see cref="DoubleTapped"/> event.
         /// </summary>
         public static readonly RoutedEvent<TappedEventArgs> DoubleTappedEvent = Gestures.DoubleTappedEvent;
-        
+
         private bool _isEffectivelyEnabled = true;
         private bool _isFocused;
         private bool _isKeyboardFocusWithin;
@@ -352,6 +357,15 @@ namespace Avalonia.Input
         {
             add { AddHandler(TappedEvent, value); }
             remove { RemoveHandler(TappedEvent, value); }
+        }
+        
+        /// <summary>
+        /// Occurs when a hold gesture occurs on the control.
+        /// </summary>
+        public event EventHandler<HoldingRoutedEventArgs>? Holding
+        {
+            add { AddHandler(HoldingEvent, value); }
+            remove { RemoveHandler(HoldingEvent, value); }
         }
 
         /// <summary>

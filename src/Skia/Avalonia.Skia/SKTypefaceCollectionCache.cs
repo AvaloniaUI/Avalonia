@@ -37,7 +37,7 @@ namespace Avalonia.Skia
 
             var typeFaceCollection = new SKTypefaceCollection();
 
-            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
             foreach (var asset in fontAssets)
             {

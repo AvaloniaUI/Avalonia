@@ -258,6 +258,8 @@ namespace Avalonia.Win32
 
         public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
 
+        public TimeSpan HoldWaitDuration { get; set; } = TimeSpan.FromMilliseconds(300);
+
         public event Action<DispatcherPriority?> Signaled;
 
         public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;

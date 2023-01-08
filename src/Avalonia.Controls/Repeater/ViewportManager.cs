@@ -116,22 +116,6 @@ namespace Avalonia.Controls
                 }
             }
         }
-        
-        private Rect GetLayoutVisibleWindowDiscardAnchor()
-        {
-            var visibleWindow = _visibleWindow;
-
-            if (HasScroller)
-            {
-                visibleWindow = new Rect(
-                    visibleWindow.X + _layoutExtent.X + _expectedViewportShift.X + _unshiftableShift.X,
-                    visibleWindow.Y + _layoutExtent.Y + _expectedViewportShift.Y + _unshiftableShift.Y,
-                    visibleWindow.Width,
-                    visibleWindow.Height);
-            }
-
-            return visibleWindow;
-        }
 
         public Rect GetLayoutVisibleWindow()
         {

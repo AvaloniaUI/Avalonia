@@ -26,21 +26,14 @@ namespace Avalonia.Controls.Platform
 
         public static IWindowImpl CreateWindow()
         {
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
-            
-            if (platform == null)
-            {
-                throw new Exception("Could not CreateWindow(): IWindowingPlatform is not registered.");
-            }
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
 
             return s_designerMode ? platform.CreateEmbeddableWindow() : platform.CreateWindow();
         }
 
         public static IWindowImpl CreateEmbeddableWindow()
         {
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
-            if (platform == null)
-                throw new Exception("Could not CreateEmbeddableWindow(): IWindowingPlatform is not registered.");
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             return platform.CreateEmbeddableWindow();
         }
     }

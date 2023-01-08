@@ -28,7 +28,7 @@ namespace Avalonia.Win32.Interop.Wpf
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            return obj is IntSize && Equals((IntSize) obj);
+            return obj is IntSize size && Equals(size);
         }
 
         public override int GetHashCode()

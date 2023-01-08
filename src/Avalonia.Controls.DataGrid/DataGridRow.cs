@@ -254,7 +254,7 @@ namespace Avalonia.Controls
                     };
                     if (OwningGrid.CellTheme is {} cellTheme)
                     {
-                        _fillerCell.SetValue(ThemeProperty, cellTheme, BindingPriority.TemplatedParent);
+                        _fillerCell.SetValue(ThemeProperty, cellTheme, BindingPriority.Template);
                     }
                     if (_cellsElement != null)
                     {
