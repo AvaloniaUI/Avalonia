@@ -140,7 +140,7 @@ namespace Avalonia.Media.TextFormatting
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 #endif
-                return Span[index];
+                return CharacterBufferReference.CharacterBuffer.Span[CharacterBufferReference.OffsetToFirstChar + index];
             }
         }
 
@@ -163,27 +163,18 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Gets the character memory buffer
         /// </summary>
-        internal ReadOnlyMemory<char> CharacterBuffer
-        {
-            get { return CharacterBufferReference.CharacterBuffer; }
-        }
+        internal ReadOnlyMemory<char> CharacterBuffer => CharacterBufferReference.CharacterBuffer;
 
         /// <summary>
         /// Gets the character offset relative to the beginning of buffer to 
         /// the first character of the run
         /// </summary>
-        internal int OffsetToFirstChar
-        {
-            get { return CharacterBufferReference.OffsetToFirstChar; }
-        }
+        internal int OffsetToFirstChar => CharacterBufferReference.OffsetToFirstChar;
 
         /// <summary>
         /// Indicate whether the character buffer range is empty
         /// </summary>
-        internal bool IsEmpty
-        {
-            get { return CharacterBufferReference.CharacterBuffer.Length == 0 || Length <= 0; }
-        }
+        internal bool IsEmpty => CharacterBufferReference.CharacterBuffer.Length == 0 || Length <= 0;
 
         internal CharacterBufferRange Take(int length)
         {
@@ -280,14 +271,8 @@ namespace Avalonia.Media.TextFormatting
 
         int IReadOnlyCollection<char>.Count => Length;
 
-        public IEnumerator<char> GetEnumerator()
-        {
-            return new ImmutableReadOnlyListStructEnumerator<char>(this);
-        }
+        public IEnumerator<char> GetEnumerator() => new ImmutableReadOnlyListStructEnumerator<char>(this);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
