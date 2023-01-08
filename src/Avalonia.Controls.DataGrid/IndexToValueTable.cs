@@ -422,7 +422,7 @@ namespace Avalonia.Controls
             else
             {
                 found = false;
-                return default(T);
+                return default;
             }
         }
 
