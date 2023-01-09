@@ -185,9 +185,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             Return:
 
-            var text = _text.Take(processor.CurrentCodeUnitOffset);
-
-            Current = new Grapheme(firstCodepoint, text.Span);
+            Current = new Grapheme(firstCodepoint, _text.OffsetToFirstChar, processor.CurrentCodeUnitOffset);
 
             _text = _text.Skip(processor.CurrentCodeUnitOffset);
 

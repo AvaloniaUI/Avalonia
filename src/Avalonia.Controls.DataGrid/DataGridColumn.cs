@@ -185,7 +185,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsVisible"/> property.
         /// </summary>
-        public static StyledProperty<bool> IsVisibleProperty =
+        public static readonly StyledProperty<bool> IsVisibleProperty =
              Control.IsVisibleProperty.AddOwner<DataGridColumn>();
 
         /// <summary>
@@ -800,9 +800,20 @@ namespace Avalonia.Controls
         protected internal virtual void RefreshCellContent(Control element, string propertyName)
         { }
 
+        /// <summary>
+        /// When overridden in a derived class, called when a cell in the column exits editing mode.
+        /// </summary>
+        protected virtual void EndCellEdit()
+        { }
+
         internal void CancelCellEditInternal(Control editingElement, object uneditedValue)
         {
             CancelCellEdit(editingElement, uneditedValue);
+        }
+
+        internal void EndCellEditInternal()
+        {
+            EndCellEdit();
         }
 
         /// <summary>
@@ -897,7 +908,7 @@ namespace Avalonia.Controls
             result[!ContentControl.ContentTemplateProperty] = this[!HeaderTemplateProperty];
             if (OwningGrid.ColumnHeaderTheme is {} columnTheme)
             {
-                result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.TemplatedParent);
+                result.SetValue(StyledElement.ThemeProperty, columnTheme, BindingPriority.Template);
             }
 
             return result;

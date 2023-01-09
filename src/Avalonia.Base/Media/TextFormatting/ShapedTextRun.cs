@@ -6,11 +6,11 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// A text run that holds shaped characters.
     /// </summary>
-    public sealed class ShapedTextCharacters : DrawableTextRun
+    public sealed class ShapedTextRun : DrawableTextRun
     {
         private GlyphRun? _glyphRun;
 
-        public ShapedTextCharacters(ShapedBuffer shapedBuffer, TextRunProperties properties)
+        public ShapedTextRun(ShapedBuffer shapedBuffer, TextRunProperties properties)
         {
             ShapedBuffer = shapedBuffer;
             CharacterBufferReference = shapedBuffer.CharacterBufferRange.CharacterBufferReference;
@@ -155,7 +155,7 @@ namespace Avalonia.Media.TextFormatting
             return length > 0;
         }
 
-        internal SplitResult<ShapedTextCharacters> Split(int length)
+        internal SplitResult<ShapedTextRun> Split(int length)
         {
             if (IsReversed)
             {
@@ -171,7 +171,7 @@ namespace Avalonia.Media.TextFormatting
             
             var splitBuffer = ShapedBuffer.Split(length);
 
-            var first = new ShapedTextCharacters(splitBuffer.First, Properties);
+            var first = new ShapedTextRun(splitBuffer.First, Properties);
 
             #if DEBUG
 
@@ -182,9 +182,9 @@ namespace Avalonia.Media.TextFormatting
 
 #endif
 
-            var second = new ShapedTextCharacters(splitBuffer.Second!, Properties);
+            var second = new ShapedTextRun(splitBuffer.Second!, Properties);
 
-            return new SplitResult<ShapedTextCharacters>(first, second);
+            return new SplitResult<ShapedTextRun>(first, second);
         }
 
         internal GlyphRun CreateGlyphRun()

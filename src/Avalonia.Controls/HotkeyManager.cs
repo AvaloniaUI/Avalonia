@@ -2,6 +2,7 @@ using System;
 using System.Windows.Input;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

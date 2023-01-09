@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls;
 
 namespace Avalonia.Native.Interop

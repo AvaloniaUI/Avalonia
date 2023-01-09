@@ -1,8 +1,9 @@
 using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
+using Avalonia.Threading;
 
-namespace Avalonia.Threading
+namespace Avalonia.ReactiveUI
 {
     /// <summary>
     /// A reactive scheduler that uses Avalonia's <see cref="Dispatcher"/>.

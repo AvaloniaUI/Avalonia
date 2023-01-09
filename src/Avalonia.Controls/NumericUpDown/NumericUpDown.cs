@@ -9,6 +9,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 

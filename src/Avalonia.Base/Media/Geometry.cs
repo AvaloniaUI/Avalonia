@@ -2,6 +2,8 @@ using System;
 using Avalonia.Platform;
 using System.ComponentModel;
 using System.Globalization;
+using Avalonia.Reactive;
+
 
 namespace Avalonia.Media
 {
@@ -120,9 +122,10 @@ namespace Avalonia.Media
         /// </remarks>
         protected static void AffectsGeometry(params AvaloniaProperty[] properties)
         {
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(AffectsGeometryInvalidate);
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsGeometryInvalidate);
+                property.Changed.Subscribe(invalidateObserver);
             }
         }
 
