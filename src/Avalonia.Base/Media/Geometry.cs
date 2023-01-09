@@ -8,7 +8,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Defines a geometric shape.
     /// </summary>
-    [TypeConverter(typeof(GeometryConverter))]
+    [TypeConverter(typeof(GeometryTypeConverter))]
     public abstract class Geometry : AvaloniaObject
     {
         /// <summary>
@@ -203,7 +203,7 @@ namespace Avalonia.Media
         }
     }
 
-    public class GeometryConverter : TypeConverter
+    public class GeometryTypeConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
