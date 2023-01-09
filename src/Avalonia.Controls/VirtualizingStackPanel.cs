@@ -533,7 +533,6 @@ namespace Avalonia.Controls
                 _recyclePool ??= new();
                 _recyclePool.Push(element);
                 element.IsVisible = false;
-                element.GetObservable(Visual.VisualParentProperty).Subscribe(x => { });
             }
         }
 
