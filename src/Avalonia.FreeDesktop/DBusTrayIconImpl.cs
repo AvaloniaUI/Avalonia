@@ -211,11 +211,9 @@ namespace Avalonia.FreeDesktop
     /// </remarks>
     internal class StatusNotifierItemDbusObj : OrgKdeStatusNotifierItem
     {
-        private readonly Connection _connection;
-
         public StatusNotifierItemDbusObj(Connection connection, ObjectPath dbusMenuPath)
         {
-            _connection = connection;
+            Connection = connection;
             BackingProperties.Menu = dbusMenuPath;
             BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), string.Empty, string.Empty);
             BackingProperties.IconName = string.Empty;
@@ -227,6 +225,8 @@ namespace Avalonia.FreeDesktop
             BackingProperties.OverlayIconPixmap = new []{ DBusTrayIconImpl.EmptyPixmap };
             InvalidateAll();
         }
+
+        protected override Connection Connection { get; }
 
         public override string Path => "/StatusNotifierItem";
 
@@ -242,12 +242,12 @@ namespace Avalonia.FreeDesktop
 
         public void InvalidateAll()
         {
-            EmitVoidSignal("NewTitle");
-            EmitVoidSignal("NewIcon");
-            EmitVoidSignal("NewAttentionIcon");
-            EmitVoidSignal("NewOverlayIcon");
-            EmitVoidSignal("NewToolTip");
-            EmitStringSignal("NewStatus", BackingProperties.Status);
+            EmitNewTitle();
+            EmitNewIcon();
+            EmitNewAttentionIcon();
+            EmitNewOverlayIcon();
+            EmitNewToolTip();
+            EmitNewStatus(BackingProperties.Status);
         }
 
         public void SetIcon((int, int, byte[]) dbusPixmap)
@@ -267,21 +267,6 @@ namespace Avalonia.FreeDesktop
             BackingProperties.Title = text;
             BackingProperties.ToolTip = (string.Empty, Array.Empty<(int, int, byte[])>(), text, string.Empty);
             InvalidateAll();
-        }
-
-        private void EmitVoidSignal(string member)
-        {
-            using var writer = _connection.GetMessageWriter();
-            writer.WriteSignalHeader(null, Path, "org.kde.StatusNotifierItem", member);
-            _connection.TrySendMessage(writer.CreateMessage());
-        }
-
-        private void EmitStringSignal(string member, string value)
-        {
-            using var writer = _connection.GetMessageWriter();
-            writer.WriteSignalHeader(null, Path, "org.kde.StatusNotifierItem", member, "s");
-            writer.WriteString(value);
-            _connection.TrySendMessage(writer.CreateMessage());
         }
     }
 }

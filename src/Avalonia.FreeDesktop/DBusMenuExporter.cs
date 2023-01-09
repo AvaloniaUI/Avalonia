@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
-using Avalonia.Reactive;
-using System.Threading.Tasks;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -27,7 +26,6 @@ namespace Avalonia.FreeDesktop
 
         private class DBusMenuExporterImpl : ComCanonicalDbusmenu, ITopLevelNativeMenuExporter, IDisposable
         {
-            private readonly Connection _connection;
             private readonly Dictionary<int, NativeMenuItemBase> _idsToItems = new();
             private readonly Dictionary<NativeMenuItemBase, int> _itemsToIds = new();
             private readonly HashSet<NativeMenu> _menus = new();
@@ -42,7 +40,7 @@ namespace Avalonia.FreeDesktop
 
             public DBusMenuExporterImpl(Connection connection, IntPtr xid)
             {
-                _connection = connection;
+                Connection = connection;
                 _xid = (uint)xid.ToInt32();
                 Path = GenerateDBusMenuObjPath;
                 SetNativeMenu(new NativeMenu());
@@ -51,12 +49,14 @@ namespace Avalonia.FreeDesktop
 
             public DBusMenuExporterImpl(Connection connection, string path)
             {
-                _connection = connection;
+                Connection = connection;
                 _appMenu = false;
                 Path = path;
                 SetNativeMenu(new NativeMenu());
                 Init();
             }
+
+            protected override Connection Connection { get; }
 
             public override string Path { get; }
 
@@ -79,12 +79,12 @@ namespace Avalonia.FreeDesktop
             protected override object OnGetProperty(int id, string name) => GetProperty(GetMenu(id), name) ?? 0;
 
             protected override void OnEvent(int id, string eventId, object data, uint timestamp) =>
-                Dispatcher.UIThread.Post(() => HandleEvent(id, eventId, data, timestamp));
+                Dispatcher.UIThread.Post(() => HandleEvent(id, eventId));
 
             protected override int[] OnEventGroup((int, string, object, uint)[] events)
             {
                 foreach (var e in events)
-                    Dispatcher.UIThread.Post(() => HandleEvent(e.Item1, e.Item2, e.Item3, e.Item4));
+                    Dispatcher.UIThread.Post(() => HandleEvent(e.Item1, e.Item2));
                 return Array.Empty<int>();
             }
 
@@ -95,13 +95,13 @@ namespace Avalonia.FreeDesktop
 
             private async void Init()
             {
-                _connection.AddMethodHandler(this);
+                Connection.AddMethodHandler(this);
                 if (!_appMenu)
                     return;
-                var services = await _connection.ListServicesAsync();
+                var services = await Connection.ListServicesAsync();
                 if (!services.Contains("com.canonical.AppMenu.Registrar"))
                     return;
-                _registrar = new ComCanonicalAppMenuRegistrar(_connection, "com.canonical.AppMenu.Registrar", "/com/canonical/AppMenu/Registrar");
+                _registrar = new ComCanonicalAppMenuRegistrar(Connection, "com.canonical.AppMenu.Registrar", "/com/canonical/AppMenu/Registrar");
                 if (!_disposed)
                     await _registrar.RegisterWindowAsync(_xid, Path);
                 // It's not really important if this code succeeds,
@@ -155,7 +155,7 @@ namespace Avalonia.FreeDesktop
                 _idsToItems.Clear();
                 _itemsToIds.Clear();
                 _revision++;
-                EmitUIntIntSignal("LayoutUpdated", _revision, 0);
+                EmitLayoutUpdated(_revision, 0);
             }
 
             private void QueueReset()
@@ -318,7 +318,7 @@ namespace Avalonia.FreeDesktop
             }
 
 
-            private void HandleEvent(int id, string eventId, object data, uint timestamp)
+            private void HandleEvent(int id, string eventId)
             {
                 if (eventId == "clicked")
                 {
@@ -326,15 +326,6 @@ namespace Avalonia.FreeDesktop
                     if (item is NativeMenuItem { IsEnabled: true } and INativeMenuItemExporterEventsImplBridge bridge)
                         bridge.RaiseClicked();
                 }
-            }
-
-            private void EmitUIntIntSignal(string member, uint arg0, int arg1)
-            {
-                using var writer = _connection.GetMessageWriter();
-                writer.WriteSignalHeader(null, Path, "com.canonical.dbusmenu", member, "ui");
-                writer.WriteUInt32(arg0);
-                writer.WriteInt32(arg1);
-                _connection.TrySendMessage(writer.CreateMessage());
             }
         }
     }
