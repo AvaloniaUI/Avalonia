@@ -127,7 +127,7 @@ namespace Avalonia.Controls
                 {
                     var e = _realizedElements.Elements[i];
 
-                    if (e is object)
+                    if (e is not null)
                     {
                         var sizeU = _realizedElements.SizeU[i];
                         var rect = orientation == Orientation.Horizontal ?
@@ -375,7 +375,7 @@ namespace Avalonia.Controls
 
             while (c is not null)
             {
-                if (!c.Bounds.IsEmpty && c.TransformToVisual(this) is Matrix transform)
+                if (!c.Bounds.IsDefault && c.TransformToVisual(this) is Matrix transform)
                 {
                     viewport = new Rect(0, 0, c.Bounds.Width, c.Bounds.Height)
                         .TransformToAABB(transform);
@@ -990,7 +990,7 @@ namespace Avalonia.Controls
 
                 foreach (var e in _elements)
                 {
-                    if (e is object)
+                    if (e is not null)
                         recycleElement(e);
                 }
 

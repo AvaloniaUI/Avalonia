@@ -29,7 +29,7 @@ namespace Avalonia.Controls.Generators
     /// </remarks>
     public class ItemContainerGenerator
     {
-        private ItemsControl _owner;
+        private readonly ItemsControl _owner;
 
         internal ItemContainerGenerator(ItemsControl owner) => _owner = owner;
 
