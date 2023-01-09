@@ -134,6 +134,12 @@ namespace Avalonia.FreeDesktop.DBusIme.Fcitx
             });
         }
 
-        private void OnCommitString(Exception? e, string s) => FireCommit(s);
+        private void OnCommitString(Exception? e, string s)
+        {
+            if (e is not null)
+                return;
+
+            FireCommit(s);
+        }
     }
 }

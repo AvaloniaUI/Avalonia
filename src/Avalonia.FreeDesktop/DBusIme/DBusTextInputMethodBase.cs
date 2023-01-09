@@ -60,7 +60,7 @@ namespace Avalonia.FreeDesktop.DBusIme
         {
             foreach (var name in _knownNames)
             {
-                var dbus = new OrgFreedesktopDBus(Connection, name, "/org/freedesktop/DBus");
+                var dbus = new OrgFreedesktopDBus(Connection, "org.freedesktop.DBus", "/org/freedesktop/DBus");
                 _disposables.Add(await dbus.WatchNameOwnerChangedAsync(OnNameChange));
                 var nameOwner = await dbus.GetNameOwnerAsync(name);
                 OnNameChange(null, (name, null, nameOwner));
@@ -74,6 +74,9 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         private async void OnNameChange(Exception? e, (string ServiceName, string? OldOwner, string? NewOwner) args)
         {
+            if (e is not null)
+                return;
+
             if (args.NewOwner is not null && _currentName is null)
             {
                 _onlineNamesQueue.Enqueue(args.ServiceName);
@@ -162,7 +165,7 @@ namespace Avalonia.FreeDesktop.DBusIme
 
         protected void AddDisposable(IDisposable? d)
         {
-            if(d is { })
+            if (d is { })
                 _disposables.Add(d);
         }
 

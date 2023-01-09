@@ -28,6 +28,9 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
         {
+            if (e is not null)
+                return;
+
             var state = (IBusModifierMask)k.state;
             KeyModifiers mods = default;
             if (state.HasAllFlags(IBusModifierMask.ControlMask))
@@ -48,6 +51,9 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
 
         private void OnCommitText(Exception? e, object wtf)
         {
+            if (e is not null)
+                return;
+
             // Hello darkness, my old friend
             if (wtf.GetType().GetField("Item3") is { } prop)
             {
