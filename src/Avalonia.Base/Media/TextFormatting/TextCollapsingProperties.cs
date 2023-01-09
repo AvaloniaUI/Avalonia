@@ -21,6 +21,6 @@ namespace Avalonia.Media.TextFormatting
         /// Collapses given text line.
         /// </summary>
         /// <param name="textLine">Text line to collapse.</param>
-        public abstract List<DrawableTextRun>? Collapse(TextLine textLine);
+        public abstract List<TextRun>? Collapse(TextLine textLine);
     }
 }

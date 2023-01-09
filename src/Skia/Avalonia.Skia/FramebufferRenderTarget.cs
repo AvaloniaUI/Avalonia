@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;

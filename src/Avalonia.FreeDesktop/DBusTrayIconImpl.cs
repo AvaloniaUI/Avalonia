@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Avalonia.Reactive;
 using System.Linq;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;

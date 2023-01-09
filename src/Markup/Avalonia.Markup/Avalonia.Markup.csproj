@@ -12,7 +12,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
   </ItemGroup>
-  <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\System.Memory.props" />
   <Import Project="..\..\..\build\ApiDiff.props" />
   <Import Project="..\..\..\build\NullableEnable.props" />

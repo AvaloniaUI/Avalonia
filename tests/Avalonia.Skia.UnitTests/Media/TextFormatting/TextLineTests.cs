@@ -326,7 +326,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     }
                 }
 
-                Assert.Equal(currentDistance, textLine.GetDistanceFromCharacterHit(new CharacterHit(s_multiLineText.Length)));
+                var actualDistance = textLine.GetDistanceFromCharacterHit(new CharacterHit(s_multiLineText.Length));
+
+                Assert.Equal(currentDistance, actualDistance);
             }
         }
 

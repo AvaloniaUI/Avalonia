@@ -3,6 +3,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.PullToRefresh;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

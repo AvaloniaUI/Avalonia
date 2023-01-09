@@ -1,9 +1,9 @@
-using System.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using System;
 using System.ComponentModel.DataAnnotations;
 using MiniMvvm;

@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Subjects;
 using Avalonia.Data;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -12,7 +12,7 @@ namespace Avalonia
     /// <typeparam name="TValue">The value type of the property.</typeparam>
     public abstract class AvaloniaProperty<TValue> : AvaloniaProperty
     {
-        private readonly Subject<AvaloniaPropertyChangedEventArgs<TValue>> _changed;
+        private readonly LightweightSubject<AvaloniaPropertyChangedEventArgs<TValue>> _changed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AvaloniaProperty{TValue}"/> class.
@@ -28,7 +28,7 @@ namespace Avalonia
             Action<AvaloniaObject, bool>? notifying = null)
             : base(name, typeof(TValue), ownerType, metadata, notifying)
         {
-            _changed = new Subject<AvaloniaPropertyChangedEventArgs<TValue>>();
+            _changed = new LightweightSubject<AvaloniaPropertyChangedEventArgs<TValue>>();
         }
 
         /// <summary>
