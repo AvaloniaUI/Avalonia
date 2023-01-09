@@ -27,11 +27,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button>
         <Button.Template>
             <ControlTemplate>
-                <controls:ListBoxHierachyLine>
-                    <controls:ListBoxHierachyLine.LineDashStyle>
+                <controls:ListBoxHierarchyLine>
+                    <controls:ListBoxHierarchyLine.LineDashStyle>
                         <DashStyle Dashes=""2,2"" Offset=""1"" />
-                    </controls:ListBoxHierachyLine.LineDashStyle>
-                </controls:ListBoxHierachyLine>
+                    </controls:ListBoxHierarchyLine.LineDashStyle>
+                </controls:ListBoxHierarchyLine>
             </ControlTemplate>
         </Button.Template>
     </Button>
