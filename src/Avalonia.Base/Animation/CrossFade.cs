@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
@@ -108,7 +108,7 @@ namespace Avalonia.Animation
             }
 
             var tasks = new List<Task>();
-            using (var disposables = new CompositeDisposable())
+            using (var disposables = new CompositeDisposable(1))
             {
                 if (to != null)
                 {

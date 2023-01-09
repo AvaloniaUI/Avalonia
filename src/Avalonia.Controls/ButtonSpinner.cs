@@ -1,7 +1,6 @@
-using System;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Data;
+using Avalonia.Reactive;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 

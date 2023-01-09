@@ -2,8 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using Avalonia.Collections;
 using Avalonia.Controls;
@@ -120,10 +119,8 @@ namespace Avalonia.Dialogs.Internal
                                       .GetRequiredService<IMountedVolumeInfoProvider>()
                                       .Listen(ManagedFileChooserSources.MountedVolumes);
 
-            var sub2 = Observable.FromEventPattern(ManagedFileChooserSources.MountedVolumes,
-                                            nameof(ManagedFileChooserSources.MountedVolumes.CollectionChanged))
-                                 .ObserveOn(AvaloniaScheduler.Instance)
-                                 .Subscribe(x => RefreshQuickLinks(quickSources));
+            var sub2 = ManagedFileChooserSources.MountedVolumes.GetWeakCollectionChangedObservable()
+                .Subscribe(x => Dispatcher.UIThread.Post(() => RefreshQuickLinks(quickSources)));
 
             _disposables.Add(sub1);
             _disposables.Add(sub2);

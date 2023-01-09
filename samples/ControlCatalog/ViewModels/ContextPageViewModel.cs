@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.VisualTree;

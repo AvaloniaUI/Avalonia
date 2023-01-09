@@ -3,6 +3,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using System;
+using Avalonia.Reactive;
 using Avalonia.Media.Immutable;
 
 namespace Avalonia.Controls

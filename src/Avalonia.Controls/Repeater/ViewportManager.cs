@@ -4,16 +4,8 @@
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
 using System;
-using System.Collections.Generic;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Threading.Tasks;
-using Avalonia.Controls.Presenters;
-using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Logging;
-using Avalonia.Media;
-using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 

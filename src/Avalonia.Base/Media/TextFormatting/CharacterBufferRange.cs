@@ -140,7 +140,7 @@ namespace Avalonia.Media.TextFormatting
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
 #endif
-                return CharacterBufferReference.CharacterBuffer.Span[CharacterBufferReference.OffsetToFirstChar + index];
+                return CharacterBuffer.Span[CharacterBufferReference.OffsetToFirstChar + index];
             }
         }
 
@@ -157,8 +157,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Gets a span from the character buffer range
         /// </summary>
-        public ReadOnlySpan<char> Span =>
-            CharacterBufferReference.CharacterBuffer.Span.Slice(CharacterBufferReference.OffsetToFirstChar, Length);
+        public ReadOnlySpan<char> Span => CharacterBuffer.Span.Slice(OffsetToFirstChar, Length);
 
         /// <summary>
         /// Gets the character memory buffer
@@ -174,7 +173,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Indicate whether the character buffer range is empty
         /// </summary>
-        internal bool IsEmpty => CharacterBufferReference.CharacterBuffer.Length == 0 || Length <= 0;
+        internal bool IsEmpty => CharacterBuffer.Length == 0 || Length <= 0;
 
         internal CharacterBufferRange Take(int length)
         {
@@ -208,9 +207,7 @@ namespace Avalonia.Media.TextFormatting
                 return new CharacterBufferRange(new CharacterBufferReference(), 0);
             }
 
-            var characterBufferReference = new CharacterBufferReference(
-                CharacterBufferReference.CharacterBuffer,
-                CharacterBufferReference.OffsetToFirstChar + length);
+            var characterBufferReference = new CharacterBufferReference(CharacterBuffer, OffsetToFirstChar + length);
 
             return new CharacterBufferRange(characterBufferReference, Length - length);
         }

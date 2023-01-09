@@ -1,6 +1,6 @@
 using System;
 using System.ComponentModel;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Diagnostics;

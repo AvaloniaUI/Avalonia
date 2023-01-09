@@ -1,6 +1,6 @@
 using System.Collections.Specialized;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Animation;
 using Avalonia.Controls.Primitives;

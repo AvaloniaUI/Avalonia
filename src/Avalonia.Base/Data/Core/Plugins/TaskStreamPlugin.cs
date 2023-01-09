@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -50,7 +49,7 @@ namespace Avalonia.Data.Core.Plugins
                         case TaskStatus.Faulted:
                             return HandleCompleted(task);
                         default:
-                            var subject = new Subject<object?>();
+                            var subject = new LightweightSubject<object?>();
                             task.ContinueWith(
                                     x => HandleCompleted(task).Subscribe(subject),
                                     TaskScheduler.FromCurrentSynchronizationContext())
