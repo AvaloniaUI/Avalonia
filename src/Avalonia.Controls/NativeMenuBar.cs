@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

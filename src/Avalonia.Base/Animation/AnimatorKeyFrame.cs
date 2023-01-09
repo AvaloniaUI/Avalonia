@@ -63,7 +63,7 @@ namespace Avalonia.Animation
             }
             else
             {
-                return this.Bind(ValueProperty, ObservableEx.SingleValue(value).ToBinding(), targetControl);
+                return this.Bind(ValueProperty, Observable.SingleValue(value).ToBinding(), targetControl);
             }
         }
 

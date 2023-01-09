@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive;
 using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.Utilities;
@@ -64,7 +63,7 @@ namespace Avalonia.Markup.Parsers
         public static ExpressionObserver Build(
             Func<object> rootGetter,
             string expression,
-            IObservable<Unit> update,
+            IObservable<ValueTuple> update,
             bool enableDataValidation = false,
             string? description = null,
             Func<string, string, Type>? typeResolver = null)

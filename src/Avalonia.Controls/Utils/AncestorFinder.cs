@@ -1,8 +1,5 @@
 using System;
-using System.Reactive;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Utils
 {
@@ -13,7 +10,7 @@ namespace Avalonia.Controls.Utils
             private readonly StyledElement _control;
             private readonly Type _ancestorType;
             public IObservable<StyledElement?> Observable => _subject;
-            private readonly Subject<StyledElement?> _subject = new Subject<StyledElement?>();
+            private readonly LightweightSubject<StyledElement?> _subject = new();
 
             private FinderNode? _child;
             private IDisposable? _disposable;
@@ -31,24 +28,21 @@ namespace Avalonia.Controls.Utils
 
             private void OnValueChanged(StyledElement? next)
             {
-                if (next == null || _ancestorType.IsAssignableFrom(next.GetType()))
+                if (next == null || _ancestorType.IsInstanceOfType(next))
                     _subject.OnNext(next);
                 else
                 {
                     _child?.Dispose();
                     _child = new FinderNode(next, _ancestorType);
-                    _child.Observable.Subscribe(OnChildValueChanged);
+                    _child.Observable.Subscribe(_subject);
                     _child.Init();
                 }
             }
 
-            private void OnChildValueChanged(StyledElement? control) => _subject.OnNext(control);
-
-
             public void Dispose()
             {
                 _child?.Dispose();
-                _subject.Dispose();
+                _subject.OnCompleted();
                 _disposable?.Dispose();
             }
         }
@@ -61,7 +55,7 @@ namespace Avalonia.Controls.Utils
 
         public static IObservable<StyledElement?> Create(StyledElement control, Type ancestorType)
         {
-            return new AnonymousObservable<StyledElement?>(observer =>
+            return Observable.Create<StyledElement?>(observer =>
             {
                 var finder = new FinderNode(control, ancestorType);
                 var subscription = finder.Observable.Subscribe(observer);

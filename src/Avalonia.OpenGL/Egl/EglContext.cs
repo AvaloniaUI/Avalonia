@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Specialized;
-using System.Reactive;
-using System.Reactive.Linq;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -28,18 +28,8 @@ namespace Avalonia.Diagnostics.ViewModels
             {
                 ElementName = control.Name;
 
-                var removed = Observable.FromEventPattern<LogicalTreeAttachmentEventArgs>(
-                    x => control.DetachedFromLogicalTree += x,
-                    x => control.DetachedFromLogicalTree -= x);
-                var classesChanged = Observable.FromEventPattern<
-                        NotifyCollectionChangedEventHandler,
-                        NotifyCollectionChangedEventArgs>(
-                        x => control.Classes.CollectionChanged += x,
-                        x => control.Classes.CollectionChanged -= x)
-                    .TakeUntil(removed);
-
-                _classesSubscription = classesChanged.Select(_ => Unit.Default)
-                    .StartWith(Unit.Default)
+                _classesSubscription = ((IObservable<object?>)control.Classes.GetWeakCollectionChangedObservable())
+                    .StartWith(null)
                     .Subscribe(_ =>
                     {
                         if (control.Classes.Count > 0)
