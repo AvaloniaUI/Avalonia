@@ -134,12 +134,12 @@ namespace Avalonia.DesignerSupport.Remote
            IAvaloniaRemoteTransportConnection ConfigureApp(IAvaloniaRemoteTransportConnection transport, CommandLineArgs args, object obj);
         }
 
-        class AppInitializer<T> : IAppInitializer where T : AppBuilderBase<T>, new()
+        class AppInitializer : IAppInitializer
         {
             public IAvaloniaRemoteTransportConnection ConfigureApp(IAvaloniaRemoteTransportConnection transport,
                 CommandLineArgs args, object obj)
             {
-                var builder = (AppBuilderBase<T>)obj;
+                var builder = (AppBuilder)obj;
                 if (args.Method == Methods.AvaloniaRemote)
                     builder.UseWindowingSubsystem(() => PreviewerWindowingPlatform.Initialize(transport));
                 if (args.Method == Methods.Html)
@@ -191,7 +191,7 @@ namespace Avalonia.DesignerSupport.Remote
             Log($"Obtaining AppBuilder instance from {builderMethod.DeclaringType.FullName}.{builderMethod.Name}");
             var appBuilder = builderMethod.Invoke(null, null);
             Log($"Initializing application in design mode");
-            var initializer =(IAppInitializer)Activator.CreateInstance(typeof(AppInitializer<>).MakeGenericType(appBuilder.GetType()));
+            var initializer =(IAppInitializer)Activator.CreateInstance(typeof(AppInitializer));
             transport = initializer.ConfigureApp(transport, args, appBuilder);
             s_transport = transport;
             transport.OnMessage += OnTransportMessage;

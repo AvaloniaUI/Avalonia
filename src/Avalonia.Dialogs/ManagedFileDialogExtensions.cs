@@ -24,16 +24,15 @@ namespace Avalonia.Dialogs
             }
         }
 
-        public static TAppBuilder UseManagedSystemDialogs<TAppBuilder>(this TAppBuilder builder)
-            where TAppBuilder : AppBuilderBase<TAppBuilder>, new()
+        public static AppBuilder UseManagedSystemDialogs(this AppBuilder builder)
         {
             builder.AfterSetup(_ =>
                 AvaloniaLocator.CurrentMutable.Bind<IStorageProviderFactory>().ToSingleton<ManagedStorageProviderFactory<Window>>());
             return builder;
         }
 
-        public static TAppBuilder UseManagedSystemDialogs<TAppBuilder, TWindow>(this TAppBuilder builder)
-            where TAppBuilder : AppBuilderBase<TAppBuilder>, new() where TWindow : Window, new()
+        public static AppBuilder UseManagedSystemDialogs<TWindow>(this AppBuilder builder)
+            where TWindow : Window, new()
         {
             builder.AfterSetup(_ =>
                 AvaloniaLocator.CurrentMutable.Bind<IStorageProviderFactory>().ToSingleton<ManagedStorageProviderFactory<TWindow>>());

@@ -91,7 +91,7 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                if (textRun is ShapedTextCharacters shapedText)
+                if (textRun is ShapedTextRun shapedText)
                 {
                     var glyphRun = shapedText.GlyphRun;
                     var shapedBuffer = shapedText.ShapedBuffer;

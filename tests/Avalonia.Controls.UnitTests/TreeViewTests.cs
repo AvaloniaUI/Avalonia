@@ -1225,7 +1225,7 @@ namespace Avalonia.Controls.UnitTests
             using (Application())
             {
                 var focus = FocusManager.Instance;
-                var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
+                var navigation = AvaloniaLocator.Current.GetRequiredService<IKeyboardNavigationHandler>();
                 var data = CreateTestTreeData();
 
                 var target = new TreeView
@@ -1270,7 +1270,6 @@ namespace Avalonia.Controls.UnitTests
             using (Application())
             {
                 var focus = FocusManager.Instance;
-                var navigation = AvaloniaLocator.Current.GetService<IKeyboardNavigationHandler>();
                 var data = CreateTestTreeData();
 
                 var selectedNode = new Node { Value = "Out of Tree Selected Item" };
@@ -1330,7 +1329,7 @@ namespace Avalonia.Controls.UnitTests
 
                 var rootNode = tree[0];
 
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
 
                 var keyEvent = new KeyEventArgs
@@ -1377,7 +1376,7 @@ namespace Avalonia.Controls.UnitTests
                 ClickContainer(fromContainer, KeyModifiers.None);
                 ClickContainer(toContainer, KeyModifiers.Shift);
 
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
 
                 var keyEvent = new KeyEventArgs
@@ -1424,7 +1423,7 @@ namespace Avalonia.Controls.UnitTests
                 ClickContainer(fromContainer, KeyModifiers.None);
                 ClickContainer(toContainer, KeyModifiers.Shift);
 
-                var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+                var keymap = AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>();
                 var selectAllGesture = keymap.SelectAll.First();
 
                 var keyEvent = new KeyEventArgs

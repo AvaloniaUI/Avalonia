@@ -127,7 +127,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 DeviceWindowHandle = GetDesktopWindow(),
                 PresentationInterval = PresentInterval.Default
             };
-            s_dxDevice = s_dxDevice ?? AvaloniaLocator.Current.GetService<SharpDX.DXGI.Device>()
+            s_dxDevice = s_dxDevice ?? AvaloniaLocator.Current.GetRequiredService<SharpDX.DXGI.Device>()
                              .QueryInterface<SharpDX.Direct3D11.Device>();
             s_d3DDevice = new DeviceEx(s_d3DContext, 0, DeviceType.Hardware, IntPtr.Zero, CreateFlags.HardwareVertexProcessing | CreateFlags.Multithreaded | CreateFlags.FpuPreserve, presentparams);
 
@@ -156,7 +156,7 @@ namespace Avalonia.Win32.Interop.Wpf
             _impl.ImageSource = _image;
 
             RemoveAndDispose(ref _backBuffer);
-            if (size == default(IntSize))
+            if (size == default)
             {
                 _image.Lock();
                 _image.SetBackBuffer(D3DResourceType.IDirect3DSurface9, IntPtr.Zero);
@@ -171,7 +171,7 @@ namespace Avalonia.Win32.Interop.Wpf
         static void RemoveAndDispose<T>(ref T d) where T : IDisposable
         {
             d?.Dispose();
-            d = default(T);
+            d = default;
         }
 
         void Swap()

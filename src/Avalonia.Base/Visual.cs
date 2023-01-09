@@ -367,7 +367,10 @@ namespace Avalonia
         /// <param name="context">The drawing context.</param>
         public virtual void Render(DrawingContext context)
         {
-            Contract.Requires<ArgumentNullException>(context != null);
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
         }
 
         /// <summary>
@@ -477,6 +480,7 @@ namespace Avalonia
             {
                 AttachToCompositor(compositingRenderer.Compositor);
             }
+            InvalidateMirrorTransform();
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
