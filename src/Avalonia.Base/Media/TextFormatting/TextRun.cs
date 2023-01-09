@@ -44,7 +44,7 @@ namespace Avalonia.Media.TextFormatting
 
                         fixed (char* charsPtr = characterBuffer.Span)
                         {
-                            return new string(charsPtr, _textRun.CharacterBufferReference.OffsetToFirstChar, _textRun.Length);
+                            return new string(charsPtr, 0, _textRun.Length);
                         }
                     }
                 }

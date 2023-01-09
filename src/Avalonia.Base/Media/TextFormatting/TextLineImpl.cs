@@ -230,12 +230,12 @@ namespace Avalonia.Media.TextFormatting
 
                         currentRun = _textRuns[j];
 
-                        if(currentRun is not ShapedTextCharacters)
+                        if(currentRun is not ShapedTextRun)
                         {
                             continue;
                         }
 
-                        shapedRun = (ShapedTextCharacters)currentRun;
+                        shapedRun = (ShapedTextRun)currentRun;
 
                         if (currentDistance + shapedRun.Size.Width <= distance)
                         {

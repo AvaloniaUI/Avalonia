@@ -130,7 +130,7 @@ namespace Avalonia.Media.TextFormatting
                         first.Add(split.First);
 
                         second.Add(split.Second!);
-                    }                
+                    }
 
                     for (var j = 1; j < secondCount; j++)
                     {
@@ -237,7 +237,7 @@ namespace Avalonia.Media.TextFormatting
 
                             var shaperOptions = new TextShaperOptions(currentRun.Properties!.Typeface.GlyphTypeface,
                                         currentRun.Properties.FontRenderingEmSize,
-                                         shapeableRun.BidiLevel, currentRun.Properties.CultureInfo, 
+                                         shapeableRun.BidiLevel, currentRun.Properties.CultureInfo,
                                          paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
                             shapedRuns.AddRange(ShapeTogether(groupedRuns, characterBufferReference, length, shaperOptions));
@@ -478,7 +478,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun shapedTextCharacters:
                         {
-                            if(shapedTextCharacters.ShapedBuffer.Length > 0)
+                            if (shapedTextCharacters.ShapedBuffer.Length > 0)
                             {
                                 var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphInfos[0].GlyphCluster;
                                 var lastCluster = firstCluster;
@@ -499,7 +499,7 @@ namespace Avalonia.Media.TextFormatting
                                 }
 
                                 measuredLength += currentRun.Length;
-                            }                         
+                            }
 
                             break;
                         }
@@ -525,7 +525,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            found:
+        found:
 
             return measuredLength != 0;
         }
@@ -565,9 +565,9 @@ namespace Avalonia.Media.TextFormatting
             double paragraphWidth, TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection,
             TextLineBreak? currentLineBreak)
         {
-            if(textRuns.Count == 0)
+            if (textRuns.Count == 0)
             {
-                return CreateEmptyTextLine(firstTextSourceIndex,paragraphWidth, paragraphProperties);
+                return CreateEmptyTextLine(firstTextSourceIndex, paragraphWidth, paragraphProperties);
             }
 
             if (!TryMeasureLength(textRuns, paragraphWidth, out var measuredLength))
@@ -583,46 +583,24 @@ namespace Avalonia.Media.TextFormatting
 
             for (var index = 0; index < textRuns.Count; index++)
             {
-                var currentRun = textRuns[index];
-
-                var runText = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
-
-                var lineBreaker = new LineBreakEnumerator(runText);
-
                 var breakFound = false;
 
-                while (lineBreaker.MoveNext())
+                var currentRun = textRuns[index];
+
+                switch (currentRun)
                 {
-                    if (lineBreaker.Current.Required &&
-                        currentLength + lineBreaker.Current.PositionMeasure <= measuredLength)
-                    {
-                        //Explicit break found
-                        breakFound = true;
-
-                        currentPosition = currentLength + lineBreaker.Current.PositionWrap;
-
-                        break;
-                    }
-
-                    if (currentLength + lineBreaker.Current.PositionMeasure > measuredLength)
-                    {
-                        if (paragraphProperties.TextWrapping == TextWrapping.WrapWithOverflow)
+                    case ShapedTextRun:
                         {
-                            if (lastWrapPosition > 0)
+                            var runText = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
+
+                            var lineBreaker = new LineBreakEnumerator(runText);
+
+                            while (lineBreaker.MoveNext())
                             {
-                                currentPosition = lastWrapPosition;
-
-                                breakFound = true;
-
-                                break;
-                            }
-
-                            //Find next possible wrap position (overflow)
-                            if (index < textRuns.Count - 1)
-                            {
-                                if (lineBreaker.Current.PositionWrap != currentRun.Length)
+                                if (lineBreaker.Current.Required &&
+                                    currentLength + lineBreaker.Current.PositionMeasure <= measuredLength)
                                 {
-                                    //We already found the next possible wrap position.
+                                    //Explicit break found
                                     breakFound = true;
 
                                     currentPosition = currentLength + lineBreaker.Current.PositionWrap;
@@ -630,51 +608,81 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                while (lineBreaker.MoveNext() && index < textRuns.Count)
+                                if (currentLength + lineBreaker.Current.PositionMeasure > measuredLength)
                                 {
-                                    currentPosition += lineBreaker.Current.PositionWrap;
-
-                                    if (lineBreaker.Current.PositionWrap != currentRun.Length)
+                                    if (paragraphProperties.TextWrapping == TextWrapping.WrapWithOverflow)
                                     {
+                                        if (lastWrapPosition > 0)
+                                        {
+                                            currentPosition = lastWrapPosition;
+
+                                            breakFound = true;
+
+                                            break;
+                                        }
+
+                                        //Find next possible wrap position (overflow)
+                                        if (index < textRuns.Count - 1)
+                                        {
+                                            if (lineBreaker.Current.PositionWrap != currentRun.Length)
+                                            {
+                                                //We already found the next possible wrap position.
+                                                breakFound = true;
+
+                                                currentPosition = currentLength + lineBreaker.Current.PositionWrap;
+
+                                                break;
+                                            }
+
+                                            while (lineBreaker.MoveNext() && index < textRuns.Count)
+                                            {
+                                                currentPosition += lineBreaker.Current.PositionWrap;
+
+                                                if (lineBreaker.Current.PositionWrap != currentRun.Length)
+                                                {
+                                                    break;
+                                                }
+
+                                                index++;
+
+                                                if (index >= textRuns.Count)
+                                                {
+                                                    break;
+                                                }
+
+                                                currentRun = textRuns[index];
+
+                                                runText = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
+
+                                                lineBreaker = new LineBreakEnumerator(runText);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            currentPosition = currentLength + lineBreaker.Current.PositionWrap;
+                                        }
+
+                                        breakFound = true;
+
                                         break;
                                     }
 
-                                    index++;
+                                    //We overflowed so we use the last available wrap position.
+                                    currentPosition = lastWrapPosition == 0 ? measuredLength : lastWrapPosition;
 
-                                    if (index >= textRuns.Count)
-                                    {
-                                        break;
-                                    }
+                                    breakFound = true;
 
-                                    currentRun = textRuns[index];
+                                    break;
+                                }
 
-                                    runText = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
-
-                                    lineBreaker = new LineBreakEnumerator(runText);
+                                if (lineBreaker.Current.PositionMeasure != lineBreaker.Current.PositionWrap)
+                                {
+                                    lastWrapPosition = currentLength + lineBreaker.Current.PositionWrap;
                                 }
                             }
-                            else
-                            {
-                                currentPosition = currentLength + lineBreaker.Current.PositionWrap;
-                            }
-
-                            breakFound = true;
 
                             break;
                         }
-
-                        //We overflowed so we use the last available wrap position.
-                        currentPosition = lastWrapPosition == 0 ? measuredLength : lastWrapPosition;
-
-                        breakFound = true;
-
-                        break;
-                    }
-
-                    if (lineBreaker.Current.PositionMeasure != lineBreaker.Current.PositionWrap)
-                    {
-                        lastWrapPosition = currentLength + lineBreaker.Current.PositionWrap;
-                    }
                 }
 
                 if (!breakFound)
@@ -694,7 +702,7 @@ namespace Avalonia.Media.TextFormatting
             var remainingCharacters = splitResult.Second;
 
             var lineBreak = remainingCharacters?.Count > 0 ?
-                new TextLineBreak(currentLineBreak?.TextEndOfLine, resolvedFlowDirection, remainingCharacters) :
+                new TextLineBreak(null, resolvedFlowDirection, remainingCharacters) :
                 null;
 
             if (lineBreak is null && currentLineBreak?.TextEndOfLine != null)
