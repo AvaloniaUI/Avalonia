@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Subjects;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
@@ -14,26 +14,7 @@ namespace Avalonia.Data
     /// </remarks>
     public class InstancedBinding
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InstancedBinding"/> class.
-        /// </summary>
-        /// <param name="subject">The binding source.</param>
-        /// <param name="mode">The binding mode.</param>
-        /// <param name="priority">The priority of the binding.</param>
-        /// <remarks>
-        /// This constructor can be used to create any type of binding and as such requires an
-        /// <see cref="ISubject{Object}"/> as the binding source because this is the only binding
-        /// source which can be used for all binding modes. If you wish to create an instance with
-        /// something other than a subject, use one of the static creation methods on this class.
-        /// </remarks>
-        public InstancedBinding(ISubject<object?> subject, BindingMode mode, BindingPriority priority)
-        {
-            Mode = mode;
-            Priority = priority;
-            Value = subject ?? throw new ArgumentNullException(nameof(subject));
-        }
-
-        private InstancedBinding(object? value, BindingMode mode, BindingPriority priority)
+        internal InstancedBinding(object? value, BindingMode mode, BindingPriority priority)
         {
             Mode = mode;
             Priority = priority;
@@ -61,9 +42,14 @@ namespace Avalonia.Data
         public IObservable<object?>? Observable => Value as IObservable<object?>;
 
         /// <summary>
-        /// Gets the <see cref="Value"/> as a subject.
+        /// Gets the <see cref="Value"/> as an observer.
         /// </summary>
-        public ISubject<object?>? Subject => Value as ISubject<object?>;
+        public IObserver<object?>? Observer => Value as IObserver<object?>;
+
+        /// <summary>
+        /// Gets the <see cref="Subject"/> as an subject.
+        /// </summary>
+        internal IAvaloniaSubject<object?>? Subject => Value as IAvaloniaSubject<object?>;
 
         /// <summary>
         /// Creates a new one-time binding with a fixed value.
@@ -111,30 +97,34 @@ namespace Avalonia.Data
         /// <summary>
         /// Creates a new one-way to source binding.
         /// </summary>
-        /// <param name="subject">The binding source.</param>
+        /// <param name="observer">The binding source.</param>
         /// <param name="priority">The priority of the binding.</param>
         /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
         public static InstancedBinding OneWayToSource(
-            ISubject<object?> subject,
+            IObserver<object?> observer,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            _ = subject ?? throw new ArgumentNullException(nameof(subject));
+            _ = observer ?? throw new ArgumentNullException(nameof(observer));
 
-            return new InstancedBinding(subject, BindingMode.OneWayToSource, priority);
+            return new InstancedBinding(observer, BindingMode.OneWayToSource, priority);
         }
 
         /// <summary>
         /// Creates a new two-way binding.
         /// </summary>
-        /// <param name="subject">The binding source.</param>
+        /// <param name="observable">The binding source.</param>
+        /// <param name="observer">The binding source.</param>
         /// <param name="priority">The priority of the binding.</param>
         /// <returns>An <see cref="InstancedBinding"/> instance.</returns>
         public static InstancedBinding TwoWay(
-            ISubject<object?> subject,
+            IObservable<object?> observable,
+            IObserver<object?> observer,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            _ = subject ?? throw new ArgumentNullException(nameof(subject));
+            _ = observable ?? throw new ArgumentNullException(nameof(observable));
+            _ = observer ?? throw new ArgumentNullException(nameof(observer));
 
+            var subject = new CombinedSubject<object?>(observer, observable);
             return new InstancedBinding(subject, BindingMode.TwoWay, priority);
         }
 

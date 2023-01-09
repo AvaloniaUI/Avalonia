@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Models;
 using Avalonia.Input;
 using Avalonia.Metadata;
 using Avalonia.Threading;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -50,15 +50,15 @@ namespace Avalonia.Diagnostics.ViewModels
             }
             else
             {
-#nullable disable
-                _pointerOverSubscription = InputManager.Instance.PreProcess
-                    .OfType<Input.Raw.RawPointerEventArgs>()
+                _pointerOverSubscription = InputManager.Instance!.PreProcess
                     .Subscribe(e =>
                         {
-                            PointerOverRoot = e.Root;
-                            PointerOverElement = e.Root.InputHitTest(e.Position);
+                            if (e is Input.Raw.RawPointerEventArgs pointerEventArgs)
+                            {
+                                PointerOverRoot = pointerEventArgs.Root;
+                                PointerOverElement = pointerEventArgs.Root.InputHitTest(pointerEventArgs.Position);
+                            }
                         });
-#nullable restore
             }
             Console = new ConsoleViewModel(UpdateConsoleContext);
         }

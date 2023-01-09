@@ -15,4 +15,5 @@
   </ItemGroup>
 
   <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\Rx.props" />
 </Project>

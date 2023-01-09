@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;

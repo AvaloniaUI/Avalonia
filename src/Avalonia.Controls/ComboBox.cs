@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.Automation.Peers;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
