@@ -6,10 +6,10 @@ public class StateData
     public string Abbreviation { get; private set; }
     public string Capital { get; private set; }
 
-    public StateData(string name, string abbreviatoin, string capital)
+    public StateData(string name, string abbreviation, string capital)
     {
         Name = name;
-        Abbreviation = abbreviatoin;
+        Abbreviation = abbreviation;
         Capital = capital;
     }
 
