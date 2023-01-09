@@ -50,8 +50,7 @@ namespace Avalonia.Rendering
         {
             get
             {
-                return _timer ??= AvaloniaLocator.Current.GetService<IRenderTimer>() ??
-                    throw new InvalidOperationException("Cannot locate IRenderTimer.");
+                return _timer ??= AvaloniaLocator.Current.GetRequiredService<IRenderTimer>();
             }
         }
 
