@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 
 namespace Avalonia.Media
 {
@@ -30,7 +31,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the geometry's bounding rectangle.
         /// </summary>
-        public Rect Bounds => PlatformImpl?.Bounds ?? Rect.Empty;
+        public Rect Bounds => PlatformImpl?.Bounds ?? default;
 
         /// <summary>
         /// Gets the platform-specific implementation of the geometry.
@@ -84,7 +85,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="pen">The stroke thickness.</param>
         /// <returns>The bounding rectangle.</returns>
-        public Rect GetRenderBounds(IPen pen) => PlatformImpl?.GetRenderBounds(pen) ?? Rect.Empty;
+        public Rect GetRenderBounds(IPen pen) => PlatformImpl?.GetRenderBounds(pen) ?? default;
 
         /// <summary>
         /// Indicates whether the geometry's fill contains the specified point.
@@ -117,9 +118,10 @@ namespace Avalonia.Media
         /// </remarks>
         protected static void AffectsGeometry(params AvaloniaProperty[] properties)
         {
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(AffectsGeometryInvalidate);
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsGeometryInvalidate);
+                property.Changed.Subscribe(invalidateObserver);
             }
         }
 

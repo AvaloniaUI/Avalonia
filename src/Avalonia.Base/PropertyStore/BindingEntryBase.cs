@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Data;
+using Avalonia.Threading;
 
 namespace Avalonia.PropertyStore
 {
@@ -116,26 +117,42 @@ namespace Avalonia.PropertyStore
 
         private void SetValue(BindingValue<TValue> value)
         {
-            if (Frame.Owner is null)
-                return;
-
-            LoggingUtils.LogIfNecessary(Frame.Owner.Owner, Property, value);
-
-            if (value.HasValue)
+            static void Execute(BindingEntryBase<TValue, TSource> instance, BindingValue<TValue> value)
             {
-                if (!_hasValue || !EqualityComparer<TValue>.Default.Equals(_value, value.Value))
+                if (instance.Frame.Owner is null)
+                    return;
+
+                LoggingUtils.LogIfNecessary(instance.Frame.Owner.Owner, instance.Property, value);
+
+                if (value.HasValue)
                 {
-                    _value = value.Value;
-                    _hasValue = true;
-                    if (_subscription is not null && _subscription != s_creatingQuiet)
-                        Frame.Owner?.OnBindingValueChanged(this, Frame.Priority);
+                    if (!instance._hasValue || !EqualityComparer<TValue>.Default.Equals(instance._value, value.Value))
+                    {
+                        instance._value = value.Value;
+                        instance._hasValue = true;
+                        if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
+                            instance.Frame.Owner?.OnBindingValueChanged(instance, instance.Frame.Priority);
+                    }
+                }
+                else if (value.Type != BindingValueType.DoNothing)
+                {
+                    instance.ClearValue();
+                    if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
+                        instance.Frame.Owner?.OnBindingValueCleared(instance.Property, instance.Frame.Priority);
                 }
             }
-            else if (value.Type != BindingValueType.DoNothing)
+
+            if (Dispatcher.UIThread.CheckAccess())
             {
-                ClearValue();
-                if (_subscription is not null && _subscription != s_creatingQuiet)
-                    Frame.Owner?.OnBindingValueCleared(Property, Frame.Priority);
+                Execute(this, value);
+            }
+            else
+            {
+                // To avoid allocating closure in the outer scope we need to capture variables
+                // locally. This allows us to skip most of the allocations when on UI thread.
+                var instance = this;
+                var newValue = value;
+                Dispatcher.UIThread.Post(() => Execute(instance, newValue));
             }
         }
 

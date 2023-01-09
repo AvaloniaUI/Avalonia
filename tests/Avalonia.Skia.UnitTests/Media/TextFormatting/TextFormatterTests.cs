@@ -583,7 +583,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var expectedTextLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties),
                     0, double.PositiveInfinity, paragraphProperties);
 
-                var expectedRuns = expectedTextLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+                var expectedRuns = expectedTextLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
                 var expectedGlyphs = expectedRuns.SelectMany(x => x.GlyphRun.GlyphIndices).ToList();
 
@@ -602,7 +602,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         var textLine =
                             formatter.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
 
-                        var shapedRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+                        var shapedRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
                         var actualGlyphs = shapedRuns.SelectMany(x => x.GlyphRun.GlyphIndices).ToList();
 

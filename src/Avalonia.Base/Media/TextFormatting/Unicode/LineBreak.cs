@@ -24,7 +24,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// Information about a potential line break position
     /// </summary>
     [DebuggerDisplay("{PositionMeasure}/{PositionWrap} @ {Required}")]
-    public readonly struct LineBreak
+    public readonly record struct LineBreak
     {
         /// <summary>
         /// Constructor

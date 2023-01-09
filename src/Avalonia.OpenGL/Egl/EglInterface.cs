@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Avalonia.Compatibility;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
 using Avalonia.SourceGenerator;
@@ -24,10 +25,9 @@ namespace Avalonia.OpenGL.Egl
 
         static Func<string, IntPtr> Load()
         {
-            var os = AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().OperatingSystem;
-            if(os == OperatingSystemType.Linux)
+            if(OperatingSystemEx.IsLinux())
                 return Load("libEGL.so.1");
-            if (os == OperatingSystemType.Android)
+            if (OperatingSystemEx.IsAndroid())
                 return Load("libEGL.so");
 
             throw new PlatformNotSupportedException();
@@ -35,7 +35,7 @@ namespace Avalonia.OpenGL.Egl
 
         static Func<string, IntPtr> Load(string library)
         {
-            var dyn = AvaloniaLocator.Current.GetService<IDynamicLibraryLoader>();
+            var dyn = AvaloniaLocator.Current.GetRequiredService<IDynamicLibraryLoader>();
             var lib = dyn.LoadLibrary(library);
             return (s) => dyn.GetProcAddress(lib, s, true);
         }
@@ -53,6 +53,9 @@ namespace Avalonia.OpenGL.Egl
 
         [GetProcAddress("eglInitialize")]        
         public partial bool Initialize(IntPtr display, out int major, out int minor);
+        
+        [GetProcAddress("eglTerminate")]        
+        public partial void Terminate(IntPtr display);
 
         [GetProcAddress("eglGetProcAddress")]        
         public partial IntPtr GetProcAddress(IntPtr proc);

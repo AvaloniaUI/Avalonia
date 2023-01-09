@@ -261,7 +261,7 @@ namespace Avalonia.Media
             DrawRectangle(brush, null, rect, cornerRadius, cornerRadius);
         }
 
-        public readonly struct PushedState : IDisposable
+        public readonly record struct PushedState : IDisposable
         {
             private readonly int _level;
             private readonly DrawingContext _context;
@@ -279,7 +279,7 @@ namespace Avalonia.Media
                 OpacityMask,
             }
 
-            public PushedState(DrawingContext context, PushedStateType type, Matrix matrix = default(Matrix))
+            public PushedState(DrawingContext context, PushedStateType type, Matrix matrix = default)
             {
                 if (context._states is null)
                     throw new ObjectDisposedException(nameof(DrawingContext));

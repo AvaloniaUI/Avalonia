@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.Rendering.Composition.Server;
@@ -10,11 +11,11 @@ public partial class Compositor
     /// <summary>
     /// Creates a new CompositionTarget
     /// </summary>
-    /// <param name="renderTargetFactory">A factory method to create IRenderTarget to be called from the render thread</param>
+    /// <param name="surfaces">A factory method to create IRenderTarget to be called from the render thread</param>
     /// <returns></returns>
-    public CompositionTarget CreateCompositionTarget(Func<IRenderTarget> renderTargetFactory)
+    public CompositionTarget CreateCompositionTarget(Func<IEnumerable<object>> surfaces)
     {
-        return new CompositionTarget(this, new ServerCompositionTarget(_server, renderTargetFactory));
+        return new CompositionTarget(this, new ServerCompositionTarget(_server, surfaces));
     }
     
     public CompositionContainerVisual CreateContainerVisual() => new(this, new ServerCompositionContainerVisual(_server));
@@ -32,4 +33,6 @@ public partial class Compositor
 
     public CompositionSolidColorVisual CreateSolidColorVisual() =>
         new(this, new ServerCompositionSolidColorVisual(Server));
+
+    public CompositionCustomVisual CreateCustomVisual(CompositionCustomVisualHandler handler) => new(this, handler);
 }

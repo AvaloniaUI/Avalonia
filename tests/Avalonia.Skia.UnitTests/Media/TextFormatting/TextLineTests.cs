@@ -92,7 +92,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 foreach (var textRun in textLine.TextRuns.OrderBy(x => x.CharacterBufferReference.OffsetToFirstChar))
                 {
-                    var shapedRun = (ShapedTextCharacters)textRun;
+                    var shapedRun = (ShapedTextRun)textRun;
 
                     clusters.AddRange(shapedRun.IsReversed ?
                         shapedRun.ShapedBuffer.GlyphClusters.Reverse() :
@@ -139,7 +139,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 foreach (var textRun in textLine.TextRuns.OrderBy(x => x.CharacterBufferReference.OffsetToFirstChar))
                 {
-                    var shapedRun = (ShapedTextCharacters)textRun;
+                    var shapedRun = (ShapedTextRun)textRun;
 
                     clusters.AddRange(shapedRun.IsReversed ?
                         shapedRun.ShapedBuffer.GlyphClusters.Reverse() :
@@ -246,7 +246,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
-                var clusters = textLine.TextRuns.Cast<ShapedTextCharacters>().SelectMany(x => x.ShapedBuffer.GlyphClusters)
+                var clusters = textLine.TextRuns.Cast<ShapedTextRun>().SelectMany(x => x.ShapedBuffer.GlyphClusters)
                     .ToArray();
 
                 var previousCharacterHit = new CharacterHit(text.Length);
@@ -308,7 +308,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 foreach (var run in textLine.TextRuns)
                 {
-                    var textRun = (ShapedTextCharacters)run;
+                    var textRun = (ShapedTextRun)run;
 
                     var glyphRun = textRun.GlyphRun;
 
@@ -636,7 +636,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
-                var textRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+                var textRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
                 var lineWidth = textLine.WidthIncludingTrailingWhitespace;
 
@@ -734,14 +734,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         private static bool IsRightToLeft(TextLine textLine)
         {
-            return textLine.TextRuns.Cast<ShapedTextCharacters>().Any(x => !x.ShapedBuffer.IsLeftToRight);
+            return textLine.TextRuns.Cast<ShapedTextRun>().Any(x => !x.ShapedBuffer.IsLeftToRight);
         }
 
         private static List<int> BuildGlyphClusters(TextLine textLine)
         {
             var glyphClusters = new List<int>();
 
-            var shapedTextRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+            var shapedTextRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
             var lastCluster = -1;
 
@@ -776,7 +776,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
             var lastCluster = -1;
 
-            var shapedTextRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+            var shapedTextRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
             foreach (var textRun in shapedTextRuns)
             {
@@ -822,16 +822,16 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var text = "0123";
                 var shaperOption = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, 0, CultureInfo.CurrentCulture);
 
-                var firstRun = new ShapedTextCharacters(TextShaper.Current.ShapeText(text, shaperOption), defaultProperties);
+                var firstRun = new ShapedTextRun(TextShaper.Current.ShapeText(text, shaperOption), defaultProperties);
 
                 var textRuns = new List<TextRun>
                 {
                     new CustomDrawableRun(),
                     firstRun,
                     new CustomDrawableRun(),
-                    new ShapedTextCharacters(TextShaper.Current.ShapeText(text, shaperOption), defaultProperties),
+                    new ShapedTextRun(TextShaper.Current.ShapeText(text, shaperOption), defaultProperties),
                     new CustomDrawableRun(),
-                    new ShapedTextCharacters(TextShaper.Current.ShapeText(text, shaperOption), defaultProperties)
+                    new ShapedTextRun(TextShaper.Current.ShapeText(text, shaperOption), defaultProperties)
                 };
 
                 var textSource = new FixedRunsTextSource(textRuns);
@@ -887,14 +887,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(0, 3);
 
-                var firstRun = textLine.TextRuns[0] as ShapedTextCharacters;
+                var firstRun = textLine.TextRuns[0] as ShapedTextRun;
 
                 Assert.Equal(1, textBounds.Count);
                 Assert.Equal(firstRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(3, 4);
 
-                var secondRun = textLine.TextRuns[1] as ShapedTextCharacters;
+                var secondRun = textLine.TextRuns[1] as ShapedTextRun;
 
                 Assert.Equal(1, textBounds.Count);
                 Assert.Equal(secondRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
@@ -934,14 +934,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(0, 4);
 
-                var secondRun = textLine.TextRuns[1] as ShapedTextCharacters;
+                var secondRun = textLine.TextRuns[1] as ShapedTextRun;
 
                 Assert.Equal(1, textBounds.Count);
                 Assert.Equal(secondRun.Size.Width, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(4, 3);
 
-                var firstRun = textLine.TextRuns[0] as ShapedTextCharacters;
+                var firstRun = textLine.TextRuns[0] as ShapedTextRun;
 
                 Assert.Equal(1, textBounds.Count);
 

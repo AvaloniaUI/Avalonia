@@ -1,4 +1,5 @@
-﻿using Avalonia.Platform;
+﻿using Avalonia.Compatibility;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia.Helpers
@@ -18,10 +19,7 @@ namespace Avalonia.Skia.Helpers
             var colorType = format?.ToSkColorType() ?? SKImageInfo.PlatformColorType;
 
             // TODO: This looks like some leftover hack
-            var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
-            var runtime = runtimePlatform?.GetRuntimeInfo();
-
-            if (runtime?.IsDesktop == true && runtime.Value.OperatingSystem == OperatingSystemType.Linux)
+            if (OperatingSystemEx.IsLinux())
             {
                 colorType = SKColorType.Bgra8888;
             }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using JetBrains.Annotations;
 
 namespace Avalonia.Media
 {
@@ -17,7 +16,7 @@ namespace Avalonia.Media
         /// <param name="style">The font style.</param>
         /// <param name="weight">The font weight.</param>
         /// <param name="stretch">The font stretch.</param>
-        public Typeface([NotNull] FontFamily fontFamily,
+        public Typeface(FontFamily fontFamily,
             FontStyle style = FontStyle.Normal,
             FontWeight weight = FontWeight.Normal,
             FontStretch stretch = FontStretch.Normal)

@@ -621,7 +621,7 @@ namespace Avalonia
         /// <param name="oldValue">The old property value.</param>
         /// <param name="newValue">The new property value.</param>
         /// <param name="priority">The priority of the binding that produced the value.</param>
-        private protected void RaisePropertyChanged<T>(
+        protected void RaisePropertyChanged<T>(
             DirectPropertyBase<T> property,
             Optional<T> oldValue,
             BindingValue<T> newValue,

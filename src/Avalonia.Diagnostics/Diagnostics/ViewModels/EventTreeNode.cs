@@ -4,6 +4,7 @@ using Avalonia.Diagnostics.Views;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {

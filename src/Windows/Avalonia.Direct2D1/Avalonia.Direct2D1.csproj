@@ -14,10 +14,8 @@
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Win32\Avalonia.Win32.csproj" />
   </ItemGroup>
-  <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\SharpDX.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
-  <Import Project="..\..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\TrimmingEnable.props" />
 

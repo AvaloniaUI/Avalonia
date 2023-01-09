@@ -1,6 +1,6 @@
 using System;
-using System.Reactive.Subjects;
 using Avalonia.Input.Raw;
+using Avalonia.Reactive;
 
 namespace Avalonia.Input
 {
@@ -10,9 +10,9 @@ namespace Avalonia.Input
     /// </summary>
     public class InputManager : IInputManager
     {
-        private readonly Subject<RawInputEventArgs> _preProcess = new Subject<RawInputEventArgs>();
-        private readonly Subject<RawInputEventArgs> _process = new Subject<RawInputEventArgs>();
-        private readonly Subject<RawInputEventArgs> _postProcess = new Subject<RawInputEventArgs>();
+        private readonly LightweightSubject<RawInputEventArgs> _preProcess = new();
+        private readonly LightweightSubject<RawInputEventArgs> _process = new();
+        private readonly LightweightSubject<RawInputEventArgs> _postProcess = new();
 
         /// <summary>
         /// Gets the global instance of the input manager.

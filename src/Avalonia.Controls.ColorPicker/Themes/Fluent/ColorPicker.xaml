@@ -3,10 +3,6 @@
                     xmlns:controls="using:Avalonia.Controls"
                     xmlns:primitives="using:Avalonia.Controls.Primitives">
 
-  <ResourceDictionary.MergedDictionaries>
-    <ResourceInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/ColorView.xaml" />
-  </ResourceDictionary.MergedDictionaries>
-
   <ControlTheme x:Key="{x:Type ColorPicker}"
                 TargetType="ColorPicker">
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />

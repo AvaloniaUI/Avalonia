@@ -16,7 +16,7 @@ public class GenericVirtualAnalyzer : DiagnosticAnalyzer
         "Performance",
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Generic virtual methods affect JIT startup time adversly and should be avoided.");
+        description: "Generic virtual methods affect JIT startup time adversely and should be avoided.");
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

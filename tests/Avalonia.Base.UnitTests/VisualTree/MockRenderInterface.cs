@@ -8,12 +8,14 @@ using Avalonia.Media.Imaging;
 
 namespace Avalonia.Base.UnitTests.VisualTree
 {
-    class MockRenderInterface : IPlatformRenderInterface
+    class MockRenderInterface : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             throw new NotImplementedException();
         }
+
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -75,6 +77,11 @@ namespace Avalonia.Base.UnitTests.VisualTree
         public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
         {
             throw new NotImplementedException();
+        }
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext)
+        {
+            return this;
         }
 
         public bool SupportsIndividualRoundRects { get; set; }
@@ -262,6 +269,11 @@ namespace Avalonia.Base.UnitTests.VisualTree
                     return false;
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            
         }
     }
 

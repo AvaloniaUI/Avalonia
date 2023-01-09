@@ -38,6 +38,8 @@ namespace Avalonia.Direct2D1
             });
         }
 
+        public bool IsCorrupted => false;
+
         public IDrawingContextLayerImpl CreateLayer(Size size)
         {
             var renderTarget = _externalRenderTargetProvider.GetOrCreateRenderTarget();

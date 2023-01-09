@@ -5,7 +5,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Holds a hit test result from a <see cref="TextLayout"/>.
     /// </summary>
-    public readonly struct TextHitTestResult
+    public readonly record struct TextHitTestResult
     {
         public TextHitTestResult(CharacterHit characterHit, int textPosition, bool isInside, bool isTrailing)
         {

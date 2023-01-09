@@ -3,7 +3,7 @@
     /// <summary>
     /// A metric that holds information about text specific measurements.
     /// </summary>
-    public readonly struct TextMetrics
+    public readonly record struct TextMetrics
     {
         public TextMetrics(IGlyphTypeface glyphTypeface, double fontRenderingEmSize)
         {

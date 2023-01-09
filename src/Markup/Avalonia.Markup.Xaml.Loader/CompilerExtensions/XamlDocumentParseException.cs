@@ -18,4 +18,9 @@ internal class XamlDocumentParseException : XamlParseException
     {
         FilePath = path;
     }
+    
+    public XamlDocumentParseException(IXamlDocumentResource document, string message, IXamlLineInfo lineInfo)
+        : this(document.FileSource?.FilePath, message, lineInfo)
+    {
+    }
 }

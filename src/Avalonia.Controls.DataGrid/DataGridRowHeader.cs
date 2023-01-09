@@ -18,8 +18,6 @@ namespace Avalonia.Controls.Primitives
     public class DataGridRowHeader : ContentControl
     {
         private const string DATAGRIDROWHEADER_elementRootName = "PART_Root";
-        private const double DATAGRIDROWHEADER_separatorThickness = 1;
-
         private Control _rootElement;
 
         public static readonly StyledProperty<IBrush> SeparatorBrushProperty =

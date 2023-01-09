@@ -1,4 +1,5 @@
 ﻿using System;
+using Avalonia.Reactive;
 
 namespace Avalonia.Media
 {
@@ -274,14 +275,12 @@ namespace Avalonia.Media
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : ExperimentalAcrylicMaterial
         {
-            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
-            {
-                (e.Sender as T)?.RaiseInvalidated(EventArgs.Empty);
-            }
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e => (e.Sender as T)?.RaiseInvalidated(EventArgs.Empty));
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(e => Invalidate(e));
+                property.Changed.Subscribe(invalidateObserver);
             }
         }
 

@@ -33,7 +33,7 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case ShapedTextCharacters shapedRun:
+                    case ShapedTextRun shapedRun:
                         {
                             currentWidth += shapedRun.Size.Width;
 
