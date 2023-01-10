@@ -1,17 +1,20 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
-    public sealed class ShapedBuffer : IList<GlyphInfo>
+    public sealed class ShapedBuffer : IList<GlyphInfo>, IDisposable
     {
         private static readonly IComparer<GlyphInfo> s_clusterComparer = new CompareClusters();
+        private bool _rented;
         
         public ShapedBuffer(CharacterBufferRange characterBufferRange, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel) : 
-            this(characterBufferRange, new GlyphInfo[bufferLength], glyphTypeface,  fontRenderingEmSize,  bidiLevel)
+            this(characterBufferRange, ArrayPool<GlyphInfo>.Shared.Rent(bufferLength), glyphTypeface,  fontRenderingEmSize,  bidiLevel)
         {
-
+            _rented = true;
+            Length = bufferLength;
         }
 
         internal ShapedBuffer(CharacterBufferRange characterBufferRange, ArraySlice<GlyphInfo> glyphInfos, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
@@ -21,11 +24,12 @@ namespace Avalonia.Media.TextFormatting
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
+            Length = GlyphInfos.Length;
         }
 
         internal ArraySlice<GlyphInfo> GlyphInfos { get; }
         
-        public int Length => GlyphInfos.Length;
+        public int Length { get; }
 
         public IGlyphTypeface GlyphTypeface { get; }
 
@@ -259,6 +263,23 @@ namespace Avalonia.Media.TextFormatting
             public IEnumerator<Vector> GetEnumerator() => new ImmutableReadOnlyListStructEnumerator<Vector>(this);
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            if (_rented)
+            {
+                GlyphInfos.ReturnRent();
+            }
+        }
+
+        ~ShapedBuffer()
+        {
+            if (_rented)
+            {
+                GlyphInfos.ReturnRent();
+            }
         }
     }
 

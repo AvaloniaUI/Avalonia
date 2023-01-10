@@ -6,7 +6,7 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// Represents a line of text that is used for text rendering.
     /// </summary>
-    public abstract class TextLine
+    public abstract class TextLine : IDisposable
     {
         /// <summary>
         /// Gets the text runs that are contained within a line.
@@ -207,5 +207,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textLength">number of characters of the specified range</param>
         /// <returns>an array of bounding rectangles.</returns>
         public abstract IReadOnlyList<TextBounds> GetTextBounds(int firstTextSourceCharacterIndex, int textLength);
+
+        public abstract void Dispose();
     }
 }

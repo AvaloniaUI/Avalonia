@@ -8,7 +8,7 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// Represents a multi line text layout.
     /// </summary>
-    public class TextLayout
+    public class TextLayout : IDisposable
     {
         private readonly ITextSource _textSource;
         private readonly TextParagraphProperties _paragraphProperties;
@@ -560,6 +560,14 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return _textTrimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, _paragraphProperties.DefaultTextRunProperties));
+        }
+
+        public void Dispose()
+        {
+            foreach (var line in TextLines)
+            {
+                line.Dispose();
+            }
         }
     }
 }

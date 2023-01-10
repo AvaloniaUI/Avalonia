@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
@@ -932,6 +933,14 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return GetTextBoundsRightToLeft(firstTextSourceIndex, textLength);
+        }
+
+        public override void Dispose()
+        {
+            foreach (var run in _textRuns.OfType<ShapedTextRun>())
+            {
+                run.Dispose();
+            }
         }
 
         public TextLineImpl FinalizeLine()

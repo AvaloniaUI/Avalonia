@@ -70,8 +70,12 @@ In respect that the structure of the sufficient amount poses problems and challe
     [Benchmark]
     public TextLayout[] BuildManySmallTexts() => _manySmallStrings.Select(MakeLayout).ToArray();
 
-    private static TextLayout MakeLayout(string str) 
-        => new TextLayout(str, Typeface.Default, 12d, Brushes.Black, maxWidth:120);
+    private static TextLayout MakeLayout(string str)
+    {
+        var layout = new TextLayout(str, Typeface.Default, 12d, Brushes.Black, maxWidth: 120);
+        layout.Dispose();
+        return layout;
+    }
 
     public void Dispose()
     {
