@@ -27,7 +27,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// as much as possible.
     /// </para>
     /// </remarks>
-    internal sealed class BidiAlgorithm
+    internal sealed class BidiAlgorithm : IDisposable
     {
         /// <summary>
         /// The original BiDiClass classes as provided by the caller
@@ -1713,6 +1713,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
             public BidiClass Sos { get; }
 
             public BidiClass Eos { get; }
+        }
+
+        public void Dispose()
+        {
+            _workingClassesBuffer.Dispose();
+            _resolvedLevelsBuffer.Dispose();
+            _x9Map.Dispose();
+            _isolatedRunMapping.Dispose();
         }
     }
 }

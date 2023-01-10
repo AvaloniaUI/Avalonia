@@ -159,7 +159,7 @@ namespace Avalonia.Media.TextFormatting
         {
             var flowDirection = paragraphProperties.FlowDirection;
             var drawableTextRuns = new List<DrawableTextRun>();
-            var biDiData = new BidiData((sbyte)flowDirection);
+            using var biDiData = new BidiData((sbyte)flowDirection);
 
             foreach (var textRun in textRuns)
             {
@@ -177,7 +177,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            var biDi = new BidiAlgorithm();
+            using var biDi = new BidiAlgorithm();
 
             biDi.Process(biDiData);
 
