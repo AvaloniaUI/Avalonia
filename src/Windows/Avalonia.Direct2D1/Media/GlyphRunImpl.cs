@@ -1,4 +1,5 @@
-﻿using Avalonia.Platform;
+﻿using System.Collections.Generic;
+using Avalonia.Platform;
 
 namespace Avalonia.Direct2D1.Media
 {
@@ -14,6 +15,11 @@ namespace Avalonia.Direct2D1.Media
         public void Dispose()
         {
             GlyphRun?.Dispose();
+        }
+
+        public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
+        {
+            return null;
         }
     }
 }

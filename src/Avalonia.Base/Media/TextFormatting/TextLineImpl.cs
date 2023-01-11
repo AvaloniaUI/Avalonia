@@ -1448,6 +1448,13 @@ namespace Avalonia.Media.TextFormatting
 
             var lineHeight = _paragraphProperties.LineHeight;
 
+            var lastRunIndex = _textRuns.Count - 1;
+
+            if (lastRunIndex > 0 && _textRuns[lastRunIndex] is TextEndOfLine)
+            {
+                lastRunIndex--;
+            }
+
             for (var index = 0; index < _textRuns.Count; index++)
             {
                 switch (_textRuns[index])
@@ -1482,7 +1489,7 @@ namespace Avalonia.Media.TextFormatting
                                 }
                             }
 
-                            if (index == _textRuns.Count - 1)
+                            if (index == lastRunIndex)
                             {
                                 width = widthIncludingWhitespace + textRun.GlyphRun.Metrics.Width;
                                 trailingWhitespaceLength = textRun.GlyphRun.Metrics.TrailingWhitespaceLength;
@@ -1502,7 +1509,7 @@ namespace Avalonia.Media.TextFormatting
                             {
                                 case FlowDirection.LeftToRight:
                                     {
-                                        if (index == _textRuns.Count - 1)
+                                        if (index == lastRunIndex)
                                         {
                                             width = widthIncludingWhitespace;
                                             trailingWhitespaceLength = 0;
@@ -1514,7 +1521,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 case FlowDirection.RightToLeft:
                                     {
-                                        if (index == _textRuns.Count - 1)
+                                        if (index == lastRunIndex)
                                         {
                                             width = widthIncludingWhitespace;
                                             trailingWhitespaceLength = 0;
