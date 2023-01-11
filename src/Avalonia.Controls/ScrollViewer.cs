@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;

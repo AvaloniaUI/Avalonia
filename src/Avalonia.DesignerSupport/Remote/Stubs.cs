@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;

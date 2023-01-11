@@ -31,7 +31,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override TextRun Symbol { get; }
 
-        public override List<DrawableTextRun>? Collapse(TextLine textLine)
+        public override List<TextRun>? Collapse(TextLine textLine)
         {
             return TextEllipsisHelper.Collapse(textLine, this, true);
         }

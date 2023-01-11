@@ -3,6 +3,7 @@ using System.Threading;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input

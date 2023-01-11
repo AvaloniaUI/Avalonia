@@ -1036,7 +1036,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public async Task Bind_With_Scheduler_Executes_On_Scheduler()
+        public async Task Bind_With_Scheduler_Executes_On_UI_Thread()
         {
             var target = new Class1();
             var source = new Subject<double>();
@@ -1047,7 +1047,6 @@ namespace Avalonia.Base.UnitTests
                 .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
 
             var services = new TestServices(
-                scheduler: AvaloniaScheduler.Instance,
                 threadingInterface: threadingInterfaceMock.Object);
 
             using (UnitTestApplication.Start(services))

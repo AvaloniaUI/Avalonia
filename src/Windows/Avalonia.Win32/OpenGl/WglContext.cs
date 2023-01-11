@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.OpenGl.WglConsts;

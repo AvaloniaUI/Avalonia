@@ -11,7 +11,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// Represents a unicode string and all associated attributes
     /// for each character required for the bidirectional Unicode algorithm
     /// </summary>
-    internal class BidiData : IDisposable
+    internal struct BidiData : IDisposable
     {
         private ArrayBuilder<BidiClass> _classes;
         private ArrayBuilder<BidiPairedBracketType> _pairedBracketTypes;

@@ -34,7 +34,7 @@ internal class IOSStorageProvider : IStorageProvider
         UIDocumentPickerViewController documentPicker;
         if (OperatingSystem.IsIOSVersionAtLeast(14))
         {
-            var allowedUtis = options.FileTypeFilter?.SelectMany(f =>
+            var allowedUtils = options.FileTypeFilter?.SelectMany(f =>
                 {
                     // We check for OS version outside of the lambda, it's safe.
 #pragma warning disable CA1416
@@ -56,18 +56,18 @@ internal class IOSStorageProvider : IStorageProvider
                 UTTypes.Item,
                 UTTypes.Data
             };
-            documentPicker = new UIDocumentPickerViewController(allowedUtis!, false);
+            documentPicker = new UIDocumentPickerViewController(allowedUtils!, false);
         }
         else
         {
-            var allowedUtis = options.FileTypeFilter?.SelectMany(f => f.AppleUniformTypeIdentifiers ?? Array.Empty<string>())
+            var allowedUtils = options.FileTypeFilter?.SelectMany(f => f.AppleUniformTypeIdentifiers ?? Array.Empty<string>())
                 .ToArray() ?? new[]
             {
                 UTTypeLegacy.Content,
                 UTTypeLegacy.Item,
                 "public.data"
             };
-            documentPicker = new UIDocumentPickerViewController(allowedUtis, UIDocumentPickerMode.Open);
+            documentPicker = new UIDocumentPickerViewController(allowedUtils, UIDocumentPickerMode.Open);
         }
 
         using (documentPicker)
