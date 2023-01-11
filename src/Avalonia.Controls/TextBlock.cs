@@ -173,13 +173,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public TextLayout TextLayout
-        {
-            get
-            {
-                return _textLayout ??= CreateTextLayout(_text);
-            }
-        }
+        public TextLayout TextLayout => _textLayout ??= CreateTextLayout(_text);
 
         /// <summary>
         /// Gets or sets the padding to place around the <see cref="Text"/>.
@@ -648,6 +642,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected void InvalidateTextLayout()
         {
+            _textLayout?.Dispose();
             _textLayout = null;
 
             InvalidateVisual();
@@ -663,6 +658,7 @@ namespace Avalonia.Controls
 
             _constraint = availableSize.Deflate(padding);
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             var inlines = Inlines;
@@ -726,6 +722,7 @@ namespace Avalonia.Controls
 
             _constraint = new Size(Math.Ceiling(finalSize.Deflate(padding).Width), double.PositiveInfinity);
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             if (HasComplexContent)
