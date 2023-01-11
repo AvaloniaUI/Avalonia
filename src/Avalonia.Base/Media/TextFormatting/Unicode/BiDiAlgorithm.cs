@@ -67,7 +67,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The forward mapping maps the start index to the end index.
         /// The reverse mapping maps the end index to the start index.
         /// </remarks>
-        private readonly BidiDictionary<int, int> _isolatePairs = new BidiDictionary<int, int>();
+        private BidiDictionary<int, int>? _isolatePairs;
 
         /// <summary>
         /// The working BiDi classes
@@ -228,7 +228,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             ArraySlice<sbyte>? outLevels)
         {
             // Reset state
-            _isolatePairs.Clear();
+            _isolatePairs?.Clear();
             _workingClassesBuffer.Clear();
             _levelRuns.Clear();
             _resolvedLevelsBuffer.Clear();
@@ -324,7 +324,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                         // Skip isolate pairs
                         // (Because we're working with a slice, we need to adjust the indices
                         //  we're using for the isolatePairs map)
-                        if (_isolatePairs.TryGetValue(data.Start + i, out i))
+                        if (_isolatePairs?.TryGetValue(data.Start + i, out i) == true)
                         {
                             i -= data.Start;
                         }
@@ -379,6 +379,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     {
                         if (_pendingIsolateOpenings.Count > 0)
                         {
+                            _isolatePairs ??= new BidiDictionary<int, int>();
                             _isolatePairs.Add(_pendingIsolateOpenings.Pop(), i);
                         }
 
@@ -499,7 +500,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                         if (resolvedIsolate == BidiClass.FirstStrongIsolate)
                         {
-                            if (!_isolatePairs.TryGetValue(i, out var endOfIsolate))
+                            if (_isolatePairs == null || !_isolatePairs.TryGetValue(i, out var endOfIsolate))
                             {
                                 endOfIsolate = _originalClasses.Length;
                             }
@@ -830,7 +831,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     var lastCharacterIndex = _isolatedRunMapping[_isolatedRunMapping.Length - 1];
                     var lastType = _originalClasses[lastCharacterIndex];
                     if ((lastType == BidiClass.LeftToRightIsolate || lastType == BidiClass.RightToLeftIsolate || lastType == BidiClass.FirstStrongIsolate) &&
-                            _isolatePairs.TryGetValue(lastCharacterIndex, out var nextRunIndex))
+                            _isolatePairs?.TryGetValue(lastCharacterIndex, out var nextRunIndex) == true)
                     {
                         // Find the continuing run index
                         runIndex = FindRunForIndex(nextRunIndex);
