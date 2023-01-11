@@ -7,6 +7,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Primitives
 {

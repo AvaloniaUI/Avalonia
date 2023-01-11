@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Avalonia.Controls.Platform;
-using Avalonia.Data;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

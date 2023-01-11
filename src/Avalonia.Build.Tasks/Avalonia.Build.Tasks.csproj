@@ -18,6 +18,9 @@
       <Compile Include="../Avalonia.Base/Utilities/AvaloniaResourcesIndex.cs">
         <Link>Shared/AvaloniaResourcesIndex.cs</Link>
       </Compile>
+      <Compile Include="../Avalonia.Base/Platform/Internal/Constants.cs">
+        <Link>Shared/Constants.cs</Link>
+      </Compile>
       <Compile Include="../Markup/Avalonia.Markup.Xaml/PortableXaml/AvaloniaResourceXamlInfo.cs">
         <Link>Shared/AvaloniaResourceXamlInfo.cs</Link>
       </Compile>

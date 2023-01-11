@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
@@ -25,9 +25,9 @@ namespace Avalonia.FreeDesktop
             return new DBusMenuExporterImpl(DBusHelper.Connection, xid);
         }
         
-        public static INativeMenuExporter TryCreateDetachedNativeMenu(ObjectPath path, Connection currentConection)
+        public static INativeMenuExporter TryCreateDetachedNativeMenu(ObjectPath path, Connection currentConnection)
         {
-            return new DBusMenuExporterImpl(currentConection, path);
+            return new DBusMenuExporterImpl(currentConnection, path);
         }
 
         public static ObjectPath GenerateDBusMenuObjPath => "/net/avaloniaui/dbusmenu/"

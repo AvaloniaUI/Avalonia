@@ -6,7 +6,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
-using Avalonia.Utilities;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

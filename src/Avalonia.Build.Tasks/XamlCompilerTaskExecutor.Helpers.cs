@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Avalonia.Platform.Internal;
 using Avalonia.Utilities;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -34,13 +36,13 @@ namespace Avalonia.Build.Tasks
             {
                 _asm = asm;
                 _embedded = ((EmbeddedResource)asm.MainModule.Resources.FirstOrDefault(r =>
-                    r.ResourceType == ResourceType.Embedded && r.Name == "!AvaloniaResources"));
+                    r.ResourceType == ResourceType.Embedded && r.Name == Constants.AvaloniaResourceName));
                 if (_embedded == null)
                     return;
                 using (var stream = _embedded.GetResourceStream())
                 {
                     var br = new BinaryReader(stream);
-                    var index = AvaloniaResourcesIndexReaderWriter.Read(new MemoryStream(br.ReadBytes(br.ReadInt32())));
+                    var index = AvaloniaResourcesIndexReaderWriter.ReadIndex(new MemoryStream(br.ReadBytes(br.ReadInt32())));
                     var baseOffset = stream.Position;
                     foreach (var e in index)
                     {
@@ -61,9 +63,18 @@ namespace Avalonia.Build.Tasks
                 if (_resources.Count == 0)
                     return;
 
-                _embedded = new EmbeddedResource("!AvaloniaResources", ManifestResourceAttributes.Public,
-                    AvaloniaResourcesIndexReaderWriter.Create(_resources.ToDictionary(x => x.Key,
-                        x => x.Value.FileContents)));
+                var output = new MemoryStream();
+
+                AvaloniaResourcesIndexReaderWriter.WriteResources(
+                    output,
+                    _resources.Select(x => (
+                        Path: x.Key,
+                        Size: x.Value.FileContents.Length,
+                        Open: (Func<Stream>) (() => new MemoryStream(x.Value.FileContents))
+                    )).ToList());
+
+                output.Position = 0L;
+                _embedded = new EmbeddedResource(Constants.AvaloniaResourceName, ManifestResourceAttributes.Public, output);
                 _asm.MainModule.Resources.Add(_embedded);
             }
 

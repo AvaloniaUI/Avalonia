@@ -1,10 +1,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
@@ -30,7 +29,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                 case TaskStatus.Faulted:
                     return HandleCompleted(task);
                 default:
-                    var subject = new Subject<object>();
+                    var subject = new LightweightSubject<object>();
                     task.ContinueWith(
                             x => HandleCompleted(task).Subscribe(subject),
                             TaskScheduler.FromCurrentSynchronizationContext())

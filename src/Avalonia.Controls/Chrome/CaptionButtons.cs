@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 
@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Chrome
     [PseudoClasses(":minimized", ":normal", ":maximized", ":fullscreen")]
     public class CaptionButtons : TemplatedControl
     {
-        private CompositeDisposable? _disposables;
+        private IDisposable? _disposables;
 
         /// <summary>
         /// Currently attached window.
@@ -28,17 +28,14 @@ namespace Avalonia.Controls.Chrome
             {
                 HostWindow = hostWindow;
 
-                _disposables = new CompositeDisposable
-                {
-                    HostWindow.GetObservable(Window.WindowStateProperty)
+                _disposables = HostWindow.GetObservable(Window.WindowStateProperty)
                     .Subscribe(x =>
                     {
                         PseudoClasses.Set(":minimized", x == WindowState.Minimized);
                         PseudoClasses.Set(":normal", x == WindowState.Normal);
                         PseudoClasses.Set(":maximized", x == WindowState.Maximized);
                         PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
-                    })
-                };
+                    });
             }
         }
 

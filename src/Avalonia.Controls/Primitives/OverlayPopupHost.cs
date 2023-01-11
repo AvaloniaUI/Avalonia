@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;

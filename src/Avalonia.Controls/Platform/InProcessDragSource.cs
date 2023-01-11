@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+﻿using System.Linq;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -17,7 +15,7 @@ namespace Avalonia.Platform
         private const RawInputModifiers MOUSE_INPUTMODIFIERS = RawInputModifiers.LeftMouseButton|RawInputModifiers.MiddleMouseButton|RawInputModifiers.RightMouseButton;
         private readonly IDragDropDevice _dragDrop;
         private readonly IInputManager _inputManager;
-        private readonly Subject<DragDropEffects> _result = new Subject<DragDropEffects>();
+        private readonly LightweightSubject<DragDropEffects> _result = new();
 
         private DragDropEffects _allowedEffects;
         private IDataObject? _draggedData;
@@ -44,11 +42,25 @@ namespace Avalonia.Platform
                 _lastPosition = default;
                 _allowedEffects = allowedEffects;
 
-                using (_inputManager.PreProcess.OfType<RawPointerEventArgs>().Subscribe(ProcessMouseEvents))
+                var inputObserver = new AnonymousObserver<RawInputEventArgs>(arg =>
                 {
-                    using (_inputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(ProcessKeyEvents))
+                    switch (arg)
                     {
-                        var effect = await _result.FirstAsync();
+                        case RawPointerEventArgs pointerEventArgs:
+                            ProcessMouseEvents(pointerEventArgs);
+                            break;
+                        case RawKeyEventArgs keyEventArgs:
+                            ProcessKeyEvents(keyEventArgs);
+                            break;
+                    }
+                }); 
+                
+                using (_inputManager.PreProcess.Subscribe(inputObserver))
+                {
+                    var tcs = new TaskCompletionSource<DragDropEffects>();
+                    using (_result.Subscribe(new AnonymousObserver<DragDropEffects>(tcs)))
+                    {
+                        var effect = await tcs.Task;
                         return effect;
                     }
                 }
