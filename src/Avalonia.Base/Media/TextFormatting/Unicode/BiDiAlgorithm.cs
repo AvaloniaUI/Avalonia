@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Avalonia.Collections.Pooled;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -27,7 +28,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// as much as possible.
     /// </para>
     /// </remarks>
-    internal sealed class BidiAlgorithm : IDisposable
+    internal struct BidiAlgorithm : IDisposable
     {
         /// <summary>
         /// The original BiDiClass classes as provided by the caller
@@ -97,7 +98,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The status stack used during resolution of explicit
         /// embedding and isolating runs
         /// </summary>
-        private readonly Stack<Status> _statusStack = new Stack<Status>();
+        private readonly PooledStack<Status> _statusStack = new PooledStack<Status>();
 
         /// <summary>
         /// Mapping used to virtually remove characters for rule X9
@@ -107,7 +108,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// Re-usable list of level runs
         /// </summary>
-        private readonly List<LevelRun> _levelRuns = new List<LevelRun>();
+        private readonly PooledList<LevelRun> _levelRuns = new PooledList<LevelRun>();
 
         /// <summary>
         /// Mapping for the current isolating sequence, built
@@ -118,7 +119,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// A stack of pending isolate openings used by FindIsolatePairs()
         /// </summary>
-        private readonly Stack<int> _pendingIsolateOpenings = new Stack<int>();
+        private readonly PooledStack<int> _pendingIsolateOpenings = new PooledStack<int>();
 
         /// <summary>
         /// The level of the isolating run currently being processed
@@ -174,17 +175,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Reusable list of pending opening brackets used by the
         /// LocatePairedBrackets method
         /// </summary>
-        private readonly List<int> _pendingOpeningBrackets = new List<int>();
+        private readonly PooledList<int> _pendingOpeningBrackets = new PooledList<int>();
 
         /// <summary>
         /// Resolved list of paired brackets
         /// </summary>
-        private readonly List<BracketPair> _pairedBrackets = new List<BracketPair>();
+        private readonly PooledList<BracketPair> _pairedBrackets = new PooledList<BracketPair>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BidiAlgorithm"/> class.
         /// </summary>
-        internal BidiAlgorithm()
+        public BidiAlgorithm()
         {
         }
 
@@ -1272,7 +1273,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Locate all pair brackets in the current isolating run
         /// </summary>
         /// <returns>A sorted list of BracketPairs</returns>
-        private List<BracketPair> LocatePairedBrackets()
+        private PooledList<BracketPair> LocatePairedBrackets()
         {
             // Clear work collections
             _pendingOpeningBrackets.Clear();
@@ -1719,8 +1720,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             _workingClassesBuffer.Dispose();
             _resolvedLevelsBuffer.Dispose();
+            _statusStack.Dispose();
             _x9Map.Dispose();
+            _levelRuns.Dispose();
             _isolatedRunMapping.Dispose();
+            _pendingIsolateOpenings.Dispose();
+            _pendingOpeningBrackets.Dispose();
+            _pairedBrackets.Dispose();
         }
     }
 }
