@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media.TextFormatting;
@@ -200,26 +201,24 @@ namespace Avalonia.Media
                     break;
             }
 
-            var strokeOffset = 0.0;
-
             switch (StrokeOffsetUnit)
             {
                 case TextDecorationUnit.FontRenderingEmSize:
-                    strokeOffset = StrokeOffset * textMetrics.FontRenderingEmSize;
+                    origin += new Point(0, StrokeOffset * textMetrics.FontRenderingEmSize);
                     break;
                 case TextDecorationUnit.Pixel:
-                    strokeOffset = StrokeOffset;
+                    origin += new Point(0, StrokeOffset);
                     break;
             }
-
-            origin += new Point(0, strokeOffset);
 
             var pen = new Pen(Stroke ?? defaultBrush, thickness,
                 new DashStyle(StrokeDashArray, StrokeDashOffset), StrokeLineCap);
 
-            if (Location == TextDecorationLocation.Underline && MathUtilities.IsZero(strokeOffset))
+            if (Location != TextDecorationLocation.Strikethrough)
             {
-                var intersections = glyphRun.GlyphRunImpl.GetIntersections((float)(thickness * 0.5d + strokeOffset), (float)(thickness * 1.5d + strokeOffset));
+                var offsetY = glyphRun.BaselineOrigin.Y - origin.Y;
+
+                var intersections = glyphRun.GlyphRunImpl.GetIntersections((float)(thickness * 0.5d - offsetY), (float)(thickness * 1.5d - offsetY));
 
                 if (intersections != null && intersections.Count > 0)
                 {
@@ -257,7 +256,7 @@ namespace Avalonia.Media
                     }
 
                     return;
-                }              
+                }
             }
 
             drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Metrics.Width, 0));
