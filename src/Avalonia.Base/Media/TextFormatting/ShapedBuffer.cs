@@ -11,7 +11,11 @@ namespace Avalonia.Media.TextFormatting
         private bool _rented;
         
         public ShapedBuffer(CharacterBufferRange characterBufferRange, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel) : 
-            this(characterBufferRange, ArrayPool<GlyphInfo>.Shared.Rent(bufferLength), glyphTypeface,  fontRenderingEmSize,  bidiLevel)
+            this(characterBufferRange, 
+                new ArraySlice<GlyphInfo>(ArrayPool<GlyphInfo>.Shared.Rent(bufferLength), 0, bufferLength), 
+                glyphTypeface,  
+                fontRenderingEmSize,  
+                bidiLevel)
         {
             _rented = true;
             Length = bufferLength;
