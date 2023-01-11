@@ -8,7 +8,7 @@ namespace Avalonia.Media.TextFormatting
     public sealed class ShapedBuffer : IList<GlyphInfo>, IDisposable
     {
         private static readonly IComparer<GlyphInfo> s_clusterComparer = new CompareClusters();
-        private bool _rented;
+        private bool _bufferRented;
         
         public ShapedBuffer(CharacterBufferRange characterBufferRange, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel) : 
             this(characterBufferRange, 
@@ -17,7 +17,7 @@ namespace Avalonia.Media.TextFormatting
                 fontRenderingEmSize,  
                 bidiLevel)
         {
-            _rented = true;
+            _bufferRented = true;
             Length = bufferLength;
         }
 
@@ -272,7 +272,7 @@ namespace Avalonia.Media.TextFormatting
         public void Dispose()
         {
             GC.SuppressFinalize(this);
-            if (_rented)
+            if (_bufferRented)
             {
                 GlyphInfos.ReturnRent();
             }
@@ -280,7 +280,7 @@ namespace Avalonia.Media.TextFormatting
 
         ~ShapedBuffer()
         {
-            if (_rented)
+            if (_bufferRented)
             {
                 GlyphInfos.ReturnRent();
             }

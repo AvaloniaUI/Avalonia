@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
@@ -69,6 +70,26 @@ In respect that the structure of the sufficient amount poses problems and challe
 
     [Benchmark]
     public TextLayout[] BuildManySmallTexts() => _manySmallStrings.Select(MakeLayout).ToArray();
+
+    [Benchmark]
+    public void VirtualizeTextBlocks()
+    {
+        var blocks = new TextBlock[10];
+        for (var i = 0; i < blocks.Length; i++)
+        {
+            blocks[i] = new TextBlock
+            {
+                Width = 120,
+                Height = 32,
+            };
+        }
+
+        for (int i = 0, j = 0; i < _manySmallStrings.Length; i++, j = j < blocks.Length - 1 ? j + 1 : 0)
+        {
+            blocks[j].Text = _manySmallStrings[i];
+            blocks[j].Measure(new Size(200, 200));
+        }
+    }
 
     private static TextLayout MakeLayout(string str)
     {
