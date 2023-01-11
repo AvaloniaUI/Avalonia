@@ -147,13 +147,13 @@ namespace Avalonia.Utilities
             {
                 newCapacity = min;
             }
-
-            Dispose();
+            
             var array = ArrayPool<T>.Shared.Rent(newCapacity);
 
             if (_size > 0)
             {
                 Array.Copy(_data!, array, _size);
+                ArrayPool<T>.Shared.Return(_data!);
             }
 
             _data = array;
