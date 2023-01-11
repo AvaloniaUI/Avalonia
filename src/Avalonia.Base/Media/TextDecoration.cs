@@ -1,5 +1,9 @@
-﻿using Avalonia.Collections;
+﻿using System.Collections.Generic;
+using Avalonia.Collections;
+using Avalonia.Collections.Pooled;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -196,18 +200,65 @@ namespace Avalonia.Media
                     break;
             }
 
+            var strokeOffset = 0.0;
+
             switch (StrokeOffsetUnit)
             {
                 case TextDecorationUnit.FontRenderingEmSize:
-                    origin += new Point(0, StrokeOffset * textMetrics.FontRenderingEmSize);
+                    strokeOffset = StrokeOffset * textMetrics.FontRenderingEmSize;
                     break;
                 case TextDecorationUnit.Pixel:
-                    origin += new Point(0, StrokeOffset);
+                    strokeOffset = StrokeOffset;
                     break;
             }
 
+            origin += new Point(0, strokeOffset);
+
             var pen = new Pen(Stroke ?? defaultBrush, thickness,
                 new DashStyle(StrokeDashArray, StrokeDashOffset), StrokeLineCap);
+
+            if (Location == TextDecorationLocation.Underline && MathUtilities.IsZero(strokeOffset))
+            {
+                var intersections = glyphRun.GlyphRunImpl.GetIntersections((float)(thickness * 0.5d + strokeOffset), (float)(thickness * 1.5d + strokeOffset));
+
+                if (intersections != null && intersections.Count > 0)
+                {
+                    var last = baselineOrigin.X;
+                    var finalPos = last + glyphRun.Size.Width;
+                    var end = last;
+
+                    var points = new List<double>();
+
+                    //math is taken from chrome's source code.
+                    for (var i = 0; i < intersections.Count; i += 2)
+                    {
+                        var start = intersections[i] - thickness;
+                        end = intersections[i + 1] + thickness;
+                        if (start > last && last + textMetrics.FontRenderingEmSize / 12 < start)
+                        {
+                            points.Add(last);
+                            points.Add(start);
+                        }
+                        last = end;
+                    }
+
+                    if (end < finalPos)
+                    {
+                        points.Add(end);
+                        points.Add(finalPos);
+                    }
+
+                    for (var i = 0; i < points.Count; i += 2)
+                    {
+                        var a = new Point(points[i], origin.Y);
+                        var b = new Point(points[i + 1], origin.Y);
+
+                        drawingContext.DrawLine(pen, a, b);
+                    }
+
+                    return;
+                }              
+            }
 
             drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Metrics.Width, 0));
         }
