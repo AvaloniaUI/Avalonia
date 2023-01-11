@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media
@@ -25,8 +26,6 @@ namespace Avalonia.Media
         /// </summary>
         public TranslateTransform()
         {
-            this.GetObservable(XProperty).Subscribe(_ => RaiseChanged());
-            this.GetObservable(YProperty).Subscribe(_ => RaiseChanged());
         }
 
         /// <summary>
@@ -63,5 +62,15 @@ namespace Avalonia.Media
         /// Gets the transform's <see cref="Matrix"/>.
         /// </summary>
         public override Matrix Value => Matrix.CreateTranslation(X, Y);
+        
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == XProperty || change.Property == YProperty)
+            {
+                RaiseChanged();
+            }
+        }
     }
 }

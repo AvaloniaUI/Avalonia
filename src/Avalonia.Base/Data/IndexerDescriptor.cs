@@ -1,12 +1,11 @@
 using System;
-using System.Reactive;
 
 namespace Avalonia.Data
 {
     /// <summary>
     /// Holds a description of a binding for <see cref="AvaloniaObject"/>'s [] operator.
     /// </summary>
-    public class IndexerDescriptor : ObservableBase<object?>, IDescription
+    public class IndexerDescriptor : IObservable<object?>, IDescription
     {
         /// <summary>
         /// Gets or sets the binding mode.
@@ -104,7 +103,7 @@ namespace Avalonia.Data
         }
 
         /// <inheritdoc/>
-        protected override IDisposable SubscribeCore(IObserver<object?> observer)
+        public IDisposable Subscribe(IObserver<object?> observer)
         {
             if (SourceObservable is null && Source is null)
                 throw new InvalidOperationException("Cannot subscribe to IndexerDescriptor.");

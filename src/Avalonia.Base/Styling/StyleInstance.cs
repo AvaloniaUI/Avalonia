@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Subjects;
 using Avalonia.Animation;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
+using Avalonia.Reactive;
 using Avalonia.Styling.Activators;
 
 namespace Avalonia.Styling
@@ -24,7 +24,7 @@ namespace Avalonia.Styling
         private bool _isActive;
         private List<ISetterInstance>? _setters;
         private List<IAnimation>? _animations;
-        private Subject<bool>? _animationTrigger;
+        private LightweightSubject<bool>? _animationTrigger;
 
         public StyleInstance(
             IStyle style,
@@ -67,7 +67,7 @@ namespace Avalonia.Styling
         {
             if (_animations is not null && control is Animatable animatable)
             {
-                _animationTrigger ??= new Subject<bool>();
+                _animationTrigger ??= new LightweightSubject<bool>();
                 foreach (var animation in _animations)
                     animation.Apply(animatable, null, _animationTrigger);
 

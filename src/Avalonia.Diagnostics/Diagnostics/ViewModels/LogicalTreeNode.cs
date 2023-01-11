@@ -1,10 +1,10 @@
 using System;
-using System.Reactive.Disposables;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 using System.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
@@ -84,7 +84,7 @@ namespace Avalonia.Diagnostics.ViewModels
                         }
                         nodes.Add(new LogicalTreeNode(window, Owner));
                     }
-                    _subscriptions = new System.Reactive.Disposables.CompositeDisposable()
+                    _subscriptions = new CompositeDisposable(2)
                     {
                         Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (s,e)=>
                             {

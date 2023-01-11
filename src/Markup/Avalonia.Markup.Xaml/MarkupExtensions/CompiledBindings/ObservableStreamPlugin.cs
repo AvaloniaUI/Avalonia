@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Linq;
 using System.Text;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {

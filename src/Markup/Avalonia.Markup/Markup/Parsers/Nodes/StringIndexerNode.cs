@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Reflection;
 using Avalonia.Data;
 using Avalonia.Data.Core;
