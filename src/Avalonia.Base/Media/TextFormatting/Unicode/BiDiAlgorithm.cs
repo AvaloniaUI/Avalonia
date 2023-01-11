@@ -98,7 +98,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The status stack used during resolution of explicit
         /// embedding and isolating runs
         /// </summary>
-        private readonly PooledStack<Status> _statusStack = new PooledStack<Status>();
+        private readonly Stack<Status> _statusStack = new Stack<Status>();
 
         /// <summary>
         /// Mapping used to virtually remove characters for rule X9
@@ -108,7 +108,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// Re-usable list of level runs
         /// </summary>
-        private readonly PooledList<LevelRun> _levelRuns = new PooledList<LevelRun>();
+        private readonly List<LevelRun> _levelRuns = new List<LevelRun>();
 
         /// <summary>
         /// Mapping for the current isolating sequence, built
@@ -119,7 +119,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// A stack of pending isolate openings used by FindIsolatePairs()
         /// </summary>
-        private readonly PooledStack<int> _pendingIsolateOpenings = new PooledStack<int>();
+        private readonly Stack<int> _pendingIsolateOpenings = new Stack<int>();
 
         /// <summary>
         /// The level of the isolating run currently being processed
@@ -175,12 +175,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Reusable list of pending opening brackets used by the
         /// LocatePairedBrackets method
         /// </summary>
-        private readonly PooledList<int> _pendingOpeningBrackets = new PooledList<int>();
+        private readonly List<int> _pendingOpeningBrackets = new List<int>();
 
         /// <summary>
         /// Resolved list of paired brackets
         /// </summary>
-        private readonly PooledList<BracketPair> _pairedBrackets = new PooledList<BracketPair>();
+        private readonly List<BracketPair> _pairedBrackets = new List<BracketPair>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BidiAlgorithm"/> class.
@@ -1273,7 +1273,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Locate all pair brackets in the current isolating run
         /// </summary>
         /// <returns>A sorted list of BracketPairs</returns>
-        private PooledList<BracketPair> LocatePairedBrackets()
+        private List<BracketPair> LocatePairedBrackets()
         {
             // Clear work collections
             _pendingOpeningBrackets.Clear();
@@ -1720,13 +1720,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
         {
             _workingClassesBuffer.Dispose();
             _resolvedLevelsBuffer.Dispose();
-            _statusStack.Dispose();
             _x9Map.Dispose();
-            _levelRuns.Dispose();
             _isolatedRunMapping.Dispose();
-            _pendingIsolateOpenings.Dispose();
-            _pendingOpeningBrackets.Dispose();
-            _pairedBrackets.Dispose();
         }
     }
 }
