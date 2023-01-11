@@ -1,4 +1,5 @@
-﻿using Avalonia.Platform;
+﻿using System.Collections.Generic;
+using Avalonia.Platform;
 
 namespace Avalonia.Benchmarks
 {
@@ -6,6 +7,11 @@ namespace Avalonia.Benchmarks
     {
         public void Dispose()
         {
+        }
+
+        public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
+        {
+            return null;
         }
     }
 }
