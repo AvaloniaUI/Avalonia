@@ -11,7 +11,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// Represents a unicode string and all associated attributes
     /// for each character required for the bidirectional Unicode algorithm
     /// </summary>
-    internal class BidiData
+    internal struct BidiData : IDisposable
     {
         private ArrayBuilder<BidiClass> _classes;
         private ArrayBuilder<BidiPairedBracketType> _pairedBracketTypes;
@@ -180,6 +180,16 @@ namespace Avalonia.Media.TextFormatting.Unicode
             _tempLevelBuffer.Clear();
             
             return _tempLevelBuffer.Add(length, false);
+        }
+
+        public void Dispose()
+        {
+            _classes.Dispose();
+            _pairedBracketTypes.Dispose();
+            _pairedBracketValues.Dispose();
+            _savedClasses.Dispose();
+            _savedPairedBracketTypes.Dispose();
+            _tempLevelBuffer.Dispose();
         }
     }
 }
