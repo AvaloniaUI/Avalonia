@@ -119,7 +119,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// A stack of pending isolate openings used by FindIsolatePairs()
         /// </summary>
-        private readonly Stack<int> _pendingIsolateOpenings = new Stack<int>();
+        private Stack<int>? _pendingIsolateOpenings;
 
         /// <summary>
         /// The level of the isolating run currently being processed
@@ -359,7 +359,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             _hasIsolates = false;
 
             // BD9...
-            _pendingIsolateOpenings.Clear();
+            _pendingIsolateOpenings?.Clear();
             
             for (var i = 0; i < _originalClasses.Length; i++)
             {
@@ -371,13 +371,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     case BidiClass.RightToLeftIsolate:
                     case BidiClass.FirstStrongIsolate:
                     {
+                        _pendingIsolateOpenings ??= new Stack<int>();
                         _pendingIsolateOpenings.Push(i);
                         _hasIsolates = true;
                         break;
                     }
                     case BidiClass.PopDirectionalIsolate:
                     {
-                        if (_pendingIsolateOpenings.Count > 0)
+                        if (_pendingIsolateOpenings?.Count > 0)
                         {
                             _isolatePairs ??= new BidiDictionary<int, int>();
                             _isolatePairs.Add(_pendingIsolateOpenings.Pop(), i);
