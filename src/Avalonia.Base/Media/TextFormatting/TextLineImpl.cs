@@ -981,9 +981,12 @@ namespace Avalonia.Media.TextFormatting
 
         public override void Dispose()
         {
-            foreach (var run in _textRuns.OfType<ShapedTextRun>())
+            for (int i = 0; i < _textRuns.Count; i++)
             {
-                run.Dispose();
+                if (_textRuns[i] is ShapedTextRun shapedTextRun)
+                {
+                    shapedTextRun.Dispose();
+                }
             }
         }
 
