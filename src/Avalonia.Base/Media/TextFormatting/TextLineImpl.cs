@@ -1438,7 +1438,7 @@ namespace Avalonia.Media.TextFormatting
 
             var lastRunIndex = _textRuns.Count - 1;
 
-            if (_textRuns[lastRunIndex] is TextEndOfLine && lastRunIndex > 0)
+            if (lastRunIndex > 0 && _textRuns[lastRunIndex] is TextEndOfLine)
             {
                 lastRunIndex--;
             }
