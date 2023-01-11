@@ -187,10 +187,7 @@ namespace Avalonia.Media.TextFormatting
 
             var processedRuns = new List<TextRun>(textRuns.Count);
 
-            foreach (var coalescedRuns in CoalesceLevels(textRuns, biDi.ResolvedLevels))
-            {
-                processedRuns.AddRange(coalescedRuns);
-            }
+            CoalesceLevels(textRuns, biDi.ResolvedLevels, processedRuns);
 
             for (var index = 0; index < processedRuns.Count; index++)
             {
@@ -282,12 +279,14 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <param name="textCharacters">The text characters to form <see cref="UnshapedTextRun"/> from.</param>
         /// <param name="levels">The bidi levels.</param>
+        /// <param name="processedRuns"></param>
         /// <returns></returns>
-        private static IEnumerable<IReadOnlyList<TextRun>> CoalesceLevels(IReadOnlyList<TextRun> textCharacters, ArraySlice<sbyte> levels)
+        private static void CoalesceLevels(IReadOnlyList<TextRun> textCharacters, ArraySlice<sbyte> levels,
+            List<TextRun> processedRuns)
         {
             if (levels.Length == 0)
             {
-                yield break;
+                return;
             }
 
             var levelIndex = 0;
@@ -306,7 +305,7 @@ namespace Avalonia.Media.TextFormatting
                 {
                     var drawableRun = textCharacters[i];
 
-                    yield return new[] { drawableRun };
+                    processedRuns.Add(drawableRun);
 
                     levelIndex += drawableRun.Length;
 
@@ -329,7 +328,7 @@ namespace Avalonia.Media.TextFormatting
 
                     if (j == runText.Length)
                     {
-                        yield return currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties);
+                        processedRuns.AddRange(currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties));
 
                         runLevel = levels[levelIndex];
 
@@ -342,7 +341,7 @@ namespace Avalonia.Media.TextFormatting
                     }
 
                     // End of this run
-                    yield return currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties);
+                    processedRuns.AddRange(currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties));
 
                     runText = runText.Skip(j);
 
@@ -355,10 +354,10 @@ namespace Avalonia.Media.TextFormatting
 
             if (currentRun is null || runText.IsEmpty)
             {
-                yield break;
+                return;
             }
 
-            yield return currentRun.GetShapeableCharacters(runText, runLevel, ref previousProperties);
+            processedRuns.AddRange(currentRun.GetShapeableCharacters(runText, runLevel, ref previousProperties));
         }
 
         /// <summary>
