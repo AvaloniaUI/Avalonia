@@ -1,6 +1,8 @@
 <UserControl x:Class="ControlCatalog.Pages.DialogsPage"
              xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:storage="clr-namespace:Avalonia.Platform.Storage;assembly=Avalonia.Base"
+             xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Collections">
   <StackPanel Margin="4"
               Orientation="Vertical"
               Spacing="4">
@@ -42,6 +44,19 @@
       </StackPanel>
     </Expander>
 
+    <AutoCompleteBox x:Name="CurrentFolderBox" Watermark="Write full path/uri or well known folder name">
+      <AutoCompleteBox.Items>
+        <generic:List x:TypeArguments="storage:WellKnownFolder">
+          <storage:WellKnownFolder>Desktop</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Documents</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Downloads</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Pictures</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Videos</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Music</storage:WellKnownFolder>
+        </generic:List>
+      </AutoCompleteBox.Items>
+    </AutoCompleteBox>
+    
     <TextBlock x:Name="PickerLastResultsVisible"
                Classes="h2"
                IsVisible="False"

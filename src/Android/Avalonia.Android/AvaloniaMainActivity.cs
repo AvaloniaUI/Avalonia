@@ -1,6 +1,7 @@
 using System;
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
@@ -17,6 +18,7 @@ namespace Avalonia.Android
         internal static object ViewContent;
 
         public Action<int, Result, Intent> ActivityResult { get; set; }
+        public Action<int, string[], Permission[]> RequestPermissionsResult { get; set; }
         internal AvaloniaView View;
         private GlobalLayoutListener _listener;
 
@@ -75,6 +77,13 @@ namespace Avalonia.Android
             base.OnActivityResult(requestCode, resultCode, data);
 
             ActivityResult?.Invoke(requestCode, resultCode, data);
+        }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+        {
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            
+            RequestPermissionsResult?.Invoke(requestCode, permissions, grantResults);
         }
 
         class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
