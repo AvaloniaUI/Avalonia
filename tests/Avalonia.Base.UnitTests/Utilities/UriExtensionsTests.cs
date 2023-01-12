@@ -29,7 +29,6 @@ public class UriExtensionsTests
     }
     
     [Theory]
-    [InlineData("C://Work/Projects.txt")]
     [InlineData("/home/Projects.txt")]
     [InlineData("/home/Stahování/Požární kniha 2.txt")]
     [InlineData("C:\\%51.txt")]

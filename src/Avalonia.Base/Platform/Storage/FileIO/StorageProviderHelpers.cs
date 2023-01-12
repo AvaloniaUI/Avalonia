@@ -15,9 +15,7 @@ internal static class StorageProviderHelpers
             .Replace("]", $"%{(int)']':X2}")
             .ToString();
 
-        return Path.IsPathRooted(path) ?
-            new UriBuilder("file", string.Empty) { Path = uriPath }.Uri :
-            new Uri(uriPath, UriKind.Relative);
+        return new UriBuilder("file", string.Empty) { Path = uriPath }.Uri;
     }
     
     public static string NameWithExtension(string path, string? defaultExtension, FilePickerFileType? filter)
