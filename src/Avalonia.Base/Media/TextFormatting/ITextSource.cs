@@ -13,5 +13,10 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="textSourceIndex">The text source index.</param>
         /// <returns>The text run.</returns>
         TextRun? GetTextRun(int textSourceIndex);
+        
+        /// <summary>
+        /// Length of text source. Used for bounds check.
+        /// </summary>
+        int Length { get; }
     }
 }

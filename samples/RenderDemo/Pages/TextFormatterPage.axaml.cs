@@ -92,6 +92,8 @@ namespace RenderDemo.Pages
 
                 return new TextCharacters(_text, _defaultProperties);
             }
+
+            public int Length => _text.Length * 2 + TextRun.DefaultTextSourceLength;
         }
 
         private class ControlRun : DrawableTextRun

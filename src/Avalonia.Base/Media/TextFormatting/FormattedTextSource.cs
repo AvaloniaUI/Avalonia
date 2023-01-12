@@ -21,7 +21,7 @@ namespace Avalonia.Media.TextFormatting
 
         public TextRun? GetTextRun(int textSourceIndex)
         {
-            if (textSourceIndex > _text.Length)
+            if (textSourceIndex >= _text.Length)
             {
                 return null;
             }
@@ -37,6 +37,8 @@ namespace Avalonia.Media.TextFormatting
 
             return new TextCharacters(runText.Take(textStyleRun.Length).CharacterBufferReference, textStyleRun.Length, textStyleRun.Value);
         }
+
+        public int Length => _text.Length;
 
         /// <summary>
         /// Creates a span of text run properties that has modifier applied.

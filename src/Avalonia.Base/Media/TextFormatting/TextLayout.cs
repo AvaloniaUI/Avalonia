@@ -443,7 +443,7 @@ namespace Avalonia.Media.TextFormatting
 
             TextLine? previousLine = null;
 
-            while (true)
+            while (_textSource.Length > _textSourceLength)
             {
                 var textLine = TextFormatter.Current.FormatLine(_textSource, _textSourceLength, MaxWidth,
                     _paragraphProperties, previousLine?.TextLineBreak);

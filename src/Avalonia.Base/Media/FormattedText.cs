@@ -1617,6 +1617,8 @@ namespace Avalonia.Media
 
                 return textCharacters;
             }
+
+            public int Length => _that._text.Length;
         }
     }
 }

@@ -93,6 +93,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 return new TextEndOfParagraph();
             }
 
+            public int Length => _textRuns.Sum(x => x.Length);
+
             private class DummyRun : TextRun
             {
                 public DummyRun()
@@ -654,6 +656,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 return new TextEndOfLine();
             }
+
+            public int Length => 0;
         }
 
         private class CustomTextSource : ITextSource
@@ -679,6 +683,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 return new TextCharacters(_text, 0, _text.Length, new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
             }
+
+            public int Length => _text.Length + TextRun.DefaultTextSourceLength + _text.Length;
         }
 
         private class RectangleRun : DrawableTextRun

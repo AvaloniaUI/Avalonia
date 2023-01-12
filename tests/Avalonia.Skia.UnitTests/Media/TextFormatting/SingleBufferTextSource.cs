@@ -29,5 +29,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
             return new TextCharacters(runText.CharacterBufferReference, runText.Length, _defaultGenericPropertiesRunProperties);
         }
+
+        public int Length => _text.Length;
     }
 }

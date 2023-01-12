@@ -698,6 +698,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         return null;
                 }
             }
+
+            public int Length => 40;
         }
 
         private class DrawableRunTextSource : ITextSource
@@ -720,6 +722,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         return null;
                 }
             }
+
+            public int Length => 10;
         }
 
         private class CustomDrawableRun : DrawableTextRun
@@ -991,6 +995,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 return null;
             }
+
+            public int Length => _textRuns.Sum(x => x.Length);
         }
 
         private static IDisposable Start()
