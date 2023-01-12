@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Reactive;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Input.GestureRecognizers;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -14,6 +15,7 @@ namespace Avalonia.Controls.Presenters
     public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable, IScrollAnchorProvider
     {
         private const double EdgeDetectionTolerance = 0.1;
+        private const int ProximityPoints = 10;
 
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
@@ -58,6 +60,30 @@ namespace Avalonia.Controls.Presenters
                 (o, v) => o.Viewport = v);
 
         /// <summary>
+        /// Defines the <see cref="HorizontalSnapPointsType"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SnapPointsType> HorizontalSnapPointsTypeProperty =
+            ScrollViewer.HorizontalSnapPointsTypeProperty.AddOwner<ScrollContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalSnapPointsType"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SnapPointsType> VerticalSnapPointsTypeProperty =
+           ScrollViewer.VerticalSnapPointsTypeProperty.AddOwner<ScrollContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalSnapPointsAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SnapPointsAlignment> HorizontalSnapPointsAlignmentProperty =
+            ScrollViewer.HorizontalSnapPointsAlignmentProperty.AddOwner<ScrollContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="VerticalSnapPointsAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SnapPointsAlignment> VerticalSnapPointsAlignmentProperty =
+            ScrollViewer.VerticalSnapPointsAlignmentProperty.AddOwner<ScrollContentPresenter>();
+
+        /// <summary>
         /// Defines the <see cref="IsScrollChainingEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsScrollChainingEnabledProperty =
@@ -71,10 +97,19 @@ namespace Avalonia.Controls.Presenters
         private IDisposable? _logicalScrollSubscription;
         private Size _viewport;
         private Dictionary<int, Vector>? _activeLogicalGestureScrolls;
+        private Dictionary<int, Vector>? _scrollGestureSnapPoints;
         private List<Control>? _anchorCandidates;
         private Control? _anchorElement;
         private Rect _anchorElementBounds;
         private bool _isAnchorElementDirty;
+        private bool _areVerticalSnapPointsRegular;
+        private bool _areHorizontalSnapPointsRegular;
+        private IReadOnlyList<double>? _horizontalSnapPoints;
+        private double _horizontalSnapPoint;
+        private IReadOnlyList<double>? _verticalSnapPoints;
+        private double _verticalSnapPoint;
+        private double _verticalSnapPointOffset;
+        private double _horizontalSnapPointOffset;
 
         /// <summary>
         /// Initializes static members of the <see cref="ScrollContentPresenter"/> class.
@@ -93,6 +128,7 @@ namespace Avalonia.Controls.Presenters
             AddHandler(RequestBringIntoViewEvent, BringIntoViewRequested);
             AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
             AddHandler(Gestures.ScrollGestureEndedEvent, OnScrollGestureEnded);
+            AddHandler(Gestures.ScrollGestureInertiaStartingEvent, OnScrollGestureInertiaStartingEnded);
 
             this.GetObservable(ChildProperty).Subscribe(UpdateScrollableSubscription);
         }
@@ -140,6 +176,30 @@ namespace Avalonia.Controls.Presenters
         {
             get { return _viewport; }
             private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
+        }
+
+        public SnapPointsType HorizontalSnapPointsType
+        {
+            get => GetValue(HorizontalSnapPointsTypeProperty); 
+            set => SetValue(HorizontalSnapPointsTypeProperty, value);
+        }
+
+        public SnapPointsType VerticalSnapPointsType
+        {
+            get => GetValue(VerticalSnapPointsTypeProperty); 
+            set => SetValue(VerticalSnapPointsTypeProperty, value);
+        }
+
+        public SnapPointsAlignment HorizontalSnapPointsAlignment
+        {
+            get => GetValue(HorizontalSnapPointsAlignmentProperty); 
+            set => SetValue(HorizontalSnapPointsAlignmentProperty, value);
+        }
+
+        public SnapPointsAlignment VerticalSnapPointsAlignment
+        {
+            get => GetValue(VerticalSnapPointsAlignmentProperty); 
+            set => SetValue(VerticalSnapPointsAlignmentProperty, value);
         }
 
         /// <summary>
@@ -424,6 +484,25 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 Vector newOffset = new Vector(x, y);
+
+                if (_scrollGestureSnapPoints?.TryGetValue(e.Id, out var snapPoint) == true)
+                {
+                    double xOffset = x;
+                    double yOffset = y;
+
+                    if (HorizontalSnapPointsType != SnapPointsType.None)
+                    {
+                        xOffset = delta.X < 0 ? Math.Max(snapPoint.X, newOffset.X) : Math.Min(snapPoint.X, newOffset.X);
+                    }
+
+                    if (VerticalSnapPointsType != SnapPointsType.None)
+                    {
+                        yOffset = delta.Y < 0 ? Math.Max(snapPoint.Y, newOffset.Y) : Math.Min(snapPoint.Y, newOffset.Y);
+                    }
+
+                    newOffset = new Vector(xOffset, yOffset);
+                }
+
                 bool offsetChanged = newOffset != Offset;
                 Offset = newOffset;
 
@@ -434,7 +513,65 @@ namespace Avalonia.Controls.Presenters
         }
 
         private void OnScrollGestureEnded(object? sender, ScrollGestureEndedEventArgs e)
-            => _activeLogicalGestureScrolls?.Remove(e.Id);
+        {
+            _activeLogicalGestureScrolls?.Remove(e.Id);
+            _scrollGestureSnapPoints?.Remove(e.Id);
+
+            Offset = SnapOffset(Offset);
+        }
+
+        private void OnScrollGestureInertiaStartingEnded(object? sender, ScrollGestureInertiaStartingEventArgs e)
+        {
+            if (Content is not IScrollSnapPointsInfo)
+                return;
+
+            if (_scrollGestureSnapPoints == null)
+                _scrollGestureSnapPoints = new Dictionary<int, Vector>();
+
+            var offset = Offset;
+
+            if (HorizontalSnapPointsType != SnapPointsType.None && VerticalSnapPointsType != SnapPointsType.None)
+            {
+                return;
+            }
+
+            double xDistance = 0;
+            double yDistance = 0;
+
+            if (HorizontalSnapPointsType != SnapPointsType.None)
+            {
+                xDistance = HorizontalSnapPointsType == SnapPointsType.Mandatory ? GetDistance(e.Inertia.X) : 0;
+            }
+
+            if (VerticalSnapPointsType != SnapPointsType.None)
+            {
+                yDistance = VerticalSnapPointsType == SnapPointsType.Mandatory ? GetDistance(e.Inertia.Y) : 0;
+            }
+
+            offset = new Vector(offset.X + xDistance, offset.Y + yDistance);
+
+            System.Diagnostics.Debug.WriteLine($"{offset}");
+
+            _scrollGestureSnapPoints.Add(e.Id, SnapOffset(offset));
+
+            double GetDistance(double speed)
+            {
+                var time = Math.Log(ScrollGestureRecognizer.InertialScrollSpeedEnd / Math.Abs(speed)) / Math.Log(ScrollGestureRecognizer.InertialResistance);
+
+                double timeElapsed = 0, distance = 0, step = 0;
+
+                while (timeElapsed <= time)
+                {
+                    double s = speed * Math.Pow(ScrollGestureRecognizer.InertialResistance, timeElapsed);
+                    distance += (s * step);
+
+                    timeElapsed += 0.016f;
+                    step = 0.016f;
+                }
+
+                return distance;
+            }
+        }
 
         /// <inheritdoc/>
         protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -472,6 +609,7 @@ namespace Avalonia.Controls.Presenters
                 }
 
                 Vector newOffset = new Vector(x, y);
+
                 bool offsetChanged = newOffset != Offset;
                 Offset = newOffset;
 
@@ -485,8 +623,34 @@ namespace Avalonia.Controls.Presenters
             {
                 InvalidateArrange();
             }
+            else if (change.Property == ContentProperty)
+            {
+                if (change.OldValue is IScrollSnapPointsInfo oldSnapPointsInfo)
+                {
+                    oldSnapPointsInfo.VerticalSnapPointsChanged -= ScrollSnapPointsInfoSnapPointsChanged;
+                    oldSnapPointsInfo.HorizontalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
+                }
+
+                if (Content is IScrollSnapPointsInfo scrollSnapPointsInfo)
+                {
+                    scrollSnapPointsInfo.VerticalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
+                    scrollSnapPointsInfo.HorizontalSnapPointsChanged += ScrollSnapPointsInfoSnapPointsChanged;
+                }
+
+                UpdateSnapPoints();
+            }
+            else if (change.Property == HorizontalSnapPointsAlignmentProperty ||
+                change.Property == VerticalSnapPointsAlignmentProperty)
+            {
+                UpdateSnapPoints();
+            }
 
             base.OnPropertyChanged(change);
+        }
+
+        private void ScrollSnapPointsInfoSnapPointsChanged(object? sender, Interactivity.RoutedEventArgs e)
+        {
+            UpdateSnapPoints();
         }
 
         private void BringIntoViewRequested(object? sender, RequestBringIntoViewEventArgs e)
@@ -634,6 +798,111 @@ namespace Avalonia.Controls.Presenters
             var p = control.TranslatePoint(default, to);
             bounds = p.HasValue ? new Rect(p.Value, control.Bounds.Size) : default;
             return p.HasValue;
+        }
+
+        private void UpdateSnapPoints()
+        {
+            if (Content is IScrollSnapPointsInfo scrollSnapPointsInfo)
+            {
+                _areVerticalSnapPointsRegular = scrollSnapPointsInfo.AreVerticalSnapPointsRegular;
+                _areHorizontalSnapPointsRegular = scrollSnapPointsInfo.AreHorizontalSnapPointsRegular;
+
+                if (!_areVerticalSnapPointsRegular)
+                {
+                    _verticalSnapPoints = scrollSnapPointsInfo.GetIrregularSnapPoints(Layout.Orientation.Vertical, HorizontalSnapPointsAlignment);
+                }
+                else
+                {
+                    _verticalSnapPoints = new List<double>();
+                    _verticalSnapPoint = scrollSnapPointsInfo.GetRegularSnapPoints(Layout.Orientation.Vertical, VerticalSnapPointsAlignment, out _verticalSnapPointOffset);
+
+                }
+
+                if (!_areHorizontalSnapPointsRegular)
+                {
+                    _horizontalSnapPoints = scrollSnapPointsInfo.GetIrregularSnapPoints(Layout.Orientation.Horizontal, HorizontalSnapPointsAlignment);
+                }
+                else
+                {
+                    _horizontalSnapPoints = new List<double>();
+                    _horizontalSnapPoint = scrollSnapPointsInfo.GetRegularSnapPoints(Layout.Orientation.Vertical, VerticalSnapPointsAlignment, out _horizontalSnapPointOffset);
+                }
+            }
+            else
+            {
+                _horizontalSnapPoints = new List<double>();
+                _verticalSnapPoints = new List<double>();
+            }
+        }
+
+        private Vector SnapOffset(Vector offset)
+        {
+            if(Content is not IScrollSnapPointsInfo)
+                return offset;
+
+            if (VerticalSnapPointsType != SnapPointsType.None)
+            {
+                double nearestSnapPoint = offset.Y;
+
+                if (_areVerticalSnapPointsRegular)
+                {
+                    var minSnapPoint = (int)(offset.Y / _verticalSnapPoint) * _verticalSnapPoint + _verticalSnapPointOffset;
+                    var maxSnapPoint = minSnapPoint + _verticalSnapPoint;
+                    var midPoint = (minSnapPoint + maxSnapPoint) / 2;
+
+                    nearestSnapPoint = offset.Y < midPoint ? minSnapPoint : maxSnapPoint;
+                }
+                else if (_verticalSnapPoints != null && _verticalSnapPoints.Count > 0)
+                {
+                    var higherSnapPoint = FindNearestSnapPoint(_verticalSnapPoints, offset.Y, out var lowerSnapPoint);
+                    var midPoint = (lowerSnapPoint + higherSnapPoint) / 2;
+
+                    nearestSnapPoint = offset.Y < midPoint ? lowerSnapPoint : higherSnapPoint;
+                }
+
+                offset = new Vector(offset.X, nearestSnapPoint);
+            }
+
+            if (HorizontalSnapPointsType != SnapPointsType.None)
+            {
+                double nearestSnapPoint = offset.X;
+
+                if (_areHorizontalSnapPointsRegular)
+                {
+                    var minSnapPoint = (int)(offset.X / _horizontalSnapPoint) * _horizontalSnapPoint + _horizontalSnapPointOffset;
+                    var maxSnapPoint = minSnapPoint + _horizontalSnapPoint;
+                    var midPoint = (minSnapPoint + maxSnapPoint) / 2;
+
+                    nearestSnapPoint = offset.X < midPoint ? minSnapPoint : maxSnapPoint;
+                }
+                else if (_horizontalSnapPoints != null && _horizontalSnapPoints.Count > 0)
+                {
+                    var higherSnapPoint = FindNearestSnapPoint(_horizontalSnapPoints, offset.X, out var lowerSnapPoint);
+                    var midPoint = (lowerSnapPoint + higherSnapPoint) / 2;
+
+                    nearestSnapPoint = offset.X < midPoint ? lowerSnapPoint : higherSnapPoint;
+                }
+
+                offset = new Vector(nearestSnapPoint, offset.Y);
+
+            }
+
+            double FindNearestSnapPoint(IReadOnlyList<double> snapPoints, double value, out double lowerSnapPoint)
+            {
+                var point = snapPoints.BinarySearch(value, Comparer<double>.Default);
+
+                lowerSnapPoint = 0;
+
+                if (point < 0)
+                {
+                    point = ~point;
+                }
+
+                lowerSnapPoint = snapPoints[Math.Max(0, point - 1)];
+                return snapPoints[Math.Min(point, snapPoints.Count - 1)];
+            }
+
+            return offset;
         }
     }
 }

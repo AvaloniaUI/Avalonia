@@ -8,6 +8,10 @@ namespace Avalonia.Input.GestureRecognizers
         : StyledElement, // It's not an "element" in any way, shape or form, but TemplateBinding refuse to work otherwise
             IGestureRecognizer
     {
+        // Pixels per second speed that is considered to be the stop of inertial scroll
+        internal const double InertialScrollSpeedEnd = 5;
+        public const double InertialResistance = 0.15;
+
         private bool _scrolling;
         private Point _trackedRootPoint;
         private IPointer? _tracking;
@@ -97,9 +101,6 @@ namespace Avalonia.Input.GestureRecognizers
             }
         }
         
-        // Pixels per second speed that is considered to be the stop of inertial scroll
-        private const double InertialScrollSpeedEnd = 5;
-        
         public void PointerMoved(PointerEventArgs e)
         {
             if (e.Pointer == _tracking)
@@ -176,6 +177,7 @@ namespace Avalonia.Input.GestureRecognizers
                     var savedGestureId = _gestureId;
                     var st = Stopwatch.StartNew();
                     var lastTime = TimeSpan.Zero;
+                    _target!.RaiseEvent(new ScrollGestureInertiaStartingEventArgs(_gestureId, _inertia));
                     DispatcherTimer.Run(() =>
                     {
                         // Another gesture has started, finish the current one
@@ -187,7 +189,7 @@ namespace Avalonia.Input.GestureRecognizers
                         var elapsedSinceLastTick = st.Elapsed - lastTime;
                         lastTime = st.Elapsed;
 
-                        var speed = _inertia * Math.Pow(0.15, st.Elapsed.TotalSeconds);
+                        var speed = _inertia * Math.Pow(InertialResistance, st.Elapsed.TotalSeconds);
                         var distance = speed * elapsedSinceLastTick.TotalSeconds;
                         var scrollGestureEventArgs = new ScrollGestureEventArgs(_gestureId, distance);
                         _target!.RaiseEvent(scrollGestureEventArgs);

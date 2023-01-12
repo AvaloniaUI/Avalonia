@@ -152,6 +152,34 @@ namespace Avalonia.Controls
                 (o, v) => o.VerticalScrollBarValue = v);
 
         /// <summary>
+        /// Defines the <see cref="HorizontalSnapPointsType"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SnapPointsType> HorizontalSnapPointsTypeProperty =
+            AvaloniaProperty.Register<ScrollViewer, SnapPointsType>(
+                nameof(HorizontalSnapPointsType));
+
+        /// <summary>
+        /// Defines the <see cref="VerticalSnapPointsType"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SnapPointsType> VerticalSnapPointsTypeProperty =
+            AvaloniaProperty.Register<ScrollViewer, SnapPointsType>(
+                nameof(VerticalSnapPointsType));
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalSnapPointsAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SnapPointsAlignment> HorizontalSnapPointsAlignmentProperty =
+            AvaloniaProperty.Register<ScrollViewer, SnapPointsAlignment>(
+                nameof(HorizontalSnapPointsAlignment));
+
+        /// <summary>
+        /// Defines the <see cref="VerticalSnapPointsAlignment"/> property.
+        /// </summary>
+        public static readonly StyledProperty<SnapPointsAlignment> VerticalSnapPointsAlignmentProperty =
+            AvaloniaProperty.Register<ScrollViewer, SnapPointsAlignment>(
+                nameof(VerticalSnapPointsAlignment));
+
+        /// <summary>
         /// Defines the VerticalScrollBarViewportSize property.
         /// </summary>
         /// <remarks>
@@ -419,6 +447,30 @@ namespace Avalonia.Controls
         {
             get => _isExpanded;
             private set => SetAndRaise(ScrollBar.IsExpandedProperty, ref _isExpanded, value);
+        }
+
+        public SnapPointsType HorizontalSnapPointsType
+        {
+            get => GetValue(HorizontalSnapPointsTypeProperty);
+            set => SetValue(HorizontalSnapPointsTypeProperty, value);
+        }
+
+        public SnapPointsType VerticalSnapPointsType
+        {
+            get => GetValue(VerticalSnapPointsTypeProperty);
+            set => SetValue(VerticalSnapPointsTypeProperty, value);
+        }
+
+        public SnapPointsAlignment HorizontalSnapPointsAlignment
+        {
+            get => GetValue(HorizontalSnapPointsAlignmentProperty); 
+            set => SetValue(HorizontalSnapPointsAlignmentProperty, value);
+        }
+
+        public SnapPointsAlignment VerticalSnapPointsAlignment
+        {
+            get => GetValue(VerticalSnapPointsAlignmentProperty); 
+            set => SetValue(VerticalSnapPointsAlignmentProperty, value);
         }
 
         /// <summary>
