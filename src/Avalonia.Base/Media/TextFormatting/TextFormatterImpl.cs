@@ -471,60 +471,61 @@ namespace Avalonia.Media.TextFormatting
             measuredLength = 0;
             var currentWidth = 0.0;
 
-            foreach (var currentRun in textRuns)
+            for (var runIndex = 0; runIndex < textRuns.Count; runIndex++)
             {
+                var currentRun = textRuns[runIndex];
                 switch (currentRun)
                 {
                     case ShapedTextRun shapedTextCharacters:
+                    {
+                        if (shapedTextCharacters.ShapedBuffer.Length > 0)
                         {
-                            if (shapedTextCharacters.ShapedBuffer.Length > 0)
+                            var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphInfos[0].GlyphCluster;
+                            var lastCluster = firstCluster;
+
+                            for (var i = 0; i < shapedTextCharacters.ShapedBuffer.Length; i++)
                             {
-                                var firstCluster = shapedTextCharacters.ShapedBuffer.GlyphInfos[0].GlyphCluster;
-                                var lastCluster = firstCluster;
+                                var glyphInfo = shapedTextCharacters.ShapedBuffer[i];
 
-                                for (var i = 0; i < shapedTextCharacters.ShapedBuffer.Length; i++)
+                                if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
                                 {
-                                    var glyphInfo = shapedTextCharacters.ShapedBuffer[i];
+                                    measuredLength += Math.Max(0, lastCluster - firstCluster);
 
-                                    if (currentWidth + glyphInfo.GlyphAdvance > paragraphWidth)
-                                    {
-                                        measuredLength += Math.Max(0, lastCluster - firstCluster);
-
-                                        goto found;
-                                    }
-
-                                    lastCluster = glyphInfo.GlyphCluster;
-                                    currentWidth += glyphInfo.GlyphAdvance;
+                                    goto found;
                                 }
 
-                                measuredLength += currentRun.Length;
+                                lastCluster = glyphInfo.GlyphCluster;
+                                currentWidth += glyphInfo.GlyphAdvance;
                             }
 
-                            break;
+                            measuredLength += currentRun.Length;
                         }
+
+                        break;
+                    }
 
                     case DrawableTextRun drawableTextRun:
+                    {
+                        if (currentWidth + drawableTextRun.Size.Width >= paragraphWidth)
                         {
-                            if (currentWidth + drawableTextRun.Size.Width >= paragraphWidth)
-                            {
-                                goto found;
-                            }
-
-                            measuredLength += currentRun.Length;
-                            currentWidth += drawableTextRun.Size.Width;
-
-                            break;
+                            goto found;
                         }
+
+                        measuredLength += currentRun.Length;
+                        currentWidth += drawableTextRun.Size.Width;
+
+                        break;
+                    }
                     default:
-                        {
-                            measuredLength += currentRun.Length;
+                    {
+                        measuredLength += currentRun.Length;
 
-                            break;
-                        }
+                        break;
+                    }
                 }
             }
 
-        found:
+            found:
 
             return measuredLength != 0;
         }
