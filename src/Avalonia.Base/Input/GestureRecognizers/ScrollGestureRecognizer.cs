@@ -189,7 +189,14 @@ namespace Avalonia.Input.GestureRecognizers
 
                         var speed = _inertia * Math.Pow(0.15, st.Elapsed.TotalSeconds);
                         var distance = speed * elapsedSinceLastTick.TotalSeconds;
-                        _target!.RaiseEvent(new ScrollGestureEventArgs(_gestureId, distance));
+                        var scrollGestureEventArgs = new ScrollGestureEventArgs(_gestureId, distance);
+                        _target!.RaiseEvent(scrollGestureEventArgs);
+
+                        if (!scrollGestureEventArgs.Handled || scrollGestureEventArgs.ShouldEndScrollGesture)
+                        {
+                            EndGesture();
+                            return false;
+                        }
 
                         // EndGesture using InertialScrollSpeedEnd only in the direction of scrolling
                         if (CanVerticallyScroll && CanHorizontallyScroll && Math.Abs(speed.X) < InertialScrollSpeedEnd && Math.Abs(speed.Y) <= InertialScrollSpeedEnd)

@@ -588,6 +588,7 @@ namespace Avalonia.Controls.Presenters
 
         protected virtual void InvalidateTextLayout()
         {
+            _textLayout?.Dispose();
             _textLayout = null;
 
             InvalidateMeasure();
@@ -597,6 +598,7 @@ namespace Avalonia.Controls.Presenters
         {
             _constraint = availableSize;
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             InvalidateArrange();
@@ -622,6 +624,7 @@ namespace Avalonia.Controls.Presenters
 
             _constraint = new Size(Math.Ceiling(finalSize.Width), double.PositiveInfinity);
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             return finalSize;

@@ -6,7 +6,7 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// A text run that holds shaped characters.
     /// </summary>
-    public sealed class ShapedTextRun : DrawableTextRun
+    public sealed class ShapedTextRun : DrawableTextRun, IDisposable
     {
         private GlyphRun? _glyphRun;
 
@@ -198,6 +198,12 @@ namespace Avalonia.Media.TextFormatting
                 ShapedBuffer.GlyphOffsets,
                 ShapedBuffer.GlyphClusters,
                 BidiLevel);
+        }
+
+        public void Dispose()
+        {
+            _glyphRun?.Dispose();
+            ShapedBuffer.Dispose();
         }
     }
 }
