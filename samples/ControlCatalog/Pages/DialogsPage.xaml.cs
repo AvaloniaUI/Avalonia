@@ -397,7 +397,7 @@ CanPickFolder: {storageProvider.CanPickFolder}";
         }
 
         Window GetWindow() => this.VisualRoot as Window ?? throw new NullReferenceException("Invalid Owner");
-        TopLevel GetTopLevel() => this.VisualRoot as TopLevel ?? throw new NullReferenceException("Invalid Owner");
+        TopLevel GetTopLevel() => TopLevel.GetTopLevel(this) ?? throw new NullReferenceException("Invalid Owner");
 
         private void InitializeComponent()
         {
