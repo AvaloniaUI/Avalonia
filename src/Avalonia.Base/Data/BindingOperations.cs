@@ -1,6 +1,5 @@
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
@@ -46,15 +45,15 @@ namespace Avalonia.Data
                         throw new InvalidOperationException("InstancedBinding does not contain an observable.");
                     return target.Bind(property, binding.Observable, binding.Priority);
                 case BindingMode.TwoWay:
+                    if (binding.Observable is null)
+                        throw new InvalidOperationException("InstancedBinding does not contain an observable.");
                     if (binding.Subject is null)
                         throw new InvalidOperationException("InstancedBinding does not contain a subject.");
                     return new TwoWayBindingDisposable(
-                        target.Bind(property, binding.Subject, binding.Priority),
+                        target.Bind(property, binding.Observable, binding.Priority),
                         target.GetObservable(property).Subscribe(binding.Subject));
                 case BindingMode.OneTime:
-                    var source = binding.Subject ?? binding.Observable;
-
-                    if (source != null)
+                    if (binding.Observable is {} source)
                     {
                         // Perf: Avoid allocating closure in the outer scope.
                         var targetCopy = target;

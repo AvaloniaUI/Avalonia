@@ -11,6 +11,7 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
@@ -387,52 +388,55 @@ namespace Avalonia
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Visual
         {
-            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
-            {
-                if (e.Sender is T sender)
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e =>
                 {
-                    sender.InvalidateVisual();
-                }
-            }
-
-            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
-            {
-                if (e.Sender is T sender)
+                    if (e.Sender is T sender)
+                    {
+                        sender.InvalidateVisual();
+                    }
+                });
+            
+            
+            var invalidateAndSubscribeObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e =>
                 {
-                    if (e.OldValue is IAffectsRender oldValue)
+                    if (e.Sender is T sender)
                     {
-                        if (sender._affectsRenderWeakSubscriber != null)
+                        if (e.OldValue is IAffectsRender oldValue)
                         {
-                            InvalidatedWeakEvent.Unsubscribe(oldValue, sender._affectsRenderWeakSubscriber);
+                            if (sender._affectsRenderWeakSubscriber != null)
+                            {
+                                InvalidatedWeakEvent.Unsubscribe(oldValue, sender._affectsRenderWeakSubscriber);
+                            }
                         }
-                    }
 
-                    if (e.NewValue is IAffectsRender newValue)
-                    {
-                        if (sender._affectsRenderWeakSubscriber == null)
+                        if (e.NewValue is IAffectsRender newValue)
                         {
-                            sender._affectsRenderWeakSubscriber = new TargetWeakEventSubscriber<Visual, EventArgs>(
-                                sender, static (target, _, _, _) =>
-                                {
-                                    target.InvalidateVisual();
-                                });
+                            if (sender._affectsRenderWeakSubscriber == null)
+                            {
+                                sender._affectsRenderWeakSubscriber = new TargetWeakEventSubscriber<Visual, EventArgs>(
+                                    sender, static (target, _, _, _) =>
+                                    {
+                                        target.InvalidateVisual();
+                                    });
+                            }
+                            InvalidatedWeakEvent.Subscribe(newValue, sender._affectsRenderWeakSubscriber);
                         }
-                        InvalidatedWeakEvent.Subscribe(newValue, sender._affectsRenderWeakSubscriber);
-                    }
 
-                    sender.InvalidateVisual();
-                }
-            }
+                        sender.InvalidateVisual();
+                    }
+                });
 
             foreach (var property in properties)
             {
                 if (property.CanValueAffectRender())
                 {
-                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
+                    property.Changed.Subscribe(invalidateAndSubscribeObserver);
                 }
                 else
                 {
-                    property.Changed.Subscribe(e => Invalidate(e));
+                    property.Changed.Subscribe(invalidateObserver);
                 }
             }
         }
@@ -480,6 +484,7 @@ namespace Avalonia
             {
                 AttachToCompositor(compositingRenderer.Compositor);
             }
+            InvalidateMirrorTransform();
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
@@ -619,23 +624,22 @@ namespace Avalonia
         /// Called when a visual's <see cref="RenderTransform"/> changes.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private static void RenderTransformChanged(AvaloniaPropertyChangedEventArgs e)
+        private static void RenderTransformChanged(AvaloniaPropertyChangedEventArgs<ITransform?> e)
         {
             var sender = e.Sender as Visual;
 
             if (sender?.VisualRoot != null)
             {
-                var oldValue = e.OldValue as Transform;
-                var newValue = e.NewValue as Transform;
+                var (oldValue, newValue) = e.GetOldAndNewValue<ITransform?>();
 
-                if (oldValue != null)
+                if (oldValue is Transform oldTransform)
                 {
-                    oldValue.Changed -= sender.RenderTransformChanged;
+                    oldTransform.Changed -= sender.RenderTransformChanged;
                 }
 
-                if (newValue != null)
+                if (newValue is Transform newTransform)
                 {
-                    newValue.Changed += sender.RenderTransformChanged;
+                    newTransform.Changed += sender.RenderTransformChanged;
                 }
                 
                 sender.InvalidateVisual();

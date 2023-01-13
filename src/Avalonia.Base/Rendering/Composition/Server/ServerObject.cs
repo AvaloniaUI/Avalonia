@@ -104,13 +104,13 @@ namespace Avalonia.Rendering.Composition.Server
         }
 
         protected void SetAnimatedValue<T>(CompositionProperty prop, ref T field,
-            TimeSpan commitedAt, IAnimationInstance animation) where T : struct
+            TimeSpan committedAt, IAnimationInstance animation) where T : struct
         {
             if (IsActive && _animations.TryGetValue(prop, out var oldAnimation))
                 oldAnimation.Deactivate();
             _animations[prop] = animation;
             
-            animation.Initialize(commitedAt, ExpressionVariant.Create(field), prop);
+            animation.Initialize(committedAt, ExpressionVariant.Create(field), prop);
             if(IsActive)
                 animation.Activate();
             
@@ -165,7 +165,7 @@ namespace Avalonia.Rendering.Composition.Server
 
         public virtual CompositionProperty? GetCompositionProperty(string fieldName) => null;
 
-        protected virtual void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
+        protected virtual void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
         {
             if (this is IDisposable disp
                 && reader.Read<byte>() == 1)
@@ -174,7 +174,7 @@ namespace Avalonia.Rendering.Composition.Server
         
         public void DeserializeChanges(BatchStreamReader reader, Batch batch)
         {
-            DeserializeChangesCore(reader, batch.CommitedAt);
+            DeserializeChangesCore(reader, batch.CommittedAt);
             ValuesInvalidated();
             ItselfLastChangedBy = batch.SequenceId;
         }

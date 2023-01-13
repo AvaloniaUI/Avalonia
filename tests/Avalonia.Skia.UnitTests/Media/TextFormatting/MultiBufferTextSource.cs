@@ -1,6 +1,4 @@
-﻿using System;
-using Avalonia.Media.TextFormatting;
-using Avalonia.Utilities;
+﻿using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {

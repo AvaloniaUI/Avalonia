@@ -67,6 +67,55 @@ namespace Avalonia.Controls.Utils
             }
         }
 
+        public static bool IsEndOfWord(string text, int index)
+        {
+            if (index >= text.Length)
+            {
+                return true;
+            }
+
+            var codepoint = new Codepoint(text[index]);
+        
+            if (!codepoint.IsWhiteSpace)
+            {
+                return false;
+            }
+            // A 'word' starts with an AlphaNumeric or some punctuation symbols immediately
+            // preceeded by lwsp.
+            if (index > 0)
+            {
+                var nextCodePoint = new Codepoint(text[index + 1]);
+
+                if (nextCodePoint.IsBreakChar)
+                {
+                    return true;
+                }
+            }
+
+            switch (codepoint.GeneralCategory)
+            {
+                case GeneralCategory.LowercaseLetter:
+                case GeneralCategory.TitlecaseLetter:
+                case GeneralCategory.UppercaseLetter:
+                case GeneralCategory.DecimalNumber:
+                case GeneralCategory.LetterNumber:
+                case GeneralCategory.OtherNumber:
+                case GeneralCategory.DashPunctuation:
+                case GeneralCategory.InitialPunctuation:
+                case GeneralCategory.OpenPunctuation:
+                case GeneralCategory.CurrencySymbol:
+                case GeneralCategory.MathSymbol:
+                    return false;
+
+                // TODO: How do you do this in .NET?
+                // case UnicodeCategory.OtherPunctuation:
+                //    // words cannot start with '.', but they can start with '&' or '*' (for example)
+                //    return g_unichar_break_type(buffer->text[index]) == G_UNICODE_BREAK_ALPHABETIC;
+                default:
+                    return true;
+            }
+        }
+
         public static int PreviousWord(string text, int cursor)
         {
             if (string.IsNullOrEmpty(text))

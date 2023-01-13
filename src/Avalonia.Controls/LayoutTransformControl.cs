@@ -4,7 +4,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Media;
 
 namespace Avalonia.Controls
@@ -424,9 +424,9 @@ namespace Avalonia.Controls
 
             if (newTransform != null)
             {
-                _transformChangedEvent = Observable.FromEventPattern<EventHandler, EventArgs>(
+                _transformChangedEvent = Observable.FromEventPattern(
                                         v => newTransform.Changed += v, v => newTransform.Changed -= v)
-                                        .Subscribe(onNext: v => ApplyLayoutTransform());
+                                        .Subscribe(_ => ApplyLayoutTransform());
             }
 
             ApplyLayoutTransform();

@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Controls.Templates

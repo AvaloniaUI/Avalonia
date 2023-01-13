@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Avalonia.Metadata;
 
 namespace Avalonia.Controls.ApplicationLifetimes
@@ -19,7 +18,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         /// <summary>
         /// Gets the arguments passed to the
-        /// <see cref="ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime{T}(T, string[], ShutdownMode)"/>
+        /// <see cref="ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime(AppBuilder, string[], ShutdownMode)"/>
         /// method.
         /// </summary>
         string[]? Args { get; }
