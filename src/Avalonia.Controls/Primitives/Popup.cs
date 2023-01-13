@@ -358,7 +358,7 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
             
-            var topLevel = placementTarget.VisualRoot as TopLevel;
+            var topLevel = TopLevel.GetTopLevel(placementTarget);
 
             if (topLevel == null)
             {

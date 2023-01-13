@@ -341,6 +341,16 @@ namespace Avalonia.Controls
         {
             return PlatformImpl?.PointToScreen(p) ?? default;
         }
+
+        /// <summary>
+        /// Gets the <see cref="TopLevel" /> for which the given <see cref="Visual"/> is hosted in.
+        /// </summary>
+        /// <param name="visual">The visual to query its TopLevel</param>
+        /// <returns>The TopLevel</returns>
+        public static TopLevel? GetTopLevel(Visual? visual)
+        {
+            return visual == null ? null : visual.VisualRoot as TopLevel;
+        }
         
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
