@@ -14,7 +14,8 @@ namespace Avalonia.Direct2D1.Media
 
         public void Dispose()
         {
-            GlyphRun?.Dispose();
+            //SharpDX already handles this.
+            //GlyphRun?.Dispose();
         }
 
         public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
