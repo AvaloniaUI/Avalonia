@@ -5,7 +5,7 @@ namespace Avalonia.Media.Immutable
     /// <summary>
     /// A brush that draws with a gradient.
     /// </summary>
-    public abstract class ImmutableGradientBrush : IGradientBrush
+    public abstract class ImmutableGradientBrush : IGradientBrush, IImmutableBrush
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ImmutableGradientBrush"/> class.

@@ -27,6 +27,7 @@ using Avalonia.Layout;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input.GestureRecognizers;
 using Avalonia.Styling;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -48,19 +49,13 @@ namespace Avalonia.Controls
         private const string DATAGRID_elementColumnHeadersPresenterName = "PART_ColumnHeadersPresenter";
         private const string DATAGRID_elementFrozenColumnScrollBarSpacerName = "PART_FrozenColumnScrollBarSpacer";
         private const string DATAGRID_elementHorizontalScrollbarName = "PART_HorizontalScrollbar";
-        private const string DATAGRID_elementRowHeadersPresenterName = "PART_RowHeadersPresenter";
         private const string DATAGRID_elementTopLeftCornerHeaderName = "PART_TopLeftCornerHeader";
         private const string DATAGRID_elementTopRightCornerHeaderName = "PART_TopRightCornerHeader";
         private const string DATAGRID_elementBottomRightCornerHeaderName = "PART_BottomRightCorner";
-        private const string DATAGRID_elementValidationSummary = "PART_ValidationSummary";
         private const string DATAGRID_elementVerticalScrollbarName = "PART_VerticalScrollbar";
-
-        private const bool DATAGRID_defaultAutoGenerateColumns = true;
         internal const bool DATAGRID_defaultCanUserReorderColumns = true;
         internal const bool DATAGRID_defaultCanUserResizeColumns = true;
         internal const bool DATAGRID_defaultCanUserSortColumns = true;
-        private const DataGridRowDetailsVisibilityMode DATAGRID_defaultRowDetailsVisibility = DataGridRowDetailsVisibilityMode.VisibleWhenSelected;
-        private const DataGridSelectionMode DATAGRID_defaultSelectionMode = DataGridSelectionMode.Extended;
 
         /// <summary>
         /// The default order to use for columns when there is no <see cref="DisplayAttribute.Order"/>
@@ -1124,7 +1119,7 @@ namespace Avalonia.Controls
                     EnsureColumnHeadersVisibility();
                     if (!newValueCols)
                     {
-                        _columnHeadersPresenter.Measure(Size.Empty);
+                        _columnHeadersPresenter.Measure(default);
                     }
                     else
                     {
@@ -1165,7 +1160,7 @@ namespace Avalonia.Controls
                 _topLeftCornerHeader.IsVisible = newValueRows && newValueCols;
                 if (_topLeftCornerHeader.IsVisible)
                 {
-                    _topLeftCornerHeader.Measure(Size.Empty);
+                    _topLeftCornerHeader.Measure(default);
                 }
             }
 
@@ -3300,7 +3295,7 @@ namespace Avalonia.Controls
                 newCell.IsVisible = column.IsVisible;
                 if (row.OwningGrid.CellTheme is {} cellTheme)
                 {
-                    newCell.SetValue(ThemeProperty, cellTheme, BindingPriority.TemplatedParent);
+                    newCell.SetValue(ThemeProperty, cellTheme, BindingPriority.Template);
                 }
             }
             row.Cells.Insert(column.Index, newCell);
@@ -4158,6 +4153,7 @@ namespace Avalonia.Controls
 
             if (exitEditingMode)
             {
+                CurrentColumn.EndCellEditInternal();
                 _editingColumnIndex = -1;
                 editingCell.UpdatePseudoClasses();
 

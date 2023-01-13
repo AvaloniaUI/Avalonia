@@ -191,7 +191,7 @@ namespace Avalonia.Win32
 
         public Action Activated { get; set; }
 
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
 
         public Action Closed { get; set; }
 
@@ -643,12 +643,6 @@ namespace Avalonia.Win32
                 _hwnd = IntPtr.Zero;
             }
 
-            if (_className != null)
-            {
-                UnregisterClass(_className, GetModuleHandle(null));
-                _className = null;
-            }
-
             _framebuffer.Dispose();
         }
 
@@ -1035,6 +1029,12 @@ namespace Avalonia.Win32
             {
                 var margins = UpdateExtendMargins();
                 DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+                unsafe
+                {
+                    int cornerPreference = (int)DwmWindowCornerPreference.DWMWCP_ROUND;
+                    DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(int));
+                }
             }
             else
             {
@@ -1045,6 +1045,12 @@ namespace Avalonia.Win32
                 _extendedMargins = new Thickness();
 
                 Resize(new Size(rcWindow.Width / RenderScaling, rcWindow.Height / RenderScaling), PlatformResizeReason.Layout);
+
+                unsafe
+                {
+                    int cornerPreference = (int)DwmWindowCornerPreference.DWMWCP_DEFAULT;
+                    DwmSetWindowAttribute(_hwnd, (int)DwmWindowAttribute.DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPreference, sizeof(int));
+                }
             }
 
             if (!_isClientAreaExtended || (_extendChromeHints.HasAllFlags(ExtendClientAreaChromeHints.SystemChrome) &&
@@ -1141,6 +1147,15 @@ namespace Avalonia.Win32
                 {
                     SetActiveWindow(_parent._hwnd);
                 }
+            }
+        }
+
+        private void AfterCloseCleanup()
+        {
+            if (_className != null)
+            {
+                UnregisterClass(_className, GetModuleHandle(null));
+                _className = null;
             }
         }
 
@@ -1343,8 +1358,6 @@ namespace Avalonia.Win32
         }
 
         private const int MF_BYCOMMAND = 0x0;
-        private const int MF_BYPOSITION = 0x400;
-        private const int MF_REMOVE = 0x1000;
         private const int MF_ENABLED = 0x0;
         private const int MF_GRAYED = 0x1;
         private const int MF_DISABLED = 0x2;

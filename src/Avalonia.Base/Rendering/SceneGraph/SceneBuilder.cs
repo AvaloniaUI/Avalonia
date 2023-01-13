@@ -331,8 +331,8 @@ namespace Avalonia.Rendering.SceneGraph
 
                 scene.Size = newSize;
 
-                Rect horizontalDirtyRect = Rect.Empty;
-                Rect verticalDirtyRect = Rect.Empty;
+                Rect horizontalDirtyRect = default;
+                Rect verticalDirtyRect = default;
 
                 if (newSize.Width > oldSize.Width)
                 {
@@ -429,7 +429,7 @@ namespace Avalonia.Rendering.SceneGraph
             else
             {
                 layer.OpacityMask = null;
-                layer.OpacityMaskRect = Rect.Empty;
+                layer.OpacityMaskRect = default;
             }
 
             layer.GeometryClip = node.HasAncestorGeometryClip ?

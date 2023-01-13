@@ -145,7 +145,7 @@ namespace Avalonia.Controls
 
             if (IsEffectivelyVisible && bounds.HasValue)
             {
-                if (bounds.Value.IsEmpty)
+                if (bounds.Value.IsDefault)
                     return false;
                 _attachment?.ShowInBounds(bounds.Value);
             }

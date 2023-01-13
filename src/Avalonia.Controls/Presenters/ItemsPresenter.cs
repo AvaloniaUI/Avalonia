@@ -77,7 +77,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        Size IScrollable.Extent => Virtualizer?.Extent ?? Size.Empty;
+        Size IScrollable.Extent => Virtualizer?.Extent ?? default;
 
         /// <inheritdoc/>
         Vector IScrollable.Offset
@@ -136,12 +136,12 @@ namespace Avalonia.Controls.Presenters
         /// <inheritdoc/>
         protected override Size MeasureOverride(Size availableSize)
         {
-            return Virtualizer?.MeasureOverride(availableSize) ?? Size.Empty;
+            return Virtualizer?.MeasureOverride(availableSize) ?? default;
         }
 
         protected override Size ArrangeOverride(Size finalSize)
         {
-            return Virtualizer?.ArrangeOverride(finalSize) ?? Size.Empty;
+            return Virtualizer?.ArrangeOverride(finalSize) ?? default;
         }
 
         /// <inheritdoc/>

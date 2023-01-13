@@ -207,7 +207,7 @@ namespace Avalonia.Input.UnitTests
         private IDisposable UnitTestApp(TimeSpan doubleClickTime = new TimeSpan())
         {
             var unitTestApp = UnitTestApplication.Start(
-                new TestServices(inputManager: new InputManager()));
+                new TestServices(inputManager: new InputManager(), threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true)));
             var iSettingsMock = new Mock<IPlatformSettings>();
             iSettingsMock.Setup(x => x.GetDoubleTapTime(It.IsAny<PointerType>())).Returns(doubleClickTime);
             iSettingsMock.Setup(x => x.GetDoubleTapSize(It.IsAny<PointerType>())).Returns(new Size(16, 16));

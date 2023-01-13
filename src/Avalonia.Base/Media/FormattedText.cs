@@ -1379,7 +1379,7 @@ namespace Avalonia.Media
                 }
             }
 
-            if (accumulatedBounds?.PlatformImpl == null || accumulatedBounds.PlatformImpl.Bounds.IsEmpty)
+            if (accumulatedBounds?.PlatformImpl == null || accumulatedBounds.PlatformImpl.Bounds.IsDefault)
             {
                 return null;
             }            

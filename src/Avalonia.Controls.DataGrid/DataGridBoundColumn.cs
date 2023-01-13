@@ -4,12 +4,7 @@
 // All other rights reserved. 
 
 using Avalonia.Data;
-using Avalonia.Utilities;
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Subjects;
-using Avalonia.Reactive;
-using System.Diagnostics;
 using Avalonia.Controls.Utils;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 

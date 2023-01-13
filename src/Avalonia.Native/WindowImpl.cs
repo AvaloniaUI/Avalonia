@@ -48,7 +48,7 @@ namespace Avalonia.Native
             {
                 if (_parent.Closing != null)
                 {
-                    return _parent.Closing().AsComBool();
+                    return _parent.Closing(WindowCloseReason.WindowClosing).AsComBool();
                 }
 
                 return true.AsComBool();
@@ -207,7 +207,7 @@ namespace Avalonia.Native
             // NO OP on OSX
         }
 
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
 
         public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
 

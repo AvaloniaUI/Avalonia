@@ -18,7 +18,8 @@ namespace Avalonia
         /// <summary>
         /// An empty rectangle.
         /// </summary>
-        public static readonly Rect Empty = default(Rect);
+        [Obsolete("Use the default keyword instead.")]
+        public static readonly Rect Empty = default;
 
         /// <summary>
         /// The X position.
@@ -169,11 +170,15 @@ namespace Avalonia
         public Point Center => new Point(_x + (_width / 2), _y + (_height / 2));
 
         /// <summary>
-        /// Gets a value that indicates whether the rectangle is empty.
+        /// Gets a value indicating whether the instance has default values (the rectangle is empty).
         /// </summary>
         // ReSharper disable CompareOfFloatsByEqualityOperator
-        public bool IsEmpty => _width == 0 && _height == 0;
+        public bool IsDefault => _width == 0 && _height == 0;
         // ReSharper restore CompareOfFloatsByEqualityOperator
+
+        /// <inheritdoc cref="IsDefault"/>
+        [Obsolete("Use IsDefault instead.")]
+        public bool IsEmpty => IsDefault;
 
         /// <summary>
         /// Checks for equality between two <see cref="Rect"/>s.
@@ -390,7 +395,7 @@ namespace Avalonia
             }
             else
             {
-                return Empty;
+                return default;
             }
         }
 
@@ -457,13 +462,13 @@ namespace Avalonia
 		/// </remarks>
 		public Rect Normalize()
         {
-            Rect rect = this;            
+            Rect rect = this;
 
             if(double.IsNaN(rect.Right) || double.IsNaN(rect.Bottom) || 
                 double.IsNaN(rect.X) || double.IsNaN(rect.Y) || 
                 double.IsNaN(Height) || double.IsNaN(Width))
             {
-                return Rect.Empty;
+                return default;
             }
 
             if (rect.Width < 0)
@@ -493,11 +498,11 @@ namespace Avalonia
             /// <returns>The union.</returns>
             public Rect Union(Rect rect)
         {
-            if (IsEmpty)
+            if (IsDefault)
             {
                 return rect;
             }
-            else if (rect.IsEmpty)
+            else if (rect.IsDefault)
             {
                 return this;
             }

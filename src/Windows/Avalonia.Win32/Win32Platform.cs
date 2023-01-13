@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
@@ -19,16 +19,14 @@ using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
-using JetBrains.Annotations;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
 {
+#nullable enable
     public static class Win32ApplicationExtensions
     {
-        public static T UseWin32<T>(
-            this T builder) 
-                where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseWin32(this AppBuilder builder)
         {
             return builder.UseWindowingSubsystem(
                 () => Win32.Win32Platform.Initialize(
@@ -106,9 +104,10 @@ namespace Avalonia
         /// <summary>
         /// Provides a way to use a custom-implemented graphics context such as a custom ISkiaGpu
         /// </summary>
-        [CanBeNull] public IPlatformGraphics CustomPlatformGraphics { get; set; }
+        public IPlatformGraphics? CustomPlatformGraphics { get; set; }
     }
 }
+#nullable restore
 
 namespace Avalonia.Win32
 {
@@ -258,6 +257,8 @@ namespace Avalonia.Win32
         }
 
         public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
+
+        public TimeSpan HoldWaitDuration { get; set; } = TimeSpan.FromMilliseconds(300);
 
         public event Action<DispatcherPriority?> Signaled;
 

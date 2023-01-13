@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls;
 
 namespace Avalonia.Native.Interop
@@ -46,7 +46,6 @@ namespace Avalonia.Native.Interop.Impl
         private AvaloniaNativeMenuExporter _exporter;
         private List<__MicroComIAvnMenuItemProxy> _menuItems = new List<__MicroComIAvnMenuItemProxy>();
         private Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy> _menuItemLookup = new Dictionary<NativeMenuItemBase, __MicroComIAvnMenuItemProxy>();
-        private CompositeDisposable _propertyDisposables = new CompositeDisposable();
 
         public void RaiseNeedsUpdate()
         {

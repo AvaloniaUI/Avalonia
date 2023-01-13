@@ -8,7 +8,6 @@ using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Platform.Interop;
-using JetBrains.Annotations;
 using static Avalonia.LinuxFramebuffer.NativeUnsafeMethods;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm;
 using static Avalonia.LinuxFramebuffer.Output.LibDrm.GbmColorFormats;
@@ -50,7 +49,7 @@ namespace Avalonia.LinuxFramebuffer.Output
                 _outputOptions = options;
             Init(card, resources, connector, modeInfo);
         }
-        public DrmOutput(string path = null, bool connectorsForceProbe = false, [CanBeNull] DrmOutputOptions options = null)
+        public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions? options = null)
         {
             if(options != null) 
                 _outputOptions = options;

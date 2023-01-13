@@ -82,6 +82,39 @@ public class CompositorHitTestingTests : CompositorTestsBase
         }
     }
     
+    [Theory,
+        InlineData(false, false),
+        InlineData(true, false),
+        InlineData(false, true),
+        InlineData(true, true),
+    ]
+    public void HitTest_Should_Find_Zero_Opacity_Controls_At_Point(bool parent, bool child)
+    {
+        
+        using (var s = new CompositorServices(new Size(200, 200)))
+        {
+            Border visible, border;
+            s.TopLevel.Content = border = new Border
+            {
+                Width = 100,
+                Height = 100,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Opacity = parent ? 0 : 1,
+                Child = visible = new Border
+                {
+                    Opacity = child ? 0 : 1,
+                    Background = Brushes.Red,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                }
+            };
+
+            s.AssertHitTest(new Point(100, 100), null, visible, border);
+        }
+    }
+    
     [Fact]
     public void HitTest_Should_Not_Find_Control_Outside_Point()
     {

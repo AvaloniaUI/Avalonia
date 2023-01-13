@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;

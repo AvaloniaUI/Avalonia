@@ -50,7 +50,7 @@ class CompositionBorderVisual : CompositionDrawListVisual
             if (ClipToBounds)
             {
                 var clipRect = Root!.SnapToDevicePixels(new Rect(new Size(Size.X, Size.Y)));
-                if (_cornerRadius.IsEmpty)
+                if (_cornerRadius.IsDefault)
                     canvas.PushClip(clipRect);
                 else
                     canvas.PushClip(new RoundedRect(clipRect, _cornerRadius));
@@ -63,9 +63,9 @@ class CompositionBorderVisual : CompositionDrawListVisual
             
         }
 
-        protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
+        protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
         {
-            base.DeserializeChangesCore(reader, commitedAt);
+            base.DeserializeChangesCore(reader, committedAt);
             if (reader.Read<bool>())
                 _cornerRadius = reader.Read<CornerRadius>();
         }

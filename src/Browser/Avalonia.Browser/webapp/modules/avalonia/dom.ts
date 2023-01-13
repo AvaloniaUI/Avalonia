@@ -17,7 +17,6 @@ export class AvaloniaDOM {
         const canvas = document.createElement("canvas");
         canvas.id = `canvas${randomIdPart}`;
         canvas.classList.add("avalonia-canvas");
-        canvas.style.backgroundColor = "#ccc";
         canvas.style.width = "100%";
         canvas.style.position = "absolute";
 

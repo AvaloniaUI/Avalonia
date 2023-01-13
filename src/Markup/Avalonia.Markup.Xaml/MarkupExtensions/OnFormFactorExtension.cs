@@ -6,7 +6,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions;
 
-public class OnFormFactorExtension : OnFormFactorExtensionBase<object, On>
+public sealed class OnFormFactorExtension : OnFormFactorExtensionBase<object, On>
 {
     public OnFormFactorExtension()
     {
@@ -24,7 +24,7 @@ public class OnFormFactorExtension : OnFormFactorExtensionBase<object, On>
     }
 }
 
-public class OnFormFactorExtension<TReturn> : OnFormFactorExtensionBase<TReturn, On<TReturn>>
+public sealed class OnFormFactorExtension<TReturn> : OnFormFactorExtensionBase<TReturn, On<TReturn>>
 {
     public OnFormFactorExtension()
     {

@@ -10,8 +10,7 @@ namespace Avalonia.Diagnostics.Controls
 
     {
         private readonly App _application;
-        private static readonly Version s_version = typeof(AvaloniaObject).Assembly?.GetName()?.Version
-            ?? Version.Parse("0.0.00");
+
         public event EventHandler? Closed;
 
         public Application(App application)

@@ -49,7 +49,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         ////}
 
         [Fact]
-        public void Indei_Validation_Does_Not_Subscribe_When_DataValidatation_Not_Enabled()
+        public void Indei_Validation_Does_Not_Subscribe_When_DataValidation_Not_Enabled()
         {
             var data = new IndeiTest { MustBePositive = 5 };
             var observer = ExpressionObserver.Create(data, o => o.MustBePositive, false);

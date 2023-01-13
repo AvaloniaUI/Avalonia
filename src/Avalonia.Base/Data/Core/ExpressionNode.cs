@@ -4,8 +4,6 @@ namespace Avalonia.Data.Core
 {
     public abstract class ExpressionNode
     {
-        private static readonly object CacheInvalid = new object();
-
         protected static readonly WeakReference<object?> UnsetReference = 
             new WeakReference<object?>(AvaloniaProperty.UnsetValue);
 

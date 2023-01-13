@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Reactive;
 using Avalonia.Styling.Activators;
+using Observable = Avalonia.Reactive.Observable;
 
 namespace Avalonia.Base.UnitTests.Styling
 {
@@ -10,12 +11,12 @@ namespace Avalonia.Base.UnitTests.Styling
     {
         public static IDisposable Subscribe(this IStyleActivator activator, Action<bool> action)
         {
-            return activator.ToObservable().Subscribe(action);
+            return Observable.Subscribe(activator.ToObservable(), action);
         }
 
         public static async Task<bool> Take(this IStyleActivator activator, int value)
         {
-            return await activator.ToObservable().Take(value);
+            return await System.Reactive.Linq.Observable.Take(activator.ToObservable(), value);
         }
 
         public static IObservable<bool> ToObservable(this IStyleActivator activator)

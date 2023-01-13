@@ -18,7 +18,7 @@ namespace Avalonia.Browser
                 _onFirstRender = onFirstRender;
             }
 
-            public Rect Bounds => Rect.Empty;
+            public Rect Bounds => default;
 
             public bool HasRendered => _hasRendered;
 

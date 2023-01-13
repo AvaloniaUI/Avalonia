@@ -68,7 +68,7 @@ namespace Avalonia.Platform
         /// Gets or sets a method called before the underlying implementation is destroyed.
         /// Return true to prevent the underlying implementation from closing.
         /// </summary>
-        Func<bool> Closing { get; set; }
+        Func<WindowCloseReason, bool> Closing { get; set; }
 
         /// <summary>
         /// Gets a value to indicate if the platform was able to extend client area to non-client area.

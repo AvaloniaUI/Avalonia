@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Numerics;
-using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.OpenGL.Egl;
+using Avalonia.Reactive;
 using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
 

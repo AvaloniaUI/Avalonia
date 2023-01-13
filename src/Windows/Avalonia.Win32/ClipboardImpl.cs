@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
