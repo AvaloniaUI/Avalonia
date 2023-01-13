@@ -918,7 +918,7 @@ namespace Avalonia.Media
             _glyphRunImpl = platformRenderInterface.CreateGlyphRun(GlyphTypeface, FontRenderingEmSize, GlyphIndices, GlyphAdvances, GlyphOffsets);
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             _glyphRunImpl?.Dispose();
         }
