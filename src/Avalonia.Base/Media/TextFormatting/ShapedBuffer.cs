@@ -9,21 +9,21 @@ namespace Avalonia.Media.TextFormatting
     {
         private static readonly IComparer<GlyphInfo> s_clusterComparer = new CompareClusters();
         private bool _bufferRented;
-        
-        public ShapedBuffer(CharacterBufferRange characterBufferRange, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel) : 
-            this(characterBufferRange, 
-                new ArraySlice<GlyphInfo>(ArrayPool<GlyphInfo>.Shared.Rent(bufferLength), 0, bufferLength), 
-                glyphTypeface,  
-                fontRenderingEmSize,  
+
+        public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel) :
+            this(text,
+                new ArraySlice<GlyphInfo>(ArrayPool<GlyphInfo>.Shared.Rent(bufferLength), 0, bufferLength),
+                glyphTypeface,
+                fontRenderingEmSize,
                 bidiLevel)
         {
             _bufferRented = true;
             Length = bufferLength;
         }
 
-        internal ShapedBuffer(CharacterBufferRange characterBufferRange, ArraySlice<GlyphInfo> glyphInfos, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
+        internal ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
-            CharacterBufferRange = characterBufferRange;
+            Text = text;
             GlyphInfos = glyphInfos;
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
@@ -51,7 +51,7 @@ namespace Avalonia.Media.TextFormatting
 
         public IReadOnlyList<Vector> GlyphOffsets => new GlyphOffsetList(GlyphInfos);
 
-        public CharacterBufferRange CharacterBufferRange { get; }
+        public ReadOnlyMemory<char> Text { get; }
         
         /// <summary>
         /// Finds a glyph index for given character index.
@@ -113,7 +113,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The split result.</returns>
         internal SplitResult<ShapedBuffer> Split(int length)
         {
-            if (CharacterBufferRange.Length == length)
+            if (Text.Length == length)
             {
                 return new SplitResult<ShapedBuffer>(this, null);
             }
@@ -125,10 +125,10 @@ namespace Avalonia.Media.TextFormatting
 
             var glyphCount = FindGlyphIndex(start + length);
 
-            var first = new ShapedBuffer(CharacterBufferRange.Take(length), 
+            var first = new ShapedBuffer(Text.Slice(0, length),
                 GlyphInfos.Take(glyphCount), GlyphTypeface, FontRenderingEmSize, BidiLevel);
 
-            var second = new ShapedBuffer(CharacterBufferRange.Skip(length),
+            var second = new ShapedBuffer(Text.Slice(length),
                 GlyphInfos.Skip(glyphCount), GlyphTypeface, FontRenderingEmSize, BidiLevel);
 
             return new SplitResult<ShapedBuffer>(first, second);

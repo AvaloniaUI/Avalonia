@@ -50,14 +50,14 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textRun in lineImpl.TextRuns)
             {
-                var text = new CharacterBufferRange(textRun);
+                var text = textRun.Text;
 
                 if (text.IsEmpty)
                 {
                     continue;
                 }
 
-                var lineBreakEnumerator = new LineBreakEnumerator(text);
+                var lineBreakEnumerator = new LineBreakEnumerator(text.Span);
 
                 while (lineBreakEnumerator.MoveNext())
                 {
@@ -84,7 +84,7 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textRun in lineImpl.TextRuns)
             {
-                var text = textRun.CharacterBufferReference.CharacterBuffer;
+                var text = textRun.Text;
 
                 if (text.IsEmpty)
                 {

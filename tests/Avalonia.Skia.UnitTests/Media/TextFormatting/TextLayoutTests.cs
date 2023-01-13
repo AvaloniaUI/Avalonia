@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -62,7 +63,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Length);
 
-                var actual = new CharacterBufferRange(textRun).Span.ToString();
+                var actual = textRun.Text.ToString();
 
                 Assert.Equal("1 ", actual);
 
@@ -144,8 +145,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var expectedGlyphs = expected.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextRun>()
                     .SelectMany(x => x.ShapedBuffer.GlyphIndices))).ToList();
 
-                var outer = new GraphemeEnumerator(new CharacterBufferRange(text));
-                var inner = new GraphemeEnumerator(new CharacterBufferRange(text));
+                var outer = new GraphemeEnumerator(text);
+                var inner = new GraphemeEnumerator(text);
                 var i = 0;
                 var j = 0;
 
@@ -153,7 +154,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     while (inner.MoveNext())
                     {
-                        j += inner.Current.Length;
+                        j += inner.Current.Text.Length;
 
                         if (j + i > text.Length)
                         {
@@ -190,9 +191,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         break;
                     }
 
-                    inner = new GraphemeEnumerator(new CharacterBufferRange(text));
+                    inner = new GraphemeEnumerator(text);
 
-                    i += outer.Current.Length;
+                    i += outer.Current.Text.Length;
                 }
             }
         }
@@ -261,7 +262,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Length);
 
-                var actual = new CharacterBufferRange(textRun).Span.ToString();
+                var actual = textRun.Text.ToString();
 
                 Assert.Equal("89", actual);
 
@@ -331,7 +332,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Length);
 
-                var actual = new CharacterBufferRange(textRun).Span.ToString();
+                var actual = textRun.Text.ToString();
 
                 Assert.Equal("😄", actual);
 
@@ -667,10 +668,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(5, layout.TextLines.Count);
 
-                Assert.Equal("123\r\n", new CharacterBufferRange(layout.TextLines[0].TextRuns[0]));
-                Assert.Equal("\r\n", new CharacterBufferRange(layout.TextLines[1].TextRuns[0]));
-                Assert.Equal("456\r\n", new CharacterBufferRange(layout.TextLines[2].TextRuns[0]));
-                Assert.Equal("\r\n", new CharacterBufferRange(layout.TextLines[3].TextRuns[0]));
+                Assert.Equal("123\r\n", layout.TextLines[0].TextRuns[0].Text.ToString());
+                Assert.Equal("\r\n", layout.TextLines[1].TextRuns[0].Text.ToString());
+                Assert.Equal("456\r\n", layout.TextLines[2].TextRuns[0].Text.ToString());
+                Assert.Equal("\r\n", layout.TextLines[3].TextRuns[0].Text.ToString());
             }
         }
 
@@ -815,8 +816,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         Assert.True(textLine.Width <= maxWidth);
 
                         var actual = new string(textLine.TextRuns.Cast<ShapedTextRun>()
-                            .OrderBy(x => x.CharacterBufferReference.OffsetToFirstChar)
-                            .SelectMany(x => new CharacterBufferRange(x.CharacterBufferReference, x.Length)).ToArray());
+                            .OrderBy(x => TextTestHelper.GetStartCharIndex(x.Text))
+                            .SelectMany(x => x.Text.ToString())
+                            .ToArray());
 
                         var expected = text.Substring(textLine.FirstTextSourceIndex, textLine.Length);
 
@@ -968,15 +970,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var i = 0;
 
-                var graphemeEnumerator = new GraphemeEnumerator(new CharacterBufferRange(text));
+                var graphemeEnumerator = new GraphemeEnumerator(text);
 
                 while (graphemeEnumerator.MoveNext())
                 {
                     var grapheme = graphemeEnumerator.Current;
 
-                    var textStyleOverrides = new[] { new ValueSpan<TextRunProperties>(i, grapheme.Length, new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Red)) };
+                    var textStyleOverrides = new[] { new ValueSpan<TextRunProperties>(i, grapheme.Text.Length, new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Red)) };
 
-                    i += grapheme.Length;
+                    i += grapheme.Text.Length;
 
                     var layout = new TextLayout(
                         text,
@@ -1019,6 +1021,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 }
             }
         }
+
+
 
         private static IDisposable Start()
         {

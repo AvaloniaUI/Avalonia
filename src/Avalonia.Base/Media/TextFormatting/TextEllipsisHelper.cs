@@ -45,9 +45,7 @@ namespace Avalonia.Media.TextFormatting
                                     {
                                         var currentBreakPosition = 0;
 
-                                        var text = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
-
-                                        var lineBreaker = new LineBreakEnumerator(text);
+                                        var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
 
                                         while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
                                         {

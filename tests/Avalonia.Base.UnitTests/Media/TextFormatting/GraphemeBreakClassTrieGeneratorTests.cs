@@ -38,18 +38,13 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
             var text = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.Codepoints).ToArray());
             var grapheme = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.Grapheme).ToArray()).AsSpan();
 
-            var enumerator = new GraphemeEnumerator(new CharacterBufferRange(text));
+            var enumerator = new GraphemeEnumerator(text);
 
             enumerator.MoveNext();
 
-            var actual = text.AsSpan(enumerator.Current.Offset, enumerator.Current.Length);
+            var actual = enumerator.Current.Text;
 
-            var pass = true;
-
-            if(actual.Length != grapheme.Length)
-            {
-                pass = false;
-            }
+            bool pass = actual.Length == grapheme.Length;
 
             if (pass)
             {
@@ -87,13 +82,13 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         {
             const string text = "ABCDEFGHIJ";
 
-            var enumerator = new GraphemeEnumerator(new CharacterBufferRange(text));
+            var enumerator = new GraphemeEnumerator(text);
 
             var count = 0;
 
             while (enumerator.MoveNext())
             {
-                Assert.Equal(1, enumerator.Current.Length);
+                Assert.Equal(1, enumerator.Current.Text.Length);
 
                 count++;
             }

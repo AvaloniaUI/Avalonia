@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Utilities;
 
@@ -162,17 +164,13 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textRun in textRuns)
             {
-                if (textRun.CharacterBufferReference.CharacterBuffer.Length == 0)
+                if (textRun.Text.IsEmpty)
                 {
-                    var characterBuffer = new CharacterBufferReference(new char[textRun.Length]);
-
-                    biDiData.Append(new CharacterBufferRange(characterBuffer, textRun.Length));
+                    biDiData.Append(new char[textRun.Length]);
                 }
                 else
                 {
-                    var text = new CharacterBufferRange(textRun.CharacterBufferReference, textRun.Length);
-
-                    biDiData.Append(text);
+                    biDiData.Append(textRun.Text.Span);
                 }
             }
 
@@ -198,9 +196,7 @@ namespace Avalonia.Media.TextFormatting
                     case UnshapedTextRun shapeableRun:
                         {
                             var groupedRuns = new List<UnshapedTextRun>(2) { shapeableRun };
-                            var characterBufferReference = currentRun.CharacterBufferReference;
-                            var length = currentRun.Length;
-                            var offsetToFirstCharacter = characterBufferReference.OffsetToFirstChar;
+                            var text = shapeableRun.Text;
 
                             while (index + 1 < processedRuns.Count)
                             {
@@ -209,23 +205,14 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (shapeableRun.CanShapeTogether(nextRun))
+                                if (shapeableRun.BidiLevel == nextRun.BidiLevel
+                                    && TryJoinContiguousMemories(text, nextRun.Text, out var joinedText)
+                                    && CanShapeTogether(shapeableRun.Properties, nextRun.Properties))
                                 {
                                     groupedRuns.Add(nextRun);
-
-                                    length += nextRun.Length;
-
-                                    if (offsetToFirstCharacter > nextRun.CharacterBufferReference.OffsetToFirstChar)
-                                    {
-                                        offsetToFirstCharacter = nextRun.CharacterBufferReference.OffsetToFirstChar;
-                                    }
-
-                                    characterBufferReference = new CharacterBufferReference(characterBufferReference.CharacterBuffer, offsetToFirstCharacter);
-
                                     index++;
-
                                     shapeableRun = nextRun;
-
+                                    text = joinedText;
                                     continue;
                                 }
 
@@ -237,7 +224,7 @@ namespace Avalonia.Media.TextFormatting
                                          shapeableRun.BidiLevel, currentRun.Properties.CultureInfo,
                                          paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
-                            shapedRuns.AddRange(ShapeTogether(groupedRuns, characterBufferReference, length, shaperOptions));
+                            shapedRuns.AddRange(ShapeTogether(groupedRuns, text, shaperOptions));
 
                             break;
                         }
@@ -253,12 +240,81 @@ namespace Avalonia.Media.TextFormatting
             return shapedRuns;
         }
 
+        /// <summary>
+        /// Tries to join two potnetially contiguous memory regions.
+        /// </summary>
+        /// <param name="x">The first memory region.</param>
+        /// <param name="y">The second memory region.</param>
+        /// <param name="joinedMemory">On success, a memory region representing the union of the two regions.</param>
+        /// <returns>true if the two regions were contigous; false otherwise.</returns>
+        private static bool TryJoinContiguousMemories(ReadOnlyMemory<char> x, ReadOnlyMemory<char> y,
+            out ReadOnlyMemory<char> joinedMemory)
+        {
+            if (MemoryMarshal.TryGetString(x, out var xString, out var xStart, out var xLength))
+            {
+                if (MemoryMarshal.TryGetString(y, out var yString, out var yStart, out var yLength)
+                    && ReferenceEquals(xString, yString)
+                    && TryGetContiguousStart(xStart, xLength, yStart, yLength, out var joinedStart))
+                {
+                    joinedMemory = xString.AsMemory(joinedStart, xLength + yLength);
+                    return true;
+                }
+            }
+
+            else if (MemoryMarshal.TryGetArray(x, out var xSegment))
+            {
+                if (MemoryMarshal.TryGetArray(y, out var ySegment)
+                    && ReferenceEquals(xSegment.Array, ySegment.Array)
+                    && TryGetContiguousStart(xSegment.Offset, xSegment.Count, ySegment.Offset, ySegment.Count, out var joinedStart))
+                {
+                    joinedMemory = xSegment.Array.AsMemory(joinedStart, xSegment.Count + ySegment.Count);
+                    return true;
+                }
+            }
+
+            else if (MemoryMarshal.TryGetMemoryManager(x, out MemoryManager<char>? xManager, out xStart, out xLength))
+            {
+                if (MemoryMarshal.TryGetMemoryManager(y, out MemoryManager<char>? yManager, out var yStart, out var yLength)
+                    && ReferenceEquals(xManager, yManager)
+                    && TryGetContiguousStart(xStart, xLength, yStart, yLength, out var joinedStart))
+                {
+                    joinedMemory = xManager.Memory.Slice(joinedStart, xLength + yLength);
+                    return true;
+                }
+            }
+
+            joinedMemory = default;
+            return false;
+
+            static bool TryGetContiguousStart(int xStart, int xLength, int yStart, int yLength, out int joinedStart)
+            {
+                var xRange = (Start: xStart, Length: xLength);
+                var yRange = (Start: yStart, Length: yLength);
+
+                var (firstRange, secondRange) = xStart <= yStart ? (xRange, yRange) : (yRange, xRange);
+                if (firstRange.Start + firstRange.Length == secondRange.Start)
+                {
+                    joinedStart = firstRange.Start;
+                    return true;
+                }
+
+                joinedStart = default;
+                return false;
+            }
+        }
+
+
+        private static bool CanShapeTogether(TextRunProperties x, TextRunProperties y)
+            => MathUtilities.AreClose(x.FontRenderingEmSize, y.FontRenderingEmSize)
+               && x.Typeface == y.Typeface
+               && x.BaselineAlignment == y.BaselineAlignment;
+
         private static IReadOnlyList<ShapedTextRun> ShapeTogether(
-            IReadOnlyList<UnshapedTextRun> textRuns, CharacterBufferReference text, int length, TextShaperOptions options)
+            IReadOnlyList<UnshapedTextRun> textRuns, ReadOnlyMemory<char> text, TextShaperOptions options)
         {
             var shapedRuns = new List<ShapedTextRun>(textRuns.Count);
 
-            var shapedBuffer = TextShaper.Current.ShapeText(text, length, options);
+            var shapedBuffer = TextShaper.Current.ShapeText(text, options);
 
             for (var i = 0; i < textRuns.Count; i++)
             {
@@ -294,7 +350,7 @@ namespace Avalonia.Media.TextFormatting
 
             TextRunProperties? previousProperties = null;
             TextCharacters? currentRun = null;
-            CharacterBufferRange runText = default;
+            ReadOnlyMemory<char> runText = default;
 
             for (var i = 0; i < textCharacters.Count; i++)
             {
@@ -312,11 +368,12 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                runText = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
+                runText = currentRun.Text;
+                var runTextSpan = runText.Span;
 
-                for (; j < runText.Length;)
+                for (; j < runTextSpan.Length;)
                 {
-                    Codepoint.ReadAt(runText, j, out var count);
+                    Codepoint.ReadAt(runTextSpan, j, out var count);
 
                     if (levelIndex + 1 == levels.Length)
                     {
@@ -326,9 +383,9 @@ namespace Avalonia.Media.TextFormatting
                     levelIndex++;
                     j += count;
 
-                    if (j == runText.Length)
+                    if (j == runTextSpan.Length)
                     {
-                        processedRuns.AddRange(currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties));
+                        processedRuns.AddRange(currentRun.GetShapeableCharacters(runText.Slice(0, j), runLevel, ref previousProperties));
 
                         runLevel = levels[levelIndex];
 
@@ -341,9 +398,10 @@ namespace Avalonia.Media.TextFormatting
                     }
 
                     // End of this run
-                    processedRuns.AddRange(currentRun.GetShapeableCharacters(runText.Take(j), runLevel, ref previousProperties));
+                    processedRuns.AddRange(currentRun.GetShapeableCharacters(runText.Slice(0, j), runLevel, ref previousProperties));
 
-                    runText = runText.Skip(j);
+                    runText = runText.Slice(j);
+                    runTextSpan = runText.Span;
 
                     j = 0;
 
@@ -411,7 +469,7 @@ namespace Avalonia.Media.TextFormatting
                         {
                             if (TryGetLineBreak(textCharacters, out var runLineBreak))
                             {
-                                var splitResult = new TextCharacters(textCharacters.CharacterBufferReference, runLineBreak.PositionWrap,
+                                var splitResult = new TextCharacters(textCharacters.Text.Slice(0, runLineBreak.PositionWrap),
                                     textCharacters.Properties);
 
                                 textRuns.Add(splitResult);
@@ -442,14 +500,14 @@ namespace Avalonia.Media.TextFormatting
         {
             lineBreak = default;
 
-            if (textRun.CharacterBufferReference.CharacterBuffer.IsEmpty)
+            var text = textRun.Text;
+
+            if (text.IsEmpty)
             {
                 return false;
             }
 
-            var characterBufferRange = new CharacterBufferRange(textRun.CharacterBufferReference, textRun.Length);
-
-            var lineBreakEnumerator = new LineBreakEnumerator(characterBufferRange);
+            var lineBreakEnumerator = new LineBreakEnumerator(text.Span);
 
             while (lineBreakEnumerator.MoveNext())
             {
@@ -541,8 +599,7 @@ namespace Avalonia.Media.TextFormatting
             var glyph = glyphTypeface.GetGlyph(s_empty[0]);
             var glyphInfos = new[] { new GlyphInfo(glyph, firstTextSourceIndex) };
 
-            var characterBufferRange = new CharacterBufferRange(new CharacterBufferReference(s_empty), s_empty.Length);
-            var shapedBuffer = new ShapedBuffer(characterBufferRange, glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
+            var shapedBuffer = new ShapedBuffer(s_empty.AsMemory(), glyphInfos, glyphTypeface, properties.FontRenderingEmSize,
                 (sbyte)flowDirection);
 
             var textRuns = new List<DrawableTextRun> { new ShapedTextRun(shapedBuffer, properties) };
@@ -589,10 +646,8 @@ namespace Avalonia.Media.TextFormatting
                 switch (currentRun)
                 {
                     case ShapedTextRun:
-                        {
-                            var runText = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
-
-                            var lineBreaker = new LineBreakEnumerator(runText);
+                    {
+                            var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
 
                             while (lineBreaker.MoveNext())
                             {
@@ -651,9 +706,7 @@ namespace Avalonia.Media.TextFormatting
 
                                                 currentRun = textRuns[index];
 
-                                                runText = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
-
-                                                lineBreaker = new LineBreakEnumerator(runText);
+                                                lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
                                             }
                                         }
                                         else
@@ -771,9 +824,7 @@ namespace Avalonia.Media.TextFormatting
 
             var shaperOptions = new TextShaperOptions(glyphTypeface, fontRenderingEmSize, (sbyte)flowDirection, cultureInfo);
 
-            var characterBuffer = textRun.CharacterBufferReference;
-
-            var shapedBuffer = textShaper.ShapeText(characterBuffer, textRun.Length, shaperOptions);
+            var shapedBuffer = textShaper.ShapeText(textRun.Text, shaperOptions);
 
             return new ShapedTextRun(shapedBuffer, textRun.Properties);
         }
