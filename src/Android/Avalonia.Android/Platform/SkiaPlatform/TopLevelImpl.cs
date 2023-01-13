@@ -25,6 +25,7 @@ using Java.Lang;
 using Math = System.Math;
 using AndroidRect = Android.Graphics.Rect;
 using Android.Graphics.Drawables;
+using Android.OS;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
