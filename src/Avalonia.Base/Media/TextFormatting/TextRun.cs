@@ -40,11 +40,11 @@ namespace Avalonia.Media.TextFormatting
                 {
                     unsafe
                     {
-                        var characterBuffer = _textRun.CharacterBufferReference.CharacterBuffer;
+                        var characterBuffer = new CharacterBufferRange(_textRun.CharacterBufferReference, _textRun.Length);
 
                         fixed (char* charsPtr = characterBuffer.Span)
                         {
-                            return new string(charsPtr, 0, characterBuffer.Span.Length);
+                            return new string(charsPtr, 0, _textRun.Length);
                         }
                     }
                 }

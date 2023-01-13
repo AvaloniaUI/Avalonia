@@ -1029,7 +1029,7 @@ namespace Avalonia.Controls
                 dataGridRow.DataContext = dataContext;
                 if (RowTheme is {} rowTheme)
                 {
-                    dataGridRow.SetValue(ThemeProperty, rowTheme, BindingPriority.TemplatedParent);
+                    dataGridRow.SetValue(ThemeProperty, rowTheme, BindingPriority.Template);
                 }
                 CompleteCellsCollection(dataGridRow);
 
@@ -2743,7 +2743,7 @@ namespace Avalonia.Controls
             groupHeader.Level = rowGroupInfo.Level;
             if (RowGroupTheme is {} rowGroupTheme)
             {
-                groupHeader.SetValue(ThemeProperty, rowGroupTheme, BindingPriority.TemplatedParent);
+                groupHeader.SetValue(ThemeProperty, rowGroupTheme, BindingPriority.Template);
             }
 
             // Set the RowGroupHeader's PropertyName. Unfortunately, CollectionViewGroup doesn't have this

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using SkiaSharp;
@@ -19,6 +20,9 @@ namespace Avalonia.Skia
         ///     Gets the text blob to draw.
         /// </summary>
         public SKTextBlob TextBlob { get; }
+
+        public IReadOnlyList<float> GetIntersections(float upperBound, float lowerBound) => 
+            TextBlob.GetIntercepts(lowerBound, upperBound);
 
         void IDisposable.Dispose()
         {

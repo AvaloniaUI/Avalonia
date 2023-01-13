@@ -22,6 +22,7 @@ namespace Avalonia.Android
         public InvalidationAwareSurfaceView(Context context) : base(context)
         {
             Holder.AddCallback(this);
+            Holder.SetFormat(global::Android.Graphics.Format.Transparent);
             _handler = new Handler(context.MainLooper);
         }
 

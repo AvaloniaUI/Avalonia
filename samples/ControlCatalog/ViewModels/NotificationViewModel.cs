@@ -1,5 +1,4 @@
-﻿using System.Reactive;
-using Avalonia.Controls.Notifications;
+﻿using Avalonia.Controls.Notifications;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels

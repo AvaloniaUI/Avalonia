@@ -126,7 +126,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Root_Should_Retun_Self_As_VisualRoot()
+        public void Root_Should_Return_Self_As_VisualRoot()
         {
             var root = new TestRoot();
 
@@ -134,7 +134,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Descendants_Should_RetunVisualRoot()
+        public void Descendants_Should_ReturnVisualRoot()
         {
             var root = new TestRoot();
             var child1 = new Decorator();

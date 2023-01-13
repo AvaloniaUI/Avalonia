@@ -12,7 +12,6 @@
     <!-- Compatibility with old apps -->
     <EmbeddedResource Include="Themes\**\*.xaml" />
   </ItemGroup>
-  <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\EmbedXaml.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\ApiDiff.props" />

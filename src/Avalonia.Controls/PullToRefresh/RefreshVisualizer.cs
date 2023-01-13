@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Numerics;
-using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.PullToRefresh;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
 
