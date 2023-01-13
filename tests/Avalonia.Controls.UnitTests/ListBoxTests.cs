@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Subjects;
 using Avalonia.Collections;
@@ -663,6 +665,71 @@ namespace Avalonia.Controls.UnitTests
             Assert.True(DataValidationErrors.GetErrors(target).SequenceEqual(new[] { exception }));
         }
 
+        [Fact]
+        public void Handles_Resetting_Items()
+        {
+            var items = new ResettingCollection(100);
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas { Height = 10 }),
+            };
+
+            Prepare(target);
+
+            var realized = target.GetRealizedContainers()
+                .Cast<ListBoxItem>()
+                .Select(x => (string)x.DataContext)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{x}"), realized);
+
+            items.Reverse();
+            Layout(target);
+
+            realized = target.GetRealizedContainers()
+                .Cast<ListBoxItem>()
+                .Select(x => (string)x.DataContext)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{99 - x}"), realized);
+        }
+
+        [Fact]
+        public void Handles_Resetting_Items_With_Existing_Selection_And_AutoScrollToSelectedItem()
+        {
+            var items = new ResettingCollection(100);
+            var target = new ListBox
+            {
+                Template = ListBoxTemplate(),
+                Items = items,
+                ItemTemplate = new FuncDataTemplate<string>((_, __) => new Canvas { Height = 10 }),
+                AutoScrollToSelectedItem = true,
+                SelectedIndex = 1,
+            };
+
+            Prepare(target);
+
+            var realized = target.GetRealizedContainers()
+                .Cast<ListBoxItem>()
+                .Select(x => (string)x.DataContext)
+                .ToList();
+
+            Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{x}"), realized);
+
+            items.Reverse();
+            Layout(target);
+
+            realized = target.GetRealizedContainers()
+                .Cast<ListBoxItem>()
+                .Select(x => (string)x.DataContext)
+                .ToList();
+
+            // "Item1" should remain selected, and now be at the bottom of the viewport.
+            Assert.Equal(Enumerable.Range(0, 10).Select(x => $"Item{10 - x}"), realized);
+        }
+
         private static void RaiseKeyEvent(ListBox listBox, Key key, KeyModifiers inputModifiers = 0)
         {
             listBox.RaiseEvent(new KeyEventArgs
@@ -710,6 +777,24 @@ namespace Avalonia.Controls.UnitTests
 
                 Assert.Equal(true, first.IsSelected);
             }
+        }
+
+        private class ResettingCollection : List<string>, INotifyCollectionChanged
+        {
+            public ResettingCollection(int itemCount)
+            {
+                AddRange(Enumerable.Range(0, itemCount).Select(x => $"Item{x}"));
+            }
+
+            public new void Reverse()
+            {
+                base.Reverse();
+                CollectionChanged?.Invoke(
+                    this,
+                    new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+
+            public event NotifyCollectionChangedEventHandler CollectionChanged;
         }
     }
 }

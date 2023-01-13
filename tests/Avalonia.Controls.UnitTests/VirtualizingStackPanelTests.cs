@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
@@ -77,6 +78,17 @@ namespace Avalonia.Controls.UnitTests
             Layout(target);
 
             AssertRealizedItems(target, itemsControl, 20, 10);
+        }
+
+        [Fact]
+        public void Scrolls_To_Index()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            target.ScrollIntoView(20);
+
+            AssertRealizedItems(target, itemsControl, 11, 10);
         }
 
         [Fact]
