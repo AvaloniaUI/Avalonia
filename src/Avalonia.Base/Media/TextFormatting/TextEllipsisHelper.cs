@@ -5,9 +5,11 @@ namespace Avalonia.Media.TextFormatting
 {
     internal static class TextEllipsisHelper
     {
-        public static List<DrawableTextRun>? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
+        public static List<TextRun>? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
         {
-            if (textLine.TextRuns is not List<DrawableTextRun> textRuns || textRuns.Count == 0)
+            var textRuns = textLine.TextRuns;
+
+            if (textRuns == null || textRuns.Count == 0)
             {
                 return null;
             }
@@ -20,7 +22,7 @@ namespace Avalonia.Media.TextFormatting
             if (properties.Width < shapedSymbol.GlyphRun.Size.Width)
             {
                 //Not enough space to fit in the symbol
-                return new List<DrawableTextRun>(0);
+                return new List<TextRun>(0);
             }
 
             var availableWidth = properties.Width - shapedSymbol.Size.Width;
@@ -31,87 +33,90 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case ShapedTextCharacters shapedRun:
-                    {
-                        currentWidth += shapedRun.Size.Width;
-
-                        if (currentWidth > availableWidth)
+                    case ShapedTextRun shapedRun:
                         {
-                            if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
+                            currentWidth += shapedRun.Size.Width;
+
+                            if (currentWidth > availableWidth)
                             {
-                                if (isWordEllipsis && measuredLength < textLine.Length)
+                                if (shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength))
                                 {
-                                    var currentBreakPosition = 0;
-
-                                    var lineBreaker = new LineBreakEnumerator(currentRun.Text);
-
-                                    while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
+                                    if (isWordEllipsis && measuredLength < textLine.Length)
                                     {
-                                        var nextBreakPosition = lineBreaker.Current.PositionMeasure;
+                                        var currentBreakPosition = 0;
 
-                                        if (nextBreakPosition == 0)
+                                        var text = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
+
+                                        var lineBreaker = new LineBreakEnumerator(text);
+
+                                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
                                         {
-                                            break;
+                                            var nextBreakPosition = lineBreaker.Current.PositionMeasure;
+
+                                            if (nextBreakPosition == 0)
+                                            {
+                                                break;
+                                            }
+
+                                            if (nextBreakPosition >= measuredLength)
+                                            {
+                                                break;
+                                            }
+
+                                            currentBreakPosition = nextBreakPosition;
                                         }
 
-                                        if (nextBreakPosition >= measuredLength)
-                                        {
-                                            break;
-                                        }
-
-                                        currentBreakPosition = nextBreakPosition;
+                                        measuredLength = currentBreakPosition;
                                     }
-
-                                    measuredLength = currentBreakPosition;
                                 }
+
+                                collapsedLength += measuredLength;
+
+                                var collapsedRuns = new List<TextRun>(textRuns.Count);
+
+                                if (collapsedLength > 0)
+                                {
+                                    var splitResult = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength);
+
+                                    collapsedRuns.AddRange(splitResult.First);
+                                }
+
+                                collapsedRuns.Add(shapedSymbol);
+
+                                return collapsedRuns;
                             }
 
-                            collapsedLength += measuredLength;
+                            availableWidth -= shapedRun.Size.Width;
 
-                            var collapsedRuns = new List<DrawableTextRun>(textRuns.Count);
-
-                            if (collapsedLength > 0)
-                            {
-                                var splitResult = TextFormatterImpl.SplitDrawableRuns(textRuns, collapsedLength);
-
-                                collapsedRuns.AddRange(splitResult.First);
-                            }
-
-                            collapsedRuns.Add(shapedSymbol);
-
-                            return collapsedRuns;
+                            break;
                         }
 
-                        availableWidth -= currentRun.Size.Width;
-
-                        
-                        break;
-                    }
-
-                    case { } drawableRun:
-                    {
-                        //The whole run needs to fit into available space
-                        if (currentWidth + drawableRun.Size.Width > availableWidth)
+                    case DrawableTextRun drawableRun:
                         {
-                            var collapsedRuns = new List<DrawableTextRun>(textRuns.Count);
-
-                            if (collapsedLength > 0)
+                            //The whole run needs to fit into available space
+                            if (currentWidth + drawableRun.Size.Width > availableWidth)
                             {
-                                var splitResult = TextFormatterImpl.SplitDrawableRuns(textRuns, collapsedLength);
+                                var collapsedRuns = new List<TextRun>(textRuns.Count);
 
-                                collapsedRuns.AddRange(splitResult.First);
+                                if (collapsedLength > 0)
+                                {
+                                    var splitResult = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength);
+
+                                    collapsedRuns.AddRange(splitResult.First);
+                                }
+
+                                collapsedRuns.Add(shapedSymbol);
+
+                                return collapsedRuns;
                             }
 
-                            collapsedRuns.Add(shapedSymbol);
+                            availableWidth -= drawableRun.Size.Width;
 
-                            return collapsedRuns;
+                            break;
                         }
-                        
-                        break;
-                    }
                 }
 
-                collapsedLength += currentRun.TextSourceLength;
+                collapsedLength += currentRun.Length;
 
                 runIndex++;
             }

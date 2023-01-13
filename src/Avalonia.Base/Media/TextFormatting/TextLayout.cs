@@ -55,7 +55,7 @@ namespace Avalonia.Media.TextFormatting
                 CreateTextParagraphProperties(typeface, fontSize, foreground, textAlignment, textWrapping,
                     textDecorations, flowDirection, lineHeight, letterSpacing);
 
-            _textSource = new FormattedTextSource(text.AsMemory(), _paragraphProperties.DefaultTextRunProperties, textStyleOverrides);
+            _textSource = new FormattedTextSource(text ?? "", _paragraphProperties.DefaultTextRunProperties, textStyleOverrides);
 
             _textTrimming = textTrimming ?? TextTrimming.None;
 
@@ -448,7 +448,7 @@ namespace Avalonia.Media.TextFormatting
                 var textLine = TextFormatter.Current.FormatLine(_textSource, _textSourceLength, MaxWidth,
                     _paragraphProperties, previousLine?.TextLineBreak);
 
-                if (textLine == null || textLine.Length == 0 || textLine.TextRuns.Count == 0 && textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
+                if(textLine == null || textLine.Length == 0)
                 {
                     if (previousLine != null && previousLine.NewLineLength > 0)
                     {
@@ -499,6 +499,11 @@ namespace Avalonia.Media.TextFormatting
                         textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(width));
                     }
 
+                    break;
+                }
+
+                if (textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
+                {
                     break;
                 }
             }

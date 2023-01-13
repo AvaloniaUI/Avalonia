@@ -60,6 +60,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBox_Should_Lose_Focus_When_Disabled()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate()
+                };
+
+                target.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target };
+
+                target.Focus();
+                Assert.True(target.IsFocused);
+                target.IsEnabled = false;
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsEnabled);
+            }
+        }
+
+        [Fact]
         public void Opening_Context_Flyout_Does_not_Lose_Selection()
         {
             using (UnitTestApplication.Start(FocusServices))
@@ -745,7 +767,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
                     
-                    var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                    var clipboard = AvaloniaLocator.CurrentMutable.GetRequiredService<IClipboard>();
                     clipboard.SetTextAsync(textInput).GetAwaiter().GetResult();
 
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
@@ -854,7 +876,7 @@ namespace Avalonia.Controls.UnitTests
 
                 AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
 
-                var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                var clipboard = AvaloniaLocator.CurrentMutable.GetRequiredService<IClipboard>();
                 clipboard.SetTextAsync(Environment.NewLine).GetAwaiter().GetResult();
 
                 RaiseKeyEvent(target, Key.V, KeyModifiers.Control);

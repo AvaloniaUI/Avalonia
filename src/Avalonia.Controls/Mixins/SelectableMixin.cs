@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Interactivity;
 using Avalonia.Controls.Primitives;
-using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Mixins
 {

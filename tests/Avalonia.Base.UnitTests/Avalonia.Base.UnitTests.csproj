@@ -3,7 +3,6 @@
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />
@@ -16,6 +15,9 @@
     <EmbeddedResource Include="..\Avalonia.RenderTests\**\*.ttf" />
     <EmbeddedResource Remove="..\Avalonia.RenderTests\Assets\NotoColorEmoji.ttf" />
     <EmbeddedResource Include="Media\TextFormatting\BreakPairTable.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Nito.AsyncEx.Context" Version="5.1.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />

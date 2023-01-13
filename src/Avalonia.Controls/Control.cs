@@ -365,9 +365,20 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTreeCore(e);
 
+            AddHandler(Gestures.HoldingEvent, OnHoldEvent);
+
             InitializeIfNeeded();
 
             ScheduleOnLoadedCore();
+        }
+
+        private void OnHoldEvent(object? sender, HoldingRoutedEventArgs e)
+        {
+            if(e.HoldingState == HoldingState.Started)
+            {
+                // Trigger ContentRequest when hold has started
+                RaiseEvent(new ContextRequestedEventArgs());
+            }
         }
 
         /// <inheritdoc/>
@@ -375,15 +386,9 @@ namespace Avalonia.Controls
         {
             base.OnDetachedFromVisualTreeCore(e);
 
+            RemoveHandler(Gestures.HoldingEvent, OnHoldEvent);
+
             OnUnloadedCore();
-        }
-
-        /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-
-            InvalidateMirrorTransform();
         }
 
         /// <inheritdoc/>

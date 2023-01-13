@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Linq;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core
 {

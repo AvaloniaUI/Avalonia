@@ -1,28 +1,39 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
+using System.Threading;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
 using Avalonia.VisualTree;
+using Math = System.Math;
 
 namespace ControlCatalog.Pages;
 
 public partial class CompositionPage : UserControl
 {
     private ImplicitAnimationCollection? _implicitAnimations;
+    private CompositionCustomVisual? _customVisual;
+    private CompositionSolidColorVisual? _solidVisual;
 
     public CompositionPage()
     {
         AvaloniaXamlLoader.Load(this);
+        AttachAnimatedSolidVisual(this.FindControl<Control>("SolidVisualHost")!);
+        AttachCustomVisual(this.FindControl<Control>("CustomVisualHost")!);
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         this.Get<ItemsControl>("Items").Items = CreateColorItems();
+
     }
 
     private static List<CompositionPageColorItem> CreateColorItems()
@@ -125,6 +136,167 @@ public partial class CompositionPage : UserControl
         {
             compositionVisual.ImplicitAnimations = page._implicitAnimations;
         }
+    }
+    
+    void AttachAnimatedSolidVisual(Visual v)
+    {
+        void Update()
+        {
+            if(_solidVisual == null)
+                return;
+            _solidVisual.Size = new Vector2((float)v.Bounds.Width / 3, (float)v.Bounds.Height / 3);
+            _solidVisual.Offset = new Vector3((float)v.Bounds.Width / 3, (float)v.Bounds.Height / 3, 0);
+        }
+        v.AttachedToVisualTree += delegate
+        {
+            var compositor = ElementComposition.GetElementVisual(v)?.Compositor;
+            if(compositor == null || _solidVisual?.Compositor == compositor)
+                return;
+            _solidVisual = compositor.CreateSolidColorVisual();
+            ElementComposition.SetElementChildVisual(v, _solidVisual);
+            _solidVisual.Color = Colors.Red;
+            var animation = _solidVisual.Compositor.CreateColorKeyFrameAnimation();
+            animation.InsertKeyFrame(0, Colors.Red);
+            animation.InsertKeyFrame(0.5f, Colors.Blue);
+            animation.InsertKeyFrame(1, Colors.Green);
+            animation.Duration = TimeSpan.FromSeconds(5);
+            animation.IterationBehavior = AnimationIterationBehavior.Forever;
+            animation.Direction = PlaybackDirection.Alternate;
+            _solidVisual.StartAnimation("Color", animation);
+
+            _solidVisual.AnchorPoint = new Vector2(0, 0);
+
+            var scale = _solidVisual.Compositor.CreateVector3KeyFrameAnimation();
+            scale.Duration = TimeSpan.FromSeconds(5);
+            scale.IterationBehavior = AnimationIterationBehavior.Forever;
+            scale.InsertKeyFrame(0, new Vector3(1, 1, 0));
+            scale.InsertKeyFrame(0.5f, new Vector3(1.5f, 1.5f, 0));
+            scale.InsertKeyFrame(1, new Vector3(1, 1, 0));
+
+            _solidVisual.StartAnimation("Scale", scale);
+
+            var center =
+                _solidVisual.Compositor.CreateExpressionAnimation(
+                    "Vector3(this.Target.Size.X * 0.5, this.Target.Size.Y * 0.5, 1)");
+            _solidVisual.StartAnimation("CenterPoint", center);
+            Update();
+        };
+        v.PropertyChanged += (_, a) =>
+        {
+            if (a.Property == BoundsProperty)
+                Update();
+        };
+    }
+
+    void AttachCustomVisual(Visual v)
+    {
+        void Update()
+        {
+            if (_customVisual == null)
+                return;
+            var h = (float)Math.Min(v.Bounds.Height, v.Bounds.Width / 3);
+            _customVisual.Size = new Vector2((float)v.Bounds.Width, h);
+            _customVisual.Offset = new Vector3(0, (float)(v.Bounds.Height - h) / 2, 0);
+        }
+        v.AttachedToVisualTree += delegate
+        {
+            var compositor = ElementComposition.GetElementVisual(v)?.Compositor;
+            if(compositor == null || _customVisual?.Compositor == compositor)
+                return;
+            _customVisual = compositor.CreateCustomVisual(new CustomVisualHandler());
+            ElementComposition.SetElementChildVisual(v, _customVisual);
+            _customVisual.SendHandlerMessage(CustomVisualHandler.StartMessage);
+            Update();
+        };
+        
+        v.PropertyChanged += (_, a) =>
+        {
+            if (a.Property == BoundsProperty)
+                Update();
+        };
+    }
+
+    class CustomVisualHandler : CompositionCustomVisualHandler
+    {
+        private TimeSpan _animationElapsed;
+        private TimeSpan? _lastServerTime;
+        private bool _running;
+
+        public static readonly object StopMessage = new(), StartMessage = new();
+        
+        public override void OnRender(ImmediateDrawingContext drawingContext)
+        {
+            if (_running)
+            {
+                if (_lastServerTime.HasValue) _animationElapsed += (CompositionNow - _lastServerTime.Value);
+                _lastServerTime = CompositionNow;
+            }
+            
+            const int cnt = 20;
+            var maxPointSizeX = EffectiveSize.X / (cnt * 1.6);
+            var maxPointSizeY = EffectiveSize.Y / 4;
+            var pointSize = Math.Min(maxPointSizeX, maxPointSizeY);
+            var animationLength = TimeSpan.FromSeconds(4);
+            var animationStage = _animationElapsed.TotalSeconds / animationLength.TotalSeconds;
+
+            var sinOffset = Math.Cos(_animationElapsed.TotalSeconds) * 1.5;
+            
+            for (var c = 0; c < cnt; c++)
+            {
+                var stage = (animationStage + (double)c / cnt) % 1;
+                var colorStage =
+                    (animationStage + (Math.Sin(_animationElapsed.TotalSeconds * 2) + 1) / 2 + (double)c / cnt) % 1;
+                var posX = (EffectiveSize.X + pointSize * 3) * stage - pointSize;
+                var posY = (EffectiveSize.Y - pointSize) * (1 + Math.Sin(stage * 3.14 * 3 + sinOffset)) / 2 + pointSize / 2;
+                var opacity = Math.Sin(stage * 3.14);
+
+
+                drawingContext.DrawEllipse(new ImmutableSolidColorBrush(Color.FromArgb(
+                        255, 
+                        (byte)(255 - 255 * colorStage),
+                        (byte)(255 * Math.Abs(0.5 - colorStage) * 2), 
+                        (byte)(255 * colorStage)
+                    ), opacity), null,
+                    new Point(posX, posY), pointSize / 2, pointSize / 2);
+            }
+            
+        }
+
+        public override void OnMessage(object message)
+        {
+            if (message == StartMessage)
+            {
+                _running = true;
+                _lastServerTime = null;
+                RegisterForNextAnimationFrameUpdate();
+            }
+            else if (message == StopMessage)
+                _running = false;
+        }
+
+        public override void OnAnimationFrameUpdate()
+        {
+            if (_running)
+            {
+                Invalidate();
+                RegisterForNextAnimationFrameUpdate();
+            }
+        }
+    }
+    
+    private void ButtonThreadSleep(object? sender, RoutedEventArgs e)
+    {
+        Thread.Sleep(10000);
+    }
+
+    private void ButtonStartCustomVisual(object? sender, RoutedEventArgs e)
+    {
+        _customVisual?.SendHandlerMessage(CustomVisualHandler.StartMessage);
+    }
+
+    private void ButtonStopCustomVisual(object? sender, RoutedEventArgs e)
+    {
+        _customVisual?.SendHandlerMessage(CustomVisualHandler.StopMessage);
     }
 }
 

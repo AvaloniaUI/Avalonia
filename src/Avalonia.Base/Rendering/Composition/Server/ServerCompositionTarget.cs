@@ -20,7 +20,7 @@ namespace Avalonia.Rendering.Composition.Server
     internal partial class ServerCompositionTarget : IDisposable
     {
         private readonly ServerCompositor _compositor;
-        private readonly Func<IRenderTarget> _renderTargetFactory;
+        private readonly Func<IEnumerable<object>> _surfaces;
         private static long s_nextId = 1;
         public long Id { get; }
         public ulong Revision { get; private set; }
@@ -39,11 +39,11 @@ namespace Avalonia.Rendering.Composition.Server
         public ReadbackIndices Readback { get; } = new();
         public int RenderedVisuals { get; set; }
 
-        public ServerCompositionTarget(ServerCompositor compositor, Func<IRenderTarget> renderTargetFactory) :
+        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces) :
             base(compositor)
         {
             _compositor = compositor;
-            _renderTargetFactory = renderTargetFactory;
+            _surfaces = surfaces;
             Id = Interlocked.Increment(ref s_nextId);
         }
 
@@ -79,17 +79,16 @@ namespace Avalonia.Rendering.Composition.Server
             if (Root == null) 
                 return;
 
-            if ((_renderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+            if (_renderTarget?.IsCorrupted == true)
             {
                 _renderTarget!.Dispose();
                 _renderTarget = null;
+                _redrawRequested = true;
             }
 
-            _renderTarget ??= _renderTargetFactory();
-
-            Compositor.UpdateServerTime();
+            _renderTarget ??= _compositor.CreateRenderTarget(_surfaces());
             
-            if(_dirtyRect.IsEmpty && !_redrawRequested)
+            if(_dirtyRect.IsDefault && !_redrawRequested)
                 return;
 
             Revision++;
@@ -109,15 +108,16 @@ namespace Avalonia.Rendering.Composition.Server
             using (var targetContext = _renderTarget.CreateDrawingContext(null))
             {
                 var layerSize = Size * Scaling;
-                if (layerSize != _layerSize || _layer == null)
+                if (layerSize != _layerSize || _layer == null || _layer.IsCorrupted)
                 {
                     _layer?.Dispose();
                     _layer = null;
                     _layer = targetContext.CreateLayer(Size);
                     _layerSize = layerSize;
+                    _dirtyRect = new Rect(0, 0, layerSize.Width, layerSize.Height);
                 }
 
-                if (!_dirtyRect.IsEmpty)
+                if (!_dirtyRect.IsDefault)
                 {
                     var visualBrushHelper = new CompositorDrawingContextProxy.VisualBrushRenderer();
                     using (var context = _layer.CreateDrawingContext(visualBrushHelper))
@@ -160,7 +160,7 @@ namespace Avalonia.Rendering.Composition.Server
                 }
                 RenderedVisuals = 0;
 
-                _dirtyRect = Rect.Empty;
+                _dirtyRect = default;
             }
         }
 
@@ -179,7 +179,7 @@ namespace Avalonia.Rendering.Composition.Server
         
         public void AddDirtyRect(Rect rect)
         {
-            if(rect.IsEmpty)
+            if(rect.IsDefault)
                 return;
             var snapped = SnapToDevicePixels(rect, Scaling);
             DebugEvents?.RectInvalidated(rect);
@@ -197,7 +197,7 @@ namespace Avalonia.Rendering.Composition.Server
             if(_disposed)
                 return;
             _disposed = true;
-            using (_compositor.GpuContext?.EnsureCurrent())
+            using (_compositor.RenderInterface.EnsureCurrent())
             {
                 if (_layer != null)
                 {

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Primitives;
@@ -174,6 +174,26 @@ namespace Avalonia.Controls
                     if (child is TreeViewItem treeViewItem)
                     {
                         ExpandSubTree(treeViewItem);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Collapse the specified <see cref="TreeViewItem"/> all descendent <see cref="TreeViewItem"/> s.
+        /// </summary>
+        /// <param name="item">The item to collapse.</param>
+        public void CollapseSubTree(TreeViewItem item)
+        {
+            item.IsExpanded = false;
+
+            if (item.Presenter?.Panel != null)
+            {
+                foreach (var child in item.Presenter.Panel.Children)
+                {
+                    if (child is TreeViewItem treeViewItem)
+                    {
+                        CollapseSubTree(treeViewItem);
                     }
                 }
             }

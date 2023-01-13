@@ -32,7 +32,7 @@ internal class AssemblyDescriptor : IAssemblyDescriptor
                     Resources.Remove(Constants.AvaloniaResourceName);
 
                     var indexLength = new BinaryReader(resources).ReadInt32();
-                    var index = AvaloniaResourcesIndexReaderWriter.Read(new SlicedStream(resources, 4, indexLength));
+                    var index = AvaloniaResourcesIndexReaderWriter.ReadIndex(new SlicedStream(resources, 4, indexLength));
                     var baseOffset = indexLength + 4;
                     AvaloniaResources = index.ToDictionary(r => GetPathRooted(r), r => (IAssetDescriptor)
                         new AvaloniaResourceDescriptor(assembly, baseOffset + r.Offset, r.Size));

@@ -13,7 +13,6 @@ namespace Avalonia.Browser.Storage;
 
 internal record FilePickerAcceptType(string Description, IReadOnlyDictionary<string, IReadOnlyList<string>> Accept);
 
-[SupportedOSPlatform("browser")]
 internal class BrowserStorageProvider : IStorageProvider
 {
     internal const string PickerCancelMessage = "The user aborted a request";
@@ -30,11 +29,11 @@ internal class BrowserStorageProvider : IStorageProvider
         await _lazyModule.Value;
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
-        var (types, exludeAll) = ConvertFileTypes(options.FileTypeFilter);
+        var (types, excludeAll) = ConvertFileTypes(options.FileTypeFilter);
 
         try
         {
-            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, exludeAll);
+            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, excludeAll);
             if (items is null)
             {
                 return Array.Empty<IStorageFile>();
@@ -64,11 +63,11 @@ internal class BrowserStorageProvider : IStorageProvider
         await _lazyModule.Value;
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
-        var (types, exludeAll) = ConvertFileTypes(options.FileTypeChoices);
+        var (types, excludeAll) = ConvertFileTypes(options.FileTypeChoices);
 
         try
         {
-            var item = await StorageHelper.SaveFileDialog(startIn, options.SuggestedFileName, types, exludeAll);
+            var item = await StorageHelper.SaveFileDialog(startIn, options.SuggestedFileName, types, excludeAll);
             return item is not null ? new JSStorageFile(item) : null;
         }
         catch (JSException ex) when (ex.Message.Contains(PickerCancelMessage, StringComparison.Ordinal))
@@ -128,9 +127,9 @@ internal class BrowserStorageProvider : IStorageProvider
             types = null;
         }
 
-        var inlcudeAll = input?.Contains(FilePickerFileTypes.All) == true || types is null;
+        var includeAll = input?.Contains(FilePickerFileTypes.All) == true || types is null;
 
-        return (types, !inlcudeAll);
+        return (types, !includeAll);
     }
 }
 

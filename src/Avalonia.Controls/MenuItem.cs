@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
@@ -159,12 +159,13 @@ namespace Avalonia.Controls
             // menu layout.
 
             var parentSharedSizeScope = this.GetObservable(VisualParentProperty)
-                .SelectMany(x =>
+                .Select(x =>
                 {
                     var parent = x as Control;
                     return parent?.GetObservable(DefinitionBase.PrivateSharedSizeScopeProperty) ??
                            Observable.Return<DefinitionBase.SharedSizeScope?>(null);
-                });
+                })
+                .Switch();
 
             this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
         }

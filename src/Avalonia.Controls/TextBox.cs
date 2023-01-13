@@ -2,7 +2,7 @@ using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -961,7 +961,9 @@ namespace Avalonia.Controls
 
                 var length = 0;
 
-                var graphemeEnumerator = new GraphemeEnumerator(input.AsMemory());
+                var inputRange = new CharacterBufferRange(new CharacterBufferReference(input), input.Length);
+
+                var graphemeEnumerator = new GraphemeEnumerator(inputRange);
 
                 while (graphemeEnumerator.MoveNext())
                 {
@@ -979,7 +981,7 @@ namespace Avalonia.Controls
                         }
                     }
 
-                    length += grapheme.Text.Length;
+                    length += grapheme.Length;
                 }
 
                 if (length < input.Length)
@@ -1473,7 +1475,11 @@ namespace Avalonia.Controls
 
                         _wordSelectionStart = SelectionStart;
 
-                        SelectionEnd = StringUtils.NextWord(text, index);
+                        if (!StringUtils.IsEndOfWord(text, index))
+                        {
+                            SelectionEnd = StringUtils.NextWord(text, index);
+                        }
+
                         break;
                     case 3:
                         _wordSelectionStart = -1;

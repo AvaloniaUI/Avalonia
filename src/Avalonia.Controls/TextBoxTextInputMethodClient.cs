@@ -77,12 +77,14 @@ namespace Avalonia.Controls
 
             foreach (var run in textLine.TextRuns)
             {
-                if(run.Text.Length > 0)
+                if(run.Length > 0)
                 {
+                    var characterBufferRange = new CharacterBufferRange(run.CharacterBufferReference, run.Length);
+
 #if NET6_0
-                    builder.Append(run.Text.Span);
+                    builder.Append(characterBufferRange.Span);
 #else
-                    builder.Append(run.Text.Span.ToArray());
+                    builder.Append(characterBufferRange.Span.ToArray());
 #endif
                 }
             }

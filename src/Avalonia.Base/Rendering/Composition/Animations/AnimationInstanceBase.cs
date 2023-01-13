@@ -80,4 +80,6 @@ internal abstract class AnimationInstanceBase : IAnimationInstance
         _invalidated = true;
         TargetObject.NotifyAnimatedValueChanged(Property);
     }
+
+    public void OnTick() => Invalidate();
 }

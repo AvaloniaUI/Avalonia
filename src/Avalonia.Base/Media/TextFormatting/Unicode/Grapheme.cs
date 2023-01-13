@@ -1,16 +1,17 @@
-﻿using Avalonia.Utilities;
+﻿using System;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
     /// <summary>
     /// Represents the smallest unit of a writing system of any given language.
     /// </summary>
-    public readonly struct Grapheme
+    public readonly ref struct Grapheme
     {
-        public Grapheme(Codepoint firstCodepoint, ReadOnlySlice<char> text)
+        public Grapheme(Codepoint firstCodepoint, int offset, int length)
         {
             FirstCodepoint = firstCodepoint;
-            Text = text;
+            Offset = offset;
+            Length = length;
         }
 
         /// <summary>
@@ -19,8 +20,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public Codepoint FirstCodepoint { get; }
 
         /// <summary>
-        /// The text that is representing the <see cref="Grapheme"/>.
+        /// The Offset to the FirstCodepoint
         /// </summary>
-        public ReadOnlySlice<char> Text { get; }
+        public int Offset { get; }
+
+        /// <summary>
+        /// The length of the grapheme cluster
+        /// </summary>
+        public int Length { get; }
     }
 }

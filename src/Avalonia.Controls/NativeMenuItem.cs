@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Utilities;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/
 
+using System;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -10,7 +11,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// Represents a unicode string and all associated attributes
     /// for each character required for the bidirectional Unicode algorithm
     /// </summary>
-    internal class BidiData
+    internal struct BidiData : IDisposable
     {
         private ArrayBuilder<BidiClass> _classes;
         private ArrayBuilder<BidiPairedBracketType> _pairedBracketTypes;
@@ -63,7 +64,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Appends text to the bidi data.
         /// </summary>
         /// <param name="text">The text to process.</param>
-        public void Append(ReadOnlySlice<char> text)
+        public void Append(CharacterBufferRange text)
         {
             _classes.Add(text.Length);
             _pairedBracketTypes.Add(text.Length);
@@ -179,6 +180,16 @@ namespace Avalonia.Media.TextFormatting.Unicode
             _tempLevelBuffer.Clear();
             
             return _tempLevelBuffer.Add(length, false);
+        }
+
+        public void Dispose()
+        {
+            _classes.Dispose();
+            _pairedBracketTypes.Dispose();
+            _pairedBracketValues.Dispose();
+            _savedClasses.Dispose();
+            _savedPairedBracketTypes.Dispose();
+            _tempLevelBuffer.Dispose();
         }
     }
 }

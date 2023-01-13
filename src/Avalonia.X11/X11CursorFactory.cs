@@ -113,7 +113,8 @@ namespace Avalonia.X11
                 image->yhot = hotSpot.Y;
                 image->pixels = (IntPtr)(image + 1);
                
-                using (var renderTarget = platformRenderInterface.CreateRenderTarget(new[] { this }))
+                using (var cpuContext = platformRenderInterface.CreateBackendContext(null))
+                using (var renderTarget = cpuContext.CreateRenderTarget(new[] { this }))
                 using (var ctx = renderTarget.CreateDrawingContext(null))
                 {
                     var r = new Rect(_pixelSize.ToSize(1)); 

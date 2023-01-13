@@ -55,12 +55,6 @@ namespace Avalonia.Browser
 
         private class Attachment : INativeControlHostControlTopLevelAttachment
         {
-            private const string InitializeWithChildHandleSymbol = "InitializeWithChildHandle";
-            private const string AttachToSymbol = "AttachTo";
-            private const string ShowInBoundsSymbol = "ShowInBounds";
-            private const string HideWithSizeSymbol = "HideWithSize";
-            private const string ReleaseChildSymbol = "ReleaseChild";
-
             private JSObject? _native;
             private BrowserNativeControlHost? _attachedTo;
 

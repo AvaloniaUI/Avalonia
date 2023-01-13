@@ -20,7 +20,7 @@ namespace Avalonia.UnitTests
     {
         public static readonly TestServices StyledWindow = new TestServices(
             assetLoader: new AssetLoader(),
-            platform: new AppBuilder().RuntimePlatform,
+            platform: new StandardRuntimePlatform(),
             renderInterface: new MockPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
             theme: () => CreateSimpleTheme(),
@@ -71,7 +71,6 @@ namespace Avalonia.UnitTests
             IRuntimePlatform platform = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderTimer renderLoop = null,
-            IScheduler scheduler = null,
             ICursorFactory standardCursorFactory = null,
             Func<IStyle> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
@@ -91,7 +90,6 @@ namespace Avalonia.UnitTests
             RenderInterface = renderInterface;
             FontManagerImpl = fontManagerImpl;
             TextShaperImpl = textShaperImpl;
-            Scheduler = scheduler;
             StandardCursorFactory = standardCursorFactory;
             Theme = theme;
             ThreadingInterface = threadingInterface;
@@ -110,7 +108,6 @@ namespace Avalonia.UnitTests
         public IPlatformRenderInterface RenderInterface { get; }
         public IFontManagerImpl FontManagerImpl { get; }
         public ITextShaperImpl TextShaperImpl { get; }
-        public IScheduler Scheduler { get; }
         public ICursorFactory StandardCursorFactory { get; }
         public Func<IStyle> Theme { get; }
         public IPlatformThreadingInterface ThreadingInterface { get; }
@@ -149,7 +146,6 @@ namespace Avalonia.UnitTests
                 renderInterface: renderInterface ?? RenderInterface,
                 fontManagerImpl: fontManagerImpl ?? FontManagerImpl,
                 textShaperImpl: textShaperImpl ?? TextShaperImpl,
-                scheduler: scheduler ?? Scheduler,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
                 theme: theme ?? Theme,
                 threadingInterface: threadingInterface ?? ThreadingInterface,
@@ -168,17 +164,5 @@ namespace Avalonia.UnitTests
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
                     y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }
-    }
-
-    public class AppBuilder : AppBuilderBase<AppBuilder>
-    {
-        public AppBuilder()
-            : base(new StandardRuntimePlatform(),
-                  builder => StandardRuntimePlatformServices.Register(builder.Instance?.GetType()
-                      ?.GetTypeInfo().Assembly))
-        {
-        }
-
-        protected override bool CheckSetup => false;
     }
 }

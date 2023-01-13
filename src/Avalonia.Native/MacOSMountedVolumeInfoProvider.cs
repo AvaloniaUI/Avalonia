@@ -2,15 +2,16 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
+using Avalonia.Reactive;
 using Avalonia.Controls.Platform;
+using Avalonia.Threading;
 
 namespace Avalonia.Native
 {
     internal class MacOSMountedVolumeInfoListener : IDisposable
     {
-        private readonly CompositeDisposable _disposables;
+        private readonly IDisposable _disposable;
         private bool _beenDisposed = false;
         private ObservableCollection<MountedVolumeInfo> mountedDrives;
 
@@ -18,17 +19,12 @@ namespace Avalonia.Native
         {
             this.mountedDrives = mountedDrives;
 
-            _disposables = new CompositeDisposable();
+            _disposable = DispatcherTimer.Run(Poll, TimeSpan.FromSeconds(1));
 
-            var pollTimer = Observable.Interval(TimeSpan.FromSeconds(1))
-                                      .Subscribe(Poll);
-
-            _disposables.Add(pollTimer);
-
-            Poll(0);
+            Poll();
         }
 
-        private void Poll(long _)
+        private bool Poll()
         {
             var mountVolInfos = Directory.GetDirectories("/Volumes/")
                                 .Where(p=> p != null)
@@ -41,13 +37,14 @@ namespace Avalonia.Native
                                 .ToArray();
                                 
             if (mountedDrives.SequenceEqual(mountVolInfos))
-                return;
+                return true;
             else
             {
                 mountedDrives.Clear();
 
                 foreach (var i in mountVolInfos)
                     mountedDrives.Add(i);
+                return true;
             }
         }
 
@@ -72,7 +69,6 @@ namespace Avalonia.Native
     {
         public IDisposable Listen(ObservableCollection<MountedVolumeInfo> mountedDrives)
         {
-            Contract.Requires<ArgumentNullException>(mountedDrives != null);
             return new MacOSMountedVolumeInfoListener(mountedDrives);
         }
     }

@@ -10,7 +10,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using System;
 using System.Diagnostics;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

@@ -359,14 +359,14 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void Empty_Expression_Should_Track_Root()
         {
             var data = new Class1 { Foo = "foo" };
-            var update = new Subject<Unit>();
+            var update = new Subject<ValueTuple>();
             var target = ExpressionObserver.Create(() => data.Foo, o => o, update);
             var result = new List<object>();
 
             target.Subscribe(x => result.Add(x));
 
             data.Foo = "bar";
-            update.OnNext(Unit.Default);
+            update.OnNext(default);
 
             Assert.Equal(new[] { "foo", "bar" }, result);
 
@@ -533,15 +533,15 @@ namespace Avalonia.Base.UnitTests.Data.Core
             var first = new Class1 { Foo = "foo" };
             var second = new Class1 { Foo = "bar" };
             var root = first;
-            var update = new Subject<Unit>();
+            var update = new Subject<ValueTuple>();
             var target = ExpressionObserver.Create(() => root, o => o.Foo, update);
             var result = new List<object>();
             var sub = target.Subscribe(x => result.Add(x));
 
             root = second;
-            update.OnNext(Unit.Default);
+            update.OnNext(default);
             root = null;
-            update.OnNext(Unit.Default);
+            update.OnNext(default);
 
             Assert.Equal(
                 new object[]
@@ -640,7 +640,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         public void RootGetter_Is_Reevaluated_On_Subscribe()
         {
             var data = "foo";
-            var target = new ExpressionObserver(() => data, new EmptyExpressionNode(), new Subject<Unit>(), null);
+            var target = new ExpressionObserver(() => data, new EmptyExpressionNode(), new Subject<ValueTuple>(), null);
             var result = new List<object>();
             var sub = target.Subscribe(x => result.Add(x));
 

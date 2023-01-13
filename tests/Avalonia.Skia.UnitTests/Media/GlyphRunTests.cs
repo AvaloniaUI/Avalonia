@@ -19,7 +19,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, direction, CultureInfo.CurrentCulture);
                 var shapedBuffer =
-                    TextShaper.Current.ShapeText(text.AsMemory(), options);
+                    TextShaper.Current.ShapeText(new CharacterBufferReference(text), text.Length, options);
 
                 var glyphRun = CreateGlyphRun(shapedBuffer);
 
@@ -39,8 +39,6 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
                 else
                 {
-                    shapedBuffer.GlyphInfos.Span.Reverse();
-
                     foreach (var rect in rects)
                     {
                         characterHit = glyphRun.GetNextCaretCharacterHit(characterHit);
@@ -62,7 +60,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, direction, CultureInfo.CurrentCulture);
                 var shapedBuffer =
-                    TextShaper.Current.ShapeText(text.AsMemory(), options);
+                    TextShaper.Current.ShapeText(new CharacterBufferReference(text), text.Length, options);
 
                 var glyphRun = CreateGlyphRun(shapedBuffer);
 
@@ -84,8 +82,6 @@ namespace Avalonia.Skia.UnitTests.Media
                 }
                 else
                 {
-                    shapedBuffer.GlyphInfos.Span.Reverse();
-
                     foreach (var rect in rects)
                     {
                         characterHit = glyphRun.GetPreviousCaretCharacterHit(characterHit);
@@ -107,7 +103,7 @@ namespace Avalonia.Skia.UnitTests.Media
             {
                 var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 10, direction, CultureInfo.CurrentCulture);
                 var shapedBuffer =
-                   TextShaper.Current.ShapeText(text.AsMemory(), options);
+                   TextShaper.Current.ShapeText(new CharacterBufferReference(text), text.Length, options);
 
                 var glyphRun = CreateGlyphRun(shapedBuffer);
 
@@ -116,16 +112,14 @@ namespace Avalonia.Skia.UnitTests.Media
                     var characterHit =
                         glyphRun.GetCharacterHitFromDistance(glyphRun.Metrics.WidthIncludingTrailingWhitespace, out _);
                     
-                    Assert.Equal(glyphRun.Characters.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+                    Assert.Equal(glyphRun.Characters.Count, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
                 }
                 else
                 {
-                    shapedBuffer.GlyphInfos.Span.Reverse();
-
-                    var characterHit =
+                     var characterHit =
                         glyphRun.GetCharacterHitFromDistance(0, out _);
                     
-                    Assert.Equal(glyphRun.Characters.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
+                    Assert.Equal(glyphRun.Characters.Count, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
                 }
                 
                 var rects = BuildRects(glyphRun);
@@ -218,15 +212,22 @@ namespace Avalonia.Skia.UnitTests.Media
 
         private static GlyphRun CreateGlyphRun(ShapedBuffer shapedBuffer)
         {
-            return new GlyphRun(
+            var glyphRun =  new GlyphRun(
                 shapedBuffer.GlyphTypeface,
                 shapedBuffer.FontRenderingEmSize,
-                shapedBuffer.Text,
+                shapedBuffer.CharacterBufferRange,
                 shapedBuffer.GlyphIndices,
                 shapedBuffer.GlyphAdvances,
                 shapedBuffer.GlyphOffsets,
                 shapedBuffer.GlyphClusters,
                 shapedBuffer.BidiLevel);
+
+            if(shapedBuffer.BidiLevel == 1)
+            {
+                shapedBuffer.GlyphInfos.Span.Reverse();
+            }
+
+            return glyphRun;
         }
 
         private static IDisposable Start()

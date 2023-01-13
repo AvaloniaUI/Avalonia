@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -25,7 +25,7 @@ namespace Avalonia.LinuxFramebuffer
 
             Surfaces = new object[] { _outputBackend };
 
-            Invalidate(default(Rect));
+            Invalidate(default);
             _inputBackend.Initialize(this, e => Input?.Invoke(e));
         }
 
@@ -33,7 +33,7 @@ namespace Avalonia.LinuxFramebuffer
         {
             var factory = AvaloniaLocator.Current.GetService<IRendererFactory>();
             var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            return factory?.Create(root, renderLoop) ?? new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor);
+            return factory?.Create(root, renderLoop) ?? new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor, () => Surfaces);
         }
 
         public void Dispose()

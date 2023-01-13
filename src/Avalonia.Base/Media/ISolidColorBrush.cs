@@ -13,4 +13,13 @@ namespace Avalonia.Media
         /// </summary>
         Color Color { get; }
     }
+
+    /// <summary>
+    /// Fills an area with a solid color.
+    /// </summary>
+    [NotClientImplementable]
+    public interface IImmutableSolidColorBrush : ISolidColorBrush, IImmutableBrush
+    {
+        
+    }
 }

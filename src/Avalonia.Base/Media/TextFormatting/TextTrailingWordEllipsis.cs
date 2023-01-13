@@ -16,7 +16,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="width">width in which collapsing is constrained to.</param>
         /// <param name="textRunProperties">text run properties of ellipsis symbol.</param>
         public TextTrailingWordEllipsis(
-            ReadOnlySlice<char> ellipsis,
+            string ellipsis,
             double width,
             TextRunProperties textRunProperties
         )
@@ -31,7 +31,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override TextRun Symbol { get; }
 
-        public override List<DrawableTextRun>? Collapse(TextLine textLine)
+        public override List<TextRun>? Collapse(TextLine textLine)
         {
             return TextEllipsisHelper.Collapse(textLine, this, true);
         }

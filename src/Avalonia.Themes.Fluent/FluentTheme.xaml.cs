@@ -99,15 +99,15 @@ namespace Avalonia.Themes.Fluent
             var themeVariantResource1 = Mode == FluentThemeMode.Dark ? _baseDark : _baseLight;
             var themeVariantResource2 = Mode == FluentThemeMode.Dark ? _fluentDark : _fluentLight;
             var dict = Resources.MergedDictionaries;
-            if (dict.Count == 2)
+            if (dict.Count == 0)
             {
-                dict.Insert(1, themeVariantResource1);
+                dict.Add(themeVariantResource1);
                 dict.Add(themeVariantResource2);
             }
             else
             {
-                dict[1] = themeVariantResource1;
-                dict[3] = themeVariantResource2;
+                dict[0] = themeVariantResource1;
+                dict[1] = themeVariantResource2;
             }
         }
 
