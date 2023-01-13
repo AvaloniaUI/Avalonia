@@ -528,6 +528,7 @@ interface IAvnWindowBase : IUnknown
      HRESULT BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point,
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
      HRESULT SetBlurEnabled(bool enable);
+     HRESULT GruntSetupWindow([intptr]void* powerpointWindow);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]

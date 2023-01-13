@@ -44,6 +44,12 @@ namespace Avalonia.Native
         {
             return _native?.ObtainNSWindowHandleRetained() ?? IntPtr.Zero;
         }
+
+        public void GruntSetupWindow(IntPtr powerpointWindow)
+        {
+            Console.WriteLine("Configuring Grunt Window");
+            _native?.GruntSetupWindow(IntPtr.Zero);
+        }
     }
 
     internal abstract class WindowBaseImpl : IWindowBaseImpl,

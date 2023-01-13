@@ -497,6 +497,12 @@ HRESULT WindowBaseImpl::SetBlurEnabled(bool enable) {
     return S_OK;
 }
 
+HRESULT WindowBaseImpl::GruntSetupWindow(void* powerpointWindow) {
+    START_COM_CALL;
+
+    return S_OK;
+}
+
 HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, AvnPoint point, IAvnClipboard *clipboard, IAvnDndResultCallback *cb, void *sourceHandle) {
     START_COM_CALL;
 
