@@ -2,6 +2,7 @@
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 using System;
 
 using static Avalonia.Controls.Platform.IInsetsManager;
