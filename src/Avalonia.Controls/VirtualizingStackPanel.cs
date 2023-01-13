@@ -277,12 +277,25 @@ namespace Avalonia.Controls
                     _isWaitingForViewportUpdate = false;
                 }
 
-                // Try to bring the item into view and do a layout pass.
+                // Try to bring the item into view.
                 _anchorElement.BringIntoView();
 
+                // If the viewport does not contain the item to scroll to, set _isWaitingForViewportUpdate:
+                // this should cause the following chain of events:
+                // - Measure is first done with the old viewport (which will be a no-op, see MeasureOverride)
+                // - The viewport is then updated by the layout system which invalidates our measure
+                // - Measure is then done with the new viewport.
                 _isWaitingForViewportUpdate = !_viewport.Contains(rect);
                 root.LayoutManager.ExecuteLayoutPass();
-                _isWaitingForViewportUpdate = false;
+
+                // If for some reason the layout system didn't give us a new viewport during the layout, we
+                // need to do another layout pass as the one that took place was a no-op.
+                if (_isWaitingForViewportUpdate)
+                {
+                    _isWaitingForViewportUpdate = false;
+                    InvalidateMeasure();
+                    root.LayoutManager.ExecuteLayoutPass();
+                }
 
                 var result = _anchorElement;
                 _anchorElement = null;
