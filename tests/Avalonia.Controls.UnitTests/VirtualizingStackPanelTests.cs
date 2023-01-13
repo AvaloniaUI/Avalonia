@@ -227,6 +227,57 @@ namespace Avalonia.Controls.UnitTests
             Assert.Null(removed.VisualParent);
         }
 
+        [Fact]
+        public void Does_Not_Recycle_Focused_Element()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            target.GetRealizedElements().First()!.Focus();
+            Assert.True(target.GetRealizedElements().First()!.IsKeyboardFocusWithin);
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
+        }
+
+        [Fact]
+        public void Removing_Item_Of_Focused_Element_Clears_Focus()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            var focused = target.GetRealizedElements().First()!;
+            focused.Focus();
+            Assert.True(focused.IsKeyboardFocusWithin);
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            Assert.All(target.GetRealizedElements(), x => Assert.False(x!.IsKeyboardFocusWithin));
+            Assert.All(target.GetRealizedElements(), x => Assert.NotSame(focused, x));
+        }
+
+        [Fact]
+        public void Scrolling_Back_To_Focused_Element_Uses_Correct_Element()
+        {
+            using var app = App();
+            var (target, scroll, itemsControl) = CreateTarget();
+
+            var focused = target.GetRealizedElements().First()!;
+            focused.Focus();
+            Assert.True(focused.IsKeyboardFocusWithin);
+
+            scroll.Offset = new Vector(0, 200);
+            Layout(target);
+
+            scroll.Offset = new Vector(0, 0);
+            Layout(target);
+
+            Assert.Same(focused, target.GetRealizedElements().First());
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -326,6 +377,6 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(ns));
         }
 
-        private static IDisposable App() => UnitTestApplication.Start();
+        private static IDisposable App() => UnitTestApplication.Start(TestServices.RealFocus);
     }
 }

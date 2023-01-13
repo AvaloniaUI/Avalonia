@@ -26,7 +26,7 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, bool>("ItemIsOwnContainer");
 
         private static readonly Rect s_invalidViewport = new(double.PositiveInfinity, double.PositiveInfinity, 0, 0);
-        private readonly Action<Control> _recycleElement;
+        private readonly Action<Control, int> _recycleElement;
         private readonly Action<Control> _recycleElementOnItemRemoved;
         private readonly Action<Control, int, int> _updateElementIndex;
         private int _anchorIndex = -1;
@@ -38,6 +38,8 @@ namespace Avalonia.Controls
         private RealizedElementList? _realizedElements;
         private Rect _viewport = s_invalidViewport;
         private Stack<Control>? _recyclePool;
+        private Control? _unrealizedFocusedElement;
+        private int _unrealizedFocusedIndex = -1;
 
         public VirtualizingStackPanel()
         {
@@ -167,7 +169,7 @@ namespace Avalonia.Controls
                     _realizedElements.ItemsInserted(e.NewStartingIndex, e.NewItems!.Count, _updateElementIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    _realizedElements.RecycleAllElements(_recycleElementOnItemRemoved);
+                    _realizedElements.ItemsReset(_recycleElementOnItemRemoved);
                     break;
             }
         }
@@ -482,6 +484,13 @@ namespace Avalonia.Controls
             var generator = ItemContainerGenerator!;
             var item = items[index];
 
+            if (_unrealizedFocusedIndex == index)
+            {
+                var element = _unrealizedFocusedElement;
+                _unrealizedFocusedElement = null;
+                _unrealizedFocusedIndex = -1;
+                return element;
+            }
             if (_recyclePool?.Count > 0)
             {
                 var recycled = _recyclePool.Pop();
@@ -515,13 +524,18 @@ namespace Avalonia.Controls
             return index * estimatedElementSize;
         }
 
-        private void RecycleElement(Control element)
+        private void RecycleElement(Control element, int index)
         {
             Debug.Assert(ItemContainerGenerator is not null);
             
             if (element.IsSet(ItemIsOwnContainerProperty))
             {
                 element.IsVisible = false;
+            }
+            else if (element.IsKeyboardFocusWithin)
+            {
+                _unrealizedFocusedElement = element;
+                _unrealizedFocusedIndex = index;
             }
             else
             {
@@ -933,11 +947,32 @@ namespace Avalonia.Controls
             }
 
             /// <summary>
+            /// Recycles all elements in response to the source collection being reset.
+            /// </summary>
+            /// <param name="recycleElement">A method used to recycle elements.</param>
+            public void ItemsReset(Action<Control> recycleElement)
+            {
+                if (_elements is null || _elements.Count == 0)
+                    return;
+
+                foreach (var e in _elements)
+                {
+                    if (e is not null)
+                        recycleElement(e);
+                }
+
+                _startU = _firstIndex = 0;
+                _elements?.Clear();
+                _sizes?.Clear();
+
+            }
+
+            /// <summary>
             /// Recycles elements before a specific index.
             /// </summary>
             /// <param name="index">The index in the source collection of new first element.</param>
             /// <param name="recycleElement">A method used to recycle elements.</param>
-            public void RecycleElementsBefore(int index, Action<Control> recycleElement)
+            public void RecycleElementsBefore(int index, Action<Control, int> recycleElement)
             {
                 if (index <= FirstIndex || _elements is null || _elements.Count == 0)
                     return;
@@ -953,7 +988,7 @@ namespace Avalonia.Controls
                     for (var i = 0; i < endIndex; ++i)
                     {
                         if (_elements[i] is Control e)
-                            recycleElement(e);
+                            recycleElement(e, i + FirstIndex);
                     }
 
                     _elements.RemoveRange(0, endIndex);
@@ -967,7 +1002,7 @@ namespace Avalonia.Controls
             /// </summary>
             /// <param name="index">The index in the source collection of new last element.</param>
             /// <param name="recycleElement">A method used to recycle elements.</param>
-            public void RecycleElementsAfter(int index, Action<Control> recycleElement)
+            public void RecycleElementsAfter(int index, Action<Control, int> recycleElement)
             {
                 if (index >= LastIndex || _elements is null || _elements.Count == 0)
                     return;
@@ -984,7 +1019,7 @@ namespace Avalonia.Controls
                     for (var i = startIndex; i < count; ++i)
                     {
                         if (_elements[i] is Control e)
-                            recycleElement(e);
+                            recycleElement(e, i + FirstIndex);
                     }
 
                     _elements.RemoveRange(startIndex, _elements.Count - startIndex);
@@ -996,15 +1031,18 @@ namespace Avalonia.Controls
             /// Recycles all realized elements.
             /// </summary>
             /// <param name="recycleElement">A method used to recycle elements.</param>
-            public void RecycleAllElements(Action<Control> recycleElement)
+            public void RecycleAllElements(Action<Control, int> recycleElement)
             {
                 if (_elements is null || _elements.Count == 0)
                     return;
 
+                var i = FirstIndex;
+
                 foreach (var e in _elements)
                 {
                     if (e is not null)
-                        recycleElement(e);
+                        recycleElement(e, i);
+                    ++i;
                 }
 
                 _startU = _firstIndex = 0;
