@@ -159,7 +159,7 @@ namespace Avalonia.PropertyStore
         public void ClearLocalValue(AvaloniaProperty property)
         {
             if (TryGetEffectiveValue(property, out var effective) &&
-                effective.Priority == BindingPriority.LocalValue)
+                effective.Priority is BindingPriority.LocalValue or BindingPriority.Internal)
             {
                 ReevaluateEffectiveValue(property, effective, ignoreLocalValue: true);
             }
@@ -180,6 +180,7 @@ namespace Avalonia.PropertyStore
                 if (TryGetEffectiveValue(property, out var existing))
                 {
                     var effective = (EffectiveValue<T>)existing;
+                    existing.RemoveCurrentValue();
                     effective.SetAndRaise(this, result, priority);
                 }
                 else
@@ -196,6 +197,7 @@ namespace Avalonia.PropertyStore
                 if (TryGetEffectiveValue(property, out var existing))
                 {
                     var effective = (EffectiveValue<T>)existing;
+                    existing.RemoveCurrentValue();
                     effective.SetLocalValueAndRaise(this, property, value);
                 }
                 else
@@ -207,6 +209,25 @@ namespace Avalonia.PropertyStore
 
                 return null;
             }
+        }
+
+        public void SetCurrentValue<T>(StyledProperty<T> property, T value)
+        {
+            if (property.ValidateValue?.Invoke(value) == false)
+            {
+                throw new ArgumentException($"{value} is not a valid value for '{property.Name}.");
+            }
+
+            // we do NOT create a new frame when setting the current value
+
+            if (!TryGetEffectiveValue(property, out var effectiveValue))
+            {
+                effectiveValue = new EffectiveValue<T>(Owner, property);
+                AddEffectiveValue(property, effectiveValue);
+            }
+
+            effectiveValue.SetCurrentValue(this, property, value);
+            // no need for ReevaluateEffectiveValue
         }
 
         public object? GetValue(AvaloniaProperty property)
@@ -222,9 +243,9 @@ namespace Avalonia.PropertyStore
         public T GetValue<T>(StyledProperty<T> property)
         {
             if (_effectiveValues.TryGetValue(property, out var v))
-                return ((EffectiveValue<T>)v).Value;
+                return ((EffectiveValue<T>)v).ActiveValue;
             if (property.Inherits && TryGetInheritedValue(property, out v))
-                return ((EffectiveValue<T>)v).Value;
+                return ((EffectiveValue<T>)v).ActiveValue;
             return property.GetDefaultValue(Owner.GetType());
         }
 
@@ -371,6 +392,7 @@ namespace Avalonia.PropertyStore
 
             if (TryGetEffectiveValue(property, out var existing))
             {
+                existing.RemoveCurrentValue();
                 if (priority <= existing.BasePriority)
                     ReevaluateEffectiveValue(property, existing);
             }
@@ -410,6 +432,7 @@ namespace Avalonia.PropertyStore
             {
                 var property = frame.GetEntry(0).Property;
                 _effectiveValues.TryGetValue(property, out var current);
+                current?.RemoveCurrentValue();
                 ReevaluateEffectiveValue(property, current);
             }
             else
@@ -465,7 +488,7 @@ namespace Avalonia.PropertyStore
 
             for (var i = 0; i < count; ++i)
             {
-                children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, value.Value);
+                children[i].GetValueStore().OnAncestorInheritedValueChanged(property, oldValue, value.ActiveValue);
             }
         }
 
@@ -633,11 +656,13 @@ namespace Avalonia.PropertyStore
         {
             object? value;
             BindingPriority priority;
+            bool isCurrent = false;
 
             if (_effectiveValues.TryGetValue(property, out var v))
             {
                 value = v.Value;
                 priority = v.Priority;
+                isCurrent = v.IsCurrent;
             }
             else if (property.Inherits && TryGetInheritedValue(property, out v))
             {
@@ -654,6 +679,7 @@ namespace Avalonia.PropertyStore
                 property,
                 value,
                 priority,
+                isCurrent,
                 null);
         }
 

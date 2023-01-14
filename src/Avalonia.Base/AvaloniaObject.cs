@@ -313,24 +313,72 @@ namespace Avalonia
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
-            _ = property ?? throw new ArgumentNullException(nameof(property));
-            VerifyAccess();
-            ValidatePriority(priority);
-
-            LogPropertySet(property, value, BindingPriority.LocalValue);
-
-            if (value is UnsetValueType)
-            {
-                if (priority == BindingPriority.LocalValue)
-                    _values.ClearLocalValue(property);
-            }
-            else if (value is not DoNothingType)
+            if (PreProcessSetOperation(property ?? throw new ArgumentNullException(nameof(property)), value, priority))
             {
                 return _values.SetValue(property, value, priority);
             }
 
             return null;
         }
+
+        /// <summary>
+        /// Sets the current value of an <see cref="AvaloniaProperty"/> without changing its value source.
+        /// The new value will have the property's current <see cref="BindingPriority"/>, or
+        /// <see cref="BindingPriority.Internal"/> if the property was unset or has an inherited value.
+        /// </summary>
+        /// <remarks>
+        /// This method can be used to update a property with a binding applied, without detaching that binding.
+        /// Controls should always use SetCurrentValue to set their own <see cref="StyledProperty{TValue}"/> values.
+        /// </remarks>
+        public void SetCurrentValue(AvaloniaProperty property, object? value) => 
+            (property ?? throw new ArgumentNullException(nameof(property))).RouteSetCurrentValue(this, value);
+
+        /// <summary>
+        /// Sets the current value of an <see cref="AvaloniaProperty"/> without changing its value source.
+        /// The new value will have the property's current <see cref="BindingPriority"/>, or
+        /// <see cref="BindingPriority.Internal"/> if the property was unset or has an inherited value.
+        /// </summary>
+        /// <remarks>
+        /// This method can be used to update a property with a binding applied, without detaching that binding.
+        /// Controls should always use SetCurrentValue to set their own <see cref="StyledProperty{TValue}"/> values.
+        /// </remarks>
+        public void SetCurrentValue<T>(StyledProperty<T> property, T value)
+        {
+            if (PreProcessSetOperation(property ?? throw new ArgumentNullException(nameof(property)), value))
+            {
+                _values.SetCurrentValue(property, value);
+            }
+        }
+
+        /// <returns>True if the set operation should proceed, otherwise false.</returns>
+        internal bool PreProcessSetOperation(AvaloniaProperty property, object? value, BindingPriority? priority = null)
+        {
+            VerifyAccess();
+            if (priority.HasValue)
+            {
+                ValidatePriority(priority.Value);
+            }
+
+            LogPropertySet(property, value, priority);
+
+            if (ReferenceEquals(value, AvaloniaProperty.UnsetValue))
+            {
+                if (priority is null or BindingPriority.LocalValue)
+                {
+                    _values.ClearLocalValue(property);
+                }
+                return false;
+            }
+
+            if (ReferenceEquals(value, BindingOperations.DoNothing))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public void SetCurrentValue<T>(DirectPropertyBase<T> property, T value) => SetValue(property, value);
 
         /// <summary>
         /// Sets a <see cref="AvaloniaProperty"/> value.
@@ -521,7 +569,7 @@ namespace Avalonia
             _inheritanceChildren ??= new List<AvaloniaObject>();
             _inheritanceChildren.Add(child);
         }
-        
+
         /// <inheritdoc/>
         internal void RemoveInheritanceChild(AvaloniaObject child)
         {
@@ -542,6 +590,7 @@ namespace Avalonia
                     property,
                     GetValue(property),
                     BindingPriority.Unset,
+                    false,
                     "Local Value");
             }
             else if (_values != null)
@@ -558,6 +607,7 @@ namespace Avalonia
                 property,
                 GetValue(property),
                 BindingPriority.Unset,
+                false,
                 "Unset");
         }
 
@@ -759,14 +809,14 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <param name="value">The new value.</param>
         /// <param name="priority">The priority.</param>
-        private void LogPropertySet<T>(AvaloniaProperty<T> property, T value, BindingPriority priority)
+        private void LogPropertySet(AvaloniaProperty property, object? value, BindingPriority? priority)
         {
             Logger.TryGet(LogEventLevel.Verbose, LogArea.Property)?.Log(
                 this,
                 "Set {Property} to {$Value} with priority {Priority}",
                 property,
                 value,
-                priority);
+                priority ?? (object) "[current]");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

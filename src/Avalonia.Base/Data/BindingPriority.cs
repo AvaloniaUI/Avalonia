@@ -36,6 +36,11 @@ namespace Avalonia.Data
         /// A style value.
         /// </summary>
         Style,
+
+        /// <summary>
+        /// A value generated internally by the control.
+        /// </summary>
+        Internal,
         
         /// <summary>
         /// The value is inherited from an ancestor element.

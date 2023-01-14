@@ -152,6 +152,8 @@ namespace Avalonia
             return null;
         }
 
+        internal override void RouteSetCurrentValue(AvaloniaObject o, object? value) => o.SetValue(this, value);
+
         /// <summary>
         /// Routes an untyped Bind call to a typed call.
         /// </summary>

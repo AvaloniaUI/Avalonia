@@ -30,10 +30,16 @@ namespace Avalonia.PropertyStore
         public BindingPriority BasePriority { get; protected set; }
 
         /// <summary>
+        /// Gets whether this value was set via <see cref="ValueStore.SetCurrentValue{T}"/>, instead of coming
+        /// from a value source with a defined <see cref="BindingPriority"/>.
+        /// </summary>
+        public abstract bool IsCurrent { get; }
+
+        /// <summary>
         /// Begins a reevaluation pass on the effective value.
         /// </summary>
         /// <param name="clearLocalValue">
-        /// Determines whether any current local value should be cleared.
+        /// Determines whether any current local/internal value should be cleared.
         /// </param>
         /// <remarks>
         /// This method resets the <see cref="Priority"/> and <see cref="BasePriority"/> properties
@@ -41,9 +47,9 @@ namespace Avalonia.PropertyStore
         /// </remarks>
         public void BeginReevaluation(bool clearLocalValue = false)
         {
-            if (clearLocalValue || Priority != BindingPriority.LocalValue)
+            if (clearLocalValue || Priority is not (BindingPriority.LocalValue or BindingPriority.Internal))
                 Priority = BindingPriority.Unset;
-            if (clearLocalValue || BasePriority != BindingPriority.LocalValue)
+            if (clearLocalValue || BasePriority is not (BindingPriority.LocalValue or BindingPriority.Internal))
                 BasePriority = BindingPriority.Unset;
         }
 
@@ -79,6 +85,17 @@ namespace Avalonia.PropertyStore
             ValueStore owner,
             IValueEntry value,
             BindingPriority priority);
+
+        /// <summary>
+        /// Sets the value without changing the value source or binding priority,
+        /// raising <see cref="AvaloniaObject.PropertyChanged"/> where necessary.
+        /// </summary>
+        /// <param name="owner">The associated value store.</param>
+        /// <param name="property">The property being changed.</param>
+        /// <param name="value">The new value of the property.</param>
+        public abstract void SetCurrentValue(ValueStore owner, AvaloniaProperty property, object? value);
+
+        public abstract void RemoveCurrentValue();
 
         /// <summary>
         /// Raises <see cref="AvaloniaObject.PropertyChanged"/> in response to an inherited value

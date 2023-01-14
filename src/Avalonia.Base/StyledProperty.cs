@@ -200,18 +200,40 @@ namespace Avalonia
             object? value,
             BindingPriority priority)
         {
-            if (value == BindingOperations.DoNothing)
+            if (PreProcessNonGenericSetOperation(target, value, out var processedValue))
             {
+                return target.SetValue<TValue>(this, processedValue!, priority);
+            }
+
                 return null;
             }
-            else if (value == UnsetValue)
+
+        internal override void RouteSetCurrentValue(
+            AvaloniaObject target, 
+            object? value)
+        {
+            if (PreProcessNonGenericSetOperation(target, value, out var processedValue))
             {
-                target.ClearValue(this);
-                return null;
+                target.SetCurrentValue(this, processedValue);
             }
-            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+        private bool PreProcessNonGenericSetOperation(
+            AvaloniaObject target, 
+            object? value, 
+            out TValue? processedValue)
+        {
+            if (!target.PreProcessSetOperation(this, value))
             {
-                return target.SetValue<TValue>(this, (TValue)converted!, priority);
+                processedValue = default;
+                return false;
+            }
+
+            if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
+            {
+                processedValue = (TValue?)converted;
+                return true;
             }
             else
             {
