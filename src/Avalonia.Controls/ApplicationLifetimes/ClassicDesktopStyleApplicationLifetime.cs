@@ -83,12 +83,12 @@ namespace Avalonia.Controls.ApplicationLifetimes
 
         public void Shutdown(int exitCode = 0)
         {
-            DoShutdown(new ShutdownRequestedEventArgs(), true, exitCode);
+            DoShutdown(new ShutdownRequestedEventArgs(), true, true, exitCode);
         }
 
         public bool TryShutdown(int exitCode = 0)
         {
-            return DoShutdown(new ShutdownRequestedEventArgs(), false, exitCode);
+            return DoShutdown(new ShutdownRequestedEventArgs(), true, false, exitCode);
         }
         
         public int Start(string[] args)
@@ -134,7 +134,11 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 _activeLifetime = null;
         }
 
-        private bool DoShutdown(ShutdownRequestedEventArgs e, bool force = false, int exitCode = 0)
+        private bool DoShutdown(
+            ShutdownRequestedEventArgs e,
+            bool isProgrammatic,
+            bool force = false,
+            int exitCode = 0)
         {
             if (!force)
             {
@@ -159,7 +163,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
                 {
                     if (w.Owner is null)
                     {
-                        w.Close();
+                        w.CloseCore(WindowCloseReason.ApplicationShutdown, isProgrammatic);
                     }
                 }
 
@@ -183,7 +187,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
             return true;
         }
         
-        private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e) => DoShutdown(e);
+        private void OnShutdownRequested(object? sender, ShutdownRequestedEventArgs e) => DoShutdown(e, false);
     }
     
     public class ClassicDesktopStyleApplicationLifetimeOptions
@@ -196,9 +200,8 @@ namespace Avalonia
 {
     public static class ClassicDesktopStyleApplicationLifetimeExtensions
     {
-        public static int StartWithClassicDesktopLifetime<T>(
-            this T builder, string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
-            where T : AppBuilderBase<T>, new()
+        public static int StartWithClassicDesktopLifetime(
+            this AppBuilder builder, string[] args, ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose)
         {
             var lifetime = new ClassicDesktopStyleApplicationLifetime()
             {

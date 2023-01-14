@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Diagnostics.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.Views
 {

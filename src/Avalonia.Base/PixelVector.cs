@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using Avalonia.Animation.Animators;
-using JetBrains.Annotations;
 
 namespace Avalonia
 {
@@ -135,7 +134,6 @@ namespace Avalonia
         /// </summary>
         /// <param name="other">The other vector.</param>
         /// <returns>True if vectors are nearly equal.</returns>
-        [Pure]
         public bool NearlyEquals(PixelVector other)
         {
             const float tolerance = float.Epsilon;

@@ -1,6 +1,6 @@
 using System;
 using System.Diagnostics;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 namespace Avalonia.Rendering

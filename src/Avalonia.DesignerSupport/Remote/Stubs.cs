@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -32,7 +32,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<Rect> Paint { get; set; }
         public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
         public Action Closed { get; set; }
         public Action LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();

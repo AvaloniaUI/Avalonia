@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using JetBrains.Annotations;
 using SkiaSharp;
+#nullable enable
 
 namespace Avalonia.Skia
 {
@@ -10,7 +11,7 @@ namespace Avalonia.Skia
     [Unstable]
     public class GlyphRunImpl : IGlyphRunImpl
     {
-        public GlyphRunImpl([NotNull] SKTextBlob textBlob)
+        public GlyphRunImpl(SKTextBlob textBlob)
         {
             TextBlob = textBlob ?? throw new ArgumentNullException (nameof (textBlob));
         }
@@ -19,6 +20,9 @@ namespace Avalonia.Skia
         ///     Gets the text blob to draw.
         /// </summary>
         public SKTextBlob TextBlob { get; }
+
+        public IReadOnlyList<float> GetIntersections(float upperBound, float lowerBound) => 
+            TextBlob.GetIntercepts(lowerBound, upperBound);
 
         void IDisposable.Dispose()
         {

@@ -1,11 +1,9 @@
 {
     "sdk": {
-        "version": "7.0.100",
+        "version": "7.0.101",
         "rollForward": "latestFeature"
     },
     "msbuild-sdks": {
-        "Microsoft.Build.Traversal": "1.0.43",
-        "MSBuild.Sdk.Extras": "3.0.22",
-        "AggregatePackage.NuGet.Sdk" : "0.1.12"
+        "Microsoft.Build.Traversal": "3.2.0"
     }
 }

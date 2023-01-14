@@ -33,12 +33,12 @@ namespace Avalonia.Diagnostics.ViewModels
         {
             _avaloniaObject = avaloniaObject;
 
-            TreePage = treePage;            
-                        Layout =  avaloniaObject is Visual 
-                ?  new ControlLayoutViewModel((Visual)avaloniaObject)
+            TreePage = treePage;
+                        Layout =  avaloniaObject is Visual visual 
+                ?  new ControlLayoutViewModel(visual)
                 : default;
 
-            NavigateToProperty(_avaloniaObject, (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString()); 
+            NavigateToProperty(_avaloniaObject, (_avaloniaObject as Control)?.Name ?? _avaloniaObject.ToString());
 
             AppliedStyles = new ObservableCollection<StyleViewModel>();
             PseudoClasses = new ObservableCollection<PseudoClassViewModel>();

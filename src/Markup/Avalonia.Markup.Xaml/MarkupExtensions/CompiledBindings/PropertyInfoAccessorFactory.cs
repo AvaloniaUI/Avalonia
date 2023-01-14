@@ -5,6 +5,7 @@ using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Utilities;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
@@ -28,11 +29,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public AvaloniaPropertyAccessor(WeakReference<AvaloniaObject> reference, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(reference != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            _reference = reference;
-            _property = property;
+            _reference = reference ?? throw new ArgumentNullException(nameof(reference));;
+            _property = property ?? throw new ArgumentNullException(nameof(property));;
         }
 
         public AvaloniaObject Instance
@@ -77,11 +75,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public InpcPropertyAccessor(WeakReference<object> reference, IPropertyInfo property)
         {
-            Contract.Requires<ArgumentNullException>(reference != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            _reference = reference;
-            _property = property;
+            _reference = reference ?? throw new ArgumentNullException(nameof(reference));
+            _property = property ?? throw new ArgumentNullException(nameof(property));
         }
 
         public override Type PropertyType => _property.PropertyType;

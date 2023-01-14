@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Xunit;
@@ -9,6 +11,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
 
 public class MergeResourceIncludeTests
 {
+    static MergeResourceIncludeTests()
+    {
+        RuntimeHelpers.RunClassConstructor(typeof(RelativeSource).TypeHandle);
+    }
+
     [Fact]
     public void MergeResourceInclude_Works_With_Single_Resource()
     {

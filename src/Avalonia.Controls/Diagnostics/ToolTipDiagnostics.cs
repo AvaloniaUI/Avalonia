@@ -8,6 +8,6 @@
         /// <summary>
         /// Provides access to the internal <see cref="ToolTip.ToolTipProperty"/> for use in DevTools.
         /// </summary>
-        public static AvaloniaProperty<ToolTip?> ToolTipProperty = ToolTip.ToolTipProperty;
+        public static readonly AvaloniaProperty<ToolTip?> ToolTipProperty = ToolTip.ToolTipProperty;
     }
 }

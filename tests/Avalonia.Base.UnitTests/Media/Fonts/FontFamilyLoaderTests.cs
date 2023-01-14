@@ -97,7 +97,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         {
             using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
             {
-                var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
                 var fontFamily = new FontFamily("resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests#Noto Mono");
 
@@ -117,7 +117,7 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         private static IDisposable StartWithResources(params (string, string)[] assets)
         {
             var assetLoader = new MockAssetLoader(assets);
-            var services = new TestServices(assetLoader: assetLoader, platform: new AppBuilder().RuntimePlatform);
+            var services = new TestServices(assetLoader: assetLoader, platform: new StandardRuntimePlatform());
             return UnitTestApplication.Start(services);
         }
     }

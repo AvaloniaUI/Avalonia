@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Xaml.Converters
             if(uri.IsAbsoluteUri && uri.IsFile)
                 return new Bitmap(uri.LocalPath);
 
-            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assets = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
             return new Bitmap(assets.Open(uri, context.GetContextBaseUri()));
         }
     }

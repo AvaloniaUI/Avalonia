@@ -13,6 +13,7 @@ namespace Avalonia.Platform
         /// Shapes the specified region within the text and returns a shaped buffer.
         /// </summary>
         /// <param name="text">The text buffer.</param>
+        /// <param name="length">The length of text.</param>
         /// <param name="options">Text shaper options to customize the shaping process.</param>
         /// <returns>A shaped glyph run.</returns>
         ShapedBuffer ShapeText(CharacterBufferReference text, int length, TextShaperOptions options);

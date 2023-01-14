@@ -23,7 +23,7 @@ namespace ControlCatalog
         private static void ConfigureAssetAssembly(AppBuilder builder)
         {
             AvaloniaLocator.CurrentMutable
-                .GetService<IAssetLoader>()
+                .GetRequiredService<IAssetLoader>()
                 .SetDefaultAssembly(typeof(App).Assembly);
         }
     }

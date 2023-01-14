@@ -28,6 +28,8 @@ namespace ControlCatalog.Android
             base.OnResume();
 
             StartActivity(new Intent(Application.Context, typeof(MainActivity)));
+
+            Finish();
         }
     }
 }

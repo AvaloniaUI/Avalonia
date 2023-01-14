@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
 using Avalonia.Media;
@@ -15,6 +17,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
 
 public class StyleIncludeTests
 {
+    static StyleIncludeTests()
+    {
+        RuntimeHelpers.RunClassConstructor(typeof(RelativeSource).TypeHandle);
+        AssetLoader.RegisterResUriParsers();
+    }
+
     [Fact]
     public void StyleInclude_Is_Built()
     {
