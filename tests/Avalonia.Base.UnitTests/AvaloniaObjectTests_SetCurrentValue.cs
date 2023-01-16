@@ -37,6 +37,20 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void CoerceValue_Coerces_CurrentValue()
+        {
+            var target = new Class1();
+
+            target.SetCurrentValue(Class1.FooProperty, NewValue);
+            Assert.Equal(2, target.FooCoercionCount); // once for the default value, twice for the value we set
+            Assert.Equal(NewValue, target.Foo);
+
+            target.CoerceValue(Class1.FooProperty);
+            Assert.Equal(4, target.FooCoercionCount); // +2 because of EffectiveValue<T>._baseValue
+            Assert.Equal(NewValue, target.Foo);
+        }
+
+        [Fact]
         public void Setting_UnsetValue_Reverts_To_Default_Value()
         {
             var target = new Class1();
@@ -196,6 +210,40 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal("thirdValue", target.Frank);
         }
 
+        [Theory, MemberData(nameof(WriteableBindingPriorities))]
+        public void SetCurrentValue_Raises_PropertyChanged(BindingPriority priority)
+        {
+            var target = new Class1();
+
+            AvaloniaPropertyChangedEventArgs? lastChangeEvent = null;
+            target.PropertyChanged += (s, e) => lastChangeEvent = e;
+
+            target.SetCurrentValue(Class1.FrankProperty, string.Empty);
+
+            VerifyPropertyChanged(lastChangeEvent, Class1.FrankProperty.GetDefaultValue(typeof(Class1)), string.Empty);
+
+            target.SetValue(Class1.FrankProperty, NewValue, priority);
+
+            VerifyPropertyChanged(lastChangeEvent, string.Empty, NewValue);
+
+            target.SetCurrentValue(Class1.FrankProperty, OtherValue);
+
+            VerifyPropertyChanged(lastChangeEvent, NewValue, OtherValue);
+            lastChangeEvent = null;
+
+            target.SetValue(Class1.FrankProperty, this, priority);
+
+            VerifyPropertyChanged(lastChangeEvent, OtherValue, this);
+        }
+
+        private static void VerifyPropertyChanged(AvaloniaPropertyChangedEventArgs? e, object? from, object? to)
+        {
+            Assert.NotNull(e);
+            Assert.Equal(from, e!.OldValue);
+            Assert.Equal(to, e.NewValue);
+            Assert.True(e.IsEffectiveValueChange);
+        }
+
         public static TheoryData<BindingPriority> WriteableBindingPriorities()
         {
             var data = new TheoryData<BindingPriority>();
@@ -213,7 +261,7 @@ namespace Avalonia.Base.UnitTests
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =
-                AvaloniaProperty.Register<Class1, string>(nameof(Foo), "foodefault");
+                AvaloniaProperty.Register<Class1, string>(nameof(Foo), "foodefault", coerce: OnCoerce);
 
             public static readonly StyledProperty<object> FrankProperty =
                 AvaloniaProperty.Register<Class1, object>(nameof(Frank), "Kups");
@@ -224,6 +272,14 @@ namespace Avalonia.Base.UnitTests
             public string Foo => GetValue(FooProperty);
             public object Frank => GetValue(FrankProperty);
             public object Inherited => GetValue(InheritedProperty);
+
+            public int FooCoercionCount { get; set; }
+
+            private static string OnCoerce(AvaloniaObject sender, string baseValue)
+            {
+                ((Class1)sender).FooCoercionCount++; // hack: casts of sender shoud be avoided in coercion methods in real code
+                return baseValue;
+            }
         }
 
         private class TestAnimatable : Animatable

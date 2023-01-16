@@ -81,10 +81,14 @@ namespace Avalonia.PropertyStore
         /// <param name="owner">The associated value store.</param>
         /// <param name="value">The new value of the property.</param>
         /// <param name="priority">The priority of the new value.</param>
+        /// <param name="clearCurrentValue">Whether a value previously passed to
+        /// <see cref="SetCurrentValue"/> should be replaced by the 
+        /// <c><paramref name="value"/></c> of this call.</param>
         public abstract void SetAndRaise(
             ValueStore owner,
             IValueEntry value,
-            BindingPriority priority);
+            BindingPriority priority,
+            bool clearCurrentValue = false);
 
         /// <summary>
         /// Sets the value without changing the value source or binding priority,
@@ -144,7 +148,7 @@ namespace Avalonia.PropertyStore
             {
                 // If we've received an animation value and the current value is a non-animation
                 // value, then the current entry becomes our base entry.
-                if (Priority > BindingPriority.LocalValue && Priority < BindingPriority.Inherited)
+                if (Priority > BindingPriority.LocalValue && Priority < BindingPriority.Internal)
                 {
                     Debug.Assert(_valueEntry is not null);
                     _baseValueEntry = _valueEntry;

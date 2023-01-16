@@ -180,8 +180,7 @@ namespace Avalonia.PropertyStore
                 if (TryGetEffectiveValue(property, out var existing))
                 {
                     var effective = (EffectiveValue<T>)existing;
-                    existing.RemoveCurrentValue();
-                    effective.SetAndRaise(this, result, priority);
+                    effective.SetAndRaise(this, result, priority, true);
                 }
                 else
                 {
@@ -197,7 +196,6 @@ namespace Avalonia.PropertyStore
                 if (TryGetEffectiveValue(property, out var existing))
                 {
                     var effective = (EffectiveValue<T>)existing;
-                    existing.RemoveCurrentValue();
                     effective.SetLocalValueAndRaise(this, property, value);
                 }
                 else
