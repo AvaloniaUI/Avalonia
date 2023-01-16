@@ -18,6 +18,8 @@ using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using Avalonia.Input.Platform;
+using System.Linq;
 
 namespace Avalonia.Controls
 {
@@ -223,20 +225,24 @@ namespace Avalonia.Controls
                 };
             }
 
-            var backKeyGesture = new KeyGesture(Key.Left, KeyModifiers.Alt);
-            _backGestureSubscription = _inputManager?.PreProcess.OfType<RawInputEventArgs>().Subscribe(e =>
+            _backGestureSubscription = _inputManager?.PreProcess.Subscribe(e =>
             {
                 bool backRequested = false;
 
                 if (e is RawKeyEventArgs rawKeyEventArgs && rawKeyEventArgs.Type == RawKeyEventType.KeyDown)
                 {
-                    var keyEvent = new KeyEventArgs()
-                    {
-                        KeyModifiers = (KeyModifiers)rawKeyEventArgs.Modifiers,
-                        Key = rawKeyEventArgs.Key
-                    };
+                    var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.Back;
 
-                    backRequested = backKeyGesture.Matches(keyEvent);
+                    if (keymap != null)
+                    {
+                        var keyEvent = new KeyEventArgs()
+                        {
+                            KeyModifiers = (KeyModifiers)rawKeyEventArgs.Modifiers,
+                            Key = rawKeyEventArgs.Key
+                        };
+
+                        backRequested = keymap.Any( key => key.Matches(keyEvent));
+                    }
                 }
                 else if(e is RawPointerEventArgs pointerEventArgs)
                 {
