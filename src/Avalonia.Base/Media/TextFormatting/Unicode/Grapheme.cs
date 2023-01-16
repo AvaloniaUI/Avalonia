@@ -7,11 +7,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// </summary>
     public readonly ref struct Grapheme
     {
-        public Grapheme(Codepoint firstCodepoint, int offset, int length)
+        public Grapheme(Codepoint firstCodepoint, ReadOnlySpan<char> text)
         {
             FirstCodepoint = firstCodepoint;
-            Offset = offset;
-            Length = length;
+            Text = text;
         }
 
         /// <summary>
@@ -20,13 +19,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public Codepoint FirstCodepoint { get; }
 
         /// <summary>
-        /// The Offset to the FirstCodepoint
+        /// The text of the grapheme cluster
         /// </summary>
-        public int Offset { get; }
-
-        /// <summary>
-        /// The length of the grapheme cluster
-        /// </summary>
-        public int Length { get; }
+        public ReadOnlySpan<char> Text { get; }
     }
 }

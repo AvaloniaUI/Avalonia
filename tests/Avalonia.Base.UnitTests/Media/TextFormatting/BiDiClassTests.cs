@@ -37,7 +37,7 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
             var text = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.CodePoints).ToArray());
 
             // Append
-            bidiData.Append(new CharacterBufferRange(text));
+            bidiData.Append(text);
 
             // Act
             for (int i = 0; i < 10; i++)
