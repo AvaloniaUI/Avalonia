@@ -3,7 +3,6 @@
 // Ported from: https://github.com/SixLabors/Fonts/
 
 using System;
-using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia.Utilities
@@ -12,7 +11,7 @@ namespace Avalonia.Utilities
     /// A helper type for avoiding allocations while building arrays.
     /// </summary>
     /// <typeparam name="T">The type of item contained in the array.</typeparam>
-    internal struct ArrayBuilder<T> : IDisposable
+    internal struct ArrayBuilder<T>
         where T : struct
     {
         private const int DefaultCapacity = 4;
@@ -136,7 +135,7 @@ namespace Avalonia.Utilities
             }
 
             // Same expansion algorithm as List<T>.
-            var newCapacity = length == 0 ? DefaultCapacity : length * 2;
+            var newCapacity = length == 0 ? DefaultCapacity : (uint)length * 2u;
 
             if (newCapacity > MaxCoreClrArrayLength)
             {
@@ -145,15 +144,14 @@ namespace Avalonia.Utilities
 
             if (newCapacity < min)
             {
-                newCapacity = min;
+                newCapacity = (uint)min;
             }
             
-            var array = ArrayPool<T>.Shared.Rent(newCapacity);
+            var array = new T[newCapacity];
 
             if (_size > 0)
             {
                 Array.Copy(_data!, array, _size);
-                ArrayPool<T>.Shared.Return(_data!);
             }
 
             _data = array;
@@ -182,13 +180,5 @@ namespace Avalonia.Utilities
         /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ArraySlice<T> AsSlice(int start, int length) => new ArraySlice<T>(_data!, start, length);
-        
-        public void Dispose()
-        {
-            if (_data != null)
-            {
-                ArrayPool<T>.Shared.Return(_data);
-            }
-        }
     }
 }

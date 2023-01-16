@@ -8,17 +8,17 @@ namespace Avalonia.Media.TextFormatting
     public sealed class ShapedBuffer : IList<GlyphInfo>, IDisposable
     {
         private static readonly IComparer<GlyphInfo> s_clusterComparer = new CompareClusters();
-        private bool _bufferRented;
 
-        public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel) :
-            this(text,
-                new ArraySlice<GlyphInfo>(ArrayPool<GlyphInfo>.Shared.Rent(bufferLength), 0, bufferLength),
-                glyphTypeface,
-                fontRenderingEmSize,
-                bidiLevel)
+        private GlyphInfo[]? _rentedBuffer;
+
+        public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
-            _bufferRented = true;
-            Length = bufferLength;
+            _rentedBuffer = ArrayPool<GlyphInfo>.Shared.Rent(bufferLength);
+            Text = text;
+            GlyphInfos = new ArraySlice<GlyphInfo>(_rentedBuffer, 0, bufferLength);
+            GlyphTypeface = glyphTypeface;
+            FontRenderingEmSize = fontRenderingEmSize;
+            BidiLevel = bidiLevel;
         }
 
         internal ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
@@ -28,12 +28,12 @@ namespace Avalonia.Media.TextFormatting
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
-            Length = GlyphInfos.Length;
         }
 
-        internal ArraySlice<GlyphInfo> GlyphInfos { get; }
-        
-        public int Length { get; }
+        internal ArraySlice<GlyphInfo> GlyphInfos { get; private set; }
+
+        public int Length
+            => GlyphInfos.Length;
 
         public IGlyphTypeface GlyphTypeface { get; }
 
@@ -271,18 +271,11 @@ namespace Avalonia.Media.TextFormatting
 
         public void Dispose()
         {
-            GC.SuppressFinalize(this);
-            if (_bufferRented)
+            if (_rentedBuffer is not null)
             {
-                GlyphInfos.ReturnRent();
-            }
-        }
-
-        ~ShapedBuffer()
-        {
-            if (_bufferRented)
-            {
-                GlyphInfos.ReturnRent();
+                ArrayPool<GlyphInfo>.Shared.Return(_rentedBuffer);
+                _rentedBuffer = null;
+                GlyphInfos = ArraySlice<GlyphInfo>.Empty; // ensure we don't misuse the returned array
             }
         }
     }

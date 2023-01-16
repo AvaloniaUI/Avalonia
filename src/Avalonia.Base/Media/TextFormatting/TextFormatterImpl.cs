@@ -11,6 +11,10 @@ namespace Avalonia.Media.TextFormatting
     internal class TextFormatterImpl : TextFormatter
     {
         private static readonly char[] s_empty = { ' ' };
+        private static readonly char[] s_defaultText = new char[TextRun.DefaultTextSourceLength];
+
+        [ThreadStatic] private static BidiData? t_bidiData;
+        [ThreadStatic] private static BidiAlgorithm? t_bidiAlgorithm;
 
         /// <inheritdoc cref="TextFormatter.FormatLine"/>
         public override TextLine FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
@@ -169,21 +173,24 @@ namespace Avalonia.Media.TextFormatting
             }
 
 
-            using var biDiData = new BidiData((sbyte)flowDirection);
+            var biDiData = t_bidiData ??= new BidiData();
+            biDiData.Reset();
+            biDiData.ParagraphEmbeddingLevel = (sbyte)flowDirection;
 
             foreach (var textRun in textRuns)
             {
-                if (textRun.Text.IsEmpty)
-                {
-                    biDiData.Append(new char[textRun.Length]);
-                }
+                ReadOnlySpan<char> text;
+                if (!textRun.Text.IsEmpty)
+                    text = textRun.Text.Span;
+                else if (textRun.Length == TextRun.DefaultTextSourceLength)
+                    text = s_defaultText;
                 else
-                {
-                    biDiData.Append(textRun.Text.Span);
-                }
+                    text = new char[textRun.Length];
+
+                biDiData.Append(text);
             }
 
-            using var biDi = new BidiAlgorithm();
+            var biDi = t_bidiAlgorithm ??= new BidiAlgorithm();
 
             biDi.Process(biDiData);
 

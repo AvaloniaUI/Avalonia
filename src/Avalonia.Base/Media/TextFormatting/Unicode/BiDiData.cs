@@ -11,7 +11,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// Represents a unicode string and all associated attributes
     /// for each character required for the bidirectional Unicode algorithm
     /// </summary>
-    internal struct BidiData : IDisposable
+    internal sealed class BidiData
     {
         private ArrayBuilder<BidiClass> _classes;
         private ArrayBuilder<BidiPairedBracketType> _pairedBracketTypes;
@@ -20,12 +20,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private ArrayBuilder<BidiPairedBracketType> _savedPairedBracketTypes;
         private ArrayBuilder<sbyte> _tempLevelBuffer;
 
-        public BidiData(sbyte paragraphEmbeddingLevel)
-        {
-            ParagraphEmbeddingLevel = paragraphEmbeddingLevel;
-        }
-
-        public sbyte ParagraphEmbeddingLevel { get; private set; }
+        public sbyte ParagraphEmbeddingLevel { get; set; }
 
         public bool HasBrackets { get; private set; }
 
@@ -36,7 +31,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// Gets the length of the data held by the BidiData
         /// </summary>
-        public int Length{get; private set; }
+        public int Length { get; private set; }
 
         /// <summary>
         /// Gets the bidi character type of each code point
@@ -182,14 +177,27 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return _tempLevelBuffer.Add(length, false);
         }
 
-        public void Dispose()
+        /// <summary>
+        /// Resets the bidi data to a clean state.
+        /// </summary>
+        public void Reset()
         {
-            _classes.Dispose();
-            _pairedBracketTypes.Dispose();
-            _pairedBracketValues.Dispose();
-            _savedClasses.Dispose();
-            _savedPairedBracketTypes.Dispose();
-            _tempLevelBuffer.Dispose();
+            _classes.Clear();
+            _pairedBracketTypes.Clear();
+            _pairedBracketValues.Clear();
+            _savedClasses.Clear();
+            _savedPairedBracketTypes.Clear();
+            _tempLevelBuffer.Clear();
+
+            ParagraphEmbeddingLevel = 0;
+            HasBrackets = false;
+            HasEmbeddings = false;
+            HasIsolates = false;
+            Length = 0;
+
+            Classes = default;
+            PairedBracketTypes = default;
+            PairedBracketValues = default;
         }
     }
 }
