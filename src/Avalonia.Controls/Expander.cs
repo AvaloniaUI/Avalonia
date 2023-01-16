@@ -84,16 +84,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Expanded"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> ExpandedEvent =
-            RoutedEvent.Register<Expander, RoutedEventArgs>(
+        public static readonly RoutedEvent<CancelRoutedEventArgs> ExpandedEvent =
+            RoutedEvent.Register<Expander, CancelRoutedEventArgs>(
                 nameof(Expanded),
                 RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Expanding"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> ExpandingEvent =
-            RoutedEvent.Register<Expander, RoutedEventArgs>(
+        public static readonly RoutedEvent<CancelRoutedEventArgs> ExpandingEvent =
+            RoutedEvent.Register<Expander, CancelRoutedEventArgs>(
                 nameof(Expanding),
                 RoutingStrategies.Bubble);
 
@@ -149,10 +149,10 @@ namespace Avalonia.Controls
         /// Occurs as the content area is closing.
         /// </summary>
         /// <remarks>
-        /// The event args <see cref="RoutedEventArgs.Handled"/> property may be set to true to cancel the event
+        /// The event args <see cref="CancelRoutedEventArgs.Cancel"/> property may be set to true to cancel the event
         /// and keep the control open (expanded).
         /// </remarks>
-        public event EventHandler<RoutedEventArgs>? Collapsing
+        public event EventHandler<CancelRoutedEventArgs>? Collapsing
         {
             add => AddHandler(CollapsingEvent, value);
             remove => RemoveHandler(CollapsingEvent, value);
@@ -171,10 +171,10 @@ namespace Avalonia.Controls
         /// Occurs as the content area is opening.
         /// </summary>
         /// <remarks>
-        /// The event args <see cref="RoutedEventArgs.Handled"/> property may be set to true to cancel the event
+        /// The event args <see cref="CancelRoutedEventArgs.Cancel"/> property may be set to true to cancel the event
         /// and keep the control closed (collapsed).
         /// </remarks>
-        public event EventHandler<RoutedEventArgs>? Expanding
+        public event EventHandler<CancelRoutedEventArgs>? Expanding
         {
             add => AddHandler(ExpandingEvent, value);
             remove => RemoveHandler(ExpandingEvent, value);
@@ -295,22 +295,22 @@ namespace Avalonia.Controls
         /// <param name="value">The value to coerce.</param>
         protected virtual bool OnCoerceIsExpanded(bool value)
         {
-            RoutedEventArgs eventArgs;
+            CancelRoutedEventArgs eventArgs;
 
             if (value)
             {
-                eventArgs = new RoutedEventArgs(ExpandingEvent, this);
+                eventArgs = new CancelRoutedEventArgs(ExpandingEvent, this);
                 OnExpanding(eventArgs);
             }
             else
             {
-                eventArgs = new RoutedEventArgs(CollapsingEvent, this);
+                eventArgs = new CancelRoutedEventArgs(CollapsingEvent, this);
                 OnCollapsing(eventArgs);
             }
 
-            if (eventArgs.Handled)
+            if (eventArgs.Cancel)
             {
-                // If the event was externally handled (canceled) we must still notify the value has changed.
+                // If the event was externally canceled we must still notify the value has changed.
                 // This property changed notification will update any external code observing this property that itself may have set the new value.
                 // We are essentially reverted any external state change along with ignoring the IsExpanded property set.
                 // Remember IsExpanded is usually controlled by a ToggleButton in the control theme and is also used for animations.
