@@ -85,25 +85,36 @@ namespace Avalonia.Controls
             set { SetValue(OrientationProperty, value); }
         }
 
+        /// <summary>
+        /// Occurs when the measurements for horizontal snap points change.
+        /// </summary>
         public event EventHandler<RoutedEventArgs>? HorizontalSnapPointsChanged
         {
             add => AddHandler(HorizontalSnapPointsChangedEvent, value);
             remove => RemoveHandler(HorizontalSnapPointsChangedEvent, value);
         }
 
-
+        /// <summary>
+        /// Occurs when the measurements for vertical snap points change.
+        /// </summary>
         public event EventHandler<RoutedEventArgs>? VerticalSnapPointsChanged
         {
             add => AddHandler(VerticalSnapPointsChangedEvent, value);
             remove => RemoveHandler(VerticalSnapPointsChangedEvent, value);
         }
 
+        /// <summary>
+        /// Gets or sets whether the horizontal snap points for the <see cref="StackPanel"/> are equidistant from each other.
+        /// </summary>
         public bool AreHorizontalSnapPointsRegular
         {
             get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
             set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
         }
 
+        /// <summary>
+        /// Gets or sets whether the vertical snap points for the <see cref="StackPanel"/> are equidistant from each other.
+        /// </summary>
         public bool AreVerticalSnapPointsRegular
         {
             get { return GetValue(AreVerticalSnapPointsRegularProperty); }

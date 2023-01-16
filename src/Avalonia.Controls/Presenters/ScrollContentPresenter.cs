@@ -178,24 +178,36 @@ namespace Avalonia.Controls.Presenters
             private set { SetAndRaise(ViewportProperty, ref _viewport, value); }
         }
 
+        /// <summary>
+        /// Gets or sets how scroll gesture reacts to the snap points along the horizontal axis.
+        /// </summary>
         public SnapPointsType HorizontalSnapPointsType
         {
-            get => GetValue(HorizontalSnapPointsTypeProperty); 
+            get => GetValue(HorizontalSnapPointsTypeProperty);
             set => SetValue(HorizontalSnapPointsTypeProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets how scroll gesture reacts to the snap points along the vertical axis.
+        /// </summary>
         public SnapPointsType VerticalSnapPointsType
         {
-            get => GetValue(VerticalSnapPointsTypeProperty); 
+            get => GetValue(VerticalSnapPointsTypeProperty);
             set => SetValue(VerticalSnapPointsTypeProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets how the existing snap points are horizontally aligned versus the initial viewport.
+        /// </summary>
         public SnapPointsAlignment HorizontalSnapPointsAlignment
         {
-            get => GetValue(HorizontalSnapPointsAlignmentProperty); 
+            get => GetValue(HorizontalSnapPointsAlignmentProperty);
             set => SetValue(HorizontalSnapPointsAlignmentProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets how the existing snap points are vertically aligned versus the initial viewport.
+        /// </summary>
         public SnapPointsAlignment VerticalSnapPointsAlignment
         {
             get => GetValue(VerticalSnapPointsAlignmentProperty); 
