@@ -3,16 +3,16 @@
 // 
 // Licensed to The Avalonia Project under MIT License, courtesy of The .NET Foundation.
 
-using System.Collections.Generic;
+using System;
 using System.Runtime.InteropServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
     public ref struct GraphemeEnumerator
     {
-        private CharacterBufferRange _text;
+        private ReadOnlySpan<char> _text;
 
-        public GraphemeEnumerator(CharacterBufferRange text)
+        public GraphemeEnumerator(ReadOnlySpan<char> text)
         {
             _text = text;
             Current = default;
@@ -185,9 +185,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             Return:
 
-            Current = new Grapheme(firstCodepoint, _text.OffsetToFirstChar, processor.CurrentCodeUnitOffset);
+            Current = new Grapheme(firstCodepoint, _text.Slice(0, processor.CurrentCodeUnitOffset));
 
-            _text = _text.Skip(processor.CurrentCodeUnitOffset);
+            _text = _text.Slice(processor.CurrentCodeUnitOffset);
 
             return true; // rules GB2, GB999
         }
@@ -195,10 +195,10 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [StructLayout(LayoutKind.Auto)]
         private ref struct Processor
         {
-            private readonly CharacterBufferRange _buffer;
+            private readonly ReadOnlySpan<char> _buffer;
             private int _codeUnitLengthOfCurrentScalar;
 
-            internal Processor(CharacterBufferRange buffer)
+            internal Processor(ReadOnlySpan<char> buffer)
             {
                 _buffer = buffer;
                 _codeUnitLengthOfCurrentScalar = 0;
