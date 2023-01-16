@@ -26,4 +26,8 @@
 
   <Import Project="..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\build\TrimmingEnable.props" />
+
+  <ItemGroup>
+    <Compile Remove="..\Shared\ModuleInitializer.cs" />
+  </ItemGroup>
 </Project>
