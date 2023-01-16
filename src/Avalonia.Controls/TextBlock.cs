@@ -173,13 +173,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public TextLayout TextLayout
-        {
-            get
-            {
-                return _textLayout ??= CreateTextLayout(_text);
-            }
-        }
+        public TextLayout TextLayout => _textLayout ??= CreateTextLayout(_text);
 
         /// <summary>
         /// Gets or sets the padding to place around the <see cref="Text"/>.
@@ -648,6 +642,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected void InvalidateTextLayout()
         {
+            _textLayout?.Dispose();
             _textLayout = null;
 
             InvalidateVisual();
@@ -663,6 +658,7 @@ namespace Avalonia.Controls
 
             _constraint = availableSize.Deflate(padding);
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             var inlines = Inlines;
@@ -726,6 +722,7 @@ namespace Avalonia.Controls
 
             _constraint = new Size(Math.Ceiling(finalSize.Deflate(padding).Width), double.PositiveInfinity);
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             if (HasComplexContent)
@@ -829,12 +826,12 @@ namespace Avalonia.Controls
 
         protected readonly record struct SimpleTextSource : ITextSource
         {
-            private readonly CharacterBufferRange _text;
+            private readonly string _text;
             private readonly TextRunProperties _defaultProperties;
 
             public SimpleTextSource(string text, TextRunProperties defaultProperties)
             {
-                _text = new CharacterBufferRange(new CharacterBufferReference(text), text.Length);
+                _text = text;
                 _defaultProperties = defaultProperties;
             }
 
@@ -845,14 +842,14 @@ namespace Avalonia.Controls
                     return new TextEndOfParagraph();
                 }
 
-                var runText = _text.Skip(textSourceIndex);
+                var runText = _text.AsMemory(textSourceIndex);
 
                 if (runText.IsEmpty)
                 {
                     return new TextEndOfParagraph();
                 }
 
-                return new TextCharacters(runText.CharacterBufferReference, runText.Length, _defaultProperties);
+                return new TextCharacters(runText, _defaultProperties);
             }
         }
 
@@ -887,14 +884,9 @@ namespace Avalonia.Controls
 
                     if (textRun is TextCharacters)                 
                     {
-                        var characterBufferReference = textRun.CharacterBufferReference;
-
                         var skip = Math.Max(0, textSourceIndex - currentPosition);
 
-                        return new TextCharacters(
-                            new CharacterBufferReference(characterBufferReference.CharacterBuffer, characterBufferReference.OffsetToFirstChar + skip), 
-                            textRun.Length - skip,
-                            textRun.Properties!);
+                        return new TextCharacters(textRun.Text.Slice(skip), textRun.Properties!);
                     }
 
                     return textRun;

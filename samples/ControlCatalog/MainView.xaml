@@ -92,6 +92,9 @@
       <TabItem Header="Flyouts">
         <pages:FlyoutsPage />
       </TabItem>
+      <TabItem Header="Gestures">
+        <pages:GesturePage />
+      </TabItem>
       <TabItem Header="Image"
                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                ScrollViewer.VerticalScrollBarVisibility="Disabled">
@@ -206,8 +209,7 @@
               </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="TransparencyLevels"
-                      HorizontalAlignment="Stretch"
-                      SelectedIndex="{Binding TransparencyLevel}">
+                      HorizontalAlignment="Stretch">
               <ComboBox.Items>
                 <WindowTransparencyLevel>None</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>

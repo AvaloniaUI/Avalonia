@@ -820,6 +820,14 @@ namespace Avalonia.Win32.Interop
             DWMWA_LAST
         };
 
+        public enum DwmWindowCornerPreference : uint
+        {
+            DWMWCP_DEFAULT = 0,
+            DWMWCP_DONOTROUND,
+            DWMWCP_ROUND,
+            DWMWCP_ROUNDSMALL
+        }
+
         public enum MapVirtualKeyMapTypes : uint
         {
             MAPVK_VK_TO_VSC = 0x00,
@@ -1409,7 +1417,7 @@ namespace Avalonia.Win32.Interop
         [DllImport("user32.dll")]
         public static extern bool TranslateMessage(ref MSG lpMsg);
 
-        [DllImport("user32.dll")]
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern bool UnregisterClass(string lpClassName, IntPtr hInstance);
 
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "SetWindowTextW")]

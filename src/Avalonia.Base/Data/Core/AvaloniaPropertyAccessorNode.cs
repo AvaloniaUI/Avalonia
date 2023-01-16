@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive.Linq;
 using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core

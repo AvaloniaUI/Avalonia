@@ -1,10 +1,10 @@
 using System;
-using System.Reactive.Disposables;
 using System.Threading;
 
 using Android.OS;
 
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 
 using App = Android.App.Application;

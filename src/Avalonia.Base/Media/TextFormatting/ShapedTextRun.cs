@@ -6,15 +6,13 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// A text run that holds shaped characters.
     /// </summary>
-    public sealed class ShapedTextCharacters : DrawableTextRun
+    public sealed class ShapedTextRun : DrawableTextRun, IDisposable
     {
         private GlyphRun? _glyphRun;
 
-        public ShapedTextCharacters(ShapedBuffer shapedBuffer, TextRunProperties properties)
+        public ShapedTextRun(ShapedBuffer shapedBuffer, TextRunProperties properties)
         {
             ShapedBuffer = shapedBuffer;
-            CharacterBufferReference = shapedBuffer.CharacterBufferRange.CharacterBufferReference;
-            Length = shapedBuffer.CharacterBufferRange.Length;
             Properties = properties;
             TextMetrics = new TextMetrics(properties.Typeface.GlyphTypeface, properties.FontRenderingEmSize);
         }
@@ -26,13 +24,15 @@ namespace Avalonia.Media.TextFormatting
         public ShapedBuffer ShapedBuffer { get; }
 
         /// <inheritdoc/>
-        public override CharacterBufferReference CharacterBufferReference { get; }
+        public override ReadOnlyMemory<char> Text
+            => ShapedBuffer.Text;
 
         /// <inheritdoc/>
         public override TextRunProperties Properties { get; }
 
         /// <inheritdoc/>
-        public override int Length { get; }
+        public override int Length
+            => ShapedBuffer.Text.Length;
 
         public TextMetrics TextMetrics { get; }
 
@@ -113,6 +113,7 @@ namespace Avalonia.Media.TextFormatting
         {
             length = 0;
             var currentWidth = 0.0;
+            var charactersSpan = GlyphRun.Characters.Span;
 
             for (var i = 0; i < ShapedBuffer.Length; i++)
             {
@@ -123,7 +124,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                Codepoint.ReadAt(GlyphRun.Characters, length, out var count);
+                Codepoint.ReadAt(charactersSpan, length, out var count);
 
                 length += count;
                 currentWidth += advance;
@@ -136,6 +137,7 @@ namespace Avalonia.Media.TextFormatting
         {
             length = 0;
             width = 0;
+            var charactersSpan = GlyphRun.Characters.Span;
 
             for (var i = ShapedBuffer.Length - 1; i >= 0; i--)
             {
@@ -146,7 +148,7 @@ namespace Avalonia.Media.TextFormatting
                     break;
                 }
 
-                Codepoint.ReadAt(GlyphRun.Characters, length, out var count);
+                Codepoint.ReadAt(charactersSpan, length, out var count);
 
                 length += count;
                 width += advance;
@@ -155,7 +157,7 @@ namespace Avalonia.Media.TextFormatting
             return length > 0;
         }
 
-        internal SplitResult<ShapedTextCharacters> Split(int length)
+        internal SplitResult<ShapedTextRun> Split(int length)
         {
             if (IsReversed)
             {
@@ -171,7 +173,7 @@ namespace Avalonia.Media.TextFormatting
             
             var splitBuffer = ShapedBuffer.Split(length);
 
-            var first = new ShapedTextCharacters(splitBuffer.First, Properties);
+            var first = new ShapedTextRun(splitBuffer.First, Properties);
 
             #if DEBUG
 
@@ -182,9 +184,9 @@ namespace Avalonia.Media.TextFormatting
 
 #endif
 
-            var second = new ShapedTextCharacters(splitBuffer.Second!, Properties);
+            var second = new ShapedTextRun(splitBuffer.Second!, Properties);
 
-            return new SplitResult<ShapedTextCharacters>(first, second);
+            return new SplitResult<ShapedTextRun>(first, second);
         }
 
         internal GlyphRun CreateGlyphRun()
@@ -192,12 +194,18 @@ namespace Avalonia.Media.TextFormatting
             return new GlyphRun(
                 ShapedBuffer.GlyphTypeface,
                 ShapedBuffer.FontRenderingEmSize,
-                new CharacterBufferRange(CharacterBufferReference, Length),
+                Text,
                 ShapedBuffer.GlyphIndices,
                 ShapedBuffer.GlyphAdvances,
                 ShapedBuffer.GlyphOffsets,
                 ShapedBuffer.GlyphClusters,
                 BidiLevel);
+        }
+
+        public void Dispose()
+        {
+            _glyphRun?.Dispose();
+            ShapedBuffer.Dispose();
         }
     }
 }

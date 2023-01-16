@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 

@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
@@ -340,6 +340,16 @@ namespace Avalonia.Controls
         PixelPoint IRenderRoot.PointToScreen(Point p)
         {
             return PlatformImpl?.PointToScreen(p) ?? default;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="TopLevel" /> for which the given <see cref="Visual"/> is hosted in.
+        /// </summary>
+        /// <param name="visual">The visual to query its TopLevel</param>
+        /// <returns>The TopLevel</returns>
+        public static TopLevel? GetTopLevel(Visual? visual)
+        {
+            return visual == null ? null : visual.VisualRoot as TopLevel;
         }
         
         /// <summary>

@@ -4,9 +4,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
 {
     public ref struct CodepointEnumerator
     {
-        private CharacterBufferRange _text;
+        private ReadOnlySpan<char> _text;
 
-        public CodepointEnumerator(CharacterBufferRange text)
+        public CodepointEnumerator(ReadOnlySpan<char> text)
         {
             _text = text;
             Current = Codepoint.ReplacementCodepoint;
@@ -32,7 +32,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             Current = Codepoint.ReadAt(_text, 0, out var count);
 
-            _text = _text.Skip(count);
+            _text = _text.Slice(count);
 
             return true;
         }

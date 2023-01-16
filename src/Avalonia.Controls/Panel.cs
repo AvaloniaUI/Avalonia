@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
 using Avalonia.Styling;
 
 namespace Avalonia.Controls
@@ -86,9 +87,11 @@ namespace Avalonia.Controls
         protected static void AffectsParentArrange<TPanel>(params AvaloniaProperty[] properties)
             where TPanel : Panel
         {
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e => AffectsParentArrangeInvalidate<TPanel>(e));
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsParentArrangeInvalidate<TPanel>);
+                property.Changed.Subscribe(invalidateObserver);
             }
         }
 
@@ -99,9 +102,11 @@ namespace Avalonia.Controls
         protected static void AffectsParentMeasure<TPanel>(params AvaloniaProperty[] properties)
             where TPanel : Panel
         {
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e => AffectsParentMeasureInvalidate<TPanel>(e));
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(AffectsParentMeasureInvalidate<TPanel>);
+                property.Changed.Subscribe(invalidateObserver);
             }
         }
 

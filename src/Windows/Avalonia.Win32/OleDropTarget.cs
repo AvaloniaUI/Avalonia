@@ -121,7 +121,7 @@ namespace Avalonia.Win32
                     _dragDevice,
                     RawDragEventType.DragLeave,
                     _target,
-                    default(Point),
+                    default,
                     null,
                     DragDropEffects.None,
                     RawInputModifiers.None

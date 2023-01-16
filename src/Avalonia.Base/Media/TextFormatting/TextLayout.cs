@@ -8,7 +8,7 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// Represents a multi line text layout.
     /// </summary>
-    public class TextLayout
+    public class TextLayout : IDisposable
     {
         private readonly ITextSource _textSource;
         private readonly TextParagraphProperties _paragraphProperties;
@@ -448,7 +448,7 @@ namespace Avalonia.Media.TextFormatting
                 var textLine = TextFormatter.Current.FormatLine(_textSource, _textSourceLength, MaxWidth,
                     _paragraphProperties, previousLine?.TextLineBreak);
 
-                if (textLine == null || textLine.Length == 0 || textLine.TextRuns.Count == 0 && textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
+                if(textLine == null || textLine.Length == 0)
                 {
                     if (previousLine != null && previousLine.NewLineLength > 0)
                     {
@@ -499,6 +499,11 @@ namespace Avalonia.Media.TextFormatting
                         textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(width));
                     }
 
+                    break;
+                }
+
+                if (textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
+                {
                     break;
                 }
             }
@@ -560,6 +565,14 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return _textTrimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(width, _paragraphProperties.DefaultTextRunProperties));
+        }
+
+        public void Dispose()
+        {
+            foreach (var line in TextLines)
+            {
+                line.Dispose();
+            }
         }
     }
 }

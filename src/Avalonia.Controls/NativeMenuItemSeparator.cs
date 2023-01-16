@@ -1,7 +1,10 @@
 ﻿namespace Avalonia.Controls
 {
-    public class NativeMenuItemSeparator : NativeMenuItemBase
+    public class NativeMenuItemSeparator : NativeMenuItem
     {
-
+        public NativeMenuItemSeparator()
+        {
+            Header = "-";
+        }
     }
 }

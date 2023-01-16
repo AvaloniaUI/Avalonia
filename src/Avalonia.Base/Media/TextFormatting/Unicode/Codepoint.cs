@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -165,11 +166,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="index">The index to read at.</param>
         /// <param name="count">The count of character that were read.</param>
         /// <returns></returns>
-        public static Codepoint ReadAt(IReadOnlyList<char> text, int index, out int count)
+        public static Codepoint ReadAt(ReadOnlySpan<char> text, int index, out int count)
         {
             count = 1;
 
-            if (index >= text.Count)
+            if (index >= text.Length)
             {
                 return ReplacementCodepoint;
             }
@@ -183,7 +184,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             {
                 hi = code;
 
-                if (index + 1 == text.Count)
+                if (index + 1 == text.Length)
                 {
                     return ReplacementCodepoint;
                 }

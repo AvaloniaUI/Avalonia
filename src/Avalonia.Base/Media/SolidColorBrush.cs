@@ -6,7 +6,7 @@ namespace Avalonia.Media
     /// <summary>
     /// Fills an area with a solid color.
     /// </summary>
-    public class SolidColorBrush : Brush, ISolidColorBrush
+    public class SolidColorBrush : Brush, ISolidColorBrush, IMutableBrush
     {
         /// <summary>
         /// Defines the <see cref="Color"/> property.
@@ -80,7 +80,7 @@ namespace Avalonia.Media
         }
 
         /// <inheritdoc/>
-        public override IBrush ToImmutable()
+        public IImmutableBrush ToImmutable()
         {
             return new ImmutableSolidColorBrush(this);
         }

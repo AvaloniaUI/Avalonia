@@ -1,31 +1,39 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
-    public sealed class ShapedBuffer : IList<GlyphInfo>
+    public sealed class ShapedBuffer : IList<GlyphInfo>, IDisposable
     {
         private static readonly IComparer<GlyphInfo> s_clusterComparer = new CompareClusters();
-        
-        public ShapedBuffer(CharacterBufferRange characterBufferRange, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel) : 
-            this(characterBufferRange, new GlyphInfo[bufferLength], glyphTypeface,  fontRenderingEmSize,  bidiLevel)
-        {
+        private bool _bufferRented;
 
+        public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel) :
+            this(text,
+                new ArraySlice<GlyphInfo>(ArrayPool<GlyphInfo>.Shared.Rent(bufferLength), 0, bufferLength),
+                glyphTypeface,
+                fontRenderingEmSize,
+                bidiLevel)
+        {
+            _bufferRented = true;
+            Length = bufferLength;
         }
 
-        internal ShapedBuffer(CharacterBufferRange characterBufferRange, ArraySlice<GlyphInfo> glyphInfos, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
+        internal ShapedBuffer(ReadOnlyMemory<char> text, ArraySlice<GlyphInfo> glyphInfos, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel)
         {
-            CharacterBufferRange = characterBufferRange;
+            Text = text;
             GlyphInfos = glyphInfos;
             GlyphTypeface = glyphTypeface;
             FontRenderingEmSize = fontRenderingEmSize;
             BidiLevel = bidiLevel;
+            Length = GlyphInfos.Length;
         }
 
         internal ArraySlice<GlyphInfo> GlyphInfos { get; }
         
-        public int Length => GlyphInfos.Length;
+        public int Length { get; }
 
         public IGlyphTypeface GlyphTypeface { get; }
 
@@ -43,7 +51,7 @@ namespace Avalonia.Media.TextFormatting
 
         public IReadOnlyList<Vector> GlyphOffsets => new GlyphOffsetList(GlyphInfos);
 
-        public CharacterBufferRange CharacterBufferRange { get; }
+        public ReadOnlyMemory<char> Text { get; }
         
         /// <summary>
         /// Finds a glyph index for given character index.
@@ -105,7 +113,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>The split result.</returns>
         internal SplitResult<ShapedBuffer> Split(int length)
         {
-            if (CharacterBufferRange.Length == length)
+            if (Text.Length == length)
             {
                 return new SplitResult<ShapedBuffer>(this, null);
             }
@@ -117,10 +125,10 @@ namespace Avalonia.Media.TextFormatting
 
             var glyphCount = FindGlyphIndex(start + length);
 
-            var first = new ShapedBuffer(CharacterBufferRange.Take(length), 
+            var first = new ShapedBuffer(Text.Slice(0, length),
                 GlyphInfos.Take(glyphCount), GlyphTypeface, FontRenderingEmSize, BidiLevel);
 
-            var second = new ShapedBuffer(CharacterBufferRange.Skip(length),
+            var second = new ShapedBuffer(Text.Slice(length),
                 GlyphInfos.Skip(glyphCount), GlyphTypeface, FontRenderingEmSize, BidiLevel);
 
             return new SplitResult<ShapedBuffer>(first, second);
@@ -259,6 +267,23 @@ namespace Avalonia.Media.TextFormatting
             public IEnumerator<Vector> GetEnumerator() => new ImmutableReadOnlyListStructEnumerator<Vector>(this);
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            if (_bufferRented)
+            {
+                GlyphInfos.ReturnRent();
+            }
+        }
+
+        ~ShapedBuffer()
+        {
+            if (_bufferRented)
+            {
+                GlyphInfos.ReturnRent();
+            }
         }
     }
 

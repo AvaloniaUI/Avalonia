@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using Avalonia.Platform;
 using Avalonia.Skia;
+using Avalonia.Reactive;
 
 namespace Avalonia.Browser.Skia
 {

@@ -76,8 +76,8 @@ namespace Avalonia.Media
         {
             using (context.PushPreTransform(Transform?.Value ?? Matrix.Identity))
             using (context.PushOpacity(Opacity))
-            using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default(DrawingContext.PushedState))
-            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default(DrawingContext.PushedState))
+            using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
+            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -461,9 +461,10 @@ namespace Avalonia.Media
 
                 if (_rootDrawing == null)
                 {
-                    // When a DrawingGroup is set, it should be made the root if
-                    // a root drawing didnt exist.
-                    Contract.Requires<NotSupportedException>(_currentDrawingGroup == null);
+                    if (_currentDrawingGroup != null)
+                    {
+                        throw new NotSupportedException("When a DrawingGroup is set, it should be made the root if a root drawing didnt exist.");
+                    }
 
                     // If this is the first Drawing being added, avoid creating a DrawingGroup
                     // and set this drawing as the root drawing.  This optimizes the common

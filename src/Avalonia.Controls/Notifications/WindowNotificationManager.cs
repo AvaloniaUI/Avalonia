@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;

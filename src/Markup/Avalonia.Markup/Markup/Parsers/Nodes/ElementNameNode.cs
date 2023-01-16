@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {

@@ -1,15 +1,16 @@
-﻿using Avalonia.Media.TextFormatting;
+﻿using System;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 {
     internal class SingleBufferTextSource : ITextSource
     {
-        private readonly CharacterBufferRange _text;
+        private readonly string _text;
         private readonly GenericTextRunProperties _defaultGenericPropertiesRunProperties;
 
         public SingleBufferTextSource(string text, GenericTextRunProperties defaultProperties)
         {
-            _text = new CharacterBufferRange(text);
+            _text = text;
             _defaultGenericPropertiesRunProperties = defaultProperties;
         }
 
@@ -20,14 +21,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 return null;
             }
 
-            var runText = _text.Skip(textSourceIndex);
+            var runText = _text.AsMemory(textSourceIndex);
 
             if (runText.IsEmpty)
             {
                 return null;
             }
 
-            return new TextCharacters(runText.CharacterBufferReference, runText.Length, _defaultGenericPropertiesRunProperties);
+            return new TextCharacters(runText, _defaultGenericPropertiesRunProperties);
         }
     }
 }

@@ -1,11 +1,8 @@
 using System;
 using System.Linq;
-using System.Reactive.Linq;
-using Avalonia.Animation.Animators;
-using Avalonia.Animation.Utils;
-using Avalonia.Data;
 using Avalonia.Reactive;
-using JetBrains.Annotations;
+using Avalonia.Animation.Animators;
+using Avalonia.Data;
 
 namespace Avalonia.Animation
 {

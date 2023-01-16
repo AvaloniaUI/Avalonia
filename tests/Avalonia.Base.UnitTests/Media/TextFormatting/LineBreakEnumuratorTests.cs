@@ -23,7 +23,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         [Fact]
         public void BasicLatinTest()
         {
-            var lineBreaker = new LineBreakEnumerator(new CharacterBufferRange("Hello World\r\nThis is a test."));
+            var lineBreaker = new LineBreakEnumerator("Hello World\r\nThis is a test.");
 
             Assert.True(lineBreaker.MoveNext());
             Assert.Equal(6, lineBreaker.Current.PositionWrap);
@@ -56,7 +56,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         [Fact]
         public void ForwardTextWithOuterWhitespace()
         {
-            var lineBreaker = new LineBreakEnumerator(new CharacterBufferRange(" Apples Pears Bananas   "));
+            var lineBreaker = new LineBreakEnumerator(" Apples Pears Bananas   ");
             var positionsF = GetBreaks(lineBreaker);
             Assert.Equal(1, positionsF[0].PositionWrap);
             Assert.Equal(0, positionsF[0].PositionMeasure);
@@ -83,7 +83,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         [Fact]
         public void ForwardTest()
         {
-            var lineBreaker = new LineBreakEnumerator(new CharacterBufferRange("Apples Pears Bananas"));
+            var lineBreaker = new LineBreakEnumerator("Apples Pears Bananas");
 
             var positionsF = GetBreaks(lineBreaker);
             Assert.Equal(7, positionsF[0].PositionWrap);
@@ -100,7 +100,7 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         {
             var text = string.Join(null, codePoints.Select(char.ConvertFromUtf32));
 
-            var lineBreaker = new LineBreakEnumerator(new CharacterBufferRange(text));
+            var lineBreaker = new LineBreakEnumerator(text);
 
             var foundBreaks = new List<int>();
             
