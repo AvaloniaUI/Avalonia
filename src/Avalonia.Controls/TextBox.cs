@@ -961,9 +961,7 @@ namespace Avalonia.Controls
 
                 var length = 0;
 
-                var inputRange = new CharacterBufferRange(new CharacterBufferReference(input), input.Length);
-
-                var graphemeEnumerator = new GraphemeEnumerator(inputRange);
+                var graphemeEnumerator = new GraphemeEnumerator(input.AsSpan());
 
                 while (graphemeEnumerator.MoveNext())
                 {
@@ -981,7 +979,7 @@ namespace Avalonia.Controls
                         }
                     }
 
-                    length += grapheme.Length;
+                    length += grapheme.Text.Length;
                 }
 
                 if (length < input.Length)

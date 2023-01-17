@@ -272,7 +272,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Style_Can_Use_NthChild_Selector_After_Reoder()
+        public void Style_Can_Use_NthChild_Selector_After_Reorder()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -311,7 +311,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Style_Can_Use_NthLastChild_Selector_After_Reoder()
+        public void Style_Can_Use_NthLastChild_Selector_After_Reorder()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {

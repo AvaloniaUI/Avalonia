@@ -7,14 +7,14 @@ namespace Avalonia.Media.TextFormatting
 {
     internal readonly struct FormattedTextSource : ITextSource
     {
-        private readonly CharacterBufferRange _text;
+        private readonly string _text;
         private readonly TextRunProperties _defaultProperties;
         private readonly IReadOnlyList<ValueSpan<TextRunProperties>>? _textModifier;
 
         public FormattedTextSource(string text, TextRunProperties defaultProperties,
             IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
         {
-            _text = new CharacterBufferRange(text);
+            _text = text;
             _defaultProperties = defaultProperties;
             _textModifier = textModifier;
         }
@@ -26,7 +26,7 @@ namespace Avalonia.Media.TextFormatting
                 return null;
             }
 
-            var runText = _text.Skip(textSourceIndex);
+            var runText = _text.AsSpan(textSourceIndex);
 
             if (runText.IsEmpty)
             {
@@ -35,7 +35,7 @@ namespace Avalonia.Media.TextFormatting
 
             var textStyleRun = CreateTextStyleRun(runText, textSourceIndex, _defaultProperties, _textModifier);
 
-            return new TextCharacters(runText.Take(textStyleRun.Length).CharacterBufferReference, textStyleRun.Length, textStyleRun.Value);
+            return new TextCharacters(_text.AsMemory(textSourceIndex, textStyleRun.Length), textStyleRun.Value);
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns>
         /// The created text style run.
         /// </returns>
-        private static ValueSpan<TextRunProperties> CreateTextStyleRun(CharacterBufferRange text, int firstTextSourceIndex,
+        private static ValueSpan<TextRunProperties> CreateTextStyleRun(ReadOnlySpan<char> text, int firstTextSourceIndex,
             TextRunProperties defaultProperties, IReadOnlyList<ValueSpan<TextRunProperties>>? textModifier)
         {
             if (textModifier == null || textModifier.Count == 0)
@@ -122,7 +122,7 @@ namespace Avalonia.Media.TextFormatting
             return new ValueSpan<TextRunProperties>(firstTextSourceIndex, length, currentProperties);
         }
 
-        private static int CoerceLength(CharacterBufferRange text, int length)
+        private static int CoerceLength(ReadOnlySpan<char> text, int length)
         {
             var finalLength = 0;
 
@@ -132,7 +132,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 var grapheme = graphemeEnumerator.Current;
 
-                finalLength += grapheme.Length;
+                finalLength += grapheme.Text.Length;
 
                 if (finalLength >= length)
                 {

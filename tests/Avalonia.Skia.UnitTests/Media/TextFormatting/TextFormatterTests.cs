@@ -279,7 +279,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var lineBreaker = new LineBreakEnumerator(new CharacterBufferRange(text));
+                var lineBreaker = new LineBreakEnumerator(text);
 
                 var expected = new List<int>();
 
@@ -677,7 +677,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     return new RectangleRun(new Rect(0, 0, 50, 50), Brushes.Green);
                 }
 
-                return new TextCharacters(_text, 0, _text.Length, new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
+                return new TextCharacters(_text, new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
             }
         }
 

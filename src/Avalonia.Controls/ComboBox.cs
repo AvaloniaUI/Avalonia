@@ -361,7 +361,7 @@ namespace Avalonia.Controls
 
             _subscriptionsOnOpen.Clear();
 
-            var toplevel = this.GetVisualRoot() as TopLevel;
+            var toplevel = TopLevel.GetTopLevel(this);
             if (toplevel != null)
             {
                 toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>

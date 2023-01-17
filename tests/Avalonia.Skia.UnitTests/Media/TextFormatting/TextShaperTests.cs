@@ -18,7 +18,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 12,0, CultureInfo.CurrentCulture);
                 var shapedBuffer = TextShaper.Current.ShapeText(text, options);
                 
-                Assert.Equal(shapedBuffer.CharacterBufferRange.Length, text.Length);
+                Assert.Equal(shapedBuffer.Length, text.Length);
                 Assert.Equal(shapedBuffer.GlyphClusters.Count, text.Length);
                 Assert.Equal(0, shapedBuffer.GlyphClusters[0]);
                 Assert.Equal(1, shapedBuffer.GlyphClusters[1]);

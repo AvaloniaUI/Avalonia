@@ -46,7 +46,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
                 Assert.NotNull(target.TextLayout);
 
                 var actual = string.Join(null,
-                    target.TextLayout.TextLines.SelectMany(x => x.TextRuns).Select(x => x.CharacterBufferReference.CharacterBuffer.Span.ToString()));
+                    target.TextLayout.TextLines.SelectMany(x => x.TextRuns).Select(x => x.Text.ToString()));
 
                 Assert.Equal("****", actual);
             }

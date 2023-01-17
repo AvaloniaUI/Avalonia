@@ -124,7 +124,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                             $"Cannot convert '{attachedProperty.Value}' to '{targetPropertyType.GetFqn()}",
                                             node);
 
-                                result = new XamlIlAttacchedPropertyEqualsSelector(result, targetPropertyField, typedValue);
+                                result = new XamlIlAttachedPropertyEqualsSelector(result, targetPropertyField, typedValue);
                                 break;
                             }
                         case SelectorGrammar.ChildSyntax child:
@@ -414,9 +414,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     }
 
 
-    class XamlIlAttacchedPropertyEqualsSelector : XamlIlSelectorNode
+    class XamlIlAttachedPropertyEqualsSelector : XamlIlSelectorNode
     {
-        public XamlIlAttacchedPropertyEqualsSelector(XamlIlSelectorNode previous,
+        public XamlIlAttachedPropertyEqualsSelector(XamlIlSelectorNode previous,
             IXamlField propertyFiled,
             IXamlAstValueNode value)
             : base(previous)

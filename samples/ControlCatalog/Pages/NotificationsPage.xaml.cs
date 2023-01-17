@@ -27,7 +27,7 @@ namespace ControlCatalog.Pages
         {
             base.OnAttachedToVisualTree(e);
 
-            _viewModel.NotificationManager = new Avalonia.Controls.Notifications.WindowNotificationManager(VisualRoot as TopLevel);
+            _viewModel.NotificationManager = new Avalonia.Controls.Notifications.WindowNotificationManager(TopLevel.GetTopLevel(this));
         }
     }
 }

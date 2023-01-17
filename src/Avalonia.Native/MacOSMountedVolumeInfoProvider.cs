@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Avalonia.Reactive;
-using Avalonia.Reactive;
 using Avalonia.Controls.Platform;
 using Avalonia.Threading;
 

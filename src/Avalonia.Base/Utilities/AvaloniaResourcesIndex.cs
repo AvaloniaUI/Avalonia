@@ -1,105 +1,116 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Xml.Linq;
-using System.Linq;
-using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Avalonia.Utilities
 {
-    #if !BUILDTASK
+#if !BUILDTASK
     public
-    #endif
+#endif
     static class AvaloniaResourcesIndexReaderWriter
     {
-        private const int LastKnownVersion = 1;
-        public static List<AvaloniaResourcesIndexEntry> Read(Stream stream)
-        {
-            var ver = new BinaryReader(stream).ReadInt32();
-            if (ver > LastKnownVersion)
-                throw new Exception("Resources index format version is not known");
+        private const int XmlLegacyVersion = 1;
+        private const int BinaryCurrentVersion = 2;
 
-            var assetDoc = XDocument.Load(stream);
-            XNamespace assetNs = assetDoc.Root!.Attribute("xmlns")!.Value;
-            List<AvaloniaResourcesIndexEntry> entries =         
-                (from entry in assetDoc.Root.Element(assetNs + "Entries")!.Elements(assetNs + "AvaloniaResourcesIndexEntry")
-                    select new AvaloniaResourcesIndexEntry
-                    {
-                        Path = entry.Element(assetNs + "Path")!.Value,
-                        Offset = int.Parse(entry.Element(assetNs + "Offset")!.Value),
-                        Size = int.Parse(entry.Element(assetNs + "Size")!.Value)                     
-                    }).ToList();
+        public static List<AvaloniaResourcesIndexEntry> ReadIndex(Stream stream)
+        {
+            using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
+
+            var version = reader.ReadInt32();
+            return version switch
+            {
+                XmlLegacyVersion => ReadXmlIndex(),
+                BinaryCurrentVersion => ReadBinaryIndex(reader),
+                _ => throw new Exception($"Unknown resources index format version {version}")
+            };
+        }
+
+        private static List<AvaloniaResourcesIndexEntry> ReadXmlIndex()
+            => throw new NotSupportedException("Found legacy resources index format: please recompile your XAML files");
+
+        private static List<AvaloniaResourcesIndexEntry> ReadBinaryIndex(BinaryReader reader)
+        {
+            var entryCount = reader.ReadInt32();
+            var entries = new List<AvaloniaResourcesIndexEntry>(entryCount);
+
+            for (var i = 0; i < entryCount; ++i)
+            {
+                entries.Add(new AvaloniaResourcesIndexEntry {
+                    Path = reader.ReadString(),
+                    Offset = reader.ReadInt32(),
+                    Size = reader.ReadInt32()
+                });
+            }
 
             return entries;
         }
 
-        [RequiresUnreferencedCode("AvaloniaResources uses Data Contract Serialization, which might require unreferenced code")]
-        public static void Write(Stream stream, List<AvaloniaResourcesIndexEntry> entries)
+        public static void WriteIndex(Stream output, List<AvaloniaResourcesIndexEntry> entries)
         {
-            new BinaryWriter(stream).Write(LastKnownVersion);
-            new DataContractSerializer(typeof(AvaloniaResourcesIndex)).WriteObject(stream,
-                new AvaloniaResourcesIndex()
+            using var writer = new BinaryWriter(output, Encoding.UTF8, leaveOpen: true);
+
+            WriteIndex(writer, entries);
+        }
+
+        private static void WriteIndex(BinaryWriter writer, List<AvaloniaResourcesIndexEntry> entries)
+        {
+            writer.Write(BinaryCurrentVersion);
+            writer.Write(entries.Count);
+
+            foreach (var entry in entries)
+            {
+                writer.Write(entry.Path ?? string.Empty);
+                writer.Write(entry.Offset);
+                writer.Write(entry.Size);
+            }
+        }
+
+        public static void WriteResources(Stream output, List<(string Path, int Size, Func<Stream> Open)> resources)
+        {
+            var entries = new List<AvaloniaResourcesIndexEntry>(resources.Count);
+            var offset = 0;
+
+            foreach (var resource in resources)
+            {
+                entries.Add(new AvaloniaResourcesIndexEntry
                 {
-                    Entries = entries
+                    Path = resource.Path,
+                    Offset = offset,
+                    Size = resource.Size
                 });
-        }
-
-        [RequiresUnreferencedCode("AvaloniaResources uses Data Contract Serialization, which might require unreferenced code")]
-        public static byte[] Create(Dictionary<string, byte[]> data)
-        {
-            var sources = data.ToList();
-            var offsets = new Dictionary<string, int>();
-            var coffset = 0;
-            foreach (var s in sources)
-            {
-                offsets[s.Key] = coffset;
-                coffset += s.Value.Length;
-            }
-            var index = sources.Select(s => new AvaloniaResourcesIndexEntry
-            {
-                Path = s.Key,
-                Size = s.Value.Length,
-                Offset = offsets[s.Key]
-            }).ToList();
-            var output = new MemoryStream();
-            var ms = new MemoryStream();
-            AvaloniaResourcesIndexReaderWriter.Write(ms, index);
-            new BinaryWriter(output).Write((int)ms.Length);
-            ms.Position = 0;
-            ms.CopyTo(output);
-            foreach (var s in sources)
-            {
-                output.Write(s.Value,0,s.Value.Length);
+                offset += resource.Size;
             }
 
-            return output.ToArray();
+            using var writer = new BinaryWriter(output, Encoding.UTF8, leaveOpen: true);
+            writer.Write(0); // index size placeholder, overwritten below
+
+            var posBeforeEntries = output.Position;
+            WriteIndex(writer, entries);
+
+            var posAfterEntries = output.Position;
+            var indexSize = (int) (posAfterEntries - posBeforeEntries);
+            output.Position = 0L;
+            writer.Write(indexSize);
+            output.Position = posAfterEntries;
+
+            foreach (var resource in resources)
+            {
+                using var resourceStream = resource.Open();
+                resourceStream.CopyTo(output);
+            }
         }
     }
 
-    [DataContract]
-#if !BUILDTASK
-    public
-#endif
-    class AvaloniaResourcesIndex
-    {       
-        [DataMember]
-        public List<AvaloniaResourcesIndexEntry> Entries { get; set; } = new List<AvaloniaResourcesIndexEntry>();
-    }
-
-    [DataContract]
 #if !BUILDTASK
     public
 #endif
     class AvaloniaResourcesIndexEntry
     {
-        [DataMember]
         public string? Path { get; set; }
-        
-        [DataMember]
+
         public int Offset { get; set; }
-        
-        [DataMember]
+
         public int Size { get; set; }
     }
 }
