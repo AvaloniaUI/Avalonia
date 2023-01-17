@@ -64,7 +64,7 @@
         <DockPanel>
           <RepeatButton Background="Transparent"
                         BorderThickness="0"
-                        Command="{Binding LineUp, RelativeSource={RelativeSource TemplatedParent}}"
+                        Command="{Binding LineUpAsync, RelativeSource={RelativeSource TemplatedParent}}"
                         DockPanel.Dock="Top">
             <RepeatButton.IsVisible>
               <MultiBinding Converter="{x:Static converters:MenuScrollingVisibilityConverter.Instance}"
