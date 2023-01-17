@@ -104,6 +104,8 @@ public class CompositorTestsBase
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; }
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
     }
 

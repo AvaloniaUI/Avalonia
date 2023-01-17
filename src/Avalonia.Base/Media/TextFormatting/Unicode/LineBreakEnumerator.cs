@@ -3,7 +3,6 @@
 // Ported from: https://github.com/SixLabors/Fonts/
 
 using System;
-using System.Collections.Generic;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -13,7 +12,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// </summary>
     public ref struct LineBreakEnumerator
     {
-        private readonly IReadOnlyList<char> _text;
+        private readonly ReadOnlySpan<char> _text;
         private int _position;
         private int _lastPosition;
         private LineBreakClass _currentClass;
@@ -29,7 +28,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private int _lb30a;
         private bool _lb31;
 
-        public LineBreakEnumerator(IReadOnlyList<char> text)
+        public LineBreakEnumerator(ReadOnlySpan<char> text)
             : this()
         {
             _text = text;
@@ -63,7 +62,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 _lb30a = 0;
             }
 
-            while (_position < _text.Count)
+            while (_position < _text.Length)
             {
                 _lastPosition = _position;
                 var lastClass = _nextClass;
@@ -93,11 +92,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
                 }
             }
 
-            if (_position >= _text.Count)
+            if (_position >= _text.Length)
             {
-                if (_lastPosition < _text.Count)
+                if (_lastPosition < _text.Length)
                 {
-                    _lastPosition = _text.Count;
+                    _lastPosition = _text.Length;
 
                     var required = false;
 

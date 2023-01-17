@@ -826,12 +826,12 @@ namespace Avalonia.Controls
 
         protected readonly record struct SimpleTextSource : ITextSource
         {
-            private readonly CharacterBufferRange _text;
+            private readonly string _text;
             private readonly TextRunProperties _defaultProperties;
 
             public SimpleTextSource(string text, TextRunProperties defaultProperties)
             {
-                _text = new CharacterBufferRange(new CharacterBufferReference(text), text.Length);
+                _text = text;
                 _defaultProperties = defaultProperties;
             }
 
@@ -842,14 +842,14 @@ namespace Avalonia.Controls
                     return new TextEndOfParagraph();
                 }
 
-                var runText = _text.Skip(textSourceIndex);
+                var runText = _text.AsMemory(textSourceIndex);
 
                 if (runText.IsEmpty)
                 {
                     return new TextEndOfParagraph();
                 }
 
-                return new TextCharacters(runText.CharacterBufferReference, runText.Length, _defaultProperties);
+                return new TextCharacters(runText, _defaultProperties);
             }
         }
 
@@ -884,14 +884,9 @@ namespace Avalonia.Controls
 
                     if (textRun is TextCharacters)                 
                     {
-                        var characterBufferReference = textRun.CharacterBufferReference;
-
                         var skip = Math.Max(0, textSourceIndex - currentPosition);
 
-                        return new TextCharacters(
-                            new CharacterBufferReference(characterBufferReference.CharacterBuffer, characterBufferReference.OffsetToFirstChar + skip), 
-                            textRun.Length - skip,
-                            textRun.Properties!);
+                        return new TextCharacters(textRun.Text.Slice(skip), textRun.Properties!);
                     }
 
                     return textRun;

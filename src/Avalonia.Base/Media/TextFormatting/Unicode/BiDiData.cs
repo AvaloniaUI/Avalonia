@@ -64,7 +64,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Appends text to the bidi data.
         /// </summary>
         /// <param name="text">The text to process.</param>
-        public void Append(CharacterBufferRange text)
+        public void Append(ReadOnlySpan<char> text)
         {
             _classes.Add(text.Length);
             _pairedBracketTypes.Add(text.Length);
