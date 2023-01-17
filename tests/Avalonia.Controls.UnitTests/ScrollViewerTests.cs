@@ -71,7 +71,7 @@ namespace Avalonia.Controls.UnitTests
             target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
             target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
             target.Offset = new Vector(25, 25);
-            target.ScrollToHome();
+            target.ScrollToHomeAsync();
 
             Assert.Equal(new Vector(0, 0), target.Offset);
         }
@@ -83,7 +83,7 @@ namespace Avalonia.Controls.UnitTests
             target.SetValue(ScrollViewer.ExtentProperty, new Size(50, 50));
             target.SetValue(ScrollViewer.ViewportProperty, new Size(10, 10));
             target.Offset = new Vector(25, 25);
-            target.ScrollToEnd();
+            target.ScrollToEndAsync();
 
             Assert.Equal(new Vector(0, 40), target.Offset);
         }

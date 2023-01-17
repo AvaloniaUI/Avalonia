@@ -93,16 +93,16 @@ namespace Avalonia.Automation.Peers
             switch (horizontalAmount)
             {
                 case ScrollAmount.LargeDecrement:
-                    Owner.PageLeft();
+                    Owner.PageLeftAsync();
                     break;
                 case ScrollAmount.SmallDecrement:
-                    Owner.LineLeft();
+                    Owner.LineLeftAsync();
                     break;
                 case ScrollAmount.SmallIncrement:
-                    Owner.LineRight();
+                    Owner.LineRightAsync();
                     break;
                 case ScrollAmount.LargeIncrement:
-                    Owner.PageRight();
+                    Owner.PageRightAsync();
                     break;
                 case ScrollAmount.NoAmount:
                     break;
@@ -113,16 +113,16 @@ namespace Avalonia.Automation.Peers
             switch (verticalAmount)
             {
                 case ScrollAmount.LargeDecrement:
-                    Owner.PageUp();
+                    Owner.PageUpAsync();
                     break;
                 case ScrollAmount.SmallDecrement:
-                    Owner.LineUp();
+                    Owner.LineUpAsync();
                     break;
                 case ScrollAmount.SmallIncrement:
-                    Owner.LineDown();
+                    Owner.LineDownAsync();
                     break;
                 case ScrollAmount.LargeIncrement:
-                    Owner.PageDown();
+                    Owner.PageDownAsync();
                     break;
                 case ScrollAmount.NoAmount:
                     break;

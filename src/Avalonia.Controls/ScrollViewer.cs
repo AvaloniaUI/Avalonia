@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Avalonia.Reactive;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
@@ -6,6 +7,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls
 {
@@ -444,84 +446,119 @@ namespace Avalonia.Controls
             set => SetValue(IsScrollChainingEnabledProperty, value);
         }
 
+        private static Task ExecuteInLayoutPriority(Action action)
+        {
+            return Dispatcher.UIThread.InvokeAsync(action, DispatcherPriority.Layout);
+        }
+
         /// <summary>
         /// Scrolls the content up one line.
         /// </summary>
-        public void LineUp()
+        public async Task LineUpAsync()
         {
-            Offset -= new Vector(0, _smallChange.Height);
+            await ExecuteInLayoutPriority(() =>
+            {
+                Offset -= new Vector(0, _smallChange.Height);
+            });
         }
 
         /// <summary>
         /// Scrolls the content down one line.
         /// </summary>
-        public void LineDown()
+        public async Task LineDownAsync()
         {
-            Offset += new Vector(0, _smallChange.Height);
+            await ExecuteInLayoutPriority(() =>
+            {
+                Offset += new Vector(0, _smallChange.Height);
+            });
         }
 
         /// <summary>
         /// Scrolls the content left one line.
         /// </summary>
-        public void LineLeft()
+        public async Task LineLeftAsync()
         {
-            Offset -= new Vector(_smallChange.Width, 0);
+            await ExecuteInLayoutPriority(() =>
+            {
+                Offset -= new Vector(_smallChange.Width, 0);
+            });
         }
 
         /// <summary>
         /// Scrolls the content right one line.
         /// </summary>
-        public void LineRight()
+        public async Task LineRightAsync()
         {
-            Offset += new Vector(_smallChange.Width, 0);
+            await ExecuteInLayoutPriority(() =>
+            {
+                Offset += new Vector(_smallChange.Width, 0);
+            });
         }
 
         /// <summary>
         /// Scrolls the content upward by one page.
         /// </summary>
-        public void PageUp()
+        public async Task PageUpAsync()
         {
-            VerticalScrollBarValue = Math.Max(_offset.Y - _viewport.Height, 0);
+            await ExecuteInLayoutPriority(() =>
+            {
+                VerticalScrollBarValue = Math.Max(_offset.Y - _viewport.Height, 0);
+            });
         }
 
         /// <summary>
         /// Scrolls the content downward by one page.
         /// </summary>
-        public void PageDown()
+        public async Task PageDownAsync()
         {
-            VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
+            await ExecuteInLayoutPriority(() =>
+            {
+                VerticalScrollBarValue = Math.Min(_offset.Y + _viewport.Height, VerticalScrollBarMaximum);
+            });
         }
 
         /// <summary>
         /// Scrolls the content left by one page.
         /// </summary>
-        public void PageLeft()
+        public async Task PageLeftAsync()
         {
-            HorizontalScrollBarValue = Math.Max(_offset.X - _viewport.Width, 0);
+            await ExecuteInLayoutPriority(() =>
+            {
+                HorizontalScrollBarValue = Math.Max(_offset.X - _viewport.Width, 0);
+            });
         }
 
         /// <summary>
         /// Scrolls the content tight by one page.
         /// </summary>
-        public void PageRight()
+        public async Task PageRightAsync()
         {
-            HorizontalScrollBarValue = Math.Min(_offset.X + _viewport.Width, HorizontalScrollBarMaximum);
+            await ExecuteInLayoutPriority(() =>
+            {
+                HorizontalScrollBarValue = Math.Min(_offset.X + _viewport.Width, HorizontalScrollBarMaximum);
+            });
         }
 
         /// <summary>
         /// Scrolls to the top-left corner of the content.
         /// </summary>
-        public void ScrollToHome()
+        public async Task ScrollToHomeAsync()
         {
-            Offset = new Vector(double.NegativeInfinity, double.NegativeInfinity);
+            await ExecuteInLayoutPriority(() =>
+            {
+                Offset = new Vector(double.NegativeInfinity, double.NegativeInfinity);
+            });
         }
 
         /// <summary>
         /// Scrolls to the bottom-left corner of the content.
         /// </summary>
-        public void ScrollToEnd()
+        public async Task ScrollToEndAsync()
         {
-            Offset = new Vector(double.NegativeInfinity, double.PositiveInfinity);
+            await ExecuteInLayoutPriority(() =>
+            {
+                Offset = new Vector(double.NegativeInfinity, double.PositiveInfinity);
+            });
         }
 
         /// <summary>
@@ -733,12 +770,12 @@ namespace Avalonia.Controls
         {
             if (e.Key == Key.PageUp)
             {
-                PageUp();
+                PageUpAsync();
                 e.Handled = true;
             }
             else if (e.Key == Key.PageDown)
             {
-                PageDown();
+                PageDownAsync();
                 e.Handled = true;
             }
         }
