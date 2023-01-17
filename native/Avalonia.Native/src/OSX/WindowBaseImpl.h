@@ -98,7 +98,7 @@ BEGIN_INTERFACE_MAP()
             IAvnClipboard *clipboard, IAvnDndResultCallback *cb,
             void *sourceHandle) override;
 
-    virtual bool IsDialog();
+    virtual bool IsModal();
 
     id<AvnWindowProtocol> GetWindowProtocol ();
                            
