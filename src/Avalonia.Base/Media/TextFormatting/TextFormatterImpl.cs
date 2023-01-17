@@ -173,9 +173,9 @@ namespace Avalonia.Media.TextFormatting
             }
 
 
-            var biDiData = t_bidiData ??= new BidiData();
-            biDiData.Reset();
-            biDiData.ParagraphEmbeddingLevel = (sbyte)flowDirection;
+            var bidiData = t_bidiData ??= new BidiData();
+            bidiData.Reset();
+            bidiData.ParagraphEmbeddingLevel = (sbyte)flowDirection;
 
             foreach (var textRun in textRuns)
             {
@@ -187,21 +187,21 @@ namespace Avalonia.Media.TextFormatting
                 else
                     text = new char[textRun.Length];
 
-                biDiData.Append(text);
+                bidiData.Append(text);
             }
 
-            var biDi = t_bidiAlgorithm ??= new BidiAlgorithm();
+            var bidiAlgorithm = t_bidiAlgorithm ??= new BidiAlgorithm();
 
-            biDi.Process(biDiData);
+            bidiAlgorithm.Process(bidiData);
 
-            var resolvedEmbeddingLevel = biDi.ResolveEmbeddingLevel(biDiData.Classes);
+            var resolvedEmbeddingLevel = bidiAlgorithm.ResolveEmbeddingLevel(bidiData.Classes);
 
             resolvedFlowDirection =
                 (resolvedEmbeddingLevel & 1) == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
 
             var processedRuns = new List<TextRun>(textRuns.Count);
 
-            CoalesceLevels(textRuns, biDi.ResolvedLevels, processedRuns);
+            CoalesceLevels(textRuns, bidiAlgorithm.ResolvedLevels, processedRuns);
 
             for (var index = 0; index < processedRuns.Count; index++)
             {

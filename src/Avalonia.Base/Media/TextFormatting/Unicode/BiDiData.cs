@@ -11,6 +11,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// Represents a unicode string and all associated attributes
     /// for each character required for the bidirectional Unicode algorithm
     /// </summary>
+    /// <remarks>To avoid allocations, this class is designed to be reused.</remarks>
     internal sealed class BidiData
     {
         private ArrayBuilder<BidiClass> _classes;

@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
     internal sealed class TextLineImpl : TextLine
     {
-        private TextRun[] _textRuns;
+        private static readonly ThreadLocal<BidiReorderer> s_bidiReorderer = new(() => new BidiReorderer());
+
+        private readonly TextRun[] _textRuns;
         private readonly double _paragraphWidth;
         private readonly TextParagraphProperties _paragraphProperties;
         private TextLineMetrics _textLineMetrics;
@@ -993,183 +996,10 @@ namespace Avalonia.Media.TextFormatting
         {
             _textLineMetrics = CreateLineMetrics();
 
-            BidiReorder();
+            var bidiReorderer = s_bidiReorderer.Value!;
+            bidiReorderer.BidiReorder(_textRuns, _resolvedFlowDirection);
 
             return this;
-        }
-
-        private static sbyte GetRunBidiLevel(TextRun run, FlowDirection flowDirection)
-        {
-            if (run is ShapedTextRun shapedTextCharacters)
-            {
-                return shapedTextCharacters.BidiLevel;
-            }
-
-            var defaultLevel = flowDirection == FlowDirection.LeftToRight ? 0 : 1;
-
-            return (sbyte)defaultLevel;
-        }
-
-        private void BidiReorder()
-        {
-            if (_textRuns.Length == 0)
-            {
-                return;
-            }
-
-            // Build up the collection of ordered runs.
-            var run = _textRuns[0];
-
-            OrderedBidiRun orderedRun = new(run, GetRunBidiLevel(run, _resolvedFlowDirection));
-
-            var current = orderedRun;
-
-            for (var i = 1; i < _textRuns.Length; i++)
-            {
-                run = _textRuns[i];
-
-                current.Next = new OrderedBidiRun(run, GetRunBidiLevel(run, _resolvedFlowDirection));
-
-                current = current.Next;
-            }
-
-            // Reorder them into visual order.
-            orderedRun = LinearReOrder(orderedRun);
-
-            // Now perform a recursive reversal of each run.
-            // From the highest level found in the text to the lowest odd level on each line, including intermediate levels
-            // not actually present in the text, reverse any contiguous sequence of characters that are at that level or higher.
-            // https://unicode.org/reports/tr9/#L2
-            sbyte max = 0;
-            var min = sbyte.MaxValue;
-
-            for (var i = 0; i < _textRuns.Length; i++)
-            {
-                var currentRun = _textRuns[i];
-
-                var level = GetRunBidiLevel(currentRun, _resolvedFlowDirection);
-
-                if (level > max)
-                {
-                    max = level;
-                }
-
-                if ((level & 1) != 0 && level < min)
-                {
-                    min = level;
-                }
-            }
-
-            if (min > max)
-            {
-                min = max;
-            }
-
-            if (max == 0 || (min == max && (max & 1) == 0))
-            {
-                // Nothing to reverse.
-                return;
-            }
-
-            // Now apply the reversal and replace the original contents.
-            var minLevelToReverse = max;
-
-            while (minLevelToReverse >= min)
-            {
-                current = orderedRun;
-
-                while (current != null)
-                {
-                    if (current.Level >= minLevelToReverse && current.Level % 2 != 0)
-                    {
-                        if (current.Run is ShapedTextRun { IsReversed: false } shapedTextCharacters)
-                        {
-                            shapedTextCharacters.Reverse();
-                        }
-                    }
-
-                    current = current.Next;
-                }
-
-                minLevelToReverse--;
-            }
-
-            var textRuns = new TextRun[_textRuns.Length];
-            var index = 0;
-
-            current = orderedRun;
-
-            while (current != null)
-            {
-                textRuns[index++] = current.Run;
-
-                current = current.Next;
-            }
-
-            _textRuns = textRuns;
-        }
-
-        /// <summary>
-        /// Reorders a series of runs from logical to visual order, returning the left most run.
-        /// <see href="https://github.com/fribidi/linear-reorder/blob/f2f872257d4d8b8e137fcf831f254d6d4db79d3c/linear-reorder.c"/>
-        /// </summary>
-        /// <param name="run">The ordered bidi run.</param>
-        /// <returns>The <see cref="OrderedBidiRun"/>.</returns>
-        private static OrderedBidiRun LinearReOrder(OrderedBidiRun? run)
-        {
-            BidiRange? range = null;
-
-            while (run != null)
-            {
-                var next = run.Next;
-
-                while (range != null && range.Level > run.Level
-                    && range.Previous != null && range.Previous.Level >= run.Level)
-                {
-                    range = BidiRange.MergeWithPrevious(range);
-                }
-
-                if (range != null && range.Level >= run.Level)
-                {
-                    // Attach run to the range.
-                    if ((run.Level & 1) != 0)
-                    {
-                        // Odd, range goes to the right of run.
-                        run.Next = range.Left;
-                        range.Left = run;
-                    }
-                    else
-                    {
-                        // Even, range goes to the left of run.
-                        range.Right!.Next = run;
-                        range.Right = run;
-                    }
-
-                    range.Level = run.Level;
-                }
-                else
-                {
-                    var r = new BidiRange();
-
-                    r.Left = r.Right = run;
-                    r.Level = run.Level;
-                    r.Previous = range;
-
-                    range = r;
-                }
-
-                run = next;
-            }
-
-            while (range?.Previous != null)
-            {
-                range = BidiRange.MergeWithPrevious(range);
-            }
-
-            // Terminate.
-            range!.Right!.Next = null;
-
-            return range.Left!;
         }
 
         /// <summary>
@@ -1618,60 +1448,6 @@ namespace Avalonia.Media.TextFormatting
 
                 default:
                     return 0;
-            }
-        }
-
-        private sealed class OrderedBidiRun
-        {
-            public OrderedBidiRun(TextRun run, sbyte level)
-            {
-                Run = run;
-                Level = level;
-            }
-
-            public sbyte Level { get; }
-
-            public TextRun Run { get; }
-
-            public OrderedBidiRun? Next { get; set; }
-        }
-
-        private sealed class BidiRange
-        {
-            public int Level { get; set; }
-
-            public OrderedBidiRun? Left { get; set; }
-
-            public OrderedBidiRun? Right { get; set; }
-
-            public BidiRange? Previous { get; set; }
-
-            public static BidiRange MergeWithPrevious(BidiRange range)
-            {
-                var previous = range.Previous;
-
-                BidiRange left;
-                BidiRange right;
-
-                if ((previous!.Level & 1) != 0)
-                {
-                    // Odd, previous goes to the right of range.
-                    left = range;
-                    right = previous;
-                }
-                else
-                {
-                    // Even, previous goes to the left of range.
-                    left = previous;
-                    right = range;
-                }
-
-                // Stitch them
-                left.Right!.Next = right.Left;
-                previous.Left = left.Left;
-                previous.Right = right.Right;
-
-                return previous;
             }
         }
     }

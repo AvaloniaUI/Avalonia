@@ -18,7 +18,7 @@ namespace Avalonia.Utilities
         private const int MaxCoreClrArrayLength = 0x7FeFFFFF;
 
         // Starts out null, initialized on first Add.
-        private T[] _data;
+        private T[]? _data;
         private int _size;
 
         /// <summary>
@@ -113,6 +113,16 @@ namespace Avalonia.Utilities
             value.Span.CopyTo(slice.Span);
 
             return slice;
+        }
+
+        /// <summary>
+        /// Appends an item.
+        /// </summary>
+        /// <param name="value">The item to append.</param>
+        public void AddItem(T value)
+        {
+            var index = Length++;
+            _data![index] = value;
         }
 
         /// <summary>
