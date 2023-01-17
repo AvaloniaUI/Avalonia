@@ -607,6 +607,30 @@ namespace Avalonia.Controls.Presenters
                 if (Extent.Height > Viewport.Height)
                 {
                     double height = isLogical ? scrollable!.ScrollSize.Height : 50;
+                    if(VerticalSnapPointsType == SnapPointsType.MandatorySingle && Content is IScrollSnapPointsInfo)
+                    {
+                        if(_areVerticalSnapPointsRegular)
+                        {
+                            height = _verticalSnapPoint;
+                        }
+                        else
+                        {
+                            double yOffset = Offset.Y;
+                            switch (VerticalSnapPointsAlignment)
+                            {
+                                case SnapPointsAlignment.Center:
+                                    yOffset += Viewport.Height / 2;
+                                    break;
+                                case SnapPointsAlignment.Far:
+                                    yOffset += Viewport.Height;
+                                    break;
+                            }
+
+                            var snapPoint = FindNearestSnapPoint(_verticalSnapPoints, yOffset, out var lowerSnapPoint);
+
+                            height = snapPoint - lowerSnapPoint;
+                        }
+                    }
                     y += -delta.Y * height;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
@@ -615,6 +639,30 @@ namespace Avalonia.Controls.Presenters
                 if (Extent.Width > Viewport.Width)
                 {
                     double width = isLogical ? scrollable!.ScrollSize.Width : 50;
+                    if (HorizontalSnapPointsType == SnapPointsType.MandatorySingle && Content is IScrollSnapPointsInfo)
+                    {
+                        if (_areHorizontalSnapPointsRegular)
+                        {
+                            width = _horizontalSnapPoint;
+                        }
+                        else
+                        {
+                            double xOffset = Offset.X;
+                            switch (VerticalSnapPointsAlignment)
+                            {
+                                case SnapPointsAlignment.Center:
+                                    xOffset += Viewport.Width / 2;
+                                    break;
+                                case SnapPointsAlignment.Far:
+                                    xOffset += Viewport.Width;
+                                    break;
+                            }
+
+                            var snapPoint = FindNearestSnapPoint(_horizontalSnapPoints, xOffset, out var lowerSnapPoint);
+
+                            width = snapPoint - lowerSnapPoint;
+                        }
+                    }
                     x += -delta.X * width;
                     x = Math.Max(x, 0);
                     x = Math.Min(x, Extent.Width - Viewport.Width);
@@ -903,19 +951,6 @@ namespace Avalonia.Controls.Presenters
 
             }
 
-            double FindNearestSnapPoint(IReadOnlyList<double> snapPoints, double value, out double lowerSnapPoint)
-            {
-                var point = snapPoints.BinarySearch(value, Comparer<double>.Default);
-
-                if (point < 0)
-                {
-                    point = ~point;
-                }
-
-                lowerSnapPoint = snapPoints[Math.Max(0, point - 1)];
-                return snapPoints[Math.Min(point, snapPoints.Count - 1)];
-            }
-
             Vector GetAlignedDiff()
             {
                 var vector = offset;
@@ -944,6 +979,25 @@ namespace Avalonia.Controls.Presenters
             }
 
             return offset;
+        }
+
+        private static double FindNearestSnapPoint(IReadOnlyList<double> snapPoints, double value, out double lowerSnapPoint)
+        {
+            var point = snapPoints.BinarySearch(value, Comparer<double>.Default);
+
+            if (point < 0)
+            {
+                point = ~point;
+
+                lowerSnapPoint = snapPoints[Math.Max(0, point - 1)];
+            }
+            else
+            {
+                lowerSnapPoint = snapPoints[point];
+
+                point += 1;
+            }
+            return snapPoints[Math.Min(point, snapPoints.Count - 1)];
         }
     }
 }
