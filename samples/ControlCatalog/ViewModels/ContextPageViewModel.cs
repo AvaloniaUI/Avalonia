@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.VisualTree;
@@ -56,12 +55,9 @@ namespace ControlCatalog.ViewModels
 
             var result = await window.StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions() { AllowMultiple = true });
 
-            if (result != null)
+            foreach (var file in result)
             {
-                foreach (var file in result)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Opened: {file.Name}");
-                }
+                System.Diagnostics.Debug.WriteLine($"Opened: {file.Name}");
             }
         }
 

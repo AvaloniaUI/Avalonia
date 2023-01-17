@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using Xunit;
 
-namespace Avalonia.Base.UnitTests
+namespace Avalonia.ReactiveUI.UnitTests
 {
     public class AvaloniaObjectTests_GetSubject
     {

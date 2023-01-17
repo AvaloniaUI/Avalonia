@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.Automation.Peers;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
@@ -383,7 +383,7 @@ namespace Avalonia.Controls
 
             _subscriptionsOnOpen.Clear();
 
-            var toplevel = this.GetVisualRoot() as TopLevel;
+            var toplevel = TopLevel.GetTopLevel(this);
             if (toplevel != null)
             {
                 toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>

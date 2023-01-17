@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using OpenGLES;
 
 namespace Avalonia.iOS

@@ -105,7 +105,7 @@ namespace Avalonia.X11
             var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
             
             if (options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetService<IRenderLoop>()!, gl);
+                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
             else
                 RenderInterface = new(gl);
 

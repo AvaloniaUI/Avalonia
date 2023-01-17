@@ -224,9 +224,9 @@ namespace Avalonia.Skia
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
-            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
+            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default)
             using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, 
-                size.Inflate(new Thickness(pen?.Thickness / 2 ?? 0))) : default(PaintWrapper))
+                size.Inflate(new Thickness(pen?.Thickness / 2 ?? 0))) : default)
             {
                 if (fill.Paint != null)
                 {

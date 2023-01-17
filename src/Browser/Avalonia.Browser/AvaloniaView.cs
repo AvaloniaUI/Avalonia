@@ -106,7 +106,7 @@ namespace Avalonia.Browser
 
             _dpi = DomHelper.ObserveDpi(OnDpiChanged);
 
-            _useGL = AvaloniaLocator.Current.GetRequiredService<IPlatformGraphics>() != null;
+            _useGL = AvaloniaLocator.Current.GetService<IPlatformGraphics>() != null;
 
             if (_useGL)
             {

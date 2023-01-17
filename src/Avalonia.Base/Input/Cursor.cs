@@ -71,8 +71,7 @@ namespace Avalonia.Input
 
         private static ICursorFactory GetCursorFactory()
         {
-            return AvaloniaLocator.Current.GetService<ICursorFactory>() ??
-                throw new Exception("Could not create Cursor: ICursorFactory not registered.");
+            return AvaloniaLocator.Current.GetRequiredService<ICursorFactory>();
         }
     }
 }

@@ -3,6 +3,7 @@
 // Ported from: https://github.com/SixLabors/Fonts/
 
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -185,5 +186,13 @@ namespace Avalonia.Utilities
 
         /// <inheritdoc/>
         int IReadOnlyCollection<T>.Count => Length;
+
+        public void ReturnRent()
+        {
+            if (_data != null)
+            {
+                ArrayPool<T>.Shared.Return(_data);
+            }
+        }
     }
 }

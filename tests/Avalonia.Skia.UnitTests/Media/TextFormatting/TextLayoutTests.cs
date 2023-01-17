@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -62,7 +63,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Length);
 
-                var actual = new CharacterBufferRange(textRun).Span.ToString();
+                var actual = textRun.Text.ToString();
 
                 Assert.Equal("1 ", actual);
 
@@ -141,11 +142,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     black,
                     textWrapping: TextWrapping.Wrap);
 
-                var expectedGlyphs = expected.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextCharacters>()
+                var expectedGlyphs = expected.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextRun>()
                     .SelectMany(x => x.ShapedBuffer.GlyphIndices))).ToList();
 
-                var outer = new GraphemeEnumerator(new CharacterBufferRange(text));
-                var inner = new GraphemeEnumerator(new CharacterBufferRange(text));
+                var outer = new GraphemeEnumerator(text);
+                var inner = new GraphemeEnumerator(text);
                 var i = 0;
                 var j = 0;
 
@@ -174,7 +175,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                             textWrapping: TextWrapping.Wrap,
                             textStyleOverrides: spans);
 
-                        var actualGlyphs = actual.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextCharacters>()
+                        var actualGlyphs = actual.TextLines.Select(x => string.Join('|', x.TextRuns.Cast<ShapedTextRun>()
                             .SelectMany(x => x.ShapedBuffer.GlyphIndices))).ToList();
 
                         Assert.Equal(expectedGlyphs.Count, actualGlyphs.Count);
@@ -190,7 +191,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         break;
                     }
 
-                    inner = new GraphemeEnumerator(new CharacterBufferRange(text));
+                    inner = new GraphemeEnumerator(text);
 
                     i += outer.Current.Text.Length;
                 }
@@ -261,7 +262,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Length);
 
-                var actual = new CharacterBufferRange(textRun).Span.ToString();
+                var actual = textRun.Text.ToString();
 
                 Assert.Equal("89", actual);
 
@@ -331,7 +332,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(2, textRun.Length);
 
-                var actual = new CharacterBufferRange(textRun).Span.ToString();
+                var actual = textRun.Text.ToString();
 
                 Assert.Equal("😄", actual);
 
@@ -447,7 +448,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     12.0f,
                     Brushes.Black.ToImmutable());
 
-                var shapedRun = (ShapedTextCharacters)layout.TextLines[0].TextRuns[0];
+                var shapedRun = (ShapedTextRun)layout.TextLines[0].TextRuns[0];
 
                 var glyphRun = shapedRun.GlyphRun;
 
@@ -481,7 +482,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 foreach (var textRun in textLine.TextRuns)
                 {
-                    var shapedRun = (ShapedTextCharacters)textRun;
+                    var shapedRun = (ShapedTextRun)textRun;
 
                     var glyphClusters = shapedRun.ShapedBuffer.GlyphClusters;
 
@@ -514,13 +515,13 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(1, layout.TextLines[0].TextRuns.Count);
 
-                Assert.Equal(expectedLength, ((ShapedTextCharacters)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters.Count);
+                Assert.Equal(expectedLength, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).GlyphRun.GlyphClusters.Count);
 
-                Assert.Equal(5, ((ShapedTextCharacters)layout.TextLines[0].TextRuns[0]).ShapedBuffer.GlyphClusters[5]);
+                Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).ShapedBuffer.GlyphClusters[5]);
 
                 if (expectedLength == 7)
                 {
-                    Assert.Equal(5, ((ShapedTextCharacters)layout.TextLines[0].TextRuns[0]).ShapedBuffer.GlyphClusters[6]);
+                    Assert.Equal(5, ((ShapedTextRun)layout.TextLines[0].TextRuns[0]).ShapedBuffer.GlyphClusters[6]);
                 }
             }
         }
@@ -555,7 +556,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textLine = layout.TextLines[0];
 
-                var textRun = (ShapedTextCharacters)textLine.TextRuns[0];
+                var textRun = (ShapedTextRun)textLine.TextRuns[0];
 
                 Assert.Equal(7, textRun.Length);
 
@@ -667,10 +668,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(5, layout.TextLines.Count);
 
-                Assert.Equal("123\r\n", new CharacterBufferRange(layout.TextLines[0].TextRuns[0]));
-                Assert.Equal("\r\n", new CharacterBufferRange(layout.TextLines[1].TextRuns[0]));
-                Assert.Equal("456\r\n", new CharacterBufferRange(layout.TextLines[2].TextRuns[0]));
-                Assert.Equal("\r\n", new CharacterBufferRange(layout.TextLines[3].TextRuns[0]));
+                Assert.Equal("123\r\n", layout.TextLines[0].TextRuns[0].Text.ToString());
+                Assert.Equal("\r\n", layout.TextLines[1].TextRuns[0].Text.ToString());
+                Assert.Equal("456\r\n", layout.TextLines[2].TextRuns[0].Text.ToString());
+                Assert.Equal("\r\n", layout.TextLines[3].TextRuns[0].Text.ToString());
             }
         }
 
@@ -775,7 +776,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Assert.Equal(textLine.WidthIncludingTrailingWhitespace, rect.Width);
                 }
 
-                var rects = layout.TextLines.SelectMany(x => x.TextRuns.Cast<ShapedTextCharacters>())
+                var rects = layout.TextLines.SelectMany(x => x.TextRuns.Cast<ShapedTextRun>())
                     .SelectMany(x => x.ShapedBuffer.GlyphAdvances).ToArray();
 
                 for (var i = 0; i < SingleLineText.Length; i++)
@@ -814,9 +815,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     {
                         Assert.True(textLine.Width <= maxWidth);
 
-                        var actual = new string(textLine.TextRuns.Cast<ShapedTextCharacters>()
-                            .OrderBy(x => x.CharacterBufferReference.OffsetToFirstChar)
-                            .SelectMany(x => new CharacterBufferRange(x.CharacterBufferReference, x.Length)).ToArray());
+                        var actual = new string(textLine.TextRuns.Cast<ShapedTextRun>()
+                            .OrderBy(x => TextTestHelper.GetStartCharIndex(x.Text))
+                            .SelectMany(x => x.Text.ToString())
+                            .ToArray());
 
                         var expected = text.Substring(textLine.FirstTextSourceIndex, textLine.Length);
 
@@ -855,7 +857,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     Brushes.Black,
                     flowDirection: FlowDirection.RightToLeft);
 
-                var firstRun = layout.TextLines[0].TextRuns[0] as ShapedTextCharacters;
+                var firstRun = layout.TextLines[0].TextRuns[0] as ShapedTextRun;
 
                 var hit = layout.HitTestPoint(new Point());
 
@@ -881,7 +883,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     currentX += advance;
                 }
 
-                var secondRun = layout.TextLines[0].TextRuns[1] as ShapedTextCharacters;
+                var secondRun = layout.TextLines[0].TextRuns[1] as ShapedTextRun;
 
                 hit = layout.HitTestPoint(new Point(firstRun.Size.Width, 0));
 
@@ -928,7 +930,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textLine = layout.TextLines[0];
 
-                var firstRun = (ShapedTextCharacters)textLine.TextRuns[0];
+                var firstRun = (ShapedTextRun)textLine.TextRuns[0];
 
                 var firstCluster = firstRun.ShapedBuffer.GlyphClusters[0];
 
@@ -968,7 +970,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var i = 0;
 
-                var graphemeEnumerator = new GraphemeEnumerator(new CharacterBufferRange(text));
+                var graphemeEnumerator = new GraphemeEnumerator(text);
 
                 while (graphemeEnumerator.MoveNext())
                 {
@@ -987,7 +989,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var textLine = layout.TextLines[0];
 
-                    var shapedRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+                    var shapedRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
                     var clusters = shapedRuns.SelectMany(x => x.ShapedBuffer.GlyphClusters).ToList();
 
@@ -1019,6 +1021,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 }
             }
         }
+
+
 
         private static IDisposable Start()
         {

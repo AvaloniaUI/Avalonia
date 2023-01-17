@@ -330,11 +330,11 @@ namespace Avalonia.Rendering
                     ? visual is IVisualWithRoundRectClip roundClipVisual
                         ? context.PushClip(new RoundedRect(bounds, roundClipVisual.ClipToBoundsRadius))
                         : context.PushClip(bounds) 
-                    : default(DrawingContext.PushedState))
+                    : default)
 #pragma warning restore CS0618 // Type or member is obsolete
 
-                using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default(DrawingContext.PushedState))
-                using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default(DrawingContext.PushedState))
+                using (visual.Clip != null ? context.PushGeometryClip(visual.Clip) : default)
+                using (visual.OpacityMask != null ? context.PushOpacityMask(visual.OpacityMask, bounds) : default)
                 using (context.PushTransformContainer())
                 {
                     visual.Render(context);

@@ -77,29 +77,9 @@ namespace Avalonia.Build.Tasks
 
         private void Pack(Stream output, List<Source> sources)
         {
-            var offsets = new Dictionary<Source, int>();
-            var coffset = 0;
-            foreach (var s in sources)
-            {
-                offsets[s] = coffset;
-                coffset += s.Size;
-            }
-            var index = sources.Select(s => new AvaloniaResourcesIndexEntry
-            {
-                Path = s.Path,
-                Size = s.Size,
-                Offset = offsets[s]
-            }).ToList();
-            var ms = new MemoryStream();
-            AvaloniaResourcesIndexReaderWriter.Write(ms, index);
-            new BinaryWriter(output).Write((int)ms.Length);
-            ms.Position = 0;
-            ms.CopyTo(output);
-            foreach (var s in sources)
-            {
-                using (var input = s.Open())
-                    input.CopyTo(output);
-            }
+            AvaloniaResourcesIndexReaderWriter.WriteResources(
+                output,
+                sources.Select(source => (source.Path, source.Size, (Func<Stream>) source.Open)).ToList());
         }
 
         private bool PreProcessXamlFiles(List<Source> sources)

@@ -62,6 +62,69 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        private class TextSourceWithDummyRuns : ITextSource
+        {
+            private readonly TextRunProperties _properties;
+            private readonly List<ValueSpan<TextRun>> _textRuns;
+
+            public TextSourceWithDummyRuns(TextRunProperties properties)
+            {
+                _properties = properties;
+
+                _textRuns = new List<ValueSpan<TextRun>>
+                {
+                    new ValueSpan<TextRun>(0, 5, new TextCharacters("Hello", _properties)),
+                    new ValueSpan<TextRun>(5, 1, new DummyRun()),
+                    new ValueSpan<TextRun>(6, 1, new DummyRun()),
+                    new ValueSpan<TextRun>(7, 6, new TextCharacters(" World", _properties))
+                };
+            }
+
+            public TextRun GetTextRun(int textSourceIndex)
+            {
+                foreach (var run in _textRuns)
+                {
+                    if (textSourceIndex < run.Start + run.Length)
+                    {
+                        return run.Value;
+                    }
+                }
+
+                return new TextEndOfParagraph();
+            }
+
+            private class DummyRun : TextRun
+            {
+                public DummyRun()
+                {
+                    Length = DefaultTextSourceLength;
+                }
+
+                public override int Length { get; }
+            }
+        }
+
+        [Fact]
+        public void Should_Format_TextLine_With_Non_Text_TextRuns()
+        {
+            using (Start())
+            {
+                var defaultProperties =
+                    new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Black);
+
+                var textSource = new TextSourceWithDummyRuns(defaultProperties);
+
+                var formatter = new TextFormatterImpl();
+
+                var textLine = formatter.FormatLine(textSource, 0, double.PositiveInfinity,
+                    new GenericTextParagraphProperties(defaultProperties));
+
+                Assert.Equal(5, textLine.TextRuns.Count);
+
+                Assert.Equal(14, textLine.Length);
+            }
+        }
+
         [Fact]
         public void Should_Format_TextRuns_With_TextRunStyles()
         {
@@ -216,7 +279,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var lineBreaker = new LineBreakEnumerator(new CharacterBufferRange(text));
+                var lineBreaker = new LineBreakEnumerator(text);
 
                 var expected = new List<int>();
 
@@ -520,7 +583,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var expectedTextLine = formatter.FormatLine(new SingleBufferTextSource(text, defaultProperties),
                     0, double.PositiveInfinity, paragraphProperties);
 
-                var expectedRuns = expectedTextLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+                var expectedRuns = expectedTextLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
                 var expectedGlyphs = expectedRuns.SelectMany(x => x.GlyphRun.GlyphIndices).ToList();
 
@@ -539,7 +602,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         var textLine =
                             formatter.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
 
-                        var shapedRuns = textLine.TextRuns.Cast<ShapedTextCharacters>().ToList();
+                        var shapedRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
                         var actualGlyphs = shapedRuns.SelectMany(x => x.GlyphRun.GlyphIndices).ToList();
 
@@ -614,7 +677,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     return new RectangleRun(new Rect(0, 0, 50, 50), Brushes.Green);
                 }
 
-                return new TextCharacters(_text, 0, _text.Length, new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
+                return new TextCharacters(_text, new GenericTextRunProperties(Typeface.Default, foregroundBrush: Brushes.Black));
             }
         }
 

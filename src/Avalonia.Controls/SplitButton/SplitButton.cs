@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -24,7 +25,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the user presses the primary part of the <see cref="SplitButton"/>.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> Click
+        public event EventHandler<RoutedEventArgs>? Click
         {
             add => AddHandler(ClickEvent, value);
             remove => RemoveHandler(ClickEvent, value);
@@ -34,7 +35,9 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Click"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
-            RoutedEvent.Register<SplitButton, RoutedEventArgs>(nameof(Click), RoutingStrategies.Bubble);
+            RoutedEvent.Register<SplitButton, RoutedEventArgs>(
+                nameof(Click),
+                RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Command"/> property.
@@ -68,20 +71,12 @@ namespace Avalonia.Controls
 
         private IDisposable? _flyoutPropertyChangedDisposable;
 
-        ////////////////////////////////////////////////////////////////////////
-        // Constructor / Destructors
-        ////////////////////////////////////////////////////////////////////////
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SplitButton"/> class.
         /// </summary>
         public SplitButton()
         {
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Properties
-        ////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Gets or sets the <see cref="ICommand"/> invoked when the primary part is pressed.
@@ -122,10 +117,6 @@ namespace Avalonia.Controls
 
         /// <inheritdoc/>
         protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
-
-        ////////////////////////////////////////////////////////////////////////
-        // Methods
-        ////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc/>
         void ICommandSource.CanExecuteChanged(object sender, EventArgs e) => this.CanExecuteChanged(sender, e);
@@ -220,10 +211,6 @@ namespace Avalonia.Controls
                 _secondaryButton.Click -= SecondaryButton_Click;
             }
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // OnEvent Overridable Methods
-        ////////////////////////////////////////////////////////////////////////
 
         /// <inheritdoc/>
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -427,10 +414,6 @@ namespace Avalonia.Controls
         {
             // Available for derived types
         }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Event Handling
-        ////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Event handler for when the internal primary button part is pressed.
