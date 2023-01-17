@@ -19,7 +19,8 @@ using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Browser
 {
-    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
+        ITopLevelWithSystemNavigationManager
     {
         private Size _clientSize;
         private IInputRoot? _inputRoot;
@@ -239,5 +240,7 @@ namespace Avalonia.Browser
 
         public INativeControlHostImpl? NativeControlHost { get; }
         public IStorageProvider StorageProvider { get; } = new BrowserStorageProvider();
+
+        public ISystemNavigationManager SystemNavigationManager { get; } = new BrowserSystemNavigationManager();
     }
 }
