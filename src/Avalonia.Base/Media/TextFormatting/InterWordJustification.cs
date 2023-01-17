@@ -111,7 +111,7 @@ namespace Avalonia.Media.TextFormatting
                         shapedBuffer.GlyphInfos[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex, glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
                     }
 
-                    glyphRun.GlyphAdvances = shapedBuffer.GlyphAdvances;
+                    glyphRun.GlyphInfos = shapedBuffer.GlyphInfos;
                 }
 
                 currentPosition += textRun.Length;
