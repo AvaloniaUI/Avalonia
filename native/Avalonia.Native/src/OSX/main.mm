@@ -398,6 +398,16 @@ public:
         }
     }
     
+    virtual HRESULT CreatePlatformSettings (IAvnPlatformSettings** ppv) override
+    {
+        START_COM_CALL;
+        
+        @autoreleasepool
+        {
+            *ppv = ::CreatePlatformSettings();
+            return S_OK;
+        }
+    }
 };
 
 extern "C" IAvaloniaNativeFactory* CreateAvaloniaNative()

@@ -805,6 +805,19 @@ namespace Avalonia.Win32
             _topmost = value;
         }
 
+        public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            if (Win32Platform.WindowsVersion.Build >= 22000)
+            {
+                var pvUseBackdropBrush = themeVariant == PlatformThemeVariant.Dark ? 1 : 0;
+                DwmSetWindowAttribute(
+                    _hwnd,
+                    (int)DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE,
+                    &pvUseBackdropBrush,
+                    sizeof(int));
+            }
+        }
+        
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(

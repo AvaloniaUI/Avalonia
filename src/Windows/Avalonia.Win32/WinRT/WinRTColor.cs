@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using Avalonia.Media;
 
 namespace Avalonia.Win32.WinRT
 {
@@ -14,5 +15,7 @@ namespace Avalonia.Win32.WinRT
         {
             A = a, R = r, G = g, B = b
         };
+
+        public Color ToAvalonia() => new(A, R, G, B);
     }
 }
