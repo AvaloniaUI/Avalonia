@@ -47,12 +47,6 @@ namespace Avalonia.Controls
         public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
 
-        /// <summary>
-        /// Defines the <see cref="VirtualizationMode"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<ListBox>();
-
         private IScrollable? _scroll;
 
         /// <summary>
@@ -61,7 +55,6 @@ namespace Avalonia.Controls
         static ListBox()
         {
             ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
-            VirtualizationModeProperty.OverrideDefaultValue<ListBox>(ItemVirtualizationMode.Simple);
         }
 
         /// <summary>
@@ -101,15 +94,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the virtualization mode for the items.
-        /// </summary>
-        public ItemVirtualizationMode VirtualizationMode
-        {
-            get { return GetValue(VirtualizationModeProperty); }
-            set { SetValue(VirtualizationModeProperty, value); }
-        }
-
-        /// <summary>
         /// Selects all items in the <see cref="ListBox"/>.
         /// </summary>
         public void SelectAll() => Selection.SelectAll();
@@ -119,14 +103,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void UnselectAll() => Selection.Clear();
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator<ListBoxItem>(
-                this, 
-                ListBoxItem.ContentProperty,
-                ListBoxItem.ContentTemplateProperty);
-        }
+        protected internal override Control CreateContainerForItemOverride() => new ListBoxItem();
 
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)

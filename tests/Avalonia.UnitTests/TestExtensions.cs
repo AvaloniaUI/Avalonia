@@ -9,6 +9,5 @@ namespace Avalonia.UnitTests
     public static class TestExtensions
     {
         public static void ApplyTemplate(this IContentPresenter presenter) => ((Layoutable)presenter).ApplyTemplate();
-        public static void ApplyTemplate(this IItemsPresenter presenter) => ((Layoutable)presenter).ApplyTemplate();
     }
 }

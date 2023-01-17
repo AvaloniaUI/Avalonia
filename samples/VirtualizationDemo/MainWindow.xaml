@@ -9,10 +9,8 @@
     <DockPanel LastChildFill="True" Margin="16">
         <StackPanel DockPanel.Dock="Right" 
                     Margin="16 0 0 0" 
-                    MinWidth="150"
+                    Width="150"
                     Spacing="4">
-            <ComboBox Items="{Binding VirtualizationModes}"
-                      SelectedItem="{Binding VirtualizationMode}"/>
             <ComboBox Items="{Binding Orientations}"
                       SelectedItem="{Binding Orientation}"/>
             <TextBox Watermark="Item Count"
@@ -49,7 +47,6 @@
                  Items="{Binding Items}" 
                  Selection="{Binding Selection}"
                  SelectionMode="Multiple"
-                 VirtualizationMode="{Binding VirtualizationMode}"
                  ScrollViewer.HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility, Mode=TwoWay}"
                  ScrollViewer.VerticalScrollBarVisibility="{Binding VerticalScrollBarVisibility, Mode=TwoWay}">
             <ListBox.ItemsPanel>
