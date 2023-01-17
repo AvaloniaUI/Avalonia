@@ -164,6 +164,12 @@ namespace Avalonia.Platform
         WindowTransparencyLevel TransparencyLevel { get; }
 
         /// <summary>
+        /// Sets the <see cref="PlatformThemeVariant"/> on the frame if it should be dark or light.
+        /// Also applies for the mobile status bar.
+        /// </summary>
+        void SetFrameThemeVariant(PlatformThemeVariant themeVariant);
+        
+        /// <summary>
         /// Gets the <see cref="AcrylicPlatformCompensationLevels"/> for the platform.        
         /// </summary>
         AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
