@@ -62,7 +62,7 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
     START_COM_CALL;
 
     @autoreleasepool {
-        _isDialog = isDialog || _parent != nullptr;
+        _isModal = isDialog;
 
         WindowBaseImpl::Show(activate, isDialog);
 
@@ -96,7 +96,7 @@ HRESULT WindowImpl::SetParent(IAvnWindow *parent) {
         
         _parent = cparent;
 
-        _isDialog = _parent != nullptr;
+        _isModal = _parent != nullptr;
         
         if(_parent != nullptr && Window != nullptr){
             // If one tries to show a child window with a minimized parent window, then the parent window will be
@@ -122,7 +122,7 @@ void WindowImpl::BringToFront()
     {
         if ([Window isVisible] && ![Window isMiniaturized])
         {
-            if(IsDialog())
+            if(IsModal())
             {
                 Activate();
             }
@@ -149,7 +149,7 @@ bool WindowImpl::CanBecomeKeyWindow()
 {
     for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
     {
-        if((*iterator)->IsDialog())
+        if((*iterator)->IsModal())
         {
             return false;
         }
@@ -568,8 +568,12 @@ HRESULT WindowImpl::SetWindowState(AvnWindowState state) {
     }
 }
 
-bool WindowImpl::IsDialog() {
-    return _isDialog;
+bool WindowImpl::IsModal() {
+    return _isModal;
+}
+
+bool WindowImpl::IsOwned() {
+    return _parent != nullptr;
 }
 
 NSWindowStyleMask WindowImpl::GetStyle() {
@@ -598,7 +602,7 @@ NSWindowStyleMask WindowImpl::GetStyle() {
             break;
     }
 
-    if (!IsDialog()) {
+    if (!IsOwned()) {
         s |= NSWindowStyleMaskMiniaturizable;
     }
 
