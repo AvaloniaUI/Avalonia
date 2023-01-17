@@ -55,7 +55,7 @@
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Center"
                         RenderTransform="{x:Null}"
-                        Command="{Binding LineDown, RelativeSource={RelativeSource TemplatedParent}}">
+                        Command="{Binding LineDownAsync, RelativeSource={RelativeSource TemplatedParent}}">
             <RepeatButton.IsVisible>
               <MultiBinding Converter="{x:Static converters:MenuScrollingVisibilityConverter.Instance}"
                             ConverterParameter="100">

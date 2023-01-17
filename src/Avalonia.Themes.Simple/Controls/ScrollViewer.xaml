@@ -83,7 +83,7 @@
           </RepeatButton>
           <RepeatButton Background="Transparent"
                         BorderThickness="0"
-                        Command="{Binding LineDown, RelativeSource={RelativeSource TemplatedParent}}"
+                        Command="{Binding LineDownAsync, RelativeSource={RelativeSource TemplatedParent}}"
                         DockPanel.Dock="Bottom">
             <RepeatButton.IsVisible>
               <MultiBinding Converter="{x:Static converters:MenuScrollingVisibilityConverter.Instance}"
