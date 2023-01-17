@@ -620,7 +620,7 @@ namespace Avalonia.Controls.Presenters
                     x = Math.Min(x, Extent.Width - Viewport.Width);
                 }
 
-                Vector newOffset = new Vector(x, y);
+                Vector newOffset = SnapOffset(new Vector(x, y));
 
                 bool offsetChanged = newOffset != Offset;
                 Offset = newOffset;
@@ -852,8 +852,11 @@ namespace Avalonia.Controls.Presenters
             if(Content is not IScrollSnapPointsInfo)
                 return offset;
 
+            var diff = GetAlignedDiff();
+
             if (VerticalSnapPointsType != SnapPointsType.None)
             {
+                offset = new Vector(offset.X, offset.Y + diff.Y);
                 double nearestSnapPoint = offset.Y;
 
                 if (_areVerticalSnapPointsRegular)
@@ -872,11 +875,12 @@ namespace Avalonia.Controls.Presenters
                     nearestSnapPoint = offset.Y < midPoint ? lowerSnapPoint : higherSnapPoint;
                 }
 
-                offset = new Vector(offset.X, nearestSnapPoint);
+                offset = new Vector(offset.X, nearestSnapPoint - diff.Y);
             }
 
             if (HorizontalSnapPointsType != SnapPointsType.None)
             {
+                offset = new Vector(offset.X + diff.X, offset.Y);
                 double nearestSnapPoint = offset.X;
 
                 if (_areHorizontalSnapPointsRegular)
@@ -895,15 +899,13 @@ namespace Avalonia.Controls.Presenters
                     nearestSnapPoint = offset.X < midPoint ? lowerSnapPoint : higherSnapPoint;
                 }
 
-                offset = new Vector(nearestSnapPoint, offset.Y);
+                offset = new Vector(nearestSnapPoint - diff.X, offset.Y);
 
             }
 
             double FindNearestSnapPoint(IReadOnlyList<double> snapPoints, double value, out double lowerSnapPoint)
             {
                 var point = snapPoints.BinarySearch(value, Comparer<double>.Default);
-
-                lowerSnapPoint = 0;
 
                 if (point < 0)
                 {
@@ -912,6 +914,33 @@ namespace Avalonia.Controls.Presenters
 
                 lowerSnapPoint = snapPoints[Math.Max(0, point - 1)];
                 return snapPoints[Math.Min(point, snapPoints.Count - 1)];
+            }
+
+            Vector GetAlignedDiff()
+            {
+                var vector = offset;
+
+                switch (VerticalSnapPointsAlignment)
+                {
+                    case SnapPointsAlignment.Center:
+                        vector += new Vector(0, Viewport.Height / 2);
+                        break;
+                    case SnapPointsAlignment.Far:
+                        vector += new Vector(0, Viewport.Height);
+                        break;
+                }
+
+                switch (HorizontalSnapPointsAlignment)
+                {
+                    case SnapPointsAlignment.Center:
+                        vector += new Vector(Viewport.Width / 2, 0);
+                        break;
+                    case SnapPointsAlignment.Far:
+                        vector += new Vector(Viewport.Width, 0);
+                        break;
+                }                
+
+                return vector - offset;
             }
 
             return offset;
