@@ -11,6 +11,9 @@ namespace ControlCatalog.Pages
         private bool _allowAutoHide;
         private ScrollBarVisibility _horizontalScrollVisibility;
         private ScrollBarVisibility _verticalScrollVisibility;
+        private SnapPointsType _verticalSnapPointsType;
+        private SnapPointsAlignment _verticalSnapPointsAlignment;
+        private bool _areSnapPointsRegular;
 
         public ScrollViewerPageViewModel()
         {
@@ -22,6 +25,20 @@ namespace ControlCatalog.Pages
                 ScrollBarVisibility.Disabled,
             };
 
+            AvailableSnapPointsType = new List<SnapPointsType>()
+            { 
+                SnapPointsType.None,
+                SnapPointsType.Mandatory,
+                SnapPointsType.MandatorySingle
+            };
+
+            AvailableSnapPointsAlignment = new List<SnapPointsAlignment>()
+            {
+                SnapPointsAlignment.Near,
+                SnapPointsAlignment.Center,
+                SnapPointsAlignment.Far,
+            };
+
             HorizontalScrollVisibility = ScrollBarVisibility.Auto;
             VerticalScrollVisibility = ScrollBarVisibility.Auto;
             AllowAutoHide = true;
@@ -31,6 +48,12 @@ namespace ControlCatalog.Pages
         {
             get => _allowAutoHide;
             set => this.RaiseAndSetIfChanged(ref _allowAutoHide, value);
+        }
+
+        public bool AreSnapPointsRegular
+        {
+            get => _areSnapPointsRegular;
+            set => this.RaiseAndSetIfChanged(ref _areSnapPointsRegular, value);
         }
 
         public ScrollBarVisibility HorizontalScrollVisibility
@@ -45,7 +68,21 @@ namespace ControlCatalog.Pages
             set => this.RaiseAndSetIfChanged(ref _verticalScrollVisibility, value);
         }
 
+        public SnapPointsType VerticalSnapPointsType
+        {
+            get => _verticalSnapPointsType;
+            set => this.RaiseAndSetIfChanged(ref _verticalSnapPointsType, value);
+        }
+
+        public SnapPointsAlignment VerticalSnapPointsAlignment
+        {
+            get => _verticalSnapPointsAlignment;
+            set => this.RaiseAndSetIfChanged(ref _verticalSnapPointsAlignment, value);
+        }
+
         public List<ScrollBarVisibility> AvailableVisibility { get; }
+        public List<SnapPointsType> AvailableSnapPointsType { get; }
+        public List<SnapPointsAlignment> AvailableSnapPointsAlignment { get; }
     }
 
     public class ScrollViewerPage : UserControl
