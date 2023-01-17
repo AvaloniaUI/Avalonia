@@ -58,6 +58,8 @@ namespace Avalonia.Controls.Embedding.Offscreen
 
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
         /// <inheritdoc/>
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
 

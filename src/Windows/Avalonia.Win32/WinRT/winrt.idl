@@ -844,3 +844,30 @@ interface ICompositor6 : IInspectable
     [overload("CreateGeometricClip")] HRESULT CreateGeometricClip([out] [retval] ICompositionGeometricClip** result);
     [overload("CreateGeometricClip")] HRESULT CreateGeometricClipWithGeometry([in] ICompositionGeometry* geometry, [out] [retval] ICompositionGeometricClip** result); 
 }
+
+enum UIColorType
+{
+    Background = 0,
+    Foreground = 1,
+    AccentDark3 = 2,
+    AccentDark2 = 3,
+    AccentDark1 = 4,
+    Accent = 5,
+    AccentLight1 = 6,
+    AccentLight2 = 7,
+    AccentLight3 = 8,
+    Complement = 9
+}
+
+[uuid(03021BE4-5254-4781-8194-5168F7D06D7B)]
+interface IUISettings3 : IInspectable
+{
+    HRESULT GetColorValue([in] UIColorType desiredColor, [out][retval] Color* value);
+}
+
+[uuid(FE0E8147-C4C0-4562-B962-1327B52AD5B9)]
+interface IAccessibilitySettings : IInspectable
+{
+    [propget] HRESULT HighContrast([out] [retval] boolean* value);
+    [propget] HRESULT HighContrastScheme([out] [retval] HSTRING* value);
+}
