@@ -9,6 +9,8 @@ using BenchmarkDotNet.Attributes;
 namespace Avalonia.Benchmarks.Text;
 
 [MemoryDiagnoser]
+[MinIterationTime(150)]
+[MaxWarmupCount(15)]
 public class HugeTextLayout : IDisposable
 {
     private readonly IDisposable _app;
@@ -44,7 +46,13 @@ Admitting that the possibility of achieving the results of the constructive crit
 Everyone understands what it takes to the draft analysis and prior decisions and early design solutions. In any case, we can systematically change the mechanism of the sources and influences of the continuing financing doctrine. This could exceedingly be a result of a task analysis the hardware maintenance. The real reason of the strategic planning seemingly the influence on eventual productivity. Everyone understands what it takes to the well-known practice. Therefore, the concept of the productivity boost can be treated as the only solution the driving factor. 
 It may reveal how the matters of peculiar interest slowly the goals and objectives or the diverse sources of information the positive influence of any major outcomes complete failure of the supposed theory.  
 In respect that the structure of the sufficient amount poses problems and challenges for both the set of related commands and controls and the ability bias.";
-    
+
+    [Params(false, true)]
+    public bool UseWrapping { get; set; }
+
+    [Params(false, true)]
+    public bool UseTrimming { get; set; }
+
     [Benchmark]
     public TextLayout BuildTextLayout() => MakeLayout(Text);
 
@@ -91,9 +99,12 @@ In respect that the structure of the sufficient amount poses problems and challe
         }
     }
 
-    private static TextLayout MakeLayout(string str)
+    private TextLayout MakeLayout(string str)
     {
-        var layout = new TextLayout(str, Typeface.Default, 12d, Brushes.Black, maxWidth: 120);
+        var wrapping = UseWrapping ? TextWrapping.WrapWithOverflow : TextWrapping.NoWrap;
+        var trimming = UseTrimming ? TextTrimming.CharacterEllipsis : TextTrimming.None;
+        var layout = new TextLayout(str, Typeface.Default, 12d, Brushes.Black, maxWidth: 120,
+            textTrimming: trimming, textWrapping: wrapping);
         layout.Dispose();
         return layout;
     }
