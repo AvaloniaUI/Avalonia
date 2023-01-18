@@ -161,6 +161,8 @@ namespace Avalonia.Direct2D1.Media
 
             if (MemoryMarshal.TryGetArray(memory, out var segment))
             {
+                start = segment.Offset;
+                length = segment.Count;
                 return segment.Array.AsMemory();
             }
 
