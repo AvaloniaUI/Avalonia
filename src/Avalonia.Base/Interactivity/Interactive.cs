@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Layout;
+using Avalonia.VisualTree;
 
 #nullable enable
 
@@ -66,38 +67,7 @@ namespace Avalonia.Interactivity
                 typedHandler(sender, typedArgs);
             }
 
-            var subscription = new EventSubscription(handler, routes, handledEventsToo, InvokeAdapter);
-
-            AddEventSubscription(routedEvent, subscription);
-        }
-
-        /// <summary>
-        /// Adds a handler for the specified routed event.
-        /// </summary>
-        /// <param name="routedEvent">The routed event.</param>
-        /// <param name="handler">The handler.</param>
-        /// <param name="routes">The routing strategies to listen to.</param>
-        /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
-        public void AddHandler(
-            RoutedEvent<CancelRoutedEventArgs> routedEvent,
-            EventHandler<CancelRoutedEventArgs>? handler,
-            RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
-            bool handledEventsToo = false)
-        {
-            routedEvent = routedEvent ?? throw new ArgumentNullException(nameof(routedEvent));
-
-            if (handler is null)
-                return;
-
-            static void InvokeAdapter(Delegate baseHandler, object sender, RoutedEventArgs args)
-            {
-                var typedHandler = (EventHandler<CancelRoutedEventArgs>)baseHandler;
-                var typedArgs = (CancelRoutedEventArgs)args;
-
-                typedHandler(sender, typedArgs);
-            }
-
-            var subscription = new EventSubscription(handler, routes, handledEventsToo, InvokeAdapter);
+            var subscription = new EventSubscription(handler, routes, handledEventsToo, (baseHandler, sender, args) => InvokeAdapter(baseHandler, sender, args));
 
             AddEventSubscription(routedEvent, subscription);
         }
