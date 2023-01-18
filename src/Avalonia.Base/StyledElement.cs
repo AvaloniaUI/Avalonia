@@ -81,7 +81,7 @@ namespace Avalonia
                 defaultValue: ThemeVariant.Light);
 
         /// <summary>
-        /// Defines the <see cref="RequestedThemeVariant"/> property.
+        /// Defines the RequestedThemeVariant property.
         /// </summary>
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
             AvaloniaProperty.Register<StyledElement, ThemeVariant?>(

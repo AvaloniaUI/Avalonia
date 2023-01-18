@@ -95,7 +95,7 @@ namespace Avalonia
             set => SetValue(RequestedThemeVariantProperty, value);
         }
         
-        /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariant"/>
+        /// <inheritdoc cref="StyledElement.ActualThemeVariant"/>
         public ThemeVariant ActualThemeVariant
         {
             get => GetValue(ActualThemeVariantProperty);
