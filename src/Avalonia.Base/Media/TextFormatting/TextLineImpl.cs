@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
     internal sealed class TextLineImpl : TextLine
     {
-        private static readonly ThreadLocal<BidiReorderer> s_bidiReorderer = new(() => new BidiReorderer());
-
         private readonly TextRun[] _textRuns;
         private readonly double _paragraphWidth;
         private readonly TextParagraphProperties _paragraphProperties;
@@ -570,7 +567,7 @@ namespace Avalonia.Media.TextFormatting
         {
             var characterIndex = firstTextSourceIndex + textLength;
 
-            var result = new List<TextBounds>(TextRuns.Count);
+            var result = new List<TextBounds>(_textRuns.Length);
             var lastDirection = FlowDirection.LeftToRight;
             var currentDirection = lastDirection;
 
@@ -583,9 +580,9 @@ namespace Avalonia.Media.TextFormatting
 
             TextRunBounds lastRunBounds = default;
 
-            for (var index = 0; index < TextRuns.Count; index++)
+            for (var index = 0; index < _textRuns.Length; index++)
             {
-                if (TextRuns[index] is not DrawableTextRun currentRun)
+                if (_textRuns[index] is not DrawableTextRun currentRun)
                 {
                     continue;
                 }
@@ -671,12 +668,12 @@ namespace Avalonia.Media.TextFormatting
 
                         for (int i = rightToLeftIndex - 1; i >= index; i--)
                         {
-                            if (TextRuns[i] is not ShapedTextRun)
+                            if (_textRuns[i] is not ShapedTextRun shapedRun)
                             {
                                 continue;
                             }
 
-                            currentShapedRun = (ShapedTextRun)TextRuns[i];
+                            currentShapedRun = shapedRun;
 
                             currentRunBounds = GetRightToLeftTextRunBounds(currentShapedRun, startX, firstTextSourceIndex, characterIndex, currentPosition, remainingLength);
 
@@ -786,7 +783,7 @@ namespace Avalonia.Media.TextFormatting
         {
             var characterIndex = firstTextSourceIndex + textLength;
 
-            var result = new List<TextBounds>(TextRuns.Count);
+            var result = new List<TextBounds>(_textRuns.Length);
             var lastDirection = FlowDirection.LeftToRight;
             var currentDirection = lastDirection;
 
@@ -797,9 +794,9 @@ namespace Avalonia.Media.TextFormatting
             double currentWidth = 0;
             var currentRect = default(Rect);
 
-            for (var index = TextRuns.Count - 1; index >= 0; index--)
+            for (var index = _textRuns.Length - 1; index >= 0; index--)
             {
-                if (TextRuns[index] is not DrawableTextRun currentRun)
+                if (_textRuns[index] is not DrawableTextRun currentRun)
                 {
                     continue;
                 }
@@ -992,14 +989,11 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        public TextLineImpl FinalizeLine()
+        public void FinalizeLine()
         {
             _textLineMetrics = CreateLineMetrics();
 
-            var bidiReorderer = s_bidiReorderer.Value!;
-            bidiReorderer.BidiReorder(_textRuns, _resolvedFlowDirection);
-
-            return this;
+            BidiReorderer.Instance.BidiReorder(_textRuns, _resolvedFlowDirection);
         }
 
         /// <summary>

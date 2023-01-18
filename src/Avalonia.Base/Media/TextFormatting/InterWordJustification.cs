@@ -48,8 +48,9 @@ namespace Avalonia.Media.TextFormatting
 
             var currentPosition = textLine.FirstTextSourceIndex;
 
-            foreach (var textRun in lineImpl.TextRuns)
+            for (var i = 0; i < lineImpl.TextRuns.Count; ++i)
             {
+                var textRun = lineImpl.TextRuns[i];
                 var text = textRun.Text;
 
                 if (text.IsEmpty)

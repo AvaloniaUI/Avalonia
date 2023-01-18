@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia.Media.TextFormatting.Unicode;
+using static Avalonia.Media.TextFormatting.FormattingObjectPool;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -47,7 +47,7 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <returns>The shapeable text characters.</returns>
         internal void GetShapeableCharacters(ReadOnlyMemory<char> text, sbyte biDiLevel,
-            ref TextRunProperties? previousProperties, List<TextRun> results)
+            ref TextRunProperties? previousProperties, RentedList<TextRun> results)
         {
             var properties = Properties;
 

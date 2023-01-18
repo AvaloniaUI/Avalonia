@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Media.TextFormatting.Unicode;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -111,20 +109,17 @@ namespace Avalonia.Media.TextFormatting
                 return new[] { shapedSymbol };
             }
 
-            // perf note: the runs are very likely to come from TextLineImpl
-            // which already uses an array: ToArray() won't ever be called in this case
-            var textRunArray = textRuns as TextRun[] ?? textRuns.ToArray();
+            var objectPool = FormattingObjectPool.Instance;
 
-            var (preSplitRuns, _) = TextFormatterImpl.SplitTextRuns(textRunArray, collapsedLength);
+            var (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
 
             var collapsedRuns = new TextRun[preSplitRuns.Count + 1];
-
-            for (var i = 0; i < preSplitRuns.Count; ++i)
-            {
-                collapsedRuns[i] = preSplitRuns[i];
-            }
-
+            preSplitRuns.CopyTo(collapsedRuns);
             collapsedRuns[collapsedRuns.Length - 1] = shapedSymbol;
+
+            objectPool.TextRunLists.Return(ref preSplitRuns);
+            objectPool.TextRunLists.Return(ref postSplitRuns);
+
             return collapsedRuns;
         }
     }

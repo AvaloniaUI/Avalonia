@@ -12,7 +12,6 @@ namespace Avalonia.Utilities
     /// </summary>
     /// <typeparam name="T">The type of item contained in the array.</typeparam>
     internal struct ArrayBuilder<T>
-        where T : struct
     {
         private const int DefaultCapacity = 4;
         private const int MaxCoreClrArrayLength = 0x7FeFFFFF;
@@ -47,6 +46,12 @@ namespace Avalonia.Utilities
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the current capacity of the array.
+        /// </summary>
+        public int Capacity
+            => _data?.Length ?? 0;
 
         /// <summary>
         /// Returns a reference to specified element of the array.
@@ -131,8 +136,28 @@ namespace Avalonia.Utilities
         /// </summary>
         public void Clear()
         {
-            // No need to actually clear since we're not allowing reference types.
+#if NET6_0_OR_GREATER
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                ClearArray();
+            }
+            else
+            {
+                _size = 0;
+            }
+#else
+            ClearArray();
+#endif
+        }
+
+        private void ClearArray()
+        {
+            var size = _size;
             _size = 0;
+            if (size > 0)
+            {
+                Array.Clear(_data!, 0, size);
+            }
         }
 
         private void EnsureCapacity(int min)
@@ -190,5 +215,12 @@ namespace Avalonia.Utilities
         /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ArraySlice<T> AsSlice(int start, int length) => new ArraySlice<T>(_data!, start, length);
+
+        /// <summary>
+        /// Returns the current state of the array as a span.
+        /// </summary>
+        /// <returns>The <see cref="Span{T}"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<T> AsSpan() => _data.AsSpan(0, _size);
     }
 }

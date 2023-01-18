@@ -10,8 +10,13 @@ namespace Avalonia.Media.TextFormatting
     /// <remarks>To avoid allocations, this class is designed to be reused.</remarks>
     internal sealed class BidiReorderer
     {
+        [ThreadStatic] private static BidiReorderer? t_instance;
+
         private ArrayBuilder<OrderedBidiRun> _runs;
         private ArrayBuilder<BidiRange> _ranges;
+
+        public static BidiReorderer Instance
+            => t_instance ??= new();
 
         public void BidiReorder(Span<TextRun> textRuns, FlowDirection flowDirection)
         {

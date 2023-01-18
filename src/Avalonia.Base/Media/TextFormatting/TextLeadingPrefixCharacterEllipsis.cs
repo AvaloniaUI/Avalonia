@@ -1,7 +1,7 @@
 ﻿// ReSharper disable ForCanBeConvertedToForeach
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using static Avalonia.Media.TextFormatting.FormattingObjectPool;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -80,60 +80,64 @@ namespace Avalonia.Media.TextFormatting
 
                                 if (measuredLength > 0)
                                 {
-                                    var collapsedRuns = new List<TextRun>(textRuns.Count + 1);
+                                    var objectPool = FormattingObjectPool.Instance;
 
-                                    // perf note: the runs are very likely to come from TextLineImpl,
-                                    // which already uses an array: ToArray() won't ever be called in this case
-                                    var textRunArray = textRuns as TextRun[] ?? textRuns.ToArray();
+                                    var collapsedRuns = objectPool.TextRunLists.Rent();
 
-                                    IReadOnlyList<TextRun>? preSplitRuns;
-                                    IReadOnlyList<TextRun>? postSplitRuns;
+                                    RentedList<TextRun>? rentedPreSplitRuns = null;
+                                    RentedList<TextRun>? rentedPostSplitRuns = null;
+                                    TextRun[]? results;
 
-                                    if (_prefixLength > 0)
+                                    try
                                     {
-                                        (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(
-                                            textRunArray, Math.Min(_prefixLength, measuredLength));
+                                        IReadOnlyList<TextRun>? effectivePostSplitRuns;
 
-                                        for (var i = 0; i < preSplitRuns.Count; i++)
+                                        if (_prefixLength > 0)
                                         {
-                                            var preSplitRun = preSplitRuns[i];
-                                            collapsedRuns.Add(preSplitRun);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        preSplitRuns = null;
-                                        postSplitRuns = textRunArray;
-                                    }
+                                            (rentedPreSplitRuns, rentedPostSplitRuns) = TextFormatterImpl.SplitTextRuns(
+                                                textRuns, Math.Min(_prefixLength, measuredLength), objectPool);
 
-                                    collapsedRuns.Add(shapedSymbol);
+                                            effectivePostSplitRuns = rentedPostSplitRuns;
 
-                                    if (measuredLength <= _prefixLength || postSplitRuns is null)
-                                    {
-                                        return collapsedRuns.ToArray();
-                                    }
-
-                                    var availableSuffixWidth = availableWidth;
-
-                                    if (preSplitRuns is not null)
-                                    {
-                                        for (var i = 0; i < preSplitRuns.Count; i++)
-                                        {
-                                            var run = preSplitRuns[i];
-                                            if (run is DrawableTextRun drawableTextRun)
+                                            foreach (var preSplitRun in rentedPreSplitRuns)
                                             {
-                                                availableSuffixWidth -= drawableTextRun.Size.Width;
+                                                collapsedRuns.Add(preSplitRun);
                                             }
                                         }
-                                    }
-
-                                    for (var i = postSplitRuns.Count - 1; i >= 0; i--)
-                                    {
-                                        var run = postSplitRuns[i];
-
-                                        switch (run)
+                                        else
                                         {
-                                            case ShapedTextRun endShapedRun:
+                                            effectivePostSplitRuns = textRuns;
+                                        }
+
+                                        collapsedRuns.Add(shapedSymbol);
+
+                                        if (measuredLength <= _prefixLength || effectivePostSplitRuns is null)
+                                        {
+                                            results = collapsedRuns.ToArray();
+                                            objectPool.TextRunLists.Return(ref collapsedRuns);
+                                            return results;
+                                        }
+
+                                        var availableSuffixWidth = availableWidth;
+
+                                        if (rentedPreSplitRuns is not null)
+                                        {
+                                            foreach (var run in rentedPreSplitRuns)
+                                            {
+                                                if (run is DrawableTextRun drawableTextRun)
+                                                {
+                                                    availableSuffixWidth -= drawableTextRun.Size.Width;
+                                                }
+                                            }
+                                        }
+
+                                        for (var i = effectivePostSplitRuns.Count - 1; i >= 0; i--)
+                                        {
+                                            var run = effectivePostSplitRuns[i];
+
+                                            switch (run)
+                                            {
+                                                case ShapedTextRun endShapedRun:
                                                 {
                                                     if (endShapedRun.TryMeasureCharactersBackwards(availableSuffixWidth,
                                                             out var suffixCount, out var suffixWidth))
@@ -151,10 +155,18 @@ namespace Avalonia.Media.TextFormatting
 
                                                     break;
                                                 }
+                                            }
                                         }
                                     }
+                                    finally
+                                    {
+                                        objectPool.TextRunLists.Return(ref rentedPreSplitRuns);
+                                        objectPool.TextRunLists.Return(ref rentedPostSplitRuns);
+                                    }
 
-                                    return collapsedRuns.ToArray();
+                                    results = collapsedRuns.ToArray();
+                                    objectPool.TextRunLists.Return(ref collapsedRuns);
+                                    return results;
                                 }
 
                                 return new TextRun[] { shapedSymbol };

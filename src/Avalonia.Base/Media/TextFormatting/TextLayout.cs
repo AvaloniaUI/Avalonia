@@ -426,16 +426,19 @@ namespace Avalonia.Media.TextFormatting
 
         private TextLine[] CreateTextLines()
         {
+            var objectPool = FormattingObjectPool.Instance;
+
             if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
-                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties);
+                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties,
+                    FormattingObjectPool.Instance);
 
                 Bounds = new Rect(0, 0, 0, textLine.Height);
 
                 return new TextLine[] { textLine };
             }
 
-            var textLines = new List<TextLine>();
+            var textLines = objectPool.TextLines.Rent();
 
             double left = double.PositiveInfinity, width = 0.0, height = 0.0;
 
@@ -447,14 +450,15 @@ namespace Avalonia.Media.TextFormatting
 
             while (true)
             {
-                var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth,
-                    _paragraphProperties, previousLine?.TextLineBreak);
+                var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth, _paragraphProperties,
+                    previousLine?.TextLineBreak);
 
                 if (textLine.Length == 0)
                 {
                     if (previousLine != null && previousLine.NewLineLength > 0)
                     {
-                        var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, MaxWidth, _paragraphProperties);
+                        var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, MaxWidth,
+                            _paragraphProperties, objectPool);
 
                         textLines.Add(emptyTextLine);
 
@@ -496,7 +500,7 @@ namespace Avalonia.Media.TextFormatting
                 //Fulfill max lines constraint
                 if (MaxLines > 0 && textLines.Count >= MaxLines)
                 {
-                    if(textLine.TextLineBreak is TextLineBreak lineBreak && lineBreak.RemainingRuns != null)
+                    if(textLine.TextLineBreak?.RemainingRuns is not null)
                     {
                         textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(width));
                     }
@@ -513,7 +517,7 @@ namespace Avalonia.Media.TextFormatting
             //Make sure the TextLayout always contains at least on empty line
             if (textLines.Count == 0)
             {
-                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties);
+                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties, objectPool);
 
                 textLines.Add(textLine);
 
@@ -552,7 +556,12 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            return textLines.ToArray();
+            var result = textLines.ToArray();
+
+            objectPool.TextLines.Return(ref textLines);
+            objectPool.VerifyAllReturned();
+
+            return result;
         }
 
         /// <summary>
