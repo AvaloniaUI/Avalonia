@@ -76,16 +76,16 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Collapsing"/> event.
         /// </summary>
-        public static readonly RoutedEvent<RoutedEventArgs> CollapsingEvent =
-            RoutedEvent.Register<Expander, RoutedEventArgs>(
+        public static readonly RoutedEvent<CancelRoutedEventArgs> CollapsingEvent =
+            RoutedEvent.Register<Expander, CancelRoutedEventArgs>(
                 nameof(Collapsing),
                 RoutingStrategies.Bubble);
 
         /// <summary>
         /// Defines the <see cref="Expanded"/> event.
         /// </summary>
-        public static readonly RoutedEvent<CancelRoutedEventArgs> ExpandedEvent =
-            RoutedEvent.Register<Expander, CancelRoutedEventArgs>(
+        public static readonly RoutedEvent<RoutedEventArgs> ExpandedEvent =
+            RoutedEvent.Register<Expander, RoutedEventArgs>(
                 nameof(Expanded),
                 RoutingStrategies.Bubble);
 
