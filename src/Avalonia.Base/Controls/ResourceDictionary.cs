@@ -192,7 +192,7 @@ namespace Avalonia.Controls
             if (_themeDictionary is not null)
             {
                 IResourceProvider? themeResourceProvider;
-                if (theme is not null)
+                if (theme is not null && theme != ThemeVariant.Default)
                 {
                     if (_themeDictionary.TryGetValue(theme, out themeResourceProvider)
                         && themeResourceProvider.TryGetResource(key, theme, out value))
