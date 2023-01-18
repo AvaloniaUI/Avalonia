@@ -1,23 +1,20 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections.Generic;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
-    public sealed class ShapedBuffer : IList<GlyphInfo>, IDisposable
+    public sealed class ShapedBuffer : IList<GlyphInfo>
     {
         private static readonly IComparer<GlyphInfo> s_clusterComparer = new CompareClusters();
-        private bool _bufferRented;
 
         public ShapedBuffer(ReadOnlyMemory<char> text, int bufferLength, IGlyphTypeface glyphTypeface, double fontRenderingEmSize, sbyte bidiLevel) :
             this(text,
-                new ArraySlice<GlyphInfo>(ArrayPool<GlyphInfo>.Shared.Rent(bufferLength), 0, bufferLength),
+                new ArraySlice<GlyphInfo>(new GlyphInfo[bufferLength], 0, bufferLength),
                 glyphTypeface,
                 fontRenderingEmSize,
                 bidiLevel)
         {
-            _bufferRented = true;
             Length = bufferLength;
         }
 
@@ -267,23 +264,6 @@ namespace Avalonia.Media.TextFormatting
             public IEnumerator<Vector> GetEnumerator() => new ImmutableReadOnlyListStructEnumerator<Vector>(this);
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-        }
-
-        public void Dispose()
-        {
-            GC.SuppressFinalize(this);
-            if (_bufferRented)
-            {
-                GlyphInfos.ReturnRent();
-            }
-        }
-
-        ~ShapedBuffer()
-        {
-            if (_bufferRented)
-            {
-                GlyphInfos.ReturnRent();
-            }
         }
     }
 
