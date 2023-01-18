@@ -9,7 +9,7 @@
       <WrapPanel.Styles>
         <Style Selector="Border">
           <Setter Property="BorderThickness" Value="1" />
-          <Setter Property="BorderBrush" Value="{DynamicResource SystemControlHighlightBaseMediumLowBrush}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource CatalogBaseMediumColor}" />
           <Setter Property="Padding" Value="2" />
           <Setter Property="Margin" Value="10" />
           <Setter Property="Width" Value="200" />

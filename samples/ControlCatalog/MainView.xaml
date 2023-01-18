@@ -165,6 +165,9 @@
       <TabItem Header="TextBlock">
         <pages:TextBlockPage />
       </TabItem>
+      <TabItem Header="Theme Variants">
+        <pages:ThemePage />
+      </TabItem>
       <TabItem Header="ToggleSwitch">
         <pages:ToggleSwitchPage />
       </TabItem>
@@ -198,14 +201,22 @@
                 <SystemDecorations>Full</SystemDecorations>
               </ComboBox.Items>
             </ComboBox>
+            <ComboBox x:Name="ThemeVariants"
+                      HorizontalAlignment="Stretch"
+                      DisplayMemberBinding="{Binding Key, x:DataType=ThemeVariant}"
+                      SelectedIndex="0">
+              <ComboBox.Items>
+                <ThemeVariant>Default</ThemeVariant>
+                <ThemeVariant>Light</ThemeVariant>
+                <ThemeVariant>Dark</ThemeVariant>
+              </ComboBox.Items>
+            </ComboBox>
             <ComboBox x:Name="Themes"
                       HorizontalAlignment="Stretch"
                       SelectedIndex="0">
               <ComboBox.Items>
-                <models:CatalogTheme>FluentLight</models:CatalogTheme>
-                <models:CatalogTheme>FluentDark</models:CatalogTheme>
-                <models:CatalogTheme>SimpleLight</models:CatalogTheme>
-                <models:CatalogTheme>SimpleDark</models:CatalogTheme>
+                <models:CatalogTheme>Fluent</models:CatalogTheme>
+                <models:CatalogTheme>Simple</models:CatalogTheme>
               </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="TransparencyLevels"
