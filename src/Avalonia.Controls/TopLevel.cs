@@ -4,6 +4,7 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
@@ -96,6 +97,7 @@ namespace Avalonia.Controls
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private readonly IPlatformRenderInterface? _renderInterface;
         private readonly IGlobalStyles? _globalStyles;
+        private readonly IGlobalThemeVariantProvider? _applicationThemeHost;
         private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
         private readonly IDisposable? _pointerOverPreProcessorSubscription;
         private readonly IDisposable? _backGestureSubscription;
@@ -114,16 +116,6 @@ namespace Avalonia.Controls
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
             AffectsMeasure<TopLevel>(ClientSizeProperty);
-
-            TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
-                (tl, e) => 
-                {
-                    if (tl.PlatformImpl != null)
-                    {
-                        tl.PlatformImpl.SetTransparencyLevelHint((WindowTransparencyLevel)e.NewValue!);
-                        tl.HandleTransparencyLevelChanged(tl.PlatformImpl.TransparencyLevel);
-                    }
-                });
         }
 
         /// <summary>
@@ -161,6 +153,7 @@ namespace Avalonia.Controls
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
+            _applicationThemeHost = TryGetService<IGlobalThemeVariantProvider>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
 
@@ -190,6 +183,11 @@ namespace Avalonia.Controls
             {
                 _globalStyles.GlobalStylesAdded += ((IStyleHost)this).StylesAdded;
                 _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
+            }
+            if (_applicationThemeHost is { })
+            {
+                SetValue(ActualThemeVariantProperty, _applicationThemeHost.ActualThemeVariant, BindingPriority.Template);
+                _applicationThemeHost.ActualThemeVariantChanged += GlobalActualThemeVariantChanged;
             }
 
             ClientSize = impl.ClientSize;
@@ -315,6 +313,13 @@ namespace Avalonia.Controls
             set => SetValue(TransparencyBackgroundFallbackProperty, value);
         }
 
+        /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariant"/>
+        public ThemeVariant? RequestedThemeVariant
+        {
+            get => GetValue(RequestedThemeVariantProperty);
+            set => SetValue(RequestedThemeVariantProperty, value);
+        }
+
         /// <summary>
         /// Occurs when physical Back Button is pressed or a back navigation has been requested.
         /// </summary>
@@ -413,6 +418,24 @@ namespace Avalonia.Controls
             return visual == null ? null : visual.VisualRoot as TopLevel;
         }
         
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == TransparencyLevelHintProperty)
+            {
+                if (PlatformImpl != null)
+                {
+                    PlatformImpl.SetTransparencyLevelHint(change.GetNewValue<WindowTransparencyLevel>());
+                    HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
+                }
+            }
+            else if (change.Property == ActualThemeVariantProperty)
+            {
+                PlatformImpl?.SetFrameThemeVariant(change.GetNewValue<ThemeVariant>().ToPlatformThemeVariant() ?? PlatformThemeVariant.Light);
+            }
+        }
+        
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
@@ -436,6 +459,10 @@ namespace Avalonia.Controls
             {
                 _globalStyles.GlobalStylesAdded -= ((IStyleHost)this).StylesAdded;
                 _globalStyles.GlobalStylesRemoved -= ((IStyleHost)this).StylesRemoved;
+            }
+            if (_applicationThemeHost is { })
+            {
+                _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
             }
 
             Renderer?.Dispose();
@@ -587,6 +614,11 @@ namespace Avalonia.Controls
             }
 
             _inputManager?.ProcessInput(e);
+        }
+
+        private void GlobalActualThemeVariantChanged(object? sender, EventArgs e)
+        {
+            SetValue(ActualThemeVariantProperty, ((IGlobalThemeVariantProvider)sender!).ActualThemeVariant, BindingPriority.Template);
         }
 
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)

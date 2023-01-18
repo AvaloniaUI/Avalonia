@@ -263,13 +263,9 @@ namespace Avalonia.Diagnostics.Views
         public void SetOptions(DevToolsOptions options)
         {
             (DataContext as MainViewModel)?.SetOptions(options);
-
-            if (options.UseDarkMode)
+            if (options.ThemeVariant is { } themeVariant)
             {
-                if (Styles[0] is SimpleTheme st)
-                {
-                    st.Mode = SimpleThemeMode.Dark;
-                }                
+                RequestedThemeVariant = themeVariant;
             }
         }
 

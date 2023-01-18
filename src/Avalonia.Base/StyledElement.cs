@@ -71,6 +71,23 @@ namespace Avalonia
         public static readonly StyledProperty<ControlTheme?> ThemeProperty =
             AvaloniaProperty.Register<StyledElement, ControlTheme?>(nameof(Theme));
 
+        /// <summary>
+        /// Defines the <see cref="ActualThemeVariant"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
+            AvaloniaProperty.Register<StyledElement, ThemeVariant>(
+                nameof(ThemeVariant),
+                inherits: true,
+                defaultValue: ThemeVariant.Light);
+
+        /// <summary>
+        /// Defines the <see cref="RequestedThemeVariant"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
+            AvaloniaProperty.Register<StyledElement, ThemeVariant?>(
+                nameof(ThemeVariant),
+                defaultValue: ThemeVariant.Default);
+
         private static readonly ControlTheme s_invalidTheme = new ControlTheme();
         private int _initCount;
         private string? _name;
@@ -258,6 +275,15 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets the UI theme that is currently used by the element, which might be different than the <see cref="RequestedThemeVariantProperty"/>.
+        /// </summary>
+        /// <returns>
+        /// If current control is contained in the ThemeVariantScope, TopLevel or Application with non-default RequestedThemeVariant, that value will be returned.
+        /// Otherwise, current OS theme variant is returned.
+        /// </returns>
+        public ThemeVariant ActualThemeVariant => GetValue(ActualThemeVariantProperty);
+
+        /// <summary>
         /// Gets the styled element's logical children.
         /// </summary>
         protected internal IAvaloniaList<ILogical> LogicalChildren
@@ -439,11 +465,11 @@ namespace Avalonia
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e) => NotifyResourcesChanged(e);
 
         /// <inheritdoc/>
-        bool IResourceNode.TryGetResource(object key, out object? value)
+        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             value = null;
-            return (_resources?.TryGetResource(key, out value) ?? false) ||
-                   (_styles?.TryGetResource(key, out value) ?? false);
+            return (_resources?.TryGetResource(key, theme, out value) ?? false) ||
+                   (_styles?.TryGetResource(key, theme, out value) ?? false);
         }
 
         /// <summary>
@@ -621,6 +647,13 @@ namespace Avalonia
 
             if (change.Property == ThemeProperty)
                 OnControlThemeChanged();
+            else if (change.Property == RequestedThemeVariantProperty)
+            {
+                if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
+                    SetValue(ActualThemeVariantProperty, themeVariant);
+                else
+                    ClearValue(ActualThemeVariantProperty);
+            }
         }
 
         private protected virtual void OnControlThemeChanged()
@@ -658,7 +691,7 @@ namespace Avalonia
         {
             var theme = Theme;
 
-            // Explitly set Theme property takes precedence.
+            // Explicitly set Theme property takes precedence.
             if (theme is not null)
                 return theme;
 
