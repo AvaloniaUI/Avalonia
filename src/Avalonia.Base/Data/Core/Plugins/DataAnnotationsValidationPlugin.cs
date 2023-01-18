@@ -10,7 +10,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Validates properties on that have <see cref="ValidationAttribute"/>s.
     /// </summary>
-    public class DataAnnotationsValidationPlugin : IDataValidationPlugin
+    internal class DataAnnotationsValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
         [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
