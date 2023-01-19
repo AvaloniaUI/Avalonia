@@ -2,13 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading;
-
-using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Media;
 using Avalonia.OpenGL;
-using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
 using SkiaSharp;
