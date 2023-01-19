@@ -323,7 +323,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when physical Back Button is pressed or a back navigation has been requested.
         /// </summary>
-        public event EventHandler<RoutedEvent> BackRequested
+        public event EventHandler<RoutedEventArgs> BackRequested
         {
             add { AddHandler(BackRequestedEvent, value); }
             remove { RemoveHandler(BackRequestedEvent, value); }
