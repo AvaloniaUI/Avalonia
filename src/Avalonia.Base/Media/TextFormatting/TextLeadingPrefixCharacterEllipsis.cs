@@ -1,5 +1,7 @@
-﻿using System;
+﻿// ReSharper disable ForCanBeConvertedToForeach
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -39,11 +41,12 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override TextRun Symbol { get; }
 
-        public override List<TextRun>? Collapse(TextLine textLine)
+        /// <inheritdoc />
+        public override TextRun[]? Collapse(TextLine textLine)
         {
             var textRuns = textLine.TextRuns;
 
-            if (textRuns == null || textRuns.Count == 0)
+            if (textRuns.Count == 0)
             {
                 return null;
             }
@@ -54,7 +57,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (Width < shapedSymbol.GlyphRun.Size.Width)
             {
-                return new List<TextRun>(0);
+                return Array.Empty<TextRun>();
             }
 
             // Overview of ellipsis structure
@@ -75,41 +78,48 @@ namespace Avalonia.Media.TextFormatting
                             {
                                 shapedRun.TryMeasureCharacters(availableWidth, out var measuredLength);
 
-                                var collapsedRuns = new List<TextRun>(textRuns.Count);
-
                                 if (measuredLength > 0)
                                 {
-                                    IReadOnlyList<TextRun>? preSplitRuns = null;
+                                    var collapsedRuns = new List<TextRun>(textRuns.Count + 1);
+
+                                    // perf note: the runs are very likely to come from TextLineImpl,
+                                    // which already uses an array: ToArray() won't ever be called in this case
+                                    var textRunArray = textRuns as TextRun[] ?? textRuns.ToArray();
+
+                                    IReadOnlyList<TextRun>? preSplitRuns;
                                     IReadOnlyList<TextRun>? postSplitRuns;
 
                                     if (_prefixLength > 0)
                                     {
-                                        var splitResult = TextFormatterImpl.SplitTextRuns(textRuns,
-                                            Math.Min(_prefixLength, measuredLength));
+                                        (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(
+                                            textRunArray, Math.Min(_prefixLength, measuredLength));
 
-                                        collapsedRuns.AddRange(splitResult.First);
-
-                                        preSplitRuns = splitResult.First;
-                                        postSplitRuns = splitResult.Second;
+                                        for (var i = 0; i < preSplitRuns.Count; i++)
+                                        {
+                                            var preSplitRun = preSplitRuns[i];
+                                            collapsedRuns.Add(preSplitRun);
+                                        }
                                     }
                                     else
                                     {
-                                        postSplitRuns = textRuns;
+                                        preSplitRuns = null;
+                                        postSplitRuns = textRunArray;
                                     }
 
                                     collapsedRuns.Add(shapedSymbol);
 
                                     if (measuredLength <= _prefixLength || postSplitRuns is null)
                                     {
-                                        return collapsedRuns;
+                                        return collapsedRuns.ToArray();
                                     }
 
                                     var availableSuffixWidth = availableWidth;
 
                                     if (preSplitRuns is not null)
                                     {
-                                        foreach (var run in preSplitRuns)
+                                        for (var i = 0; i < preSplitRuns.Count; i++)
                                         {
+                                            var run = preSplitRuns[i];
                                             if (run is DrawableTextRun drawableTextRun)
                                             {
                                                 availableSuffixWidth -= drawableTextRun.Size.Width;
@@ -143,13 +153,11 @@ namespace Avalonia.Media.TextFormatting
                                                 }
                                         }
                                     }
-                                }
-                                else
-                                {
-                                    collapsedRuns.Add(shapedSymbol);
+
+                                    return collapsedRuns.ToArray();
                                 }
 
-                                return collapsedRuns;
+                                return new TextRun[] { shapedSymbol };
                             }
 
                             availableWidth -= shapedRun.Size.Width;

@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
-    internal class TextLineImpl : TextLine
+    internal sealed class TextLineImpl : TextLine
     {
-        private IReadOnlyList<TextRun> _textRuns;
+        private TextRun[] _textRuns;
         private readonly double _paragraphWidth;
         private readonly TextParagraphProperties _paragraphProperties;
         private TextLineMetrics _textLineMetrics;
         private readonly FlowDirection _resolvedFlowDirection;
 
-        public TextLineImpl(IReadOnlyList<TextRun> textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
+        public TextLineImpl(TextRun[] textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
             TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection = FlowDirection.LeftToRight,
             TextLineBreak? lineBreak = null, bool hasCollapsed = false)
         {
@@ -147,7 +146,7 @@ namespace Avalonia.Media.TextFormatting
             var collapsedLine = new TextLineImpl(collapsedRuns, FirstTextSourceIndex, Length, _paragraphWidth, _paragraphProperties,
                 _resolvedFlowDirection, TextLineBreak, true);
 
-            if (collapsedRuns.Count > 0)
+            if (collapsedRuns.Length > 0)
             {
                 collapsedLine.FinalizeLine();
             }
@@ -166,7 +165,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override CharacterHit GetCharacterHitFromDistance(double distance)
         {
-            if (_textRuns.Count == 0)
+            if (_textRuns.Length == 0)
             {
                 return new CharacterHit();
             }
@@ -182,7 +181,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (distance >= WidthIncludingTrailingWhitespace)
             {
-                var lastRun = _textRuns[_textRuns.Count - 1];
+                var lastRun = _textRuns[_textRuns.Length - 1];
 
                 var size = 0.0;
 
@@ -199,7 +198,7 @@ namespace Avalonia.Media.TextFormatting
             var currentPosition = FirstTextSourceIndex;
             var currentDistance = 0.0;
 
-            for (var i = 0; i < _textRuns.Count; i++)
+            for (var i = 0; i < _textRuns.Length; i++)
             {
                 var currentRun = _textRuns[i];
 
@@ -208,7 +207,7 @@ namespace Avalonia.Media.TextFormatting
                     var rightToLeftIndex = i;
                     currentPosition += currentRun.Length;
 
-                    while (rightToLeftIndex + 1 <= _textRuns.Count - 1)
+                    while (rightToLeftIndex + 1 <= _textRuns.Length - 1)
                     {
                         var nextShaped = _textRuns[++rightToLeftIndex] as ShapedTextRun;
 
@@ -224,7 +223,7 @@ namespace Avalonia.Media.TextFormatting
 
                     for (var j = i; i <= rightToLeftIndex; j++)
                     {
-                        if (j > _textRuns.Count - 1)
+                        if (j > _textRuns.Length - 1)
                         {
                             break;
                         }
@@ -254,7 +253,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentRun is DrawableTextRun drawableTextRun)
                 {
-                    if (i < _textRuns.Count - 1 && currentDistance + drawableTextRun.Size.Width < distance)
+                    if (i < _textRuns.Length - 1 && currentDistance + drawableTextRun.Size.Width < distance)
                     {
                         currentDistance += drawableTextRun.Size.Width;
 
@@ -328,7 +327,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (flowDirection == FlowDirection.LeftToRight)
             {
-                for (var index = 0; index < _textRuns.Count; index++)
+                for (var index = 0; index < _textRuns.Length; index++)
                 {
                     var currentRun = _textRuns[index];
 
@@ -338,7 +337,7 @@ namespace Avalonia.Media.TextFormatting
 
                         var rightToLeftWidth = shapedRun.Size.Width;
 
-                        while (i + 1 <= _textRuns.Count - 1)
+                        while (i + 1 <= _textRuns.Length - 1)
                         {
                             var nextRun = _textRuns[i + 1];
 
@@ -402,7 +401,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 currentDistance += WidthIncludingTrailingWhitespace;
 
-                for (var index = _textRuns.Count - 1; index >= 0; index--)
+                for (var index = _textRuns.Length - 1; index >= 0; index--)
                 {
                     var currentRun = _textRuns[index];
 
@@ -502,7 +501,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override CharacterHit GetNextCaretCharacterHit(CharacterHit characterHit)
         {
-            if (_textRuns.Count == 0)
+            if (_textRuns.Length == 0)
             {
                 return new CharacterHit();
             }
@@ -637,7 +636,7 @@ namespace Avalonia.Media.TextFormatting
                         var rightToLeftIndex = index;
                         var rightToLeftWidth = currentShapedRun.Size.Width;
 
-                        while (rightToLeftIndex + 1 <= _textRuns.Count - 1 && _textRuns[rightToLeftIndex + 1] is ShapedTextRun nextShapedRun)
+                        while (rightToLeftIndex + 1 <= _textRuns.Length - 1 && _textRuns[rightToLeftIndex + 1] is ShapedTextRun nextShapedRun)
                         {
                             if (nextShapedRun == null || nextShapedRun.ShapedBuffer.IsLeftToRight)
                             {
@@ -981,7 +980,7 @@ namespace Avalonia.Media.TextFormatting
 
         public override void Dispose()
         {
-            for (int i = 0; i < _textRuns.Count; i++)
+            for (int i = 0; i < _textRuns.Length; i++)
             {
                 if (_textRuns[i] is ShapedTextRun shapedTextRun)
                 {
@@ -1013,7 +1012,7 @@ namespace Avalonia.Media.TextFormatting
 
         private void BidiReorder()
         {
-            if (_textRuns.Count == 0)
+            if (_textRuns.Length == 0)
             {
                 return;
             }
@@ -1025,7 +1024,7 @@ namespace Avalonia.Media.TextFormatting
 
             var current = orderedRun;
 
-            for (var i = 1; i < _textRuns.Count; i++)
+            for (var i = 1; i < _textRuns.Length; i++)
             {
                 run = _textRuns[i];
 
@@ -1044,7 +1043,7 @@ namespace Avalonia.Media.TextFormatting
             sbyte max = 0;
             var min = sbyte.MaxValue;
 
-            for (var i = 0; i < _textRuns.Count; i++)
+            for (var i = 0; i < _textRuns.Length; i++)
             {
                 var currentRun = _textRuns[i];
 
@@ -1095,13 +1094,14 @@ namespace Avalonia.Media.TextFormatting
                 minLevelToReverse--;
             }
 
-            var textRuns = new List<TextRun>(_textRuns.Count);
+            var textRuns = new TextRun[_textRuns.Length];
+            var index = 0;
 
             current = orderedRun;
 
             while (current != null)
             {
-                textRuns.Add(current.Run);
+                textRuns[index++] = current.Run;
 
                 current = current.Next;
             }
@@ -1197,7 +1197,7 @@ namespace Avalonia.Media.TextFormatting
 
             var runIndex = GetRunIndexAtCharacterIndex(codepointIndex, LogicalDirection.Forward, out var currentPosition);
 
-            while (runIndex < _textRuns.Count)
+            while (runIndex < _textRuns.Length)
             {
                 var currentRun = _textRuns[runIndex];
 
@@ -1346,7 +1346,7 @@ namespace Avalonia.Media.TextFormatting
             textPosition = FirstTextSourceIndex;
             TextRun? previousRun = null;
 
-            while (runIndex < _textRuns.Count)
+            while (runIndex < _textRuns.Length)
             {
                 var currentRun = _textRuns[runIndex];
 
@@ -1395,7 +1395,7 @@ namespace Avalonia.Media.TextFormatting
                                 }
                             }
 
-                            if (runIndex + 1 >= _textRuns.Count)
+                            if (runIndex + 1 >= _textRuns.Length)
                             {
                                 return runIndex;
                             }
@@ -1411,7 +1411,7 @@ namespace Avalonia.Media.TextFormatting
                                 return runIndex;
                             }
 
-                            if (runIndex + 1 >= _textRuns.Count)
+                            if (runIndex + 1 >= _textRuns.Length)
                             {
                                 return runIndex;
                             }
@@ -1448,14 +1448,14 @@ namespace Avalonia.Media.TextFormatting
 
             var lineHeight = _paragraphProperties.LineHeight;
 
-            var lastRunIndex = _textRuns.Count - 1;
+            var lastRunIndex = _textRuns.Length - 1;
 
             if (lastRunIndex > 0 && _textRuns[lastRunIndex] is TextEndOfLine)
             {
                 lastRunIndex--;
             }
 
-            for (var index = 0; index < _textRuns.Count; index++)
+            for (var index = 0; index < _textRuns.Length; index++)
             {
                 switch (_textRuns[index])
                 {

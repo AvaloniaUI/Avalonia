@@ -1,15 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Media.TextFormatting.Unicode;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
     internal static class TextEllipsisHelper
     {
-        public static List<TextRun>? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
+        public static TextRun[]? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
         {
             var textRuns = textLine.TextRuns;
 
-            if (textRuns == null || textRuns.Count == 0)
+            if (textRuns.Count == 0)
             {
                 return null;
             }
@@ -22,7 +25,7 @@ namespace Avalonia.Media.TextFormatting
             if (properties.Width < shapedSymbol.GlyphRun.Size.Width)
             {
                 //Not enough space to fit in the symbol
-                return new List<TextRun>(0);
+                return Array.Empty<TextRun>();
             }
 
             var availableWidth = properties.Width - shapedSymbol.Size.Width;
@@ -70,18 +73,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 collapsedLength += measuredLength;
 
-                                var collapsedRuns = new List<TextRun>(textRuns.Count);
-
-                                if (collapsedLength > 0)
-                                {
-                                    var splitResult = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength);
-
-                                    collapsedRuns.AddRange(splitResult.First);
-                                }
-
-                                collapsedRuns.Add(shapedSymbol);
-
-                                return collapsedRuns;
+                                return CreateCollapsedRuns(textRuns, collapsedLength, shapedSymbol);
                             }
 
                             availableWidth -= shapedRun.Size.Width;
@@ -94,18 +86,7 @@ namespace Avalonia.Media.TextFormatting
                             //The whole run needs to fit into available space
                             if (currentWidth + drawableRun.Size.Width > availableWidth)
                             {
-                                var collapsedRuns = new List<TextRun>(textRuns.Count);
-
-                                if (collapsedLength > 0)
-                                {
-                                    var splitResult = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength);
-
-                                    collapsedRuns.AddRange(splitResult.First);
-                                }
-
-                                collapsedRuns.Add(shapedSymbol);
-
-                                return collapsedRuns;
+                                return CreateCollapsedRuns(textRuns, collapsedLength, shapedSymbol);
                             }
 
                             availableWidth -= drawableRun.Size.Width;
@@ -120,6 +101,31 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return null;
+        }
+
+        private static TextRun[] CreateCollapsedRuns(IReadOnlyList<TextRun> textRuns, int collapsedLength,
+            TextRun shapedSymbol)
+        {
+            if (collapsedLength <= 0)
+            {
+                return new[] { shapedSymbol };
+            }
+
+            // perf note: the runs are very likely to come from TextLineImpl
+            // which already uses an array: ToArray() won't ever be called in this case
+            var textRunArray = textRuns as TextRun[] ?? textRuns.ToArray();
+
+            var (preSplitRuns, _) = TextFormatterImpl.SplitTextRuns(textRunArray, collapsedLength);
+
+            var collapsedRuns = new TextRun[preSplitRuns.Count + 1];
+
+            for (var i = 0; i < preSplitRuns.Count; ++i)
+            {
+                collapsedRuns[i] = preSplitRuns[i];
+            }
+
+            collapsedRuns[collapsedRuns.Length - 1] = shapedSymbol;
+            return collapsedRuns;
         }
     }
 }
