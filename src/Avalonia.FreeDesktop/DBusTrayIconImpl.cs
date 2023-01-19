@@ -134,7 +134,6 @@ namespace Avalonia.FreeDesktop
             IsActive = false;
             _isDisposed = true;
             DestroyTrayIcon();
-            _connection?.Dispose();
             _serviceWatchDisposable?.Dispose();
         }
 

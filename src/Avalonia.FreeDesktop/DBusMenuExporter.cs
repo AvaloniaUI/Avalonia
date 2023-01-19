@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
@@ -43,7 +44,7 @@ namespace Avalonia.FreeDesktop
                 _xid = (uint)xid.ToInt32();
                 Path = GenerateDBusMenuObjPath;
                 SetNativeMenu(new NativeMenu());
-                Init();
+                _ = InitializeAsync();
             }
 
             public DBusMenuExporterImpl(Connection connection, string path)
@@ -52,7 +53,7 @@ namespace Avalonia.FreeDesktop
                 _appMenu = false;
                 Path = path;
                 SetNativeMenu(new NativeMenu());
-                Init();
+                _ = InitializeAsync();
             }
 
             protected override Connection Connection { get; }
@@ -92,7 +93,7 @@ namespace Avalonia.FreeDesktop
             protected override (int[] updatesNeeded, int[] idErrors) OnAboutToShowGroup(int[] ids) =>
                 (Array.Empty<int>(), Array.Empty<int>());
 
-            private async void Init()
+            private async Task InitializeAsync()
             {
                 Connection.AddMethodHandler(this);
                 if (!_appMenu)
