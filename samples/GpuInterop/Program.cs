@@ -1,5 +1,5 @@
-﻿using Avalonia;
-
+﻿global using System.Reactive.Disposables;
+using Avalonia;
 namespace GpuInterop
 {
     public class Program

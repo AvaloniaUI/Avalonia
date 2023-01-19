@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using System.Threading.Tasks;
-using Avalonia;
+using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Rendering;

@@ -1,23 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
-using SharpDX.Direct2D1;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
-using SharpDX.Mathematics.Interop;
-using Buffer = SharpDX.Direct3D11.Buffer;
-using DeviceContext = SharpDX.Direct2D1.DeviceContext;
 using DxgiFactory1 = SharpDX.DXGI.Factory1;
-using Matrix = SharpDX.Matrix;
 using D3DDevice = SharpDX.Direct3D11.Device;
 using DxgiResource = SharpDX.DXGI.Resource;
-using FeatureLevel = SharpDX.Direct3D.FeatureLevel;
 
 namespace GpuInterop.D3DDemo;
 

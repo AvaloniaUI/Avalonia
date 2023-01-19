@@ -1,10 +1,9 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
 using static Avalonia.OpenGL.GlConsts;
 namespace Avalonia.OpenGL.Controls;
