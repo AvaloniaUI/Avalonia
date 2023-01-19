@@ -14,6 +14,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// <remarks>To avoid allocations, this class is designed to be reused.</remarks>
     internal sealed class BidiData
     {
+        private bool _hasCleanState = true;
         private ArrayBuilder<BidiClass> _classes;
         private ArrayBuilder<BidiPairedBracketType> _pairedBracketTypes;
         private ArrayBuilder<int> _pairedBracketValues;
@@ -62,6 +63,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="text">The text to process.</param>
         public void Append(ReadOnlySpan<char> text)
         {
+            _hasCleanState = false;
+
             _classes.Add(text.Length);
             _pairedBracketTypes.Add(text.Length);
             _pairedBracketValues.Add(text.Length);
@@ -183,12 +186,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         public void Reset()
         {
-            _classes.Clear();
-            _pairedBracketTypes.Clear();
-            _pairedBracketValues.Clear();
-            _savedClasses.Clear();
-            _savedPairedBracketTypes.Clear();
-            _tempLevelBuffer.Clear();
+            if (_hasCleanState)
+            {
+                return;
+            }
+
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _classes);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _pairedBracketTypes);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _pairedBracketValues);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _savedClasses);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _savedPairedBracketTypes);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _tempLevelBuffer);
 
             ParagraphEmbeddingLevel = 0;
             HasBrackets = false;
@@ -199,6 +207,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
             Classes = default;
             PairedBracketTypes = default;
             PairedBracketValues = default;
+
+            _hasCleanState = true;
         }
     }
 }

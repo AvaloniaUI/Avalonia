@@ -117,8 +117,8 @@ namespace Avalonia.Media.TextFormatting
             }
             finally
             {
-                _runs.Clear();
-                _ranges.Clear();
+                FormattingBufferHelper.ClearThenResetIfTooLarge(ref _runs);
+                FormattingBufferHelper.ClearThenResetIfTooLarge(ref _ranges);
             }
         }
 

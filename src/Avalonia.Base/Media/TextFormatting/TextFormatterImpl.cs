@@ -225,6 +225,9 @@ namespace Avalonia.Media.TextFormatting
 
             CoalesceLevels(textRuns, bidiAlgorithm.ResolvedLevels.Span, processedRuns);
 
+            bidiData.Reset();
+            bidiAlgorithm.Reset();
+
             var groupedRuns = objectPool.UnshapedTextRunLists.Rent();
 
             for (var index = 0; index < processedRuns.Count; index++)

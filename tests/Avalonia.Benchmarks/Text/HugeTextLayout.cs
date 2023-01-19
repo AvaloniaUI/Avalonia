@@ -48,10 +48,10 @@ It may reveal how the matters of peculiar interest slowly the goals and objectiv
 In respect that the structure of the sufficient amount poses problems and challenges for both the set of related commands and controls and the ability bias.";
 
     [Params(false, true)]
-    public bool UseWrapping { get; set; }
+    public bool Wrap { get; set; }
 
     [Params(false, true)]
-    public bool UseTrimming { get; set; }
+    public bool Trim { get; set; }
 
     [Benchmark]
     public TextLayout BuildTextLayout() => MakeLayout(Text);
@@ -101,8 +101,8 @@ In respect that the structure of the sufficient amount poses problems and challe
 
     private TextLayout MakeLayout(string str)
     {
-        var wrapping = UseWrapping ? TextWrapping.WrapWithOverflow : TextWrapping.NoWrap;
-        var trimming = UseTrimming ? TextTrimming.CharacterEllipsis : TextTrimming.None;
+        var wrapping = Wrap ? TextWrapping.WrapWithOverflow : TextWrapping.NoWrap;
+        var trimming = Trim ? TextTrimming.CharacterEllipsis : TextTrimming.None;
         var layout = new TextLayout(str, Typeface.Default, 12d, Brushes.Black, maxWidth: 120,
             textTrimming: trimming, textWrapping: wrapping);
         layout.Dispose();

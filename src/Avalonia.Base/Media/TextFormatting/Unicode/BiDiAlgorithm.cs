@@ -29,6 +29,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
     internal sealed class BidiAlgorithm
     {
         /// <summary>
+        /// Whether the state is clean and can be reused without a reset.
+        /// </summary>
+        private bool _hasCleanState = true;
+
+        /// <summary>
         /// The original BiDiClass classes as provided by the caller
         /// </summary>
         private ArraySlice<BidiClass> _originalClasses;
@@ -226,15 +231,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
             ArraySlice<sbyte>? outLevels)
         {
             // Reset state
-            _isolatePairs.Clear();
-            _workingClassesBuffer.Clear();
-            _levelRuns.Clear();
-            _resolvedLevelsBuffer.Clear();
+            Reset();
 
             if (types.IsEmpty)
             {
                 return;
             }
+
+            _hasCleanState = false;
 
             // Setup original types and working types
             _originalClasses = types;
@@ -1637,6 +1641,47 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     default:
                         return BidiClass.OtherNeutral;
             }
+        }
+
+        /// <summary>
+        /// Resets the bidi algorithm to a clean state.
+        /// </summary>
+        public void Reset()
+        {
+            if (_hasCleanState)
+            {
+                return;
+            }
+
+            _originalClasses = default;
+            _pairedBracketTypes = default;
+            _pairedBracketValues = default;
+            _hasBrackets = default;
+            _hasEmbeddings = default;
+            _hasIsolates = default;
+            _isolatePairs.ClearThenResetIfTooLarge();
+            _workingClasses = default;
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _workingClassesBuffer);
+            _resolvedLevels = default;
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _resolvedLevelsBuffer);
+            _paragraphEmbeddingLevel = default;
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_statusStack);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _x9Map);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_levelRuns);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _isolatedRunMapping);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_pendingIsolateOpenings);
+            _runLevel = default;
+            _runDirection = default;
+            _runLength = default;
+            _runResolvedClasses = default;
+            _runOriginalClasses = default;
+            _runLevels = default;
+            _runBiDiPairedBracketTypes = default;
+            _runPairedBracketValues = default;
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_pendingOpeningBrackets);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_pairedBrackets);
+
+            _hasCleanState = true;
         }
 
         /// <summary>

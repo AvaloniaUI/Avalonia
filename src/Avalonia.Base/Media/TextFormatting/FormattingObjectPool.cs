@@ -80,7 +80,7 @@ namespace Avalonia.Media.TextFormatting
                 }
 
                 --_pendingReturnCount;
-                rentedList.Clear();
+                FormattingBufferHelper.ClearThenResetIfTooLarge(rentedList);
 
                 if (_size < MaxSize)
                 {
