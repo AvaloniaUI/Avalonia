@@ -264,6 +264,15 @@ namespace Avalonia.Controls
                 Dispatcher.UIThread.Post(this.BringIntoView); // must use the Dispatcher, otherwise the TreeView doesn't scroll
             }
         }
+        
+        protected virtual void HeaderDoubleTapped(object? sender, TappedEventArgs e)
+        {
+            if (ItemCount > 0)
+            {
+                IsExpanded = !IsExpanded;
+                e.Handled = true;
+            }
+        }
 
         private static int CalculateDistanceFromLogicalParent<T>(ILogical? logical, int @default = -1) where T : class
         {
@@ -276,15 +285,6 @@ namespace Avalonia.Controls
             }
 
             return logical != null ? result : @default;
-        }
-
-        private void HeaderDoubleTapped(object? sender, TappedEventArgs e)
-        {
-            if (ItemCount > 0)
-            {
-                IsExpanded = !IsExpanded;
-                e.Handled = true;
-            }
         }
     }
 }
