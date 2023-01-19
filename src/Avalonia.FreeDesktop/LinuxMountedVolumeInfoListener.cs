@@ -1,14 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Avalonia.Controls.Platform;
 using Avalonia.Reactive;
-using Avalonia.Reactive;
 using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using System.Text;
 using Avalonia.Threading;
 
 namespace Avalonia.FreeDesktop

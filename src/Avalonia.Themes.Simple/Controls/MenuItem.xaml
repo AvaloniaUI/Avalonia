@@ -72,8 +72,6 @@
                   <ItemsPresenter Name="PART_ItemsPresenter"
                                   Margin="2"
                                   Grid.IsSharedSizeScope="True"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  Items="{TemplateBinding Items}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </ScrollViewer>
               </Border>

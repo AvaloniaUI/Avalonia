@@ -23,7 +23,7 @@ private:
     NSRect _preZoomSize;
     bool _transitioningWindowState;
     bool _isClientAreaExtended;
-    bool _isDialog;
+    bool _isModal;
     WindowImpl* _parent;
     std::list<WindowImpl*> _children;
     AvnExtendClientAreaChromeHints _extendClientHints;
@@ -91,7 +91,9 @@ BEGIN_INTERFACE_MAP()
 
     virtual HRESULT SetWindowState (AvnWindowState state) override;
 
-    virtual bool IsDialog() override;
+    virtual bool IsModal() override;
+    
+    bool IsOwned();
     
     virtual void BringToFront () override;
     

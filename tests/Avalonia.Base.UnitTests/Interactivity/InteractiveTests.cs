@@ -338,6 +338,27 @@ namespace Avalonia.Base.UnitTests.Interactivity
         }
 
         [Fact]
+        public void Typed_Class_Handlers_Should_Be_Called_For_Handled_Events()
+        {
+            var ev = new RoutedEvent<RoutedEventArgs>(
+                "test",
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
+                typeof(TestInteractive));
+
+            var target = CreateTree(ev, null, 0);
+
+            ev.AddClassHandler<TestInteractive>((x, e) => x.MarkEventAsHandled(e), RoutingStrategies.Bubble);
+            ev.AddClassHandler<TestInteractive>((x, e) => x.ClassHandler(e), RoutingStrategies.Bubble, handledEventsToo: true);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.True(args.Handled);
+            Assert.True(target.ClassHandlerInvoked);
+            Assert.True(target.GetVisualParent<TestInteractive>().ClassHandlerInvoked);
+        }
+
+        [Fact]
         public void GetObservable_Should_Listen_To_Event()
         {
             var ev = new RoutedEvent<RoutedEventArgs>("test", RoutingStrategies.Direct, typeof(TestInteractive));
@@ -442,6 +463,11 @@ namespace Avalonia.Base.UnitTests.Interactivity
             public void ClassHandler(RoutedEventArgs e)
             {
                 ClassHandlerInvoked = true;
+            }
+
+            public void MarkEventAsHandled(RoutedEventArgs e)
+            {
+                e.Handled = true;
             }
         }
     }

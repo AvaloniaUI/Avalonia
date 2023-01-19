@@ -19,7 +19,8 @@ using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Browser
 {
-    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
+        ITopLevelWithSystemNavigationManager
     {
         private Size _clientSize;
         private IInputRoot? _inputRoot;
@@ -228,11 +229,18 @@ namespace Avalonia.Browser
 
         public IKeyboardDevice KeyboardDevice { get; } = BrowserWindowingPlatform.Keyboard;
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            // not in the standard, but we potentially can use "apple-mobile-web-app-status-bar-style" for iOS and "theme-color" for android.
+        }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
 
         public ITextInputMethodImpl TextInputMethod => _avaloniaView;
 
         public INativeControlHostImpl? NativeControlHost { get; }
         public IStorageProvider StorageProvider { get; } = new BrowserStorageProvider();
+
+        public ISystemNavigationManager SystemNavigationManager { get; } = new BrowserSystemNavigationManager();
     }
 }
