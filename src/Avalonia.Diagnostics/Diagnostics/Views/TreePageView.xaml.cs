@@ -21,7 +21,6 @@ namespace Avalonia.Diagnostics.Views
         {
             InitializeComponent();
             _tree = this.GetControl<TreeView>("tree");
-            _tree.ItemContainerGenerator.Index!.Materialized += TreeViewItemMaterialized;
 
             _adorner = new Panel
             {
@@ -101,31 +100,6 @@ namespace Avalonia.Diagnostics.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-        }
-
-        private void TreeViewItemMaterialized(object? sender, ItemContainerEventArgs e)
-        {
-            var item = (TreeViewItem)e.Containers[0].ContainerControl;
-            item.TemplateApplied += TreeViewItemTemplateApplied;
-        }
-
-        private void TreeViewItemTemplateApplied(object? sender, TemplateAppliedEventArgs e)
-        {
-            var item = (TreeViewItem)sender!;
-
-            // This depends on the default tree item template.
-            // We want to handle events in the item header but exclude events coming from children.
-            var header = item.FindDescendantOfType<Border>();
-
-            Debug.Assert(header != null);
-
-            if (header != null)
-            {
-                header.PointerEntered += AddAdorner;
-                header.PointerExited += RemoveAdorner;
-            }
-
-            item.TemplateApplied -= TreeViewItemTemplateApplied;
         }
     }
 }

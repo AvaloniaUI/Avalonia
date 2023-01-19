@@ -1,179 +1,208 @@
 using System;
-using System.Collections.Specialized;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using static Avalonia.Utilities.MathUtilities;
 
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>
-    /// Displays items inside an <see cref="ItemsControl"/>.
+    /// Presents items inside an <see cref="Avalonia.Controls.ItemsControl"/>.
     /// </summary>
-    public class ItemsPresenter : ItemsPresenterBase, ILogicalScrollable
+    public class ItemsPresenter : Control, ILogicalScrollable
     {
         /// <summary>
-        /// Defines the <see cref="VirtualizationMode"/> property.
+        /// Defines the <see cref="ItemsPanel"/> property.
         /// </summary>
-        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            AvaloniaProperty.Register<ItemsPresenter, ItemVirtualizationMode>(
-                nameof(VirtualizationMode),
-                defaultValue: ItemVirtualizationMode.None);
+        public static readonly StyledProperty<ITemplate<Panel>> ItemsPanelProperty =
+            ItemsControl.ItemsPanelProperty.AddOwner<ItemsPresenter>();
 
-        private bool _canHorizontallyScroll;
-        private bool _canVerticallyScroll;
+        private PanelContainerGenerator? _generator;
+        private ILogicalScrollable? _logicalScrollable;
         private EventHandler? _scrollInvalidated;
 
-        /// <summary>
-        /// Initializes static members of the <see cref="ItemsPresenter"/> class.
-        /// </summary>
         static ItemsPresenter()
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue(
                 typeof(ItemsPresenter),
                 KeyboardNavigationMode.Once);
-
-            VirtualizationModeProperty.Changed
-                .AddClassHandler<ItemsPresenter>((x, e) => x.VirtualizationModeChanged(e));
         }
 
-        /// <summary>
-        /// Gets or sets the virtualization mode for the items.
-        /// </summary>
-        public ItemVirtualizationMode VirtualizationMode
-        {
-            get { return GetValue(VirtualizationModeProperty); }
-            set { SetValue(VirtualizationModeProperty, value); }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
-        /// </summary>
-        bool ILogicalScrollable.CanHorizontallyScroll
-        {
-            get { return _canHorizontallyScroll; }
-            set
-            {
-                _canHorizontallyScroll = value;
-                InvalidateMeasure();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the content can be scrolled horizontally.
-        /// </summary>
-        bool ILogicalScrollable.CanVerticallyScroll
-        {
-            get { return _canVerticallyScroll; }
-            set
-            {
-                _canVerticallyScroll = value;
-                InvalidateMeasure();
-            }
-        }
-        /// <inheritdoc/>
-        bool ILogicalScrollable.IsLogicalScrollEnabled
-        {
-            get { return Virtualizer?.IsLogicalScrollEnabled ?? false; }
-        }
-
-        /// <inheritdoc/>
-        Size IScrollable.Extent => Virtualizer?.Extent ?? default;
-
-        /// <inheritdoc/>
-        Vector IScrollable.Offset
-        {
-            get { return Virtualizer?.Offset ?? new Vector(); }
-            set
-            {
-                if (Virtualizer != null)
-                {
-                    Virtualizer.Offset = CoerceOffset(value);
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        Size IScrollable.Viewport => Virtualizer?.Viewport ?? Bounds.Size;
-
-        /// <inheritdoc/>
         event EventHandler? ILogicalScrollable.ScrollInvalidated
         {
             add => _scrollInvalidated += value;
             remove => _scrollInvalidated -= value;
         }
 
-        /// <inheritdoc/>
-        Size ILogicalScrollable.ScrollSize => new Size(ScrollViewer.DefaultSmallChange, 1);
-
-        /// <inheritdoc/>
-        Size ILogicalScrollable.PageScrollSize => Virtualizer?.Viewport ?? new Size(16, 16);
-
-        internal ItemVirtualizer? Virtualizer { get; private set; }
-
-        /// <inheritdoc/>
-        bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect)
+        /// <summary>
+        /// Gets or sets a template which creates the <see cref="Panel"/> used to display the items.
+        /// </summary>
+        public ITemplate<Panel> ItemsPanel
         {
-            return false;
+            get => GetValue(ItemsPanelProperty);
+            set => SetValue(ItemsPanelProperty, value);
         }
 
-        /// <inheritdoc/>
-        Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from)
+        /// <summary>
+        /// Gets the panel used to display the items.
+        /// </summary>
+        public Panel? Panel { get; private set; }
+
+        /// <summary>
+        /// Gets the owner <see cref="ItemsControl"/>.
+        /// </summary>
+        internal ItemsControl? ItemsControl { get; private set; }
+        
+        bool ILogicalScrollable.CanHorizontallyScroll 
         {
-            return Virtualizer?.GetControlInDirection(direction, from);
+            get => _logicalScrollable?.CanHorizontallyScroll ?? false;
+            set
+            {
+                if (_logicalScrollable is not null)
+                    _logicalScrollable.CanHorizontallyScroll = value;
+            }
         }
 
-        /// <inheritdoc/>
-        void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e)
+        bool ILogicalScrollable.CanVerticallyScroll 
         {
-            _scrollInvalidated?.Invoke(this, e);
+            get => _logicalScrollable?.CanVerticallyScroll ?? false;
+            set
+            {
+                if (_logicalScrollable is not null)
+                    _logicalScrollable.CanVerticallyScroll = value;
+            }
         }
 
-        public override void ScrollIntoView(int index)
+        Vector IScrollable.Offset 
         {
-            Virtualizer?.ScrollIntoView(index);
+            get => _logicalScrollable?.Offset ?? default;
+            set
+            {
+                if (_logicalScrollable is not null)
+                    _logicalScrollable.Offset = value;
+            }
         }
 
-        /// <inheritdoc/>
-        protected override Size MeasureOverride(Size availableSize)
+        bool ILogicalScrollable.IsLogicalScrollEnabled => _logicalScrollable?.IsLogicalScrollEnabled ?? false;
+        Size ILogicalScrollable.ScrollSize => _logicalScrollable?.ScrollSize ?? default;
+        Size ILogicalScrollable.PageScrollSize => _logicalScrollable?.PageScrollSize ?? default;
+        Size IScrollable.Extent => _logicalScrollable?.Extent ?? default;
+        Size IScrollable.Viewport => _logicalScrollable?.Viewport ?? default;
+
+        public override sealed void ApplyTemplate()
         {
-            return Virtualizer?.MeasureOverride(availableSize) ?? default;
+            if (Panel is null && ItemsControl is not null)
+            {
+                if (_logicalScrollable is not null)
+                {
+                    _logicalScrollable.ScrollInvalidated -= OnLogicalScrollInvalidated;
+                }
+
+                Panel = ItemsPanel.Build();
+                Panel.SetValue(TemplatedParentProperty, TemplatedParent);
+                LogicalChildren.Add(Panel);
+                VisualChildren.Add(Panel);
+
+                if (Panel is VirtualizingPanel v)
+                    v.Attach(ItemsControl);
+                else
+                    CreateSimplePanelGenerator();
+
+                _logicalScrollable = Panel as ILogicalScrollable;
+
+                if (_logicalScrollable is not null)
+                {
+                    _logicalScrollable.ScrollInvalidated += OnLogicalScrollInvalidated;
+                }
+            }
         }
 
-        protected override Size ArrangeOverride(Size finalSize)
+        bool ILogicalScrollable.BringIntoView(Control target, Rect targetRect) =>
+            _logicalScrollable?.BringIntoView(target, targetRect) ?? false;
+        Control? ILogicalScrollable.GetControlInDirection(NavigationDirection direction, Control? from) =>
+            _logicalScrollable?.GetControlInDirection(direction, from);
+        void ILogicalScrollable.RaiseScrollInvalidated(EventArgs e) => _scrollInvalidated?.Invoke(this, e);
+
+        internal void ScrollIntoView(int index)
         {
-            return Virtualizer?.ArrangeOverride(finalSize) ?? default;
+            if (Panel is VirtualizingPanel v)
+                v.ScrollIntoView(index);
+            else if (index >= 0 && index < Panel?.Children.Count)
+                Panel.Children[index].BringIntoView();
         }
 
-        /// <inheritdoc/>
-        protected override void PanelCreated(Panel panel)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
-            Virtualizer?.Dispose();
-            Virtualizer = ItemVirtualizer.Create(this);
-            _scrollInvalidated?.Invoke(this, EventArgs.Empty);
+            base.OnPropertyChanged(change);
 
-            KeyboardNavigation.SetTabNavigation(
-                (InputElement)panel,
-                KeyboardNavigation.GetTabNavigation(this));
+            if (change.Property == TemplatedParentProperty)
+            {
+                ResetState();
+                ItemsControl = null;
+
+                if (change.NewValue is ItemsControl itemsControl)
+                {
+                    ItemsControl = itemsControl;
+                    ItemsControl.RegisterItemsPresenter(this);
+                }
+            }
+            else if (change.Property == ItemsPanelProperty)
+            {
+                ResetState();
+                InvalidateMeasure();
+            }
         }
 
-        protected override void ItemsChanged(NotifyCollectionChangedEventArgs e)
+        internal void Refresh()
         {
-            Virtualizer?.ItemsChanged(Items, e);
+            if (Panel is VirtualizingPanel v)
+                v.Refresh();
+            else
+                _generator?.Refresh();
         }
 
-        private Vector CoerceOffset(Vector value)
+        private void ResetState()
         {
-            var scrollable = (ILogicalScrollable)this;
-            var maxX = Math.Max(scrollable.Extent.Width - scrollable.Viewport.Width, 0);
-            var maxY = Math.Max(scrollable.Extent.Height - scrollable.Viewport.Height, 0);
-            return new Vector(Clamp(value.X, 0, maxX), Clamp(value.Y, 0, maxY));
+            _generator?.Dispose();
+            _generator = null;
+            LogicalChildren.Clear();
+            VisualChildren.Clear();
+            (Panel as VirtualizingPanel)?.Detach();
+            Panel = null;
         }
 
-        private void VirtualizationModeChanged(AvaloniaPropertyChangedEventArgs e)
+        private void CreateSimplePanelGenerator()
         {
-            Virtualizer?.Dispose();
-            Virtualizer = ItemVirtualizer.Create(this);
-            _scrollInvalidated?.Invoke(this, EventArgs.Empty);
+            Debug.Assert(Panel is not VirtualizingPanel);
+
+            if (ItemsControl is null || Panel is null)
+                return;
+
+            _generator?.Dispose();
+            _generator = new(this);
         }
+
+        internal Control? ContainerFromIndex(int index)
+        {
+            if (Panel is VirtualizingPanel v)
+                return v.ContainerFromIndex(index);
+            return index >= 0 && index < Panel?.Children.Count ? Panel.Children[index] : null;
+        }
+
+        internal IEnumerable<Control>? GetRealizedContainers()
+        {
+            if (Panel is VirtualizingPanel v)
+                return v.GetRealizedContainers();
+            return Panel?.Children;
+        }
+
+        internal int IndexFromContainer(Control container)
+        {
+            if (Panel is VirtualizingPanel v)
+                return v.IndexFromContainer(container);
+            return Panel?.Children.IndexOf(container) ?? -1;
+        }
+
+        private void OnLogicalScrollInvalidated(object? sender, EventArgs e) => _scrollInvalidated?.Invoke(this, e);
     }
 }
