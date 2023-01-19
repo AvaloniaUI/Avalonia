@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Features;
+using Avalonia.Reactive;
 
 namespace Avalonia.X11.Glx
 {

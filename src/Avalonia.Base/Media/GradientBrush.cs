@@ -6,6 +6,7 @@ using System.ComponentModel;
 using Avalonia.Animation.Animators;
 using Avalonia.Collections;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
 
 namespace Avalonia.Media
 {

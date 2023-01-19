@@ -24,7 +24,7 @@ namespace ControlCatalog.Pages
         {
             this.InitializeComponent();
 
-            var results = this.Get<ItemsPresenter>("PickerLastResults");
+            var results = this.Get<ItemsControl>("PickerLastResults");
             var resultsVisible = this.Get<TextBlock>("PickerLastResultsVisible");
             var bookmarkContainer = this.Get<TextBox>("BookmarkContainer");
             var openedFileContent = this.Get<TextBox>("OpenedFileContent");
@@ -36,18 +36,18 @@ namespace ControlCatalog.Pages
             {
                 if (this.Get<CheckBox>("UseFilters").IsChecked != true)
                     return new List<FileDialogFilter>();
-                return  new List<FileDialogFilter>
-                {
-                    new FileDialogFilter
-                    {
-                        Name = "Text files (.txt)", Extensions = new List<string> {"txt"}
-                    },
-                    new FileDialogFilter
-                    {
-                        Name = "All files",
-                        Extensions = new List<string> {"*"}
-                    }
-                };
+                return new List<FileDialogFilter>
+                            {
+                                new FileDialogFilter
+                                {
+                                    Name = "Text files (.txt)", Extensions = new List<string> {"txt"}
+                                },
+                                new FileDialogFilter
+                                {
+                                    Name = "All files",
+                                    Extensions = new List<string> {"*"}
+                                }
+                            };
             }
 
             List<FilePickerFileType>? GetFileTypes()
@@ -55,10 +55,10 @@ namespace ControlCatalog.Pages
                 if (this.Get<CheckBox>("UseFilters").IsChecked != true)
                     return null;
                 return new List<FilePickerFileType>
-                {
-                    FilePickerFileTypes.All,
-                    FilePickerFileTypes.TextPlain
-                };
+                            {
+                                FilePickerFileTypes.All,
+                                FilePickerFileTypes.TextPlain
+                            };
             }
 
             this.Get<Button>("OpenFile").Click += async delegate
@@ -205,15 +205,15 @@ namespace ControlCatalog.Pages
                     await using var stream = await file.OpenWriteAsync();
                     await using var reader = new System.IO.StreamWriter(stream);
 #else
-                    using var stream = await file.OpenWriteAsync();
-                    using var reader = new System.IO.StreamWriter(stream);
+                                using var stream = await file.OpenWriteAsync();
+                                using var reader = new System.IO.StreamWriter(stream);
 #endif
                     await reader.WriteLineAsync(openedFileContent.Text);
 
                     lastSelectedDirectory = await file.GetParentAsync();
                 }
 
-                await SetPickerResult(file is null ? null : new [] {file});
+                await SetPickerResult(file is null ? null : new[] { file });
             };
             this.Get<Button>("OpenFolderPicker").Click += async delegate
             {
@@ -243,7 +243,7 @@ namespace ControlCatalog.Pages
                     : null;
 
                 await SetPickerResult(folder is null ? null : new[] { folder });
-                
+
                 lastSelectedDirectory = folder;
             };
 
@@ -260,23 +260,23 @@ namespace ControlCatalog.Pages
 
                     var props = await item.GetBasicPropertiesAsync();
                     resultText += @$"Size: {props.Size}
-DateCreated: {props.DateCreated}
-DateModified: {props.DateModified}
-CanBookmark: {item.CanBookmark}
-";
+            DateCreated: {props.DateCreated}
+            DateModified: {props.DateModified}
+            CanBookmark: {item.CanBookmark}
+            ";
                     if (item is IStorageFile file)
                     {
                         resultText += @$"
-CanOpenRead: {file.CanOpenRead}
-CanOpenWrite: {file.CanOpenWrite}
-Content:
-";
+            CanOpenRead: {file.CanOpenRead}
+            CanOpenWrite: {file.CanOpenWrite}
+            Content:
+            ";
                         if (file.CanOpenRead)
                         {
 #if NET6_0_OR_GREATER
                             await using var stream = await file.OpenReadAsync();
 #else
-                            using var stream = await file.OpenReadAsync();
+                                        using var stream = await file.OpenReadAsync();
 #endif
                             using var reader = new System.IO.StreamReader(stream);
 
@@ -396,8 +396,8 @@ CanPickFolder: {storageProvider.CanPickFolder}";
             return item.TryGetUri(out var uri) ? uri.ToString() : item.Name;
         }
 
-        Window GetWindow() => this.VisualRoot as Window ?? throw new NullReferenceException("Invalid Owner");
-        TopLevel GetTopLevel() => this.VisualRoot as TopLevel ?? throw new NullReferenceException("Invalid Owner");
+        Window GetWindow() => TopLevel.GetTopLevel(this) as Window ?? throw new NullReferenceException("Invalid Owner");
+        TopLevel GetTopLevel() => TopLevel.GetTopLevel(this) ?? throw new NullReferenceException("Invalid Owner");
 
         private void InitializeComponent()
         {

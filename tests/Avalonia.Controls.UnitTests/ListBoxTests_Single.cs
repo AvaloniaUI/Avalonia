@@ -324,7 +324,6 @@ namespace Avalonia.Controls.UnitTests
                 Content = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                 }.RegisterInNameScope(scope)
             };
         }

@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
     internal class TextLineImpl : TextLine
     {
-        private readonly List<DrawableTextRun> _textRuns;
+        private IReadOnlyList<TextRun> _textRuns;
         private readonly double _paragraphWidth;
         private readonly TextParagraphProperties _paragraphProperties;
         private TextLineMetrics _textLineMetrics;
         private readonly FlowDirection _resolvedFlowDirection;
 
-        public TextLineImpl(List<DrawableTextRun> textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
+        public TextLineImpl(IReadOnlyList<TextRun> textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
             TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection = FlowDirection.LeftToRight,
             TextLineBreak? lineBreak = null, bool hasCollapsed = false)
         {
@@ -86,11 +87,14 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textRun in _textRuns)
             {
-                var offsetY = GetBaselineOffset(this, textRun);
+                if (textRun is DrawableTextRun drawable)
+                {
+                    var offsetY = GetBaselineOffset(this, drawable);
 
-                textRun.Draw(drawingContext, new Point(currentX, currentY + offsetY));
+                    drawable.Draw(drawingContext, new Point(currentX, currentY + offsetY));
 
-                currentX += textRun.Size.Width;
+                    currentX += drawable.Size.Width;
+                }
             }
         }
 
@@ -180,7 +184,14 @@ namespace Avalonia.Media.TextFormatting
             {
                 var lastRun = _textRuns[_textRuns.Count - 1];
 
-                return GetRunCharacterHit(lastRun, FirstTextSourceIndex + Length - lastRun.Length, lastRun.Size.Width);
+                var size = 0.0;
+
+                if (lastRun is DrawableTextRun drawableTextRun)
+                {
+                    size = drawableTextRun.Size.Width;
+                }
+
+                return GetRunCharacterHit(lastRun, FirstTextSourceIndex + Length - lastRun.Length, size);
             }
 
             // process hit that happens within the line
@@ -220,9 +231,16 @@ namespace Avalonia.Media.TextFormatting
 
                         currentRun = _textRuns[j];
 
-                        if (currentDistance + currentRun.Size.Width <= distance)
+                        if(currentRun is not ShapedTextRun)
                         {
-                            currentDistance += currentRun.Size.Width;
+                            continue;
+                        }
+
+                        shapedRun = (ShapedTextRun)currentRun;
+
+                        if (currentDistance + shapedRun.Size.Width <= distance)
+                        {
+                            currentDistance += shapedRun.Size.Width;
                             currentPosition -= currentRun.Length;
 
                             continue;
@@ -234,12 +252,19 @@ namespace Avalonia.Media.TextFormatting
 
                 characterHit = GetRunCharacterHit(currentRun, currentPosition, distance - currentDistance);
 
-                if (i < _textRuns.Count - 1 && currentDistance + currentRun.Size.Width < distance)
+                if (currentRun is DrawableTextRun drawableTextRun)
                 {
-                    currentDistance += currentRun.Size.Width;
+                    if (i < _textRuns.Count - 1 && currentDistance + drawableTextRun.Size.Width < distance)
+                    {
+                        currentDistance += drawableTextRun.Size.Width;
 
-                    currentPosition += currentRun.Length;
+                        currentPosition += currentRun.Length;
 
+                        continue;
+                    }
+                }
+                else
+                {
                     continue;
                 }
 
@@ -249,7 +274,7 @@ namespace Avalonia.Media.TextFormatting
             return characterHit;
         }
 
-        private static CharacterHit GetRunCharacterHit(DrawableTextRun run, int currentPosition, double distance)
+        private static CharacterHit GetRunCharacterHit(TextRun run, int currentPosition, double distance)
         {
             CharacterHit characterHit;
 
@@ -270,9 +295,9 @@ namespace Avalonia.Media.TextFormatting
 
                         break;
                     }
-                default:
+                case DrawableTextRun drawableTextRun:
                     {
-                        if (distance < run.Size.Width / 2)
+                        if (distance < drawableTextRun.Size.Width / 2)
                         {
                             characterHit = new CharacterHit(currentPosition);
                         }
@@ -282,6 +307,10 @@ namespace Avalonia.Media.TextFormatting
                         }
                         break;
                     }
+                default:
+                    characterHit = new CharacterHit(currentPosition, run.Length);
+
+                    break;
             }
 
             return characterHit;
@@ -307,7 +336,7 @@ namespace Avalonia.Media.TextFormatting
                     {
                         var i = index;
 
-                        var rightToLeftWidth = currentRun.Size.Width;
+                        var rightToLeftWidth = shapedRun.Size.Width;
 
                         while (i + 1 <= _textRuns.Count - 1)
                         {
@@ -317,7 +346,7 @@ namespace Avalonia.Media.TextFormatting
                             {
                                 i++;
 
-                                rightToLeftWidth += nextRun.Size.Width;
+                                rightToLeftWidth += nextShapedRun.Size.Width;
 
                                 continue;
                             }
@@ -331,7 +360,10 @@ namespace Avalonia.Media.TextFormatting
                             {
                                 currentRun = _textRuns[i];
 
-                                rightToLeftWidth -= currentRun.Size.Width;
+                                if (currentRun is DrawableTextRun drawable)
+                                {
+                                    rightToLeftWidth -= drawable.Size.Width;
+                                }
 
                                 if (currentPosition + currentRun.Length >= characterIndex)
                                 {
@@ -355,8 +387,13 @@ namespace Avalonia.Media.TextFormatting
                         return Math.Max(0, currentDistance + distance);
                     }
 
+                    if (currentRun is DrawableTextRun drawableTextRun)
+                    {
+                        currentDistance += drawableTextRun.Size.Width;
+                    }
+
                     //No hit hit found so we add the full width
-                    currentDistance += currentRun.Size.Width;
+
                     currentPosition += currentRun.Length;
                     remainingLength -= currentRun.Length;
                 }
@@ -380,8 +417,12 @@ namespace Avalonia.Media.TextFormatting
                         return Math.Max(0, currentDistance - distance);
                     }
 
+                    if (currentRun is DrawableTextRun drawableTextRun)
+                    {
+                        currentDistance -= drawableTextRun.Size.Width;
+                    }
+
                     //No hit hit found so we add the full width
-                    currentDistance -= currentRun.Size.Width;
                     currentPosition += currentRun.Length;
                     remainingLength -= currentRun.Length;
                 }
@@ -391,7 +432,7 @@ namespace Avalonia.Media.TextFormatting
         }
 
         private static bool TryGetDistanceFromCharacterHit(
-            DrawableTextRun currentRun,
+            TextRun currentRun,
             CharacterHit characterHit,
             int currentPosition,
             int remainingLength,
@@ -432,7 +473,7 @@ namespace Avalonia.Media.TextFormatting
 
                         break;
                     }
-                default:
+                case DrawableTextRun drawableTextRun:
                     {
                         if (characterIndex == currentPosition)
                         {
@@ -441,13 +482,17 @@ namespace Avalonia.Media.TextFormatting
 
                         if (characterIndex == currentPosition + currentRun.Length)
                         {
-                            distance = currentRun.Size.Width;
+                            distance = drawableTextRun.Size.Width;
 
                             return true;
 
                         }
 
                         break;
+                    }
+                default:
+                    {
+                        return false;
                     }
             }
 
@@ -934,6 +979,17 @@ namespace Avalonia.Media.TextFormatting
             return GetTextBoundsRightToLeft(firstTextSourceIndex, textLength);
         }
 
+        public override void Dispose()
+        {
+            for (int i = 0; i < _textRuns.Count; i++)
+            {
+                if (_textRuns[i] is ShapedTextRun shapedTextRun)
+                {
+                    shapedTextRun.Dispose();
+                }
+            }
+        }
+
         public TextLineImpl FinalizeLine()
         {
             _textLineMetrics = CreateLineMetrics();
@@ -943,7 +999,7 @@ namespace Avalonia.Media.TextFormatting
             return this;
         }
 
-        private static sbyte GetRunBidiLevel(DrawableTextRun run, FlowDirection flowDirection)
+        private static sbyte GetRunBidiLevel(TextRun run, FlowDirection flowDirection)
         {
             if (run is ShapedTextRun shapedTextCharacters)
             {
@@ -1039,16 +1095,18 @@ namespace Avalonia.Media.TextFormatting
                 minLevelToReverse--;
             }
 
-            _textRuns.Clear();
+            var textRuns = new List<TextRun>(_textRuns.Count);
 
             current = orderedRun;
 
             while (current != null)
             {
-                _textRuns.Add(current.Run);
+                textRuns.Add(current.Run);
 
                 current = current.Next;
             }
+
+            _textRuns = textRuns;
         }
 
         /// <summary>
@@ -1286,7 +1344,7 @@ namespace Avalonia.Media.TextFormatting
         {
             var runIndex = 0;
             textPosition = FirstTextSourceIndex;
-            DrawableTextRun? previousRun = null;
+            TextRun? previousRun = null;
 
             while (runIndex < _textRuns.Count)
             {
@@ -1346,7 +1404,6 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
-
                     default:
                         {
                             if (codepointIndex == textPosition)
@@ -1363,6 +1420,7 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
+
                 }
 
                 runIndex++;
@@ -1389,6 +1447,13 @@ namespace Avalonia.Media.TextFormatting
             var height = descent - ascent + lineGap;
 
             var lineHeight = _paragraphProperties.LineHeight;
+
+            var lastRunIndex = _textRuns.Count - 1;
+
+            if (lastRunIndex > 0 && _textRuns[lastRunIndex] is TextEndOfLine)
+            {
+                lastRunIndex--;
+            }
 
             for (var index = 0; index < _textRuns.Count; index++)
             {
@@ -1424,7 +1489,7 @@ namespace Avalonia.Media.TextFormatting
                                 }
                             }
 
-                            if (index == _textRuns.Count - 1)
+                            if (index == lastRunIndex)
                             {
                                 width = widthIncludingWhitespace + textRun.GlyphRun.Metrics.Width;
                                 trailingWhitespaceLength = textRun.GlyphRun.Metrics.TrailingWhitespaceLength;
@@ -1436,7 +1501,7 @@ namespace Avalonia.Media.TextFormatting
                             break;
                         }
 
-                    case { } drawableTextRun:
+                    case DrawableTextRun drawableTextRun:
                         {
                             widthIncludingWhitespace += drawableTextRun.Size.Width;
 
@@ -1444,7 +1509,7 @@ namespace Avalonia.Media.TextFormatting
                             {
                                 case FlowDirection.LeftToRight:
                                     {
-                                        if (index == _textRuns.Count - 1)
+                                        if (index == lastRunIndex)
                                         {
                                             width = widthIncludingWhitespace;
                                             trailingWhitespaceLength = 0;
@@ -1456,7 +1521,7 @@ namespace Avalonia.Media.TextFormatting
 
                                 case FlowDirection.RightToLeft:
                                     {
-                                        if (index == _textRuns.Count - 1)
+                                        if (index == lastRunIndex)
                                         {
                                             width = widthIncludingWhitespace;
                                             trailingWhitespaceLength = 0;
@@ -1558,7 +1623,7 @@ namespace Avalonia.Media.TextFormatting
 
         private sealed class OrderedBidiRun
         {
-            public OrderedBidiRun(DrawableTextRun run, sbyte level)
+            public OrderedBidiRun(TextRun run, sbyte level)
             {
                 Run = run;
                 Level = level;
@@ -1566,7 +1631,7 @@ namespace Avalonia.Media.TextFormatting
 
             public sbyte Level { get; }
 
-            public DrawableTextRun Run { get; }
+            public TextRun Run { get; }
 
             public OrderedBidiRun? Next { get; set; }
         }

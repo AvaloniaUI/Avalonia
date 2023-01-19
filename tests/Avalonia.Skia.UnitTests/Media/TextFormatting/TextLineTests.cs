@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.UnitTests;
@@ -90,7 +91,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var clusters = new List<int>();
 
-                foreach (var textRun in textLine.TextRuns.OrderBy(x => x.CharacterBufferReference.OffsetToFirstChar))
+                foreach (var textRun in textLine.TextRuns.OrderBy(x => TextTestHelper.GetStartCharIndex(x.Text)))
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
@@ -137,7 +138,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var clusters = new List<int>();
 
-                foreach (var textRun in textLine.TextRuns.OrderBy(x => x.CharacterBufferReference.OffsetToFirstChar))
+                foreach (var textRun in textLine.TextRuns.OrderBy(x => TextTestHelper.GetStartCharIndex(x.Text)))
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
@@ -326,7 +327,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     }
                 }
 
-                Assert.Equal(currentDistance, textLine.GetDistanceFromCharacterHit(new CharacterHit(s_multiLineText.Length)));
+                var actualDistance = textLine.GetDistanceFromCharacterHit(new CharacterHit(s_multiLineText.Length));
+
+                Assert.Equal(currentDistance, actualDistance);
             }
         }
 
@@ -408,7 +411,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.True(collapsedLine.HasCollapsed);
 
-                var trimmedText = collapsedLine.TextRuns.SelectMany(x => new CharacterBufferRange(x)).ToArray();
+                var trimmedText = collapsedLine.TextRuns.SelectMany(x => x.Text.ToString()).ToArray();
 
                 Assert.Equal(expected.Length, trimmedText.Length);
 
@@ -651,7 +654,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     var run = textRuns[i];
                     var bounds = runBounds[i];
 
-                    Assert.Equal(run.CharacterBufferReference.OffsetToFirstChar, bounds.TextSourceCharacterIndex);
+                    Assert.Equal(TextTestHelper.GetStartCharIndex(run.Text), bounds.TextSourceCharacterIndex);
                     Assert.Equal(run, bounds.TextRun);
                     Assert.Equal(run.Size.Width, bounds.Rectangle.Width);
                 }

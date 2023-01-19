@@ -23,6 +23,5 @@
   <Import Project="..\..\build\SampleApp.props" />
   <Import Project="..\..\build\ReferenceCoreLibraries.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
-  <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ReactiveUI.props" />
 </Project>

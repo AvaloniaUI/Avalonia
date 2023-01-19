@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
@@ -159,12 +159,13 @@ namespace Avalonia.Controls
             // menu layout.
 
             var parentSharedSizeScope = this.GetObservable(VisualParentProperty)
-                .SelectMany(x =>
+                .Select(x =>
                 {
                     var parent = x as Control;
                     return parent?.GetObservable(DefinitionBase.PrivateSharedSizeScopeProperty) ??
                            Observable.Return<DefinitionBase.SharedSizeScope?>(null);
-                });
+                })
+                .Switch();
 
             this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
         }
@@ -328,15 +329,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems
-        {
-            get
-            {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
-            }
-        }
+        IEnumerable<IMenuItem> IMenuElement.SubItems => GetRealizedContainers().OfType<IMenuItem>();
 
         /// <summary>
         /// Opens the submenu.
@@ -357,11 +350,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
-        }
+        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
@@ -673,7 +663,7 @@ namespace Avalonia.Controls
 
             if (value)
             {
-                foreach (var item in Items!.OfType<MenuItem>())
+                foreach (var item in ItemsView.OfType<MenuItem>())
                 {
                     item.TryUpdateCanExecute();
                 }

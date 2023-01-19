@@ -19,7 +19,7 @@ namespace ControlCatalog.ViewModels
     {
         public TransitioningContentControlPageViewModel()
         {
-            var assetLoader = AvaloniaLocator.Current?.GetService<IAssetLoader>()!;
+            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
             var images = new string[] 
             { 

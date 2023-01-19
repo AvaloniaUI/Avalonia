@@ -129,6 +129,11 @@ namespace Avalonia.Headless
             public void Dispose()
             {
             }
+
+            public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         class HeadlessGeometryStub : IGeometryImpl

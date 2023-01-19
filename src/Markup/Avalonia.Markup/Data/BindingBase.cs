@@ -1,9 +1,5 @@
-﻿
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
@@ -247,6 +243,7 @@ namespace Avalonia.Data
             // Content property is bound to a value which becomes the ContentPresenter's 
             // DataContext - it is from this that the child hosted by the ContentPresenter needs to
             // inherit its DataContext.
+
             return target.GetObservable(Visual.VisualParentProperty)
                 .Select(x =>
                 {
@@ -255,7 +252,7 @@ namespace Avalonia.Data
                 }).Switch();
         }
 
-        private class UpdateSignal : SingleSubscriberObservableBase<Unit>
+        private class UpdateSignal : SingleSubscriberObservableBase<ValueTuple>
         {
             private readonly AvaloniaObject _target;
             private readonly AvaloniaProperty _property;
@@ -280,7 +277,7 @@ namespace Avalonia.Data
             {
                 if (e.Property == _property)
                 {
-                    PublishNext(Unit.Default);
+                    PublishNext(default);
                 }
             }
         }

@@ -19,7 +19,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public Codepoint FirstCodepoint { get; }
 
         /// <summary>
-        /// The text that is representing the <see cref="Grapheme"/>.
+        /// The text of the grapheme cluster
         /// </summary>
         public ReadOnlySpan<char> Text { get; }
     }

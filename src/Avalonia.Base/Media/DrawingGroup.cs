@@ -76,8 +76,8 @@ namespace Avalonia.Media
         {
             using (context.PushPreTransform(Transform?.Value ?? Matrix.Identity))
             using (context.PushOpacity(Opacity))
-            using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default(DrawingContext.PushedState))
-            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default(DrawingContext.PushedState))
+            using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
+            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default)
             {
                 foreach (var drawing in Children)
                 {

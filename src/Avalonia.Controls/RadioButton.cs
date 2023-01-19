@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls.Primitives;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
