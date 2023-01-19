@@ -4,6 +4,8 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Tmds.DBus.Protocol;
+using Tmds.DBus.SourceGenerator;
+
 
 namespace Avalonia.FreeDesktop.DBusIme.IBus
 {
@@ -49,18 +51,13 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             });
         }
 
-        private void OnCommitText(Exception? e, object wtf)
+        private void OnCommitText(Exception? e, DBusVariantItem variantItem)
         {
             if (e is not null)
                 return;
 
-            // Hello darkness, my old friend
-            if (wtf.GetType().GetField("Item3") is { } prop)
-            {
-                var text = prop.GetValue(wtf) as string;
-                if (!string.IsNullOrEmpty(text))
-                    FireCommit(text!);
-            }
+            if (variantItem.Value is DBusStructItem { Count: >= 3 } structItem && structItem[2] is DBusStringItem stringItem)
+                FireCommit(stringItem.Value);
         }
 
         protected override Task DisconnectAsync() => _service?.DestroyAsync() ?? Task.CompletedTask;

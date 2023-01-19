@@ -9,8 +9,7 @@ using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Tmds.DBus.Protocol;
-
-#pragma warning disable 1998
+using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
 {
@@ -60,7 +59,7 @@ namespace Avalonia.FreeDesktop
 
             public override string Path { get; }
 
-            protected override (uint revision, (int, Dictionary<string, object>, object[]) layout) OnGetLayout(int parentId, int recursionDepth, string[] propertyNames)
+            protected override (uint revision, (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) layout) OnGetLayout(int parentId, int recursionDepth, string[] propertyNames)
             {
                 var menu = GetMenu(parentId);
                 var layout = GetLayout(menu.item, menu.menu, recursionDepth, propertyNames);
@@ -73,15 +72,15 @@ namespace Avalonia.FreeDesktop
                 return (_revision, layout);
             }
 
-            protected override (int, Dictionary<string, object>)[] OnGetGroupProperties(int[] ids, string[] propertyNames) =>
+            protected override (int, Dictionary<string, DBusVariantItem>)[] OnGetGroupProperties(int[] ids, string[] propertyNames) =>
                 ids.Select(id => (id, GetProperties(GetMenu(id), propertyNames))).ToArray();
 
-            protected override object OnGetProperty(int id, string name) => GetProperty(GetMenu(id), name) ?? 0;
+            protected override DBusVariantItem OnGetProperty(int id, string name) => GetProperty(GetMenu(id), name) ?? new DBusVariantItem("i", new DBusInt32Item(0));
 
-            protected override void OnEvent(int id, string eventId, object data, uint timestamp) =>
+            protected override void OnEvent(int id, string eventId, DBusVariantItem data, uint timestamp) =>
                 Dispatcher.UIThread.Post(() => HandleEvent(id, eventId));
 
-            protected override int[] OnEventGroup((int, string, object, uint)[] events)
+            protected override int[] OnEventGroup((int, string, DBusVariantItem, uint)[] events)
             {
                 foreach (var e in events)
                     Dispatcher.UIThread.Post(() => HandleEvent(e.Item1, e.Item2));
@@ -115,14 +114,14 @@ namespace Avalonia.FreeDesktop
                 if (_disposed)
                     return;
                 _disposed = true;
-
                 // Fire and forget
-                _registrar?.UnregisterWindowAsync(_xid);
+                _ = _registrar?.UnregisterWindowAsync(_xid);
             }
 
 
 
             public bool IsNativeMenuExported { get; private set; }
+
             public event EventHandler? OnIsNativeMenuExportedChanged;
 
             public void SetNativeMenu(NativeMenu? menu)
@@ -203,31 +202,31 @@ namespace Avalonia.FreeDesktop
                 QueueReset();
             }
 
-            private static readonly string[] AllProperties = {
+            private static readonly string[] s_allProperties = {
                 "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state", "icon-data"
             };
 
-            private object? GetProperty((NativeMenuItemBase? item, NativeMenu? menu) i, string name)
+            private DBusVariantItem? GetProperty((NativeMenuItemBase? item, NativeMenu? menu) i, string name)
             {
                 var (it, menu) = i;
 
                 if (it is NativeMenuItemSeparator)
                 {
                     if (name == "type")
-                        return "separator";
+                        return new DBusVariantItem("s", new DBusStringItem("separator"));
                 }
                 else if (it is NativeMenuItem item)
                 {
                     if (name == "type")
                         return null;
                     if (name == "label")
-                        return item.Header ?? "<null>";
+                        return new DBusVariantItem("s", new DBusStringItem(item.Header ?? "<null>"));
                     if (name == "enabled")
                     {
                         if (item.Menu is not null && item.Menu.Items.Count == 0)
-                            return false;
+                            return new DBusVariantItem("b", new DBusBoolItem(false));
                         if (!item.IsEnabled)
-                            return false;
+                            return new DBusVariantItem("b", new DBusBoolItem(false));
                         return null;
                     }
                     if (name == "shortcut")
@@ -236,30 +235,30 @@ namespace Avalonia.FreeDesktop
                             return null;
                         if (item.Gesture.KeyModifiers == 0)
                             return null;
-                        var lst = new List<string>();
+                        var lst = new List<DBusItem>();
                         var mod = item.Gesture;
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Control))
-                            lst.Add("Control");
+                            lst.Add(new DBusStringItem("Control"));
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Alt))
-                            lst.Add("Alt");
+                            lst.Add(new DBusStringItem("Alt"));
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Shift))
-                            lst.Add("Shift");
+                            lst.Add(new DBusStringItem("Shift"));
                         if (mod.KeyModifiers.HasAllFlags(KeyModifiers.Meta))
-                            lst.Add("Super");
-                        lst.Add(item.Gesture.Key.ToString());
-                        return new[] { lst.ToArray() };
+                            lst.Add(new DBusStringItem("Super"));
+                        lst.Add(new DBusStringItem(item.Gesture.Key.ToString()));
+                        return new DBusVariantItem("aas", new DBusArrayItem(DBusType.Array, new[] { new DBusArrayItem(DBusType.String, lst) }));
                     }
 
                     if (name == "toggle-type")
                     {
                         if (item.ToggleType == NativeMenuItemToggleType.CheckBox)
-                            return "checkmark";
+                            return new DBusVariantItem("s", new DBusStringItem("checkmark"));
                         if (item.ToggleType == NativeMenuItemToggleType.Radio)
-                            return "radio";
+                            return new DBusVariantItem("s", new DBusStringItem("radio"));
                     }
 
                     if (name == "toggle-state" && item.ToggleType != NativeMenuItemToggleType.None)
-                        return item.IsChecked ? 1 : 0;
+                        return new DBusVariantItem("i", new DBusInt32Item(item.IsChecked ? 1 : 0));
 
                     if (name == "icon-data")
                     {
@@ -273,23 +272,24 @@ namespace Avalonia.FreeDesktop
 
                                 using var ms = new MemoryStream();
                                 icon.Save(ms);
-                                return ms.ToArray();
+                                return new DBusVariantItem("ay",
+                                    new DBusArrayItem(DBusType.Byte, ms.ToArray().Select(static x => new DBusByteItem(x))));
                             }
                         }
                     }
 
                     if (name == "children-display")
-                        return menu is not null ? "submenu" : null;
+                        return menu is not null ? new DBusVariantItem("s", new DBusStringItem("submenu")) : null;
                 }
 
                 return null;
             }
 
-            private Dictionary<string, object> GetProperties((NativeMenuItemBase? item, NativeMenu? menu) i, string[] names)
+            private Dictionary<string, DBusVariantItem> GetProperties((NativeMenuItemBase? item, NativeMenu? menu) i, string[] names)
             {
                 if (names.Length == 0)
-                    names = AllProperties;
-                var properties = new Dictionary<string, object>();
+                    names = s_allProperties;
+                var properties = new Dictionary<string, DBusVariantItem>();
                 foreach (var n in names)
                 {
                     var v = GetProperty(i, n);
@@ -300,17 +300,23 @@ namespace Avalonia.FreeDesktop
                 return properties;
             }
 
-            private (int, Dictionary<string, object>, object[]) GetLayout(NativeMenuItemBase? item, NativeMenu? menu, int depth, string[] propertyNames)
+            private (int, Dictionary<string, DBusVariantItem>, DBusVariantItem[]) GetLayout(NativeMenuItemBase? item, NativeMenu? menu, int depth, string[] propertyNames)
             {
                 var id = item is null ? 0 : GetId(item);
                 var props = GetProperties((item, menu), propertyNames);
-                var children = depth == 0 || menu is null ? Array.Empty<object>() : new object[menu.Items.Count];
+                var children = depth == 0 || menu is null ? Array.Empty<DBusVariantItem>() : new DBusVariantItem[menu.Items.Count];
                 if (menu is not null)
                 {
                     for (var c = 0; c < children.Length; c++)
                     {
                         var ch = menu.Items[c];
-                        children[c] = GetLayout(ch, (ch as NativeMenuItem)?.Menu, depth == -1 ? -1 : depth - 1, propertyNames);
+                        var layout = GetLayout(ch, (ch as NativeMenuItem)?.Menu, depth == -1 ? -1 : depth - 1, propertyNames);
+                        children[c] = new DBusVariantItem("(ia{sv}av)", new DBusStructItem(new DBusItem[]
+                        {
+                            new DBusInt32Item(layout.Item1),
+                            new DBusArrayItem(DBusType.DictEntry, layout.Item2.Select(static x => new DBusDictEntryItem(new DBusStringItem(x.Key), x.Value))),
+                            new DBusArrayItem(DBusType.Variant, layout.Item3)
+                        }));
                     }
                 }
 

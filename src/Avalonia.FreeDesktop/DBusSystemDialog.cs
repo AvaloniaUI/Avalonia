@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Tmds.DBus.Protocol;
+using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
 {
@@ -44,12 +44,12 @@ namespace Avalonia.FreeDesktop
         {
             var parentWindow = $"x11:{_handle.Handle:X}";
             ObjectPath objectPath;
-            var chooserOptions = new Dictionary<string, object>();
+            var chooserOptions = new Dictionary<string, DBusVariantItem>();
             var filters = ParseFilters(options.FileTypeFilter);
-            if (filters.Any())
+            if (filters is not null)
                 chooserOptions.Add("filters", filters);
 
-            chooserOptions.Add("multiple", options.AllowMultiple);
+            chooserOptions.Add("multiple", new DBusVariantItem("b", new DBusBoolItem(options.AllowMultiple)));
 
             objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
 
@@ -58,9 +58,8 @@ namespace Avalonia.FreeDesktop
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
                 if (e is not null)
-                    tsc.TrySetException(e);
-                else
-                    tsc.TrySetResult(x.results["uris"] as string[]);
+                    return;
+                tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
             });
 
             var uris = await tsc.Task ?? Array.Empty<string>();
@@ -71,15 +70,15 @@ namespace Avalonia.FreeDesktop
         {
             var parentWindow = $"x11:{_handle.Handle:X}";
             ObjectPath objectPath;
-            var chooserOptions = new Dictionary<string, object>();
+            var chooserOptions = new Dictionary<string, DBusVariantItem>();
             var filters = ParseFilters(options.FileTypeChoices);
-            if (filters.Any())
+            if (filters is not null)
                 chooserOptions.Add("filters", filters);
 
             if (options.SuggestedFileName is { } currentName)
-                chooserOptions.Add("current_name", currentName);
+                chooserOptions.Add("current_name", new DBusVariantItem("s", new DBusStringItem(currentName)));
             if (options.SuggestedStartLocation?.TryGetUri(out var currentFolder) == true)
-                chooserOptions.Add("current_folder", Encoding.UTF8.GetBytes(currentFolder.ToString()));
+                chooserOptions.Add("current_folder", new DBusVariantItem("s", new DBusStringItem(currentFolder.ToString())));
 
             objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
             var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
@@ -87,9 +86,8 @@ namespace Avalonia.FreeDesktop
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
                 if (e is not null)
-                    tsc.TrySetException(e);
-                else
-                    tsc.TrySetResult(x.results["uris"] as string[]);
+                    return;
+                tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
             });
 
             var uris = await tsc.Task;
@@ -106,10 +104,10 @@ namespace Avalonia.FreeDesktop
         public override async Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
         {
             var parentWindow = $"x11:{_handle.Handle:X}";
-            var chooserOptions = new Dictionary<string, object>
+            var chooserOptions = new Dictionary<string, DBusVariantItem>
             {
-                { "directory", true },
-                { "multiple", options.AllowMultiple }
+                { "directory", new DBusVariantItem("b", new DBusBoolItem(true)) },
+                { "multiple", new DBusVariantItem("b", new DBusBoolItem(options.AllowMultiple)) }
             };
 
             var objectPath = await _fileChooser.OpenFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
@@ -118,9 +116,8 @@ namespace Avalonia.FreeDesktop
             using var disposable = await request.WatchResponseAsync((e, x) =>
             {
                 if (e is not null)
-                    tsc.TrySetException(e);
-                else
-                    tsc.TrySetResult(x.results["uris"] as string[]);
+                    return;
+                tsc.TrySetResult((x.results["uris"].Value as DBusArrayItem)?.Select(static y => (y as DBusStringItem)!.Value).ToArray());
             });
 
             var uris = await tsc.Task ?? Array.Empty<string>();
@@ -131,29 +128,38 @@ namespace Avalonia.FreeDesktop
                 .Select(static path => new BclStorageFolder(new DirectoryInfo(path))).ToList();
         }
 
-        private static (string name, (uint style, string extension)[])[] ParseFilters(IReadOnlyList<FilePickerFileType>? fileTypes)
+        private static DBusVariantItem? ParseFilters(IReadOnlyList<FilePickerFileType>? fileTypes)
         {
+            const uint GlobStyle = 0u;
+            const uint MimeStyle = 1u;
+
             // Example: [('Images', [(0, '*.ico'), (1, 'image/png')]), ('Text', [(0, '*.txt')])]
             if (fileTypes is null)
-                return Array.Empty<(string name, (uint style, string extension)[])>();
+                return null;
 
-            var filters = new List<(string name, (uint style, string extension)[])>();
+            var any = false;
+            var filters = new DBusArrayItem(DBusType.Struct, new List<DBusItem>());
+
             foreach (var fileType in fileTypes)
             {
-                const uint GlobStyle = 0u;
-                const uint MimeStyle = 1u;
+                var extensions = new List<DBusItem>();
+                if (fileType.Patterns?.Count > 0)
+                    extensions.AddRange(
+                        fileType.Patterns.Select(static pattern =>
+                            new DBusStructItem(new DBusItem[] { new DBusUInt32Item(GlobStyle), new DBusStringItem(pattern) })));
+                else if (fileType.MimeTypes?.Count > 0)
+                    extensions.AddRange(
+                        fileType.MimeTypes.Select(static mimeType =>
+                            new DBusStructItem(new DBusItem[] { new DBusUInt32Item(MimeStyle), new DBusStringItem(mimeType) })));
+                else
+                    continue;
 
-                var extensions = Enumerable.Empty<(uint, string)>();
-
-                if (fileType.Patterns is not null)
-                    extensions = extensions.Concat(fileType.Patterns.Select(static x => (globStyle: GlobStyle, x)));
-                else if (fileType.MimeTypes is not null)
-                    extensions = extensions.Concat(fileType.MimeTypes.Select(static x => (mimeStyle: MimeStyle, x)));
-                if (extensions.Any())
-                    filters.Add((fileType.Name, extensions.ToArray()));
+                any = true;
+                filters.Add(new DBusStructItem(
+                    new DBusItem[] { new DBusStringItem(fileType.Name), new DBusArrayItem(DBusType.Struct, extensions) }));
             }
 
-            return filters.ToArray();
+            return any ? new DBusVariantItem("a(sa(us))", filters) : null;
         }
     }
 }
