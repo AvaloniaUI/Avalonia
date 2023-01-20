@@ -12,6 +12,8 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Styling;
@@ -23,7 +25,7 @@ namespace Avalonia.Controls
     /// Displays a collection of items.
     /// </summary>
     [PseudoClasses(":empty", ":singleitem")]
-    public class ItemsControl : TemplatedControl, IChildIndexProvider
+    public class ItemsControl : TemplatedControl, IChildIndexProvider, IScrollSnapPointsInfo
     {
         /// <summary>
         /// The default value for the <see cref="ItemsPanel"/> property.
@@ -91,6 +93,7 @@ namespace Avalonia.Controls
         private IDataTemplate? _displayMemberItemTemplate;
         private Tuple<int, Control>? _containerBeingPrepared;
         private ScrollViewer? _scrollViewer;
+        private ItemsPresenter? _itemsPresenter;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsControl"/> class.
@@ -203,6 +206,45 @@ namespace Avalonia.Controls
             remove => _childIndexChanged -= value;
         }
 
+
+        public event EventHandler<RoutedEventArgs> HorizontalSnapPointsChanged
+        {
+            add
+            {
+                if (_itemsPresenter != null)
+                {
+                    _itemsPresenter.HorizontalSnapPointsChanged += value;
+                }
+            }
+
+            remove
+            {
+                if (_itemsPresenter != null)
+                {
+                    _itemsPresenter.HorizontalSnapPointsChanged -= value;
+                }
+            }
+        }
+
+        public event EventHandler<RoutedEventArgs> VerticalSnapPointsChanged
+        {
+            add
+            {
+                if (_itemsPresenter != null)
+                {
+                    _itemsPresenter.VerticalSnapPointsChanged += value;
+                }
+            }
+
+            remove
+            {
+                if (_itemsPresenter != null)
+                {
+                    _itemsPresenter.VerticalSnapPointsChanged -= value;
+                }
+            }
+        }
+
         /// <summary>
         /// Returns the container for the item at the specified index.
         /// </summary>
@@ -254,7 +296,8 @@ namespace Avalonia.Controls
         /// Gets the currently realized containers.
         /// </summary>
         public IEnumerable<Control> GetRealizedContainers() => Presenter?.GetRealizedContainers() ?? Array.Empty<Control>();
-
+        public bool AreHorizontalSnapPointsRegular => _itemsPresenter?.AreHorizontalSnapPointsRegular ?? false;
+        public bool AreVerticalSnapPointsRegular => _itemsPresenter?.AreVerticalSnapPointsRegular ?? false;
 
         /// <summary>
         /// Creates or a container that can be used to display an item.
@@ -355,6 +398,7 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+            _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
         }
 
         /// <summary>
@@ -670,6 +714,18 @@ namespace Avalonia.Controls
         {
             count = ItemsView.Count;
             return true;
+        }
+
+        public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
+        {
+            return _itemsPresenter?.GetIrregularSnapPoints(orientation, snapPointsAlignment) ?? new List<double>();
+        }
+
+        public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
+        {
+            offset = 0;
+
+            return _itemsPresenter?.GetRegularSnapPoints(orientation, snapPointsAlignment, out offset) ?? 0;
         }
     }
 }

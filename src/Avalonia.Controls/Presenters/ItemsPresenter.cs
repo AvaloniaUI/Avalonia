@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
 
 namespace Avalonia.Controls.Presenters
 {
     /// <summary>
     /// Presents items inside an <see cref="Avalonia.Controls.ItemsControl"/>.
     /// </summary>
-    public class ItemsPresenter : Control, ILogicalScrollable
+    public class ItemsPresenter : Control, ILogicalScrollable, IScrollSnapPointsInfo
     {
         /// <summary>
         /// Defines the <see cref="ItemsPanel"/> property.
@@ -20,6 +22,44 @@ namespace Avalonia.Controls.Presenters
         private PanelContainerGenerator? _generator;
         private ILogicalScrollable? _logicalScrollable;
         private EventHandler? _scrollInvalidated;
+
+        public event EventHandler<RoutedEventArgs> HorizontalSnapPointsChanged
+        {
+            add
+            {
+                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
+                {
+                    scrollSnapPointsInfo.HorizontalSnapPointsChanged += value;
+                }
+            }
+
+            remove
+            {
+                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
+                {
+                    scrollSnapPointsInfo.HorizontalSnapPointsChanged -= value;
+                }
+            }
+        }
+
+        public event EventHandler<RoutedEventArgs> VerticalSnapPointsChanged
+        {
+            add
+            {
+                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
+                {
+                    scrollSnapPointsInfo.VerticalSnapPointsChanged += value;
+                }
+            }
+
+            remove
+            {
+                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
+                {
+                    scrollSnapPointsInfo.VerticalSnapPointsChanged -= value;
+                }
+            }
+        }
 
         static ItemsPresenter()
         {
@@ -88,6 +128,9 @@ namespace Avalonia.Controls.Presenters
         Size ILogicalScrollable.PageScrollSize => _logicalScrollable?.PageScrollSize ?? default;
         Size IScrollable.Extent => _logicalScrollable?.Extent ?? default;
         Size IScrollable.Viewport => _logicalScrollable?.Viewport ?? default;
+
+        public bool AreHorizontalSnapPointsRegular => Panel is IScrollSnapPointsInfo scrollSnapPointsInfo ? scrollSnapPointsInfo.AreHorizontalSnapPointsRegular : false;
+        public bool AreVerticalSnapPointsRegular => Panel is IScrollSnapPointsInfo scrollSnapPointsInfo ? scrollSnapPointsInfo.AreVerticalSnapPointsRegular : false;
 
         public override sealed void ApplyTemplate()
         {
@@ -204,5 +247,27 @@ namespace Avalonia.Controls.Presenters
         }
 
         private void OnLogicalScrollInvalidated(object? sender, EventArgs e) => _scrollInvalidated?.Invoke(this, e);
+
+        public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
+        {
+            if(Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
+            {
+                return scrollSnapPointsInfo.GetIrregularSnapPoints(orientation, snapPointsAlignment);
+            }
+
+            return new List<double>();
+        }
+
+        public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
+        {
+            if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
+            {
+                return scrollSnapPointsInfo.GetRegularSnapPoints(orientation, snapPointsAlignment, out offset);
+            }
+
+            offset = 0;
+
+            return 0;
+        }
     }
 }
