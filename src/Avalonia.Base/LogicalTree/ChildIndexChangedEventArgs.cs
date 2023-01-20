@@ -12,17 +12,23 @@ namespace Avalonia.LogicalTree
 
         private ChildIndexChangedEventArgs()
         {
+            Index = -1;
         }
 
-        public ChildIndexChangedEventArgs(ILogical child)
+        public ChildIndexChangedEventArgs(ILogical child, int index)
         {
             Child = child;
+            Index = index;
         }
 
         /// <summary>
-        /// Logical child which index was changed.
-        /// If null, all children should be reset.
+        /// Gets the logical child whose index was changed or null if all children should be re-evaluated.
         /// </summary>
         public ILogical? Child { get; }
+
+        /// <summary>
+        /// Gets the new index of <see cref="Child"/> or -1 if all children should be re-evaluated.
+        /// </summary>
+        public int Index { get; }
     }
 }

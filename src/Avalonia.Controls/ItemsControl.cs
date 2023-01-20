@@ -520,7 +520,7 @@ namespace Avalonia.Controls
         internal void ItemContainerPrepared(Control container, object? item, int index)
         {
             _containerBeingPrepared = new(index, container);
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, index));
             _containerBeingPrepared = null;
 
             _scrollViewer?.RegisterAnchorCandidate(container);
@@ -529,7 +529,7 @@ namespace Avalonia.Controls
         internal void ItemContainerIndexChanged(Control container, int oldIndex, int newIndex)
         {
             ContainerIndexChangedOverride(container, oldIndex, newIndex);
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container));
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, newIndex));
         }
 
         internal void ClearItemContainer(Control container)

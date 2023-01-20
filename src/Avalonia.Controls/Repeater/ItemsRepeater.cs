@@ -557,11 +557,12 @@ namespace Avalonia.Controls
 
         internal void OnElementPrepared(Control element, VirtualizationInfo virtInfo)
         {
+            var index = virtInfo.Index;
+
             _viewportManager.OnElementPrepared(element, virtInfo);
 
             if (ElementPrepared != null)
             {
-                var index = virtInfo.Index;
 
                 if (_elementPreparedArgs == null)
                 {
@@ -575,7 +576,7 @@ namespace Avalonia.Controls
                 ElementPrepared(this, _elementPreparedArgs);
             }
 
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, index));
         }
 
         internal void OnElementClearing(Control element)
@@ -594,7 +595,7 @@ namespace Avalonia.Controls
                 ElementClearing(this, _elementClearingArgs);
             }
 
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, -1));
         }
 
         internal void OnElementIndexChanged(Control element, int oldIndex, int newIndex)
@@ -613,7 +614,7 @@ namespace Avalonia.Controls
                 ElementIndexChanged(this, _elementIndexChangedArgs);
             }
 
-            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element));
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(element, newIndex));
         }
 
         private void OnDataSourcePropertyChanged(ItemsSourceView? oldValue, ItemsSourceView? newValue)

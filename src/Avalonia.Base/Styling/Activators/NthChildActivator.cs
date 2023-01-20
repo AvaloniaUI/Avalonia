@@ -13,6 +13,7 @@ namespace Avalonia.Styling.Activators
         private readonly int _step;
         private readonly int _offset;
         private readonly bool _reversed;
+        private int _index = -1;
 
         public NthChildActivator(
             ILogical control,
@@ -28,7 +29,8 @@ namespace Avalonia.Styling.Activators
 
         protected override bool EvaluateIsActive()
         {
-            return NthChildSelector.Evaluate(_control, _provider, _step, _offset, _reversed).IsMatch;
+            var index = _index >= 0 ? _index : _provider.GetChildIndex(_control);
+            return NthChildSelector.Evaluate(index, _provider, _step, _offset, _reversed).IsMatch;
         }
 
         protected override void Initialize() => _provider.ChildIndexChanged += ChildIndexChanged;
@@ -37,13 +39,11 @@ namespace Avalonia.Styling.Activators
         private void ChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)
         {
             // Run matching again if:
-            // 1. Selector is reversed, so other item insertion/deletion might affect total count without changing subscribed item index.
-            // 2. e.Child is null, when all children indices were changed.
-            // 3. Subscribed child index was changed.
-            if (_reversed
-                || e.Child is null
-                || e.Child == _control)
+            // 1. e.Child is null, when all children indices were changed.
+            // 2. Subscribed child index was changed.
+            if (e.Child is null || e.Child == _control)
             {
+                _index = e.Index;
                 ReevaluateIsActive();
             }
         }
