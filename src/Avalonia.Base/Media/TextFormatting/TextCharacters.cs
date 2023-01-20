@@ -140,16 +140,14 @@ namespace Avalonia.Media.TextFormatting
 
             var enumerator = new GraphemeEnumerator(textSpan);
 
-            while (enumerator.MoveNext())
+            while (enumerator.MoveNext(out var grapheme))
             {
-                var grapheme = enumerator.Current;
-
                 if (!grapheme.FirstCodepoint.IsWhiteSpace && glyphTypeface.TryGetGlyph(grapheme.FirstCodepoint, out _))
                 {
                     break;
                 }
 
-                count += grapheme.Text.Length;
+                count += grapheme.Length;
             }
 
             return new UnshapedTextRun(text.Slice(0, count), defaultProperties, biDiLevel);
@@ -184,10 +182,8 @@ namespace Avalonia.Media.TextFormatting
 
             var enumerator = new GraphemeEnumerator(text);
 
-            while (enumerator.MoveNext())
+            while (enumerator.MoveNext(out var currentGrapheme))
             {
-                var currentGrapheme = enumerator.Current;
-
                 var currentScript = currentGrapheme.FirstCodepoint.Script;
 
                 if (!currentGrapheme.FirstCodepoint.IsWhiteSpace && defaultFont != null && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
@@ -217,7 +213,7 @@ namespace Avalonia.Media.TextFormatting
                     }
                 }
 
-                length += currentGrapheme.Text.Length;
+                length += currentGrapheme.Length;
             }
 
             return length > 0;

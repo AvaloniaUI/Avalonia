@@ -198,10 +198,13 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     break; // nothing but trailers after the final RI
             }
 
+            const uint gb9Mask =
+                (1U << (int)GraphemeBreakClass.Extend) |
+                (1U << (int)GraphemeBreakClass.ZWJ) |
+                (1U << (int)GraphemeBreakClass.SpacingMark);
+
             // rules GB9, GB9a
-            while (_currentType is GraphemeBreakClass.Extend
-                or GraphemeBreakClass.ZWJ
-                or GraphemeBreakClass.SpacingMark)
+            while (((1U << (int)_currentType) & gb9Mask) != 0U)
             {
                 ReadNextCodepoint();
             }

@@ -151,9 +151,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 while (true)
                 {
-                    while (inner.MoveNext())
+                    Grapheme grapheme;
+                    while (inner.MoveNext(out grapheme))
                     {
-                        j += inner.Current.Text.Length;
+                        j += grapheme.Length;
 
                         if (j + i > text.Length)
                         {
@@ -184,14 +185,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                         }
                     }
 
-                    if (!outer.MoveNext())
+                    if (!outer.MoveNext(out grapheme))
                     {
                         break;
                     }
 
                     inner = new GraphemeEnumerator(text);
 
-                    i += outer.Current.Text.Length;
+                    i += grapheme.Length;
                 }
             }
 
@@ -979,13 +980,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var graphemeEnumerator = new GraphemeEnumerator(text);
 
-                while (graphemeEnumerator.MoveNext())
+                while (graphemeEnumerator.MoveNext(out var grapheme))
                 {
-                    var grapheme = graphemeEnumerator.Current;
+                    var textStyleOverrides = new[] { new ValueSpan<TextRunProperties>(i, grapheme.Length, new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Red)) };
 
-                    var textStyleOverrides = new[] { new ValueSpan<TextRunProperties>(i, grapheme.Text.Length, new GenericTextRunProperties(Typeface.Default, 12, foregroundBrush: Brushes.Red)) };
-
-                    i += grapheme.Text.Length;
+                    i += grapheme.Length;
 
                     var layout = new TextLayout(
                         text,
