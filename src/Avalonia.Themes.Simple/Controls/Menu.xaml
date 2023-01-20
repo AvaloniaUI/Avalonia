@@ -36,8 +36,6 @@
                   <ItemsPresenter Name="PART_ItemsPresenter"
                                   Margin="2"
                                   Grid.IsSharedSizeScope="True"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  Items="{TemplateBinding Items}"
                                   ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </ScrollViewer>
               </Border>
@@ -72,8 +70,6 @@
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <ItemsPresenter Name="PART_ItemsPresenter"
-                          ItemTemplate="{TemplateBinding ItemTemplate}"
-                          Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}"
                           KeyboardNavigation.TabNavigation="Continue" />
         </Border>

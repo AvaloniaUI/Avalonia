@@ -53,7 +53,7 @@
                 <TabControl
                     Items="{Binding Tabs}"
                     Margin="0 16"
-                    HeaderDisplayMemberBinding="{Binding Header, x:DataType=viewModels:TabControlPageViewModelItem}"
+                    DisplayMemberBinding="{Binding Header, x:DataType=viewModels:TabControlPageViewModelItem}"
                     TabStripPlacement="{Binding TabPlacement}">
                     <TabControl.ContentTemplate>
                         <DataTemplate x:DataType="viewModels:TabControlPageViewModelItem">
