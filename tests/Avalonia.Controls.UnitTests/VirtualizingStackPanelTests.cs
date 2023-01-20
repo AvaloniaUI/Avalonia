@@ -9,6 +9,8 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
 using Xunit;
@@ -278,6 +280,58 @@ namespace Avalonia.Controls.UnitTests
             Assert.Same(focused, target.GetRealizedElements().First());
         }
 
+        [Fact]
+        public void NthChild_Selector_Works()
+        {
+            using var app = App();
+            
+            var style = new Style(x => x.OfType<ContentPresenter>().NthChild(5, 0))
+            {
+                Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.Red) },
+            };
+
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
+            
+            Assert.Equal(10, realized.Count);
+            
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 4 || i == 9) ? Brushes.Red : null;
+
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, container.Background);
+            }
+        }
+
+        [Fact]
+        public void NthLastChild_Selector_Works()
+        {
+            using var app = App();
+
+            var style = new Style(x => x.OfType<ContentPresenter>().NthLastChild(5, 0))
+            {
+                Setters = { new Setter(ListBoxItem.BackgroundProperty, Brushes.Red) },
+            };
+
+            var (target, _, _) = CreateTarget(styles: new[] { style });
+            var realized = target.GetRealizedContainers()!.Cast<ContentPresenter>().ToList();
+
+            Assert.Equal(10, realized.Count);
+
+            for (var i = 0; i < 10; ++i)
+            {
+                var container = realized[i];
+                var index = target.IndexFromContainer(container);
+                var expectedBackground = (i == 0 || i == 5) ? Brushes.Red : null;
+
+                Assert.Equal(i, index);
+                Assert.Equal(expectedBackground, container.Background);
+            }
+        }
+
         private static IReadOnlyList<int> GetRealizedIndexes(VirtualizingStackPanel target, ItemsControl itemsControl)
         {
             return target.GetRealizedElements()
@@ -322,7 +376,8 @@ namespace Avalonia.Controls.UnitTests
 
         private static (VirtualizingStackPanel, ScrollViewer, ItemsControl) CreateTarget(
             IEnumerable<object>? items = null,
-            bool useItemTemplate = true)
+            bool useItemTemplate = true,
+            IEnumerable<Style>? styles = null)
         {
             var target = new VirtualizingStackPanel();
 
@@ -351,6 +406,10 @@ namespace Avalonia.Controls.UnitTests
 
             var root = new TestRoot(true, itemsControl);
             root.ClientSize = new(100, 100);
+
+            if (styles is not null)
+                root.Styles.AddRange(styles);
+
             root.LayoutManager.ExecuteInitialLayoutPass();
 
             return (target, scroll, itemsControl);
