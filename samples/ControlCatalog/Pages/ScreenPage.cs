@@ -41,9 +41,6 @@ namespace ControlCatalog.Pages
             var screens = w.Screens.All;
             var scaling = ((IRenderRoot)w).RenderScaling;
 
-            var drawBrush = Brushes.Black;
-            Pen p = new Pen(drawBrush);
-
             var activeScreen = w.Screens.ScreenFromBounds(new PixelRect(w.Position, PixelSize.FromSize(w.Bounds.Size, scaling)));
             double maxBottom = 0;
 
@@ -114,7 +111,7 @@ namespace ControlCatalog.Pages
 
             }
 
-            context.DrawRectangle(p, new Rect(w.Position.X / 10f + Math.Abs(_leftMost), w.Position.Y / 10f+Math.Abs(_topMost), w.Bounds.Width / 10, w.Bounds.Height / 10));
+            context.DrawRectangle(_activePen, new Rect(w.Position.X / 10f + Math.Abs(_leftMost), w.Position.Y / 10f+Math.Abs(_topMost), w.Bounds.Width / 10, w.Bounds.Height / 10));
         }
 
         private static FormattedText CreateFormattedText(string textToFormat, double size = 12)
