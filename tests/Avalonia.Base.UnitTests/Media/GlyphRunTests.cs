@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Utilities;
@@ -179,12 +181,14 @@ namespace Avalonia.Base.UnitTests.Media
         private static GlyphRun CreateGlyphRun(double[] glyphAdvances, int[] glyphClusters, int bidiLevel = 0)
         {
             var count = glyphAdvances.Length;
-            var glyphIndices = new ushort[count];
 
-            var characters = Enumerable.Repeat('a', count).ToArray();
+            var glyphInfos = new GlyphInfo[count];
+            for (var i = 0; i < count; ++i)
+            {
+                glyphInfos[i] = new GlyphInfo(0, glyphClusters[i], glyphAdvances[i]);
+            }
 
-            return new GlyphRun(new MockGlyphTypeface(), 10, characters, glyphIndices, glyphAdvances,
-                glyphClusters: glyphClusters, biDiLevel: bidiLevel);
+            return new GlyphRun(new MockGlyphTypeface(), 10, new string('a', count).AsMemory(), glyphInfos, bidiLevel);
         }
     }
 }
