@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using Avalonia.Utilities;
 
@@ -13,7 +14,7 @@ namespace Avalonia.Media.TextFormatting
         {
             arrayBuilder.Clear();
 
-            if (IsBufferTooLarge<T>(arrayBuilder.Capacity))
+            if (IsBufferTooLarge<T>((uint) arrayBuilder.Capacity))
             {
                 arrayBuilder = default;
             }
@@ -23,7 +24,7 @@ namespace Avalonia.Media.TextFormatting
         {
             list.Clear();
 
-            if (IsBufferTooLarge<T>(list.Capacity))
+            if (IsBufferTooLarge<T>((uint) list.Capacity))
             {
                 list.TrimExcess();
             }
@@ -31,9 +32,11 @@ namespace Avalonia.Media.TextFormatting
 
         public static void ClearThenResetIfTooLarge<T>(Stack<T> stack)
         {
+            var approximateCapacity = RoundUpToPowerOf2((uint)stack.Count);
+
             stack.Clear();
 
-            if (IsBufferTooLarge<T>(stack.Count))
+            if (IsBufferTooLarge<T>(approximateCapacity))
             {
                 stack.TrimExcess();
             }
@@ -42,10 +45,12 @@ namespace Avalonia.Media.TextFormatting
         public static void ClearThenResetIfTooLarge<TKey, TValue>(ref Dictionary<TKey, TValue> dictionary)
             where TKey : notnull
         {
+            var approximateCapacity = RoundUpToPowerOf2((uint)dictionary.Count);
+
             dictionary.Clear();
 
             // dictionary is in fact larger than that: it has entries and buckets, but let's only count our data here
-            if (IsBufferTooLarge<KeyValuePair<TKey, TValue>>(dictionary.Count))
+            if (IsBufferTooLarge<KeyValuePair<TKey, TValue>>(approximateCapacity))
             {
 #if NET6_0_OR_GREATER
                 dictionary.TrimExcess();
@@ -56,7 +61,24 @@ namespace Avalonia.Media.TextFormatting
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsBufferTooLarge<T>(int length)
-            => (long)Unsafe.SizeOf<T>() * length > MaxKeptBufferSizeInBytes;
+        private static bool IsBufferTooLarge<T>(uint capacity)
+            => (long) (uint) Unsafe.SizeOf<T>() * capacity > MaxKeptBufferSizeInBytes;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static uint RoundUpToPowerOf2(uint value)
+        {
+#if NET6_0_OR_GREATER
+            return BitOperations.RoundUpToPowerOf2(value);
+#else
+            // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+            --value;
+            value |= value >> 1;
+            value |= value >> 2;
+            value |= value >> 4;
+            value |= value >> 8;
+            value |= value >> 16;
+            return value + 1;
+#endif
+        }
     }
 }

@@ -150,6 +150,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </remarks>
         public void SaveTypes()
         {
+            _hasCleanState = false;
+
             // Capture the types data
             _savedClasses.Clear();
             _savedClasses.Add(_classes.AsSlice());
@@ -162,6 +164,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </summary>
         public void RestoreTypes()
         {
+            _hasCleanState = false;
+
             _classes.Clear();
             _classes.Add(_savedClasses.AsSlice());
             _pairedBracketTypes.Clear();
