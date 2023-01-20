@@ -1256,7 +1256,7 @@ namespace Avalonia.Media.TextFormatting
 
         private TextLineMetrics CreateLineMetrics()
         {
-            var fontMetrics = _paragraphProperties.DefaultTextRunProperties.Typeface.GlyphTypeface.Metrics;
+            var fontMetrics = _paragraphProperties.DefaultTextRunProperties.CachedGlyphTypeface.Metrics;
             var fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
             var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
 
@@ -1285,12 +1285,13 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun textRun:
                         {
+                            var properties = textRun.Properties;
                             var textMetrics =
-                                new TextMetrics(textRun.Properties.Typeface.GlyphTypeface, textRun.Properties.FontRenderingEmSize);
+                                new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
 
-                            if (fontRenderingEmSize < textRun.Properties.FontRenderingEmSize)
+                            if (fontRenderingEmSize < properties.FontRenderingEmSize)
                             {
-                                fontRenderingEmSize = textRun.Properties.FontRenderingEmSize;
+                                fontRenderingEmSize = properties.FontRenderingEmSize;
 
                                 if (ascent > textMetrics.Ascent)
                                 {

@@ -427,11 +427,12 @@ namespace Avalonia.Media.TextFormatting
         private TextLine[] CreateTextLines()
         {
             var objectPool = FormattingObjectPool.Instance;
+            var fontManager = FontManager.Current;
 
             if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
                 var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties,
-                    FormattingObjectPool.Instance);
+                    fontManager);
 
                 Bounds = new Rect(0, 0, 0, textLine.Height);
 
@@ -458,7 +459,7 @@ namespace Avalonia.Media.TextFormatting
                     if (previousLine != null && previousLine.NewLineLength > 0)
                     {
                         var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, MaxWidth,
-                            _paragraphProperties, objectPool);
+                            _paragraphProperties, fontManager);
 
                         textLines.Add(emptyTextLine);
 
@@ -517,7 +518,7 @@ namespace Avalonia.Media.TextFormatting
             //Make sure the TextLayout always contains at least on empty line
             if (textLines.Count == 0)
             {
-                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties, objectPool);
+                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties, fontManager);
 
                 textLines.Add(textLine);
 

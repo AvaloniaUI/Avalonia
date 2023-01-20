@@ -14,7 +14,7 @@ namespace Avalonia.Media.TextFormatting
         {
             ShapedBuffer = shapedBuffer;
             Properties = properties;
-            TextMetrics = new TextMetrics(properties.Typeface.GlyphTypeface, properties.FontRenderingEmSize);
+            TextMetrics = new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
         }
 
         public bool IsReversed { get; private set; }
