@@ -6,7 +6,7 @@ using Avalonia.Reactive;
 namespace Avalonia.Data.Core
 {
     [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
-    public class StreamNode : ExpressionNode
+    internal class StreamNode : ExpressionNode
     {
         private IStreamPlugin? _customPlugin = null;
         private IDisposable? _subscription;
