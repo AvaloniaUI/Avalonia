@@ -936,7 +936,7 @@ namespace Avalonia.Controls
 
                     // Update the indexes of the elements after the removed range.
                     end = _elements.Count;
-                    var newIndex = first;
+                    var newIndex = first + start;
                     for (var i = start; i < end; ++i)
                     {
                         if (_elements[i] is Control element)
