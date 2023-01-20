@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using Avalonia.LogicalTree;
 
 namespace Avalonia.Styling.Activators
@@ -33,8 +34,16 @@ namespace Avalonia.Styling.Activators
             return NthChildSelector.Evaluate(index, _provider, _step, _offset, _reversed).IsMatch;
         }
 
-        protected override void Initialize() => _provider.ChildIndexChanged += ChildIndexChanged;
-        protected override void Deinitialize() => _provider.ChildIndexChanged -= ChildIndexChanged;
+        protected override void Initialize()
+        {
+            _provider.ChildIndexChanged += ChildIndexChanged;
+            _provider.TotalCountChanged += TotalCountChanged;
+        }
+
+        protected override void Deinitialize()
+        {
+            _provider.ChildIndexChanged -= ChildIndexChanged;
+        }
 
         private void ChildIndexChanged(object? sender, ChildIndexChangedEventArgs e)
         {
@@ -46,6 +55,12 @@ namespace Avalonia.Styling.Activators
                 _index = e.Index;
                 ReevaluateIsActive();
             }
+        }
+
+        private void TotalCountChanged(object? sender, EventArgs e)
+        {
+            if (_reversed)
+                ReevaluateIsActive();
         }
     }
 }

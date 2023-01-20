@@ -88,6 +88,7 @@ namespace Avalonia.Controls
         private int _itemCount;
         private ItemContainerGenerator? _itemContainerGenerator;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
+        private EventHandler<EventArgs>? _totalCountChanged;
         private IDataTemplate? _displayMemberItemTemplate;
         private Tuple<int, Control>? _containerBeingPrepared;
         private ScrollViewer? _scrollViewer;
@@ -201,6 +202,12 @@ namespace Avalonia.Controls
         {
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
+        }
+
+        event EventHandler<EventArgs>? IChildIndexProvider.TotalCountChanged
+        {
+            add => _totalCountChanged += value;
+            remove => _totalCountChanged -= value;
         }
 
         /// <summary>
@@ -418,6 +425,7 @@ namespace Avalonia.Controls
             else if (change.Property == ItemCountProperty)
             {
                 UpdatePseudoClasses(change.GetNewValue<int>());
+                _totalCountChanged?.Invoke(this, EventArgs.Empty);
             }
             else if (change.Property == ItemContainerThemeProperty && _itemContainerGenerator is not null)
             {

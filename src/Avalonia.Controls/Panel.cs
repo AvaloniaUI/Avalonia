@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -34,6 +35,7 @@ namespace Avalonia.Controls
         }
 
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
+        private EventHandler<EventArgs>? _totalCountChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Panel"/> class.
@@ -41,6 +43,7 @@ namespace Avalonia.Controls
         public Panel()
         {
             Children.CollectionChanged += ChildrenChanged;
+            Children.PropertyChanged += ChildrenPropertyChanged;
         }
 
         /// <summary>
@@ -62,6 +65,12 @@ namespace Avalonia.Controls
         {
             add => _childIndexChanged += value;
             remove => _childIndexChanged -= value;
+        }
+
+        event EventHandler<EventArgs>? IChildIndexProvider.TotalCountChanged
+        {
+            add => _totalCountChanged += value;
+            remove => _totalCountChanged -= value;
         }
 
         /// <summary>
@@ -159,6 +168,12 @@ namespace Avalonia.Controls
         private protected virtual void InvalidateMeasureOnChildrenChanged()
         {
             InvalidateMeasure();
+        }
+
+        private void ChildrenPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Children.Count) || e.PropertyName is null)
+                _totalCountChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private static void AffectsParentArrangeInvalidate<TPanel>(AvaloniaPropertyChangedEventArgs e)

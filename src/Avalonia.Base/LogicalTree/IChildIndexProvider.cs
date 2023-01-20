@@ -25,8 +25,13 @@ namespace Avalonia.LogicalTree
         bool TryGetTotalCount(out int count);
 
         /// <summary>
-        /// Notifies subscriber when child's index or total count was changed.
+        /// Notifies subscriber when a child's index was changed.
         /// </summary>
         event EventHandler<ChildIndexChangedEventArgs>? ChildIndexChanged;
+
+        /// <summary>
+        /// Notifies subscriber when the total child count changes.
+        /// </summary>
+        event EventHandler<EventArgs>? TotalCountChanged;
     }
 }
