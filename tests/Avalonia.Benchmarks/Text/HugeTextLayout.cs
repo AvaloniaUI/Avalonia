@@ -77,7 +77,17 @@ In respect that the structure of the sufficient amount poses problems and challe
     public TextLayout BuildEmojisTextLayout() => MakeLayout(Emojis);
 
     [Benchmark]
-    public TextLayout[] BuildManySmallTexts() => _manySmallStrings.Select(MakeLayout).ToArray();
+    public TextLayout[] BuildManySmallTexts()
+    {
+        var results = new TextLayout[_manySmallStrings.Length];
+
+        for (var i = 0; i < _manySmallStrings.Length; i++)
+        {
+            results[i] = MakeLayout(_manySmallStrings[i]);
+        }
+
+        return results;
+    }
 
     [Benchmark]
     public void VirtualizeTextBlocks()

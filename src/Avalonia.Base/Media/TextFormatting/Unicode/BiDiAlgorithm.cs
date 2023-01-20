@@ -343,6 +343,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsIsolateStart(BidiClass type)
+        {
+            const uint mask =
+                (1U << (int)BidiClass.LeftToRightIsolate) |
+                (1U << (int)BidiClass.RightToLeftIsolate) |
+                (1U << (int)BidiClass.FirstStrongIsolate);
+
+            return ((1U << (int)type) & mask) != 0U;
+        }
+
         /// <summary>
         /// Build a list of matching isolates for a directionality slice
         /// Implements BD9
@@ -701,28 +712,19 @@ namespace Avalonia.Media.TextFormatting.Unicode
             var lastType = _workingClasses[lastCharIndex];
             int nextLevel;
 
-            switch (lastType)
+            if (IsIsolateStart(lastType))
             {
-                case BidiClass.LeftToRightIsolate:
-                case BidiClass.RightToLeftIsolate:
-                case BidiClass.FirstStrongIsolate:
+                nextLevel = _paragraphEmbeddingLevel;
+            }
+            else
+            {
+                i = lastCharIndex + 1;
+                while (i < _originalClasses.Length && IsRemovedByX9(_originalClasses[i]))
                 {
-                    nextLevel = _paragraphEmbeddingLevel;
-                    
-                    break;
+                    i++;
                 }
-                default:
-                {
-                    i = lastCharIndex + 1;
-                    while (i < _originalClasses.Length && IsRemovedByX9(_originalClasses[i]))
-                    {
-                        i++;
-                    }
 
-                    nextLevel = i >= _originalClasses.Length ? _paragraphEmbeddingLevel : _resolvedLevels[i];
-                    
-                    break;
-                }
+                nextLevel = i >= _originalClasses.Length ? _paragraphEmbeddingLevel : _resolvedLevels[i];
             }
 
             var eos = DirectionFromLevel(Math.Max(nextLevel, level));
@@ -831,8 +833,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     // PDI and concatenate that run to this one
                     var lastCharacterIndex = _isolatedRunMapping[_isolatedRunMapping.Length - 1];
                     var lastType = _originalClasses[lastCharacterIndex];
-                    if ((lastType == BidiClass.LeftToRightIsolate || lastType == BidiClass.RightToLeftIsolate || lastType == BidiClass.FirstStrongIsolate) &&
-                            _isolatePairs.TryGetValue(lastCharacterIndex, out var nextRunIndex))
+                    if (IsIsolateStart(lastType) && _isolatePairs.TryGetValue(lastCharacterIndex, out var nextRunIndex))
                     {
                         // Find the continuing run index
                         runIndex = FindRunForIndex(nextRunIndex);

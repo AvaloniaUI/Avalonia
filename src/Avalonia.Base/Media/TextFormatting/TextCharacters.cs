@@ -47,13 +47,13 @@ namespace Avalonia.Media.TextFormatting
         /// </summary>
         /// <returns>The shapeable text characters.</returns>
         internal void GetShapeableCharacters(ReadOnlyMemory<char> text, sbyte biDiLevel,
-            ref TextRunProperties? previousProperties, RentedList<TextRun> results)
+            FontManager fontManager, ref TextRunProperties? previousProperties, RentedList<TextRun> results)
         {
             var properties = Properties;
 
             while (!text.IsEmpty)
             {
-                var shapeableRun = CreateShapeableRun(text, properties, biDiLevel, ref previousProperties);
+                var shapeableRun = CreateShapeableRun(text, properties, biDiLevel, fontManager, ref previousProperties);
 
                 results.Add(shapeableRun);
 
@@ -72,7 +72,8 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="previousProperties"></param>
         /// <returns>A list of shapeable text runs.</returns>
         private static UnshapedTextRun CreateShapeableRun(ReadOnlyMemory<char> text,
-            TextRunProperties defaultProperties, sbyte biDiLevel, ref TextRunProperties? previousProperties)
+            TextRunProperties defaultProperties, sbyte biDiLevel, FontManager fontManager,
+            ref TextRunProperties? previousProperties)
         {
             var defaultTypeface = defaultProperties.Typeface;
             var currentTypeface = defaultTypeface;
@@ -121,7 +122,7 @@ namespace Avalonia.Media.TextFormatting
 
             //ToDo: Fix FontFamily fallback
             var matchFound =
-                FontManager.Current.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
+                fontManager.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
                     defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
                     out currentTypeface);
 

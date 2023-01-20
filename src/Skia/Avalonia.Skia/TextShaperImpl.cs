@@ -52,6 +52,8 @@ namespace Avalonia.Skia
 
                 var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
 
+                var targetInfos = shapedBuffer.GlyphInfos;
+
                 var glyphInfos = buffer.GetGlyphInfoSpan();
 
                 var glyphPositions = buffer.GetGlyphPositionSpan();
@@ -77,9 +79,7 @@ namespace Avalonia.Skia
                             4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
                     }
 
-                    var targetInfo = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
-
-                    shapedBuffer[i] = targetInfo;
+                    targetInfos[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
                 }
 
                 return shapedBuffer;

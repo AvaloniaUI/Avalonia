@@ -22,5 +22,9 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The text of the grapheme cluster
         /// </summary>
         public ReadOnlySpan<char> Text { get; }
+
+        /// <inheritdoc />
+        public override string ToString()
+            => Text.ToString();
     }
 }
