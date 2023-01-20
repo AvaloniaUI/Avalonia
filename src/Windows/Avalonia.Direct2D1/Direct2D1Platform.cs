@@ -7,6 +7,7 @@ using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
@@ -157,12 +158,11 @@ namespace Avalonia.Direct2D1
         public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => new GeometryGroupImpl(fillRule, children);
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => new CombinedGeometryImpl(combineMode, g1, g2);
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, 
-            IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
         {
             var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
 
-            var glyphCount = glyphIndices.Count;
+            var glyphCount = glyphInfos.Count;
 
             var run = new SharpDX.DirectWrite.GlyphRun
             {
@@ -174,44 +174,23 @@ namespace Avalonia.Direct2D1
 
             for (var i = 0; i < glyphCount; i++)
             {
-                indices[i] = (short)glyphIndices[i];
+                indices[i] = (short)glyphInfos[i].GlyphIndex;
             }
 
             run.Indices = indices;
 
             run.Advances = new float[glyphCount];
 
-            var scale = (float)(fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight);
-
-            if (glyphAdvances == null)
+            for (var i = 0; i < glyphCount; i++)
             {
-                for (var i = 0; i < glyphCount; i++)
-                {
-                    var advance = glyphTypeface.GetGlyphAdvance(glyphIndices[i]) * scale;
-
-                    run.Advances[i] = advance;
-                }
-            }
-            else
-            {
-                for (var i = 0; i < glyphCount; i++)
-                {
-                    var advance = (float)glyphAdvances[i];
-
-                    run.Advances[i] = advance;
-                }
-            }
-
-            if (glyphOffsets == null)
-            {
-                return new GlyphRunImpl(run);
+                run.Advances[i] = (float)glyphInfos[i].GlyphAdvance;
             }
 
             run.Offsets = new GlyphOffset[glyphCount];
 
             for (var i = 0; i < glyphCount; i++)
             {
-                var (x, y) = glyphOffsets[i];
+                var (x, y) = glyphInfos[i].GlyphOffset;
 
                 run.Offsets[i] = new GlyphOffset
                 {
@@ -254,11 +233,12 @@ namespace Avalonia.Direct2D1
 
             using (var sink = pathGeometry.Open())
             {
-                var glyphs = new short[glyphRun.GlyphIndices.Count];
+                var glyphInfos = glyphRun.GlyphInfos;
+                var glyphs = new short[glyphInfos.Count];
 
-                for (int i = 0; i < glyphRun.GlyphIndices.Count; i++)
+                for (int i = 0; i < glyphInfos.Count; i++)
                 {
-                    glyphs[i] = (short)glyphRun.GlyphIndices[i];
+                    glyphs[i] = (short)glyphInfos[i].GlyphIndex;
                 }
 
                 glyphTypeface.FontFace.GetGlyphRunOutline((float)glyphRun.FontRenderingEmSize, glyphs, null, null, false, !glyphRun.IsLeftToRight, sink);

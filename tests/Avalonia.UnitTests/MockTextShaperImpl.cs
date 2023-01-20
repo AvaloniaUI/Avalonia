@@ -24,7 +24,10 @@ namespace Avalonia.UnitTests
 
                 var glyphIndex = typeface.GetGlyph(codepoint);
 
-                shapedBuffer[i] = new GlyphInfo(glyphIndex, glyphCluster, 10);
+                for (var j = 0; j < count; ++j)
+                {
+                    shapedBuffer[i + j] = new GlyphInfo(glyphIndex, glyphCluster, 10);
+                }
 
                 i += count;
             }
