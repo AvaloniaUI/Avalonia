@@ -9,6 +9,7 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Headless
 {
@@ -118,7 +119,7 @@ namespace Avalonia.Headless
             return new HeadlessGeometryStub(new Rect(glyphRun.Size));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
         {
             return new HeadlessGlyphRunStub();
         }

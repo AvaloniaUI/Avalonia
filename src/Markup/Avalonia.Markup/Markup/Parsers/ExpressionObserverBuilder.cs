@@ -6,7 +6,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers
 {
-    public static class ExpressionObserverBuilder
+    internal static class ExpressionObserverBuilder
     {
         [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
         internal static (ExpressionNode Node, SourceMode Mode) Parse(string expression, bool enableValidation = false, Func<string, string, Type>? typeResolver = null,

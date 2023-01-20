@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
@@ -13,6 +12,7 @@ namespace Avalonia.Media.TextFormatting
         private readonly ITextSource _textSource;
         private readonly TextParagraphProperties _paragraphProperties;
         private readonly TextTrimming _textTrimming;
+        private readonly TextLine[] _textLines;
 
         private int _textSourceLength;
 
@@ -69,7 +69,7 @@ namespace Avalonia.Media.TextFormatting
 
             MaxLines = maxLines;
 
-            TextLines = CreateTextLines();
+            _textLines = CreateTextLines();
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Avalonia.Media.TextFormatting
 
             MaxLines = maxLines;
 
-            TextLines = CreateTextLines();
+            _textLines = CreateTextLines();
         }
 
         /// <summary>
@@ -147,7 +147,8 @@ namespace Avalonia.Media.TextFormatting
         /// <value>
         /// The text lines.
         /// </value>
-        public IReadOnlyList<TextLine> TextLines { get; private set; }
+        public IReadOnlyList<TextLine> TextLines
+            => _textLines;
 
         /// <summary>
         /// Gets the bounds of the layout.
@@ -164,14 +165,14 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="origin">The origin.</param>
         public void Draw(DrawingContext context, Point origin)
         {
-            if (!TextLines.Any())
+            if (_textLines.Length == 0)
             {
                 return;
             }
 
             var (currentX, currentY) = origin;
 
-            foreach (var textLine in TextLines)
+            foreach (var textLine in _textLines)
             {
                 textLine.Draw(context, new Point(currentX + textLine.Start, currentY));
 
@@ -186,7 +187,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns></returns>
         public Rect HitTestTextPosition(int textPosition)
         {
-            if (TextLines.Count == 0)
+            if (_textLines.Length == 0)
             {
                 return new Rect();
             }
@@ -198,7 +199,7 @@ namespace Avalonia.Media.TextFormatting
 
             var currentY = 0.0;
 
-            foreach (var textLine in TextLines)
+            foreach (var textLine in _textLines)
             {
                 var end = textLine.FirstTextSourceIndex + textLine.Length;
 
@@ -230,11 +231,11 @@ namespace Avalonia.Media.TextFormatting
                 return Array.Empty<Rect>();
             }
 
-            var result = new List<Rect>(TextLines.Count);
+            var result = new List<Rect>(_textLines.Length);
 
             var currentY = 0d;
 
-            foreach (var textLine in TextLines)
+            foreach (var textLine in _textLines)
             {
                 //Current line isn't covered.
                 if (textLine.FirstTextSourceIndex + textLine.Length < start)
@@ -284,13 +285,12 @@ namespace Avalonia.Media.TextFormatting
         {
             var currentY = 0d;
 
-            var lineIndex = 0;
             TextLine? currentLine = null;
             CharacterHit characterHit;
 
-            for (; lineIndex < TextLines.Count; lineIndex++)
+            for (var lineIndex = 0; lineIndex < _textLines.Length; lineIndex++)
             {
-                currentLine = TextLines[lineIndex];
+                currentLine = _textLines[lineIndex];
 
                 if (currentY + currentLine.Height > point.Y)
                 {
@@ -322,12 +322,12 @@ namespace Avalonia.Media.TextFormatting
 
             if (charIndex > _textSourceLength)
             {
-                return TextLines.Count - 1;
+                return _textLines.Length - 1;
             }
 
-            for (var index = 0; index < TextLines.Count; index++)
+            for (var index = 0; index < _textLines.Length; index++)
             {
-                var textLine = TextLines[index];
+                var textLine = _textLines[index];
 
                 if (textLine.FirstTextSourceIndex + textLine.Length < charIndex)
                 {
@@ -341,7 +341,7 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            return TextLines.Count - 1;
+            return _textLines.Length - 1;
         }
 
         private TextHitTestResult GetHitTestResult(TextLine textLine, CharacterHit characterHit, Point point)
@@ -424,18 +424,21 @@ namespace Avalonia.Media.TextFormatting
             height += textLine.Height;
         }
 
-        private IReadOnlyList<TextLine> CreateTextLines()
+        private TextLine[] CreateTextLines()
         {
+            var objectPool = FormattingObjectPool.Instance;
+
             if (MathUtilities.IsZero(MaxWidth) || MathUtilities.IsZero(MaxHeight))
             {
-                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties);
+                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, double.PositiveInfinity, _paragraphProperties,
+                    FormattingObjectPool.Instance);
 
                 Bounds = new Rect(0, 0, 0, textLine.Height);
 
-                return new List<TextLine> { textLine };
+                return new TextLine[] { textLine };
             }
 
-            var textLines = new List<TextLine>();
+            var textLines = objectPool.TextLines.Rent();
 
             double left = double.PositiveInfinity, width = 0.0, height = 0.0;
 
@@ -443,16 +446,19 @@ namespace Avalonia.Media.TextFormatting
 
             TextLine? previousLine = null;
 
+            var textFormatter = TextFormatter.Current;
+
             while (true)
             {
-                var textLine = TextFormatter.Current.FormatLine(_textSource, _textSourceLength, MaxWidth,
-                    _paragraphProperties, previousLine?.TextLineBreak);
+                var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth, _paragraphProperties,
+                    previousLine?.TextLineBreak);
 
-                if(textLine == null || textLine.Length == 0)
+                if (textLine.Length == 0)
                 {
                     if (previousLine != null && previousLine.NewLineLength > 0)
                     {
-                        var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, MaxWidth, _paragraphProperties);
+                        var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, MaxWidth,
+                            _paragraphProperties, objectPool);
 
                         textLines.Add(emptyTextLine);
 
@@ -494,7 +500,7 @@ namespace Avalonia.Media.TextFormatting
                 //Fulfill max lines constraint
                 if (MaxLines > 0 && textLines.Count >= MaxLines)
                 {
-                    if(textLine.TextLineBreak is TextLineBreak lineBreak && lineBreak.RemainingRuns != null)
+                    if(textLine.TextLineBreak?.RemainingRuns is not null)
                     {
                         textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(width));
                     }
@@ -511,7 +517,7 @@ namespace Avalonia.Media.TextFormatting
             //Make sure the TextLayout always contains at least on empty line
             if (textLines.Count == 0)
             {
-                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties);
+                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties, objectPool);
 
                 textLines.Add(textLine);
 
@@ -524,8 +530,9 @@ namespace Avalonia.Media.TextFormatting
             {
                 var whitespaceWidth = 0d;
 
-                foreach (var line in textLines)
+                for (var i = 0; i < textLines.Count; i++)
                 {
+                    var line = textLines[i];
                     var lineWhitespaceWidth = line.Width - line.WidthIncludingTrailingWhitespace;
 
                     if (lineWhitespaceWidth > whitespaceWidth)
@@ -549,7 +556,12 @@ namespace Avalonia.Media.TextFormatting
                 }
             }
 
-            return textLines;
+            var result = textLines.ToArray();
+
+            objectPool.TextLines.Return(ref textLines);
+            objectPool.VerifyAllReturned();
+
+            return result;
         }
 
         /// <summary>
@@ -569,7 +581,7 @@ namespace Avalonia.Media.TextFormatting
 
         public void Dispose()
         {
-            foreach (var line in TextLines)
+            foreach (var line in _textLines)
             {
                 line.Dispose();
             }

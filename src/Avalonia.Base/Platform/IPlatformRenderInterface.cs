@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 
 namespace Avalonia.Platform
@@ -166,11 +167,9 @@ namespace Avalonia.Platform
         /// </summary>
         /// <param name="glyphTypeface">The glyph typeface.</param>
         /// <param name="fontRenderingEmSize">The font rendering em size.</param>
-        /// <param name="glyphIndices">The glyph indices.</param>
-        /// <param name="glyphAdvances">The glyph advances.</param>
-        /// <param name="glyphOffsets">The glyph offsets.</param>
-        /// <returns></returns>
-        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double>? glyphAdvances, IReadOnlyList<Vector>? glyphOffsets);
+        /// <param name="glyphInfos">The list of glyphs.</param>
+        /// <returns>An <see cref="IGlyphRunImpl"/>.</returns>
+        IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos);
 
         /// <summary>
         /// Creates a backend-specific object using a low-level API graphics context

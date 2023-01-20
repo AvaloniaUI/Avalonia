@@ -19,6 +19,7 @@
   <Import Project="..\..\..\build\TrimmingEnable.props" />
 
   <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Markup.Xaml, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 </Project>
