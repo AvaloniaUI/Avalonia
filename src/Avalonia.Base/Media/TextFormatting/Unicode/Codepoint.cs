@@ -102,7 +102,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     (1UL << (int)GeneralCategory.SpaceSeparator) |
                     (1UL << (int)GeneralCategory.SpacingMark);
 
-                return ((1UL << (int)GeneralCategory) & whiteSpaceMask) != 0L;
+                return ((1UL << (int)GeneralCategory) & whiteSpaceMask) != 0UL;
             }
         }
         
