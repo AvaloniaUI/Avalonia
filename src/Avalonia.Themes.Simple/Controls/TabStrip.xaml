@@ -5,8 +5,6 @@
     <Setter Property="Template">
       <ControlTemplate>
         <ItemsPresenter Name="PART_ItemsPresenter"
-                        ItemTemplate="{TemplateBinding ItemTemplate}"
-                        Items="{TemplateBinding Items}"
                         ItemsPanel="{TemplateBinding ItemsPanel}" />
       </ControlTemplate>
     </Setter>

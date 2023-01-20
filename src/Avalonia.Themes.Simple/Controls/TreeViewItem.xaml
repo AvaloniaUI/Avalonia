@@ -59,12 +59,12 @@
                                 Padding="{TemplateBinding Padding}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalAlignment}"
                                 Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding HeaderTemplate}"
                                 Focusable="False" />
             </Grid>
           </Border>
           <ItemsPresenter Name="PART_ItemsPresenter"
                           IsVisible="{TemplateBinding IsExpanded}"
-                          Items="{TemplateBinding Items}"
                           ItemsPanel="{TemplateBinding ItemsPanel}" />
         </StackPanel>
       </ControlTemplate>

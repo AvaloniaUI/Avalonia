@@ -35,11 +35,6 @@ namespace Avalonia.Controls
             throw new NotSupportedException("Use MenuFlyout.ShowAt(Control) instead");
         }
 
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
-        }
-
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);

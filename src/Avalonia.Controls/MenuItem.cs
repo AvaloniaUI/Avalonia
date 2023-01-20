@@ -329,15 +329,7 @@ namespace Avalonia.Controls
         }
 
         /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems
-        {
-            get
-            {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
-            }
-        }
+        IEnumerable<IMenuItem> IMenuElement.SubItems => GetRealizedContainers().OfType<IMenuItem>();
 
         /// <summary>
         /// Opens the submenu.
@@ -358,11 +350,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
-        }
+        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
@@ -674,7 +663,7 @@ namespace Avalonia.Controls
 
             if (value)
             {
-                foreach (var item in Items!.OfType<MenuItem>())
+                foreach (var item in ItemsView.OfType<MenuItem>())
                 {
                     item.TryUpdateCanExecute();
                 }
