@@ -10,7 +10,7 @@ namespace Avalonia.Data.Core.Plugins
     /// Handles binding to <see cref="Task"/>s for the '^' stream binding operator.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
-    public class TaskStreamPlugin : IStreamPlugin
+    internal class TaskStreamPlugin : IStreamPlugin
     {
         /// <summary>
         /// Checks whether this plugin handles the specified value.

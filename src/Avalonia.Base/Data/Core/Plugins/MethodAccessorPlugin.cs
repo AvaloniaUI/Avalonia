@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Avalonia.Data.Core.Plugins
 {
-    public class MethodAccessorPlugin : IPropertyAccessorPlugin
+    internal class MethodAccessorPlugin : IPropertyAccessorPlugin
     {
         private readonly Dictionary<(Type, string), MethodInfo?> _methodLookup =
             new Dictionary<(Type, string), MethodInfo?>();
