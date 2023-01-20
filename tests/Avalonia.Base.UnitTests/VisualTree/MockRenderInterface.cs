@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Base.UnitTests.VisualTree
 {
@@ -76,7 +77,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
         {
             throw new NotImplementedException();
         }

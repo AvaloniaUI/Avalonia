@@ -3,7 +3,6 @@
 // Ported from: https://github.com/SixLabors/Fonts/
 
 using System;
-using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia.Utilities
@@ -12,14 +11,13 @@ namespace Avalonia.Utilities
     /// A helper type for avoiding allocations while building arrays.
     /// </summary>
     /// <typeparam name="T">The type of item contained in the array.</typeparam>
-    internal struct ArrayBuilder<T> : IDisposable
-        where T : struct
+    internal struct ArrayBuilder<T>
     {
         private const int DefaultCapacity = 4;
         private const int MaxCoreClrArrayLength = 0x7FeFFFFF;
 
         // Starts out null, initialized on first Add.
-        private T[] _data;
+        private T[]? _data;
         private int _size;
 
         /// <summary>
@@ -48,6 +46,12 @@ namespace Avalonia.Utilities
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the current capacity of the array.
+        /// </summary>
+        public int Capacity
+            => _data?.Length ?? 0;
 
         /// <summary>
         /// Returns a reference to specified element of the array.
@@ -117,13 +121,43 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
+        /// Appends an item.
+        /// </summary>
+        /// <param name="value">The item to append.</param>
+        public void AddItem(T value)
+        {
+            var index = Length++;
+            _data![index] = value;
+        }
+
+        /// <summary>
         /// Clears the array.
         /// Allocated memory is left intact for future usage.
         /// </summary>
         public void Clear()
         {
-            // No need to actually clear since we're not allowing reference types.
+#if NET6_0_OR_GREATER
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                ClearArray();
+            }
+            else
+            {
+                _size = 0;
+            }
+#else
+            ClearArray();
+#endif
+        }
+
+        private void ClearArray()
+        {
+            var size = _size;
             _size = 0;
+            if (size > 0)
+            {
+                Array.Clear(_data!, 0, size);
+            }
         }
 
         private void EnsureCapacity(int min)
@@ -136,7 +170,7 @@ namespace Avalonia.Utilities
             }
 
             // Same expansion algorithm as List<T>.
-            var newCapacity = length == 0 ? DefaultCapacity : length * 2;
+            var newCapacity = length == 0 ? DefaultCapacity : (uint)length * 2u;
 
             if (newCapacity > MaxCoreClrArrayLength)
             {
@@ -145,15 +179,14 @@ namespace Avalonia.Utilities
 
             if (newCapacity < min)
             {
-                newCapacity = min;
+                newCapacity = (uint)min;
             }
             
-            var array = ArrayPool<T>.Shared.Rent(newCapacity);
+            var array = new T[newCapacity];
 
             if (_size > 0)
             {
                 Array.Copy(_data!, array, _size);
-                ArrayPool<T>.Shared.Return(_data!);
             }
 
             _data = array;
@@ -182,13 +215,12 @@ namespace Avalonia.Utilities
         /// <returns>The <see cref="ArraySlice{T}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ArraySlice<T> AsSlice(int start, int length) => new ArraySlice<T>(_data!, start, length);
-        
-        public void Dispose()
-        {
-            if (_data != null)
-            {
-                ArrayPool<T>.Shared.Return(_data);
-            }
-        }
+
+        /// <summary>
+        /// Returns the current state of the array as a span.
+        /// </summary>
+        /// <returns>The <see cref="Span{T}"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<T> AsSpan() => _data.AsSpan(0, _size);
     }
 }

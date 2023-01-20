@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Microsoft.Diagnostics.Runtime;
 
 namespace Avalonia.Benchmarks
@@ -122,7 +123,7 @@ namespace Avalonia.Benchmarks
             return new MockStreamGeometryImpl();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
         {
             return new MockGlyphRun();
         }

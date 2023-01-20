@@ -1,11 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -83,9 +83,9 @@ namespace Avalonia.Skia
 
             var (currentX, currentY) = glyphRun.BaselineOrigin;
 
-            for (var i = 0; i < glyphRun.GlyphIndices.Count; i++)
+            for (var i = 0; i < glyphRun.GlyphInfos.Count; i++)
             {
-                var glyph = glyphRun.GlyphIndices[i];
+                var glyph = glyphRun.GlyphInfos[i].GlyphIndex;
                 var glyphPath = skFont.GetGlyphPath(glyph);
 
                 if (!glyphPath.IsEmpty)
@@ -93,14 +93,7 @@ namespace Avalonia.Skia
                     path.AddPath(glyphPath, (float)currentX, (float)currentY);
                 }
 
-                if (glyphRun.GlyphAdvances != null)
-                {
-                    currentX += glyphRun.GlyphAdvances[i];
-                }
-                else
-                {
-                    currentX += glyphPath.Bounds.Right;
-                }
+                currentX += glyphRun.GlyphInfos[i].GlyphAdvance;
             }
 
             return new StreamGeometryImpl(path);
@@ -208,17 +201,16 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices,
-            IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
         {
             if (glyphTypeface == null)
             {
                 throw new ArgumentNullException(nameof(glyphTypeface));
             }
 
-            if (glyphIndices == null)
+            if (glyphInfos == null)
             {
-                throw new ArgumentNullException(nameof(glyphIndices));
+                throw new ArgumentNullException(nameof(glyphInfos));
             }
 
             var glyphTypefaceImpl = glyphTypeface as GlyphTypefaceImpl;
@@ -237,59 +229,25 @@ namespace Avalonia.Skia
 
             var builder = new SKTextBlobBuilder();
 
-            var count = glyphIndices.Count;
+            var count = glyphInfos.Count;
 
-            if (glyphOffsets != null && glyphAdvances != null)
+            var runBuffer = builder.AllocatePositionedRun(font, count);
+
+            var glyphSpan = runBuffer.GetGlyphSpan();
+            var positionSpan = runBuffer.GetPositionSpan();
+
+            var currentX = 0.0;
+
+            for (int i = 0; i < count; i++)
             {
-                var runBuffer = builder.AllocatePositionedRun(font, count);
+                var glyphInfo = glyphInfos[i];
+                var offset = glyphInfo.GlyphOffset;
 
-                var glyphSpan = runBuffer.GetGlyphSpan();
-                var positionSpan = runBuffer.GetPositionSpan();
+                glyphSpan[i] = glyphInfo.GlyphIndex;
 
-                var currentX = 0.0;
+                positionSpan[i] = new SKPoint((float)(currentX + offset.X), (float)offset.Y);
 
-                for (int i = 0; i < glyphOffsets.Count; i++)
-                {
-                    var offset = glyphOffsets[i];
-
-                    glyphSpan[i] = glyphIndices[i];
-
-                    positionSpan[i] = new SKPoint((float)(currentX + offset.X), (float)offset.Y);
-
-                    currentX += glyphAdvances[i];
-                }
-            }
-            else
-            {
-                if (glyphAdvances != null)
-                {
-                    var runBuffer = builder.AllocateHorizontalRun(font, count, 0);
-
-                    var glyphSpan = runBuffer.GetGlyphSpan();
-                    var positionSpan = runBuffer.GetPositionSpan();
-
-                    var currentX = 0.0;
-
-                    for (int i = 0; i < glyphAdvances.Count; i++)
-                    {
-                        glyphSpan[i] = glyphIndices[i];
-
-                        positionSpan[i] = (float)currentX;
-
-                        currentX += glyphAdvances[i];
-                    }
-                }
-                else
-                {
-                    var runBuffer = builder.AllocateRun(font, count, 0, 0);
-
-                    var glyphSpan = runBuffer.GetGlyphSpan();
-
-                    for (int i = 0; i < glyphIndices.Count; i++)
-                    {
-                        glyphSpan[i] = glyphIndices[i];
-                    }
-                }
+                currentX += glyphInfo.GlyphAdvance;
             }
 
             return new GlyphRunImpl(builder.Build());
