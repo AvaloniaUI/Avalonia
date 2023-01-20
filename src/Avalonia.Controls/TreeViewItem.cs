@@ -265,7 +265,10 @@ namespace Avalonia.Controls
             }
         }
         
-        protected virtual void HeaderDoubleTapped(object? sender, TappedEventArgs e)
+        /// <summary>
+        /// Invoked when the <see cref="DoubleTapped"/> event occurs in the header.
+        /// </summary>
+        protected virtual void OnHeaderDoubleTapped(TappedEventArgs e)
         {
             if (ItemCount > 0)
             {
@@ -285,6 +288,11 @@ namespace Avalonia.Controls
             }
 
             return logical != null ? result : @default;
+        }
+
+        private void HeaderDoubleTapped(object? sender, TappedEventArgs e)
+        {
+            OnHeaderDoubleTapped(e);
         }
     }
 }
