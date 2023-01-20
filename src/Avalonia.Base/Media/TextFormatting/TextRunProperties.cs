@@ -93,6 +93,9 @@ namespace Avalonia.Media.TextFormatting
         
         internal TextRunProperties WithTypeface(Typeface typeface)
         {
+            if (this is GenericTextRunProperties other && other.Typeface == typeface)
+                return this;
+
             return new GenericTextRunProperties(typeface, FontRenderingEmSize,
                 TextDecorations, ForegroundBrush, BackgroundBrush, BaselineAlignment);
         }
