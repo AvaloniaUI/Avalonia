@@ -168,15 +168,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="HorizontalSnapPointsAlignment"/> property.
         /// </summary>
-        public static readonly StyledProperty<SnapPointsAlignment> HorizontalSnapPointsAlignmentProperty =
-            AvaloniaProperty.Register<ScrollViewer, SnapPointsAlignment>(
+        public static readonly AttachedProperty<SnapPointsAlignment> HorizontalSnapPointsAlignmentProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsAlignment>(
                 nameof(HorizontalSnapPointsAlignment));
 
         /// <summary>
         /// Defines the <see cref="VerticalSnapPointsAlignment"/> property.
         /// </summary>
-        public static readonly StyledProperty<SnapPointsAlignment> VerticalSnapPointsAlignmentProperty =
-            AvaloniaProperty.Register<ScrollViewer, SnapPointsAlignment>(
+        public static readonly AttachedProperty<SnapPointsAlignment> VerticalSnapPointsAlignmentProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, SnapPointsAlignment>(
                 nameof(VerticalSnapPointsAlignment));
 
         /// <summary>

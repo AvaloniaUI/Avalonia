@@ -23,43 +23,21 @@ namespace Avalonia.Controls.Presenters
         private ILogicalScrollable? _logicalScrollable;
         private EventHandler? _scrollInvalidated;
 
-        public event EventHandler<RoutedEventArgs> HorizontalSnapPointsChanged
-        {
-            add
-            {
-                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
-                {
-                    scrollSnapPointsInfo.HorizontalSnapPointsChanged += value;
-                }
-            }
+        /// <summary>
+        /// Defines the <see cref="HorizontalSnapPointsChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> HorizontalSnapPointsChangedEvent =
+            RoutedEvent.Register<StackPanel, RoutedEventArgs>(
+                nameof(HorizontalSnapPointsChanged),
+                RoutingStrategies.Bubble);
 
-            remove
-            {
-                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
-                {
-                    scrollSnapPointsInfo.HorizontalSnapPointsChanged -= value;
-                }
-            }
-        }
-
-        public event EventHandler<RoutedEventArgs> VerticalSnapPointsChanged
-        {
-            add
-            {
-                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
-                {
-                    scrollSnapPointsInfo.VerticalSnapPointsChanged += value;
-                }
-            }
-
-            remove
-            {
-                if (Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
-                {
-                    scrollSnapPointsInfo.VerticalSnapPointsChanged -= value;
-                }
-            }
-        }
+        /// <summary>
+        /// Defines the <see cref="VerticalSnapPointsChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> VerticalSnapPointsChangedEvent =
+            RoutedEvent.Register<StackPanel, RoutedEventArgs>(
+                nameof(VerticalSnapPointsChanged),
+                RoutingStrategies.Bubble);
 
         static ItemsPresenter()
         {
@@ -123,6 +101,24 @@ namespace Avalonia.Controls.Presenters
             }
         }
 
+        /// <summary>
+        /// Occurs when the measurements for horizontal snap points change.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? HorizontalSnapPointsChanged
+        {
+            add => AddHandler(HorizontalSnapPointsChangedEvent, value);
+            remove => RemoveHandler(HorizontalSnapPointsChangedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs when the measurements for vertical snap points change.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? VerticalSnapPointsChanged
+        {
+            add => AddHandler(VerticalSnapPointsChangedEvent, value);
+            remove => RemoveHandler(VerticalSnapPointsChangedEvent, value);
+        }
+
         bool ILogicalScrollable.IsLogicalScrollEnabled => _logicalScrollable?.IsLogicalScrollEnabled ?? false;
         Size ILogicalScrollable.ScrollSize => _logicalScrollable?.ScrollSize ?? default;
         Size ILogicalScrollable.PageScrollSize => _logicalScrollable?.PageScrollSize ?? default;
@@ -150,6 +146,21 @@ namespace Avalonia.Controls.Presenters
                     v.Attach(ItemsControl);
                 else
                     CreateSimplePanelGenerator();
+
+                if(Panel is IScrollSnapPointsInfo scrollSnapPointsInfo)
+                {
+                    scrollSnapPointsInfo.VerticalSnapPointsChanged += (s, e) =>
+                    {
+                        e.RoutedEvent = VerticalSnapPointsChangedEvent;
+                        RaiseEvent(e);
+                    };
+
+                    scrollSnapPointsInfo.HorizontalSnapPointsChanged += (s, e) =>
+                    {
+                        e.RoutedEvent = HorizontalSnapPointsChangedEvent;
+                        RaiseEvent(e);
+                    };
+                }
 
                 _logicalScrollable = Panel as ILogicalScrollable;
 

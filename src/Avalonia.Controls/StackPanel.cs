@@ -356,6 +356,7 @@ namespace Avalonia.Controls
             child.Arrange(rect);
         }
 
+        /// <inheritdoc/>
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {
             var snapPoints = new List<double>();
@@ -419,6 +420,7 @@ namespace Avalonia.Controls
             return snapPoints;
         }
 
+        /// <inheritdoc/>
         public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
         {
             offset = 0f;
@@ -470,7 +472,7 @@ namespace Avalonia.Controls
                     break;
             }
 
-            return snapPoint;
+            return snapPoint + Spacing;
         }
     }
 }
