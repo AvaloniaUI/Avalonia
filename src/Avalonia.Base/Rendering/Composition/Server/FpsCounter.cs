@@ -72,7 +72,7 @@ internal class FpsCounter
         {
             var run = _runs[ch - FirstChar];
             context.Transform = Matrix.CreateTranslation(offset, 0);
-            context.DrawGlyphRun(Brushes.White, run);
+            context.DrawGlyphRun(Brushes.White, run.PlatformImpl);
             offset += run.Size.Width;
         }
     }

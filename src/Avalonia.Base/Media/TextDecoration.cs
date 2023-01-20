@@ -218,7 +218,7 @@ namespace Avalonia.Media
             {
                 var offsetY = glyphRun.BaselineOrigin.Y - origin.Y;
 
-                var intersections = glyphRun.GlyphRunImpl.GetIntersections((float)(thickness * 0.5d - offsetY), (float)(thickness * 1.5d - offsetY));
+                var intersections = glyphRun.PlatformImpl.Item.GetIntersections((float)(thickness * 0.5d - offsetY), (float)(thickness * 1.5d - offsetY));
 
                 if (intersections != null && intersections.Count > 0)
                 {

@@ -126,13 +126,17 @@ namespace Avalonia.Headless
 
         class HeadlessGlyphRunStub : IGlyphRunImpl
         {
+            public Size Size => new Size(8, 12);
+
+            public Point BaselineOrigin => new Point(0, 8);
+
             public void Dispose()
             {
             }
 
             public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
             {
-                throw new NotImplementedException();
+                return null;
             }
         }
 
@@ -463,7 +467,7 @@ namespace Avalonia.Headless
             {
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+            public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
             {
                 
             }
