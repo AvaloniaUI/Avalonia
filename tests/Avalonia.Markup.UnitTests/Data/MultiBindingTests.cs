@@ -30,7 +30,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null).Observable;
+            var observable = binding.Initiate(target, null).Source;
             var result = await observable.Take(1);
 
             Assert.Equal("1,2,3", result);
@@ -59,7 +59,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null).Observable;
+            var observable = binding.Initiate(target, null).Source;
             var result = await observable.Take(1);
 
             Assert.Equal("1,2,3", result);

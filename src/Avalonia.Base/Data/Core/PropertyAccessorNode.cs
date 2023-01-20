@@ -5,7 +5,7 @@ using Avalonia.Data.Core.Plugins;
 namespace Avalonia.Data.Core
 {
     [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
-    public class PropertyAccessorNode : SettableNode
+    internal class PropertyAccessorNode : SettableNode
     {
         private readonly bool _enableValidation;
         private IPropertyAccessorPlugin? _customPlugin;
