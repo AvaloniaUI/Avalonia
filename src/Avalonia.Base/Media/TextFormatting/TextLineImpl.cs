@@ -1320,7 +1320,7 @@ namespace Avalonia.Media.TextFormatting
                                 newLineLength = textRun.GlyphRun.Metrics.NewLineLength;
                             }
 
-                            widthIncludingWhitespace += textRun.GlyphRun.Metrics.WidthIncludingTrailingWhitespace;
+                            widthIncludingWhitespace += textRun.Size.Width;
 
                             break;
                         }

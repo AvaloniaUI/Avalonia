@@ -25,7 +25,7 @@ namespace Avalonia.Base.UnitTests.Media
         [Theory]
         public void Should_Get_Distance_From_CharacterHit(double[] advances, int[] clusters, int start, int trailingLength, double expectedDistance)
         {
-            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using(UnitTestApplication.Start(TestServices.StyledWindow))
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var characterHit = new CharacterHit(start, trailingLength);
@@ -44,7 +44,7 @@ namespace Avalonia.Base.UnitTests.Media
         public void Should_Get_CharacterHit_FromDistance(double[] advances, int[] clusters, double distance, int start,
             int trailingLengthExpected, bool isInsideExpected)
         {
-            using(UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            using(UnitTestApplication.Start(TestServices.StyledWindow))
             using (var glyphRun = CreateGlyphRun(advances, clusters))
             {
                 var textBounds = glyphRun.GetCharacterHitFromDistance(distance, out var isInside);

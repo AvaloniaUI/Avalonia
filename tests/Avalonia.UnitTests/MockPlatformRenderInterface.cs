@@ -149,7 +149,7 @@ namespace Avalonia.UnitTests
 
         public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
         {
-            return Mock.Of<IGlyphRunImpl>();
+            return new MockGlyphRun(glyphInfos);
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
