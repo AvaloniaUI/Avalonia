@@ -181,9 +181,15 @@ namespace Avalonia.Direct2D1
 
             run.Advances = new float[glyphCount];
 
+            var width = 0.0;
+
             for (var i = 0; i < glyphCount; i++)
             {
-                run.Advances[i] = (float)glyphInfos[i].GlyphAdvance;
+                var advance = glyphInfos[i].GlyphAdvance;
+
+                width += advance;
+
+                run.Advances[i] = (float)advance;
             }
 
             run.Offsets = new GlyphOffset[glyphCount];
@@ -199,7 +205,11 @@ namespace Avalonia.Direct2D1
                 };
             }
 
-            return new GlyphRunImpl(run);
+            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
+            var height = glyphTypeface.Metrics.LineSpacing * scale;
+            var baselineOrigin = new Point(0, -glyphTypeface.Metrics.Ascent * scale);
+
+            return new GlyphRunImpl(run, new Size(width, height), baselineOrigin);
         }
 
         class D2DApi : IPlatformRenderInterfaceContext

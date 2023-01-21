@@ -2131,9 +2131,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private static IDisposable Start()
         {
-            return UnitTestApplication.Start(new TestServices(
-                fontManagerImpl: new MockFontManagerImpl(),
-                textShaperImpl: new MockTextShaperImpl()));
+            return UnitTestApplication.Start(TestServices.StyledWindow);
         }
 
         private static void Prepare(SelectingItemsControl target)

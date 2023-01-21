@@ -125,7 +125,7 @@ namespace Avalonia.Benchmarks
 
         public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
         {
-            return new MockGlyphRun();
+            return new MockGlyphRun(glyphInfos);
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext)

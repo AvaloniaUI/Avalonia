@@ -110,7 +110,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 if (glyphRun.IsLeftToRight)
                 {
                     var characterHit =
-                        glyphRun.GetCharacterHitFromDistance(glyphRun.Metrics.WidthIncludingTrailingWhitespace, out _);
+                        glyphRun.GetCharacterHitFromDistance(glyphRun.Size.Width, out _);
                     
                     Assert.Equal(glyphRun.Characters.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
                 }
@@ -159,7 +159,7 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             var height = glyphRun.Size.Height;
 
-            var currentX = glyphRun.IsLeftToRight ? 0d : glyphRun.Metrics.WidthIncludingTrailingWhitespace;
+            var currentX = glyphRun.IsLeftToRight ? 0d : glyphRun.Size.Width;
             
             var rects = new List<Rect>(glyphRun.GlyphInfos!.Count);
 

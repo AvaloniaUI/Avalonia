@@ -81,7 +81,7 @@ namespace Avalonia.Skia
 
             SKPath path = new SKPath();
 
-            var (currentX, currentY) = glyphRun.BaselineOrigin;
+            var (currentX, currentY) = glyphRun.PlatformImpl.Item.BaselineOrigin;
 
             for (var i = 0; i < glyphRun.GlyphInfos.Count; i++)
             {
@@ -236,7 +236,7 @@ namespace Avalonia.Skia
             var glyphSpan = runBuffer.GetGlyphSpan();
             var positionSpan = runBuffer.GetPositionSpan();
 
-            var currentX = 0.0;
+            var width = 0.0;
 
             for (int i = 0; i < count; i++)
             {
@@ -245,12 +245,16 @@ namespace Avalonia.Skia
 
                 glyphSpan[i] = glyphInfo.GlyphIndex;
 
-                positionSpan[i] = new SKPoint((float)(currentX + offset.X), (float)offset.Y);
+                positionSpan[i] = new SKPoint((float)(width + offset.X), (float)offset.Y);
 
-                currentX += glyphInfo.GlyphAdvance;
+                width += glyphInfo.GlyphAdvance;
             }
 
-            return new GlyphRunImpl(builder.Build());
+            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
+            var height = glyphTypeface.Metrics.LineSpacing * scale;
+            var baselineOrigin = new Point(0, -glyphTypeface.Metrics.Ascent * scale);
+
+            return new GlyphRunImpl(builder.Build(), new Size(width, height), baselineOrigin);
         }
     }
 }
