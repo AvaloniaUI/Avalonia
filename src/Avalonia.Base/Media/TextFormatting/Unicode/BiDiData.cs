@@ -89,10 +89,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
              
             var codePointEnumerator = new CodepointEnumerator(text);
             
-            while (codePointEnumerator.MoveNext())
+            while (codePointEnumerator.MoveNext(out var codepoint))
             {
-                var codepoint = codePointEnumerator.Current;
-
                 // Look up BiDiClass
                 var dir = codepoint.BiDiClass;
                 

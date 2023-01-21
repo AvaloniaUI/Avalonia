@@ -231,6 +231,7 @@ namespace Avalonia.Media.TextFormatting
             bidiAlgorithm.Reset();
 
             var groupedRuns = objectPool.UnshapedTextRunLists.Rent();
+            var textShaper = TextShaper.Current;
 
             for (var index = 0; index < processedRuns.Count; index++)
             {
@@ -272,7 +273,7 @@ namespace Avalonia.Media.TextFormatting
                                 properties.FontRenderingEmSize, shapeableRun.BidiLevel, properties.CultureInfo,
                                 paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
 
-                            ShapeTogether(groupedRuns, text, shaperOptions, shapedRuns);
+                            ShapeTogether(groupedRuns, text, shaperOptions, textShaper, shapedRuns);
 
                             break;
                         }
@@ -360,9 +361,9 @@ namespace Avalonia.Media.TextFormatting
                && x.BaselineAlignment == y.BaselineAlignment;
 
         private static void ShapeTogether(IReadOnlyList<UnshapedTextRun> textRuns, ReadOnlyMemory<char> text,
-            TextShaperOptions options, RentedList<TextRun> results)
+            TextShaperOptions options, TextShaper textShaper, RentedList<TextRun> results)
         {
-            var shapedBuffer = TextShaper.Current.ShapeText(text, options);
+            var shapedBuffer = textShaper.ShapeText(text, options);
 
             for (var i = 0; i < textRuns.Count; i++)
             {
@@ -559,14 +560,12 @@ namespace Avalonia.Media.TextFormatting
 
             var lineBreakEnumerator = new LineBreakEnumerator(text.Span);
 
-            while (lineBreakEnumerator.MoveNext())
+            while (lineBreakEnumerator.MoveNext(out lineBreak))
             {
-                if (!lineBreakEnumerator.Current.Required)
+                if (!lineBreak.Required)
                 {
                     continue;
                 }
-
-                lineBreak = lineBreakEnumerator.Current;
 
                 return lineBreak.PositionWrap >= textRun.Length || true;
             }
@@ -704,20 +703,20 @@ namespace Avalonia.Media.TextFormatting
                     {
                             var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
 
-                            while (lineBreaker.MoveNext())
+                            while (lineBreaker.MoveNext(out var lineBreak))
                             {
-                                if (lineBreaker.Current.Required &&
-                                    currentLength + lineBreaker.Current.PositionMeasure <= measuredLength)
+                                if (lineBreak.Required &&
+                                    currentLength + lineBreak.PositionMeasure <= measuredLength)
                                 {
                                     //Explicit break found
                                     breakFound = true;
 
-                                    currentPosition = currentLength + lineBreaker.Current.PositionWrap;
+                                    currentPosition = currentLength + lineBreak.PositionWrap;
 
                                     break;
                                 }
 
-                                if (currentLength + lineBreaker.Current.PositionMeasure > measuredLength)
+                                if (currentLength + lineBreak.PositionMeasure > measuredLength)
                                 {
                                     if (paragraphProperties.TextWrapping == TextWrapping.WrapWithOverflow)
                                     {
@@ -733,21 +732,21 @@ namespace Avalonia.Media.TextFormatting
                                         //Find next possible wrap position (overflow)
                                         if (index < textRuns.Count - 1)
                                         {
-                                            if (lineBreaker.Current.PositionWrap != currentRun.Length)
+                                            if (lineBreak.PositionWrap != currentRun.Length)
                                             {
                                                 //We already found the next possible wrap position.
                                                 breakFound = true;
 
-                                                currentPosition = currentLength + lineBreaker.Current.PositionWrap;
+                                                currentPosition = currentLength + lineBreak.PositionWrap;
 
                                                 break;
                                             }
 
-                                            while (lineBreaker.MoveNext() && index < textRuns.Count)
+                                            while (lineBreaker.MoveNext(out lineBreak) && index < textRuns.Count)
                                             {
-                                                currentPosition += lineBreaker.Current.PositionWrap;
+                                                currentPosition += lineBreak.PositionWrap;
 
-                                                if (lineBreaker.Current.PositionWrap != currentRun.Length)
+                                                if (lineBreak.PositionWrap != currentRun.Length)
                                                 {
                                                     break;
                                                 }
@@ -766,7 +765,7 @@ namespace Avalonia.Media.TextFormatting
                                         }
                                         else
                                         {
-                                            currentPosition = currentLength + lineBreaker.Current.PositionWrap;
+                                            currentPosition = currentLength + lineBreak.PositionWrap;
                                         }
 
                                         breakFound = true;
@@ -782,9 +781,9 @@ namespace Avalonia.Media.TextFormatting
                                     break;
                                 }
 
-                                if (lineBreaker.Current.PositionMeasure != lineBreaker.Current.PositionWrap)
+                                if (lineBreak.PositionMeasure != lineBreak.PositionWrap)
                                 {
-                                    lastWrapPosition = currentLength + lineBreaker.Current.PositionWrap;
+                                    lastWrapPosition = currentLength + lineBreak.PositionWrap;
                                 }
                             }
 
@@ -806,18 +805,18 @@ namespace Avalonia.Media.TextFormatting
 
             var (preSplitRuns, postSplitRuns) = SplitTextRuns(textRuns, measuredLength, objectPool);
 
-            var lineBreak = postSplitRuns?.Count > 0 ?
+            var textLineBreak = postSplitRuns?.Count > 0 ?
                 new TextLineBreak(null, resolvedFlowDirection, postSplitRuns.ToArray()) :
                 null;
 
-            if (lineBreak is null && currentLineBreak?.TextEndOfLine != null)
+            if (textLineBreak is null && currentLineBreak?.TextEndOfLine != null)
             {
-                lineBreak = new TextLineBreak(currentLineBreak.TextEndOfLine, resolvedFlowDirection);
+                textLineBreak = new TextLineBreak(currentLineBreak.TextEndOfLine, resolvedFlowDirection);
             }
 
             var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
                 paragraphWidth, paragraphProperties, resolvedFlowDirection,
-                lineBreak);
+                textLineBreak);
 
             textLine.FinalizeLine();
 

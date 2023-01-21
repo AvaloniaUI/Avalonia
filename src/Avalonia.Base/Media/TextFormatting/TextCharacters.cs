@@ -110,14 +110,14 @@ namespace Avalonia.Media.TextFormatting
 
             var codepointEnumerator = new CodepointEnumerator(text.Slice(count).Span);
 
-            while (codepointEnumerator.MoveNext())
+            while (codepointEnumerator.MoveNext(out var cp))
             {
-                if (codepointEnumerator.Current.IsWhiteSpace)
+                if (cp.IsWhiteSpace)
                 {
                     continue;
                 }
 
-                codepoint = codepointEnumerator.Current;
+                codepoint = cp;
 
                 break;
             }

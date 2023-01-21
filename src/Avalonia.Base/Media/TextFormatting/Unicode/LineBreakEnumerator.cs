@@ -47,10 +47,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
             _lb30 = false;
             _lb30a = 0;
         }
-        
-        public LineBreak Current { get; private set; }
-        
-        public bool MoveNext()
+
+        public bool MoveNext(out LineBreak lineBreak)
         {
             // Get the first char if we're at the beginning of the string.
             if (_first)
@@ -76,7 +74,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     case LineBreakClass.CarriageReturn when _nextClass != LineBreakClass.LineFeed:
                     {
                         _currentClass = MapFirst(_nextClass);
-                        Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, true);
+                        lineBreak = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, true);
                         return true;
                     }
                 }
@@ -88,7 +86,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 if (shouldBreak)
                 {
-                    Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition);
+                    lineBreak = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition);
                     return true;
                 }
             }
@@ -109,13 +107,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             break;
                     }
 
-                    Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, required);
+                    lineBreak = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, required);
                     return true;
                 }
             }
 
-            Current = default;
-            
+            lineBreak = default;
             return false;
         }
 

@@ -283,9 +283,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var expected = new List<int>();
 
-                while (lineBreaker.MoveNext())
+                while (lineBreaker.MoveNext(out var lineBreak))
                 {
-                    expected.Add(lineBreaker.Current.PositionWrap - 1);
+                    expected.Add(lineBreak.PositionWrap - 1);
                 }
 
                 var typeface = new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#" +
