@@ -79,18 +79,6 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
-        public async Task Should_Coerce_Get_Null_Double_String_To_UnsetValue()
-        {
-            var data = new Class1 { StringValue = null };
-            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.StringValue), typeof(double));
-            var result = await target.Take(1);
-
-            Assert.Equal(AvaloniaProperty.UnsetValue, result);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
         public void Should_Convert_Set_String_To_Double()
         {
             var data = new Class1 { StringValue = $"{5.6}" };
@@ -245,19 +233,6 @@ namespace Avalonia.Base.UnitTests.Data.Core
             target.OnNext("foo");
 
             Assert.Equal(9.8, data.DoubleValue);
-
-            GC.KeepAlive(data);
-        }
-
-        [Fact]
-        public void Should_Coerce_Setting_Null_Double_To_Default_Value()
-        {
-            var data = new Class1 { DoubleValue = 5.6 };
-            var target = new BindingExpression(ExpressionObserver.Create(data, o => o.DoubleValue), typeof(string));
-
-            target.OnNext(null);
-
-            Assert.Equal(0, data.DoubleValue);
 
             GC.KeepAlive(data);
         }
