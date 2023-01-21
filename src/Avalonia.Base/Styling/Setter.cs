@@ -109,7 +109,7 @@ namespace Avalonia.Styling
 
                 if (mode == BindingMode.OneWay || mode == BindingMode.TwoWay)
                 {
-                    return new PropertySetterBindingInstance(target, instance, Property, mode, i.Observable!);
+                    return new PropertySetterBindingInstance(target, instance, Property, mode, i.Source);
                 }
 
                 throw new NotSupportedException();
