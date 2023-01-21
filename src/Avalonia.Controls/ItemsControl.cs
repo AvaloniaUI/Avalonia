@@ -90,7 +90,6 @@ namespace Avalonia.Controls
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private EventHandler<EventArgs>? _totalCountChanged;
         private IDataTemplate? _displayMemberItemTemplate;
-        private Tuple<int, Control>? _containerBeingPrepared;
         private ScrollViewer? _scrollViewer;
 
         /// <summary>
@@ -527,10 +526,7 @@ namespace Avalonia.Controls
 
         internal void ItemContainerPrepared(Control container, object? item, int index)
         {
-            _containerBeingPrepared = new(index, container);
             _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(container, index));
-            _containerBeingPrepared = null;
-
             _scrollViewer?.RegisterAnchorCandidate(container);
         }
 
@@ -668,9 +664,6 @@ namespace Avalonia.Controls
 
         int IChildIndexProvider.GetChildIndex(ILogical child)
         {
-            if (_containerBeingPrepared?.Item2 == child)
-                return _containerBeingPrepared.Item1;
-
             return child is Control container ? IndexFromContainer(container) : -1;
         }
 
