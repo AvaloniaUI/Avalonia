@@ -52,8 +52,21 @@ namespace Avalonia.Styling.Activators
             // 2. Subscribed child index was changed.
             if (e.Child is null || e.Child == _control)
             {
+                // We're using the _index field to pass the index of the child to EvaluateIsActive
+                // *only* when the active state is re-evaluated via this event handler. The docs
+                // for EvaluateIsActive say:
+                //
+                // > This method should read directly from its inputs and not rely on any
+                // > subscriptions to fire in order to be up-to-date.
+                //
+                // Which is good advice in general, however in this case we need to break the rule
+                // and use the value from the event subscription instead of calling
+                // IChildIndexProvider.GetChildIndex. This is because this event can be fired during
+                // the process of realizing an element of a virtualized list; in this case calling
+                // GetChildIndex may not return the correct index as the element isn't yet realized.
                 _index = e.Index;
                 ReevaluateIsActive();
+                _index = -1;
             }
         }
 
