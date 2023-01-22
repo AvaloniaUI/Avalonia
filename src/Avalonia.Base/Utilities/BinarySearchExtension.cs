@@ -14,7 +14,6 @@
 // under the License.
 // Copied from: https://github.com/toptensoftware/RichTextKit
 
-using System;
 using System.Collections.Generic;
 
 namespace Avalonia.Utilities
@@ -39,7 +38,7 @@ namespace Avalonia.Utilities
         /// <param name="value">The value to search for</param>
         /// <param name="comparer">The comparer</param>
         /// <returns>The index of the found item; otherwise the bitwise complement of the index of the next larger item</returns>
-        public static int BinarySearch<T>(this IReadOnlyList<T> list, T value, IComparer<T> comparer) where T : IComparable
+        public static int BinarySearch<T>(this IReadOnlyList<T> list, T value, IComparer<T> comparer)
         {
             return list.BinarySearch(0, list.Count, value, comparer);
         }

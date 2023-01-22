@@ -79,7 +79,7 @@ namespace Avalonia.Controls
             {
                 if(run.Length > 0)
                 {
-#if NET6_0
+#if NET6_0_OR_GREATER
                     builder.Append(run.Text.Span);
 #else
                     builder.Append(run.Text.Span.ToArray());

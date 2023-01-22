@@ -47,6 +47,9 @@
     <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Direct2D1.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.LeakTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Markup, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Markup.Xaml, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Markup.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Skia.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />

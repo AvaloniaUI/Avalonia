@@ -585,7 +585,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var expectedRuns = expectedTextLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
-                var expectedGlyphs = expectedRuns.SelectMany(x => x.GlyphRun.GlyphIndices).ToList();
+                var expectedGlyphs = expectedRuns
+                    .SelectMany(run => run.GlyphRun.GlyphInfos, (_, glyph) => glyph.GlyphIndex)
+                    .ToList();
 
                 for (var i = 0; i < text.Length; i++)
                 {
@@ -604,7 +606,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                         var shapedRuns = textLine.TextRuns.Cast<ShapedTextRun>().ToList();
 
-                        var actualGlyphs = shapedRuns.SelectMany(x => x.GlyphRun.GlyphIndices).ToList();
+                        var actualGlyphs = shapedRuns
+                            .SelectMany(x => x.GlyphRun.GlyphInfos, (_, glyph) => glyph.GlyphIndex)
+                            .ToList();
 
                         Assert.Equal(expectedGlyphs, actualGlyphs);
                     }
@@ -706,7 +710,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         public static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(renderInterface: new PlatformRenderInterface(null),
+                .With(renderInterface: new PlatformRenderInterface(),
                     textShaperImpl: new TextShaperImpl()));
 
             AvaloniaLocator.CurrentMutable

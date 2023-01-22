@@ -24,7 +24,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.CompiledBindingSafeSupressWarningMessage)]
-        public ExpressionNode BuildExpression(bool enableValidation)
+        internal ExpressionNode BuildExpression(bool enableValidation)
         {
             ExpressionNode pathRoot = null;
             ExpressionNode path = null;
