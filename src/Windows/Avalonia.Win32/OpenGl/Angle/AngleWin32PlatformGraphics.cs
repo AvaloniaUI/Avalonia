@@ -9,7 +9,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Win32.OpenGl.Angle;
 
-internal class AngleWin32PlatformGraphics : IPlatformGraphics
+internal class AngleWin32PlatformGraphics : IPlatformGraphics, IPlatformGraphicsOpenGlContextFactory
 {
     private readonly Win32AngleEglInterface _egl;
     private AngleWin32EglDisplay _sharedDisplay;
@@ -29,9 +29,10 @@ internal class AngleWin32PlatformGraphics : IPlatformGraphics
             var rv = display.CreateContext(new EglContextOptions
             {
                 DisposeCallback = display.Dispose,
-                ExtraFeatures = new Dictionary<Type, object>
+                ExtraFeatures = new Dictionary<Type, Func<EglContext, object>>
                 {
-                    [typeof(IGlPlatformSurfaceRenderTargetFactory)] = new AngleD3DTextureFeature()
+                    [typeof(IGlPlatformSurfaceRenderTargetFactory)] = _ => new AngleD3DTextureFeature(),
+                    [typeof(IGlContextExternalObjectsFeature)] = context => new AngleExternalObjectsFeature(context)
                 }
             });
             success = true;
@@ -73,8 +74,6 @@ internal class AngleWin32PlatformGraphics : IPlatformGraphics
 
     public static AngleWin32PlatformGraphics TryCreate(AngleOptions options)
     {
-         
-        
         Win32AngleEglInterface egl;
         try
         {
@@ -127,5 +126,14 @@ internal class AngleWin32PlatformGraphics : IPlatformGraphics
                 }
             }
         return null;
+    }
+
+    public IGlContext CreateContext(IEnumerable<GlVersion>? versions)
+    {
+        if (UsesSharedContext)
+            throw new InvalidOperationException();
+        if (versions != null && versions.All(v => v.Type != GlProfileType.OpenGLES || v.Major != 3))
+            throw new OpenGlException("Unable to create context with requested version");
+        return (IGlContext)CreateContext();
     }
 }

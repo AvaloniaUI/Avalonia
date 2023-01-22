@@ -209,5 +209,10 @@ namespace Avalonia.Platform
         /// </param>
         /// <returns>An <see cref="IRenderTarget"/>.</returns>
         IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces);
+        
+        /// <summary>
+        /// Indicates that the context is no longer usable. This method should be thread-safe
+        /// </summary>
+        bool IsLost { get; }
     }
 }

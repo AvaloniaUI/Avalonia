@@ -58,6 +58,8 @@ namespace Avalonia.UnitTests
             return new MockRenderTarget();
         }
 
+        public bool IsLost => false;
+
         public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
