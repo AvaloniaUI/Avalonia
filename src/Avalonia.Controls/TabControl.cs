@@ -195,7 +195,7 @@ namespace Avalonia.Controls
             else
             {
                 var container = SelectedItem as IContentControl ??
-                    ItemContainerGenerator.ContainerFromIndex(SelectedIndex) as IContentControl;
+                    ContainerFromIndex(SelectedIndex) as IContentControl;
                 SelectedContentTemplate = container?.ContentTemplate;
                 SelectedContent = container?.Content;
             }
