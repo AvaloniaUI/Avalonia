@@ -73,39 +73,32 @@ namespace Avalonia.Media.TextFormatting.Unicode
             // bracket values for all code points
 
             int i = Length;
+
+            const uint embeddingMask =
+                (1U << (int)BidiClass.LeftToRightEmbedding) |
+                (1U << (int)BidiClass.LeftToRightOverride) |
+                (1U << (int)BidiClass.RightToLeftEmbedding) |
+                (1U << (int)BidiClass.RightToLeftOverride) |
+                (1U << (int)BidiClass.PopDirectionalFormat);
+
+            const uint isolateMask =
+                (1U << (int)BidiClass.LeftToRightIsolate) |
+                (1U << (int)BidiClass.RightToLeftIsolate) |
+                (1U << (int)BidiClass.FirstStrongIsolate) |
+                (1U << (int)BidiClass.PopDirectionalIsolate);
              
             var codePointEnumerator = new CodepointEnumerator(text);
             
-            while (codePointEnumerator.MoveNext())
+            while (codePointEnumerator.MoveNext(out var codepoint))
             {
-                var codepoint = codePointEnumerator.Current;
-
                 // Look up BiDiClass
                 var dir = codepoint.BiDiClass;
                 
                 _classes[i] = dir;
 
-                switch (dir)
-                {
-                    case BidiClass.LeftToRightEmbedding:
-                    case BidiClass.LeftToRightOverride:
-                    case BidiClass.RightToLeftEmbedding:
-                    case BidiClass.RightToLeftOverride:
-                    case BidiClass.PopDirectionalFormat:
-                    {
-                        HasEmbeddings = true;
-                        break;
-                    }
-
-                    case BidiClass.LeftToRightIsolate:
-                    case BidiClass.RightToLeftIsolate:
-                    case BidiClass.FirstStrongIsolate:
-                    case BidiClass.PopDirectionalIsolate:
-                    {
-                        HasIsolates = true;
-                        break;
-                    }
-                }
+                var dirBit = 1U << (int)dir;
+                HasEmbeddings = (dirBit & embeddingMask) != 0U;
+                HasIsolates = (dirBit & isolateMask) != 0U;
 
                 // Lookup paired bracket types
                 var pbt = codepoint.PairedBracketType;

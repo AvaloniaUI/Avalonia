@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Skia;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 
@@ -13,24 +14,35 @@ namespace Avalonia.Benchmarks.Text;
 [MaxWarmupCount(15)]
 public class HugeTextLayout : IDisposable
 {
+    private static readonly Random s_rand = new();
+    private static readonly bool s_useSkia = true;
+
     private readonly IDisposable _app;
-    private string[] _manySmallStrings;
-    private static Random _rand = new Random();
-    
+    private readonly string[] _manySmallStrings;
+
     private static string RandomString(int length)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&?%$@";
-        return new string(Enumerable.Repeat(chars, length).Select(s => s[_rand.Next(s.Length)]).ToArray());
+        return new string(Enumerable.Repeat(chars, length).Select(s => s[s_rand.Next(s.Length)]).ToArray());
     }
 
     public HugeTextLayout()
     {
-        _manySmallStrings = Enumerable.Range(0, 1000).Select(x => RandomString(_rand.Next(2, 15))).ToArray();
-        _app = UnitTestApplication.Start(
-            TestServices.StyledWindow.With(
-                renderInterface: new NullRenderingPlatform(),
-                threadingInterface: new NullThreadingPlatform(),
-                standardCursorFactory: new NullCursorFactory()));
+        _manySmallStrings = Enumerable.Range(0, 1000).Select(_ => RandomString(s_rand.Next(2, 15))).ToArray();
+
+        var testServices = TestServices.StyledWindow.With(
+            renderInterface: new NullRenderingPlatform(),
+            threadingInterface: new NullThreadingPlatform(),
+            standardCursorFactory: new NullCursorFactory());
+
+        if (s_useSkia)
+        {
+            testServices = testServices.With(
+                textShaperImpl: new TextShaperImpl(),
+                fontManagerImpl: new FontManagerImpl());
+        }
+
+        _app = UnitTestApplication.Start(testServices);
     }
     
     private const string Text = @"Though, the objectives of the development of the prominent landmarks can be neglected in most cases, it should be realized that after the completion of the strategic decision gives rise to The Expertise of Regular Program (Carlton Cartwright in The Book of the Key Factor) 
@@ -77,7 +89,17 @@ In respect that the structure of the sufficient amount poses problems and challe
     public TextLayout BuildEmojisTextLayout() => MakeLayout(Emojis);
 
     [Benchmark]
-    public TextLayout[] BuildManySmallTexts() => _manySmallStrings.Select(MakeLayout).ToArray();
+    public TextLayout[] BuildManySmallTexts()
+    {
+        var results = new TextLayout[_manySmallStrings.Length];
+
+        for (var i = 0; i < _manySmallStrings.Length; i++)
+        {
+            results[i] = MakeLayout(_manySmallStrings[i]);
+        }
+
+        return results;
+    }
 
     [Benchmark]
     public void VirtualizeTextBlocks()

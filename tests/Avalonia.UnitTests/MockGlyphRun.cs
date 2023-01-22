@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 
@@ -9,7 +8,14 @@ namespace Avalonia.UnitTests
     {
         public MockGlyphRun(IReadOnlyList<GlyphInfo> glyphInfos)
         {
-            Size = new Size(glyphInfos.Sum(x=> x.GlyphAdvance), 10);
+            var width = 0.0;
+
+            for (var i = 0; i < glyphInfos.Count; ++i)
+            {
+                width += glyphInfos[i].GlyphAdvance;
+            }
+
+            Size = new Size(width, 10);
         }
 
         public Size Size { get; }

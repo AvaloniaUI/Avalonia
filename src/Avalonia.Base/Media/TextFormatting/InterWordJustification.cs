@@ -60,10 +60,8 @@ namespace Avalonia.Media.TextFormatting
 
                 var lineBreakEnumerator = new LineBreakEnumerator(text.Span);
 
-                while (lineBreakEnumerator.MoveNext())
+                while (lineBreakEnumerator.MoveNext(out var currentBreak))
                 {
-                    var currentBreak = lineBreakEnumerator.Current;
-
                     if (!currentBreak.Required && currentBreak.PositionWrap != textRun.Length)
                     {
                         breakOportunities.Enqueue(currentPosition + currentBreak.PositionMeasure);

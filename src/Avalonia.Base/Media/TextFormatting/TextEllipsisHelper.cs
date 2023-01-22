@@ -48,9 +48,9 @@ namespace Avalonia.Media.TextFormatting
 
                                         var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
 
-                                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
+                                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext(out var lineBreak))
                                         {
-                                            var nextBreakPosition = lineBreaker.Current.PositionMeasure;
+                                            var nextBreakPosition = lineBreak.PositionMeasure;
 
                                             if (nextBreakPosition == 0)
                                             {
