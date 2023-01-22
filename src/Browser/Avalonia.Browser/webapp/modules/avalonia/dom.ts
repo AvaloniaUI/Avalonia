@@ -3,6 +3,27 @@ export class AvaloniaDOM {
         element.classList.add(className);
     }
 
+    static observeDarkMode(observer: (isDarkMode: boolean, isHighContrast: boolean) => boolean) {
+        if (globalThis.matchMedia === undefined) {
+            return false;
+        }
+
+        const colorShemeMedia = globalThis.matchMedia("(prefers-color-scheme: dark)");
+        const prefersContrastMedia = globalThis.matchMedia("(prefers-contrast: more)");
+
+        colorShemeMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+            observer(args.matches, prefersContrastMedia.matches);
+        });
+        prefersContrastMedia.addEventListener("change", (args: MediaQueryListEvent) => {
+            observer(colorShemeMedia.matches, args.matches);
+        });
+
+        return {
+            isDarkMode: colorShemeMedia.matches,
+            isHighContrast: prefersContrastMedia.matches
+        };
+    }
+
     static createAvaloniaHost(host: HTMLElement) {
         const randomIdPart = Math.random().toString(36).replace(/[^a-z]+/g, "").substr(2, 10);
 
@@ -17,7 +38,6 @@ export class AvaloniaDOM {
         const canvas = document.createElement("canvas");
         canvas.id = `canvas${randomIdPart}`;
         canvas.classList.add("avalonia-canvas");
-        canvas.style.backgroundColor = "#ccc";
         canvas.style.width = "100%";
         canvas.style.position = "absolute";
 

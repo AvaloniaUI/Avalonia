@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Reactive.Linq;
 using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core
 {
-    public class AvaloniaPropertyAccessorNode : SettableNode
+    internal class AvaloniaPropertyAccessorNode : SettableNode
     {
         private IDisposable? _subscription;
         private readonly bool _enableValidation;

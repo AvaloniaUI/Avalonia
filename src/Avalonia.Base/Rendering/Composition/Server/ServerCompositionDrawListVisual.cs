@@ -48,7 +48,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         }
     }
 
-    protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
+    protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
         if (reader.Read<byte>() == 1)
         {
@@ -56,7 +56,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
             _renderCommands = reader.ReadObject<CompositionDrawList?>();
             _contentBounds = null;
         }
-        base.DeserializeChangesCore(reader, commitedAt);
+        base.DeserializeChangesCore(reader, committedAt);
     }
 
     protected override void RenderCore(CompositorDrawingContextProxy canvas, Rect currentTransformedClip)

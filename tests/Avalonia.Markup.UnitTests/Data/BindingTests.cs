@@ -334,7 +334,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
+            var result = binding.Initiate(target, TextBox.TextProperty).Source;
 
             Assert.IsType<DefaultValueConverter>(((BindingExpression)result).Converter);
         }
@@ -350,7 +350,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
+            var result = binding.Initiate(target, TextBox.TextProperty).Source;
 
             Assert.Same(converter.Object, ((BindingExpression)result).Converter);
         }
@@ -367,7 +367,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Path = "Bar",
             };
 
-            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
+            var result = binding.Initiate(target, TextBox.TextProperty).Source;
 
             Assert.Same("foo", ((BindingExpression)result).ConverterParameter);
         }

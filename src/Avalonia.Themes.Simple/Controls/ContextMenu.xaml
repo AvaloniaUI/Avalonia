@@ -17,8 +17,6 @@
                 CornerRadius="{TemplateBinding CornerRadius}">
           <ScrollViewer Theme="{StaticResource SimpleMenuScrollViewer}">
             <ItemsPresenter Name="PART_ItemsPresenter"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
-                            Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
                             KeyboardNavigation.TabNavigation="Continue" />
           </ScrollViewer>

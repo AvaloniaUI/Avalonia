@@ -22,7 +22,8 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private readonly IRenderLoop _renderLoop;
 
-        private readonly Queue<Batch> _batches = new Queue<Batch>(); 
+        private readonly Queue<Batch> _batches = new Queue<Batch>();
+        private readonly Queue<Action> _receivedJobQueue = new();
         public long LastBatchId { get; private set; }
         public Stopwatch Clock { get; } = Stopwatch.StartNew();
         public TimeSpan ServerNow { get; private set; }
@@ -75,7 +76,7 @@ namespace Avalonia.Rendering.Composition.Server
                         var readObject = stream.ReadObject();
                         if (readObject == RenderThreadJobsStartMarker)
                         {
-                            ReadAndExecuteJobs(stream);
+                            ReadServerJobs(stream);
                             continue;
                         }
                         
@@ -97,21 +98,24 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
 
-        void ReadAndExecuteJobs(BatchStreamReader reader)
+        void ReadServerJobs(BatchStreamReader reader)
         {
             object? readObject;
             while ((readObject = reader.ReadObject()) != RenderThreadJobsEndMarker)
-            {
-                var job = (Action)readObject!;
+                _receivedJobQueue.Enqueue((Action)readObject!);
+        }
+
+        void ExecuteServerJobs()
+        {
+            while(_receivedJobQueue.Count > 0)
                 try
                 {
-                    job();
+                    _receivedJobQueue.Dequeue()();
                 }
                 catch
                 {
                     // Ignore
                 }
-            }
         }
 
         void CompletePendingBatches()
@@ -160,6 +164,7 @@ namespace Avalonia.Rendering.Composition.Server
             try
             {
                 RenderInterface.EnsureValidBackendContext();
+                ExecuteServerJobs();
                 foreach (var t in _activeTargets)
                     t.Render();
             }

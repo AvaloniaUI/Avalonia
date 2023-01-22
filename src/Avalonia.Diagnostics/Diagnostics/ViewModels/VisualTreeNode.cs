@@ -1,12 +1,11 @@
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 using System.Linq;
 
@@ -61,9 +60,12 @@ namespace Avalonia.Diagnostics.ViewModels
                     IPopupHostProvider popupHostProvider,
                     string? providerName = null)
                 {
-                    return Observable.FromEvent<IPopupHost?>(
-                            x => popupHostProvider.PopupHostChanged += x,
-                            x => popupHostProvider.PopupHostChanged -= x)
+                    return Observable.Create<IPopupHost?>(observer =>
+                        {
+                            void Handler(IPopupHost? args) => observer.OnNext(args);
+                            popupHostProvider.PopupHostChanged += Handler;
+                            return Disposable.Create(() => popupHostProvider.PopupHostChanged -= Handler);
+                        })
                         .StartWith(popupHostProvider.PopupHost)
                         .Select(popupHost =>
                         {
@@ -80,29 +82,39 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     Popup p => GetPopupHostObservable(p),
                     Control c => Observable.CombineLatest(
-                            c.GetObservable(Control.ContextFlyoutProperty),
-                            c.GetObservable(Control.ContextMenuProperty),
-                            c.GetObservable(FlyoutBase.AttachedFlyoutProperty),
-                            c.GetObservable(ToolTipDiagnostics.ToolTipProperty),
-                            c.GetObservable(Button.FlyoutProperty),
-                            (ContextFlyout, ContextMenu, AttachedFlyout, ToolTip, ButtonFlyout) =>
+                            new IObservable<IPopupHostProvider?>[]
                             {
-                                if (ContextMenu != null)
+                                c.GetObservable(Control.ContextFlyoutProperty),
+                                c.GetObservable(Control.ContextMenuProperty),
+                                c.GetObservable(FlyoutBase.AttachedFlyoutProperty),
+                                c.GetObservable(ToolTipDiagnostics.ToolTipProperty),
+                                c.GetObservable(Button.FlyoutProperty)
+                            })
+                        .Select(
+                            items =>
+                            {
+                                var contextFlyout = items[0];
+                                var contextMenu = (ContextMenu?)items[1];
+                                var attachedFlyout = items[2];
+                                var toolTip = items[3];
+                                var buttonFlyout = items[4];
+
+                                if (contextMenu != null)
                                     //Note: ContextMenus are special since all the items are added as visual children.
                                     //So we don't need to go via Popup
-                                    return Observable.Return<PopupRoot?>(new PopupRoot(ContextMenu));
+                                    return Observable.Return<PopupRoot?>(new PopupRoot(contextMenu));
 
-                                if (ContextFlyout != null)
-                                    return GetPopupHostObservable(ContextFlyout, "ContextFlyout");
+                                if (contextFlyout != null)
+                                    return GetPopupHostObservable(contextFlyout, "ContextFlyout");
 
-                                if (AttachedFlyout != null)
-                                    return GetPopupHostObservable(AttachedFlyout, "AttachedFlyout");
+                                if (attachedFlyout != null)
+                                    return GetPopupHostObservable(attachedFlyout, "AttachedFlyout");
 
-                                if (ToolTip != null)
-                                    return GetPopupHostObservable(ToolTip, "ToolTip");
+                                if (toolTip != null)
+                                    return GetPopupHostObservable(toolTip, "ToolTip");
 
-                                if (ButtonFlyout != null)
-                                    return GetPopupHostObservable(ButtonFlyout, "Flyout");
+                                if (buttonFlyout != null)
+                                    return GetPopupHostObservable(buttonFlyout, "Flyout");
 
                                 return Observable.Return<PopupRoot?>(null);
                             })
@@ -188,7 +200,7 @@ namespace Avalonia.Diagnostics.ViewModels
                         }
                         nodes.Add(new VisualTreeNode(window, Owner));
                     }
-                    _subscriptions = new System.Reactive.Disposables.CompositeDisposable()
+                    _subscriptions = new CompositeDisposable(2)
                     {
                         Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (s,e)=>
                             {

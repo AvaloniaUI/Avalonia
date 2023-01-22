@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.Fonts
 {
     public sealed class FamilyNameCollection : IReadOnlyList<string>
     {
+        private readonly string[] _names;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FamilyNameCollection"/> class.
         /// </summary>
@@ -20,12 +21,19 @@ namespace Avalonia.Media.Fonts
                 throw new ArgumentNullException(nameof(familyNames));
             }
 
-            Names = Array.ConvertAll(familyNames.Split(','), p => p.Trim());
+            _names = SplitNames(familyNames);
 
-            PrimaryFamilyName = Names[0];
+            PrimaryFamilyName = _names[0];
 
-            HasFallbacks = Names.Count > 1;
+            HasFallbacks = _names.Length > 1;
         }
+
+        private static string[] SplitNames(string names)
+#if NET6_0_OR_GREATER
+            => names.Split(',', StringSplitOptions.TrimEntries);
+#else
+            => Array.ConvertAll(names.Split(','), p => p.Trim());
+#endif
 
         /// <summary>
         /// Gets the primary family name.
@@ -42,14 +50,6 @@ namespace Avalonia.Media.Fonts
         ///   <c>true</c> if fallbacks are defined; otherwise, <c>false</c>.
         /// </value>
         public bool HasFallbacks { get; }
-
-        /// <summary>
-        /// Gets the internal collection of names.
-        /// </summary>
-        /// <value>
-        /// The names.
-        /// </value>
-        internal IReadOnlyList<string> Names { get; }
 
         /// <summary>
         /// Returns an enumerator for the name collection.
@@ -76,23 +76,7 @@ namespace Avalonia.Media.Fonts
         /// A <see cref="string" /> that represents this instance.
         /// </returns>
         public override string ToString()
-        {
-            var builder = StringBuilderCache.Acquire();
-
-            for (var index = 0; index < Names.Count; index++)
-            {
-                builder.Append(Names[index]);
-
-                if (index == Names.Count - 1)
-                {
-                    break;
-                }
-
-                builder.Append(", ");
-            }
-
-            return StringBuilderCache.GetStringAndRelease(builder);
-        }
+            => String.Join(", ", _names);
 
         /// <summary>
         /// Returns a hash code for this instance.
@@ -102,7 +86,7 @@ namespace Avalonia.Media.Fonts
         /// </returns>
         public override int GetHashCode()
         {
-            if (Count == 0)
+            if (_names.Length == 0)
             {
                 return 0;
             }
@@ -111,9 +95,9 @@ namespace Avalonia.Media.Fonts
             {
                 int hash = 17;
 
-                for (var i = 0; i < Names.Count; i++)
+                for (var i = 0; i < _names.Length; i++)
                 {
-                    string name = Names[i];
+                    string name = _names[i];
 
                     hash = hash * 23 + name.GetHashCode();
                 }
@@ -145,30 +129,10 @@ namespace Avalonia.Media.Fonts
         ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
         public override bool Equals(object? obj)
-        {
-            if (!(obj is FamilyNameCollection other))
-            {
-                return false;
-            }
+            => obj is FamilyNameCollection other && _names.AsSpan().SequenceEqual(other._names);
 
-            if (other.Count != Count)
-            {
-                return false;
-            }
+        public int Count => _names.Length;
 
-            for (int i = 0; i < Count; i++)
-            {
-                if (Names[i] != other.Names[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public int Count => Names.Count;
-
-        public string this[int index] => Names[index];
+        public string this[int index] => _names[index];
     }
 }

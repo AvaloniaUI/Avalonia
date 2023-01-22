@@ -45,7 +45,7 @@ internal static partial class StorageHelper
 
     [JSImport("StorageItem.getItems", AvaloniaModule.StorageModuleName)]
     [return: JSMarshalAs<JSType.Promise<JSType.Object>>]
-    public static partial Task<JSObject> GetItems(JSObject item);
+    public static partial Task<JSObject?> GetItems(JSObject item);
 
     [JSImport("StorageItems.itemsArray", AvaloniaModule.StorageModuleName)]
     public static partial JSObject[] ItemsArray(JSObject item);

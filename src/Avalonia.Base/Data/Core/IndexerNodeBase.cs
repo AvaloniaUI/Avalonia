@@ -1,48 +1,47 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia.Data.Core
 {
-    public abstract class IndexerNodeBase : SettableNode
+    internal abstract class IndexerNodeBase : SettableNode,
+        IWeakEventSubscriber<NotifyCollectionChangedEventArgs>,
+        IWeakEventSubscriber<PropertyChangedEventArgs>
     {
-        private IDisposable? _subscription;
-        
         protected override void StartListeningCore(WeakReference<object?> reference)
         {
             reference.TryGetTarget(out var target);
 
-            var incc = target as INotifyCollectionChanged;
-            var inpc = target as INotifyPropertyChanged;
-            var inputs = new List<IObservable<object?>>();
-
-            if (incc != null)
+            if (target is INotifyCollectionChanged incc)
             {
-                inputs.Add(WeakObservable.FromEventPattern(
-                    incc, WeakEvents.CollectionChanged)
-                    .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
-                    .Select(_ => GetValue(target)));
+                WeakEvents.CollectionChanged.Subscribe(incc, this);
             }
 
-            if (inpc != null)
+            if (target is INotifyPropertyChanged inpc)
             {
-                inputs.Add(WeakObservable.FromEventPattern(
-                    inpc, WeakEvents.PropertyChanged)
-                    .Where(x => ShouldUpdate(x.Sender, x.EventArgs))
-                    .Select(_ => GetValue(target)));
+                WeakEvents.PropertyChanged.Subscribe(inpc, this);
             }
-
-            _subscription = Observable.Merge(inputs).StartWith(GetValue(target)).Subscribe(ValueChanged);
+            
+            ValueChanged(GetValue(target));
         }
 
         protected override void StopListeningCore()
         {
-            _subscription?.Dispose();
+            if (Target.TryGetTarget(out var target))
+            {
+                if (target is INotifyCollectionChanged incc)
+                {
+                    WeakEvents.CollectionChanged.Unsubscribe(incc, this);
+                }
+
+                if (target is INotifyPropertyChanged inpc)
+                {
+                    WeakEvents.PropertyChanged.Unsubscribe(inpc, this);
+                }
+            }
         }
 
         protected abstract object? GetValue(object? target);
@@ -83,5 +82,21 @@ namespace Avalonia.Data.Core
         }
 
         protected abstract bool ShouldUpdate(object? sender, PropertyChangedEventArgs e);
+
+        void IWeakEventSubscriber<NotifyCollectionChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, NotifyCollectionChangedEventArgs e)
+        {
+            if (ShouldUpdate(sender, e))
+            {
+                ValueChanged(GetValue(sender));
+            }
+        }
+
+        void IWeakEventSubscriber<PropertyChangedEventArgs>.OnEvent(object? sender, WeakEvent ev, PropertyChangedEventArgs e)
+        {
+            if (ShouldUpdate(sender, e))
+            {
+                ValueChanged(GetValue(sender));
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -18,7 +19,7 @@ namespace Avalonia.Media.TextFormatting
         /// <summary>
         /// Gets the text run's text.
         /// </summary>
-        public virtual CharacterBufferReference CharacterBufferReference => default;
+        public virtual ReadOnlyMemory<char> Text => default;
 
         /// <summary>
         /// A set of properties shared by every characters in the run
@@ -34,21 +35,7 @@ namespace Avalonia.Media.TextFormatting
                 _textRun = textRun;
             }
 
-            public string Text
-            {
-                get
-                {
-                    unsafe
-                    {
-                        var characterBuffer = _textRun.CharacterBufferReference.CharacterBuffer;
-
-                        fixed (char* charsPtr = characterBuffer.Span)
-                        {
-                            return new string(charsPtr, 0, characterBuffer.Span.Length);
-                        }
-                    }
-                }
-            }
+            public string Text => _textRun.Text.ToString();
 
             public TextRunProperties? Properties => _textRun.Properties;
         }

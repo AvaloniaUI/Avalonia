@@ -39,7 +39,7 @@ namespace Avalonia.Browser
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToSingleton<CssCursorFactory>()
                 .Bind<IKeyboardDevice>().ToConstant(s_keyboard)
-                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
+                .Bind<IPlatformSettings>().ToSingleton<BrowserPlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(ManualTriggerRenderTimer.Instance)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
@@ -13,13 +12,13 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.Views
 {
     internal class MainWindow : Window, IStyleHost
     {
-        private readonly IDisposable? _keySubscription;
-        private readonly IDisposable? _pointerSubscription;
+        private readonly IDisposable? _inputSubscription;
         private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
         private AvaloniaObject? _root;
         private PixelPoint _lastPointerPosition;
@@ -33,15 +32,19 @@ namespace Avalonia.Diagnostics.Views
             if (Theme is null && this.FindResource(typeof(Window)) is ControlTheme windowTheme)
                 Theme = windowTheme;
 
-            _keySubscription = InputManager.Instance?.Process
-                .OfType<RawKeyEventArgs>()
-                .Where(x => x.Type == RawKeyEventType.KeyDown)
-                .Subscribe(RawKeyDown);
-            _pointerSubscription = InputManager.Instance?.Process
-                .OfType<RawPointerEventArgs>()
-                .Subscribe(x => _lastPointerPosition = ((Visual)x.Root).PointToScreen(x.Position));
-
-
+            _inputSubscription = InputManager.Instance?.Process
+                .Subscribe(x =>
+                {
+                    if (x is RawPointerEventArgs pointerEventArgs)
+                    {
+                        _lastPointerPosition = ((Visual)x.Root).PointToScreen(pointerEventArgs.Position);
+                    }
+                    else if (x is RawKeyEventArgs keyEventArgs && keyEventArgs.Type == RawKeyEventType.KeyDown)
+                    {
+                        RawKeyDown(keyEventArgs);
+                    }
+                });
+            
             _frozenPopupStates = new Dictionary<Popup, IDisposable>();
 
             EventHandler? lh = default;
@@ -94,8 +97,7 @@ namespace Avalonia.Diagnostics.Views
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            _keySubscription?.Dispose();
-            _pointerSubscription?.Dispose();
+            _inputSubscription?.Dispose();
 
             foreach (var state in _frozenPopupStates)
             {

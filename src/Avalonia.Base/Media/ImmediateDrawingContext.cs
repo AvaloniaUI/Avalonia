@@ -182,7 +182,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IImmutableBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IImmutableBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
             _ = glyphRun ?? throw new ArgumentNullException(nameof(glyphRun));
 
@@ -218,7 +218,7 @@ namespace Avalonia.Media
                 OpacityMask,
             }
 
-            internal PushedState(ImmediateDrawingContext context, PushedStateType type, Matrix matrix = default(Matrix))
+            internal PushedState(ImmediateDrawingContext context, PushedStateType type, Matrix matrix = default)
             {
                 if (context._states is null)
                     throw new ObjectDisposedException(nameof(ImmediateDrawingContext));

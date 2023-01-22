@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 
 namespace Avalonia.Rendering;
 
@@ -49,6 +49,8 @@ public class PlatformRenderInterfaceContextManager
             return _backend!;
         }
     }
+
+    internal IPlatformGraphicsContext? GpuContext => _gpuContext?.Value;
 
     public IDisposable EnsureCurrent()
     {

@@ -20,7 +20,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var target = new Binding(nameof(Class1.Foo));
             var instanced = target.Initiate(textBlock, TextBlock.TextProperty, enableDataValidation: false);
-            var subject = (BindingExpression)instanced.Subject;
+            var subject = (BindingExpression)instanced.Source;
             object result = null;
 
             subject.Subscribe(x => result = x);
@@ -38,7 +38,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var target = new Binding(nameof(Class1.Foo));
             var instanced = target.Initiate(textBlock, TextBlock.TextProperty, enableDataValidation: true);
-            var subject = (BindingExpression)instanced.Subject;
+            var subject = (BindingExpression)instanced.Source;
             object result = null;
 
             subject.Subscribe(x => result = x);
@@ -56,7 +56,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             var target = new Binding(nameof(Class1.Foo)) { Priority = BindingPriority.Template };
             var instanced = target.Initiate(textBlock, TextBlock.TextProperty, enableDataValidation: true);
-            var subject = (BindingExpression)instanced.Subject;
+            var subject = (BindingExpression)instanced.Source;
             object result = null;
 
             subject.Subscribe(x => result = x);

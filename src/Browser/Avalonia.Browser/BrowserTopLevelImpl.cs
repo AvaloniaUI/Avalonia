@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Versioning;
 using Avalonia.Browser.Skia;
 using Avalonia.Browser.Storage;
 using Avalonia.Controls;
@@ -14,10 +15,12 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 
+[assembly: SupportedOSPlatform("browser")]
+
 namespace Avalonia.Browser
 {
-    [System.Runtime.Versioning.SupportedOSPlatform("browser")] // gets rid of callsite warnings
-    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
+        ITopLevelWithSystemNavigationManager
     {
         private Size _clientSize;
         private IInputRoot? _inputRoot;
@@ -201,7 +204,11 @@ namespace Avalonia.Browser
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
-
+            if (transparencyLevel == WindowTransparencyLevel.None
+                || transparencyLevel == WindowTransparencyLevel.Transparent)
+            {
+                TransparencyLevel = transparencyLevel;
+            }
         }
 
         public Size ClientSize => _clientSize;
@@ -221,12 +228,19 @@ namespace Avalonia.Browser
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
 
         public IKeyboardDevice KeyboardDevice { get; } = BrowserWindowingPlatform.Keyboard;
-        public WindowTransparencyLevel TransparencyLevel { get; }
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            // not in the standard, but we potentially can use "apple-mobile-web-app-status-bar-style" for iOS and "theme-color" for android.
+        }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
 
         public ITextInputMethodImpl TextInputMethod => _avaloniaView;
 
         public INativeControlHostImpl? NativeControlHost { get; }
         public IStorageProvider StorageProvider { get; } = new BrowserStorageProvider();
+
+        public ISystemNavigationManager SystemNavigationManager { get; } = new BrowserSystemNavigationManager();
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -37,30 +37,29 @@ namespace Avalonia.Controls.Notifications
                     RaiseEvent(new RoutedEventArgs(NotificationClosedEvent));
                 });
 
-            // Disabling nullable checking because of https://github.com/dotnet/reactive/issues/1525
-#pragma warning disable CS8620
             this.GetObservable(ContentProperty)
-                .OfType<Notification>()
-#pragma warning restore CS8620
                 .Subscribe(x =>
                 {
-                    switch (x.Type)
+                    if (x is Notification notification)
                     {
-                        case NotificationType.Error:
-                            PseudoClasses.Add(":error");
-                            break;
+                        switch (notification.Type)
+                        {
+                            case NotificationType.Error:
+                                PseudoClasses.Add(":error");
+                                break;
 
-                        case NotificationType.Information:
-                            PseudoClasses.Add(":information");
-                            break;
+                            case NotificationType.Information:
+                                PseudoClasses.Add(":information");
+                                break;
 
-                        case NotificationType.Success:
-                            PseudoClasses.Add(":success");
-                            break;
+                            case NotificationType.Success:
+                                PseudoClasses.Add(":success");
+                                break;
 
-                        case NotificationType.Warning:
-                            PseudoClasses.Add(":warning");
-                            break;
+                            case NotificationType.Warning:
+                                PseudoClasses.Add(":warning");
+                                break;
+                        }
                     }
                 });
         }

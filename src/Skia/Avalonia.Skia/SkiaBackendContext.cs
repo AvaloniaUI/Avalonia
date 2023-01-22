@@ -43,5 +43,7 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
             "Don't know how to create a Skia render target from any of provided surfaces");
     }
 
+    public bool IsLost => _gpu.IsLost;
+
     public object TryGetFeature(Type featureType) => _gpu?.TryGetFeature(featureType);
 }

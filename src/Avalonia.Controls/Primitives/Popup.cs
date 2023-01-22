@@ -1,6 +1,6 @@
 using System;
 using System.ComponentModel;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Diagnostics;
@@ -358,7 +358,7 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
             
-            var topLevel = placementTarget.VisualRoot as TopLevel;
+            var topLevel = TopLevel.GetTopLevel(placementTarget);
 
             if (topLevel == null)
             {

@@ -767,7 +767,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
                     
-                    var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                    var clipboard = AvaloniaLocator.CurrentMutable.GetRequiredService<IClipboard>();
                     clipboard.SetTextAsync(textInput).GetAwaiter().GetResult();
 
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
@@ -876,7 +876,7 @@ namespace Avalonia.Controls.UnitTests
 
                 AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
 
-                var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                var clipboard = AvaloniaLocator.CurrentMutable.GetRequiredService<IClipboard>();
                 clipboard.SetTextAsync(Environment.NewLine).GetAwaiter().GetResult();
 
                 RaiseKeyEvent(target, Key.V, KeyModifiers.Control);

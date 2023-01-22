@@ -78,12 +78,7 @@ namespace ControlCatalog.Pages
             get => _info;
             private set => SetAndRaise(InfoProperty, ref _info, value);
         }
-
-        static OpenGlPageControl()
-        {
-            AffectsRender<OpenGlPageControl>(YawProperty, PitchProperty, RollProperty, DiscoProperty);
-        }
-
+        
         private int _vertexShader;
         private int _fragmentShader;
         private int _shaderProgram;
@@ -254,7 +249,7 @@ namespace ControlCatalog.Pages
                 Console.WriteLine(err);
         }
 
-        protected unsafe override void OnOpenGlInit(GlInterface GL, int fb)
+        protected override unsafe void OnOpenGlInit(GlInterface GL)
         {
             CheckError(GL);
 
@@ -309,7 +304,7 @@ namespace ControlCatalog.Pages
 
         }
 
-        protected override void OnOpenGlDeinit(GlInterface GL, int fb)
+        protected override void OnOpenGlDeinit(GlInterface GL)
         {
             // Unbind everything
             GL.BindBuffer(GL_ARRAY_BUFFER, 0);
@@ -366,7 +361,15 @@ namespace ControlCatalog.Pages
 
             CheckError(GL);
             if (_disco > 0.01)
-                Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Background);
+                RequestNextFrameRendering();
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            if (change.Property == YawProperty || change.Property == RollProperty || change.Property == PitchProperty ||
+                change.Property == DiscoProperty)
+                RequestNextFrameRendering();
+            base.OnPropertyChanged(change);
         }
     }
 }

@@ -1,5 +1,10 @@
-﻿using Avalonia.Collections;
+﻿using System;
+using System.Collections.Generic;
+using Avalonia.Collections;
+using Avalonia.Collections.Pooled;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Media
 {
@@ -208,6 +213,51 @@ namespace Avalonia.Media
 
             var pen = new Pen(Stroke ?? defaultBrush, thickness,
                 new DashStyle(StrokeDashArray, StrokeDashOffset), StrokeLineCap);
+
+            if (Location != TextDecorationLocation.Strikethrough)
+            {
+                var offsetY = glyphRun.BaselineOrigin.Y - origin.Y;
+
+                var intersections = glyphRun.PlatformImpl.Item.GetIntersections((float)(thickness * 0.5d - offsetY), (float)(thickness * 1.5d - offsetY));
+
+                if (intersections != null && intersections.Count > 0)
+                {
+                    var last = baselineOrigin.X;
+                    var finalPos = last + glyphRun.Size.Width;
+                    var end = last;
+
+                    var points = new List<double>();
+
+                    //math is taken from chrome's source code.
+                    for (var i = 0; i < intersections.Count; i += 2)
+                    {
+                        var start = intersections[i] - thickness;
+                        end = intersections[i + 1] + thickness;
+                        if (start > last && last + textMetrics.FontRenderingEmSize / 12 < start)
+                        {
+                            points.Add(last);
+                            points.Add(start);
+                        }
+                        last = end;
+                    }
+
+                    if (end < finalPos)
+                    {
+                        points.Add(end);
+                        points.Add(finalPos);
+                    }
+
+                    for (var i = 0; i < points.Count; i += 2)
+                    {
+                        var a = new Point(points[i], origin.Y);
+                        var b = new Point(points[i + 1], origin.Y);
+
+                        drawingContext.DrawLine(pen, a, b);
+                    }
+
+                    return;
+                }
+            }
 
             drawingContext.DrawLine(pen, origin, origin + new Point(glyphRun.Metrics.Width, 0));
         }

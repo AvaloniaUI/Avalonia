@@ -445,7 +445,7 @@ partial class AvaloniaView
 
         UITextPosition IUITextInput.BeginningOfDocument => _beginningOfDocument;
 
-        private int DocumentLength => _client.SurroundingText.Text.Length + (_markedText?.Length ?? 0);
+        private int DocumentLength => (_client.SurroundingText.Text?.Length ?? 0) + (_markedText?.Length ?? 0);
         UITextPosition IUITextInput.EndOfDocument => new AvaloniaTextPosition(DocumentLength);
 
         UITextRange IUITextInput.MarkedTextRange
