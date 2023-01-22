@@ -227,6 +227,7 @@ namespace Avalonia.Direct2D1
             }
 
             public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => _platform.CreateRenderTarget(surfaces);
+            public bool IsLost => false;
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) =>
