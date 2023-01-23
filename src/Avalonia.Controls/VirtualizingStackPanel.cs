@@ -703,21 +703,29 @@ namespace Avalonia.Controls
                         throw new InvalidOperationException();
                     if (Orientation == Orientation.Horizontal)
                     {
-                        foreach (var child in VisualChildren)
+                        var averageElementSize = EstimateElementSizeU();
+                        double snapPoint = 0;
+                        for (var i = 0; i < Items.Count; i++)
                         {
-                            double snapPoint = 0;
-
-                            switch (snapPointsAlignment)
+                            var container = ContainerFromIndex(i);
+                            if (container != null)
                             {
-                                case SnapPointsAlignment.Near:
-                                    snapPoint = child.Bounds.Left;
-                                    break;
-                                case SnapPointsAlignment.Center:
-                                    snapPoint = child.Bounds.Center.X;
-                                    break;
-                                case SnapPointsAlignment.Far:
-                                    snapPoint = child.Bounds.Right;
-                                    break;
+                                switch (snapPointsAlignment)
+                                {
+                                    case SnapPointsAlignment.Near:
+                                        snapPoint = container.Bounds.Left;
+                                        break;
+                                    case SnapPointsAlignment.Center:
+                                        snapPoint = container.Bounds.Center.X;
+                                        break;
+                                    case SnapPointsAlignment.Far:
+                                        snapPoint = container.Bounds.Right;
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                snapPoint += averageElementSize;
                             }
 
                             snapPoints.Add(snapPoint);
@@ -729,21 +737,29 @@ namespace Avalonia.Controls
                         throw new InvalidOperationException();
                     if (Orientation == Orientation.Vertical)
                     {
-                        foreach (var child in VisualChildren)
+                        var averageElementSize = EstimateElementSizeU();
+                        double snapPoint = 0;
+                        for (var i = 0; i < Items.Count; i++)
                         {
-                            double snapPoint = 0;
-
-                            switch (snapPointsAlignment)
+                            var container = ContainerFromIndex(i);
+                            if (container != null)
                             {
-                                case SnapPointsAlignment.Near:
-                                    snapPoint = child.Bounds.Top;
-                                    break;
-                                case SnapPointsAlignment.Center:
-                                    snapPoint = child.Bounds.Center.Y;
-                                    break;
-                                case SnapPointsAlignment.Far:
-                                    snapPoint = child.Bounds.Bottom;
-                                    break;
+                                switch (snapPointsAlignment)
+                                {
+                                    case SnapPointsAlignment.Near:
+                                        snapPoint = container.Bounds.Top;
+                                        break;
+                                    case SnapPointsAlignment.Center:
+                                        snapPoint = container.Bounds.Center.Y;
+                                        break;
+                                    case SnapPointsAlignment.Far:
+                                        snapPoint = container.Bounds.Bottom;
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                snapPoint += averageElementSize;
                             }
 
                             snapPoints.Add(snapPoint);
