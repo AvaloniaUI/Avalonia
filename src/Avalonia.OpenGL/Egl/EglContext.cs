@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Reactive;
@@ -19,21 +20,24 @@ namespace Avalonia.OpenGL.Egl
         private readonly object _lock;
 
         internal EglContext(EglDisplay display, EglInterface egl, EglContext sharedWith, IntPtr ctx, EglSurface offscreenSurface,
-            GlVersion version, int sampleCount, int stencilSize, Action disposeCallback, Dictionary<Type, object> features)
+            GlVersion version, int sampleCount, int stencilSize, Action disposeCallback, 
+            Dictionary<Type, Func<EglContext, object>> features)
         {
             _disp = display;
             _egl = egl;
             _sharedWith = sharedWith;
             _context = ctx;
             _disposeCallback = disposeCallback;
-            _features = features;
             OffscreenSurface = offscreenSurface;
             Version = version;
             SampleCount = sampleCount;
             StencilSize = stencilSize;
             _lock = display.ContextSharedSyncRoot ?? new object();
             using (MakeCurrent())
+            {
                 GlInterface = GlInterface.FromNativeUtf8GetProcAddress(version, _egl.GetProcAddress);
+                _features = features.ToDictionary(x => x.Key, x => x.Value(this));
+            }
         }
 
         public IntPtr Context =>
@@ -155,6 +159,14 @@ namespace Avalonia.OpenGL.Egl
         {
             if(_context == IntPtr.Zero)
                 return;
+            
+            foreach(var f in _features.ToList())
+                if (f.Value is IDisposable d)
+                {
+                    d.Dispose();
+                    _features.Remove(f.Key);
+                }
+
             _egl.DestroyContext(_disp.Handle, Context);
             OffscreenSurface?.Dispose();
             _context = IntPtr.Zero;

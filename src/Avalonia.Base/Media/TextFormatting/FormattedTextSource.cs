@@ -128,11 +128,9 @@ namespace Avalonia.Media.TextFormatting
 
             var graphemeEnumerator = new GraphemeEnumerator(text);
 
-            while (graphemeEnumerator.MoveNext())
+            while (graphemeEnumerator.MoveNext(out var grapheme))
             {
-                var grapheme = graphemeEnumerator.Current;
-
-                finalLength += grapheme.Text.Length;
+                finalLength += grapheme.Length;
 
                 if (finalLength >= length)
                 {

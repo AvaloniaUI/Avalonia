@@ -282,11 +282,11 @@ namespace Avalonia.Win32.DirectX
 
         public D3D11_USAGE Usage;
 
-        public uint BindFlags;
+        public D3D11_BIND_FLAG BindFlags;
 
         public uint CPUAccessFlags;
 
-        public uint MiscFlags;
+        public D3D11_RESOURCE_MISC_FLAG MiscFlags;
     }
 #nullable restore
 }

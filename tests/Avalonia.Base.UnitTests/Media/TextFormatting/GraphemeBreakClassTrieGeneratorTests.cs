@@ -40,9 +40,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             var enumerator = new GraphemeEnumerator(text);
 
-            enumerator.MoveNext();
+            enumerator.MoveNext(out var g);
 
-            var actual = enumerator.Current.Text;
+            var actual = text.AsSpan(g.Offset, g.Length);
 
             bool pass = actual.Length == grapheme.Length;
 
@@ -86,9 +86,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             var count = 0;
 
-            while (enumerator.MoveNext())
+            while (enumerator.MoveNext(out var grapheme))
             {
-                Assert.Equal(1, enumerator.Current.Text.Length);
+                Assert.Equal(1, grapheme.Length);
 
                 count++;
             }

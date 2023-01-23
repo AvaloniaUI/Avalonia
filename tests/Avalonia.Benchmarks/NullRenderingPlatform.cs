@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Microsoft.Diagnostics.Runtime;
 
 namespace Avalonia.Benchmarks
@@ -45,6 +46,8 @@ namespace Avalonia.Benchmarks
         {
             throw new NotImplementedException();
         }
+
+        public bool IsLost => false;
 
         public object TryGetFeature(Type featureType) => null;
 
@@ -120,9 +123,9 @@ namespace Avalonia.Benchmarks
             return new MockStreamGeometryImpl();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
         {
-            return new MockGlyphRun();
+            return new MockGlyphRun(glyphInfos);
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext)
