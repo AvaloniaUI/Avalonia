@@ -15,7 +15,7 @@ namespace Avalonia.Benchmarks.Text;
 public class HugeTextLayout : IDisposable
 {
     private static readonly Random s_rand = new();
-    private static readonly bool s_useSkia = true;
+    private static readonly bool s_useSkia = false;
 
     private readonly IDisposable _app;
     private readonly string[] _manySmallStrings;
