@@ -21,7 +21,20 @@ namespace Avalonia.Controls.Presenters
 
         private PanelContainerGenerator? _generator;
         private ILogicalScrollable? _logicalScrollable;
+        private IScrollSnapPointsInfo? _scrollSnapPointsInfo;
         private EventHandler? _scrollInvalidated;
+
+        /// <summary>
+        /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AreHorizontalSnapPointsRegularProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreHorizontalSnapPointsRegular));
+
+        /// <summary>
+        /// Defines the <see cref="AreVerticalSnapPointsRegular"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AreVerticalSnapPointsRegularProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreVerticalSnapPointsRegular));
 
         /// <summary>
         /// Defines the <see cref="HorizontalSnapPointsChanged"/> event.
@@ -125,8 +138,23 @@ namespace Avalonia.Controls.Presenters
         Size IScrollable.Extent => _logicalScrollable?.Extent ?? default;
         Size IScrollable.Viewport => _logicalScrollable?.Viewport ?? default;
 
-        public bool AreHorizontalSnapPointsRegular => Panel is IScrollSnapPointsInfo scrollSnapPointsInfo ? scrollSnapPointsInfo.AreHorizontalSnapPointsRegular : false;
-        public bool AreVerticalSnapPointsRegular => Panel is IScrollSnapPointsInfo scrollSnapPointsInfo ? scrollSnapPointsInfo.AreVerticalSnapPointsRegular : false;
+        /// <summary>
+        /// Gets or sets whether the horizontal snap points for the <see cref="ItemsControl"/> are equidistant from each other.
+        /// </summary>
+        public bool AreHorizontalSnapPointsRegular
+        {
+            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
+            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the vertical snap points for the <see cref="ItemsControl"/> are equidistant from each other.
+        /// </summary>
+        public bool AreVerticalSnapPointsRegular
+        {
+            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
+            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
+        }
 
         public override sealed void ApplyTemplate()
         {
@@ -139,8 +167,15 @@ namespace Avalonia.Controls.Presenters
 
                 Panel = ItemsPanel.Build();
                 Panel.SetValue(TemplatedParentProperty, TemplatedParent);
+                _scrollSnapPointsInfo = Panel as IScrollSnapPointsInfo;
                 LogicalChildren.Add(Panel);
                 VisualChildren.Add(Panel);
+
+                if (_scrollSnapPointsInfo != null)
+                {
+                    _scrollSnapPointsInfo.AreVerticalSnapPointsRegular = AreVerticalSnapPointsRegular;
+                    _scrollSnapPointsInfo.AreHorizontalSnapPointsRegular = AreHorizontalSnapPointsRegular;
+                }
 
                 if (Panel is VirtualizingPanel v)
                     v.Attach(ItemsControl);
@@ -204,6 +239,16 @@ namespace Avalonia.Controls.Presenters
             {
                 ResetState();
                 InvalidateMeasure();
+            }
+            else if(change.Property == AreHorizontalSnapPointsRegularProperty)
+            {
+                if (_scrollSnapPointsInfo != null)
+                    _scrollSnapPointsInfo.AreHorizontalSnapPointsRegular = AreHorizontalSnapPointsRegular;
+            }
+            else if (change.Property == AreVerticalSnapPointsRegularProperty)
+            {
+                if (_scrollSnapPointsInfo != null)
+                    _scrollSnapPointsInfo.AreVerticalSnapPointsRegular = AreVerticalSnapPointsRegular;
             }
         }
 

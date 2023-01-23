@@ -74,6 +74,18 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IBinding?> DisplayMemberBindingProperty =
             AvaloniaProperty.Register<ItemsControl, IBinding?>(nameof(DisplayMemberBinding));
+        
+        /// <summary>
+        /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AreHorizontalSnapPointsRegularProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreHorizontalSnapPointsRegular));
+
+        /// <summary>
+        /// Defines the <see cref="AreVerticalSnapPointsRegular"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AreVerticalSnapPointsRegularProperty =
+            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreVerticalSnapPointsRegular));
 
         /// <summary>
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
@@ -94,6 +106,7 @@ namespace Avalonia.Controls
         private Tuple<int, Control>? _containerBeingPrepared;
         private ScrollViewer? _scrollViewer;
         private ItemsPresenter? _itemsPresenter;
+        private IScrollSnapPointsInfo? _scrolSnapPointInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsControl"/> class.
@@ -246,6 +259,24 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Gets or sets whether the horizontal snap points for the <see cref="ItemsControl"/> are equidistant from each other.
+        /// </summary>
+        public bool AreHorizontalSnapPointsRegular
+        {
+            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
+            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the vertical snap points for the <see cref="ItemsControl"/> are equidistant from each other.
+        /// </summary>
+        public bool AreVerticalSnapPointsRegular
+        {
+            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
+            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
+        }
+
+        /// <summary>
         /// Returns the container for the item at the specified index.
         /// </summary>
         /// <param name="index">The index of the item to retrieve.</param>
@@ -296,8 +327,6 @@ namespace Avalonia.Controls
         /// Gets the currently realized containers.
         /// </summary>
         public IEnumerable<Control> GetRealizedContainers() => Presenter?.GetRealizedContainers() ?? Array.Empty<Control>();
-        public bool AreHorizontalSnapPointsRegular => _itemsPresenter?.AreHorizontalSnapPointsRegular ?? false;
-        public bool AreVerticalSnapPointsRegular => _itemsPresenter?.AreVerticalSnapPointsRegular ?? false;
 
         /// <summary>
         /// Creates or a container that can be used to display an item.
@@ -399,6 +428,8 @@ namespace Avalonia.Controls
             base.OnApplyTemplate(e);
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
+
+            _scrolSnapPointInfo = _itemsPresenter as IScrollSnapPointsInfo;
         }
 
         /// <summary>

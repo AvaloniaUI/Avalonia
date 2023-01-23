@@ -35,7 +35,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="AreVerticalSnapPointsRegular"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> AreVerticalSnapPointsRegularProperty =
-            AvaloniaProperty.Register<StackPanel, bool>(nameof(AreVerticalSnapPointsRegular));
+            AvaloniaProperty.Register<VirtualizingStackPanel, bool>(nameof(AreVerticalSnapPointsRegular));
 
         /// <summary>
         /// Defines the <see cref="HorizontalSnapPointsChanged"/> event.
@@ -725,7 +725,20 @@ namespace Avalonia.Controls
                             }
                             else
                             {
-                                snapPoint += averageElementSize;
+                                if (snapPoint == 0)
+                                {
+                                    switch (snapPointsAlignment)
+                                    {
+                                        case SnapPointsAlignment.Center:
+                                            snapPoint = averageElementSize / 2;
+                                            break;
+                                        case SnapPointsAlignment.Far:
+                                            snapPoint = averageElementSize;
+                                            break;
+                                    }
+                                }
+                                else
+                                    snapPoint += averageElementSize;
                             }
 
                             snapPoints.Add(snapPoint);
@@ -759,7 +772,20 @@ namespace Avalonia.Controls
                             }
                             else
                             {
-                                snapPoint += averageElementSize;
+                                if (snapPoint == 0)
+                                {
+                                    switch (snapPointsAlignment)
+                                    {
+                                        case SnapPointsAlignment.Center:
+                                            snapPoint = averageElementSize / 2;
+                                            break;
+                                        case SnapPointsAlignment.Far:
+                                            snapPoint = averageElementSize;
+                                            break;
+                                    }
+                                }
+                                else
+                                    snapPoint += averageElementSize;
                             }
 
                             snapPoints.Add(snapPoint);

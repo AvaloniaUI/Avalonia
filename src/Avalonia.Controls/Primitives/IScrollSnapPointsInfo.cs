@@ -11,14 +11,14 @@ namespace Avalonia.Controls.Primitives
     public interface IScrollSnapPointsInfo
     {
         /// <summary>
-        /// Gets a value that indicates whether the horizontal snap points for the container are equidistant from each other.
+        /// Gets or sets a value that indicates whether the horizontal snap points for the container are equidistant from each other.
         /// </summary>
-        bool AreHorizontalSnapPointsRegular { get; }
+        bool AreHorizontalSnapPointsRegular { get; set; }
 
         /// <summary>
-        /// Gets a value that indicates whether the vertical snap points for the container are equidistant from each other.
+        /// Gets or sets a value that indicates whether the vertical snap points for the container are equidistant from each other.
         /// </summary>
-        bool AreVerticalSnapPointsRegular { get; }
+        bool AreVerticalSnapPointsRegular { get; set; }
 
         /// <summary>
         /// Returns the set of distances between irregular snap points for a specified orientation and alignment.
