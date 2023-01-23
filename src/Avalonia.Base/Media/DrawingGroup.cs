@@ -167,18 +167,17 @@ namespace Avalonia.Media
                 AddNewGeometryDrawing(brush, pen, new PlatformGeometry(geometry));
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+            public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
             {
                 if (foreground == null || glyphRun == null)
                 {
                     return;
                 }
 
-                // Add a GlyphRunDrawing to the Drawing graph
                 GlyphRunDrawing glyphRunDrawing = new GlyphRunDrawing
                 {
                     Foreground = foreground,
-                    GlyphRun = glyphRun,
+                    GlyphRun = new GlyphRun(glyphRun)
                 };
 
                 // Add Drawing to the Drawing graph

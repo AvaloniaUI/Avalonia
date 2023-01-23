@@ -50,6 +50,8 @@ public class PlatformRenderInterfaceContextManager
         }
     }
 
+    internal IPlatformGraphicsContext? GpuContext => _gpuContext?.Value;
+
     public IDisposable EnsureCurrent()
     {
         EnsureValidBackendContext();

@@ -86,7 +86,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
         _impl.DrawEllipse(brush, pen, rect);
     }
 
-    public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+    public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
     {
         _impl.DrawGlyphRun(foreground, glyphRun);
     }

@@ -428,6 +428,8 @@ namespace Avalonia.Controls.Presenters
                 Offset = newOffset;
 
                 e.Handled = !IsScrollChainingEnabled || offsetChanged;
+
+                e.ShouldEndScrollGesture = !IsScrollChainingEnabled && !offsetChanged;
             }
         }
 

@@ -6,17 +6,15 @@ namespace Avalonia.Media.TextFormatting
     /// <summary>
     /// A text run that holds shaped characters.
     /// </summary>
-    public sealed class ShapedTextRun : DrawableTextRun
+    public sealed class ShapedTextRun : DrawableTextRun, IDisposable
     {
         private GlyphRun? _glyphRun;
 
         public ShapedTextRun(ShapedBuffer shapedBuffer, TextRunProperties properties)
         {
             ShapedBuffer = shapedBuffer;
-            CharacterBufferReference = shapedBuffer.CharacterBufferRange.CharacterBufferReference;
-            Length = shapedBuffer.CharacterBufferRange.Length;
             Properties = properties;
-            TextMetrics = new TextMetrics(properties.Typeface.GlyphTypeface, properties.FontRenderingEmSize);
+            TextMetrics = new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
         }
 
         public bool IsReversed { get; private set; }
@@ -26,13 +24,15 @@ namespace Avalonia.Media.TextFormatting
         public ShapedBuffer ShapedBuffer { get; }
 
         /// <inheritdoc/>
-        public override CharacterBufferReference CharacterBufferReference { get; }
+        public override ReadOnlyMemory<char> Text
+            => ShapedBuffer.Text;
 
         /// <inheritdoc/>
         public override TextRunProperties Properties { get; }
 
         /// <inheritdoc/>
-        public override int Length { get; }
+        public override int Length
+            => ShapedBuffer.Text.Length;
 
         public TextMetrics TextMetrics { get; }
 
@@ -40,25 +40,14 @@ namespace Avalonia.Media.TextFormatting
 
         public override Size Size => GlyphRun.Size;
 
-        public GlyphRun GlyphRun
-        {
-            get
-            {
-                if(_glyphRun is null)
-                {
-                    _glyphRun = CreateGlyphRun();
-                }
-
-                return _glyphRun;
-            }
-        }
+        public GlyphRun GlyphRun => _glyphRun ??= CreateGlyphRun();
 
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
             using (drawingContext.PushPreTransform(Matrix.CreateTranslation(origin)))
             {
-                if (GlyphRun.GlyphIndices.Count == 0)
+                if (GlyphRun.GlyphInfos.Count == 0)
                 {
                     return;
                 }
@@ -113,17 +102,18 @@ namespace Avalonia.Media.TextFormatting
         {
             length = 0;
             var currentWidth = 0.0;
+            var charactersSpan = GlyphRun.Characters.Span;
 
             for (var i = 0; i < ShapedBuffer.Length; i++)
             {
-                var advance = ShapedBuffer.GlyphAdvances[i];
+                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
 
                 if (currentWidth + advance > availableWidth)
                 {
                     break;
                 }
 
-                Codepoint.ReadAt(GlyphRun.Characters, length, out var count);
+                Codepoint.ReadAt(charactersSpan, length, out var count);
 
                 length += count;
                 currentWidth += advance;
@@ -136,17 +126,18 @@ namespace Avalonia.Media.TextFormatting
         {
             length = 0;
             width = 0;
+            var charactersSpan = GlyphRun.Characters.Span;
 
             for (var i = ShapedBuffer.Length - 1; i >= 0; i--)
             {
-                var advance = ShapedBuffer.GlyphAdvances[i];
+                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
 
                 if (width + advance > availableWidth)
                 {
                     break;
                 }
 
-                Codepoint.ReadAt(GlyphRun.Characters, length, out var count);
+                Codepoint.ReadAt(charactersSpan, length, out var count);
 
                 length += count;
                 width += advance;
@@ -192,12 +183,15 @@ namespace Avalonia.Media.TextFormatting
             return new GlyphRun(
                 ShapedBuffer.GlyphTypeface,
                 ShapedBuffer.FontRenderingEmSize,
-                new CharacterBufferRange(CharacterBufferReference, Length),
-                ShapedBuffer.GlyphIndices,
-                ShapedBuffer.GlyphAdvances,
-                ShapedBuffer.GlyphOffsets,
-                ShapedBuffer.GlyphClusters,
+                Text,
+                ShapedBuffer,
                 BidiLevel);
+        }
+
+        public void Dispose()
+        {
+            _glyphRun?.Dispose();
+            ShapedBuffer.Dispose();
         }
     }
 }

@@ -151,7 +151,11 @@ namespace Avalonia.Controls
                     _content.Loaded += (s, e) =>
                     {
                         var composition = ElementComposition.GetElementVisual(_content);
-                        var compositor = composition!.Compositor;
+
+                        if(composition == null)
+                            return;
+
+                        var compositor = composition.Compositor;
                         composition.Opacity = 0;
 
                         var smoothRotationAnimation

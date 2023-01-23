@@ -7,13 +7,10 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.App;
-using AndroidX.Lifecycle;
-
-using AndroidRect = Android.Graphics.Rect;
 
 namespace Avalonia.Android
 {
-    public abstract class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler
+    public abstract class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler, IActivityNavigationService
     {
         internal static object ViewContent;
 
@@ -58,9 +55,18 @@ namespace Avalonia.Android
             }
         }
 
-        public override void OnConfigurationChanged(Configuration newConfig)
+        public event EventHandler<AndroidBackRequestedEventArgs> BackRequested;
+
+        public override void OnBackPressed()
         {
-            base.OnConfigurationChanged(newConfig);
+            var eventArgs = new AndroidBackRequestedEventArgs();
+
+            BackRequested?.Invoke(this, eventArgs);
+
+            if (!eventArgs.Handled)
+            {
+                base.OnBackPressed();
+            }
         }
 
         protected override void OnDestroy()

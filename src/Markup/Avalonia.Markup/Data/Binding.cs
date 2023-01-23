@@ -56,7 +56,7 @@ namespace Avalonia.Data
         /// </summary>
         public Func<string, string, Type>? TypeResolver { get; set; }
 
-        protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
+        private protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
