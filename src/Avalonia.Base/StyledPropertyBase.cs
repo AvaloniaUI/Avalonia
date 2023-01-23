@@ -1,10 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Avalonia.Data;
 using Avalonia.PropertyStore;
-using Avalonia.Reactive;
-using Avalonia.Styling;
 using Avalonia.Utilities;
 
 namespace Avalonia
@@ -14,8 +11,6 @@ namespace Avalonia
     /// </summary>
     public abstract class StyledPropertyBase<TValue> : AvaloniaProperty<TValue>, IStyledPropertyAccessor
     {
-        private readonly bool _inherits;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="StyledPropertyBase{T}"/> class.
         /// </summary>
@@ -34,7 +29,7 @@ namespace Avalonia
             Action<AvaloniaObject, bool>? notifying = null)
                 : base(name, ownerType, metadata, notifying)
         {
-            _inherits = inherits;
+            Inherits = inherits;
             ValidateValue = validate;
             HasCoercion |= metadata.CoerceValue != null;
 
@@ -53,16 +48,8 @@ namespace Avalonia
         protected StyledPropertyBase(StyledPropertyBase<TValue> source, Type ownerType)
             : base(source, ownerType, null)
         {
-            _inherits = source.Inherits;
+            Inherits = source.Inherits;
         }
-
-        /// <summary>
-        /// Gets a value indicating whether the property inherits its value.
-        /// </summary>
-        /// <value>
-        /// A value indicating whether the property inherits its value.
-        /// </value>
-        public override bool Inherits => _inherits;
 
         /// <summary>
         /// Gets the value validation callback for the property.
