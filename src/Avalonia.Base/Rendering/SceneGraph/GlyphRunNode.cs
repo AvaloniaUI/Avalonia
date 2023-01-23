@@ -1,6 +1,7 @@
 ﻿using System;
 using Avalonia.Media;
 using Avalonia.Platform;
+using Avalonia.Utilities;
 
 namespace Avalonia.Rendering.SceneGraph
 {
@@ -19,13 +20,13 @@ namespace Avalonia.Rendering.SceneGraph
         public GlyphRunNode(
             Matrix transform,
             IBrush foreground,
-            GlyphRun glyphRun,
+            IRef<IGlyphRunImpl> glyphRun,
             IDisposable? aux = null)
-            : base(new Rect(glyphRun.Size), transform, aux)
+            : base(new Rect(glyphRun.Item.Size), transform, aux)
         {
             Transform = transform;
             Foreground = foreground.ToImmutable();
-            GlyphRun = glyphRun;
+            GlyphRun = glyphRun.Clone();
         }
 
         /// <summary>
@@ -41,7 +42,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <summary>
         /// Gets the glyph run to draw.
         /// </summary>
-        public GlyphRun GlyphRun { get; }
+        public IRef<IGlyphRunImpl> GlyphRun { get; }
 
         /// <inheritdoc/>
         public override void Render(IDrawingContextImpl context)
@@ -61,14 +62,19 @@ namespace Avalonia.Rendering.SceneGraph
         /// The properties of the other draw operation are passed in as arguments to prevent
         /// allocation of a not-yet-constructed draw operation object.
         /// </remarks>
-        internal bool Equals(Matrix transform, IBrush foreground, GlyphRun glyphRun)
+        internal bool Equals(Matrix transform, IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
             return transform == Transform &&
                    Equals(foreground, Foreground) &&
-                   Equals(glyphRun, GlyphRun);
+                   Equals(glyphRun.Item, GlyphRun.Item);
         }
 
         /// <inheritdoc/>
         public override bool HitTest(Point p) => Bounds.ContainsExclusive(p);
+
+        public override void Dispose()
+        {
+            GlyphRun?.Dispose();
+        }
     }
 }

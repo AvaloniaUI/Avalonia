@@ -42,7 +42,8 @@
                               Grid.Column="2"
                               Margin="{TemplateBinding Padding}"
                               VerticalAlignment="Center"
-                              Content="{TemplateBinding Header}">
+                              Content="{TemplateBinding Header}"
+                              ContentTemplate="{TemplateBinding ItemTemplate}">
               <ContentPresenter.DataTemplates>
                 <DataTemplate DataType="sys:String">
                   <AccessText Text="{Binding}" />

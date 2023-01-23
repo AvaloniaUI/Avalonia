@@ -2,7 +2,7 @@ using System;
 
 namespace Avalonia.Data.Core
 {
-    public abstract class ExpressionNode
+    internal abstract class ExpressionNode
     {
         protected static readonly WeakReference<object?> UnsetReference = 
             new WeakReference<object?>(AvaloniaProperty.UnsetValue);

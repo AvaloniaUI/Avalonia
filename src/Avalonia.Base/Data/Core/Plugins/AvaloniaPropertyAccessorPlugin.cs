@@ -8,7 +8,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Reads a property from a <see cref="AvaloniaObject"/>.
     /// </summary>
-    public class AvaloniaPropertyAccessorPlugin : IPropertyAccessorPlugin
+    internal class AvaloniaPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
         /// <inheritdoc/>
         [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
