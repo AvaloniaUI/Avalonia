@@ -24,10 +24,8 @@ namespace Avalonia
             Func<TValue, bool>? validate = null)
             : base(name, ownerType, metadata, inherits, validate)
         {
+            IsAttached = true;
         }
-
-        /// <inheritdoc/>
-        public override bool IsAttached => true;
 
         /// <summary>
         /// Attaches the property as a non-attached property on the specified type.
