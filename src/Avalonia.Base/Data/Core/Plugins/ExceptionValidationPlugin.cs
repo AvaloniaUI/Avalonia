@@ -7,7 +7,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Validates properties that report errors by throwing exceptions.
     /// </summary>
-    public class ExceptionValidationPlugin : IDataValidationPlugin
+    internal class ExceptionValidationPlugin : IDataValidationPlugin
     {
         /// <inheritdoc/>
         [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]

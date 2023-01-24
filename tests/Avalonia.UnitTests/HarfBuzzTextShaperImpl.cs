@@ -52,6 +52,8 @@ namespace Avalonia.UnitTests
 
                 var shapedBuffer = new ShapedBuffer(text, bufferLength, typeface, fontRenderingEmSize, bidiLevel);
 
+                var targetInfos = shapedBuffer.GlyphInfos;
+
                 var glyphInfos = buffer.GetGlyphInfoSpan();
 
                 var glyphPositions = buffer.GetGlyphPositionSpan();
@@ -77,9 +79,7 @@ namespace Avalonia.UnitTests
                             4 * typeface.GetGlyphAdvance(glyphIndex) * textScale;
                     }
 
-                    var targetInfo = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
-
-                    shapedBuffer[i] = targetInfo;
+                    targetInfos[i] = new Media.TextFormatting.GlyphInfo(glyphIndex, glyphCluster, glyphAdvance, glyphOffset);
                 }
 
                 return shapedBuffer;
@@ -161,6 +161,8 @@ namespace Avalonia.UnitTests
 
             if (MemoryMarshal.TryGetArray(memory, out var segment))
             {
+                start = segment.Offset;
+                length = segment.Count;
                 return segment.Array.AsMemory();
             }
 

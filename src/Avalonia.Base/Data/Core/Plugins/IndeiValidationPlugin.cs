@@ -10,7 +10,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Validates properties on objects that implement <see cref="INotifyDataErrorInfo"/>.
     /// </summary>
-    public class IndeiValidationPlugin : IDataValidationPlugin
+    internal class IndeiValidationPlugin : IDataValidationPlugin
     {
         private static readonly WeakEvent<INotifyDataErrorInfo, DataErrorsChangedEventArgs>
             ErrorsChangedWeakEvent = WeakEvent.Register<INotifyDataErrorInfo, DataErrorsChangedEventArgs>(

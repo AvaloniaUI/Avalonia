@@ -759,6 +759,7 @@ namespace Avalonia.Controls.UnitTests
                 var lbItems = target.GetLogicalChildren().OfType<ListBoxItem>().ToArray();
 
                 var first = lbItems.First();
+                var beforeLast = lbItems[^2];
                 var last = lbItems.Last();
 
                 first.Focus();
@@ -767,6 +768,12 @@ namespace Avalonia.Controls.UnitTests
                 Assert.Equal(true, first.IsSelected);
 
                 RaiseKeyEvent(target, Key.Up);
+                Assert.Equal(true, last.IsSelected);
+
+                RaiseKeyEvent(target, Key.Up);
+                Assert.Equal(true, beforeLast.IsSelected);
+
+                RaiseKeyEvent(target, Key.Down);
                 Assert.Equal(true, last.IsSelected);
 
                 RaiseKeyEvent(target, Key.Down);

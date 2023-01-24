@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
-    internal class TextLineImpl : TextLine
+    internal sealed class TextLineImpl : TextLine
     {
-        private IReadOnlyList<TextRun> _textRuns;
+        private readonly TextRun[] _textRuns;
         private readonly double _paragraphWidth;
         private readonly TextParagraphProperties _paragraphProperties;
         private TextLineMetrics _textLineMetrics;
         private readonly FlowDirection _resolvedFlowDirection;
 
-        public TextLineImpl(IReadOnlyList<TextRun> textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
+        public TextLineImpl(TextRun[] textRuns, int firstTextSourceIndex, int length, double paragraphWidth,
             TextParagraphProperties paragraphProperties, FlowDirection resolvedFlowDirection = FlowDirection.LeftToRight,
             TextLineBreak? lineBreak = null, bool hasCollapsed = false)
         {
@@ -147,7 +146,7 @@ namespace Avalonia.Media.TextFormatting
             var collapsedLine = new TextLineImpl(collapsedRuns, FirstTextSourceIndex, Length, _paragraphWidth, _paragraphProperties,
                 _resolvedFlowDirection, TextLineBreak, true);
 
-            if (collapsedRuns.Count > 0)
+            if (collapsedRuns.Length > 0)
             {
                 collapsedLine.FinalizeLine();
             }
@@ -166,7 +165,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override CharacterHit GetCharacterHitFromDistance(double distance)
         {
-            if (_textRuns.Count == 0)
+            if (_textRuns.Length == 0)
             {
                 return new CharacterHit();
             }
@@ -182,7 +181,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (distance >= WidthIncludingTrailingWhitespace)
             {
-                var lastRun = _textRuns[_textRuns.Count - 1];
+                var lastRun = _textRuns[_textRuns.Length - 1];
 
                 var size = 0.0;
 
@@ -199,7 +198,7 @@ namespace Avalonia.Media.TextFormatting
             var currentPosition = FirstTextSourceIndex;
             var currentDistance = 0.0;
 
-            for (var i = 0; i < _textRuns.Count; i++)
+            for (var i = 0; i < _textRuns.Length; i++)
             {
                 var currentRun = _textRuns[i];
 
@@ -208,7 +207,7 @@ namespace Avalonia.Media.TextFormatting
                     var rightToLeftIndex = i;
                     currentPosition += currentRun.Length;
 
-                    while (rightToLeftIndex + 1 <= _textRuns.Count - 1)
+                    while (rightToLeftIndex + 1 <= _textRuns.Length - 1)
                     {
                         var nextShaped = _textRuns[++rightToLeftIndex] as ShapedTextRun;
 
@@ -224,7 +223,7 @@ namespace Avalonia.Media.TextFormatting
 
                     for (var j = i; i <= rightToLeftIndex; j++)
                     {
-                        if (j > _textRuns.Count - 1)
+                        if (j > _textRuns.Length - 1)
                         {
                             break;
                         }
@@ -254,7 +253,7 @@ namespace Avalonia.Media.TextFormatting
 
                 if (currentRun is DrawableTextRun drawableTextRun)
                 {
-                    if (i < _textRuns.Count - 1 && currentDistance + drawableTextRun.Size.Width < distance)
+                    if (i < _textRuns.Length - 1 && currentDistance + drawableTextRun.Size.Width < distance)
                     {
                         currentDistance += drawableTextRun.Size.Width;
 
@@ -328,7 +327,7 @@ namespace Avalonia.Media.TextFormatting
 
             if (flowDirection == FlowDirection.LeftToRight)
             {
-                for (var index = 0; index < _textRuns.Count; index++)
+                for (var index = 0; index < _textRuns.Length; index++)
                 {
                     var currentRun = _textRuns[index];
 
@@ -338,7 +337,7 @@ namespace Avalonia.Media.TextFormatting
 
                         var rightToLeftWidth = shapedRun.Size.Width;
 
-                        while (i + 1 <= _textRuns.Count - 1)
+                        while (i + 1 <= _textRuns.Length - 1)
                         {
                             var nextRun = _textRuns[i + 1];
 
@@ -402,7 +401,7 @@ namespace Avalonia.Media.TextFormatting
             {
                 currentDistance += WidthIncludingTrailingWhitespace;
 
-                for (var index = _textRuns.Count - 1; index >= 0; index--)
+                for (var index = _textRuns.Length - 1; index >= 0; index--)
                 {
                     var currentRun = _textRuns[index];
 
@@ -502,7 +501,7 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override CharacterHit GetNextCaretCharacterHit(CharacterHit characterHit)
         {
-            if (_textRuns.Count == 0)
+            if (_textRuns.Length == 0)
             {
                 return new CharacterHit();
             }
@@ -568,7 +567,7 @@ namespace Avalonia.Media.TextFormatting
         {
             var characterIndex = firstTextSourceIndex + textLength;
 
-            var result = new List<TextBounds>(TextRuns.Count);
+            var result = new List<TextBounds>(_textRuns.Length);
             var lastDirection = FlowDirection.LeftToRight;
             var currentDirection = lastDirection;
 
@@ -581,9 +580,9 @@ namespace Avalonia.Media.TextFormatting
 
             TextRunBounds lastRunBounds = default;
 
-            for (var index = 0; index < TextRuns.Count; index++)
+            for (var index = 0; index < _textRuns.Length; index++)
             {
-                if (TextRuns[index] is not DrawableTextRun currentRun)
+                if (_textRuns[index] is not DrawableTextRun currentRun)
                 {
                     continue;
                 }
@@ -637,7 +636,7 @@ namespace Avalonia.Media.TextFormatting
                         var rightToLeftIndex = index;
                         var rightToLeftWidth = currentShapedRun.Size.Width;
 
-                        while (rightToLeftIndex + 1 <= _textRuns.Count - 1 && _textRuns[rightToLeftIndex + 1] is ShapedTextRun nextShapedRun)
+                        while (rightToLeftIndex + 1 <= _textRuns.Length - 1 && _textRuns[rightToLeftIndex + 1] is ShapedTextRun nextShapedRun)
                         {
                             if (nextShapedRun == null || nextShapedRun.ShapedBuffer.IsLeftToRight)
                             {
@@ -669,12 +668,12 @@ namespace Avalonia.Media.TextFormatting
 
                         for (int i = rightToLeftIndex - 1; i >= index; i--)
                         {
-                            if (TextRuns[i] is not ShapedTextRun)
+                            if (_textRuns[i] is not ShapedTextRun shapedRun)
                             {
                                 continue;
                             }
 
-                            currentShapedRun = (ShapedTextRun)TextRuns[i];
+                            currentShapedRun = shapedRun;
 
                             currentRunBounds = GetRightToLeftTextRunBounds(currentShapedRun, startX, firstTextSourceIndex, characterIndex, currentPosition, remainingLength);
 
@@ -784,7 +783,7 @@ namespace Avalonia.Media.TextFormatting
         {
             var characterIndex = firstTextSourceIndex + textLength;
 
-            var result = new List<TextBounds>(TextRuns.Count);
+            var result = new List<TextBounds>(_textRuns.Length);
             var lastDirection = FlowDirection.LeftToRight;
             var currentDirection = lastDirection;
 
@@ -795,9 +794,9 @@ namespace Avalonia.Media.TextFormatting
             double currentWidth = 0;
             var currentRect = default(Rect);
 
-            for (var index = TextRuns.Count - 1; index >= 0; index--)
+            for (var index = _textRuns.Length - 1; index >= 0; index--)
             {
-                if (TextRuns[index] is not DrawableTextRun currentRun)
+                if (_textRuns[index] is not DrawableTextRun currentRun)
                 {
                     continue;
                 }
@@ -981,7 +980,7 @@ namespace Avalonia.Media.TextFormatting
 
         public override void Dispose()
         {
-            for (int i = 0; i < _textRuns.Count; i++)
+            for (int i = 0; i < _textRuns.Length; i++)
             {
                 if (_textRuns[i] is ShapedTextRun shapedTextRun)
                 {
@@ -990,186 +989,11 @@ namespace Avalonia.Media.TextFormatting
             }
         }
 
-        public TextLineImpl FinalizeLine()
+        public void FinalizeLine()
         {
             _textLineMetrics = CreateLineMetrics();
 
-            BidiReorder();
-
-            return this;
-        }
-
-        private static sbyte GetRunBidiLevel(TextRun run, FlowDirection flowDirection)
-        {
-            if (run is ShapedTextRun shapedTextCharacters)
-            {
-                return shapedTextCharacters.BidiLevel;
-            }
-
-            var defaultLevel = flowDirection == FlowDirection.LeftToRight ? 0 : 1;
-
-            return (sbyte)defaultLevel;
-        }
-
-        private void BidiReorder()
-        {
-            if (_textRuns.Count == 0)
-            {
-                return;
-            }
-
-            // Build up the collection of ordered runs.
-            var run = _textRuns[0];
-
-            OrderedBidiRun orderedRun = new(run, GetRunBidiLevel(run, _resolvedFlowDirection));
-
-            var current = orderedRun;
-
-            for (var i = 1; i < _textRuns.Count; i++)
-            {
-                run = _textRuns[i];
-
-                current.Next = new OrderedBidiRun(run, GetRunBidiLevel(run, _resolvedFlowDirection));
-
-                current = current.Next;
-            }
-
-            // Reorder them into visual order.
-            orderedRun = LinearReOrder(orderedRun);
-
-            // Now perform a recursive reversal of each run.
-            // From the highest level found in the text to the lowest odd level on each line, including intermediate levels
-            // not actually present in the text, reverse any contiguous sequence of characters that are at that level or higher.
-            // https://unicode.org/reports/tr9/#L2
-            sbyte max = 0;
-            var min = sbyte.MaxValue;
-
-            for (var i = 0; i < _textRuns.Count; i++)
-            {
-                var currentRun = _textRuns[i];
-
-                var level = GetRunBidiLevel(currentRun, _resolvedFlowDirection);
-
-                if (level > max)
-                {
-                    max = level;
-                }
-
-                if ((level & 1) != 0 && level < min)
-                {
-                    min = level;
-                }
-            }
-
-            if (min > max)
-            {
-                min = max;
-            }
-
-            if (max == 0 || (min == max && (max & 1) == 0))
-            {
-                // Nothing to reverse.
-                return;
-            }
-
-            // Now apply the reversal and replace the original contents.
-            var minLevelToReverse = max;
-
-            while (minLevelToReverse >= min)
-            {
-                current = orderedRun;
-
-                while (current != null)
-                {
-                    if (current.Level >= minLevelToReverse && current.Level % 2 != 0)
-                    {
-                        if (current.Run is ShapedTextRun { IsReversed: false } shapedTextCharacters)
-                        {
-                            shapedTextCharacters.Reverse();
-                        }
-                    }
-
-                    current = current.Next;
-                }
-
-                minLevelToReverse--;
-            }
-
-            var textRuns = new List<TextRun>(_textRuns.Count);
-
-            current = orderedRun;
-
-            while (current != null)
-            {
-                textRuns.Add(current.Run);
-
-                current = current.Next;
-            }
-
-            _textRuns = textRuns;
-        }
-
-        /// <summary>
-        /// Reorders a series of runs from logical to visual order, returning the left most run.
-        /// <see href="https://github.com/fribidi/linear-reorder/blob/f2f872257d4d8b8e137fcf831f254d6d4db79d3c/linear-reorder.c"/>
-        /// </summary>
-        /// <param name="run">The ordered bidi run.</param>
-        /// <returns>The <see cref="OrderedBidiRun"/>.</returns>
-        private static OrderedBidiRun LinearReOrder(OrderedBidiRun? run)
-        {
-            BidiRange? range = null;
-
-            while (run != null)
-            {
-                var next = run.Next;
-
-                while (range != null && range.Level > run.Level
-                    && range.Previous != null && range.Previous.Level >= run.Level)
-                {
-                    range = BidiRange.MergeWithPrevious(range);
-                }
-
-                if (range != null && range.Level >= run.Level)
-                {
-                    // Attach run to the range.
-                    if ((run.Level & 1) != 0)
-                    {
-                        // Odd, range goes to the right of run.
-                        run.Next = range.Left;
-                        range.Left = run;
-                    }
-                    else
-                    {
-                        // Even, range goes to the left of run.
-                        range.Right!.Next = run;
-                        range.Right = run;
-                    }
-
-                    range.Level = run.Level;
-                }
-                else
-                {
-                    var r = new BidiRange();
-
-                    r.Left = r.Right = run;
-                    r.Level = run.Level;
-                    r.Previous = range;
-
-                    range = r;
-                }
-
-                run = next;
-            }
-
-            while (range?.Previous != null)
-            {
-                range = BidiRange.MergeWithPrevious(range);
-            }
-
-            // Terminate.
-            range!.Right!.Next = null;
-
-            return range.Left!;
+            BidiReorderer.Instance.BidiReorder(_textRuns, _resolvedFlowDirection);
         }
 
         /// <summary>
@@ -1197,7 +1021,7 @@ namespace Avalonia.Media.TextFormatting
 
             var runIndex = GetRunIndexAtCharacterIndex(codepointIndex, LogicalDirection.Forward, out var currentPosition);
 
-            while (runIndex < _textRuns.Count)
+            while (runIndex < _textRuns.Length)
             {
                 var currentRun = _textRuns[runIndex];
 
@@ -1346,7 +1170,7 @@ namespace Avalonia.Media.TextFormatting
             textPosition = FirstTextSourceIndex;
             TextRun? previousRun = null;
 
-            while (runIndex < _textRuns.Count)
+            while (runIndex < _textRuns.Length)
             {
                 var currentRun = _textRuns[runIndex];
 
@@ -1395,7 +1219,7 @@ namespace Avalonia.Media.TextFormatting
                                 }
                             }
 
-                            if (runIndex + 1 >= _textRuns.Count)
+                            if (runIndex + 1 >= _textRuns.Length)
                             {
                                 return runIndex;
                             }
@@ -1411,7 +1235,7 @@ namespace Avalonia.Media.TextFormatting
                                 return runIndex;
                             }
 
-                            if (runIndex + 1 >= _textRuns.Count)
+                            if (runIndex + 1 >= _textRuns.Length)
                             {
                                 return runIndex;
                             }
@@ -1432,7 +1256,7 @@ namespace Avalonia.Media.TextFormatting
 
         private TextLineMetrics CreateLineMetrics()
         {
-            var fontMetrics = _paragraphProperties.DefaultTextRunProperties.Typeface.GlyphTypeface.Metrics;
+            var fontMetrics = _paragraphProperties.DefaultTextRunProperties.CachedGlyphTypeface.Metrics;
             var fontRenderingEmSize = _paragraphProperties.DefaultTextRunProperties.FontRenderingEmSize;
             var scale = fontRenderingEmSize / fontMetrics.DesignEmHeight;
 
@@ -1448,25 +1272,26 @@ namespace Avalonia.Media.TextFormatting
 
             var lineHeight = _paragraphProperties.LineHeight;
 
-            var lastRunIndex = _textRuns.Count - 1;
+            var lastRunIndex = _textRuns.Length - 1;
 
             if (lastRunIndex > 0 && _textRuns[lastRunIndex] is TextEndOfLine)
             {
                 lastRunIndex--;
             }
 
-            for (var index = 0; index < _textRuns.Count; index++)
+            for (var index = 0; index < _textRuns.Length; index++)
             {
                 switch (_textRuns[index])
                 {
                     case ShapedTextRun textRun:
                         {
+                            var properties = textRun.Properties;
                             var textMetrics =
-                                new TextMetrics(textRun.Properties.Typeface.GlyphTypeface, textRun.Properties.FontRenderingEmSize);
+                                new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
 
-                            if (fontRenderingEmSize < textRun.Properties.FontRenderingEmSize)
+                            if (fontRenderingEmSize < properties.FontRenderingEmSize)
                             {
-                                fontRenderingEmSize = textRun.Properties.FontRenderingEmSize;
+                                fontRenderingEmSize = properties.FontRenderingEmSize;
 
                                 if (ascent > textMetrics.Ascent)
                                 {
@@ -1496,7 +1321,7 @@ namespace Avalonia.Media.TextFormatting
                                 newLineLength = textRun.GlyphRun.Metrics.NewLineLength;
                             }
 
-                            widthIncludingWhitespace += textRun.GlyphRun.Metrics.WidthIncludingTrailingWhitespace;
+                            widthIncludingWhitespace += textRun.Size.Width;
 
                             break;
                         }
@@ -1618,60 +1443,6 @@ namespace Avalonia.Media.TextFormatting
 
                 default:
                     return 0;
-            }
-        }
-
-        private sealed class OrderedBidiRun
-        {
-            public OrderedBidiRun(TextRun run, sbyte level)
-            {
-                Run = run;
-                Level = level;
-            }
-
-            public sbyte Level { get; }
-
-            public TextRun Run { get; }
-
-            public OrderedBidiRun? Next { get; set; }
-        }
-
-        private sealed class BidiRange
-        {
-            public int Level { get; set; }
-
-            public OrderedBidiRun? Left { get; set; }
-
-            public OrderedBidiRun? Right { get; set; }
-
-            public BidiRange? Previous { get; set; }
-
-            public static BidiRange MergeWithPrevious(BidiRange range)
-            {
-                var previous = range.Previous;
-
-                BidiRange left;
-                BidiRange right;
-
-                if ((previous!.Level & 1) != 0)
-                {
-                    // Odd, previous goes to the right of range.
-                    left = range;
-                    right = previous;
-                }
-                else
-                {
-                    // Even, previous goes to the left of range.
-                    left = previous;
-                    right = range;
-                }
-
-                // Stitch them
-                left.Right!.Next = right.Left;
-                previous.Left = left.Left;
-                previous.Right = right.Right;
-
-                return previous;
             }
         }
     }

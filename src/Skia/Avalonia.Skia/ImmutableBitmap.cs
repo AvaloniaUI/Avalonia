@@ -37,6 +37,13 @@ namespace Avalonia.Skia
             }
         }
 
+        public ImmutableBitmap(SKImage image)
+        {
+            _image = image;
+            PixelSize = new PixelSize(image.Width, image.Height);
+            Dpi = new Vector(96, 96);
+        }
+
         public ImmutableBitmap(ImmutableBitmap src, PixelSize destinationSize, BitmapInterpolationMode interpolationMode)
         {
             SKImageInfo info = new SKImageInfo(destinationSize.Width, destinationSize.Height, SKColorType.Bgra8888);

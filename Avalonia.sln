@@ -231,6 +231,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Browser.Blaz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactiveUIDemo", "samples\ReactiveUIDemo\ReactiveUIDemo.csproj", "{75C47156-C5D8-44BC-A5A7-E8657C2248D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GpuInterop", "samples\GpuInterop\GpuInterop.csproj", "{C810060E-3809-4B74-A125-F11533AF9C1B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -542,6 +544,10 @@ Global
 		{75C47156-C5D8-44BC-A5A7-E8657C2248D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75C47156-C5D8-44BC-A5A7-E8657C2248D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{75C47156-C5D8-44BC-A5A7-E8657C2248D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C810060E-3809-4B74-A125-F11533AF9C1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C810060E-3809-4B74-A125-F11533AF9C1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C810060E-3809-4B74-A125-F11533AF9C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C810060E-3809-4B74-A125-F11533AF9C1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -606,6 +612,7 @@ Global
 		{15B93A4C-1B46-43F6-B534-7B25B6E99932} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{90B08091-9BBD-4362-B712-E9F2CC62B218} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{75C47156-C5D8-44BC-A5A7-E8657C2248D6} = {9B9E3891-2366-4253-A952-D08BCEB71098}
+		{C810060E-3809-4B74-A125-F11533AF9C1B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

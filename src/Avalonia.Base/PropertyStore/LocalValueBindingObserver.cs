@@ -11,13 +11,13 @@ namespace Avalonia.PropertyStore
         private readonly ValueStore _owner;
         private IDisposable? _subscription;
 
-        public LocalValueBindingObserver(ValueStore owner, StyledPropertyBase<T> property)
+        public LocalValueBindingObserver(ValueStore owner, StyledProperty<T> property)
         {
             _owner = owner;
             Property = property;
         }
 
-        public StyledPropertyBase<T> Property { get;}
+        public StyledProperty<T> Property { get;}
 
         public void Start(IObservable<T> source)
         {
@@ -41,7 +41,7 @@ namespace Avalonia.PropertyStore
 
         public void OnNext(T value)
         {
-            static void Execute(ValueStore owner, StyledPropertyBase<T> property, T value)
+            static void Execute(ValueStore owner, StyledProperty<T> property, T value)
             {
                 if (property.ValidateValue?.Invoke(value) != false)
                     owner.SetValue(property, value, BindingPriority.LocalValue);

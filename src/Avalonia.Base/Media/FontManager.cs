@@ -132,7 +132,7 @@ namespace Avalonia.Media
                 {
                     typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
 
-                    var glyphTypeface = typeface.GlyphTypeface;
+                    var glyphTypeface = GetOrAddGlyphTypeface(typeface);
 
                     if(glyphTypeface.TryGetGlyph((uint)codepoint, out _)){
                         return true;

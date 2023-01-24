@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Avalonia.Data.Core
 {
-    public class LogicalNotNode : ExpressionNode, ITransformNode
+    internal class LogicalNotNode : ExpressionNode, ITransformNode
     {
         public override string Description => "!";
 

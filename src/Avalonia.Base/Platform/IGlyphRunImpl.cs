@@ -10,6 +10,23 @@ namespace Avalonia.Platform
     [Unstable]
     public interface IGlyphRunImpl : IDisposable 
     {
-        IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound);
+
+        /// <summary>
+        ///     Gets the conservative bounding box of the glyph run./>.
+        /// </summary>
+        Size Size { get; }
+
+        /// <summary>
+        ///     Gets the baseline origin of the glyph run./>.
+        /// </summary>
+        Point BaselineOrigin { get; }
+
+        /// <summary>
+        /// Gets the intersections of specified upper and lower limit.
+        /// </summary>
+        /// <param name="lowerLimit">Upper limit.</param>
+        /// <param name="upperLimit">Lower limit.</param>
+        /// <returns></returns>
+        IReadOnlyList<float> GetIntersections(float lowerLimit, float upperLimit);
     }
 }

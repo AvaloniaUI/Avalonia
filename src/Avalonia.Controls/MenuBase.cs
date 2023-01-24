@@ -84,13 +84,13 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem?)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
             set
             {
                 SelectedIndex = value is Control c ?
-                    ItemContainerGenerator.IndexFromContainer(c) : -1;
+                    IndexFromContainer(c) : -1;
             }
         }
 
