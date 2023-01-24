@@ -113,14 +113,18 @@ namespace Avalonia.Media.TextFormatting
 
             var (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
 
-            var collapsedRuns = new TextRun[preSplitRuns.Count + 1];
-            preSplitRuns.CopyTo(collapsedRuns);
-            collapsedRuns[collapsedRuns.Length - 1] = shapedSymbol;
-
-            objectPool.TextRunLists.Return(ref preSplitRuns);
-            objectPool.TextRunLists.Return(ref postSplitRuns);
-
-            return collapsedRuns;
+            try
+            {
+                var collapsedRuns = new TextRun[preSplitRuns.Count + 1];
+                preSplitRuns.CopyTo(collapsedRuns);
+                collapsedRuns[collapsedRuns.Length - 1] = shapedSymbol;
+                return collapsedRuns;
+            }
+            finally
+            {
+                objectPool.TextRunLists.Return(ref preSplitRuns);
+                objectPool.TextRunLists.Return(ref postSplitRuns);
+            }
         }
     }
 }

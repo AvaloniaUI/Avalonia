@@ -32,58 +32,64 @@ namespace Avalonia.Media.TextFormatting
             var fetchedRuns = FetchTextRuns(textSource, firstTextSourceIndex, objectPool,
                 out var textEndOfLine, out var textSourceLength);
 
-            RentedList<TextRun>? shapedTextRuns;
+            RentedList<TextRun>? shapedTextRuns = null;
 
-            if (previousLineBreak?.RemainingRuns is { } remainingRuns)
+            try
             {
-                resolvedFlowDirection = previousLineBreak.FlowDirection;
-                textRuns = remainingRuns;
-                nextLineBreak = previousLineBreak;
-                shapedTextRuns = null;
+                if (previousLineBreak?.RemainingRuns is { } remainingRuns)
+                {
+                    resolvedFlowDirection = previousLineBreak.FlowDirection;
+                    textRuns = remainingRuns;
+                    nextLineBreak = previousLineBreak;
+                    shapedTextRuns = null;
+                }
+                else
+                {
+                    shapedTextRuns = ShapeTextRuns(fetchedRuns, paragraphProperties, objectPool, fontManager,
+                        out resolvedFlowDirection);
+                    textRuns = shapedTextRuns;
+
+                    if (nextLineBreak == null && textEndOfLine != null)
+                    {
+                        nextLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
+                    }
+                }
+
+                TextLineImpl textLine;
+
+                switch (textWrapping)
+                {
+                    case TextWrapping.NoWrap:
+                    {
+                        // perf note: if textRuns comes from remainingRuns above, it's very likely coming from this class
+                        // which already uses an array: ToArray() won't ever be called in this case
+                        var textRunArray = textRuns as TextRun[] ?? textRuns.ToArray();
+
+                        textLine = new TextLineImpl(textRunArray, firstTextSourceIndex, textSourceLength,
+                            paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
+
+                        textLine.FinalizeLine();
+
+                        break;
+                    }
+                    case TextWrapping.WrapWithOverflow:
+                    case TextWrapping.Wrap:
+                    {
+                        textLine = PerformTextWrapping(textRuns, firstTextSourceIndex, paragraphWidth,
+                            paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool, fontManager);
+                        break;
+                    }
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(textWrapping));
+                }
+
+                return textLine;
             }
-            else
+            finally
             {
-                shapedTextRuns = ShapeTextRuns(fetchedRuns, paragraphProperties, objectPool, fontManager, out resolvedFlowDirection);
-                textRuns = shapedTextRuns;
-
-                if (nextLineBreak == null && textEndOfLine != null)
-                {
-                    nextLineBreak = new TextLineBreak(textEndOfLine, resolvedFlowDirection);
-                }
+                objectPool.TextRunLists.Return(ref shapedTextRuns);
+                objectPool.TextRunLists.Return(ref fetchedRuns);
             }
-
-            TextLineImpl textLine;
-
-            switch (textWrapping)
-            {
-                case TextWrapping.NoWrap:
-                {
-                    // perf note: if textRuns comes from remainingRuns above, it's very likely coming from this class
-                    // which already uses an array: ToArray() won't ever be called in this case
-                    var textRunArray = textRuns as TextRun[] ?? textRuns.ToArray();
-
-                    textLine = new TextLineImpl(textRunArray, firstTextSourceIndex, textSourceLength,
-                        paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
-
-                    textLine.FinalizeLine();
-
-                    break;
-                }
-                case TextWrapping.WrapWithOverflow:
-                case TextWrapping.Wrap:
-                {
-                    textLine = PerformTextWrapping(textRuns, firstTextSourceIndex, paragraphWidth,
-                        paragraphProperties, resolvedFlowDirection, nextLineBreak, objectPool, fontManager);
-                    break;
-                }
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(textWrapping));
-            }
-
-            objectPool.TextRunLists.Return(ref shapedTextRuns);
-            objectPool.TextRunLists.Return(ref fetchedRuns);
-
-            return textLine;
         }
 
         /// <summary>
@@ -224,23 +230,26 @@ namespace Avalonia.Media.TextFormatting
                 (resolvedEmbeddingLevel & 1) == 0 ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
 
             var processedRuns = objectPool.TextRunLists.Rent();
-
-            CoalesceLevels(textRuns, bidiAlgorithm.ResolvedLevels.Span, fontManager, processedRuns);
-
-            bidiData.Reset();
-            bidiAlgorithm.Reset();
-
             var groupedRuns = objectPool.UnshapedTextRunLists.Rent();
-            var textShaper = TextShaper.Current;
 
-            for (var index = 0; index < processedRuns.Count; index++)
+            try
             {
-                var currentRun = processedRuns[index];
+                CoalesceLevels(textRuns, bidiAlgorithm.ResolvedLevels.Span, fontManager, processedRuns);
 
-                switch (currentRun)
+                bidiData.Reset();
+                bidiAlgorithm.Reset();
+
+
+                var textShaper = TextShaper.Current;
+
+                for (var index = 0; index < processedRuns.Count; index++)
                 {
-                    case UnshapedTextRun shapeableRun:
+                    var currentRun = processedRuns[index];
+
+                    switch (currentRun)
                     {
+                        case UnshapedTextRun shapeableRun:
+                        {
                             groupedRuns.Clear();
                             groupedRuns.Add(shapeableRun);
 
@@ -277,17 +286,20 @@ namespace Avalonia.Media.TextFormatting
 
                             break;
                         }
-                    default:
+                        default:
                         {
                             shapedRuns.Add(currentRun);
 
                             break;
                         }
+                    }
                 }
             }
-
-            objectPool.TextRunLists.Return(ref processedRuns);
-            objectPool.UnshapedTextRunLists.Return(ref groupedRuns);
+            finally
+            {
+                objectPool.TextRunLists.Return(ref processedRuns);
+                objectPool.UnshapedTextRunLists.Return(ref groupedRuns);
+            }
 
             return shapedRuns;
         }
@@ -805,25 +817,29 @@ namespace Avalonia.Media.TextFormatting
 
             var (preSplitRuns, postSplitRuns) = SplitTextRuns(textRuns, measuredLength, objectPool);
 
-            var textLineBreak = postSplitRuns?.Count > 0 ?
-                new TextLineBreak(null, resolvedFlowDirection, postSplitRuns.ToArray()) :
-                null;
-
-            if (textLineBreak is null && currentLineBreak?.TextEndOfLine != null)
+            try
             {
-                textLineBreak = new TextLineBreak(currentLineBreak.TextEndOfLine, resolvedFlowDirection);
+                var textLineBreak = postSplitRuns?.Count > 0 ?
+                    new TextLineBreak(null, resolvedFlowDirection, postSplitRuns.ToArray()) :
+                    null;
+
+                if (textLineBreak is null && currentLineBreak?.TextEndOfLine != null)
+                {
+                    textLineBreak = new TextLineBreak(currentLineBreak.TextEndOfLine, resolvedFlowDirection);
+                }
+
+                var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
+                    paragraphWidth, paragraphProperties, resolvedFlowDirection,
+                    textLineBreak);
+
+                textLine.FinalizeLine();
+                return textLine;
             }
-
-            var textLine = new TextLineImpl(preSplitRuns.ToArray(), firstTextSourceIndex, measuredLength,
-                paragraphWidth, paragraphProperties, resolvedFlowDirection,
-                textLineBreak);
-
-            textLine.FinalizeLine();
-
-            objectPool.TextRunLists.Return(ref preSplitRuns);
-            objectPool.TextRunLists.Return(ref postSplitRuns);
-
-            return textLine;
+            finally
+            {
+                objectPool.TextRunLists.Return(ref preSplitRuns);
+                objectPool.TextRunLists.Return(ref postSplitRuns);
+            }
         }
 
         private struct TextRunEnumerator
