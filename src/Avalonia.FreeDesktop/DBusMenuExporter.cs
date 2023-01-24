@@ -207,7 +207,7 @@ namespace Avalonia.FreeDesktop
                 "type", "label", "enabled", "visible", "shortcut", "toggle-type", "children-display", "toggle-state", "icon-data"
             };
 
-            private DBusVariantItem? GetProperty((NativeMenuItemBase? item, NativeMenu? menu) i, string name)
+            private static DBusVariantItem? GetProperty((NativeMenuItemBase? item, NativeMenu? menu) i, string name)
             {
                 var (it, menu) = i;
 
