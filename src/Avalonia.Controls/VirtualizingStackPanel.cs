@@ -226,7 +226,7 @@ namespace Avalonia.Controls
             {
                 if (toIndex < 0)
                     toIndex = count - 1;
-                else if (toIndex >= count - 1)
+                else if (toIndex >= count)
                     toIndex = 0;
             }
 
