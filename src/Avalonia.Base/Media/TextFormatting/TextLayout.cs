@@ -441,128 +441,133 @@ namespace Avalonia.Media.TextFormatting
 
             var textLines = objectPool.TextLines.Rent();
 
-            double left = double.PositiveInfinity, width = 0.0, height = 0.0;
-
-            _textSourceLength = 0;
-
-            TextLine? previousLine = null;
-
-            var textFormatter = TextFormatter.Current;
-
-            while (true)
+            try
             {
-                var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth, _paragraphProperties,
-                    previousLine?.TextLineBreak);
+                double left = double.PositiveInfinity, width = 0.0, height = 0.0;
 
-                if (textLine.Length == 0)
+                _textSourceLength = 0;
+
+                TextLine? previousLine = null;
+
+                var textFormatter = TextFormatter.Current;
+
+                while (true)
                 {
-                    if (previousLine != null && previousLine.NewLineLength > 0)
+                    var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth,
+                        _paragraphProperties, previousLine?.TextLineBreak);
+
+                    if (textLine.Length == 0)
                     {
-                        var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, MaxWidth,
-                            _paragraphProperties, fontManager);
+                        if (previousLine != null && previousLine.NewLineLength > 0)
+                        {
+                            var emptyTextLine = TextFormatterImpl.CreateEmptyTextLine(_textSourceLength, MaxWidth,
+                                _paragraphProperties, fontManager);
 
-                        textLines.Add(emptyTextLine);
+                            textLines.Add(emptyTextLine);
 
-                        UpdateBounds(emptyTextLine, ref left, ref width, ref height);
+                            UpdateBounds(emptyTextLine, ref left, ref width, ref height);
+                        }
+
+                        break;
                     }
 
-                    break;
-                }
+                    _textSourceLength += textLine.Length;
 
-                _textSourceLength += textLine.Length;
-
-                //Fulfill max height constraint
-                if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight) && height + textLine.Height > MaxHeight)
-                {
-                    if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
+                    //Fulfill max height constraint
+                    if (textLines.Count > 0 && !double.IsPositiveInfinity(MaxHeight)
+                        && height + textLine.Height > MaxHeight)
                     {
-                        var collapsedLine =
-                            previousLine.Collapse(GetCollapsingProperties(MaxWidth));
+                        if (previousLine?.TextLineBreak != null && _textTrimming != TextTrimming.None)
+                        {
+                            var collapsedLine =
+                                previousLine.Collapse(GetCollapsingProperties(MaxWidth));
 
-                        textLines[textLines.Count - 1] = collapsedLine;
+                            textLines[textLines.Count - 1] = collapsedLine;
+                        }
+
+                        break;
                     }
 
-                    break;
-                }
+                    var hasOverflowed = textLine.HasOverflowed;
 
-                var hasOverflowed = textLine.HasOverflowed;
-
-                if (hasOverflowed && _textTrimming != TextTrimming.None)
-                {
-                    textLine = textLine.Collapse(GetCollapsingProperties(MaxWidth));
-                }
-
-                textLines.Add(textLine);
-
-                UpdateBounds(textLine, ref left, ref width, ref height);
-
-                previousLine = textLine;
-
-                //Fulfill max lines constraint
-                if (MaxLines > 0 && textLines.Count >= MaxLines)
-                {
-                    if(textLine.TextLineBreak?.RemainingRuns is not null)
+                    if (hasOverflowed && _textTrimming != TextTrimming.None)
                     {
-                        textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(width));
+                        textLine = textLine.Collapse(GetCollapsingProperties(MaxWidth));
                     }
 
-                    break;
-                }
+                    textLines.Add(textLine);
 
-                if (textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
-                {
-                    break;
-                }
-            }
+                    UpdateBounds(textLine, ref left, ref width, ref height);
 
-            //Make sure the TextLayout always contains at least on empty line
-            if (textLines.Count == 0)
-            {
-                var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties, fontManager);
+                    previousLine = textLine;
 
-                textLines.Add(textLine);
-
-                UpdateBounds(textLine, ref left, ref width, ref height);
-            }
-
-            Bounds = new Rect(left, 0, width, height);
-
-            if (_paragraphProperties.TextAlignment == TextAlignment.Justify)
-            {
-                var whitespaceWidth = 0d;
-
-                for (var i = 0; i < textLines.Count; i++)
-                {
-                    var line = textLines[i];
-                    var lineWhitespaceWidth = line.Width - line.WidthIncludingTrailingWhitespace;
-
-                    if (lineWhitespaceWidth > whitespaceWidth)
+                    //Fulfill max lines constraint
+                    if (MaxLines > 0 && textLines.Count >= MaxLines)
                     {
-                        whitespaceWidth = lineWhitespaceWidth;
+                        if (textLine.TextLineBreak?.RemainingRuns is not null)
+                        {
+                            textLines[textLines.Count - 1] = textLine.Collapse(GetCollapsingProperties(width));
+                        }
+
+                        break;
+                    }
+
+                    if (textLine.TextLineBreak?.TextEndOfLine is TextEndOfParagraph)
+                    {
+                        break;
                     }
                 }
 
-                var justificationWidth = width - whitespaceWidth;
-
-                if (justificationWidth > 0)
+                //Make sure the TextLayout always contains at least on empty line
+                if (textLines.Count == 0)
                 {
-                    var justificationProperties = new InterWordJustification(justificationWidth);
+                    var textLine =
+                        TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties, fontManager);
 
-                    for (var i = 0; i < textLines.Count - 1; i++)
+                    textLines.Add(textLine);
+
+                    UpdateBounds(textLine, ref left, ref width, ref height);
+                }
+
+                Bounds = new Rect(left, 0, width, height);
+
+                if (_paragraphProperties.TextAlignment == TextAlignment.Justify)
+                {
+                    var whitespaceWidth = 0d;
+
+                    for (var i = 0; i < textLines.Count; i++)
                     {
                         var line = textLines[i];
+                        var lineWhitespaceWidth = line.Width - line.WidthIncludingTrailingWhitespace;
 
-                        line.Justify(justificationProperties);
+                        if (lineWhitespaceWidth > whitespaceWidth)
+                        {
+                            whitespaceWidth = lineWhitespaceWidth;
+                        }
+                    }
+
+                    var justificationWidth = width - whitespaceWidth;
+
+                    if (justificationWidth > 0)
+                    {
+                        var justificationProperties = new InterWordJustification(justificationWidth);
+
+                        for (var i = 0; i < textLines.Count - 1; i++)
+                        {
+                            var line = textLines[i];
+
+                            line.Justify(justificationProperties);
+                        }
                     }
                 }
+
+                return textLines.ToArray();
             }
-
-            var result = textLines.ToArray();
-
-            objectPool.TextLines.Return(ref textLines);
-            objectPool.VerifyAllReturned();
-
-            return result;
+            finally
+            {
+                objectPool.TextLines.Return(ref textLines);
+                objectPool.VerifyAllReturned();
+            }
         }
 
         /// <summary>
