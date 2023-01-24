@@ -86,7 +86,6 @@ namespace Avalonia.Media.TextFormatting
 
                                     RentedList<TextRun>? rentedPreSplitRuns = null;
                                     RentedList<TextRun>? rentedPostSplitRuns = null;
-                                    TextRun[]? results;
 
                                     try
                                     {
@@ -113,9 +112,7 @@ namespace Avalonia.Media.TextFormatting
 
                                         if (measuredLength <= _prefixLength || effectivePostSplitRuns is null)
                                         {
-                                            results = collapsedRuns.ToArray();
-                                            objectPool.TextRunLists.Return(ref collapsedRuns);
-                                            return results;
+                                            return collapsedRuns.ToArray();
                                         }
 
                                         var availableSuffixWidth = availableWidth;
@@ -157,16 +154,15 @@ namespace Avalonia.Media.TextFormatting
                                                 }
                                             }
                                         }
+
+                                        return collapsedRuns.ToArray();
                                     }
                                     finally
                                     {
                                         objectPool.TextRunLists.Return(ref rentedPreSplitRuns);
                                         objectPool.TextRunLists.Return(ref rentedPostSplitRuns);
+                                        objectPool.TextRunLists.Return(ref collapsedRuns);
                                     }
-
-                                    results = collapsedRuns.ToArray();
-                                    objectPool.TextRunLists.Return(ref collapsedRuns);
-                                    return results;
                                 }
 
                                 return new TextRun[] { shapedSymbol };

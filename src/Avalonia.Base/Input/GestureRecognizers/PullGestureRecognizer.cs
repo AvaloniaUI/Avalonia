@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Avalonia.Input.GestureRecognizers;
 
 namespace Avalonia.Input
@@ -88,7 +89,10 @@ namespace Avalonia.Input
                 }
 
                 _pullInProgress = true;
-                _target?.RaiseEvent(new PullGestureEventArgs(_gestureId, delta, PullDirection));
+                var pullEventArgs = new PullGestureEventArgs(_gestureId, delta, PullDirection);
+                _target?.RaiseEvent(pullEventArgs);
+
+                e.Handled = pullEventArgs.Handled;
             }
         }
 

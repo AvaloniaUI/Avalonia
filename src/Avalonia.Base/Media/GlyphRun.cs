@@ -13,13 +13,21 @@ namespace Avalonia.Media
     /// </summary>
     public sealed class GlyphRun : IDisposable
     {
+        private readonly static IPlatformRenderInterface s_renderInterface;
+
         private IRef<IGlyphRunImpl>? _platformImpl;
         private double _fontRenderingEmSize;
         private int _biDiLevel;
         private GlyphRunMetrics? _glyphRunMetrics;
         private ReadOnlyMemory<char> _characters;
         private IReadOnlyList<GlyphInfo> _glyphInfos;
+        private Point? _baselineOrigin;
         private bool _hasOneCharPerCluster; // if true, character index and cluster are similar
+
+        static GlyphRun()
+        {
+            s_renderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlyphRun"/> class by specifying properties of the class.
@@ -28,15 +36,17 @@ namespace Avalonia.Media
         /// <param name="fontRenderingEmSize">The rendering em size.</param>
         /// <param name="characters">The characters.</param>
         /// <param name="glyphIndices">The glyph indices.</param>
+        /// <param name="baselineOrigin">The baseline origin of the run.</param>
         /// <param name="biDiLevel">The bidi level.</param>
         public GlyphRun(
             IGlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             ReadOnlyMemory<char> characters,
             IReadOnlyList<ushort> glyphIndices,
+            Point? baselineOrigin = null,
             int biDiLevel = 0)
             : this(glyphTypeface, fontRenderingEmSize, characters,
-                CreateGlyphInfos(glyphIndices, fontRenderingEmSize, glyphTypeface), biDiLevel)
+                CreateGlyphInfos(glyphIndices, fontRenderingEmSize, glyphTypeface), baselineOrigin, biDiLevel)
         {
             _hasOneCharPerCluster = true;
         }
@@ -48,12 +58,14 @@ namespace Avalonia.Media
         /// <param name="fontRenderingEmSize">The rendering em size.</param>
         /// <param name="characters">The characters.</param>
         /// <param name="glyphInfos">The list of glyphs used.</param>
+        /// <param name="baselineOrigin">The baseline origin of the run.</param>
         /// <param name="biDiLevel">The bidi level.</param>
         public GlyphRun(
             IGlyphTypeface glyphTypeface,
             double fontRenderingEmSize,
             ReadOnlyMemory<char> characters,
             IReadOnlyList<GlyphInfo> glyphInfos,
+            Point? baselineOrigin = null,
             int biDiLevel = 0)
         {
             GlyphTypeface = glyphTypeface;
@@ -64,6 +76,8 @@ namespace Avalonia.Media
 
             _glyphInfos = glyphInfos;
 
+            _baselineOrigin = baselineOrigin;
+
             _biDiLevel = biDiLevel;
         }
 
@@ -72,6 +86,7 @@ namespace Avalonia.Media
             _glyphInfos = Array.Empty<GlyphInfo>();
             GlyphTypeface = Typeface.Default.GlyphTypeface;
             _platformImpl = platformImpl;
+            _baselineOrigin = platformImpl.Item.BaselineOrigin;
         }
 
         private static IReadOnlyList<GlyphInfo> CreateGlyphInfos(IReadOnlyList<ushort> glyphIndices,
@@ -147,9 +162,13 @@ namespace Avalonia.Media
             => _glyphRunMetrics ??= CreateGlyphRunMetrics();
 
         /// <summary>
-        ///     Gets the baseline origin of the<see cref="GlyphRun"/>.
+        ///     Gets or sets the baseline origin of the<see cref="GlyphRun"/>.
         /// </summary>
-        public Point BaselineOrigin => PlatformImpl.Item.BaselineOrigin;
+        public Point BaselineOrigin
+        {
+            get => _baselineOrigin ?? default;
+            set => Set(ref _baselineOrigin, value);
+        }
 
         /// <summary>
         ///     Gets or sets the list of UTF16 code points that represent the Unicode content of the <see cref="GlyphRun"/>.
@@ -204,9 +223,7 @@ namespace Avalonia.Media
         /// <returns>The geometry returned contains the combined geometry of all glyphs in the glyph run.</returns>
         public Geometry BuildGeometry()
         {
-            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-
-            var geometryImpl = platformRenderInterface.BuildGlyphRunGeometry(this);
+            var geometryImpl = s_renderInterface.BuildGlyphRunGeometry(this);
 
             return new PlatformGeometry(geometryImpl);
         }
@@ -802,9 +819,11 @@ namespace Avalonia.Media
 
         private IRef<IGlyphRunImpl> CreateGlyphRunImpl()
         {
-            var platformRenderInterface = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
-
-            var platformImpl = platformRenderInterface.CreateGlyphRun(GlyphTypeface, FontRenderingEmSize, GlyphInfos);
+            var platformImpl = s_renderInterface.CreateGlyphRun(
+                GlyphTypeface, 
+                FontRenderingEmSize, 
+                GlyphInfos, 
+                _baselineOrigin ?? new Point(0, -GlyphTypeface.Metrics.Ascent * Scale));
 
             _platformImpl = RefCountable.Create(platformImpl);
 
