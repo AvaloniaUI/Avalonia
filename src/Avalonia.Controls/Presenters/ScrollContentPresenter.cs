@@ -869,7 +869,7 @@ namespace Avalonia.Controls.Presenters
 
                 if (!_areVerticalSnapPointsRegular)
                 {
-                    _verticalSnapPoints = scrollSnapPointsInfo.GetIrregularSnapPoints(Layout.Orientation.Vertical, HorizontalSnapPointsAlignment);
+                    _verticalSnapPoints = scrollSnapPointsInfo.GetIrregularSnapPoints(Layout.Orientation.Vertical, VerticalSnapPointsAlignment);
                 }
                 else
                 {

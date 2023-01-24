@@ -50,6 +50,7 @@ namespace ControlCatalog.Pages
         public List<SnapPointsType> AvailableSnapPointsType { get; }
         public List<SnapPointsAlignment> AvailableSnapPointsAlignment { get; }
     }
+
     public class ScrollSnapPage : UserControl
     {
         public ScrollSnapPage()
