@@ -581,12 +581,21 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void HandleInput(RawInputEventArgs e)
         {
-            if (e is RawPointerEventArgs pointerArgs)
+            if (PlatformImpl != null)
             {
-                pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
-            }
+                if (e is RawPointerEventArgs pointerArgs)
+                {
+                    pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
+                }
 
-            _inputManager?.ProcessInput(e);
+                _inputManager?.ProcessInput(e);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
+                    this,
+                    "PlatformImpl is null, couldn't handle input.");
+            }
         }
 
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)
