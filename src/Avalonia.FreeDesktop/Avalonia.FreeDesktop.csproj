@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <Import Project="..\..\build\TrimmingEnable.props" />
-  <Import Project="..\..\build\NetAnalyzers.props" />
 
   <ItemGroup>
     <Compile Include="..\Shared\IsExternalInit.cs" Link="IsExternalInit.cs" />
