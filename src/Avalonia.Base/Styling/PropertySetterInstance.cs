@@ -14,7 +14,7 @@ namespace Avalonia.Styling
         ISetterInstance
     {
         private readonly StyledElement _target;
-        private readonly StyledPropertyBase<T>? _styledProperty;
+        private readonly StyledProperty<T>? _styledProperty;
         private readonly DirectPropertyBase<T>? _directProperty;
         private readonly T _value;
         private IDisposable? _subscription;
@@ -22,7 +22,7 @@ namespace Avalonia.Styling
 
         public PropertySetterInstance(
             StyledElement target,
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             T value)
         {
             _target = target;

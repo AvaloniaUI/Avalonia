@@ -11,13 +11,13 @@ namespace Avalonia.PropertyStore
         private readonly ValueStore _owner;
         private IDisposable? _subscription;
 
-        public LocalValueUntypedBindingObserver(ValueStore owner, StyledPropertyBase<T> property)
+        public LocalValueUntypedBindingObserver(ValueStore owner, StyledProperty<T> property)
         {
             _owner = owner;
             Property = property;
         }
 
-        public StyledPropertyBase<T> Property { get; }
+        public StyledProperty<T> Property { get; }
 
         public void Start(IObservable<object?> source)
         {

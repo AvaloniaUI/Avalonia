@@ -15,7 +15,7 @@ namespace Avalonia.Data.Core.Plugins
         private static MethodInfo? s_observableGeneric;
         private static MethodInfo? s_observableSelect;
 
-        [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicProperties, "Avalonia.Data.Core.Plugins.ObservableStreamPlugin", "Avalonia.Base")]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, "Avalonia.Data.Core.Plugins.ObservableStreamPlugin", "Avalonia.Base")]
         public ObservableStreamPlugin()
         {
             
