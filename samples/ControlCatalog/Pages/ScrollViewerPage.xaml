@@ -9,6 +9,7 @@
     <Grid ColumnDefinitions="Auto, *">
       <StackPanel Orientation="Vertical" Spacing="4">
         <ToggleSwitch IsChecked="{Binding AllowAutoHide}" Content="Allow auto hide" />
+        <ToggleSwitch IsChecked="{Binding EnableInertia}" Content="Enable Inertia" />
 
         <StackPanel Orientation="Vertical" Spacing="4">
           <TextBlock Text="Horizontal Scroll" />
@@ -24,6 +25,7 @@
       <ScrollViewer x:Name="ScrollViewer"
                     Grid.Column="1"
                     Width="400" Height="400"
+                    IsScrollInertiaEnabled="{Binding EnableInertia}"
                     AllowAutoHide="{Binding AllowAutoHide}"
                     HorizontalScrollBarVisibility="{Binding HorizontalScrollVisibility}"
                     VerticalScrollBarVisibility="{Binding VerticalScrollVisibility}">
