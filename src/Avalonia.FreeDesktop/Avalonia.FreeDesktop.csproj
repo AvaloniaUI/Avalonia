@@ -24,8 +24,4 @@
     <InternalsVisibleTo Include="Avalonia.X11, PublicKey=$(AvaloniaPublicKey)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="obj" />
-  </ItemGroup>
-
 </Project>
