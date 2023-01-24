@@ -201,7 +201,11 @@ namespace Avalonia.Skia
             return new WriteableBitmapImpl(size, dpi, format, alphaFormat);
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<GlyphInfo> glyphInfos)
+        public IGlyphRunImpl CreateGlyphRun(
+            IGlyphTypeface glyphTypeface,
+            double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos,
+            Point baselineOrigin)
         {
             if (glyphTypeface == null)
             {
@@ -252,7 +256,6 @@ namespace Avalonia.Skia
 
             var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
             var height = glyphTypeface.Metrics.LineSpacing * scale;
-            var baselineOrigin = new Point(0, -glyphTypeface.Metrics.Ascent * scale);
 
             return new GlyphRunImpl(builder.Build(), new Size(width, height), baselineOrigin);
         }

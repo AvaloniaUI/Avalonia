@@ -185,7 +185,7 @@ namespace Avalonia.Media.TextFormatting
                 ShapedBuffer.FontRenderingEmSize,
                 Text,
                 ShapedBuffer,
-                BidiLevel);
+                biDiLevel: BidiLevel);
         }
 
         public void Dispose()
