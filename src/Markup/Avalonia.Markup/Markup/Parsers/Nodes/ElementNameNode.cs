@@ -6,7 +6,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
-    public class ElementNameNode : ExpressionNode
+    internal class ElementNameNode : ExpressionNode
     {
         private readonly WeakReference<INameScope> _nameScope;
         private readonly string _name;

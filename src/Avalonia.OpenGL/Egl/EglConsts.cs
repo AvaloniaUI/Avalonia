@@ -64,7 +64,7 @@ namespace Avalonia.OpenGL.Egl
         public const int  EGL_WIDTH = 0x3057;
         public const int  EGL_WINDOW_BIT = 0x0004;
 
-//        public const int  EGL_BACK_BUFFER = 0x3084;
+        public const int  EGL_BACK_BUFFER = 0x3084;
 //        public const int  EGL_BIND_TO_TEXTURE_RGB = 0x3039;
 //        public const int  EGL_BIND_TO_TEXTURE_RGBA = 0x303A;
         public const int  EGL_CONTEXT_LOST = 0x300E;
@@ -73,11 +73,11 @@ namespace Avalonia.OpenGL.Egl
 //        public const int  EGL_MIPMAP_TEXTURE = 0x3082;
 //        public const int  EGL_MIPMAP_LEVEL = 0x3083;
 //        public const int  EGL_NO_TEXTURE = 0x305C;
-//        public const int  EGL_TEXTURE_2D = 0x305F;
-//        public const int  EGL_TEXTURE_FORMAT = 0x3080;
+        public const int  EGL_TEXTURE_2D = 0x305F;
+        public const int  EGL_TEXTURE_FORMAT = 0x3080;
 //        public const int  EGL_TEXTURE_RGB = 0x305D;
-//        public const int  EGL_TEXTURE_RGBA = 0x305E;
-//        public const int  EGL_TEXTURE_TARGET = 0x3081;
+        public const int  EGL_TEXTURE_RGBA = 0x305E;
+        public const int  EGL_TEXTURE_TARGET = 0x3081;
 
 //        public const int  EGL_ALPHA_FORMAT = 0x3088;
 //        public const int  EGL_ALPHA_FORMAT_NONPRE = 0x308B;
@@ -216,5 +216,7 @@ namespace Avalonia.OpenGL.Egl
         public const int  EGL_TEXTURE_OFFSET_Y_ANGLE = 0x3491;
 
         public const int  EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE = 0x33A6;
+        
+        public const int EGL_TEXTURE_INTERNAL_FORMAT_ANGLE = 0x345D;
     }
 }

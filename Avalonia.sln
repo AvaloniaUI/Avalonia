@@ -234,6 +234,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tmds.DBus.Protocol", "src\Linux\Tmds.DBus\src\Tmds.DBus.Protocol\Tmds.DBus.Protocol.csproj", "{29E25263-3CC3-4D55-A042-00BA136867D4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tmds.DBus.SourceGenerator", "src\tools\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator.csproj", "{5E9C0032-E460-4BC1-BCC7-6448F34DD679}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GpuInterop", "samples\GpuInterop\GpuInterop.csproj", "{C810060E-3809-4B74-A125-F11533AF9C1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -554,6 +555,10 @@ Global
 		{5E9C0032-E460-4BC1-BCC7-6448F34DD679}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E9C0032-E460-4BC1-BCC7-6448F34DD679}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E9C0032-E460-4BC1-BCC7-6448F34DD679}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C810060E-3809-4B74-A125-F11533AF9C1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C810060E-3809-4B74-A125-F11533AF9C1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C810060E-3809-4B74-A125-F11533AF9C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C810060E-3809-4B74-A125-F11533AF9C1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -620,6 +625,7 @@ Global
 		{75C47156-C5D8-44BC-A5A7-E8657C2248D6} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 		{29E25263-3CC3-4D55-A042-00BA136867D4} = {86C53C40-57AA-45B8-AD42-FAE0EFDF0F2B}
 		{5E9C0032-E460-4BC1-BCC7-6448F34DD679} = {4ED8B739-6F4E-4CD4-B993-545E6B5CE637}
+		{C810060E-3809-4B74-A125-F11533AF9C1B} = {9B9E3891-2366-4253-A952-D08BCEB71098}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}

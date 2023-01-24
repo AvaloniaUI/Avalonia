@@ -132,7 +132,7 @@ namespace Avalonia
 
             switch (property)
             {
-                case StyledPropertyBase<T> styled:
+                case StyledProperty<T> styled:
                     ClearValue(styled);
                     break;
                 case DirectPropertyBase<T> direct:
@@ -147,7 +147,7 @@ namespace Avalonia
         /// Clears a <see cref="AvaloniaProperty"/>'s local value.
         /// </summary>
         /// <param name="property">The property.</param>
-        public void ClearValue<T>(StyledPropertyBase<T> property)
+        public void ClearValue<T>(StyledProperty<T> property)
         {
             property = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
@@ -220,7 +220,7 @@ namespace Avalonia
         /// <typeparam name="T">The type of the property.</typeparam>
         /// <param name="property">The property.</param>
         /// <returns>The value.</returns>
-        public T GetValue<T>(StyledPropertyBase<T> property)
+        public T GetValue<T>(StyledProperty<T> property)
         {
             _ = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
@@ -243,7 +243,7 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        public Optional<T> GetBaseValue<T>(StyledPropertyBase<T> property)
+        public Optional<T> GetBaseValue<T>(StyledProperty<T> property)
         {
             _ = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
@@ -309,7 +309,7 @@ namespace Avalonia
         /// An <see cref="IDisposable"/> if setting the property can be undone, otherwise null.
         /// </returns>
         public IDisposable? SetValue<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             T value,
             BindingPriority priority = BindingPriority.LocalValue)
         {
@@ -373,7 +373,7 @@ namespace Avalonia
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         public IDisposable Bind<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<object?> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
@@ -396,7 +396,7 @@ namespace Avalonia
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         public IDisposable Bind<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<T> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
@@ -419,7 +419,7 @@ namespace Avalonia
         /// A disposable which can be used to terminate the binding.
         /// </returns>
         public IDisposable Bind<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<BindingValue<T>> source,
             BindingPriority priority = BindingPriority.LocalValue)
         {
