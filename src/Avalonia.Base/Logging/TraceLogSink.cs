@@ -141,7 +141,7 @@ namespace Avalonia.Logging
                 result.Append(')');
             }
 
-            return result.ToString();
+            return StringBuilderCache.GetStringAndRelease(result);
         }
     }
 }
