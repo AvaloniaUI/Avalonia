@@ -34,7 +34,7 @@ namespace Avalonia.Input
         }
 
         [Unstable]
-        [Obsolete("This constructor may be removed in 12.0. Consider replacing it with RawDragEvent.")]
+        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using DragDrop.DoDragDrop or IHeadlessWindow.DragDrop.")]
         public DragEventArgs(RoutedEvent<DragEventArgs> routedEvent, IDataObject data, Interactive target, Point targetLocation, KeyModifiers keyModifiers)
             : base(routedEvent)
         {

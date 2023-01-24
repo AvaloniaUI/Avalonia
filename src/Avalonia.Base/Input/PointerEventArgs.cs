@@ -15,7 +15,7 @@ namespace Avalonia.Input
         private readonly Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
 
         [Unstable]
-        [Obsolete("This constructor may be removed in 12.0. Consider replacing it with RawPointerEventArgs or headless unit tests helpers.")]
+        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
         public PointerEventArgs(RoutedEvent routedEvent,
             object? source,
             IPointer pointer,
