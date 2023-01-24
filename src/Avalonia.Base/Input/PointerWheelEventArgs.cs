@@ -7,7 +7,7 @@ namespace Avalonia.Input
 {
     public class PointerWheelEventArgs : PointerEventArgs
     {
-        public Vector Delta { get; set; }
+        public Vector Delta { get; }
 
         [Unstable]
         [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow.MouseWheel.")]

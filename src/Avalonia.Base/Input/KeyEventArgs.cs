@@ -10,10 +10,10 @@ namespace Avalonia.Input
 
         }
 
-        public IKeyboardDevice? Device { get; set; }
+        public IKeyboardDevice? Device { get; init; }
 
-        public Key Key { get; set; }
+        public Key Key { get; init; }
 
-        public KeyModifiers KeyModifiers { get; set; }
+        public KeyModifiers KeyModifiers { get; init; }
     }
 }

@@ -33,7 +33,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Tab,
             });
 
@@ -53,7 +52,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
             });
 
@@ -73,7 +71,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
                 KeyModifiers = KeyModifiers.Control
             });
@@ -96,7 +93,6 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
                 {
-                    RoutedEvent = InputElement.GotFocusEvent,
                     NavigationMethod = NavigationMethod.Directional,
                     KeyModifiers = KeyModifiers.Control
                 });

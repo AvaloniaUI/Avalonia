@@ -7,7 +7,7 @@ namespace Avalonia.Input
 {
     public class PointerDeltaEventArgs : PointerEventArgs
     {
-        public Vector Delta { get; set; }
+        public Vector Delta { get; }
 
         [Unstable]
         [Obsolete("This constructor might be removed in 12.0.")]
