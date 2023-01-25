@@ -27,7 +27,8 @@ namespace Avalonia.Input.GestureRecognizers
         // Movement per second
         private Vector _inertia;
         private ulong? _lastMoveTimestamp;
-        
+        private bool _isScrollInertiaEnabled;
+
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
         /// </summary>
@@ -45,6 +46,15 @@ namespace Avalonia.Input.GestureRecognizers
                 nameof(CanVerticallyScroll),
                 o => o.CanVerticallyScroll,
                 (o, v) => o.CanVerticallyScroll = v);
+
+        /// <summary>
+        /// Defines the <see cref="IsScrollInertiaEnabled"/> property.
+        /// </summary>
+        public static readonly DirectProperty<ScrollGestureRecognizer, bool> IsScrollInertiaEnabledProperty =
+            AvaloniaProperty.RegisterDirect<ScrollGestureRecognizer, bool>(
+                nameof(IsScrollInertiaEnabled),
+                o => o.IsScrollInertiaEnabled,
+                (o, v) => o.IsScrollInertiaEnabled = v);
 
         /// <summary>
         /// Defines the <see cref="ScrollStartDistance"/> property.
@@ -71,6 +81,15 @@ namespace Avalonia.Input.GestureRecognizers
         {
             get => _canVerticallyScroll;
             set => SetAndRaise(CanVerticallyScrollProperty, ref _canVerticallyScroll, value);
+        }
+        
+        /// <summary>
+        /// Gets or sets whether the gesture should include inertia in it's behavior.
+        /// </summary>
+        public bool IsScrollInertiaEnabled
+        {
+            get => _isScrollInertiaEnabled;
+            set => SetAndRaise(IsScrollInertiaEnabledProperty, ref _isScrollInertiaEnabled, value);
         }
 
         /// <summary>
@@ -169,7 +188,8 @@ namespace Avalonia.Input.GestureRecognizers
                 if (_inertia == default
                     || e.Timestamp == 0
                     || _lastMoveTimestamp == 0
-                    || e.Timestamp - _lastMoveTimestamp > 200)
+                    || e.Timestamp - _lastMoveTimestamp > 200
+                    || !IsScrollInertiaEnabled)
                     EndGesture();
                 else
                 {

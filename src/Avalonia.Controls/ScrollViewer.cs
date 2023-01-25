@@ -222,6 +222,14 @@ namespace Avalonia.Controls
                 defaultValue: true);
 
         /// <summary>
+        /// Defines the <see cref="IsScrollInertiaEnabled"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<bool> IsScrollInertiaEnabledProperty =
+            AvaloniaProperty.RegisterAttached<ScrollViewer, Control, bool>(
+                nameof(IsScrollInertiaEnabled),
+                defaultValue: true);
+
+        /// <summary>
         /// Defines the <see cref="ScrollChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<ScrollChangedEventArgs> ScrollChangedEvent =
@@ -506,6 +514,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(IsScrollChainingEnabledProperty);
             set => SetValue(IsScrollChainingEnabledProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether scroll gestures should include inertia in their behavior and value.
+        /// </summary>
+        public bool IsScrollInertiaEnabled
+        {
+            get => GetValue(IsScrollInertiaEnabledProperty);
+            set => SetValue(IsScrollInertiaEnabledProperty, value);
         }
 
         /// <summary>
