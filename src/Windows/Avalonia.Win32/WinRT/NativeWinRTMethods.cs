@@ -22,6 +22,9 @@ namespace Avalonia.Win32.WinRT
         internal static IntPtr WindowsCreateString(string sourceString) 
             => WindowsCreateString(sourceString, sourceString.Length);
 
+        [DllImport("api-ms-win-core-winrt-string-l1-1-0.dll", CallingConvention = CallingConvention.StdCall)]
+        internal static extern unsafe char* WindowsGetStringRawBuffer(IntPtr hstring, uint* length);
+
         [DllImport("api-ms-win-core-winrt-string-l1-1-0.dll", 
             CallingConvention = CallingConvention.StdCall, PreserveSig = false)]
         internal static extern unsafe void WindowsDeleteString(IntPtr hString);
@@ -120,17 +123,38 @@ namespace Avalonia.Win32.WinRT
     class HStringInterop : IDisposable
     {
         private IntPtr _s;
+        private bool _owns;
 
         public HStringInterop(string s)
         {
             _s = s == null ? IntPtr.Zero : NativeWinRTMethods.WindowsCreateString(s);
+            _owns = true;
+        }
+        
+        public HStringInterop(IntPtr str, bool owns = false)
+        {
+            _s = str;
+            _owns = owns;
         }
 
         public IntPtr Handle => _s;
 
+        public unsafe string Value
+        {
+            get
+            {
+                if (_s == IntPtr.Zero)
+                    return null;
+
+                uint length;
+                var buffer = NativeWinRTMethods.WindowsGetStringRawBuffer(_s, &length);
+                return new string(buffer, 0, (int) length);
+            }
+        }
+        
         public void Dispose()
         {
-            if (_s != IntPtr.Zero)
+            if (_s != IntPtr.Zero && _owns)
             {
                 NativeWinRTMethods.WindowsDeleteString(_s);
                 _s = IntPtr.Zero;

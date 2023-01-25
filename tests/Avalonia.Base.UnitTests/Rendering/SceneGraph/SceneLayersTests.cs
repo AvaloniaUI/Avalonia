@@ -29,7 +29,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
 
             var result = target.Select(x => x.LayerRoot).ToArray();
 
-            Assert.Equal(new IVisual[] { root, border, decorator }, result);
+            Assert.Equal(new Visual[] { root, border, decorator }, result);
         }
     }
 }

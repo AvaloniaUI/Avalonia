@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Concurrency;
-using System.Threading;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -39,7 +37,6 @@ namespace Avalonia
 
         private readonly Lazy<IClipboard?> _clipboard =
             new Lazy<IClipboard?>(() => (IClipboard?)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
-        private readonly Styler _styler = new Styler();
         private Styles? _styles;
         private IResourceDictionary? _resources;
         private bool _notifyingResourcesChanged;
@@ -232,8 +229,6 @@ namespace Avalonia
                 .Bind<IFocusManager>().ToConstant(FocusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
-                .Bind<IStyler>().ToConstant(_styler)
-                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
             
             // TODO: Fix this, for now we keep this behavior since someone might be relying on it in 0.9.x

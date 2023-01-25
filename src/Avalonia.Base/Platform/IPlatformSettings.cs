@@ -27,5 +27,20 @@ namespace Avalonia.Platform
         /// tap gesture.
         /// </summary>
         TimeSpan GetDoubleTapTime(PointerType type);
+
+        /// <summary>
+        /// Holding duration between pointer press and when event is fired.
+        /// </summary>
+        TimeSpan HoldWaitDuration { get; }
+        
+        /// <summary>
+        /// Gets current system color values including dark mode and accent colors.
+        /// </summary>
+        PlatformColorValues GetColorValues();
+
+        /// <summary>
+        /// Raises when current system color values are changed. Including changing of a dark mode and accent colors.
+        /// </summary>
+        event EventHandler<PlatformColorValues>? ColorValuesChanged;
     }
 }

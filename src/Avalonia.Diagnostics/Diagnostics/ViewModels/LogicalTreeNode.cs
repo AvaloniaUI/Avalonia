@@ -1,16 +1,16 @@
 using System;
-using System.Reactive.Disposables;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
 using System.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class LogicalTreeNode : TreeNode
     {
-        public LogicalTreeNode(IAvaloniaObject avaloniaObject, TreeNode? parent)
+        public LogicalTreeNode(AvaloniaObject avaloniaObject, TreeNode? parent)
             : base(avaloniaObject, parent)
         {
             Children =  avaloniaObject switch
@@ -25,7 +25,7 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public static LogicalTreeNode[] Create(object control)
         {
-            var logical = control as IAvaloniaObject;
+            var logical = control as AvaloniaObject;
             return logical != null ? new[] { new LogicalTreeNode(logical, null) } : Array.Empty<LogicalTreeNode>();
         }
 
@@ -49,7 +49,7 @@ namespace Avalonia.Diagnostics.ViewModels
             protected override void Initialize(AvaloniaList<TreeNode> nodes)
             {
                 _subscription = _control.LogicalChildren.ForEachItem(
-                    (i, item) => nodes.Insert(i, new LogicalTreeNode((IAvaloniaObject)item, Owner)),
+                    (i, item) => nodes.Insert(i, new LogicalTreeNode((AvaloniaObject)item, Owner)),
                     (i, item) => nodes.RemoveAt(i),
                     () => nodes.Clear());
             }
@@ -84,7 +84,7 @@ namespace Avalonia.Diagnostics.ViewModels
                         }
                         nodes.Add(new LogicalTreeNode(window, Owner));
                     }
-                    _subscriptions = new System.Reactive.Disposables.CompositeDisposable()
+                    _subscriptions = new CompositeDisposable(2)
                     {
                         Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (s,e)=>
                             {
@@ -92,7 +92,7 @@ namespace Avalonia.Diagnostics.ViewModels
                                 {
                                     return;
                                 }
-                                nodes.Add(new LogicalTreeNode((IAvaloniaObject)s!,Owner));
+                                nodes.Add(new LogicalTreeNode((AvaloniaObject)s!,Owner));
                             }),
                         Window.WindowClosedEvent.AddClassHandler(typeof(Window), (s,e)=>
                             {

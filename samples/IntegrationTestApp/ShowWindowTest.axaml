@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="IntegrationTestApp.ShowWindowTest"
         Name="SecondaryWindow"
+        x:DataType="Window"
         Title="Show Window Test">
   <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
     <Label Grid.Column="0" Grid.Row="1">Client Size</Label>
@@ -26,10 +27,10 @@
     
     <Label Grid.Column="0" Grid.Row="7">WindowState</Label>
     <ComboBox Name="WindowState" Grid.Column="1" Grid.Row="7" SelectedIndex="{Binding WindowState}">
-      <ComboBoxItem>Normal</ComboBoxItem>
-      <ComboBoxItem>Minimized</ComboBoxItem>
-      <ComboBoxItem>Maximized</ComboBoxItem>
-      <ComboBoxItem>Fullscreen</ComboBoxItem>
+      <ComboBoxItem Name="WindowStateNormal">Normal</ComboBoxItem>
+      <ComboBoxItem Name="WindowStateMinimized">Minimized</ComboBoxItem>
+      <ComboBoxItem Name="WindowStateMaximized">Maximized</ComboBoxItem>
+      <ComboBoxItem Name="WindowStateFullScreen">FullScreen</ComboBoxItem>
     </ComboBox>
 
     <Label Grid.Column="0" Grid.Row="8">Order (mac)</Label>

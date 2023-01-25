@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.OpenGL.Imaging;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -8,7 +8,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Custom Skia gpu instance.
     /// </summary>
-    public interface ISkiaGpu
+    public interface ISkiaGpu : IPlatformGraphicsContext
     {
         /// <summary>
         /// Attempts to create custom render target from given surfaces.
@@ -30,10 +30,5 @@ namespace Avalonia.Skia
         SKSurface Surface { get; }
         bool CanBlit { get; }
         void Blit(SKCanvas canvas);
-    }
-
-    public interface IOpenGlAwareSkiaGpu : ISkiaGpu
-    {
-        IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi);
     }
 }

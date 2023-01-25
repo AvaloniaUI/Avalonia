@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia;
@@ -59,6 +60,7 @@ namespace IntegrationTestApp
             var sizeTextBox = this.GetControl<TextBox>("ShowWindowSize");
             var modeComboBox = this.GetControl<ComboBox>("ShowWindowMode");
             var locationComboBox = this.GetControl<ComboBox>("ShowWindowLocation");
+            var stateComboBox = this.GetControl<ComboBox>("ShowWindowState");
             var size = !string.IsNullOrWhiteSpace(sizeTextBox.Text) ? Size.Parse(sizeTextBox.Text) : (Size?)null;
             var owner = (Window)this.GetVisualRoot()!;
 
@@ -85,6 +87,7 @@ namespace IntegrationTestApp
             }
 
             sizeTextBox.Text = string.Empty;
+            window.WindowState = (WindowState)stateComboBox.SelectedIndex;
 
             switch (modeComboBox.SelectedIndex)
             {
@@ -176,6 +179,8 @@ namespace IntegrationTestApp
                 ShowWindow();
             if (source?.Name == "SendToBack")
                 SendToBack();
+            if (source?.Name == "EnterFullscreen")
+                WindowState = WindowState.FullScreen;
             if (source?.Name == "ExitFullscreen")
                 WindowState = WindowState.Normal;
             if (source?.Name == "RestoreAll")

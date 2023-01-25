@@ -489,10 +489,29 @@ HRESULT WindowBaseImpl::CreateNativeControlHost(IAvnNativeControlHost **retOut) 
     return S_OK;
 }
 
-HRESULT WindowBaseImpl::SetBlurEnabled(bool enable) {
+HRESULT WindowBaseImpl::SetTransparencyMode(AvnWindowTransparencyMode mode) {
     START_COM_CALL;
 
-    [StandardContainer ShowBlur:enable];
+    [Window setBackgroundColor: (mode != Transparent ? [NSColor windowBackgroundColor] : [NSColor clearColor])];
+    [StandardContainer ShowBlur: mode == Blur];
+
+    return S_OK;
+}
+
+HRESULT WindowBaseImpl::SetFrameThemeVariant(AvnPlatformThemeVariant variant) {
+    START_COM_CALL;
+
+    NSAppearanceName appearanceName;
+    if (@available(macOS 10.14, *))
+    {
+        appearanceName = variant == AvnPlatformThemeVariant::Dark ? NSAppearanceNameDarkAqua : NSAppearanceNameAqua;
+    }
+    else
+    {
+        appearanceName = variant == AvnPlatformThemeVariant::Dark ? NSAppearanceNameVibrantDark : NSAppearanceNameAqua;
+    }
+
+    [Window setAppearance: [NSAppearance appearanceNamed: appearanceName]];
 
     return S_OK;
 }
@@ -541,7 +560,7 @@ HRESULT WindowBaseImpl::BeginDragAndDropOperation(AvnDragDropEffects effects, Av
     return S_OK;
 }
 
-bool WindowBaseImpl::IsDialog() {
+bool WindowBaseImpl::IsModal() {
     return false;
 }
 

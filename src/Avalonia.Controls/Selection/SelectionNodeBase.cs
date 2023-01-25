@@ -21,10 +21,12 @@ namespace Avalonia.Controls.Selection
             {
                 if (_source != value)
                 {
-                    ItemsView?.RemoveListener(this);
+                    if (ItemsView?.Inner is INotifyCollectionChanged inccOld)
+                        CollectionChangedEventManager.Instance.RemoveListener(inccOld, this);
                     _source = value;
-                    ItemsView = value is object ? ItemsSourceView<T>.GetOrCreate(value) : null;
-                    ItemsView?.AddListener(this);
+                    ItemsView = value is object ? ItemsSourceView.GetOrCreate<T>(value) : null;
+                    if (ItemsView?.Inner is INotifyCollectionChanged inccNew)
+                        CollectionChangedEventManager.Instance.AddListener(inccNew, this);
                 }
             }
         }
@@ -254,6 +256,7 @@ namespace Avalonia.Controls.Selection
                         break;
                     }
                 case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
                     {
                         var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
                         var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
@@ -290,12 +293,12 @@ namespace Avalonia.Controls.Selection
             // so bail.
             //
             // See unit test Handles_Selection_Made_In_CollectionChanged for more details.
-            if (ItemsView is object &&
+            if (ItemsView is not null &&
                 RangesEnabled &&
                 Ranges.Count > 0 &&
                 e.Action == NotifyCollectionChangedAction.Add)
             {
-                var lastIndex = Ranges.Last().End;
+                var lastIndex = Ranges[Ranges.Count - 1].End;
 
                 if (e.NewStartingIndex <= lastIndex)
                 {

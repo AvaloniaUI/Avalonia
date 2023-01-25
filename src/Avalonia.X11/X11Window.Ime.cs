@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using Avalonia.FreeDesktop;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
@@ -104,13 +103,18 @@ namespace Avalonia.X11
             if (ev.KeyEvent.state.HasAllFlags(XModifierMask.Mod2Mask)
                 && key > X11Key.Num_Lock && key <= X11Key.KP_9)
                 key = (X11Key)XKeycodeToKeysym(_x11.Display, ev.KeyEvent.keycode, index ? 0 : 1).ToInt32();
-            
-            var filtered = ScheduleKeyInput(new RawKeyEventArgs(_keyboard, (ulong)ev.KeyEvent.time.ToInt64(), _inputRoot,
-                ev.type == XEventName.KeyPress ? RawKeyEventType.KeyDown : RawKeyEventType.KeyUp,
-                X11KeyTransform.ConvertKey(key), TranslateModifiers(ev.KeyEvent.state)), ref ev, (int)key, ev.KeyEvent.keycode);
-           
-            if (ev.type == XEventName.KeyPress && !filtered) 
-                TriggerClassicTextInputEvent(ref ev);
+
+            var convertedKey = X11KeyTransform.ConvertKey(key);
+            var modifiers = TranslateModifiers(ev.KeyEvent.state);
+            var timestamp = (ulong)ev.KeyEvent.time.ToInt64();
+            RawKeyEventArgs args =
+                ev.type == XEventName.KeyPress
+                    ? new RawKeyEventArgsWithText(_keyboard, timestamp, _inputRoot, RawKeyEventType.KeyDown,
+                        convertedKey, modifiers, TranslateEventToString(ref ev))
+                    : new RawKeyEventArgs(_keyboard, timestamp, _inputRoot, RawKeyEventType.KeyUp, convertedKey,
+                        modifiers);
+
+            ScheduleKeyInput(args, ref ev, (int)key, ev.KeyEvent.keycode);
         }
 
         void TriggerClassicTextInputEvent(ref XEvent ev)
@@ -156,16 +160,15 @@ namespace Avalonia.X11
         }
         
         
-        bool ScheduleKeyInput(RawKeyEventArgs args, ref XEvent xev, int keyval, int keycode)
+        void ScheduleKeyInput(RawKeyEventArgs args, ref XEvent xev, int keyval, int keycode)
         {
             _x11.LastActivityTimestamp = xev.ButtonEvent.time;
-            if (_imeControl != null && _imeControl.IsEnabled)
-            {
-                if (FilterIme(args, xev, keyval, keycode))
-                    return true;
-            }
+            
+            if (_imeControl is { IsEnabled: true } 
+                && FilterIme(args, xev, keyval, keycode)) 
+                return;
+            
             ScheduleInput(args);
-            return false;
         }
         
         bool FilterIme(RawKeyEventArgs args, XEvent xev, int keyval, int keycode)
@@ -190,17 +193,26 @@ namespace Avalonia.X11
                 {
                     var ev = _imeQueue.Dequeue();
                     if (_imeControl == null || !await _imeControl.HandleEventAsync(ev.args, ev.keyval, ev.keycode))
-                    {
                         ScheduleInput(ev.args);
-                        if (ev.args.Type == RawKeyEventType.KeyDown)
-                            TriggerClassicTextInputEvent(ref ev.xev);
-                    }
                 }
             }
             finally
             {
                 _processingIme = false;
             }
+        }
+
+        // This class is used to attach the text value of the key to an asynchronously dispatched KeyDown event
+        class RawKeyEventArgsWithText : RawKeyEventArgs
+        {
+            public RawKeyEventArgsWithText(IKeyboardDevice device, ulong timestamp, IInputRoot root,
+                RawKeyEventType type, Key key, RawInputModifiers modifiers, string text) :
+                base(device, timestamp, root, type, key, modifiers)
+            {
+                Text = text;
+            }
+            
+            public string Text { get; }
         }
     }
 }

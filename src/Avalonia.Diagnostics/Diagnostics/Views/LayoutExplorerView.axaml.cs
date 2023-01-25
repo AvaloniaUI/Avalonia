@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Diagnostics.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.Views
 {
@@ -100,7 +101,7 @@ namespace Avalonia.Diagnostics.Views
                 }
             }
 
-            Point TranslateToRoot(Point point, IVisual from)
+            Point TranslateToRoot(Point point, Visual from)
             {
                 return from.TranslatePoint(point, _layoutRoot) ?? default;
             }

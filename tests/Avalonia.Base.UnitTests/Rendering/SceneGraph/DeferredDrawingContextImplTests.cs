@@ -15,7 +15,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         public void Should_Add_VisualNode()
         {
             var parent = new VisualNode(new TestRoot(), null);
-            var child = new VisualNode(Mock.Of<IVisual>(), parent);
+            var child = new VisualNode(Mock.Of<Visual>(), parent);
             var layers = new SceneLayers(parent.Visual);
             var target = new DeferredDrawingContextImpl(null, layers);
 
@@ -30,7 +30,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         public void Should_Not_Replace_Identical_VisualNode()
         {
             var parent = new VisualNode(new TestRoot(), null);
-            var child = new VisualNode(Mock.Of<IVisual>(), parent);
+            var child = new VisualNode(Mock.Of<Visual>(), parent);
             var layers = new SceneLayers(parent.Visual);
 
             parent.AddChild(child);
@@ -48,8 +48,8 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
         public void Should_Replace_Different_VisualNode()
         {
             var parent = new VisualNode(new TestRoot(), null);
-            var child1 = new VisualNode(Mock.Of<IVisual>(), parent);
-            var child2 = new VisualNode(Mock.Of<IVisual>(), parent);
+            var child1 = new VisualNode(Mock.Of<Visual>(), parent);
+            var child2 = new VisualNode(Mock.Of<Visual>(), parent);
             var layers = new SceneLayers(parent.Visual);
 
             parent.AddChild(child1);
@@ -69,15 +69,15 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             var root = new TestRoot();
             var node = new VisualNode(root, null) { LayerRoot = root };
 
-            node.AddChild(new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root });
-            node.AddChild(new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root });
-            node.AddChild(new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root });
-            node.AddChild(new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root });
+            node.AddChild(new VisualNode(Mock.Of<Visual>(), node) { LayerRoot = root });
+            node.AddChild(new VisualNode(Mock.Of<Visual>(), node) { LayerRoot = root });
+            node.AddChild(new VisualNode(Mock.Of<Visual>(), node) { LayerRoot = root });
+            node.AddChild(new VisualNode(Mock.Of<Visual>(), node) { LayerRoot = root });
 
             var layers = new SceneLayers(root);
             var target = new DeferredDrawingContextImpl(null, layers);
-            var child1 = new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root };
-            var child2 = new VisualNode(Mock.Of<IVisual>(), node) { LayerRoot = root };
+            var child1 = new VisualNode(Mock.Of<Visual>(), node) { LayerRoot = root };
+            var child2 = new VisualNode(Mock.Of<Visual>(), node) { LayerRoot = root };
 
             target.BeginUpdate(node);
             using (target.BeginUpdate(child1)) { }

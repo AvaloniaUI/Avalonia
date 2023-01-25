@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
@@ -17,6 +18,8 @@ using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using Avalonia.Input.Platform;
+using System.Linq;
 
 namespace Avalonia.Controls
 {
@@ -76,6 +79,12 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
             AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
 
+        /// <summary>
+        /// Defines the <see cref="BackRequested"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> BackRequestedEvent = 
+            RoutedEvent.Register<TopLevel, RoutedEventArgs>(nameof(BackRequested), RoutingStrategies.Bubble);
+
         private static readonly WeakEvent<IResourceHost, ResourcesChangedEventArgs>
             ResourcesChangedWeakEvent = WeakEvent.Register<IResourceHost, ResourcesChangedEventArgs>(
                 (s, h) => s.ResourcesChanged += h,
@@ -89,6 +98,7 @@ namespace Avalonia.Controls
         private readonly IGlobalStyles? _globalStyles;
         private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
         private readonly IDisposable? _pointerOverPreProcessorSubscription;
+        private readonly IDisposable? _backGestureSubscription;
         private Size _clientSize;
         private Size? _frameSize;
         private WindowTransparencyLevel _actualTransparencyLevel;
@@ -145,7 +155,6 @@ namespace Avalonia.Controls
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
 
             dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
-            var styler = TryGetService<IStyler>(dependencyResolver);
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
@@ -183,8 +192,6 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
             }
 
-            styler?.ApplyStyles(this);
-
             ClientSize = impl.ClientSize;
             FrameSize = impl.FrameSize;
             
@@ -208,6 +215,48 @@ namespace Avalonia.Controls
 
             _pointerOverPreProcessor = new PointerOverPreProcessor(this);
             _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
+
+            if(impl is ITopLevelWithSystemNavigationManager topLevelWithSystemNavigation)
+            {
+                topLevelWithSystemNavigation.SystemNavigationManager.BackRequested += (s, e) =>
+                {
+                    e.RoutedEvent = BackRequestedEvent;
+                    RaiseEvent(e);
+                };
+            }
+
+            _backGestureSubscription = _inputManager?.PreProcess.Subscribe(e =>
+            {
+                bool backRequested = false;
+
+                if (e is RawKeyEventArgs rawKeyEventArgs && rawKeyEventArgs.Type == RawKeyEventType.KeyDown)
+                {
+                    var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>()?.Back;
+
+                    if (keymap != null)
+                    {
+                        var keyEvent = new KeyEventArgs()
+                        {
+                            KeyModifiers = (KeyModifiers)rawKeyEventArgs.Modifiers,
+                            Key = rawKeyEventArgs.Key
+                        };
+
+                        backRequested = keymap.Any( key => key.Matches(keyEvent));
+                    }
+                }
+                else if(e is RawPointerEventArgs pointerEventArgs)
+                {
+                    backRequested = pointerEventArgs.Type == RawPointerEventType.XButton1Down;
+                }
+
+                if (backRequested)
+                {
+                    var backRequestedEventArgs = new RoutedEventArgs(BackRequestedEvent);
+                    RaiseEvent(backRequestedEventArgs);
+
+                    e.Handled = backRequestedEventArgs.Handled;
+                }
+            });
         }
 
         /// <summary>
@@ -264,6 +313,15 @@ namespace Avalonia.Controls
         {
             get => GetValue(TransparencyBackgroundFallbackProperty);
             set => SetValue(TransparencyBackgroundFallbackProperty, value);
+        }
+
+        /// <summary>
+        /// Occurs when physical Back Button is pressed or a back navigation has been requested.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs> BackRequested
+        {
+            add { AddHandler(BackRequestedEvent, value); }
+            remove { RemoveHandler(BackRequestedEvent, value); }
         }
 
         public ILayoutManager LayoutManager
@@ -326,17 +384,7 @@ namespace Avalonia.Controls
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
             ?? (PlatformImpl as ITopLevelImplWithStorageProvider)?.StorageProvider
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
-
-        IRenderTarget IRenderRoot.CreateRenderTarget() => CreateRenderTarget();
-
-        /// <inheritdoc/>
-        protected virtual IRenderTarget CreateRenderTarget()
-        {
-            if(PlatformImpl == null)
-                throw new InvalidOperationException("Can't create render target, PlatformImpl is null (might be already disposed)");
-            return _renderInterface!.CreateRenderTarget(PlatformImpl.Surfaces);
-        }
-
+        
         /// <inheritdoc/>
         void IRenderRoot.Invalidate(Rect rect)
         {
@@ -354,18 +402,22 @@ namespace Avalonia.Controls
         {
             return PlatformImpl?.PointToScreen(p) ?? default;
         }
+
+        /// <summary>
+        /// Gets the <see cref="TopLevel" /> for which the given <see cref="Visual"/> is hosted in.
+        /// </summary>
+        /// <param name="visual">The visual to query its TopLevel</param>
+        /// <returns>The TopLevel</returns>
+        public static TopLevel? GetTopLevel(Visual? visual)
+        {
+            return visual == null ? null : visual.VisualRoot as TopLevel;
+        }
         
         /// <summary>
         /// Creates the layout manager for this <see cref="TopLevel" />.
         /// </summary>
         protected virtual ILayoutManager CreateLayoutManager() => new LayoutManager(this);
 
-        public override void InvalidateMirrorTransform()
-        {
-        }
-        
-        protected override bool BypassFlowDirectionPolicies => true;
-        
         /// <summary>
         /// Handles a paint notification from <see cref="ITopLevelImpl.Resized"/>.
         /// </summary>
@@ -391,6 +443,7 @@ namespace Avalonia.Controls
 
             _pointerOverPreProcessor?.OnCompleted();
             _pointerOverPreProcessorSubscription?.Dispose();
+            _backGestureSubscription?.Dispose();
 
             PlatformImpl = null;
 
@@ -430,7 +483,7 @@ namespace Avalonia.Controls
             LayoutHelper.InvalidateSelfAndChildrenMeasure(this);
         }
 
-        private bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
+        private static bool TransparencyLevelsMatch (WindowTransparencyLevel requested, WindowTransparencyLevel received)
         {
             if(requested == received)
             {
@@ -528,12 +581,21 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void HandleInput(RawInputEventArgs e)
         {
-            if (e is RawPointerEventArgs pointerArgs)
+            if (PlatformImpl != null)
             {
-                pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
-            }
+                if (e is RawPointerEventArgs pointerArgs)
+                {
+                    pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
+                }
 
-            _inputManager?.ProcessInput(e);
+                _inputManager?.ProcessInput(e);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
+                    this,
+                    "PlatformImpl is null, couldn't handle input.");
+            }
         }
 
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)
@@ -543,7 +605,7 @@ namespace Avalonia.Controls
 
         void PlatformImpl_LostFocus()
         {
-            var focused = (IVisual?)FocusManager.Instance?.Current;
+            var focused = (Visual?)FocusManager.Instance?.Current;
             if (focused == null)
                 return;
             while (focused.VisualParent != null)
@@ -551,6 +613,13 @@ namespace Avalonia.Controls
 
             if (focused == this)
                 KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+        }
+
+        protected override bool BypassFlowDirectionPolicies => true;
+
+        public override void InvalidateMirrorTransform()
+        {
+            // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
         }
 
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>

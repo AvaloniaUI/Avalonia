@@ -132,7 +132,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
                 get { throw new NotImplementedException(); }
             }
 
-            public ITemplatedControl TemplatedParent
+            public AvaloniaObject TemplatedParent
             {
                 get { throw new NotImplementedException(); }
             }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Avalonia.Interactivity;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

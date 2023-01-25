@@ -10,15 +10,15 @@ namespace Avalonia.Rendering.SceneGraph
     /// </summary>
     public class SceneLayers : IEnumerable<SceneLayer>
     {
-        private readonly IVisual _root;
+        private readonly Visual _root;
         private readonly List<SceneLayer> _inner;
-        private readonly Dictionary<IVisual, SceneLayer> _index;
+        private readonly Dictionary<Visual, SceneLayer> _index;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SceneLayers"/> class.
         /// </summary>
         /// <param name="root">The scene's root visual.</param>
-        public SceneLayers(IVisual root) : this(root, 0)
+        public SceneLayers(Visual root) : this(root, 0)
         {
         }
 
@@ -27,12 +27,12 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="root">The scene's root visual.</param>
         /// <param name="capacity">Initial layer capacity.</param>
-        public SceneLayers(IVisual root, int capacity)
+        public SceneLayers(Visual root, int capacity)
         {
             _root = root;
 
             _inner = new List<SceneLayer>(capacity);
-            _index = new Dictionary<IVisual, SceneLayer>(capacity);
+            _index = new Dictionary<Visual, SceneLayer>(capacity);
         }
 
         /// <summary>
@@ -71,14 +71,14 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="visual">The layer's root visual.</param>
         /// <returns>The layer.</returns>
-        public SceneLayer this[IVisual visual] => _index[visual];
+        public SceneLayer this[Visual visual] => _index[visual];
 
         /// <summary>
         /// Adds a layer to the scene.
         /// </summary>
         /// <param name="layerRoot">The root visual of the layer.</param>
         /// <returns>The created layer.</returns>
-        public SceneLayer Add(IVisual layerRoot)
+        public SceneLayer Add(Visual layerRoot)
         {
             _ = layerRoot ?? throw new ArgumentNullException(nameof(layerRoot));
 
@@ -115,7 +115,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// <returns>
         /// True if a layer exists with the specified root visual, otherwise false.
         /// </returns>
-        public bool Exists(IVisual layerRoot)
+        public bool Exists(Visual layerRoot)
         {
             _ = layerRoot ?? throw new ArgumentNullException(nameof(layerRoot));
 
@@ -127,7 +127,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="layerRoot">The root visual.</param>
         /// <returns>The layer if found, otherwise null.</returns>
-        public SceneLayer? Find(IVisual layerRoot)
+        public SceneLayer? Find(Visual layerRoot)
         {
             _index.TryGetValue(layerRoot, out var result);
             return result;
@@ -138,7 +138,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="layerRoot">The root visual.</param>
         /// <returns>The layer.</returns>
-        public SceneLayer GetOrAdd(IVisual layerRoot)
+        public SceneLayer GetOrAdd(Visual layerRoot)
         {
             _ = layerRoot ?? throw new ArgumentNullException(nameof(layerRoot));
 
@@ -155,7 +155,7 @@ namespace Avalonia.Rendering.SceneGraph
         /// </summary>
         /// <param name="layerRoot">The root visual.</param>
         /// <returns>True if a matching layer was removed, otherwise false.</returns>
-        public bool Remove(IVisual layerRoot)
+        public bool Remove(Visual layerRoot)
         {
             _ = layerRoot ?? throw new ArgumentNullException(nameof(layerRoot));
 

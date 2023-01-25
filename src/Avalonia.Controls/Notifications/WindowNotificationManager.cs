@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
@@ -146,7 +146,11 @@ namespace Avalonia.Controls.Notifications
         {
             var adornerLayer = host.FindDescendantOfType<VisualLayerManager>()?.AdornerLayer;
 
-            adornerLayer?.Children.Add(this);
+            if (adornerLayer is not null)
+            {
+                adornerLayer.Children.Add(this);
+                AdornerLayer.SetAdornedElement(this, adornerLayer);
+            }
         }
 
         private void UpdatePseudoClasses(NotificationPosition position)

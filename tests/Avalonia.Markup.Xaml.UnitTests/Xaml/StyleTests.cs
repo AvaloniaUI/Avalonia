@@ -110,31 +110,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void StyleInclude_Is_Built()
-        {
-            using (UnitTestApplication.Start(TestServices.StyledWindow
-                                              .With(theme: () => new Styles())))
-            {
-                var xaml = @"
-<ContentControl xmlns='https://github.com/avaloniaui'>
-    <ContentControl.Styles>
-        <StyleInclude Source='resm:Avalonia.Markup.Xaml.UnitTests.Xaml.Style1.xaml?assembly=Avalonia.Markup.Xaml.UnitTests'/>
-    </ContentControl.Styles>
-</ContentControl>";
-
-                var window = AvaloniaRuntimeXamlLoader.Parse<ContentControl>(xaml);
-
-                Assert.Single(window.Styles);
-
-                var styleInclude = window.Styles[0] as StyleInclude;
-
-                Assert.NotNull(styleInclude);
-                Assert.NotNull(styleInclude.Source);
-                Assert.NotNull(styleInclude.Loaded);
-            }
-        }
-
-        [Fact]
         public void Setter_Can_Contain_Template()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
@@ -297,7 +272,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Style_Can_Use_NthChild_Selector_After_Reoder()
+        public void Style_Can_Use_NthChild_Selector_After_Reorder()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -336,7 +311,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Style_Can_Use_NthLastChild_Selector_After_Reoder()
+        public void Style_Can_Use_NthLastChild_Selector_After_Reorder()
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -374,7 +349,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-
         [Fact]
         public void Style_Can_Use_NthChild_Selector_With_ListBox()
         {
@@ -397,21 +371,22 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 };
 
                 var list = window.FindControl<ListBox>("list");
-                list.VirtualizationMode = ItemVirtualizationMode.Simple;
                 list.Items = collection;
 
                 window.Show();
 
-                IEnumerable<IBrush> GetColors() => list.Presenter.Panel.Children.Cast<ListBoxItem>().Select(t => t.Background);
+                IEnumerable<IBrush> GetColors() => list.GetRealizedContainers().Cast<ListBoxItem>().Select(t => t.Background);
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Green, Brushes.Transparent }, GetColors());
 
                 collection.Remove(Brushes.Green);
+                window.LayoutManager.ExecuteLayoutPass();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);
+                window.LayoutManager.ExecuteLayoutPass();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue, Brushes.Transparent, Brushes.Black }, GetColors());
             }
@@ -453,7 +428,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 collection.Remove(Brushes.Green);
 
-                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
+                Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors().ToList());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);

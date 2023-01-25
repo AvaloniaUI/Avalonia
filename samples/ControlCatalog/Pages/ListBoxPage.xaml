@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.ListBoxPage">
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.ListBoxPage"
+             x:DataType="viewModels:ListBoxPageViewModel">
   <DockPanel>
     <DockPanel.Styles>
       <Style Selector="ListBox ListBoxItem:nth-child(5n+3)">
@@ -30,6 +32,7 @@
     </StackPanel>
     <ListBox Items="{Binding Items}"
              Selection="{Binding Selection}"
+             DisplayMemberBinding="{Binding (viewModels:ItemModel).ID, StringFormat='{}Item {0:N0}'}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
              SelectionMode="{Binding SelectionMode^}"
              WrapSelection="{Binding WrapSelection}"/>

@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Reactive.Concurrency;
 using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Input;

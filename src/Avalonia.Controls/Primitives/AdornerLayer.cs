@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
@@ -60,7 +61,7 @@ namespace Avalonia.Controls.Primitives
             adorner.SetValue(AdornedElementProperty, adorned);
         }
 
-        public static AdornerLayer? GetAdornerLayer(IVisual visual)
+        public static AdornerLayer? GetAdornerLayer(Visual visual)
         {
             return visual.FindAncestorOfType<VisualLayerManager>()?.AdornerLayer;
         }
@@ -232,7 +233,7 @@ namespace Avalonia.Controls.Primitives
             layer?.UpdateAdornedElement(adorner, adorned);
         }
 
-        private void UpdateClip(IControl control, TransformedBounds bounds, bool isEnabled)
+        private void UpdateClip(Control control, TransformedBounds bounds, bool isEnabled)
         {
             if (!isEnabled)
             {

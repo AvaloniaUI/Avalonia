@@ -8,7 +8,7 @@ namespace Avalonia.Rendering
     /// Represents the root of a renderable tree.
     /// </summary>
     [NotClientImplementable]
-    public interface IRenderRoot : IVisual
+    public interface IRenderRoot
     {
         /// <summary>
         /// Gets the client size of the window.
@@ -24,12 +24,6 @@ namespace Avalonia.Rendering
         /// The scaling factor to use in rendering.
         /// </summary>
         double RenderScaling { get; }
-
-        /// <summary>
-        /// Creates a render target for the window.
-        /// </summary>
-        /// <returns>An <see cref="IRenderTarget"/>.</returns>
-        IRenderTarget CreateRenderTarget();
 
         /// <summary>
         /// Adds a rectangle to the window's dirty region.

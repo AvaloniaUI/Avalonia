@@ -25,17 +25,17 @@ namespace Avalonia.Styling
         /// <inheritdoc/>
         public override Type? TargetType => null;
 
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
-                _selectorString = _parent.ToString() + ' ';
+                _selectorString = _parent.ToString(owner) + ' ';
             }
 
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             var c = (ILogical)control;
             var descendantMatches = new OrActivatorBuilder();
@@ -46,7 +46,7 @@ namespace Avalonia.Styling
 
                 if (c is IStyleable)
                 {
-                    var match = _parent.Match((IStyleable)c, parent, subscribe);
+                    var match = _parent.Match((StyledElement)c, parent, subscribe);
 
                     if (match.Result == SelectorMatchResult.Sometimes)
                     {

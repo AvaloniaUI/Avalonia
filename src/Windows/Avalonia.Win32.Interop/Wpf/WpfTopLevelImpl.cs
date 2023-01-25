@@ -87,9 +87,11 @@ namespace Avalonia.Win32.Interop.Wpf
             _ttl.ScalingChanged?.Invoke(_ttl.RenderScaling);
         }
 
+        
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return new ImmediateRenderer(root);
+            var mgr = new PlatformRenderInterfaceContextManager(null);
+            return new ImmediateRenderer((Visual)root, () => mgr.CreateRenderTarget(_surfaces), mgr);
         }
 
         public void Dispose()
@@ -142,8 +144,7 @@ namespace Avalonia.Win32.Interop.Wpf
 
         protected override void OnLostFocus(RoutedEventArgs e) => LostFocus?.Invoke();
 
-
-        RawInputModifiers GetModifiers(MouseEventArgs e)
+        static RawInputModifiers GetModifiers(MouseEventArgs e)
         {
             var state = Keyboard.Modifiers;
             var rv = default(RawInputModifiers);
@@ -256,6 +257,8 @@ namespace Avalonia.Win32.Interop.Wpf
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }

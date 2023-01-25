@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ControlCatalog.Pages.OpenGlPage"
-             xmlns:pages="clr-namespace:ControlCatalog.Pages">
+             xmlns:pages="using:ControlCatalog.Pages">
   <Grid>
     <pages:OpenGlPageControl x:Name="GL"/>
     <StackPanel>

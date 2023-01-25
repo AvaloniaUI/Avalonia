@@ -1,7 +1,9 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:views="clr-namespace:Avalonia.Diagnostics.Views"
-             x:Class="Avalonia.Diagnostics.Views.MainView">
+             xmlns:views="using:Avalonia.Diagnostics.Views"
+             xmlns:viewModels="using:Avalonia.Diagnostics.ViewModels"
+             x:Class="Avalonia.Diagnostics.Views.MainView"
+             x:DataType="viewModels:MainViewModel">
   <Grid Name="rootGrid" RowDefinitions="Auto,Auto,*,Auto,0,Auto">
     <Menu>
       <MenuItem Header="_File">
@@ -38,7 +40,7 @@
         </MenuItem>
       </MenuItem>
       <MenuItem Header="_View">
-        <MenuItem Header="_Console" Command="{Binding $parent[UserControl].ToggleConsole}">
+        <MenuItem Header="_Console" Command="{Binding $parent[views:MainView].ToggleConsole}">
           <MenuItem.Icon>
             <CheckBox BorderThickness="0"
                       IsChecked="{Binding Console.IsVisible}"

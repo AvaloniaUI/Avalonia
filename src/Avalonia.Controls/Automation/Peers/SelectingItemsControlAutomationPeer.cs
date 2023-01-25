@@ -35,9 +35,9 @@ namespace Avalonia.Automation.Peers
 
                 foreach (var i in selection.SelectedIndexes)
                 {
-                    var container = owner.ItemContainerGenerator.ContainerFromIndex(i);
+                    var container = owner.ContainerFromIndex(i);
 
-                    if (container is Control c && ((IVisual)c).IsAttachedToVisualTree)
+                    if (container is Control c && c.IsAttachedToVisualTree)
                     {
                         var peer = GetOrCreate(c);
 

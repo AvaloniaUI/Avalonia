@@ -44,7 +44,7 @@ namespace Avalonia.Input
                     && _lastPointer is (var lastPointer, var lastPosition))
                 {
                     _lastPointer = null;
-                    ClearPointerOver(lastPointer, args.Root, 0, args.Root.PointToClient(lastPosition),
+                    ClearPointerOver(lastPointer, args.Root, 0, PointToClient(args.Root, lastPosition),
                         new PointerPointProperties(args.InputModifiers, args.Type.ToUpdateKind()),
                         args.InputModifiers.ToKeyModifiers());
                 }
@@ -64,14 +64,14 @@ namespace Avalonia.Input
         {
             if (_lastPointer is (var pointer, var position))
             {
-                var clientPoint = _inputRoot.PointToClient(position);
+                var clientPoint = PointToClient(_inputRoot, position);
 
                 if (dirtyRect.Contains(clientPoint))
                 {
                     var element = pointer.Captured ?? _inputRoot.InputHitTest(clientPoint);
                     SetPointerOver(pointer, _inputRoot, element, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
-                else if (!_inputRoot.Bounds.Contains(clientPoint))
+                else if (!((Visual)_inputRoot).Bounds.Contains(clientPoint))
                 {
                     ClearPointerOver(pointer, _inputRoot, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
                 }
@@ -82,7 +82,7 @@ namespace Avalonia.Input
         {
             if (_lastPointer is (var pointer, var position))
             {
-                var clientPoint = _inputRoot.PointToClient(position);
+                var clientPoint = PointToClient(_inputRoot, position);
                 ClearPointerOver(pointer, _inputRoot, 0, clientPoint, PointerPointProperties.None, KeyModifiers.None);
             }
             _lastPointer = null;
@@ -101,10 +101,10 @@ namespace Avalonia.Input
             // Do not pass rootVisual, when we have unknown position,
             // so GetPosition won't return invalid values.
             var e = new PointerEventArgs(InputElement.PointerExitedEvent, element, pointer,
-                position.HasValue ? root : null, position.HasValue ? position.Value : default,
+                position.HasValue ? root as Visual : null, position.HasValue ? position.Value : default,
                 timestamp, properties, inputModifiers);
 
-            if (element != null && !element.IsAttachedToVisualTree)
+            if (element is Visual v && !v.IsAttachedToVisualTree)
             {
                 // element has been removed from visual tree so do top down cleanup
                 if (root.IsPointerOver)
@@ -117,7 +117,7 @@ namespace Avalonia.Input
                 e.Source = element;
                 e.Handled = false;
                 element.RaiseEvent(e);
-                element = (IInputElement?)element.VisualParent;
+                element = GetVisualParent(element);
             }
 
             root.PointerOverElement = null;
@@ -127,14 +127,18 @@ namespace Avalonia.Input
 
         private void ClearChildrenPointerOver(PointerEventArgs e, IInputElement element, bool clearRoot)
         {
-            foreach (IInputElement el in element.VisualChildren)
+            if (element is Visual v)
             {
-                if (el.IsPointerOver)
+                foreach (IInputElement el in v.VisualChildren)
                 {
-                    ClearChildrenPointerOver(e, el, true);
-                    break;
+                    if (el.IsPointerOver)
+                    {
+                        ClearChildrenPointerOver(e, el, true);
+                        break;
+                    }
                 }
             }
+            
             if (clearRoot)
             {
                 e.Source = element;
@@ -160,7 +164,7 @@ namespace Avalonia.Input
                 }
             }
 
-            _lastPointer = (pointer, root.PointToScreen(position));
+            _lastPointer = (pointer, ((Visual)root).PointToScreen(position));
         }
 
         private void SetPointerOverToElement(IPointer pointer, IInputRoot root, IInputElement element,
@@ -177,14 +181,14 @@ namespace Avalonia.Input
                     branch = el;
                     break;
                 }
-                el = (IInputElement?)el.VisualParent;
+                el = GetVisualParent(el);
             }
 
             el = root.PointerOverElement;
 
-            var e = new PointerEventArgs(InputElement.PointerExitedEvent, el, pointer, root, position,
+            var e = new PointerEventArgs(InputElement.PointerExitedEvent, el, pointer, (Visual)root, position,
                 timestamp, properties, inputModifiers);
-            if (el != null && branch != null && !el.IsAttachedToVisualTree)
+            if (el is Visual v && branch != null && !v.IsAttachedToVisualTree)
             {
                 ClearChildrenPointerOver(e, branch, false);
             }
@@ -194,7 +198,7 @@ namespace Avalonia.Input
                 e.Source = el;
                 e.Handled = false;
                 el.RaiseEvent(e);
-                el = (IInputElement?)el.VisualParent;
+                el = GetVisualParent(el);
             }
 
             el = root.PointerOverElement = element;
@@ -206,8 +210,18 @@ namespace Avalonia.Input
                 e.Source = el;
                 e.Handled = false;
                 el.RaiseEvent(e);
-                el = (IInputElement?)el.VisualParent;
+                el = GetVisualParent(el);
             }
+        }
+
+        private static IInputElement? GetVisualParent(IInputElement e)
+        {
+            return (e as Visual)?.VisualParent as IInputElement;
+        }
+
+        private static Point PointToClient(IInputRoot root, PixelPoint p)
+        {
+            return ((Visual)root).PointToClient(p);
         }
     }
 }

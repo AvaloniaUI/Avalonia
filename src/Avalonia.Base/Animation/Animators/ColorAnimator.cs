@@ -2,7 +2,7 @@
 // and adopted from LottieSharp Project (https://github.com/ascora/LottieSharp).
 
 using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Logging;
 using Avalonia.Media;
 

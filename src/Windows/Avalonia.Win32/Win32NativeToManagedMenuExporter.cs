@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;

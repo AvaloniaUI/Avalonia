@@ -24,7 +24,7 @@ public class PointerCanvas : Control
     {
         struct CanvasPoint
         {
-            public IBrush Brush;
+            public IBrush? Brush;
             public Point Point;
             public double Radius;
             public double? Pressure;

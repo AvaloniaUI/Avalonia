@@ -66,16 +66,14 @@ namespace Avalonia.UnitTests
                 .Bind<IFontManagerImpl>().ToConstant(Services.FontManagerImpl)
                 .Bind<ITextShaperImpl>().ToConstant(Services.TextShaperImpl)
                 .Bind<IPlatformThreadingInterface>().ToConstant(Services.ThreadingInterface)
-                .Bind<IScheduler>().ToConstant(Services.Scheduler)
                 .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
-                .Bind<IStyler>().ToConstant(Services.Styler)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
             var theme = Services.Theme?.Invoke();
 
-            if (theme is Styles styles)
+            if (theme is Style styles)
             {
-                Styles.AddRange(styles);
+                Styles.AddRange(styles.Children);
             }
             else if (theme is not null)
             {

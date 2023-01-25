@@ -173,13 +173,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the <see cref="TextLayout"/> used to render the text.
         /// </summary>
-        public TextLayout TextLayout
-        {
-            get
-            {
-                return _textLayout ??= CreateTextLayout(_text);
-            }
-        }
+        public TextLayout TextLayout => _textLayout ??= CreateTextLayout(_text);
 
         /// <summary>
         /// Gets or sets the padding to place around the <see cref="Text"/>.
@@ -630,7 +624,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                textSource = new SimpleTextSource((text ?? "").AsMemory(), defaultProperties);
+                textSource = new SimpleTextSource(text ?? "", defaultProperties);
             }
 
             return new TextLayout(
@@ -648,6 +642,7 @@ namespace Avalonia.Controls
         /// </summary>
         protected void InvalidateTextLayout()
         {
+            _textLayout?.Dispose();
             _textLayout = null;
 
             InvalidateVisual();
@@ -663,6 +658,7 @@ namespace Avalonia.Controls
 
             _constraint = availableSize.Deflate(padding);
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             var inlines = Inlines;
@@ -726,6 +722,7 @@ namespace Avalonia.Controls
 
             _constraint = new Size(Math.Ceiling(finalSize.Deflate(padding).Width), double.PositiveInfinity);
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             if (HasComplexContent)
@@ -827,12 +824,12 @@ namespace Avalonia.Controls
             InvalidateTextLayout();
         }
 
-        protected readonly struct SimpleTextSource : ITextSource
+        protected readonly record struct SimpleTextSource : ITextSource
         {
-            private readonly ReadOnlySlice<char> _text;
+            private readonly string _text;
             private readonly TextRunProperties _defaultProperties;
 
-            public SimpleTextSource(ReadOnlySlice<char> text, TextRunProperties defaultProperties)
+            public SimpleTextSource(string text, TextRunProperties defaultProperties)
             {
                 _text = text;
                 _defaultProperties = defaultProperties;
@@ -845,7 +842,7 @@ namespace Avalonia.Controls
                     return new TextEndOfParagraph();
                 }
 
-                var runText = _text.Skip(textSourceIndex);
+                var runText = _text.AsMemory(textSourceIndex);
 
                 if (runText.IsEmpty)
                 {
@@ -873,21 +870,23 @@ namespace Avalonia.Controls
 
                 foreach (var textRun in _textRuns)
                 {
-                    if (textRun.TextSourceLength == 0)
+                    if (textRun.Length == 0)
                     {
                         continue;
                     }
 
-                    if (textSourceIndex >= currentPosition + textRun.TextSourceLength)
+                    if (textSourceIndex >= currentPosition + textRun.Length)
                     {
-                        currentPosition += textRun.TextSourceLength;
+                        currentPosition += textRun.Length;
 
                         continue;
                     }
 
-                    if (textRun is TextCharacters)
+                    if (textRun is TextCharacters)                 
                     {
-                        return new TextCharacters(textRun.Text.Skip(Math.Max(0, textSourceIndex - currentPosition)), textRun.Properties!);
+                        var skip = Math.Max(0, textSourceIndex - currentPosition);
+
+                        return new TextCharacters(textRun.Text.Slice(skip), textRun.Properties!);
                     }
 
                     return textRun;

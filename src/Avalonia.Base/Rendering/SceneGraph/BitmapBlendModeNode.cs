@@ -27,7 +27,7 @@ namespace Avalonia.Rendering.SceneGraph
         }
 
         /// <inheritdoc/>
-        public Rect Bounds => Rect.Empty;
+        public Rect Bounds => default;
 
         /// <summary>
         /// Gets the BitmapBlend to be pushed or null if the operation represents a pop.

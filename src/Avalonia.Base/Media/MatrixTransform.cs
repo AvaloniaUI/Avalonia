@@ -1,10 +1,11 @@
 using System;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Transforms an <see cref="IVisual"/> according to a <see cref="Matrix"/>.
+    /// Transforms an <see cref="Visual"/> according to a <see cref="Matrix"/>.
     /// </summary>
     public class MatrixTransform : Transform
     {

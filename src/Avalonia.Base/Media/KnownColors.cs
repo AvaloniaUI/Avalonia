@@ -10,7 +10,7 @@ namespace Avalonia.Media
         private static readonly IReadOnlyDictionary<string, KnownColor> _knownColorNames;
         private static readonly IReadOnlyDictionary<uint, string> _knownColors;
 #if !BUILDTASK
-        private static readonly Dictionary<KnownColor, ISolidColorBrush> _knownBrushes;
+        private static readonly Dictionary<KnownColor, IImmutableSolidColorBrush> _knownBrushes;
 #endif
 
         [GenerateEnumValueDictionary()]
@@ -39,7 +39,7 @@ namespace Avalonia.Media
             _knownColors = knownColors;
             
 #if !BUILDTASK
-            _knownBrushes = new Dictionary<KnownColor, ISolidColorBrush>();
+            _knownBrushes = new ();
 #endif
         }
 
@@ -72,7 +72,7 @@ namespace Avalonia.Media
         }
 
 #if !BUILDTASK
-        public static ISolidColorBrush ToBrush(this KnownColor color)
+        public static IImmutableSolidColorBrush ToBrush(this KnownColor color)
         {
             lock (_knownBrushes)
             {

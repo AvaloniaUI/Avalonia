@@ -96,9 +96,9 @@ namespace Avalonia.Skia
 
             SKColorType colorType = format.ToSkColorType();
             SKAlphaType alphaType = alphaFormat.ToSkAlphaType();
-            
-            var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
-            
+
+            var runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+
             if (runtimePlatform != null)
             {
                 _bitmap = new SKBitmap();
@@ -217,8 +217,7 @@ namespace Avalonia.Skia
             public int RowBytes => _bitmap.RowBytes;
 
             /// <inheritdoc />
-            public Vector Dpi { get; } = SkiaPlatform.DefaultDpi;
-
+            public Vector Dpi => _parent.Dpi;
             /// <inheritdoc />
             public PixelFormat Format => _bitmap.ColorType.ToPixelFormat();
         }

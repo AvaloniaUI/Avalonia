@@ -47,10 +47,7 @@ namespace Avalonia.Media
                     return current;
                 }
 
-                var fontManagerImpl = AvaloniaLocator.Current.GetService<IFontManagerImpl>();
-
-                if (fontManagerImpl == null)
-                    throw new InvalidOperationException("No font manager implementation was registered.");
+                var fontManagerImpl = AvaloniaLocator.Current.GetRequiredService<IFontManagerImpl>();
 
                 current = new FontManager(fontManagerImpl);
 
@@ -135,7 +132,7 @@ namespace Avalonia.Media
                 {
                     typeface = new Typeface(fallback.FontFamily, fontStyle, fontWeight, fontStretch);
 
-                    var glyphTypeface = typeface.GlyphTypeface;
+                    var glyphTypeface = GetOrAddGlyphTypeface(typeface);
 
                     if(glyphTypeface.TryGetGlyph((uint)codepoint, out _)){
                         return true;

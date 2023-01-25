@@ -206,7 +206,7 @@ namespace Avalonia.Rendering.SceneGraph
         public object? GetFeature(Type t) => null;
 
         /// <inheritdoc/>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
             var next = NextDrawAs<GlyphRunNode>();
 

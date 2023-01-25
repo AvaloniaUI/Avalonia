@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Globalization;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -31,10 +29,7 @@ namespace Avalonia.Media.TextFormatting
                     return current;
                 }
 
-                var textShaperImpl = AvaloniaLocator.Current.GetService<ITextShaperImpl>();
-
-                if (textShaperImpl == null)
-                    throw new InvalidOperationException("No text shaper implementation was registered.");
+                var textShaperImpl = AvaloniaLocator.Current.GetRequiredService<ITextShaperImpl>();
 
                 current = new TextShaper(textShaperImpl);
 
@@ -45,9 +40,14 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <inheritdoc cref="ITextShaperImpl.ShapeText"/>
-        public ShapedBuffer ShapeText(ReadOnlySlice<char> text, TextShaperOptions options)
+        public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options = default)
         {
             return _platformImpl.ShapeText(text, options);
+        }
+
+        public ShapedBuffer ShapeText(string text, TextShaperOptions options = default)
+        {
+            return ShapeText(text.AsMemory(), options);
         }
     }
 }

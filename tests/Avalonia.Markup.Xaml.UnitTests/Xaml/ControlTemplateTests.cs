@@ -27,11 +27,11 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
     <Button>
         <Button.Template>
             <ControlTemplate>
-                <controls:ListBoxHierachyLine>
-                    <controls:ListBoxHierachyLine.LineDashStyle>
+                <controls:ListBoxHierarchyLine>
+                    <controls:ListBoxHierarchyLine.LineDashStyle>
                         <DashStyle Dashes=""2,2"" Offset=""1"" />
-                    </controls:ListBoxHierachyLine.LineDashStyle>
-                </controls:ListBoxHierachyLine>
+                    </controls:ListBoxHierarchyLine.LineDashStyle>
+                </controls:ListBoxHierarchyLine>
             </ControlTemplate>
         </Button.Template>
     </Button>
@@ -41,7 +41,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
                 window.ApplyTemplate();
                 button.ApplyTemplate();
-                var listBoxHierarchyLine = button.GetVisualChildren().ElementAt(0) as ListBoxHierachyLine;
+                var listBoxHierarchyLine = button.GetVisualChildren().ElementAt(0) as ListBoxHierarchyLine;
                 Assert.Equal(1, listBoxHierarchyLine.LineDashStyle.Offset);
                 Assert.Equal(2, listBoxHierarchyLine.LineDashStyle.Dashes.Count);
                 Assert.Equal(2, listBoxHierarchyLine.LineDashStyle.Dashes[0]);
@@ -77,7 +77,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -142,7 +142,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Dock.Top, DockPanel.GetDock(presenter));
 
                 var diagnostic = presenter.GetDiagnostic(DockPanel.DockProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -176,7 +176,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -210,7 +210,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal(Brushes.Red, presenter.Background);
 
                 var diagnostic = presenter.GetDiagnostic(Button.BackgroundProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -241,7 +241,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.Equal("Foo", presenter.Content);
 
                 var diagnostic = presenter.GetDiagnostic(ContentPresenter.ContentProperty);
-                Assert.Equal(BindingPriority.TemplatedParent, diagnostic.Priority);
+                Assert.Equal(BindingPriority.Template, diagnostic.Priority);
             }
         }
 
@@ -309,10 +309,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             Assert.Equal("Bar", bar.Name);
         }
     }
-    public class ListBoxHierachyLine : Panel
+    public class ListBoxHierarchyLine : Panel
     {
         public static readonly StyledProperty<DashStyle> LineDashStyleProperty =
-        AvaloniaProperty.Register<ListBoxHierachyLine, DashStyle>(nameof(LineDashStyle));
+        AvaloniaProperty.Register<ListBoxHierarchyLine, DashStyle>(nameof(LineDashStyle));
 
         public DashStyle LineDashStyle
         {

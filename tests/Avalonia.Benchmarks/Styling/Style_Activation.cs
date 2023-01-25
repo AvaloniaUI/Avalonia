@@ -1,6 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using Avalonia.Controls;
+using Avalonia.PropertyStore;
 using Avalonia.Styling;
+using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 
 #nullable enable
@@ -26,8 +28,7 @@ namespace Avalonia.Benchmarks.Styling
             {
                 Setters = { new Setter(TestClass.StringProperty, "foo") }
             };
-
-            style.TryAttach(_target, null);
+            StyleHelpers.TryAttach(style, _target);
         }
 
         [Benchmark]

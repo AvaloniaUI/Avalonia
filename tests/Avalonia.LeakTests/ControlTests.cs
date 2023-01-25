@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Disposables;
-
+using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
@@ -361,7 +361,7 @@ namespace Avalonia.LeakTests
 
                     // Do a layout and make sure that TreeViewItems get realized.
                     window.LayoutManager.ExecuteInitialLayoutPass();
-                    Assert.Single(target.ItemContainerGenerator.Containers);
+                    Assert.Single(target.GetRealizedContainers());
 
                     // Clear the content and ensure the TreeView is removed.
                     window.Content = null;
@@ -713,6 +713,10 @@ namespace Avalonia.LeakTests
         {
             using (Start())
             {
+                // Height of ListBoxItem content + padding.
+                const double ListBoxItemHeight = 12;
+                const double TextBoxHeight = 25;
+
                 var items = new ObservableCollection<int>(Enumerable.Range(0, 10));
                 NameScope ns;
                 TextBox tb;
@@ -721,8 +725,8 @@ namespace Avalonia.LeakTests
                 {
                     [NameScope.NameScopeProperty] = ns = new NameScope(),
                     Width = 100,
-                    Height = 100,
-                    Content = new StackPanel
+                    Height = (items.Count * ListBoxItemHeight) + TextBoxHeight,
+                    Content = new DockPanel
                     {
                         Children =
                         {
@@ -730,6 +734,8 @@ namespace Avalonia.LeakTests
                             {
                                 Name = "tb",
                                 Text = "foo",
+                                Height = TextBoxHeight,
+                                [DockPanel.DockProperty] = Dock.Top,
                             }),
                             (lb = new ListBox
                             {
@@ -745,7 +751,8 @@ namespace Avalonia.LeakTests
                                             Path = "Text",
                                             NameScope = new WeakReference<INameScope>(ns),
                                         }
-                                    })
+                                    }),
+                                Padding = new Thickness(0),
                             }),
                         }
                     }
@@ -758,18 +765,18 @@ namespace Avalonia.LeakTests
 
                 void AssertInitialItemState()
                 {
-                    var item0 = (ListBoxItem)lb.ItemContainerGenerator.Containers.First().ContainerControl;
+                    var item0 = (ListBoxItem)lb.GetRealizedContainers().First();
                     var canvas0 = (Canvas)item0.Presenter.Child;
                     Assert.Equal("foo", canvas0.Tag);
                 }
-               
-                Assert.Equal(10, lb.ItemContainerGenerator.Containers.Count());
+
+                Assert.Equal(10, lb.GetRealizedContainers().Count());
                 AssertInitialItemState();
 
                 items.Clear();
                 window.LayoutManager.ExecuteLayoutPass();
 
-                Assert.Empty(lb.ItemContainerGenerator.Containers);
+                Assert.Empty(lb.GetRealizedContainers());
 
                 // Process all Loaded events to free control reference(s)
                 Dispatcher.UIThread.RunJobs(DispatcherPriority.Loaded);
@@ -836,7 +843,6 @@ namespace Avalonia.LeakTests
                     {
                         Width = 100,
                         Height = 100,
-                        VirtualizationMode = ItemVirtualizationMode.None,
                         // Create a button with binding to the KeyGesture in the template and add it to references list
                         ItemTemplate = new FuncDataTemplate(typeof(KeyGesture), (o, scope) =>
                         {
@@ -1029,7 +1035,7 @@ namespace Avalonia.LeakTests
 #pragma warning disable CS0067
             public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
 #pragma warning restore CS0067
-            public void AddDirty(IVisual visual)
+            public void AddDirty(Visual visual)
             {
             }
 
@@ -1037,15 +1043,15 @@ namespace Avalonia.LeakTests
             {
             }
 
-            public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
+            public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter) => null;
 
-            public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter) => null;
+            public Visual HitTestFirst(Point p, Visual root, Func<Visual, bool> filter) => null;
 
             public void Paint(Rect rect)
             {
             }
 
-            public void RecalculateChildren(IVisual visual)
+            public void RecalculateChildren(Visual visual)
             {
             }
 
@@ -1060,6 +1066,8 @@ namespace Avalonia.LeakTests
             public void Stop()
             {
             }
+
+            public ValueTask<object> TryGetRenderInterfaceFeature(Type featureType) => new(null);
         }
     }
 }

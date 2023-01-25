@@ -439,6 +439,7 @@ namespace Avalonia.Controls.Selection
 
             if ((e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex) ||
                 (e.Action == NotifyCollectionChangedAction.Replace && e.OldStartingIndex == oldSelectedIndex) ||
+                (e.Action == NotifyCollectionChangedAction.Move && e.OldStartingIndex == oldSelectedIndex) ||
                 e.Action == NotifyCollectionChangedAction.Reset)
             {
                 RaisePropertyChanged(nameof(SelectedItem));
@@ -738,7 +739,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        public struct BatchUpdateOperation : IDisposable
+        public record struct BatchUpdateOperation : IDisposable
         {
             private readonly SelectionModel<T> _owner;
             private bool _isDisposed;

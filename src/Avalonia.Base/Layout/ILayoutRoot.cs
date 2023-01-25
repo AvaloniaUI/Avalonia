@@ -6,7 +6,7 @@ namespace Avalonia.Layout
     /// Defines the root of a layoutable tree.
     /// </summary>
     [NotClientImplementable]
-    public interface ILayoutRoot : ILayoutable
+    public interface ILayoutRoot
     {
         /// <summary>
         /// The size available to lay out the controls.

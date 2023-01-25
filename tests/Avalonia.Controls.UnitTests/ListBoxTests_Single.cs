@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -32,7 +33,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Tab,
             });
 
@@ -52,7 +52,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
             });
 
@@ -72,7 +71,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
                 KeyModifiers = KeyModifiers.Control
             });
@@ -95,7 +93,6 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
                 {
-                    RoutedEvent = InputElement.GotFocusEvent,
                     NavigationMethod = NavigationMethod.Directional,
                     KeyModifiers = KeyModifiers.Control
                 });
@@ -315,7 +312,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private Control CreateListBoxTemplate(ITemplatedControl parent, INameScope scope)
+        private Control CreateListBoxTemplate(TemplatedControl parent, INameScope scope)
         {
             return new ScrollViewer
             {
@@ -323,12 +320,11 @@ namespace Avalonia.Controls.UnitTests
                 Content = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                 }.RegisterInNameScope(scope)
             };
         }
 
-        private Control CreateScrollViewerTemplate(ITemplatedControl parent, INameScope scope)
+        private Control CreateScrollViewerTemplate(TemplatedControl parent, INameScope scope)
         {
             return new ScrollContentPresenter
             {
@@ -338,7 +334,7 @@ namespace Avalonia.Controls.UnitTests
             }.RegisterInNameScope(scope);
         }
 
-        private void ApplyTemplate(ListBox target)
+        private static void ApplyTemplate(ListBox target)
         {
             // Apply the template to the ListBox itself.
             target.ApplyTemplate();

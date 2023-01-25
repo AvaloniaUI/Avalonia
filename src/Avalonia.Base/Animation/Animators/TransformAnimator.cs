@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Transformation;

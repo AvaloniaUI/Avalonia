@@ -55,18 +55,28 @@ namespace Avalonia.Controls
             get => _cellEditingCellTemplate;
             set => SetAndRaise(CellEditingTemplateProperty, ref _cellEditingCellTemplate, value);
         }
-        
-        private void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+
+        private bool _forceGenerateCellFromTemplate;
+
+        protected override void EndCellEdit()
         {
-            var oldValue = (IDataTemplate)e.OldValue;
-            var value = (IDataTemplate)e.NewValue;
+            //the next call to generate element should not resuse the current content as we need to exit edit mode
+            _forceGenerateCellFromTemplate = true;
+            base.EndCellEdit();
         }
 
-        protected override IControl GenerateElement(DataGridCell cell, object dataItem)
+        protected override Control GenerateElement(DataGridCell cell, object dataItem)
         {
-            if(CellTemplate != null)
+            if (CellTemplate != null)
             {
-                return CellTemplate.Build(dataItem);
+                if (_forceGenerateCellFromTemplate)
+                {
+                    _forceGenerateCellFromTemplate = false;
+                    return CellTemplate.Build(dataItem);
+                }
+                return (CellTemplate is IRecyclingDataTemplate recyclingDataTemplate)
+                    ? recyclingDataTemplate.Build(dataItem, cell.Content as Control)
+                    : CellTemplate.Build(dataItem);
             }
             if (Design.IsDesignMode)
             {
@@ -78,7 +88,7 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override IControl GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding binding)
+        protected override Control GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding binding)
         {
             binding = null;
             if(CellEditingTemplate != null)
@@ -99,12 +109,12 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override object PrepareCellForEdit(IControl editingElement, RoutedEventArgs editingEventArgs)
+        protected override object PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
         {
             return null;
         }
 
-        protected internal override void RefreshCellContent(IControl element, string propertyName)
+        protected internal override void RefreshCellContent(Control element, string propertyName)
         {
             var cell = element.Parent as DataGridCell;
             if(propertyName == nameof(CellTemplate) && cell is not null)

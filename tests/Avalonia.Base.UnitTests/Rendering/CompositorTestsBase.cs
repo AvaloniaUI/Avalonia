@@ -18,7 +18,6 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
-using JetBrains.Annotations;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Rendering;
@@ -76,7 +75,7 @@ public class CompositorTestsBase
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            return Renderer = new CompositingRenderer(root, _compositor);
+            return Renderer = new CompositingRenderer(root, _compositor, () => Surfaces);
         }
 
         public void Invalidate(Rect rect)
@@ -105,6 +104,8 @@ public class CompositorTestsBase
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; }
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
     }
 
@@ -176,16 +177,16 @@ public class CompositorTestsBase
             Events.Rects.Clear();
         }
 
-        public void AssertHitTest(double x, double y, Func<IVisual, bool> filter, params object[] expected)
+        public void AssertHitTest(double x, double y, Func<Visual, bool> filter, params object[] expected)
             => AssertHitTest(new Point(x, y), filter, expected);
-        public void AssertHitTest(Point pt, Func<IVisual, bool> filter, params object[] expected)
+        public void AssertHitTest(Point pt, Func<Visual, bool> filter, params object[] expected)
         {
             RunJobs();
             var tested = Renderer.HitTest(pt, TopLevel, filter);
             Assert.Equal(expected, tested);
         }
         
-        public void AssertHitTestFirst(Point pt, Func<IVisual, bool> filter, object expected)
+        public void AssertHitTestFirst(Point pt, Func<Visual, bool> filter, object expected)
         {
             RunJobs();
             var tested = Renderer.HitTest(pt, TopLevel, filter).First();

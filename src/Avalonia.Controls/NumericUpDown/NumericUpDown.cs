@@ -9,6 +9,7 @@ using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Reactive;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
@@ -869,7 +870,7 @@ namespace Avalonia.Controls
             }
         }
 
-        private static decimal OnCoerceMaximum(IAvaloniaObject instance, decimal value)
+        private static decimal OnCoerceMaximum(AvaloniaObject instance, decimal value)
         {
             if (instance is NumericUpDown upDown)
             {
@@ -879,7 +880,7 @@ namespace Avalonia.Controls
             return value;
         }
 
-        private static decimal OnCoerceMinimum(IAvaloniaObject instance, decimal value)
+        private static decimal OnCoerceMinimum(AvaloniaObject instance, decimal value)
         {
             if (instance is NumericUpDown upDown)
             {
@@ -889,7 +890,7 @@ namespace Avalonia.Controls
             return value;
         }
 
-        private static decimal OnCoerceIncrement(IAvaloniaObject instance, decimal value)
+        private static decimal OnCoerceIncrement(AvaloniaObject instance, decimal value)
         {
             if (instance is NumericUpDown upDown)
             {

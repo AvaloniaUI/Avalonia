@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using System.Windows.Input;
@@ -23,11 +24,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             _dependsOnProperties = dependsOnProperties;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string propertyName)
         {
             throw new InvalidOperationException("The CommandAccessorPlugin does not support dynamic matching");
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object> reference, string propertyName)
         {
             return new CommandAccessor(reference, _execute, _canExecute, _dependsOnProperties);
@@ -41,9 +44,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
             public CommandAccessor(WeakReference<object> reference, Action<object, object> execute, Func<object, object, bool> canExecute, ISet<string> dependsOnProperties)
             {
-                Contract.Requires<ArgumentNullException>(reference != null);
-
-                _reference = reference;
+                _reference = reference ?? throw new ArgumentNullException(nameof(reference));
                 _dependsOnProperties = dependsOnProperties;
                 _command = new Command(reference, execute, canExecute);
 
@@ -124,7 +125,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             {
                 if (_dependsOnProperties is { Count: > 0 } && _reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
                 {
-                    WeakEventHandlerManager.Unsubscribe<PropertyChangedEventArgs, InpcPropertyAccessor>(
+                    WeakEventHandlerManager.Unsubscribe<PropertyChangedEventArgs, CommandAccessor>(
                         inpc,
                         nameof(INotifyPropertyChanged.PropertyChanged),
                         OnNotifyPropertyChanged);
@@ -145,7 +146,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             {
                 if (_dependsOnProperties is { Count:>0 } && _reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
                 {
-                    WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, InpcPropertyAccessor>(
+                    WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, CommandAccessor>(
                         inpc,
                         nameof(INotifyPropertyChanged.PropertyChanged),
                         OnNotifyPropertyChanged);

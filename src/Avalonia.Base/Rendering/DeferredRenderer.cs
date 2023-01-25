@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Logging;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
@@ -22,14 +23,16 @@ namespace Avalonia.Rendering
     {
         private readonly IDispatcher? _dispatcher;
         private readonly IRenderLoop? _renderLoop;
-        private readonly IVisual _root;
+        private readonly Func<IRenderTarget>? _renderTargetFactory;
+        private readonly PlatformRenderInterfaceContextManager? _renderInterface;
+        private readonly Visual _root;
         private readonly ISceneBuilder _sceneBuilder;
 
         private bool _running;
         private bool _disposed;
         private volatile IRef<Scene>? _scene;
         private DirtyVisuals? _dirty;
-        private HashSet<IVisual>? _recalculateChildren;
+        private HashSet<Visual>? _recalculateChildren;
         private IRef<IRenderTargetBitmapImpl>? _overlay;
         private int _lastSceneId = -1;
         private DisplayDirtyRects _dirtyRectsDisplay = new DisplayDirtyRects();
@@ -39,27 +42,34 @@ namespace Avalonia.Rendering
         private readonly object _startStopLock = new object();
         private readonly object _renderLoopIsRenderingLock = new object();
         private readonly Action _updateSceneIfNeededDelegate;
+        private List<Action>? _pendingRenderThreadJobs;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeferredRenderer"/> class.
         /// </summary>
         /// <param name="root">The control to render.</param>
         /// <param name="renderLoop">The render loop.</param>
+        /// <param name="renderTargetFactory">The target render factory.</param>
+        /// <param name="renderInterface">The Platform Render Context.</param>
         /// <param name="sceneBuilder">The scene builder to use. Optional.</param>
         /// <param name="dispatcher">The dispatcher to use. Optional.</param>
         /// <param name="rendererLock">Lock object used before trying to access render target</param>
         public DeferredRenderer(
             IRenderRoot root,
             IRenderLoop renderLoop,
+            Func<IRenderTarget> renderTargetFactory,
+            PlatformRenderInterfaceContextManager? renderInterface = null,
             ISceneBuilder? sceneBuilder = null,
             IDispatcher? dispatcher = null,
             IDeferredRendererLock? rendererLock = null) : base(true)
         {
             _dispatcher = dispatcher ?? Dispatcher.UIThread;
-            _root = root ?? throw new ArgumentNullException(nameof(root));
+            _root = root as Visual ?? throw new ArgumentNullException(nameof(root));
             _sceneBuilder = sceneBuilder ?? new SceneBuilder();
             Layers = new RenderLayers();
             _renderLoop = renderLoop;
+            _renderTargetFactory = renderTargetFactory;
+            _renderInterface = renderInterface;
             _lock = rendererLock ?? new ManagedDeferredRendererLock();
             _updateSceneIfNeededDelegate = UpdateSceneIfNeeded;
         }
@@ -74,7 +84,7 @@ namespace Avalonia.Rendering
         /// This constructor is intended to be used for unit testing.
         /// </remarks>
         public DeferredRenderer(
-            IVisual root,
+            Visual root,
             IRenderTarget renderTarget,
             ISceneBuilder? sceneBuilder = null) : base(true)
         {
@@ -116,7 +126,7 @@ namespace Avalonia.Rendering
         internal IRenderTarget? RenderTarget { get; private set; }
 
         /// <inheritdoc/>
-        public void AddDirty(IVisual visual)
+        public void AddDirty(Visual visual)
         {
             _dirty?.Add(visual);
         }
@@ -142,7 +152,7 @@ namespace Avalonia.Rendering
             DisposeRenderTarget();
         }
 
-        public void RecalculateChildren(IVisual visual) => _recalculateChildren?.Add(visual);
+        public void RecalculateChildren(Visual visual) => _recalculateChildren?.Add(visual);
 
         void DisposeRenderTarget()
         {
@@ -163,17 +173,17 @@ namespace Avalonia.Rendering
         }
 
         /// <inheritdoc/>
-        public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool>? filter)
+        public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter)
         {
             EnsureCanHitTest();
 
             //It's safe to access _scene here without a lock since
             //it's only changed from UI thread which we are currently on
-            return _scene?.Item.HitTest(p, root, filter) ?? Enumerable.Empty<IVisual>();
+            return _scene?.Item.HitTest(p, root, filter) ?? Enumerable.Empty<Visual>();
         }
 
         /// <inheritdoc/>
-        public IVisual? HitTestFirst(Point p, IVisual root, Func<IVisual, bool>? filter)
+        public Visual? HitTestFirst(Point p, Visual root, Func<Visual, bool>? filter)
         {
             EnsureCanHitTest();
 
@@ -256,6 +266,30 @@ namespace Avalonia.Rendering
             }
         }
 
+        public ValueTask<object?> TryGetRenderInterfaceFeature(Type featureType)
+        {
+            if (_renderInterface == null)
+                return new((object?)null);
+            
+            var tcs = new TaskCompletionSource<object?>();
+            _pendingRenderThreadJobs ??= new();
+            _pendingRenderThreadJobs.Add(() =>
+            {
+                try
+                {
+                    using (_renderInterface.EnsureCurrent())
+                    {
+                        tcs.TrySetResult(_renderInterface.Value.TryGetFeature(featureType));
+                    }
+                }
+                catch (Exception e)
+                {
+                    tcs.TrySetException(e);
+                }
+            });
+            return new ValueTask<object?>(tcs.Task);
+        }
+
         bool NeedsUpdate => _dirty == null || _dirty.Count > 0;
         bool IRenderLoopTask.NeedsUpdate => NeedsUpdate;
 
@@ -272,12 +306,12 @@ namespace Avalonia.Rendering
             }
         }
 
-        Scene? TryGetChildScene(IRef<IDrawOperation>? op) => (op?.Item as BrushDrawOperation)?.Aux as Scene;
+        static Scene? TryGetChildScene(IRef<IDrawOperation>? op) => (op?.Item as BrushDrawOperation)?.Aux as Scene;
         
         /// <inheritdoc/>
         Size IVisualBrushRenderer.GetRenderTargetSize(IVisualBrush brush)
         {
-            return TryGetChildScene(_currentDraw)?.Size ?? Size.Empty;
+            return TryGetChildScene(_currentDraw)?.Size ?? default;
         }
 
         /// <inheritdoc/>
@@ -337,7 +371,16 @@ namespace Avalonia.Rendering
                                 }
                                 finally
                                 {
-                                    scene.Item.MarkAsRendered();
+                                    try
+                                    {
+                                        if(scene.Item.RenderThreadJobs!=null)
+                                            foreach (var job in scene.Item.RenderThreadJobs)
+                                                job();
+                                    }
+                                    finally
+                                    {
+                                        scene.Item.MarkAsRendered();
+                                    }
                                 }
                             }
                         }
@@ -414,13 +457,13 @@ namespace Avalonia.Rendering
         }
 
 
-        private void Render(IDrawingContextImpl context, VisualNode node, IVisual? layer, Rect clipBounds)
+        private void Render(IDrawingContextImpl context, VisualNode node, Visual? layer, Rect clipBounds)
         {
             if (layer == null || node.LayerRoot == layer)
             {
                 clipBounds = node.ClipBounds.Intersect(clipBounds);
 
-                if (!clipBounds.IsEmpty && node.Opacity > 0)
+                if (!clipBounds.IsDefault && node.Opacity > 0)
                 {
                     var isLayerRoot = node.Visual == layer;
 
@@ -604,7 +647,7 @@ namespace Avalonia.Rendering
                 return;
             }
 
-            if ((RenderTarget as IRenderTargetWithCorruptionInfo)?.IsCorrupted == true)
+            if (RenderTarget?.IsCorrupted == true)
             {
                 RenderTarget!.Dispose();
                 RenderTarget = null;
@@ -612,7 +655,7 @@ namespace Avalonia.Rendering
 
             if (RenderTarget == null)
             {
-                RenderTarget = ((IRenderRoot)_root).CreateRenderTarget();
+                RenderTarget = _renderTargetFactory!();
             }
 
             context = RenderTarget.CreateDrawingContext(this);
@@ -637,13 +680,17 @@ namespace Avalonia.Rendering
             }
             if (_root.IsVisible)
             {
-                var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root));
+                var sceneRef = RefCountable.Create(_scene?.Item.CloneScene() ?? new Scene(_root)
+                {
+                    RenderThreadJobs = _pendingRenderThreadJobs
+                });
+                _pendingRenderThreadJobs = null;
                 var scene = sceneRef.Item;
 
                 if (_dirty == null)
                 {
                     _dirty = new DirtyVisuals();
-                    _recalculateChildren = new HashSet<IVisual>();
+                    _recalculateChildren = new HashSet<Visual>();
                     _sceneBuilder.UpdateAll(scene);
                 }
                 else
@@ -725,7 +772,7 @@ namespace Avalonia.Rendering
 
             foreach (var layer in Layers)
             {
-                var fileName = Path.Combine(DebugFramesPath ?? string.Empty, $"frame-{id}-layer-{index++}.png");
+                var fileName = Path.Combine(DebugFramesPath ?? string.Empty, FormattableString.Invariant($"frame-{id}-layer-{index++}.png"));
                 layer.Bitmap.Item.Save(fileName);
             }
         }

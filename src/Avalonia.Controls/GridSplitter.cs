@@ -53,8 +53,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="PreviewContent"/> property.
         /// </summary>
-        public static readonly StyledProperty<ITemplate<IControl>> PreviewContentProperty =
-            AvaloniaProperty.Register<GridSplitter, ITemplate<IControl>>(nameof(PreviewContent));
+        public static readonly StyledProperty<ITemplate<Control>> PreviewContentProperty =
+            AvaloniaProperty.Register<GridSplitter, ITemplate<Control>>(nameof(PreviewContent));
 
         private static readonly Cursor s_columnSplitterCursor = new Cursor(StandardCursorType.SizeWestEast);
         private static readonly Cursor s_rowSplitterCursor = new Cursor(StandardCursorType.SizeNorthSouth);
@@ -109,7 +109,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets content that will be shown when <see cref="ShowsPreview"/> is enabled and user starts resize operation.
         /// </summary>
-        public ITemplate<IControl> PreviewContent
+        public ITemplate<Control> PreviewContent
         {
             get => GetValue(PreviewContentProperty);
             set => SetValue(PreviewContentProperty, value);
@@ -336,7 +336,7 @@ namespace Avalonia.Controls
                     return;
                 }
 
-                IControl? builtPreviewContent = previewContent?.Build();
+                Control? builtPreviewContent = previewContent?.Build();
 
                 _resizeData.Adorner = new PreviewAdorner(builtPreviewContent);
 
@@ -516,7 +516,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Retrieves the ActualWidth or ActualHeight of the definition depending on its type Column or Row.
         /// </summary>
-        private double GetActualLength(DefinitionBase definition)
+        private static double GetActualLength(DefinitionBase definition)
         {
             var column = definition as ColumnDefinition;
 
@@ -696,7 +696,7 @@ namespace Avalonia.Controls
             private readonly TranslateTransform _translation;
             private readonly Decorator _decorator;
             
-            public PreviewAdorner(IControl? previewControl)
+            public PreviewAdorner(Control? previewControl)
             {
                 // Add a decorator to perform translations.
                 _translation = new TranslateTransform();

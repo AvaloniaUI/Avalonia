@@ -16,6 +16,8 @@ namespace Avalonia.Benchmarks.Themes
     public class ThemeBenchmark : IDisposable
     {
         private IDisposable _app;
+        private readonly FluentTheme _reusableFluentTheme = new FluentTheme();
+        private readonly SimpleTheme _reusableSimpleTheme = new SimpleTheme();
 
         public ThemeBenchmark()
         {
@@ -31,7 +33,7 @@ namespace Avalonia.Benchmarks.Themes
         [Arguments(FluentThemeMode.Light)]
         public bool InitFluentTheme(FluentThemeMode mode)
         {
-            UnitTestApplication.Current.Styles[0] = new FluentTheme(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
+            UnitTestApplication.Current.Styles[0] = new FluentTheme()
             {
                 Mode = mode
             };
@@ -43,11 +45,31 @@ namespace Avalonia.Benchmarks.Themes
         [Arguments(SimpleThemeMode.Light)]
         public bool InitSimpleTheme(SimpleThemeMode mode)
         {
-            UnitTestApplication.Current.Styles[0] = new SimpleTheme(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
+            UnitTestApplication.Current.Styles[0] = new SimpleTheme()
             {
                 Mode = mode
             };
             return ((IResourceHost)UnitTestApplication.Current).TryGetResource("ThemeAccentColor", out _);
+        }
+        
+        [Benchmark]
+        [Arguments(typeof(Button))]
+        [Arguments(typeof(TextBox))]
+        [Arguments(typeof(DatePicker))]
+        public object FindFluentControlTheme(Type type)
+        {
+            _reusableFluentTheme.TryGetResource(type, out var theme);
+            return theme;
+        }
+
+        [Benchmark]
+        [Arguments(typeof(Button))]
+        [Arguments(typeof(TextBox))]
+        [Arguments(typeof(DatePicker))]
+        public object FindSimpleControlTheme(Type type)
+        {
+            _reusableSimpleTheme.TryGetResource(type, out var theme);
+            return theme;
         }
 
         public void Dispose()

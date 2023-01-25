@@ -190,7 +190,7 @@ namespace Avalonia.Controls
             _increaseButtonSubscription?.Dispose();
             _increaseButtonReleaseDispose?.Dispose();
             _pointerMovedDispose?.Dispose();
-            
+
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
             _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
@@ -258,7 +258,7 @@ namespace Avalonia.Controls
 
             e.Handled = handled;
         }
-            
+
         private void MoveToNextTick(double direction)
         {
             if (direction == 0.0) return;
@@ -317,6 +317,12 @@ namespace Avalonia.Controls
 
         private void TrackMoved(object? sender, PointerEventArgs e)
         {
+            if (!IsEnabled)
+            {
+                _isDragging = false;
+                return;
+            }
+
             if (_isDragging)
             {
                 MoveToPoint(e.GetCurrentPoint(_track));
@@ -343,15 +349,15 @@ namespace Avalonia.Controls
                 return;
 
             var orient = Orientation == Orientation.Horizontal;
-            var thumbLength = (orient 
-                ? _track.Thumb.Bounds.Width 
+            var thumbLength = (orient
+                ? _track.Thumb.Bounds.Width
                 : _track.Thumb.Bounds.Height) + double.Epsilon;
-            var trackLength = (orient 
-                ? _track.Bounds.Width 
+            var trackLength = (orient
+                ? _track.Bounds.Width
                 : _track.Bounds.Height) - thumbLength;
             var trackPos = orient ? posOnTrack.Position.X : posOnTrack.Position.Y;
             var logicalPos = MathUtilities.Clamp((trackPos - thumbLength * 0.5) / trackLength, 0.0d, 1.0d);
-            var invert = orient ? 
+            var invert = orient ?
                 IsDirectionReversed ? 1 : 0 :
                 IsDirectionReversed ? 0 : 1;
             var calcVal = Math.Abs(invert - logicalPos);

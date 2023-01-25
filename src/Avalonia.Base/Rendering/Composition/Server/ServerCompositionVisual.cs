@@ -37,18 +37,25 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
 
             currentTransformedClip = currentTransformedClip.Intersect(_combinedTransformedClipBounds);
-            if(currentTransformedClip.IsEmpty)
+            if(currentTransformedClip.IsDefault)
                 return;
 
             Root!.RenderedVisuals++;
             
+            if (Opacity != 1)
+                canvas.PushOpacity(Opacity);
+            if (AdornedVisual != null)
+            {
+                canvas.PostTransform = Matrix.Identity;
+                canvas.Transform = Matrix.Identity;
+                canvas.PushClip(AdornedVisual._combinedTransformedClipBounds);
+            }
             var transform = GlobalTransformMatrix;
             canvas.PostTransform = MatrixUtils.ToMatrix(transform);
             canvas.Transform = Matrix.Identity;
-            if (Opacity != 1)
-                canvas.PushOpacity(Opacity);
+            
             var boundsRect = new Rect(new Size(Size.X, Size.Y));
-            if(ClipToBounds)
+            if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PushClip(Root!.SnapToDevicePixels(boundsRect));
             if (Clip != null) 
                 canvas.PushGeometryClip(Clip);
@@ -65,11 +72,15 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PopOpacityMask();
             if (Clip != null)
                 canvas.PopGeometryClip();
-            if (ClipToBounds)
+            if (ClipToBounds && !HandlesClipToBounds)
+                canvas.PopClip();
+            if (AdornedVisual != null)
                 canvas.PopClip();
             if(Opacity != 1)
                 canvas.PopOpacity();
         }
+
+        protected virtual bool HandlesClipToBounds => false;
         
         private ReadbackData _readback0, _readback1, _readback2;
 
@@ -137,7 +148,7 @@ namespace Avalonia.Rendering.Composition.Server
             if (ownBounds != _oldOwnContentBounds || positionChanged)
             {
                 _oldOwnContentBounds = ownBounds;
-                if (ownBounds.IsEmpty)
+                if (ownBounds.IsDefault)
                     TransformedOwnContentBounds = default;
                 else
                     TransformedOwnContentBounds =
@@ -153,15 +164,25 @@ namespace Avalonia.Rendering.Composition.Server
                 
                 _clipSizeDirty = false;
             }
+
+            _combinedTransformedClipBounds =
+                AdornedVisual?._combinedTransformedClipBounds
+                ?? Parent?._combinedTransformedClipBounds
+                ?? new Rect(Root!.Size);
             
-            _combinedTransformedClipBounds = Parent?._combinedTransformedClipBounds ?? new Rect(Root!.Size);
             if (_transformedClipBounds != null)
                 _combinedTransformedClipBounds = _combinedTransformedClipBounds.Intersect(_transformedClipBounds.Value);
             
             EffectiveOpacity = Opacity * (Parent?.EffectiveOpacity ?? 1);
 
-            IsVisibleInFrame = _parent?.IsVisibleInFrame != false && Visible && EffectiveOpacity > 0.04 && !_isBackface &&
-                               !_combinedTransformedClipBounds.IsEmpty;
+            IsHitTestVisibleInFrame = _parent?.IsHitTestVisibleInFrame != false
+                                      && Visible
+                                      && !_isBackface
+                                      && !_combinedTransformedClipBounds.IsDefault;
+
+            IsVisibleInFrame = IsHitTestVisibleInFrame
+                               && _parent?.IsVisibleInFrame != false
+                               && EffectiveOpacity > 0.04;
 
             if (wasVisible != IsVisibleInFrame || positionChanged)
             {
@@ -185,12 +206,12 @@ namespace Avalonia.Rendering.Composition.Server
             readback.Revision = root.Revision;
             readback.Matrix = GlobalTransformMatrix;
             readback.TargetId = Root.Id;
-            readback.Visible = IsVisibleInFrame;
+            readback.Visible = IsHitTestVisibleInFrame;
         }
 
         void AddDirtyRect(Rect rc)
         {
-            if(rc == Rect.Empty)
+            if(rc == default)
                 return;
             Root?.AddDirtyRect(rc);
         }
@@ -214,13 +235,29 @@ namespace Avalonia.Rendering.Composition.Server
         partial void OnRootChanging()
         {
             if (Root != null)
+            {
                 Root.RemoveVisual(this);
+                OnDetachedFromRoot(Root);
+            }
+        }
+
+        protected virtual void OnDetachedFromRoot(ServerCompositionTarget target)
+        {
+            
         }
         
         partial void OnRootChanged()
         {
             if (Root != null)
+            {
                 Root.AddVisual(this);
+                OnAttachedToRoot(Root);
+            }
+        }
+        
+        protected virtual void OnAttachedToRoot(ServerCompositionTarget target)
+        {
+            
         }
         
         protected override void ValuesInvalidated()
@@ -230,6 +267,7 @@ namespace Avalonia.Rendering.Composition.Server
         }
 
         public bool IsVisibleInFrame { get; set; }
+        public bool IsHitTestVisibleInFrame { get; set; }
         public double EffectiveOpacity { get; set; }
         public Rect TransformedOwnContentBounds { get; set; }
         public virtual Rect OwnContentBounds => new Rect(0, 0, Size.X, Size.Y);

@@ -1,6 +1,5 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    x:CompileBindings="True">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <Design.PreviewWith>
     <Border Padding="20">
@@ -104,17 +103,18 @@
                     RenderTransformOrigin="50%,50%"
                     Stretch="None"
                     Stroke="{DynamicResource ExpanderChevronForeground}"
-                    StrokeThickness="1" />
-              <Border.RenderTransform>
-                <RotateTransform />
-              </Border.RenderTransform>
+                    StrokeThickness="1">
+                <Path.RenderTransform>
+                  <RotateTransform />
+                </Path.RenderTransform>
+              </Path>
             </Border>
           </Grid>
         </Border>
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:checked /template/ Border#ExpandCollapseChevronBorder">
+    <Style Selector="^:checked /template/ Path#ExpandCollapseChevron">
       <Style.Animations>
         <Animation FillMode="Both" Duration="0:0:0.0625">
           <KeyFrame Cue="100%">
@@ -123,8 +123,8 @@
         </Animation>
       </Style.Animations>
     </Style>
-    
-    <Style Selector="^:not(:checked) /template/ Border#ExpandCollapseChevronBorder">
+
+    <Style Selector="^:not(:checked) /template/ Path#ExpandCollapseChevron">
       <Style.Animations>
         <Animation FillMode="Both" Duration="0:0:0.0625">
           <KeyFrame Cue="0%">

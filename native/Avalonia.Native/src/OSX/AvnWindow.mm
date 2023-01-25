@@ -44,7 +44,7 @@
 
 -(bool) isDialog
 {
-    return _parent->IsDialog();
+    return _parent->IsModal();
 }
 
 -(double) getExtendedTitleBarHeight
@@ -171,9 +171,7 @@
     _closed = false;
     _isEnabled = true;
 
-    [self backingScaleFactor];
     [self setOpaque:NO];
-    [self setBackgroundColor: [NSColor clearColor]];
 
     _isExtended = false;
     _isTransitioningToFullScreen = false;
@@ -283,6 +281,9 @@
 
 - (void)windowDidBecomeKey:(NSNotification *_Nonnull)notification
 {
+    if (_parent == nullptr)
+        return;
+        
     _parent->BringToFront();
     
     dispatch_async(dispatch_get_main_queue(), ^{
