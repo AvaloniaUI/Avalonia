@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.Automation.Peers;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
@@ -52,12 +52,6 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly DirectProperty<ComboBox, object?> SelectionBoxItemProperty =
             AvaloniaProperty.RegisterDirect<ComboBox, object?>(nameof(SelectionBoxItem), o => o.SelectionBoxItem);
-
-        /// <summary>
-        /// Defines the <see cref="VirtualizationMode"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<ComboBox>();
 
         /// <summary>
         /// Defines the <see cref="PlaceholderText"/> property.
@@ -154,15 +148,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the virtualization mode for the items.
-        /// </summary>
-        public ItemVirtualizationMode VirtualizationMode
-        {
-            get => GetValue(VirtualizationModeProperty);
-            set => SetValue(VirtualizationModeProperty, value);
-        }
-
-        /// <summary>
         /// Gets or sets the horizontal alignment of the content within the control.
         /// </summary>
         public HorizontalAlignment HorizontalContentAlignment
@@ -180,16 +165,6 @@ namespace Avalonia.Controls
             set => SetValue(VerticalContentAlignmentProperty, value);
         }
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator<ComboBoxItem>(
-                this,
-                ComboBoxItem.ContentProperty,
-                ComboBoxItem.ContentTemplateProperty);
-        }
-
-        /// <inheritdoc/>
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -201,6 +176,9 @@ namespace Avalonia.Controls
             base.InvalidateMirrorTransform();
             UpdateFlowDirection();
         }
+
+        protected internal override Control CreateContainerForItemOverride() => new ComboBoxItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is ComboBoxItem;
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)
@@ -383,7 +361,7 @@ namespace Avalonia.Controls
 
             _subscriptionsOnOpen.Clear();
 
-            var toplevel = this.GetVisualRoot() as TopLevel;
+            var toplevel = TopLevel.GetTopLevel(this);
             if (toplevel != null)
             {
                 toplevel.AddDisposableHandler(PointerWheelChangedEvent, (s, ev) =>
@@ -421,12 +399,12 @@ namespace Avalonia.Controls
             var selectedIndex = SelectedIndex;
             if (IsDropDownOpen && selectedIndex != -1)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                var container = ContainerFromIndex(selectedIndex);
 
                 if (container == null && SelectedIndex != -1)
                 {
                     ScrollIntoView(Selection.SelectedIndex);
-                    container = ItemContainerGenerator.ContainerFromIndex(selectedIndex);
+                    container = ContainerFromIndex(selectedIndex);
                 }
 
                 if (container != null && CanFocus(container))
@@ -490,11 +468,11 @@ namespace Avalonia.Controls
 
         private void SelectFocusedItem()
         {
-            foreach (ItemContainerInfo dropdownItem in ItemContainerGenerator.Containers)
+            foreach (var dropdownItem in GetRealizedContainers())
             {
-                if (dropdownItem.ContainerControl.IsFocused)
+                if (dropdownItem.IsFocused)
                 {
-                    SelectedIndex = dropdownItem.Index;
+                    SelectedIndex = IndexFromContainer(dropdownItem);
                     break;
                 }
             }

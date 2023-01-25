@@ -1,13 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media.TextFormatting.Unicode;
 
 namespace Avalonia.Media.TextFormatting
 {
     internal static class TextEllipsisHelper
     {
-        public static List<DrawableTextRun>? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
+        public static TextRun[]? Collapse(TextLine textLine, TextCollapsingProperties properties, bool isWordEllipsis)
         {
-            if (textLine.TextRuns is not List<DrawableTextRun> textRuns || textRuns.Count == 0)
+            var textRuns = textLine.TextRuns;
+
+            if (textRuns.Count == 0)
             {
                 return null;
             }
@@ -20,7 +23,7 @@ namespace Avalonia.Media.TextFormatting
             if (properties.Width < shapedSymbol.GlyphRun.Size.Width)
             {
                 //Not enough space to fit in the symbol
-                return new List<DrawableTextRun>(0);
+                return Array.Empty<TextRun>();
             }
 
             var availableWidth = properties.Width - shapedSymbol.Size.Width;
@@ -31,7 +34,7 @@ namespace Avalonia.Media.TextFormatting
 
                 switch (currentRun)
                 {
-                    case ShapedTextCharacters shapedRun:
+                    case ShapedTextRun shapedRun:
                         {
                             currentWidth += shapedRun.Size.Width;
 
@@ -43,13 +46,11 @@ namespace Avalonia.Media.TextFormatting
                                     {
                                         var currentBreakPosition = 0;
 
-                                        var text = new CharacterBufferRange(currentRun.CharacterBufferReference, currentRun.Length);
+                                        var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
 
-                                        var lineBreaker = new LineBreakEnumerator(text);
-
-                                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext())
+                                        while (currentBreakPosition < measuredLength && lineBreaker.MoveNext(out var lineBreak))
                                         {
-                                            var nextBreakPosition = lineBreaker.Current.PositionMeasure;
+                                            var nextBreakPosition = lineBreak.PositionMeasure;
 
                                             if (nextBreakPosition == 0)
                                             {
@@ -70,44 +71,23 @@ namespace Avalonia.Media.TextFormatting
 
                                 collapsedLength += measuredLength;
 
-                                var collapsedRuns = new List<DrawableTextRun>(textRuns.Count);
-
-                                if (collapsedLength > 0)
-                                {
-                                    var splitResult = TextFormatterImpl.SplitDrawableRuns(textRuns, collapsedLength);
-
-                                    collapsedRuns.AddRange(splitResult.First);
-                                }
-
-                                collapsedRuns.Add(shapedSymbol);
-
-                                return collapsedRuns;
+                                return CreateCollapsedRuns(textRuns, collapsedLength, shapedSymbol);
                             }
 
-                            availableWidth -= currentRun.Size.Width;
-
+                            availableWidth -= shapedRun.Size.Width;
 
                             break;
                         }
 
-                    case { } drawableRun:
+                    case DrawableTextRun drawableRun:
                         {
                             //The whole run needs to fit into available space
                             if (currentWidth + drawableRun.Size.Width > availableWidth)
                             {
-                                var collapsedRuns = new List<DrawableTextRun>(textRuns.Count);
-
-                                if (collapsedLength > 0)
-                                {
-                                    var splitResult = TextFormatterImpl.SplitDrawableRuns(textRuns, collapsedLength);
-
-                                    collapsedRuns.AddRange(splitResult.First);
-                                }
-
-                                collapsedRuns.Add(shapedSymbol);
-
-                                return collapsedRuns;
+                                return CreateCollapsedRuns(textRuns, collapsedLength, shapedSymbol);
                             }
+
+                            availableWidth -= drawableRun.Size.Width;
 
                             break;
                         }
@@ -119,6 +99,32 @@ namespace Avalonia.Media.TextFormatting
             }
 
             return null;
+        }
+
+        private static TextRun[] CreateCollapsedRuns(IReadOnlyList<TextRun> textRuns, int collapsedLength,
+            TextRun shapedSymbol)
+        {
+            if (collapsedLength <= 0)
+            {
+                return new[] { shapedSymbol };
+            }
+
+            var objectPool = FormattingObjectPool.Instance;
+
+            var (preSplitRuns, postSplitRuns) = TextFormatterImpl.SplitTextRuns(textRuns, collapsedLength, objectPool);
+
+            try
+            {
+                var collapsedRuns = new TextRun[preSplitRuns.Count + 1];
+                preSplitRuns.CopyTo(collapsedRuns);
+                collapsedRuns[collapsedRuns.Length - 1] = shapedSymbol;
+                return collapsedRuns;
+            }
+            finally
+            {
+                objectPool.TextRunLists.Return(ref preSplitRuns);
+                objectPool.TextRunLists.Return(ref postSplitRuns);
+            }
         }
     }
 }

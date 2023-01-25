@@ -3,6 +3,7 @@ using System.Threading;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -43,6 +44,10 @@ namespace Avalonia.Input
         public static readonly RoutedEvent<ScrollGestureEventArgs> ScrollGestureEvent =
             RoutedEvent.Register<ScrollGestureEventArgs>(
                 "ScrollGesture", RoutingStrategies.Bubble, typeof(Gestures));
+
+        public static readonly RoutedEvent<ScrollGestureInertiaStartingEventArgs> ScrollGestureInertiaStartingEvent =
+            RoutedEvent.Register<ScrollGestureInertiaStartingEventArgs>(
+                "ScrollGestureInertiaStarting", RoutingStrategies.Bubble, typeof(Gestures));
 
         public static readonly RoutedEvent<ScrollGestureEndedEventArgs> ScrollGestureEndedEvent =
             RoutedEvent.Register<ScrollGestureEndedEventArgs>(

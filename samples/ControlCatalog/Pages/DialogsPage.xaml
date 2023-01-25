@@ -46,7 +46,7 @@
                Classes="h2"
                IsVisible="False"
                Text="Last picker results:" />
-    <ItemsPresenter x:Name="PickerLastResults" />
+    <ItemsControl x:Name="PickerLastResults" />
 
     <TextBox Name="BookmarkContainer" Watermark="Bookmark" />
     <TextBox Name="OpenedFileContent"

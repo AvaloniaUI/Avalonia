@@ -6,6 +6,10 @@ namespace Avalonia.Input
     {
         public int Id { get; }
         public Vector Delta { get; }
+        /// <summary>
+        /// When set the ScrollGestureRecognizer should stop its current active scroll gesture.
+        /// </summary>
+        public bool ShouldEndScrollGesture { get; set; }
         private static int _nextId = 1;
 
         public static int GetNextFreeId() => _nextId++;
@@ -24,6 +28,18 @@ namespace Avalonia.Input
         internal ScrollGestureEndedEventArgs(int id) : base(Gestures.ScrollGestureEndedEvent)
         {
             Id = id;
+        }
+    }
+
+    public class ScrollGestureInertiaStartingEventArgs : RoutedEventArgs
+    {
+        public int Id { get; }
+        public Vector Inertia { get; }
+
+        internal ScrollGestureInertiaStartingEventArgs(int id, Vector inertia) : base(Gestures.ScrollGestureInertiaStartingEvent)
+        {
+            Id = id;
+            Inertia = inertia;
         }
     }
 }

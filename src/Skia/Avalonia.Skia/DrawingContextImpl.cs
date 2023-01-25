@@ -224,9 +224,9 @@ namespace Avalonia.Skia
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
-            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
+            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default)
             using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, 
-                size.Inflate(new Thickness(pen?.Thickness / 2 ?? 0))) : default(PaintWrapper))
+                size.Inflate(new Thickness(pen?.Thickness / 2 ?? 0))) : default)
             {
                 if (fill.Paint != null)
                 {
@@ -492,15 +492,15 @@ namespace Avalonia.Skia
         }
        
         /// <inheritdoc />
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
             CheckLease();
-            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Size))
+            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Item.Size))
             {
-                var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
+                var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
 
-                Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.BaselineOrigin.X,
-                    (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
+                Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.Item.BaselineOrigin.X,
+                    (float)glyphRun.Item.BaselineOrigin.Y, paintWrapper.Paint);
             }
         }
 

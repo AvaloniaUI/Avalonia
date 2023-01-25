@@ -1,7 +1,4 @@
-using System;
-using System.Reactive.Concurrency;
 using Avalonia.Input;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {

@@ -1,6 +1,5 @@
 using Android.OS;
 using AndroidX.AppCompat.App;
-using Avalonia.Controls;
 
 namespace Avalonia.Android
 {
@@ -8,15 +7,22 @@ namespace Avalonia.Android
     {
         protected abstract AppBuilder CreateAppBuilder();
 
+        private static AppBuilder s_appBuilder;
+
         protected override void OnCreate(Bundle? savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
 
-            var builder = CreateAppBuilder();
+            if (s_appBuilder == null)
+            {
+                var builder = CreateAppBuilder();
 
-            var lifetime = new SingleViewLifetime();
+                var lifetime = new SingleViewLifetime();
 
-            builder.SetupWithLifetime(lifetime);
+                builder.SetupWithLifetime(lifetime);
+
+                s_appBuilder = builder;
+            }
         }
     }
 

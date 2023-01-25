@@ -107,7 +107,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void CaretIndex_Can_Moved_To_Position_After_The_End_Of_Text_With_Arrow_Key()
         {
-            using (Start())
+            using (Start(TestServices.StyledWindow))
             {
                 var target = new MaskedTextBox
                 {
@@ -182,7 +182,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
         {
-            using (Start())
+            using (Start(TestServices.StyledWindow))
             {
                 MaskedTextBox textBox = new MaskedTextBox
                 {
@@ -224,7 +224,7 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Control_Delete_Should_Remove_The_Word_After_The_Caret_If_There_Is_No_Selection()
         {
-            using (Start())
+            using (Start(TestServices.StyledWindow))
             {
                 var textBox = new MaskedTextBox
                 {
@@ -810,7 +810,7 @@ namespace Avalonia.Controls.UnitTests
             bool fromClipboard,
             string expected)
         {
-            using (Start())
+            using (Start(TestServices.StyledWindow))
             {
                 var target = new MaskedTextBox
                 {
@@ -827,7 +827,7 @@ namespace Avalonia.Controls.UnitTests
                 {
                     AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
 
-                    var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                    var clipboard = AvaloniaLocator.CurrentMutable.GetRequiredService<IClipboard>();
                     clipboard.SetTextAsync(textInput).GetAwaiter().GetResult();
 
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);

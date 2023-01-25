@@ -25,7 +25,7 @@ namespace Avalonia.LinuxFramebuffer
 
             Surfaces = new object[] { _outputBackend };
 
-            Invalidate(default(Rect));
+            Invalidate(default);
             _inputBackend.Initialize(this, e => Input?.Invoke(e));
         }
 
@@ -82,6 +82,8 @@ namespace Avalonia.LinuxFramebuffer
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }

@@ -35,7 +35,7 @@ namespace Avalonia.OpenGL.Egl
 
         static Func<string, IntPtr> Load(string library)
         {
-            var dyn = AvaloniaLocator.Current.GetService<IDynamicLibraryLoader>();
+            var dyn = AvaloniaLocator.Current.GetRequiredService<IDynamicLibraryLoader>();
             var lib = dyn.LoadLibrary(library);
             return (s) => dyn.GetProcAddress(lib, s, true);
         }
@@ -97,6 +97,9 @@ namespace Avalonia.OpenGL.Egl
 
         [GetProcAddress("eglCreateWindowSurface")]
         public partial IntPtr CreateWindowSurface(IntPtr display, IntPtr config, IntPtr window, int[] attrs);
+
+        [GetProcAddress("eglBindTexImage")]
+        public partial int BindTexImage(IntPtr display, IntPtr surface, int buffer);
 
         [GetProcAddress("eglGetConfigAttrib")]
         public partial bool GetConfigAttrib(IntPtr display, IntPtr config, int attr, out int rv);

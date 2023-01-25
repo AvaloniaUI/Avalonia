@@ -1,4 +1,6 @@
-﻿namespace Avalonia.Data
+﻿using Avalonia.Reactive;
+
+namespace Avalonia.Data
 {
     public class IndexerBinding : IBinding
     {
@@ -22,7 +24,10 @@
             object? anchor = null,
             bool enableDataValidation = false)
         {
-            return new InstancedBinding(Source.GetSubject(Property), Mode, BindingPriority.LocalValue);
+            var subject = new CombinedSubject<object?>(
+                new AnonymousObserver<object?>(x => Source.SetValue(Property, x, BindingPriority.LocalValue)),
+                Source.GetObservable(Property));
+            return new InstancedBinding(subject, Mode, BindingPriority.LocalValue);
         }
     }
 }

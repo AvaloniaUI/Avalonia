@@ -144,8 +144,11 @@
       <TabItem Header="RelativePanel">
         <pages:RelativePanelPage />
       </TabItem>
-        <TabItem Header="ScrollViewer">
+      <TabItem Header="ScrollViewer">
         <pages:ScrollViewerPage />
+      </TabItem>
+      <TabItem Header="ScrollViewer Snapping">
+        <pages:ScrollSnapPage />
       </TabItem>
       <TabItem Header="Slider">
         <pages:SliderPage />
@@ -209,8 +212,7 @@
               </ComboBox.Items>
             </ComboBox>
             <ComboBox x:Name="TransparencyLevels"
-                      HorizontalAlignment="Stretch"
-                      SelectedIndex="{Binding TransparencyLevel}">
+                      HorizontalAlignment="Stretch">
               <ComboBox.Items>
                 <WindowTransparencyLevel>None</WindowTransparencyLevel>
                 <WindowTransparencyLevel>Transparent</WindowTransparencyLevel>

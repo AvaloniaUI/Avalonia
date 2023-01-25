@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
@@ -11,6 +11,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -19,6 +20,7 @@ using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.WinRT;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
@@ -111,7 +113,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IPlatformSettings, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
+    public class Win32Platform : IPlatformThreadingInterface, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
         private static readonly Win32Platform s_instance = new Win32Platform();
         private static Thread _uiThread;
@@ -126,6 +128,7 @@ namespace Avalonia.Win32
         }
 
         internal static Win32Platform Instance => s_instance;
+        internal static IPlatformSettings PlatformSettings => AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
 
         internal IntPtr Handle => _hwnd;
 
@@ -153,7 +156,7 @@ namespace Avalonia.Win32
                 .Bind<IClipboard>().ToSingleton<ClipboardImpl>()
                 .Bind<ICursorFactory>().ToConstant(CursorFactory.Instance)
                 .Bind<IKeyboardDevice>().ToConstant(WindowsKeyboardDevice.Instance)
-                .Bind<IPlatformSettings>().ToConstant(s_instance)
+                .Bind<IPlatformSettings>().ToSingleton<Win32PlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(s_instance)
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
@@ -258,8 +261,6 @@ namespace Avalonia.Win32
 
         public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
 
-        public TimeSpan HoldWaitDuration { get; set; } = TimeSpan.FromMilliseconds(300);
-
         public event Action<DispatcherPriority?> Signaled;
 
         public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
@@ -284,6 +285,17 @@ namespace Avalonia.Win32
                     {
                         return IntPtr.Zero;
                     }
+                }
+            }
+
+            if (msg == (uint)WindowsMessage.WM_SETTINGCHANGE 
+                && PlatformSettings is Win32PlatformSettings win32PlatformSettings)
+            {
+                var changedSetting = Marshal.PtrToStringAuto(lParam);
+                if (changedSetting == "ImmersiveColorSet" // dark/light mode
+                    || changedSetting == "WindowsThemeElement") // high contrast mode
+                {
+                    win32PlatformSettings.OnColorValuesChanged();   
                 }
             }
             
@@ -403,25 +415,5 @@ namespace Avalonia.Win32
 
             SetProcessDPIAware();
         }
-
-        Size IPlatformSettings.GetTapSize(PointerType type)
-        {
-            return type switch
-            {
-                PointerType.Touch => new(10, 10),
-                _ => new(GetSystemMetrics(SystemMetric.SM_CXDRAG), GetSystemMetrics(SystemMetric.SM_CYDRAG)),
-            };
-        }
-
-        Size IPlatformSettings.GetDoubleTapSize(PointerType type)
-        {
-            return type switch
-            {
-                PointerType.Touch => new(16, 16),
-                _ => new(GetSystemMetrics(SystemMetric.SM_CXDOUBLECLK), GetSystemMetrics(SystemMetric.SM_CYDOUBLECLK)),
-            };
-        }
-
-        TimeSpan IPlatformSettings.GetDoubleTapTime(PointerType type) => TimeSpan.FromMilliseconds(GetDoubleClickTime());
     }
 }

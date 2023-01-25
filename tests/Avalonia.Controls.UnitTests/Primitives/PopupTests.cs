@@ -564,7 +564,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (CreateServices())
             {
                 var renderer = new Mock<IRenderer>();
-                var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+                var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
                 var windowImpl = Mock.Get(platform.CreateWindow());
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
@@ -1115,10 +1115,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Name = "popup",
                 PlacementTarget = control,
-                Child = new ItemsPresenter
-                {
-                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
-                }
+                Child = new ItemsPresenter(),
             }.RegisterInNameScope(scope);
         }
 

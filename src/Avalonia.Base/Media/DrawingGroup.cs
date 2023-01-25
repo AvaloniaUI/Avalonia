@@ -76,8 +76,8 @@ namespace Avalonia.Media
         {
             using (context.PushPreTransform(Transform?.Value ?? Matrix.Identity))
             using (context.PushOpacity(Opacity))
-            using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default(DrawingContext.PushedState))
-            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default(DrawingContext.PushedState))
+            using (ClipGeometry != null ? context.PushGeometryClip(ClipGeometry) : default)
+            using (OpacityMask != null ? context.PushOpacityMask(OpacityMask, GetBounds()) : default)
             {
                 foreach (var drawing in Children)
                 {
@@ -167,18 +167,17 @@ namespace Avalonia.Media
                 AddNewGeometryDrawing(brush, pen, new PlatformGeometry(geometry));
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+            public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
             {
                 if (foreground == null || glyphRun == null)
                 {
                     return;
                 }
 
-                // Add a GlyphRunDrawing to the Drawing graph
                 GlyphRunDrawing glyphRunDrawing = new GlyphRunDrawing
                 {
                     Foreground = foreground,
-                    GlyphRun = glyphRun,
+                    GlyphRun = new GlyphRun(glyphRun)
                 };
 
                 // Add Drawing to the Drawing graph
