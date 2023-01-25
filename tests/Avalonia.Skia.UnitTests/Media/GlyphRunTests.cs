@@ -217,7 +217,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 shapedBuffer.FontRenderingEmSize,
                 shapedBuffer.Text,
                 shapedBuffer.GlyphInfos,
-                shapedBuffer.BidiLevel);
+                biDiLevel: shapedBuffer.BidiLevel);
 
             if(shapedBuffer.BidiLevel == 1)
             {
