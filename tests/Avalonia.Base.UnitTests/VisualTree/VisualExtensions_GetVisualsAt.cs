@@ -16,7 +16,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
         public void Should_Find_Control()
         {
             Border target;
-            var services = new CompositorTestServices(new Size(200, 200))
+            using var services = new CompositorTestServices(new Size(200, 200))
             {
                 TopLevel =
                 {
@@ -54,7 +54,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
         public void Should_Not_Find_Sibling_Control()
         {
             Border target;
-            var services = new CompositorTestServices(new Size(200, 200))
+            using var services = new CompositorTestServices(new Size(200, 200))
             {
                 TopLevel =
                 {
