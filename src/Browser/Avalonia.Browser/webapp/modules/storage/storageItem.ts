@@ -1,14 +1,29 @@
 import { avaloniaDb, fileBookmarksStore } from "./indexedDb";
 
 export class StorageItem {
-    constructor(public handle: FileSystemHandle, private readonly bookmarkId?: string) { }
-
-    public get name(): string {
-        return this.handle.name;
+    constructor(
+        public handle?: FileSystemHandle,
+        private readonly bookmarkId?: string,
+        public wellKnownType?: WellKnownDirectory
+    ) {
     }
 
-    public get kind(): string {
-        return this.handle.kind;
+    public get name(): string {
+        if (this.handle) {
+            return this.handle.name;
+        }
+        return this.wellKnownType ?? "";
+    }
+
+    public get kind(): "file" | "directory" {
+        if (this.handle) {
+            return this.handle.kind;
+        }
+        return "directory";
+    }
+
+    public static createWellKnownDirectory(type: WellKnownDirectory) {
+        return new StorageItem(undefined, undefined, type);
     }
 
     public static async openRead(item: StorageItem): Promise<Blob> {
@@ -48,7 +63,7 @@ export class StorageItem {
     }
 
     public static async getItems(item: StorageItem): Promise<StorageItems> {
-        if (item.handle.kind !== "directory") {
+        if (item.kind !== "directory" || !item.handle) {
             return new StorageItems([]);
         }
 
@@ -60,6 +75,10 @@ export class StorageItem {
     }
 
     private async verityPermissions(mode: FileSystemPermissionMode): Promise<void | never> {
+        if (!this.handle) {
+            return;
+        }
+
         if (await this.handle.queryPermission({ mode }) === "granted") {
             return;
         }
@@ -69,10 +88,13 @@ export class StorageItem {
         }
     }
 
-    public static async saveBookmark(item: StorageItem): Promise<string> {
+    public static async saveBookmark(item: StorageItem): Promise<string | null> {
         // If file was previously bookmarked, just return old one.
         if (item.bookmarkId) {
             return item.bookmarkId;
+        }
+        if (!item.handle) {
+            return null;
         }
 
         const connection = await avaloniaDb.connect();

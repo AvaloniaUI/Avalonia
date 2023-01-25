@@ -17,7 +17,11 @@ namespace Avalonia.Diagnostics.Screenshots
 
         public async Task Take(Control control)
         {
+#if NET6_0_OR_GREATER
+            await using var output = await GetStream(control);
+#else
             using var output = await GetStream(control);
+#endif
             if (output is { })
             {
                 control.RenderTo(output);
