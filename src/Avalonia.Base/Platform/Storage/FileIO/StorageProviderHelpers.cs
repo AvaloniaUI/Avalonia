@@ -1,13 +1,23 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Avalonia.Metadata;
+using System.Text;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
-[Unstable]
-public static class StorageProviderHelpers
+internal static class StorageProviderHelpers
 {
+    public static Uri FilePathToUri(string path)
+    {
+        var uriPath = new StringBuilder(path)
+            .Replace("%", $"%{(int)'%':X2}")
+            .Replace("[", $"%{(int)'[':X2}")
+            .Replace("]", $"%{(int)']':X2}")
+            .ToString();
+
+        return new UriBuilder("file", string.Empty) { Path = uriPath }.Uri;
+    }
+    
     public static string NameWithExtension(string path, string? defaultExtension, FilePickerFileType? filter)
     {
         var name = Path.GetFileName(path);
