@@ -11,7 +11,7 @@ using Avalonia.Platform.Storage.FileIO;
 
 namespace Avalonia.Dialogs;
 
-public class ManagedStorageProvider<T> : BclStorageProvider where T : Window, new()
+internal class ManagedStorageProvider<T> : BclStorageProvider where T : Window, new()
 {
     private readonly Window _parent;
     private readonly ManagedFileDialogOptions _managedOptions;
