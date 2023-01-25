@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
@@ -46,16 +45,6 @@ namespace Avalonia.Controls
                     menuItem.IsSubMenuOpen = false;
                 }
             }
-        }
-
-        protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
-        {
-            base.PrepareContainerForItemOverride(element, item, index);
-
-            // Child menu items should not inherit the menu's ItemContainerTheme as that is specific
-            // for top-level menu items.
-            if ((element as MenuItem)?.ItemContainerTheme == ItemContainerTheme)
-                element.ClearValue(ItemContainerThemeProperty);
         }
     }
 }
