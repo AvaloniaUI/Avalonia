@@ -3,8 +3,8 @@
              xmlns:pages="using:ControlCatalog.Pages"
              x:Class="ControlCatalog.Pages.ScrollViewerPage"
              x:DataType="pages:ScrollViewerPageViewModel">
-  <StackPanel Orientation="Vertical" Spacing="4">
-    <TextBlock Classes="h2">Allows for horizontal and vertical content scrolling.</TextBlock>
+  <StackPanel Orientation="Vertical" Spacing="20">
+    <TextBlock TextWrapping="Wrap" Classes="h2">Allows for horizontal and vertical content scrolling. Supports snapping on touch and pointer wheel scrolling.</TextBlock>
 
     <Grid ColumnDefinitions="Auto, *">
       <StackPanel Orientation="Vertical" Spacing="4">
@@ -33,6 +33,5 @@
                Source="/Assets/delicate-arch-896885_640.jpg" />
       </ScrollViewer>
     </Grid>
-
   </StackPanel>
 </UserControl>
