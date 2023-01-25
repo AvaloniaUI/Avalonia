@@ -92,6 +92,7 @@
 
               <ContentPresenter Name="PART_HeaderPresenter"
                                 Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding ItemTemplate}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 RecognizesAccessKey="True"
@@ -131,9 +132,7 @@
                     CornerRadius="{DynamicResource OverlayCornerRadius}">
               <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
                 <ItemsPresenter Name="PART_ItemsPresenter"
-                                Items="{TemplateBinding Items}"
                                 ItemsPanel="{TemplateBinding ItemsPanel}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}"
                                 Margin="{DynamicResource MenuFlyoutScrollerMargin}"
                                 Grid.IsSharedSizeScope="True" />
               </ScrollViewer>

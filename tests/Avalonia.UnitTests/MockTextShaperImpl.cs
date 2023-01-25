@@ -13,6 +13,7 @@ namespace Avalonia.UnitTests
             var fontRenderingEmSize = options.FontRenderingEmSize;
             var bidiLevel = options.BidiLevel;
             var shapedBuffer = new ShapedBuffer(text, text.Length, typeface, fontRenderingEmSize, bidiLevel);
+            var targetInfos = shapedBuffer.GlyphInfos;
             var textSpan = text.Span;
             var textStartIndex = TextTestHelper.GetStartCharIndex(text);
 
@@ -24,7 +25,10 @@ namespace Avalonia.UnitTests
 
                 var glyphIndex = typeface.GetGlyph(codepoint);
 
-                shapedBuffer[i] = new GlyphInfo(glyphIndex, glyphCluster, 10);
+                for (var j = 0; j < count; ++j)
+                {
+                    targetInfos[i + j] = new GlyphInfo(glyphIndex, glyphCluster, 10);
+                }
 
                 i += count;
             }

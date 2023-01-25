@@ -1260,6 +1260,56 @@ namespace Avalonia.Controls.UnitTests.Selection
             }
 
             [Fact]
+            public void Moving_Selected_Item_Updates_State()
+            {
+                var target = CreateTarget();
+                var data = (AvaloniaList<string>)target.Source!;
+                var selectionChangedRaised = 0;
+                var selectedIndexRaised = 0;
+                var selectedItemRaised = 0;
+                var indexesChangedRaised = 0;
+
+                target.Source = data;
+                target.SelectRange(1, 4);
+
+                target.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(target.SelectedIndex))
+                    {
+                        ++selectedIndexRaised;
+                    }
+
+                    if (e.PropertyName == nameof(target.SelectedItem))
+                    {
+                        ++selectedItemRaised;
+                    }
+                };
+
+                target.IndexesChanged += (s, e) => ++indexesChangedRaised;
+
+                target.SelectionChanged += (s, e) =>
+                {
+                    Assert.Empty(e.DeselectedIndexes);
+                    Assert.Equal(new[] { "bar" }, e.DeselectedItems);
+                    Assert.Empty(e.SelectedIndexes);
+                    Assert.Empty(e.SelectedItems);
+                    ++selectionChangedRaised;
+                };
+
+                data.Move(1, 0);
+
+                Assert.Equal(2, target.SelectedIndex);
+                Assert.Equal(new[] { 2, 3, 4 }, target.SelectedIndexes);
+                Assert.Equal("baz", target.SelectedItem);
+                Assert.Equal(new[] { "baz", "qux", "quux" }, target.SelectedItems);
+                Assert.Equal(2, target.AnchorIndex);
+                Assert.Equal(1, selectionChangedRaised);
+                Assert.Equal(1, selectedIndexRaised);
+                Assert.Equal(1, selectedItemRaised);
+                Assert.Equal(0, indexesChangedRaised);
+            }
+
+            [Fact]
             public void Resetting_Source_Updates_State()
             {
                 var target = CreateTarget();

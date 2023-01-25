@@ -2,7 +2,6 @@
 using Avalonia.Reactive;
 using System;
 using System.Collections.Generic;
-using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Utils
 {

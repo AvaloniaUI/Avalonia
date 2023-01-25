@@ -56,9 +56,7 @@
                 CornerRadius="{TemplateBinding CornerRadius}">
           <ScrollViewer Theme="{StaticResource FluentMenuScrollViewer}">
             <ItemsPresenter Name="PART_ItemsPresenter"
-                            Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
                             Margin="{DynamicResource MenuFlyoutScrollerMargin}"
                             KeyboardNavigation.TabNavigation="Continue"
                             Grid.IsSharedSizeScope="True" />

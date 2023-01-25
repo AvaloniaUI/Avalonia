@@ -81,6 +81,10 @@ namespace Avalonia.Input.Platform
             {
                 new KeyGesture(Key.Apps)
             };
+            Back = new List<KeyGesture>
+            {
+                new KeyGesture(Key.Left, KeyModifiers.Alt)
+            };
         }
 
         public KeyModifiers CommandModifiers { get; set; }
@@ -101,5 +105,6 @@ namespace Avalonia.Input.Platform
         public List<KeyGesture> MoveCursorToTheStartOfDocumentWithSelection { get; set; }
         public List<KeyGesture> MoveCursorToTheEndOfDocumentWithSelection { get; set; }
         public List<KeyGesture> OpenContextMenu { get; set; }
+        public List<KeyGesture> Back { get; set; }
     }
 }

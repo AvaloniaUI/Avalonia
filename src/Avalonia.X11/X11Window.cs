@@ -731,7 +731,7 @@ namespace Avalonia.X11
         void DispatchInput(RawInputEventArgs args)
         {
             Input?.Invoke(args);
-            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrWhiteSpace(text.Text))
+            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
                 Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
         }
 
@@ -1225,6 +1225,8 @@ namespace Avalonia.X11
 
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 

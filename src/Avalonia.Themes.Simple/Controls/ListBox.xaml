@@ -20,13 +20,14 @@
                         Background="{TemplateBinding Background}"
                         HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                         IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
-                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
+                        VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                        VerticalSnapPointsType="{TemplateBinding (ScrollViewer.VerticalSnapPointsType)}"
+                        HorizontalSnapPointsType="{TemplateBinding (ScrollViewer.HorizontalSnapPointsType)}">
             <ItemsPresenter Name="PART_ItemsPresenter"
                             Margin="{TemplateBinding Padding}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
-                            Items="{TemplateBinding Items}"
-                            ItemsPanel="{TemplateBinding ItemsPanel}"
-                            VirtualizationMode="{TemplateBinding VirtualizationMode}" />
+                            AreVerticalSnapPointsRegular="{TemplateBinding AreVerticalSnapPointsRegular}"
+                            AreHorizontalSnapPointsRegular="{TemplateBinding AreHorizontalSnapPointsRegular}"
+                            ItemsPanel="{TemplateBinding ItemsPanel}" />
           </ScrollViewer>
         </Border>
       </ControlTemplate>

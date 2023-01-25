@@ -16,11 +16,13 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Markup.Data;
 using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.UnitTests;
+using Avalonia.VisualTree;
 using Moq;
 using Xunit;
 
@@ -633,6 +635,78 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Empty(receivedArgs.AddedItems);
             Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
             Assert.False(items.Single().IsSelected);
+        }
+
+        [Fact]
+        public void Replacing_Selected_Item_Should_Clear_Selection()
+        {
+            var items = new AvaloniaList<Item>
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 1;
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            SelectionChangedEventArgs receivedArgs = null;
+
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            var removed = items[1];
+            items[1] = new Item();
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.NotNull(receivedArgs);
+            Assert.Empty(receivedArgs.AddedItems);
+            Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
+            Assert.All(items, x => Assert.False(x.IsSelected));
+        }
+
+        [Fact]
+        public void Moving_Selected_Item_Should_Clear_Selection()
+        {
+            var items = new AvaloniaList<Item>
+            {
+                new Item(),
+                new Item(),
+            };
+
+            var target = new SelectingItemsControl
+            {
+                Items = items,
+                Template = Template(),
+            };
+
+            Prepare(target);
+            target.SelectedIndex = 1;
+
+            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(1, target.SelectedIndex);
+
+            SelectionChangedEventArgs receivedArgs = null;
+
+            target.SelectionChanged += (_, args) => receivedArgs = args;
+
+            var removed = items[1];
+            items.Move(1, 0);
+
+            Assert.Null(target.SelectedItem);
+            Assert.Equal(-1, target.SelectedIndex);
+            Assert.NotNull(receivedArgs);
+            Assert.Empty(receivedArgs.AddedItems);
+            Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
+            Assert.All(items, x => Assert.False(x.IsSelected));
         }
 
         [Fact]
@@ -1475,7 +1549,6 @@ namespace Avalonia.Controls.UnitTests.Primitives
                             Height = 10
                         }),
                     AutoScrollToSelectedItem = true,
-                    VirtualizationMode = ItemVirtualizationMode.Simple,
                 };
 
                 var root = new TestRoot(true, target);
@@ -1489,9 +1562,10 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 // #3148 triggered here.
                 items.Reset(new[] { "Item99" });
+                Layout(target);
 
                 Assert.Equal(0, target.SelectedIndex);
-                Assert.Equal(1, target.Presenter.Panel.Children.Count);
+                Assert.Equal(1, target.Presenter.Panel.Children.Where(x => x.IsVisible).Count());
             }
         }
 
@@ -2057,9 +2131,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
         private static IDisposable Start()
         {
-            return UnitTestApplication.Start(new TestServices(
-                fontManagerImpl: new MockFontManagerImpl(),
-                textShaperImpl: new MockTextShaperImpl()));
+            return UnitTestApplication.Start(TestServices.StyledWindow);
         }
 
         private static void Prepare(SelectingItemsControl target)
@@ -2084,15 +2156,18 @@ namespace Avalonia.Controls.UnitTests.Primitives
             root.LayoutManager.ExecuteInitialLayoutPass();
         }
 
+        private static void Layout(Control c)
+        {
+            ((ILayoutRoot)c.GetVisualRoot()).LayoutManager.ExecuteLayoutPass();
+        }
+
         private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
-                    [~ItemsPresenter.VirtualizationModeProperty] = control[~ListBox.VirtualizationModeProperty],
                 }.RegisterInNameScope(scope));
         }
 

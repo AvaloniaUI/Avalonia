@@ -95,9 +95,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
-                    clusters.AddRange(shapedRun.IsReversed ?
-                        shapedRun.ShapedBuffer.GlyphClusters.Reverse() :
-                        shapedRun.ShapedBuffer.GlyphClusters);
+                    var runClusters = shapedRun.ShapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster);
+
+                    clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
                 }
 
                 var nextCharacterHit = new CharacterHit(0, clusters[1] - clusters[0]);
@@ -142,9 +142,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var shapedRun = (ShapedTextRun)textRun;
 
-                    clusters.AddRange(shapedRun.IsReversed ?
-                        shapedRun.ShapedBuffer.GlyphClusters.Reverse() :
-                        shapedRun.ShapedBuffer.GlyphClusters);
+                    var runClusters = shapedRun.ShapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster);
+
+                    clusters.AddRange(shapedRun.IsReversed ? runClusters.Reverse() : runClusters);
                 }
 
                 clusters.Reverse();
@@ -247,7 +247,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                     formatter.FormatLine(textSource, 0, double.PositiveInfinity,
                         new GenericTextParagraphProperties(defaultProperties));
 
-                var clusters = textLine.TextRuns.Cast<ShapedTextRun>().SelectMany(x => x.ShapedBuffer.GlyphClusters)
+                var clusters = textLine.TextRuns
+                    .Cast<ShapedTextRun>()
+                    .SelectMany(x => x.ShapedBuffer.GlyphInfos, (_, glyph) => glyph.GlyphCluster)
                     .ToArray();
 
                 var previousCharacterHit = new CharacterHit(text.Length);
@@ -313,11 +315,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var glyphRun = textRun.GlyphRun;
 
-                    for (var i = 0; i < glyphRun.GlyphClusters!.Count; i++)
+                    for (var i = 0; i < glyphRun.GlyphInfos.Count; i++)
                     {
-                        var cluster = glyphRun.GlyphClusters[i];
+                        var cluster = glyphRun.GlyphInfos[i].GlyphCluster;
 
-                        var advance = glyphRun.GlyphAdvances[i];
+                        var advance = glyphRun.GlyphInfos[i].GlyphAdvance;
 
                         var distance = textLine.GetDistanceFromCharacterHit(new CharacterHit(cluster));
 
@@ -750,7 +752,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var shapedBuffer = textRun.ShapedBuffer;
 
-                var currentClusters = shapedBuffer.GlyphClusters.ToList();
+                var currentClusters = shapedBuffer.GlyphInfos.Select(glyph => glyph.GlyphCluster).ToList();
 
                 foreach (var currentCluster in currentClusters)
                 {
@@ -783,11 +785,11 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var shapedBuffer = textRun.ShapedBuffer;
 
-                for (var index = 0; index < shapedBuffer.GlyphAdvances.Count; index++)
+                for (var index = 0; index < shapedBuffer.GlyphInfos.Length; index++)
                 {
-                    var currentCluster = shapedBuffer.GlyphClusters[index];
+                    var currentCluster = shapedBuffer.GlyphInfos[index].GlyphCluster;
 
-                    var advance = shapedBuffer.GlyphAdvances[index];
+                    var advance = shapedBuffer.GlyphInfos[index].GlyphAdvance;
 
                     if (lastCluster != currentCluster)
                     {
