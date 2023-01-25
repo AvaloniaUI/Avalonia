@@ -281,6 +281,18 @@ namespace Avalonia.Headless
                 button == 1 ? RawPointerEventType.MiddleButtonUp : RawPointerEventType.RightButtonUp,
                 point, modifiers));
         }
+        
+        void IHeadlessWindow.MouseWheel(Point point, Vector delta, RawInputModifiers modifiers)
+        {
+            Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot,
+                point, delta, modifiers));
+        }
+        
+        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
+        {
+            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
+            Input?.Invoke(new RawDragEvent(device, type, InputRoot, point, data, effects, modifiers));
+        }
 
         void IWindowImpl.Move(PixelPoint point)
         {

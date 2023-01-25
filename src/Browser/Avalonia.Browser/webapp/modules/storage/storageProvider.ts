@@ -17,7 +17,7 @@ export class StorageProvider {
         startIn: StorageItem | null): Promise<StorageItem> {
         // 'Picker' API doesn't accept "null" as a parameter, so it should be set to undefined.
         const options: DirectoryPickerOptions = {
-            startIn: (startIn?.handle ?? undefined)
+            startIn: (startIn?.wellKnownType ?? startIn?.handle ?? undefined)
         };
 
         const handle = await window.showDirectoryPicker(options);
@@ -28,7 +28,7 @@ export class StorageProvider {
         startIn: StorageItem | null, multiple: boolean,
         types: FilePickerAcceptType[] | null, excludeAcceptAllOption: boolean): Promise<StorageItems> {
         const options: OpenFilePickerOptions = {
-            startIn: (startIn?.handle ?? undefined),
+            startIn: (startIn?.wellKnownType ?? startIn?.handle ?? undefined),
             multiple,
             excludeAcceptAllOption,
             types: (types ?? undefined)
@@ -42,7 +42,7 @@ export class StorageProvider {
         startIn: StorageItem | null, suggestedName: string | null,
         types: FilePickerAcceptType[] | null, excludeAcceptAllOption: boolean): Promise<StorageItem> {
         const options: SaveFilePickerOptions = {
-            startIn: (startIn?.handle ?? undefined),
+            startIn: (startIn?.wellKnownType ?? startIn?.handle ?? undefined),
             suggestedName: (suggestedName ?? undefined),
             excludeAcceptAllOption,
             types: (types ?? undefined)
