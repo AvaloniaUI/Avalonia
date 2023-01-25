@@ -48,7 +48,7 @@ namespace Avalonia.Controls.Primitives
         /// This event notifies an attached <see cref="ScrollViewer"/> of a change in 
         /// one of the scroll properties.
         /// </remarks>
-        event EventHandler ScrollInvalidated;
+        event EventHandler? ScrollInvalidated;
 
         /// <summary>
         /// Attempts to bring a portion of the target visual into view by scrolling the content.
@@ -56,7 +56,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="target">The target visual.</param>
         /// <param name="targetRect">The portion of the target visual to bring into view.</param>
         /// <returns>True if the scroll offset was changed; otherwise false.</returns>
-        bool BringIntoView(IControl target, Rect targetRect);
+        bool BringIntoView(Control target, Rect targetRect);
 
         /// <summary>
         /// Gets the next control in the specified direction.
@@ -64,7 +64,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="direction">The movement direction.</param>
         /// <param name="from">The control from which movement begins.</param>
         /// <returns>The control.</returns>
-        IControl GetControlInDirection(NavigationDirection direction, IControl from);
+        Control? GetControlInDirection(NavigationDirection direction, Control? from);
 
         /// <summary>
         /// Raises the <see cref="ScrollInvalidated"/> event.

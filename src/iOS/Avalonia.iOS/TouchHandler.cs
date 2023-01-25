@@ -19,7 +19,7 @@ namespace Avalonia.iOS
             _tl = tl;
         }
 
-        ulong Ts(UIEvent evt) => (ulong) (evt.Timestamp * 1000);
+        static ulong Ts(UIEvent evt) => (ulong) (evt.Timestamp * 1000);
         private IInputRoot Root => _view.InputRoot;
         private static long _nextTouchPointId = 1;
         private Dictionary<UITouch, long> _knownTouches = new Dictionary<UITouch, long>();
@@ -41,7 +41,7 @@ namespace Avalonia.iOS
                         _ => RawPointerEventType.TouchUpdate
                     }, pt, RawInputModifiers.None, id);
 
-                _device.ProcessRawEvent(ev);
+                _tl.Input?.Invoke(ev);
                 
                 if (t.Phase == UITouchPhase.Cancelled || t.Phase == UITouchPhase.Ended)
                     _knownTouches.Remove(t);

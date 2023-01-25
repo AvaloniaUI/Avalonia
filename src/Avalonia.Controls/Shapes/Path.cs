@@ -8,7 +8,7 @@ namespace Avalonia.Controls.Shapes
         public static readonly StyledProperty<Geometry> DataProperty =
             AvaloniaProperty.Register<Path, Geometry>(nameof(Data));
 
-        private EventHandler _geometryChangedHandler;
+        private EventHandler? _geometryChangedHandler;
 
         static Path()
         {
@@ -22,7 +22,7 @@ namespace Avalonia.Controls.Shapes
             set { SetValue(DataProperty, value); }
         }
 
-        private EventHandler GeometryChangedHandler => _geometryChangedHandler ??= GeometryChanged;
+        private EventHandler? GeometryChangedHandler => _geometryChangedHandler ??= GeometryChanged;
 
         protected override Geometry CreateDefiningGeometry() => Data;
 
@@ -53,8 +53,8 @@ namespace Avalonia.Controls.Shapes
                 return;
             }
 
-            var oldGeometry = (Geometry)e.OldValue;
-            var newGeometry = (Geometry)e.NewValue;
+            var oldGeometry = (Geometry?)e.OldValue;
+            var newGeometry = (Geometry?)e.NewValue;
 
             if (oldGeometry is object)
             {
@@ -67,7 +67,7 @@ namespace Avalonia.Controls.Shapes
             }
         }
 
-        private void GeometryChanged(object sender, EventArgs e)
+        private void GeometryChanged(object? sender, EventArgs e)
         {
             InvalidateGeometry();
         }

@@ -3,6 +3,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
 using System;
+using Avalonia.Reactive;
 using Avalonia.Media.Immutable;
 
 namespace Avalonia.Controls
@@ -17,7 +18,7 @@ namespace Avalonia.Controls
 
         private readonly BorderRenderHelper _borderRenderHelper = new BorderRenderHelper();
 
-        private IDisposable _subscription;
+        private IDisposable? _subscription;
 
         static ExperimentalAcrylicBorder()
         {
@@ -46,11 +47,14 @@ namespace Avalonia.Controls
         {
             base.OnAttachedToVisualTree(e);
 
-            var tl = (e.Root as TopLevel);
+            var tl = (TopLevel)e.Root;
 
             _subscription = tl.GetObservable(TopLevel.ActualTransparencyLevelProperty)
                 .Subscribe(x =>
                 {
+                    if (tl.PlatformImpl is null)
+                        return;
+
                     switch (x)
                     {
                         case WindowTransparencyLevel.Transparent:

@@ -1,8 +1,8 @@
-#nullable enable
 using System;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -272,8 +272,9 @@ namespace Avalonia.Controls
             _popupHost = OverlayPopupHost.CreatePopupHost(control, null);
             _popupHost.SetChild(this);
             ((ISetLogicalParent)_popupHost).SetParent(control);
-            
-            _popupHost.ConfigurePosition(control, GetPlacement(control), 
+            ApplyTemplatedParent(this, control.TemplatedParent);
+
+            _popupHost.ConfigurePosition(control, GetPlacement(control),
                 new Point(GetHorizontalOffset(control), GetVerticalOffset(control)));
 
             WindowManagerAddShadowHintChanged(_popupHost, false);
@@ -297,7 +298,7 @@ namespace Avalonia.Controls
         {
             if (host is PopupRoot pr)
             {
-                pr.PlatformImpl.SetWindowManagerAddShadowHint(hint);
+                pr.PlatformImpl?.SetWindowManagerAddShadowHint(hint);
             }
         }
 

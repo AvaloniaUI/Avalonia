@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using System.Threading.Tasks;
 
 using Android.OS;
 using Android.Views;
 
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 
 using Java.Lang;
@@ -29,6 +29,9 @@ namespace Avalonia.Android
             _thread = new Thread(Loop);
             _thread.Start();
         }
+        
+        
+        public bool RunsInBackground => true;
 
         public event Action<TimeSpan> Tick
         {

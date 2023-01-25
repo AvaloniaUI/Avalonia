@@ -1,10 +1,11 @@
 ﻿using System;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
-    public class FindAncestorNode : ExpressionNode
+    internal class FindAncestorNode : ExpressionNode
     {
         private readonly int _level;
         private readonly Type? _ancestorType;
@@ -31,9 +32,9 @@ namespace Avalonia.Markup.Parsers.Nodes
             }
         }
 
-        protected override void StartListeningCore(WeakReference<object> reference)
+        protected override void StartListeningCore(WeakReference<object?> reference)
         {
-            if (reference.TryGetTarget(out object target) && target is ILogical logical)
+            if (reference.TryGetTarget(out var target) && target is ILogical logical)
             {
                 _subscription = ControlLocator.Track(logical, _level, _ancestorType).Subscribe(ValueChanged);
             }

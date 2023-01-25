@@ -15,6 +15,6 @@ namespace Avalonia.Controls.Templates
         /// An <see cref="InstancedBinding"/> holding the items, or an observable that tracks the
         /// items. May return null if no child items.
         /// </returns>
-        InstancedBinding ItemsSelector(object item);
+        InstancedBinding? ItemsSelector(object item);
     }
 }

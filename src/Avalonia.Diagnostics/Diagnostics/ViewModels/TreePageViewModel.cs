@@ -32,13 +32,14 @@ namespace Avalonia.Diagnostics.ViewModels
         public TreeNode? SelectedNode
         {
             get => _selectedNode;
-            private set
+            set
             {
                 if (RaiseAndSetIfChanged(ref _selectedNode, value))
                 {
                     Details = value != null ?
                         new ControlDetailsViewModel(this, value.Visual) :
                         null;
+                    Details?.UpdatePropertiesView(MainView.ShowImplementedInterfaces);
                     Details?.UpdateStyleFilters();
                 }
             }
@@ -68,7 +69,7 @@ namespace Avalonia.Diagnostics.ViewModels
             _details?.Dispose();
         }
 
-        public TreeNode? FindNode(IControl control)
+        public TreeNode? FindNode(Control control)
         {
             foreach (var node in Nodes)
             {
@@ -83,17 +84,18 @@ namespace Avalonia.Diagnostics.ViewModels
             return null;
         }
 
-        public void SelectControl(IControl control)
+        public void SelectControl(Control control)
         {
             var node = default(TreeNode);
+            Control? c = control;
 
-            while (node == null && control != null)
+            while (node == null && c != null)
             {
-                node = FindNode(control);
+                node = FindNode(c);
 
                 if (node == null)
                 {
-                    control = control.GetVisualParent<IControl>();
+                    c = c.GetVisualParent<Control>();
                 }
             }
 
@@ -113,7 +115,7 @@ namespace Avalonia.Diagnostics.ViewModels
             }
         }
 
-        private TreeNode? FindNode(TreeNode node, IControl control)
+        private TreeNode? FindNode(TreeNode node, Control control)
         {
             if (node.Visual == control)
             {
@@ -133,6 +135,11 @@ namespace Avalonia.Diagnostics.ViewModels
             }
 
             return null;
+        }
+
+        internal void UpdatePropertiesView()
+        {
+            Details?.UpdatePropertiesView(MainView?.ShowImplementedInterfaces ?? true);
         }
     }
 }

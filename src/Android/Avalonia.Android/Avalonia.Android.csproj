@@ -1,13 +1,20 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>monoandroid11.0</TargetFramework>
+    <TargetFramework>net6.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <MSBuildEnableWorkloadResolver>true</MSBuildEnableWorkloadResolver>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
+    <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.3.1.3" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.3.1.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
-  <Import Project="..\..\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
-  <Import Project="..\..\..\build\Rx.props" />
-  <Import Project="..\..\..\build\AndroidWorkarounds.props" />
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 </Project>

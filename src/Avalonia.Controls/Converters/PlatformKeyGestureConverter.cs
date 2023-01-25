@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Converters
 {
@@ -13,7 +14,7 @@ namespace Avalonia.Controls.Converters
     /// </summary>
     public class PlatformKeyGestureConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is null)
             {
@@ -29,7 +30,7 @@ namespace Avalonia.Controls.Converters
             }
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -62,7 +63,7 @@ namespace Avalonia.Controls.Converters
 
         private static string ToString(KeyGesture gesture, string meta)
         {
-            var s = new StringBuilder();
+            var s = StringBuilderCache.Acquire();
 
             static void Plus(StringBuilder s)
             {
@@ -98,12 +99,12 @@ namespace Avalonia.Controls.Converters
             Plus(s);
             s.Append(ToString(gesture.Key));
 
-            return s.ToString();
+            return StringBuilderCache.GetStringAndRelease(s);
         }
 
         private static string ToOSXString(KeyGesture gesture)
         {
-            var s = new StringBuilder();
+            var s = StringBuilderCache.Acquire();
 
             if (gesture.KeyModifiers.HasAllFlags(KeyModifiers.Control))
             {
@@ -127,7 +128,7 @@ namespace Avalonia.Controls.Converters
 
             s.Append(ToOSXString(gesture.Key));
 
-            return s.ToString();
+            return StringBuilderCache.GetStringAndRelease(s);
         }
 
         private static string ToString(Key key)

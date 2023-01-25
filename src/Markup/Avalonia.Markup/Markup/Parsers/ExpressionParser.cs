@@ -5,9 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Markup.Parsers
 {
+    /// <summary>
+    /// Parser for composition expressions
+    /// </summary>
     internal class ExpressionParser
     {
         private readonly bool _enableValidation;
@@ -21,7 +25,8 @@ namespace Avalonia.Markup.Parsers
             _enableValidation = enableValidation;
         }
 
-        public (ExpressionNode? Node, SourceMode Mode) Parse(ref CharacterReader r)
+        [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
+        public (ExpressionNode Node, SourceMode Mode) Parse(ref CharacterReader r)
         {
             ExpressionNode? rootNode = null;
             ExpressionNode? node = null;
@@ -74,6 +79,9 @@ namespace Avalonia.Markup.Parsers
                 }
             }
 
+            if (rootNode is null)
+                throw new ExpressionParseException(r.Position, "Unexpected end of expression.");
+
             return (rootNode, mode);
         }
 
@@ -108,6 +116,9 @@ namespace Avalonia.Markup.Parsers
                 castType = _typeResolver(node.Namespace, node.TypeName);
             }
 
+            if (castType is null)
+                throw new InvalidOperationException("Unable to determine type for cast.");
+
             return new TypeCastNode(castType);
         }
 
@@ -118,7 +129,11 @@ namespace Avalonia.Markup.Parsers
                 throw new InvalidOperationException("Cannot parse a binding path with an attached property without a type resolver. Maybe you can use a LINQ Expression binding path instead?");
             }
 
-            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(_typeResolver(node.Namespace, node.TypeName), node.PropertyName);
+            var type = _typeResolver(node.Namespace, node.TypeName);
+            var property = AvaloniaPropertyRegistry.Instance.FindRegistered(type, node.PropertyName);
+
+            if (property is null)
+                throw new InvalidOperationException($"Cannot find property {type}.{node.PropertyName}.");
 
             return new AvaloniaPropertyAccessorNode(property, _enableValidation);
         }

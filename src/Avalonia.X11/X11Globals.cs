@@ -41,7 +41,7 @@ namespace Avalonia.X11
                 {
                     _wmName = value;
                     // The collection might change during enumeration
-                    foreach (var s in _subscribers.ToList()) 
+                    foreach (var s in _subscribers.ToArray()) 
                         s.WmChanged(value);
                 }
             }
@@ -69,7 +69,7 @@ namespace Avalonia.X11
                 {
                     _isCompositionEnabled = value;
                     // The collection might change during enumeration
-                    foreach (var s in _subscribers.ToList()) 
+                    foreach (var s in _subscribers.ToArray()) 
                         s.CompositionChanged(value);
                 }
             }

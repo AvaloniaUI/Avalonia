@@ -1,9 +1,6 @@
 ﻿using System;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
 using Avalonia.Styling;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
@@ -49,7 +46,6 @@ namespace Avalonia.Benchmarks.Themes
                 platform: new AppBuilder().RuntimePlatform,
                 renderInterface: new MockPlatformRenderInterface(),
                 standardCursorFactory: Mock.Of<ICursorFactory>(),
-                styler: new Styler(),
                 theme: () => LoadFluentTheme(),
                 threadingInterface: new NullThreadingPlatform(),
                 fontManagerImpl: new MockFontManagerImpl(),
@@ -64,7 +60,7 @@ namespace Avalonia.Benchmarks.Themes
             AssetLoader.RegisterResUriParsers();
             return new Styles
             {
-                new Avalonia.Themes.Fluent.FluentTheme(new Uri("avares://Avalonia.Benchmarks"))
+                new Avalonia.Themes.Fluent.FluentTheme()
                 {
 
                 }

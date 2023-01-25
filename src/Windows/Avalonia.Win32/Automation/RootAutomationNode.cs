@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
+using Avalonia.Platform;
 using Avalonia.Win32.Interop.Automation;
 
 #nullable enable
 
 namespace Avalonia.Win32.Automation
 {
+    [RequiresUnreferencedCode("Requires .NET COM interop")]
     internal class RootAutomationNode : AutomationNode,
         IRawElementProviderFragmentRoot
     {
@@ -21,8 +24,8 @@ namespace Avalonia.Win32.Automation
 
         public override IRawElementProviderFragmentRoot? FragmentRoot => this;
         public new IRootProvider Peer { get; }
-        public WindowImpl? WindowImpl => Peer.PlatformImpl as WindowImpl;
-        
+        public IWindowBaseImpl? WindowImpl => Peer.PlatformImpl as IWindowBaseImpl;
+
         public IRawElementProviderFragment? ElementProviderFromPoint(double x, double y)
         {
             if (WindowImpl is null)
@@ -41,7 +44,7 @@ namespace Avalonia.Win32.Automation
             return GetOrCreate(focus);
         }
 
-        public void FocusChanged(object sender, EventArgs e)
+        public void FocusChanged(object? sender, EventArgs e)
         {
             if (GetOrCreate(Peer.GetFocus()) is AutomationNode node)
                 RaiseEvent(node, UiaEventId.AutomationFocusChanged);

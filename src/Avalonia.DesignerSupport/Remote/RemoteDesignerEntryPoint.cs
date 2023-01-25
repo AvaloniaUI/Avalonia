@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Reflection;
 using System.Threading;
@@ -133,12 +134,12 @@ namespace Avalonia.DesignerSupport.Remote
            IAvaloniaRemoteTransportConnection ConfigureApp(IAvaloniaRemoteTransportConnection transport, CommandLineArgs args, object obj);
         }
 
-        class AppInitializer<T> : IAppInitializer where T : AppBuilderBase<T>, new()
+        class AppInitializer : IAppInitializer
         {
             public IAvaloniaRemoteTransportConnection ConfigureApp(IAvaloniaRemoteTransportConnection transport,
                 CommandLineArgs args, object obj)
             {
-                var builder = (AppBuilderBase<T>)obj;
+                var builder = (AppBuilder)obj;
                 if (args.Method == Methods.AvaloniaRemote)
                     builder.UseWindowingSubsystem(() => PreviewerWindowingPlatform.Initialize(transport));
                 if (args.Method == Methods.Html)
@@ -150,10 +151,20 @@ namespace Avalonia.DesignerSupport.Remote
                 }
 
                 if (args.Method == Methods.Win32)
-                    builder.UseWindowingSubsystem("Avalonia.Win32");
+                    builder.UseWindowingSubsystem(GetInitializer("Avalonia.Win32"), "Win32");
                 builder.SetupWithoutStarting();
                 return transport;
             }
+
+            private static Action GetInitializer(string assemblyName) => () =>
+            {
+                var assembly = Assembly.Load(new AssemblyName(assemblyName));
+                var platformClassName = assemblyName.Replace("Avalonia.", string.Empty) + "Platform";
+                var platformClassFullName = assemblyName + "." + platformClassName;
+                var platformClass = assembly.GetType(platformClassFullName);
+                var init = platformClass!.GetRuntimeMethod("Initialize", Type.EmptyTypes);
+                init!.Invoke(null, null);
+            };
         }
 
         private const string BuilderMethodName = "BuildAvaloniaApp";
@@ -168,15 +179,19 @@ namespace Avalonia.DesignerSupport.Remote
             var entryPoint = asm.EntryPoint;
             if (entryPoint == null)
                 throw Die($"Assembly {args.AppPath} doesn't have an entry point");
-            var builderMethod = entryPoint.DeclaringType.GetMethod(BuilderMethodName,
-                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, Array.Empty<Type>(), null);
+            var builderMethod = entryPoint.DeclaringType.GetMethod(
+                BuilderMethodName,
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy,
+                null,
+                Array.Empty<Type>(),
+                null);
             if (builderMethod == null)
                 throw Die($"{entryPoint.DeclaringType.FullName} doesn't have a method named {BuilderMethodName}");
             Design.IsDesignMode = true;
             Log($"Obtaining AppBuilder instance from {builderMethod.DeclaringType.FullName}.{builderMethod.Name}");
             var appBuilder = builderMethod.Invoke(null, null);
             Log($"Initializing application in design mode");
-            var initializer =(IAppInitializer)Activator.CreateInstance(typeof(AppInitializer<>).MakeGenericType(appBuilder.GetType()));
+            var initializer =(IAppInitializer)Activator.CreateInstance(typeof(AppInitializer));
             transport = initializer.ConfigureApp(transport, args, appBuilder);
             s_transport = transport;
             transport.OnMessage += OnTransportMessage;

@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.Build.Traversal">
   <ItemGroup>
+    <!-- Build Avalonia.Build.Tasks first because everything depends on it -->
+    <ProjectReference Include="src/Avalonia.Build.Tasks/Avalonia.Build.Tasks.csproj" />
     <ProjectReference Include="src/**/*.*proj" />
     <ProjectReference Include="samples/**/*.*proj" />
     <ProjectReference Include="tests/**/*.*proj" />
@@ -7,16 +9,10 @@
     <ProjectReference Remove="**/*.shproj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml/PortableXaml/**/*.*proj" />
     <ProjectReference Remove="src/Markup/Avalonia.Markup.Xaml.Loader/xamlil.github/**/*.*proj" />
-    <ProjectReference Remove="tests/Avalonia.ReactiveUI.Events.UnitTests/Avalonia.ReactiveUI.Events.UnitTests.csproj" />
-  </ItemGroup>
-  <!--<ItemGroup Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\Android')">-->
-  <ItemGroup>
-    <ProjectReference Remove="src/Android/**/*.*proj" />
-    <ProjectReference Remove="samples/ControlCatalog.Android/ControlCatalog.Android.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\iOS')">
-    <ProjectReference Remove="src/iOS/**/*.*proj" />
-    <ProjectReference Remove="samples/ControlCatalog.iOS/ControlCatalog.iOS.csproj" />
+    <!-- Exclude iOS, Android and Web samples from build -->
+    <ProjectReference Remove="samples/*.iOS/*.csproj" />
+    <ProjectReference Remove="samples/*.Android/*.csproj" />
+    <ProjectReference Remove="samples/*.Web/*.csproj" />
   </ItemGroup>
   <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows')) OR '$(MSBuildRuntimeType)' != 'Full'">
     <ProjectReference Remove="src/Windows/Avalonia.Win32.Interop/Avalonia.Win32.Interop.csproj" />
@@ -24,7 +20,13 @@
     <ProjectReference Remove="samples/ControlCatalog.Desktop/*.*proj" />
   </ItemGroup>
 
+  <!-- Build android and iOS projects only on Windows, where we have installed android workload -->
+  <ItemGroup Condition="!$([MSBuild]::IsOsPlatform('Windows'))">
+    <ProjectReference Remove="src/Android/**/*.*proj" />
+    <ProjectReference Remove="src/iOS/**/*.*proj" />
+  </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="SlnGen" Version="2.0.40" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.SlnGen" Version="8.5.17" PrivateAssets="all" />
   </ItemGroup>
 </Project>

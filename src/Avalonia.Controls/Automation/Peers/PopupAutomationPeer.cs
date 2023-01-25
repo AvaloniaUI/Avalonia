@@ -4,8 +4,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class PopupAutomationPeer : ControlAutomationPeer
@@ -26,7 +24,7 @@ namespace Avalonia.Automation.Peers
         protected override bool IsContentElementCore() => false;
         protected override bool IsControlElementCore() => false;
 
-        private void PopupOpenedClosed(object sender, EventArgs e)
+        private void PopupOpenedClosed(object? sender, EventArgs e)
         {
             // This is golden. We're following WPF's automation peer API here where the
             // parent of a peer is set when another peer returns it as a child. We want to

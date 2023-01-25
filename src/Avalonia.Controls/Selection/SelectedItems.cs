@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     internal class SelectedItems<T> : IReadOnlyList<T>
@@ -37,9 +35,9 @@ namespace Avalonia.Controls.Selection
                 {
                     return _owner.SelectedItem;
                 }
-                else if (Items is object)
+                else if (Items is not null && Ranges is not null)
                 {
-                    return Items[index];
+                    return Items[IndexRange.GetAt(Ranges, index)];
                 }
                 else
                 {

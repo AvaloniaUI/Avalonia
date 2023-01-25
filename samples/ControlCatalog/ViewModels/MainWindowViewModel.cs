@@ -1,59 +1,40 @@
-using System.Reactive;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Notifications;
 using Avalonia.Dialogs;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using System;
+using System.ComponentModel.DataAnnotations;
 using MiniMvvm;
 
 namespace ControlCatalog.ViewModels
 {
     class MainWindowViewModel : ViewModelBase
     {
-        private IManagedNotificationManager _notificationManager;
-
         private bool _isMenuItemChecked = true;
         private WindowState _windowState;
-        private WindowState[] _windowStates;
-        private int _transparencyLevel;
-        private ExtendClientAreaChromeHints _chromeHints;
+        private WindowState[] _windowStates = Array.Empty<WindowState>();
+        private ExtendClientAreaChromeHints _chromeHints = ExtendClientAreaChromeHints.PreferSystemChrome;
         private bool _extendClientAreaEnabled;
-        private bool _systemTitleBarEnabled;        
+        private bool _systemTitleBarEnabled;
         private bool _preferSystemChromeEnabled;
         private double _titleBarHeight;
 
-        public MainWindowViewModel(IManagedNotificationManager notificationManager)
+        public MainWindowViewModel()
         {
-            _notificationManager = notificationManager;
-
-            ShowCustomManagedNotificationCommand = MiniCommand.Create(() =>
-            {
-                NotificationManager.Show(new NotificationViewModel(NotificationManager) { Title = "Hey There!", Message = "Did you know that Avalonia now supports Custom In-Window Notifications?" });
-            });
-
-            ShowManagedNotificationCommand = MiniCommand.Create(() =>
-            {
-                NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Welcome", "Avalonia now supports Notifications.", NotificationType.Information));
-            });
-
-            ShowNativeNotificationCommand = MiniCommand.Create(() =>
-            {
-                NotificationManager.Show(new Avalonia.Controls.Notifications.Notification("Error", "Native Notifications are not quite ready. Coming soon.", NotificationType.Error));
-            });
-
             AboutCommand = MiniCommand.CreateFromTask(async () =>
             {
                 var dialog = new AboutAvaloniaDialog();
 
-                var mainWindow = (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-
-                await dialog.ShowDialog(mainWindow);
+                if ((App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow is { } mainWindow)
+                {
+                    await dialog.ShowDialog(mainWindow);
+                }
             });
-
             ExitCommand = MiniCommand.Create(() =>
             {
-                (App.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime).Shutdown();
+                (App.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
             });
 
             ToggleMenuItemCheckedCommand = MiniCommand.Create(() =>
@@ -91,12 +72,6 @@ namespace ControlCatalog.ViewModels
 
             SystemTitleBarEnabled = true;            
             TitleBarHeight = -1;
-        }        
-
-        public int TransparencyLevel
-        {
-            get { return _transparencyLevel; }
-            set { this.RaiseAndSetIfChanged(ref _transparencyLevel, value); }
         }        
 
         public ExtendClientAreaChromeHints ChromeHints
@@ -141,28 +116,28 @@ namespace ControlCatalog.ViewModels
             set { this.RaiseAndSetIfChanged(ref _windowStates, value); }
         }
 
-        public IManagedNotificationManager NotificationManager
-        {
-            get { return _notificationManager; }
-            set { this.RaiseAndSetIfChanged(ref _notificationManager, value); }
-        }
-
         public bool IsMenuItemChecked
         {
             get { return _isMenuItemChecked; }
             set { this.RaiseAndSetIfChanged(ref _isMenuItemChecked, value); }
         }
 
-        public MiniCommand ShowCustomManagedNotificationCommand { get; }
-
-        public MiniCommand ShowManagedNotificationCommand { get; }
-
-        public MiniCommand ShowNativeNotificationCommand { get; }
-
         public MiniCommand AboutCommand { get; }
 
         public MiniCommand ExitCommand { get; }
 
         public MiniCommand ToggleMenuItemCheckedCommand { get; }
+
+        private DateTime? _validatedDateExample;
+
+        /// <summary>
+        ///    A required DateTime which should demonstrate validation for the DateTimePicker
+        /// </summary>
+        [Required]
+        public DateTime? ValidatedDateExample
+        {
+            get => _validatedDateExample;
+            set => this.RaiseAndSetIfChanged(ref _validatedDateExample, value);
+        }
     }
 }

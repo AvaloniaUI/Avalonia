@@ -3,8 +3,6 @@ using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Utilities;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class ScrollViewerAutomationPeer : ControlAutomationPeer, IScrollProvider

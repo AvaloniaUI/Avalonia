@@ -1,0 +1,4 @@
+Compat issues with assembly Avalonia.Base:
+MembersMustExist : Member 'public System.Int32 System.Int32 Avalonia.Threading.DispatcherPriority.value__' does not exist in the implementation but it does exist in the contract.
+InterfacesShouldHaveSameMembers : Interface member 'public void Avalonia.Threading.IDispatcher.Post<T>(System.Action<T>, T, Avalonia.Threading.DispatcherPriority)' is present in the implementation but not in the contract.
+Total Issues: 2

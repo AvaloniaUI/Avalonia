@@ -13,7 +13,7 @@ namespace Avalonia.Win32
         private HitTestValues HitTestNCA(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
         {
             // Get the point coordinates for the hit test (screen space).
-            var ptMouse = PointFromLParam(lParam);
+            var ptMouse = WindowImpl.PointFromLParam(lParam);
 
             // Get the window rectangle.
             GetWindowRect(hWnd, out var rcWindow);
@@ -23,16 +23,10 @@ namespace Avalonia.Win32
             AdjustWindowRectEx(ref rcFrame, (uint)(WindowStyles.WS_OVERLAPPEDWINDOW & ~WindowStyles.WS_CAPTION), false, 0);
 
             var borderThickness = new RECT();
-            if (GetStyle().HasAllFlags(WindowStyles.WS_THICKFRAME))
-            {
-                AdjustWindowRectEx(ref borderThickness, (uint)(GetStyle()), false, 0);
-                borderThickness.left *= -1;
-                borderThickness.top *= -1;
-            }
-            else if (GetStyle().HasAllFlags(WindowStyles.WS_BORDER))
-            {
-                borderThickness = new RECT { bottom = 1, left = 1, right = 1, top = 1 };
-            }
+            
+            AdjustWindowRectEx(ref borderThickness, (uint)GetStyle(), false, 0);
+            borderThickness.left *= -1;
+            borderThickness.top *= -1;
 
             if (_extendTitleBarHint >= 0)
             {
@@ -111,13 +105,13 @@ namespace Avalonia.Win32
 
                         if (hittestResult == HitTestValues.HTCAPTION)
                         {
-                            var position = PointToClient(PointFromLParam(lParam));
+                            var position = PointToClient(WindowImpl.PointFromLParam(lParam));
 
                             if (_owner is Window window)
                             {
-                                var visual = window.Renderer.HitTestFirst(position, _owner as Window, x =>
+                                var visual = window.Renderer.HitTestFirst(position, window, x =>
                                 {
-                                    if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsVisible))
+                                    if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                     {
                                         return false;
                                     }

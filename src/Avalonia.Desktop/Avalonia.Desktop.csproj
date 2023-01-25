@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-      <TargetFramework>netstandard2.0</TargetFramework>
+      <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
       <PackageId>Avalonia.Desktop</PackageId>
   </PropertyGroup>
 
@@ -12,5 +12,7 @@
       <ProjectReference Include="../Avalonia.X11/Avalonia.X11.csproj" />
   </ItemGroup>
   
-  <Import Project="..\..\build\ApiDiff.props" />  
+  <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
+  <Import Project="..\..\build\NullableEnable.props" />
 </Project>

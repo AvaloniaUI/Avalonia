@@ -1,39 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Avalonia.Data.Core.Plugins
 {
-    public class MethodAccessorPlugin : IPropertyAccessorPlugin
+    internal class MethodAccessorPlugin : IPropertyAccessorPlugin
     {
-        private readonly Dictionary<(Type, string), MethodInfo> _methodLookup =
-            new Dictionary<(Type, string), MethodInfo>();
+        private readonly Dictionary<(Type, string), MethodInfo?> _methodLookup =
+            new Dictionary<(Type, string), MethodInfo?>();
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string methodName) => GetFirstMethodWithName(obj.GetType(), methodName) != null;
 
-        public IPropertyAccessor Start(WeakReference<object> reference, string methodName)
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
+        public IPropertyAccessor? Start(WeakReference<object?> reference, string methodName)
         {
-            Contract.Requires<ArgumentNullException>(reference != null);
-            Contract.Requires<ArgumentNullException>(methodName != null);
+            _ = reference ?? throw new ArgumentNullException(nameof(reference));
+            _ = methodName ?? throw new ArgumentNullException(nameof(methodName));
 
-            reference.TryGetTarget(out object instance);
+            if (!reference.TryGetTarget(out var instance) || instance is null)
+                return null;
 
             var method = GetFirstMethodWithName(instance.GetType(), methodName);
 
-            if (method != null)
+            if (method is not null)
             {
-                var parameters = method.GetParameters();
-
-                if (parameters.Length + (method.ReturnType == typeof(void) ? 0 : 1) > 8)
-                {
-                    var exception = new ArgumentException(
-                        "Cannot create a binding accessor for a method with more than 8 parameters or more than 7 parameters if it has a non-void return type.",
-                        nameof(methodName));
-                    return new PropertyError(new BindingNotification(exception, BindingErrorType.Error));
-                }
-
-                return new Accessor(reference, method, parameters);
+                return new Accessor(reference, method);
             }
             else
             {
@@ -43,11 +37,12 @@ namespace Avalonia.Data.Core.Plugins
             }
         }
 
-        private MethodInfo GetFirstMethodWithName(Type type, string methodName)
+        private MethodInfo? GetFirstMethodWithName(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] Type type, string methodName)
         {
             var key = (type, methodName);
 
-            if (!_methodLookup.TryGetValue(key, out MethodInfo methodInfo))
+            if (!_methodLookup.TryGetValue(key, out var methodInfo))
             {
                 methodInfo = TryFindAndCacheMethod(type, methodName);
             }
@@ -55,22 +50,30 @@ namespace Avalonia.Data.Core.Plugins
             return methodInfo;
         }
 
-        private MethodInfo TryFindAndCacheMethod(Type type, string methodName)
+        private MethodInfo? TryFindAndCacheMethod(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.NonPublicMethods)] Type type, string methodName)
         {
-            MethodInfo found = null;
+            MethodInfo? found = null;
 
             const BindingFlags bindingFlags =
                 BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
 
             var methods = type.GetMethods(bindingFlags);
 
-            foreach (MethodInfo methodInfo in methods)
+            foreach (var methodInfo in methods)
             {
                 if (methodInfo.Name == methodName)
                 {
-                    found = methodInfo;
-
-                    break;
+                    var parameters = methodInfo.GetParameters();
+                    if (parameters.Length == 1 && parameters[0].ParameterType == typeof(object))
+                    {
+                        found = methodInfo;
+                        break;
+                    }
+                    else if (parameters.Length == 0)
+                    {
+                        found = methodInfo;
+                    }
                 }
             }
 
@@ -81,17 +84,19 @@ namespace Avalonia.Data.Core.Plugins
 
         private sealed class Accessor : PropertyAccessorBase
         {
-            public Accessor(WeakReference<object> reference, MethodInfo method, ParameterInfo[] parameters)
+            public Accessor(WeakReference<object?> reference, MethodInfo method)
             {
-                Contract.Requires<ArgumentNullException>(reference != null);
-                Contract.Requires<ArgumentNullException>(method != null);
+                _ = reference ?? throw new ArgumentNullException(nameof(reference));
+                _ = method ?? throw new ArgumentNullException(nameof(method));
 
                 var returnType = method.ReturnType;
-                bool hasReturn = returnType != typeof(void);
 
-                var signatureTypeCount = (hasReturn ? 1 : 0) + parameters.Length;
+                var parameters = method.GetParameters();
+
+                var signatureTypeCount = parameters.Length + 1;
 
                 var paramTypes = new Type[signatureTypeCount];
+
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
@@ -100,34 +105,25 @@ namespace Avalonia.Data.Core.Plugins
                     paramTypes[i] = parameter.ParameterType;
                 }
 
-                if (hasReturn)
-                {
-                    paramTypes[paramTypes.Length - 1] = returnType;
+                paramTypes[paramTypes.Length - 1] = returnType;
 
-                    PropertyType = Expression.GetFuncType(paramTypes);
-                }
-                else
-                {
-                    PropertyType = Expression.GetActionType(paramTypes);
-                }
+                PropertyType = Expression.GetDelegateType(paramTypes);
 
                 if (method.IsStatic)
                 {
                     Value = method.CreateDelegate(PropertyType);
                 }
-                else
+                else if (reference.TryGetTarget(out var target))
                 {
-                    reference.TryGetTarget(out object target);
-
                     Value = method.CreateDelegate(PropertyType, target);
                 }
             }
 
-            public override Type PropertyType { get; }
+            public override Type? PropertyType { get; }
 
-            public override object Value { get; }
+            public override object? Value { get; }
 
-            public override bool SetValue(object value, BindingPriority priority) => false;
+            public override bool SetValue(object? value, BindingPriority priority) => false;
 
             protected override void SubscribeCore()
             {

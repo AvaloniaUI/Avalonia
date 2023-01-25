@@ -73,12 +73,17 @@ ComPtr<IAvnApplicationEvents> _events;
     _isHandlingSendEvent = true;
     @try {
         [super sendEvent: event];
+        if ([event type] == NSEventTypeKeyUp && ([event modifierFlags] & NSEventModifierFlagCommand))
+        {
+            [[self keyWindow] sendEvent:event];
+        }
+        
     } @finally {
         _isHandlingSendEvent = oldHandling;
     }
 }
 
-// This is needed for certain embedded controls
+// This is needed for certain embedded controls DO NOT REMOVE..
 - (BOOL) isHandlingSendEvent
 {
     return _isHandlingSendEvent;
@@ -88,12 +93,41 @@ ComPtr<IAvnApplicationEvents> _events;
 {
     _isHandlingSendEvent = handlingSendEvent;
 }
-
 @end
 
-extern void InitializeAvnApp(IAvnApplicationEvents* events)
+extern void InitializeAvnApp(IAvnApplicationEvents* events, bool disableAppDelegate)
 {
-    NSApplication* app = [AvnApplication sharedApplication];
-    id delegate = [[AvnAppDelegate alloc] initWithEvents:events];
-    [app setDelegate:delegate];
+    if(!disableAppDelegate)
+    {
+        NSApplication* app = [AvnApplication sharedApplication];
+        id delegate = [[AvnAppDelegate alloc] initWithEvents:events];
+        [app setDelegate:delegate];
+    }
+}
+
+HRESULT AvnApplicationCommands::HideApp()
+{
+    START_COM_CALL;
+    [[NSApplication sharedApplication] hide:[NSApp delegate]];
+    return S_OK;
+}
+
+HRESULT AvnApplicationCommands::ShowAll()
+{
+    START_COM_CALL;
+    [[NSApplication sharedApplication] unhideAllApplications:[NSApp delegate]];
+    return S_OK;
+}
+
+HRESULT AvnApplicationCommands::HideOthers()
+{
+    START_COM_CALL;
+    [[NSApplication sharedApplication] hideOtherApplications:[NSApp delegate]];
+    return S_OK;
+}
+
+
+extern IAvnApplicationCommands* CreateApplicationCommands()
+{
+    return new AvnApplicationCommands();
 }

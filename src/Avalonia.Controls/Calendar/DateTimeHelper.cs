@@ -1,10 +1,11 @@
 ﻿// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Avalonia.Controls
@@ -67,12 +68,10 @@ namespace Avalonia.Controls
 
         public static DateTime DiscardDayTime(DateTime d)
         {
-            int year = d.Year;
-            int month = d.Month;
-            DateTime newD = new DateTime(year, month, 1, 0, 0, 0);
-            return newD;
+            return new DateTime(d.Year, d.Month, 1, 0, 0, 0);
         }
 
+        [return: NotNullIfNotNull("d")]
         public static DateTime? DiscardTime(DateTime? d)
         {
             if (d == null)

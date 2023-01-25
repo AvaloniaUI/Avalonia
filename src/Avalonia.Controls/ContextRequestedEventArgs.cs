@@ -1,8 +1,6 @@
 ﻿using Avalonia.Input;
 using Avalonia.Interactivity;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     /// <summary>

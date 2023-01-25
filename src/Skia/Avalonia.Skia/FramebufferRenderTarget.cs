@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -61,6 +61,8 @@ namespace Avalonia.Skia
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
 
+        public bool IsCorrupted => false;
+
         /// <summary>
         /// Check if two images info are compatible.
         /// </summary>
@@ -90,7 +92,8 @@ namespace Avalonia.Skia
             
             _currentFramebufferAddress = framebuffer.Address;
 
-            var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, framebuffer.RowBytes);
+            var surface = SKSurface.Create(desiredImageInfo, _currentFramebufferAddress, 
+                framebuffer.RowBytes, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
 
             // If surface cannot be created - try to create a compatibility shim first
             if (surface == null)
@@ -148,7 +151,7 @@ namespace Avalonia.Skia
                         $"Unable to create pixel format shim for conversion from {bitmapColorType} to {destinationInfo.ColorType}");
                 }
 
-                Surface = SKSurface.Create(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes);
+                Surface = SKSurface.Create(_bitmap.Info, _bitmap.GetPixels(), _bitmap.RowBytes, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
 
                 if (Surface == null)
                 {

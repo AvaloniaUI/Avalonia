@@ -14,22 +14,32 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
         {
             using (Start())
             {
-                var text = "\n\r\n".AsMemory();
-
-                var glyphRun = TextShaper.Current.ShapeText(
-                    text,
-                    Typeface.Default,
-                    12,
-                    CultureInfo.CurrentCulture);
+                var text = "\n\r\n";
+                var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 12,0, CultureInfo.CurrentCulture);
+                var shapedBuffer = TextShaper.Current.ShapeText(text, options);
                 
-                Assert.Equal(glyphRun.Characters.Length, text.Length);
-                Assert.Equal(glyphRun.GlyphClusters.Length, text.Length);
-                Assert.Equal(0, glyphRun.GlyphClusters[0]);
-                Assert.Equal(1, glyphRun.GlyphClusters[1]);
-                Assert.Equal(1, glyphRun.GlyphClusters[2]);
+                Assert.Equal(shapedBuffer.Length, text.Length);
+                Assert.Equal(shapedBuffer.GlyphInfos.Length, text.Length);
+                Assert.Equal(0, shapedBuffer.GlyphInfos[0].GlyphCluster);
+                Assert.Equal(1, shapedBuffer.GlyphInfos[1].GlyphCluster);
+                Assert.Equal(1, shapedBuffer.GlyphInfos[2].GlyphCluster);
             }
         }
-        
+
+        [Fact]
+        public void Should_Apply_IncrementalTabWidth()
+        {
+            using (Start())
+            {
+                var text = "\t";
+                var options = new TextShaperOptions(Typeface.Default.GlyphTypeface, 12, 0, CultureInfo.CurrentCulture, 100);
+                var shapedBuffer = TextShaper.Current.ShapeText(text, options);
+
+                Assert.Equal(shapedBuffer.Length, text.Length);
+                Assert.Equal(100, shapedBuffer.GlyphInfos[0].GlyphAdvance);
+            }
+        }
+
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface

@@ -3,19 +3,22 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
+using Avalonia.Controls.Platform;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
-    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow
+    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow, ITopLevelImplWithStorageProvider
     {
         private IKeyboardDevice _keyboard;
         private Stopwatch _st = Stopwatch.StartNew();
@@ -52,7 +55,10 @@ namespace Avalonia.Headless
         public Action<double> ScalingChanged { get; set; }
 
         public IRenderer CreateRenderer(IRenderRoot root)
-            => new DeferredRenderer(root, AvaloniaLocator.Current.GetService<IRenderLoop>());
+            => AvaloniaHeadlessPlatform.Compositor != null
+                ? new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces)
+                : new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
+                    () => new PlatformRenderInterfaceContextManager(null).CreateRenderTarget(Surfaces), null);
 
         public void Invalidate(Rect rect)
         {
@@ -169,7 +175,7 @@ namespace Avalonia.Headless
 
         }
 
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
 
         class FramebufferProxy : ILockedFramebuffer
         {
@@ -245,6 +251,8 @@ namespace Avalonia.Headless
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
 
+        public IStorageProvider StorageProvider => new NoopStorageProvider();
+
         void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
         {
             Input?.Invoke(new RawKeyEventArgs(_keyboard, Timestamp, InputRoot, RawKeyEventType.KeyDown, key, modifiers));
@@ -275,6 +283,18 @@ namespace Avalonia.Headless
                 button == 0 ? RawPointerEventType.LeftButtonUp :
                 button == 1 ? RawPointerEventType.MiddleButtonUp : RawPointerEventType.RightButtonUp,
                 point, modifiers));
+        }
+        
+        void IHeadlessWindow.MouseWheel(Point point, Vector delta, RawInputModifiers modifiers)
+        {
+            Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot,
+                point, delta, modifiers));
+        }
+        
+        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
+        {
+            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
+            Input?.Invoke(new RawDragEvent(device, type, InputRoot, point, data, effects, modifiers));
         }
 
         void IWindowImpl.Move(PixelPoint point)
@@ -334,6 +354,11 @@ namespace Avalonia.Headless
         }
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+            
+        }
+        
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             
         }

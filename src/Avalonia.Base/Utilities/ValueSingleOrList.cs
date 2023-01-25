@@ -58,7 +58,7 @@ namespace Avalonia.Utilities
                     List.Add(Single);
                     List.Add(value);
 
-                    Single = default;
+                    Single = default!;
                 }
             }
         }
@@ -81,7 +81,7 @@ namespace Avalonia.Utilities
 
             if (EqualityComparer<T>.Default.Equals(Single, value))
             {
-                Single = default;
+                Single = default!;
 
                 _isSingleSet = false;
 

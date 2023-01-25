@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Avalonia.Data;
+using Avalonia.PropertyStore;
+using Avalonia.Styling;
 using Avalonia.Utilities;
 using Xunit;
 
@@ -67,7 +69,7 @@ namespace Avalonia.Base.UnitTests
         public void OverrideMetadata_Should_Merge_Values()
         {
             var metadata = new AvaloniaPropertyMetadata(BindingMode.TwoWay);
-            var notify = (Action<IAvaloniaObject, bool>)((a, b) => { });
+            var notify = (Action<AvaloniaObject, bool>)((a, b) => { });
             var overridden = new AvaloniaPropertyMetadata();
             var target = new TestProperty<string>("test", typeof(Class1), metadata);
 
@@ -146,43 +148,38 @@ namespace Avalonia.Base.UnitTests
                 OverrideMetadata(typeof(T), metadata);
             }
 
-            public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> vistor, ref TData data)
-            {
-                throw new NotImplementedException();
-            }
-
             internal override IDisposable RouteBind(
-                IAvaloniaObject o,
-                IObservable<BindingValue<object>> source,
+                AvaloniaObject o,
+                IObservable<object> source,
                 BindingPriority priority)
             {
                 throw new NotImplementedException();
             }
 
-            internal override void RouteClearValue(IAvaloniaObject o)
+            internal override void RouteClearValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();
             }
 
-            internal override object RouteGetValue(IAvaloniaObject o)
+            internal override object RouteGetValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();
             }
 
-            internal override object RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
-            {
-                throw new NotImplementedException();
-            }
-
-            internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)
+            internal override object RouteGetBaseValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();
             }
 
             internal override IDisposable RouteSetValue(
-                IAvaloniaObject o,
+                AvaloniaObject o,
                 object value,
                 BindingPriority priority)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();
             }
@@ -195,7 +192,7 @@ namespace Avalonia.Base.UnitTests
 
             public int NotifyCount { get; private set; }
 
-            private static void FooNotifying(IAvaloniaObject o, bool n)
+            private static void FooNotifying(AvaloniaObject o, bool n)
             {
                 ++((Class1)o).NotifyCount;
             }

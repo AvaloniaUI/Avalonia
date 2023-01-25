@@ -1,8 +1,11 @@
+using Avalonia.Metadata;
+
 namespace Avalonia.Data
 {
     /// <summary>
     /// Holds a binding that can be applied to a property on an object.
     /// </summary>
+    [NotClientImplementable]
     public interface IBinding
     {
         /// <summary>
@@ -20,10 +23,10 @@ namespace Avalonia.Data
         /// <returns>
         /// A <see cref="InstancedBinding"/> or null if the binding could not be resolved.
         /// </returns>
-        InstancedBinding Initiate(
-            IAvaloniaObject target, 
-            AvaloniaProperty targetProperty,
-            object anchor = null,
+        InstancedBinding? Initiate(
+            AvaloniaObject target, 
+            AvaloniaProperty? targetProperty,
+            object? anchor = null,
             bool enableDataValidation = false);
     }
 }

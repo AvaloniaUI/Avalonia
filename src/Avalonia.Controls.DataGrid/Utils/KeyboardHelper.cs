@@ -4,22 +4,29 @@
 // All other rights reserved.
 
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 
 namespace Avalonia.Controls.Utils
 {
     internal static class KeyboardHelper
     {
-        public static void GetMetaKeyState(KeyModifiers modifiers, out bool ctrl, out bool shift)
+        public static void GetMetaKeyState(KeyModifiers modifiers, out bool ctrlOrCmd, out bool shift)
         {
-            ctrl = (modifiers & KeyModifiers.Control) == KeyModifiers.Control;
-            shift = (modifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
+            ctrlOrCmd = modifiers.HasFlag(GetPlatformCtrlOrCmdKeyModifier());
+            shift = modifiers.HasFlag(KeyModifiers.Shift);
         }
 
-        public static void GetMetaKeyState(KeyModifiers modifiers, out bool ctrl, out bool shift, out bool alt)
+        public static void GetMetaKeyState(KeyModifiers modifiers, out bool ctrlOrCmd, out bool shift, out bool alt)
         {
-            ctrl = (modifiers & KeyModifiers.Control) == KeyModifiers.Control;
-            shift = (modifiers & KeyModifiers.Shift) == KeyModifiers.Shift;
-            alt = (modifiers & KeyModifiers.Alt) == KeyModifiers.Alt;
+            ctrlOrCmd = modifiers.HasFlag(GetPlatformCtrlOrCmdKeyModifier());
+            shift = modifiers.HasFlag(KeyModifiers.Shift);
+            alt = modifiers.HasFlag(KeyModifiers.Alt);
+        }
+
+        public static KeyModifiers GetPlatformCtrlOrCmdKeyModifier()
+        {                
+            var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+            return keymap?.CommandModifiers ?? KeyModifiers.Control;
         }
     }
 }

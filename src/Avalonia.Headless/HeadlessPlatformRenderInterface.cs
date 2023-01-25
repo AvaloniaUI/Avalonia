@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Headless
 {
-    internal class HeadlessPlatformRenderInterface : IPlatformRenderInterface
+    internal class HeadlessPlatformRenderInterface : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public static void Initialize()
         {
@@ -21,16 +23,13 @@ namespace Avalonia.Headless
 
         public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };
 
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
+
         public bool SupportsIndividualRoundRects => false;
 
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
-
-        public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment, TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new HeadlessFormattedTextStub(text, constraint);
-        }
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new HeadlessGeometryStub(rect);
 
@@ -51,6 +50,8 @@ namespace Avalonia.Headless
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => throw new NotImplementedException();
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
+        public bool IsLost => false;
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -114,9 +115,34 @@ namespace Avalonia.Headless
             return new HeadlessBitmapStub(destinationSize, new Vector(96, 96));
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            return new HeadlessGeometryStub(new Rect(glyphRun.Size));
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(
+            IGlyphTypeface glyphTypeface, 
+            double fontRenderingEmSize,
+            IReadOnlyList<GlyphInfo> glyphInfos, 
+            Point baselineOrigin)
         {
             return new HeadlessGlyphRunStub();
+        }
+
+        class HeadlessGlyphRunStub : IGlyphRunImpl
+        {
+            public Size Size => new Size(8, 12);
+
+            public Point BaselineOrigin => new Point(0, 8);
+
+            public void Dispose()
+            {
+            }
+
+            public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
+            {
+                return null;
+            }
         }
 
         class HeadlessGeometryStub : IGeometryImpl
@@ -202,16 +228,9 @@ namespace Avalonia.Headless
             public Matrix Transform { get; }
         }
 
-        class HeadlessGlyphRunStub : IGlyphRunImpl
-        {
-            public void Dispose()
-            {
-            }
-        }
-
         class HeadlessStreamingGeometryStub : HeadlessGeometryStub, IStreamGeometryImpl
         {
-            public HeadlessStreamingGeometryStub() : base(Rect.Empty)
+            public HeadlessStreamingGeometryStub() : base(default)
             {
             }
 
@@ -312,6 +331,8 @@ namespace Avalonia.Headless
                 return new HeadlessDrawingContextStub();
             }
 
+            public bool IsCorrupted => false;
+
             public void Blit(IDrawingContextImpl context)
             {
                 
@@ -322,12 +343,12 @@ namespace Avalonia.Headless
             public Vector Dpi { get; }
             public PixelSize PixelSize { get; }
             public int Version { get; set; }
-            public void Save(string fileName)
+            public void Save(string fileName, int? quality = null)
             {
 
             }
 
-            public void Save(Stream stream)
+            public void Save(Stream stream, int? quality = null)
             {
 
             }
@@ -349,12 +370,8 @@ namespace Avalonia.Headless
             }
 
             public Matrix Transform { get; set; }
+
             public void Clear(Color color)
-            {
-
-            }
-
-            public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
             {
 
             }
@@ -419,9 +436,13 @@ namespace Avalonia.Headless
 
             }
 
+            public object GetFeature(Type t)
+            {
+                return null;
+            }
+
             public void DrawLine(IPen pen, Point p1, Point p2)
             {
-                throw new NotImplementedException();
             }
 
             public void DrawGeometry(IBrush brush, IPen pen, IGeometryImpl geometry)
@@ -447,7 +468,11 @@ namespace Avalonia.Headless
                 
             }
 
-            public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+            public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
+            {
+            }
+
+            public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
             {
                 
             }
@@ -469,32 +494,13 @@ namespace Avalonia.Headless
             {
                 return new HeadlessDrawingContextStub();
             }
+
+            public bool IsCorrupted => false;
         }
 
-        class HeadlessFormattedTextStub : IFormattedTextImpl
+        public void Dispose()
         {
-            public HeadlessFormattedTextStub(string text, Size constraint)
-            {
-                Text = text;
-                Constraint = constraint;
-                Bounds = new Rect(Constraint.Constrain(new Size(50, 50)));
-            }
-
-            public Size Constraint { get; }
-            public Rect Bounds { get; }
-            public string Text { get; }
-
-
-            public IEnumerable<FormattedTextLine> GetLines()
-            {
-                return new[] { new FormattedTextLine(Text.Length, 10) };
-            }
-
-            public TextHitTestResult HitTestPoint(Point point) => new TextHitTestResult();
-
-            public Rect HitTestTextPosition(int index) => new Rect();
-
-            public IEnumerable<Rect> HitTestTextRange(int index, int length) => new Rect[length];
+            
         }
     }
 }

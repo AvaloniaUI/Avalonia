@@ -1,10 +1,12 @@
 using System.Collections;
 using Avalonia.Controls.Generators;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Templates;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
@@ -12,24 +14,25 @@ namespace Avalonia.Controls
     /// <summary>
     /// An <see cref="ItemsControl"/> in which individual items can be selected.
     /// </summary>
+    [TemplatePart("PART_ScrollViewer", typeof(IScrollable))]
     public class ListBox : SelectingItemsControl
     {
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new VirtualizingStackPanel());
+        private static readonly FuncTemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new VirtualizingStackPanel());
 
         /// <summary>
         /// Defines the <see cref="Scroll"/> property.
         /// </summary>
-        public static readonly DirectProperty<ListBox, IScrollable> ScrollProperty =
-            AvaloniaProperty.RegisterDirect<ListBox, IScrollable>(nameof(Scroll), o => o.Scroll);
+        public static readonly DirectProperty<ListBox, IScrollable?> ScrollProperty =
+            AvaloniaProperty.RegisterDirect<ListBox, IScrollable?>(nameof(Scroll), o => o.Scroll);
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
         /// </summary>
-        public static readonly new DirectProperty<SelectingItemsControl, IList> SelectedItemsProperty =
+        public static readonly new DirectProperty<SelectingItemsControl, IList?> SelectedItemsProperty =
             SelectingItemsControl.SelectedItemsProperty;
 
         /// <summary>
@@ -44,13 +47,7 @@ namespace Avalonia.Controls
         public static readonly new StyledProperty<SelectionMode> SelectionModeProperty = 
             SelectingItemsControl.SelectionModeProperty;
 
-        /// <summary>
-        /// Defines the <see cref="VirtualizationMode"/> property.
-        /// </summary>
-        public static readonly StyledProperty<ItemVirtualizationMode> VirtualizationModeProperty =
-            ItemsPresenter.VirtualizationModeProperty.AddOwner<ListBox>();
-
-        private IScrollable _scroll;
+        private IScrollable? _scroll;
 
         /// <summary>
         /// Initializes static members of the <see cref="ItemsControl"/> class.
@@ -58,20 +55,19 @@ namespace Avalonia.Controls
         static ListBox()
         {
             ItemsPanelProperty.OverrideDefaultValue<ListBox>(DefaultPanel);
-            VirtualizationModeProperty.OverrideDefaultValue<ListBox>(ItemVirtualizationMode.Simple);
         }
 
         /// <summary>
         /// Gets the scroll information for the <see cref="ListBox"/>.
         /// </summary>
-        public IScrollable Scroll
+        public IScrollable? Scroll
         {
             get { return _scroll; }
             private set { SetAndRaise(ScrollProperty, ref _scroll, value); }
         }
 
         /// <inheritdoc/>
-        public new IList SelectedItems
+        public new IList? SelectedItems
         {
             get => base.SelectedItems;
             set => base.SelectedItems = value;
@@ -98,15 +94,6 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Gets or sets the virtualization mode for the items.
-        /// </summary>
-        public ItemVirtualizationMode VirtualizationMode
-        {
-            get { return GetValue(VirtualizationModeProperty); }
-            set { SetValue(VirtualizationModeProperty, value); }
-        }
-
-        /// <summary>
         /// Selects all items in the <see cref="ListBox"/>.
         /// </summary>
         public void SelectAll() => Selection.SelectAll();
@@ -116,14 +103,7 @@ namespace Avalonia.Controls
         /// </summary>
         public void UnselectAll() => Selection.Clear();
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator<ListBoxItem>(
-                this, 
-                ListBoxItem.ContentProperty,
-                ListBoxItem.ContentTemplateProperty);
-        }
+        protected internal override Control CreateContainerForItemOverride() => new ListBoxItem();
 
         /// <inheritdoc/>
         protected override void OnGotFocus(GotFocusEventArgs e)
@@ -136,7 +116,8 @@ namespace Avalonia.Controls
                     e.Source,
                     true,
                     e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                    e.KeyModifiers.HasAllFlags(KeyModifiers.Control));
+                    e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
+                    fromFocus: true);
             }
         }
 
@@ -145,7 +126,7 @@ namespace Avalonia.Controls
         {
             base.OnPointerPressed(e);
 
-            if (e.Source is IVisual source)
+            if (e.Source is Visual source)
             {
                 var point = e.GetCurrentPoint(source);
 
@@ -155,7 +136,7 @@ namespace Avalonia.Controls
                         e.Source,
                         true,
                         e.KeyModifiers.HasAllFlags(KeyModifiers.Shift),
-                        e.KeyModifiers.HasAllFlags(KeyModifiers.Control),
+                        e.KeyModifiers.HasAllFlags(AvaloniaLocator.Current.GetRequiredService<PlatformHotkeyConfiguration>().CommandModifiers),
                         point.Properties.IsRightButtonPressed);
                 }
             }

@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public abstract class DefinitionList<T> : AvaloniaList<T> where T : DefinitionBase
@@ -36,7 +34,7 @@ namespace Avalonia.Controls
             }
         }
 
-        internal void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        internal void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             var idx = 0;
 
@@ -62,7 +60,7 @@ namespace Avalonia.Controls
 
             for (var i = 0; i < count; i++)
             {
-                var definition = (DefinitionBase) items[i];
+                var definition = (DefinitionBase) items[i]!;
 
                 if (wasRemoved)
                 {

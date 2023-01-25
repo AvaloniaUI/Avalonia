@@ -4,7 +4,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia.Helpers
 {
-    public class DrawingContextHelper
+    public static class DrawingContextHelper
     {
         /// <summary>
         /// Wrap Skia canvas in drawing context so we can use Avalonia api to render to external skia canvas
@@ -27,5 +27,6 @@ namespace Avalonia.Skia.Helpers
 
             return new DrawingContextImpl(createInfo);
         }
+        
     }
 }

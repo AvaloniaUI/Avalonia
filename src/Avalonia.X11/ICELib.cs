@@ -46,7 +46,7 @@ namespace Avalonia.X11
             IntPtr iceConn,
             bool swap,
             int offendingMinorOpcode,
-            ulong offendingSequence,
+            nuint offendingSequence,
             int errorClass,
             int severity,
             IntPtr values

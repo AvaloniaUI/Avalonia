@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using static System.Char;
 
@@ -7,26 +8,26 @@ namespace Avalonia.Utilities
 #if !BUILDTASK
     public
 #endif
-    struct StringTokenizer : IDisposable
+    record struct StringTokenizer : IDisposable
     {
         private const char DefaultSeparatorChar = ',';
 
         private readonly string _s;
         private readonly int _length;
         private readonly char _separator;
-        private readonly string _exceptionMessage;
+        private readonly string? _exceptionMessage;
         private readonly IFormatProvider _formatProvider;
         private int _index;
         private int _tokenIndex;
         private int _tokenLength;
 
-        public StringTokenizer(string s, IFormatProvider formatProvider, string exceptionMessage = null)
+        public StringTokenizer(string s, IFormatProvider formatProvider, string? exceptionMessage = null)
             : this(s, GetSeparatorFromFormatProvider(formatProvider), exceptionMessage)
         {
             _formatProvider = formatProvider;
         }
 
-        public StringTokenizer(string s, char separator = DefaultSeparatorChar, string exceptionMessage = null)
+        public StringTokenizer(string s, char separator = DefaultSeparatorChar, string? exceptionMessage = null)
         {
             _s = s ?? throw new ArgumentNullException(nameof(s));
             _length = s?.Length ?? 0;
@@ -43,7 +44,7 @@ namespace Avalonia.Utilities
             }
         }
 
-        public string CurrentToken => _tokenIndex < 0 ? null : _s.Substring(_tokenIndex, _tokenLength);
+        public string? CurrentToken => _tokenIndex < 0 ? null : _s.Substring(_tokenIndex, _tokenLength);
 
         public void Dispose()
         {
@@ -62,7 +63,7 @@ namespace Avalonia.Utilities
             }
             else
             {
-                result = default(Int32);
+                result = default;
                 return false;
             }
         }
@@ -86,7 +87,7 @@ namespace Avalonia.Utilities
             }
             else
             {
-                result = default(double);
+                result = default;
                 return false;
             }
         }
@@ -101,7 +102,7 @@ namespace Avalonia.Utilities
             return result;
         }
 
-        public bool TryReadString(out string result, char? separator = null)
+        public bool TryReadString([MaybeNullWhen(false)] out string result, char? separator = null)
         {
             var success = TryReadToken(separator ?? _separator);
             result = CurrentToken;

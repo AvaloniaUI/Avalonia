@@ -13,9 +13,9 @@ using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Avalonia.X11;
 using Avalonia.X11.Glx;
-using Avalonia.X11.NativeDialogs;
 using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
@@ -29,6 +29,8 @@ namespace Avalonia.X11
         public XI2Manager XI2;
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
+        public Compositor Compositor { get; private set; }
+        public PlatformRenderInterfaceContextManager RenderInterface { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
@@ -68,6 +70,7 @@ namespace Avalonia.X11
             //TODO: log
             if (options.UseDBusMenu)
                 DBusHelper.TryInitialize();
+
             AvaloniaLocator.CurrentMutable.BindToSelf(this)
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IPlatformThreadingInterface>().ToConstant(new X11PlatformThreading(this))
@@ -77,13 +80,12 @@ namespace Avalonia.X11
                 .Bind<IKeyboardDevice>().ToFunc(() => KeyboardDevice)
                 .Bind<ICursorFactory>().ToConstant(new X11CursorFactory(Display))
                 .Bind<IClipboard>().ToConstant(new X11Clipboard(this))
-                .Bind<IPlatformSettings>().ToConstant(new PlatformSettingsStub())
-                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader(Info))
-                .Bind<ISystemDialogImpl>().ToConstant(new GtkSystemDialog())
+                .Bind<IPlatformSettings>().ToSingleton<DBusPlatformSettings>()
+                .Bind<IPlatformIconLoader>().ToConstant(new X11IconLoader())
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new LinuxMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(new X11PlatformLifetimeEvents(this));
             
-            X11Screens = Avalonia.X11.X11Screens.Init(this);
+            X11Screens = X11.X11Screens.Init(this);
             Screens = new X11Screens(X11Screens);
             if (Info.XInputVersion != null)
             {
@@ -95,12 +97,18 @@ namespace Avalonia.X11
             if (options.UseGpu)
             {
                 if (options.UseEGL)
-                    EglPlatformOpenGlInterface.TryInitialize();
+                    EglPlatformGraphics.TryInitialize();
                 else
-                    GlxPlatformOpenGlInterface.TryInitialize(Info, Options.GlProfiles);
+                    GlxPlatformGraphics.TryInitialize(Info, Options.GlProfiles);
             }
 
+            var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
             
+            if (options.UseCompositor)
+                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
+            else
+                RenderInterface = new(gl);
+
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -135,7 +143,7 @@ namespace Avalonia.X11
             throw new NotSupportedException();
         }
 
-        bool EnableIme(X11PlatformOptions options)
+        static bool EnableIme(X11PlatformOptions options)
         {
             // Disable if explicitly asked by user
             var avaloniaImModule = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
@@ -156,8 +164,8 @@ namespace Avalonia.X11
 
             return isCjkLocale;
         }
-        
-        bool ShouldUseXim()
+
+        static bool ShouldUseXim()
         {
             // Check if we are forbidden from using IME
             if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"
@@ -209,9 +217,15 @@ namespace Avalonia
 
         /// <summary>
         /// Enables global menu support on Linux desktop environments where it's supported (e. g. XFCE and MATE with plugin, KDE, etc).
-        /// The default value is false.
+        /// The default value is true.
         /// </summary>
-        public bool UseDBusMenu { get; set; }
+        public bool UseDBusMenu { get; set; } = true;
+
+        /// <summary>
+        /// Enables DBus file picker instead of GTK.
+        /// The default value is true.
+        /// </summary>
+        public bool UseDBusFilePicker { get; set; } = true;
 
         /// <summary>
         /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
@@ -221,6 +235,8 @@ namespace Avalonia
         /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
         /// </remarks>
         public bool UseDeferredRendering { get; set; } = true;
+
+        public bool UseCompositor { get; set; } = true;
 
         /// <summary>
         /// Determines whether to use IME.
@@ -261,7 +277,9 @@ namespace Avalonia
             // and sometimes attempts to use GLX might cause a segfault
             "llvmpipe"
         };
-        public string WmClass { get; set; } = Assembly.GetEntryAssembly()?.GetName()?.Name ?? "AvaloniaApplication";
+
+        
+        public string WmClass { get; set; }
 
         /// <summary>
         /// Enables multitouch support. The default value is true.
@@ -270,10 +288,22 @@ namespace Avalonia
         /// Multitouch allows a surface (a touchpad or touchscreen) to recognize the presence of more than one point of contact with the surface at the same time.
         /// </remarks>
         public bool? EnableMultiTouch { get; set; } = true;
+
+        public X11PlatformOptions()
+        {
+            try
+            {
+                WmClass = Assembly.GetEntryAssembly()?.GetName()?.Name;
+            }
+            catch
+            {
+                //
+            }
+        }
     }
     public static class AvaloniaX11PlatformExtensions
     {
-        public static T UseX11<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseX11(this AppBuilder builder)
         {
             builder.UseWindowingSubsystem(() =>
                 new AvaloniaX11Platform().Initialize(AvaloniaLocator.Current.GetService<X11PlatformOptions>() ??

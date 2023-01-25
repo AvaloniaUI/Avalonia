@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Dialogs;
+using Avalonia.Input;
 using Avalonia.Native.Interop;
 using Avalonia.Native.Interop.Impl;
 using Avalonia.Threading;
@@ -18,11 +19,13 @@ namespace Avalonia.Native
         private NativeMenu _menu;
         private __MicroComIAvnMenuProxy _nativeMenu;
         private readonly IAvnTrayIcon _trayIcon;
+        private readonly IAvnApplicationCommands _applicationCommands;
 
         public AvaloniaNativeMenuExporter(IAvnWindow nativeWindow, IAvaloniaNativeFactory factory)
         {
             _factory = factory;
             _nativeWindow = nativeWindow;
+            _applicationCommands = _factory.CreateApplicationCommands();
 
             DoLayoutReset();
         }
@@ -30,6 +33,7 @@ namespace Avalonia.Native
         public AvaloniaNativeMenuExporter(IAvaloniaNativeFactory factory)
         {
             _factory = factory;
+            _applicationCommands = _factory.CreateApplicationCommands();
 
             DoLayoutReset();
         }
@@ -38,7 +42,8 @@ namespace Avalonia.Native
         {
             _factory = factory;
             _trayIcon = trayIcon;
-            
+            _applicationCommands = _factory.CreateApplicationCommands();
+
             DoLayoutReset();
         }
 
@@ -64,27 +69,92 @@ namespace Avalonia.Native
         {
             var result = new NativeMenu();
 
-            var aboutItem = new NativeMenuItem
-            {
-                Header = "About Avalonia",
-            };
-
-            aboutItem.Click += async (sender, e) =>
+            var aboutItem = new NativeMenuItem("About Avalonia");
+            
+            aboutItem.Click += async (_, _) =>
             {
                 var dialog = new AboutAvaloniaDialog();
 
-                var mainWindow = (Application.Current.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-
-                await dialog.ShowDialog(mainWindow);
+                if (Application.Current is
+                    { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime { MainWindow: { } mainWindow } })
+                {
+                    await dialog.ShowDialog(mainWindow);   
+                }
             };
-
+            
             result.Add(aboutItem);
 
             return result;
         }
 
+        private void PopulateStandardOSXMenuItems(NativeMenu appMenu)
+        {
+            appMenu.Add(new NativeMenuItemSeparator());
+
+            var servicesMenu = new NativeMenuItem("Services");
+            servicesMenu.Menu = new NativeMenu { [MacOSNativeMenuCommands.IsServicesSubmenuProperty] = true };
+
+            appMenu.Add(servicesMenu);
+
+            appMenu.Add(new NativeMenuItemSeparator());
+
+            var hideItem = new NativeMenuItem("Hide " + (Application.Current?.Name ?? "Application"))
+            {
+                Gesture = new KeyGesture(Key.H, KeyModifiers.Meta)
+            };
+
+            hideItem.Click += (_, _) =>
+            {
+                _applicationCommands.HideApp();
+            };
+
+            appMenu.Add(hideItem);
+
+            var hideOthersItem = new NativeMenuItem("Hide Others")
+            {
+                Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta | KeyModifiers.Alt)
+            };
+            hideOthersItem.Click += (_, _) =>
+            {
+                _applicationCommands.HideOthers();
+            };
+            appMenu.Add(hideOthersItem);
+
+            var showAllItem = new NativeMenuItem("Show All");
+            showAllItem.Click += (_, _) =>
+            {
+                _applicationCommands.ShowAll();
+            };
+
+            appMenu.Add(showAllItem);
+
+            appMenu.Add(new NativeMenuItemSeparator());
+
+            var quitItem = new NativeMenuItem("Quit") { Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta) };
+            quitItem.Click += (_, _) =>
+            {
+                if (Application.Current is { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime lifetime })
+                {
+                    lifetime.TryShutdown();
+                }
+                else if(Application.Current is {ApplicationLifetime: IControlledApplicationLifetime controlledLifetime})
+                {
+                    controlledLifetime.Shutdown();
+                }
+            };
+
+            appMenu.Add(quitItem);
+        }
+
         private void DoLayoutReset(bool forceUpdate = false)
         {
+            var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>() ?? new MacOSPlatformOptions();
+
+            if (macOpts.DisableNativeMenus)
+            {
+                return;
+            }
+
             if (_resetQueued || forceUpdate)
             {
                 _resetQueued = false;
@@ -155,6 +225,13 @@ namespace Avalonia.Native
                 _nativeMenu = __MicroComIAvnMenuProxy.Create(_factory);
 
                 _nativeMenu.Initialize(this, appMenuHolder, "");
+
+                var macOpts = AvaloniaLocator.Current.GetService<MacOSPlatformOptions>();
+
+                if (macOpts == null || !macOpts.DisableDefaultApplicationMenuItems)
+                {
+                    PopulateStandardOSXMenuItems(menu);
+                }
 
                 setMenu = true;
             }

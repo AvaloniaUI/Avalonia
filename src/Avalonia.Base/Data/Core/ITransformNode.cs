@@ -2,6 +2,6 @@
 {
     interface ITransformNode
     {
-        object Transform(object value);
+        object? Transform(object? value);
     }
 }

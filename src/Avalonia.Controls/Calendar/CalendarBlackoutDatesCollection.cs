@@ -1,6 +1,6 @@
 ﻿// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
-// Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+// Please see https://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
 
 using System;
@@ -206,7 +206,7 @@ namespace Avalonia.Controls.Primitives
             return true;
         }
         
-        private void EnsureValidThread()
+        private static void EnsureValidThread()
         {
             Dispatcher.UIThread.VerifyAccess();
         }

@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +14,15 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control to allow the user to select a date
     /// </summary>
+    [TemplatePart("PART_ButtonContentGrid", typeof(Grid))]
+    [TemplatePart("PART_DayTextBlock",      typeof(TextBlock))]
+    [TemplatePart("PART_FirstSpacer",       typeof(Rectangle))]
+    [TemplatePart("PART_FlyoutButton",      typeof(Button))]
+    [TemplatePart("PART_MonthTextBlock",    typeof(TextBlock))]
+    [TemplatePart("PART_PickerPresenter",   typeof(DatePickerPresenter))]
+    [TemplatePart("PART_Popup",             typeof(Popup))]
+    [TemplatePart("PART_SecondSpacer",      typeof(Rectangle))]
+    [TemplatePart("PART_YearTextBlock",     typeof(TextBlock))]
     [PseudoClasses(":hasnodate")]
     public class DatePicker : TemplatedControl
     {
@@ -29,18 +39,6 @@ namespace Avalonia.Controls
         public static readonly DirectProperty<DatePicker, bool> DayVisibleProperty =
             AvaloniaProperty.RegisterDirect<DatePicker, bool>(nameof(DayVisible),
                 x => x.DayVisible, (x, v) => x.DayVisible = v);
-
-        /// <summary>
-        /// Defines the <see cref="Header"/> Property
-        /// </summary>
-        public static readonly StyledProperty<object> HeaderProperty =
-            AvaloniaProperty.Register<DatePicker, object>(nameof(Header));
-
-        /// <summary>
-        /// Defines the <see cref="HeaderTemplate"/> Property
-        /// </summary>
-        public static readonly StyledProperty<IDataTemplate> HeaderTemplateProperty =
-            AvaloniaProperty.Register<DatePicker, IDataTemplate>(nameof(HeaderTemplate));
 
         /// <summary>
         /// Defines the <see cref="MaxYear"/> Property
@@ -93,15 +91,15 @@ namespace Avalonia.Controls
                 defaultBindingMode: BindingMode.TwoWay);
 
         // Template Items
-        private Button _flyoutButton;
-        private TextBlock _dayText;
-        private TextBlock _monthText;
-        private TextBlock _yearText;
-        private Grid _container;
-        private Rectangle _spacer1;
-        private Rectangle _spacer2;
-        private Popup _popup;
-        private DatePickerPresenter _presenter;
+        private Button? _flyoutButton;
+        private TextBlock? _dayText;
+        private TextBlock? _monthText;
+        private TextBlock? _yearText;
+        private Grid? _container;
+        private Rectangle? _spacer1;
+        private Rectangle? _spacer2;
+        private Popup? _popup;
+        private DatePickerPresenter? _presenter;
 
         private bool _areControlsAvailable;
 
@@ -140,24 +138,6 @@ namespace Avalonia.Controls
                 SetAndRaise(DayVisibleProperty, ref _dayVisible, value);
                 SetGrid();
             }
-        }
-
-        /// <summary>
-        /// Gets or sets the DatePicker header
-        /// </summary>
-        public object Header
-        {
-            get => GetValue(HeaderProperty);
-            set => SetValue(HeaderProperty, value);
-        }
-
-        /// <summary>
-        /// Gets or sets the header template
-        /// </summary>
-        public IDataTemplate HeaderTemplate
-        {
-            get => GetValue(HeaderTemplateProperty);
-            set => SetValue(HeaderTemplateProperty, value);
         }
 
         /// <summary>
@@ -256,7 +236,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Raised when the <see cref="SelectedDate"/> changes
         /// </summary>
-        public event EventHandler<DatePickerSelectedValueChangedEventArgs> SelectedDateChanged;
+        public event EventHandler<DatePickerSelectedValueChangedEventArgs>? SelectedDateChanged;
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
@@ -270,15 +250,15 @@ namespace Avalonia.Controls
             }
 
             base.OnApplyTemplate(e);
-            _flyoutButton = e.NameScope.Find<Button>("FlyoutButton");
-            _dayText = e.NameScope.Find<TextBlock>("DayText");
-            _monthText = e.NameScope.Find<TextBlock>("MonthText");
-            _yearText = e.NameScope.Find<TextBlock>("YearText");
-            _container = e.NameScope.Find<Grid>("ButtonContentGrid");
-            _spacer1 = e.NameScope.Find<Rectangle>("FirstSpacer");
-            _spacer2 = e.NameScope.Find<Rectangle>("SecondSpacer");
-            _popup = e.NameScope.Find<Popup>("Popup");
-            _presenter = e.NameScope.Find<DatePickerPresenter>("PickerPresenter");
+            _flyoutButton = e.NameScope.Find<Button>("PART_FlyoutButton");
+            _dayText = e.NameScope.Find<TextBlock>("PART_DayTextBlock");
+            _monthText = e.NameScope.Find<TextBlock>("PART_MonthTextBlock");
+            _yearText = e.NameScope.Find<TextBlock>("PART_YearTextBlock");
+            _container = e.NameScope.Find<Grid>("PART_ButtonContentGrid");
+            _spacer1 = e.NameScope.Find<Rectangle>("PART_FirstSpacer");
+            _spacer2 = e.NameScope.Find<Rectangle>("PART_SecondSpacer");
+            _popup = e.NameScope.Find<Popup>("PART_Popup");
+            _presenter = e.NameScope.Find<DatePickerPresenter>("PART_PickerPresenter");
 
             _areControlsAvailable = true;
 
@@ -307,16 +287,16 @@ namespace Avalonia.Controls
             }
         }
 
-        private void OnDismissPicker(object sender, EventArgs e)
+        private void OnDismissPicker(object? sender, EventArgs e)
         {
-            _popup.Close();
+            _popup!.Close();
             Focus();
         }
 
-        private void OnConfirmed(object sender, EventArgs e)
+        private void OnConfirmed(object? sender, EventArgs e)
         {
-            _popup.Close();
-            SelectedDate = _presenter.Date;
+            _popup!.Close();
+            SelectedDate = _presenter!.Date;
         }
 
         private void SetGrid()
@@ -325,7 +305,7 @@ namespace Avalonia.Controls
                 return;
 
             var fmt = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
-            var columns = new List<(TextBlock, int)>
+            var columns = new List<(TextBlock?, int)>
             {
                 (_monthText, MonthVisible ? fmt.IndexOf("m", StringComparison.OrdinalIgnoreCase) : -1),
                 (_yearText, YearVisible ? fmt.IndexOf("y", StringComparison.OrdinalIgnoreCase) : -1),
@@ -366,11 +346,11 @@ namespace Avalonia.Controls
             var isSpacer1Visible = columnIndex > 1;
             var isSpacer2Visible = columnIndex > 2;
             // ternary conditional operator is used to make sure grid cells will be validated
-            Grid.SetColumn(_spacer1, isSpacer1Visible ? 1 : 0);
-            Grid.SetColumn(_spacer2, isSpacer2Visible ? 3 : 0);
+            Grid.SetColumn(_spacer1!, isSpacer1Visible ? 1 : 0);
+            Grid.SetColumn(_spacer2!, isSpacer2Visible ? 3 : 0);
 
-            _spacer1.IsVisible = isSpacer1Visible;
-            _spacer2.IsVisible = isSpacer2Visible;
+            _spacer1!.IsVisible = isSpacer1Visible;
+            _spacer2!.IsVisible = isSpacer2Visible;
         }
 
         private void SetSelectedDateText()
@@ -382,37 +362,46 @@ namespace Avalonia.Controls
             {
                 PseudoClasses.Set(":hasnodate", false);
                 var selDate = SelectedDate.Value;
-                _monthText.Text = selDate.ToString(MonthFormat);
-                _yearText.Text = selDate.ToString(YearFormat);
-                _dayText.Text = selDate.ToString(DayFormat);
+                _monthText!.Text = selDate.ToString(MonthFormat);
+                _yearText!.Text = selDate.ToString(YearFormat);
+                _dayText!.Text = selDate.ToString(DayFormat);
             }
             else
             {
                 PseudoClasses.Set(":hasnodate", true);
-                _monthText.Text = "month";
-                _yearText.Text = "year";
-                _dayText.Text = "day";
+                _monthText!.Text = "month";
+                _yearText!.Text = "year";
+                _dayText!.Text = "day";
             }
         }
 
-        private void OnFlyoutButtonClicked(object sender, RoutedEventArgs e)
+        private void OnFlyoutButtonClicked(object? sender, RoutedEventArgs e)
         {
             if (_presenter == null)
-                throw new InvalidOperationException("No DatePickerPresenter found");
+                throw new InvalidOperationException("No DatePickerPresenter found.");
+            if (_popup == null)
+                throw new InvalidOperationException("No Popup found.");
 
             _presenter.Date = SelectedDate ?? DateTimeOffset.Now;
 
+            _popup.PlacementMode = PlacementMode.AnchorAndGravity;
+            _popup.PlacementAnchor = Primitives.PopupPositioning.PopupAnchor.Bottom;
+            _popup.PlacementGravity = Primitives.PopupPositioning.PopupGravity.Bottom;
+            _popup.PlacementConstraintAdjustment = Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
             _popup.IsOpen = true;
+
+            // Overlay popup hosts won't get measured until the next layout pass, but we need the
+            // template to be applied to `_presenter` now. Detect this case and force a layout pass.
+            if (!_presenter.IsMeasureValid)
+                (VisualRoot as ILayoutRoot)?.LayoutManager?.ExecuteInitialLayoutPass();
 
             var deltaY = _presenter.GetOffsetForPopup();
 
             // The extra 5 px I think is related to default popup placement behavior
-            _popup.Host.ConfigurePosition(_popup.PlacementTarget, PlacementMode.AnchorAndGravity, new Point(0, deltaY + 5),
-                Primitives.PopupPositioning.PopupAnchor.Bottom, Primitives.PopupPositioning.PopupGravity.Bottom,
-                 Primitives.PopupPositioning.PopupPositionerConstraintAdjustment.SlideY);
+            _popup.VerticalOffset = deltaY + 5;
         }
 
-        protected virtual void OnSelectedDateChanged(object sender, DatePickerSelectedValueChangedEventArgs e)
+        protected virtual void OnSelectedDateChanged(object? sender, DatePickerSelectedValueChangedEventArgs e)
         {
             SelectedDateChanged?.Invoke(sender, e);
         }

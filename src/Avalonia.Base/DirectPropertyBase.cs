@@ -1,9 +1,6 @@
 ﻿using System;
 using Avalonia.Data;
-using Avalonia.Reactive;
-using Avalonia.Utilities;
-
-#nullable enable
+using Avalonia.PropertyStore;
 
 namespace Avalonia
 {
@@ -29,21 +26,7 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata)
             : base(name, ownerType, metadata)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DirectPropertyBase{TValue}"/> class.
-        /// </summary>
-        /// <param name="source">The property to copy.</param>
-        /// <param name="ownerType">The new owner type.</param>
-        /// <param name="metadata">Optional overridden metadata.</param>
-        [Obsolete("Use constructor with DirectPropertyBase<TValue> instead.", true)]
-        protected DirectPropertyBase(
-            AvaloniaProperty source,
-            Type ownerType,
-            AvaloniaPropertyMetadata metadata)
-            : this(source as DirectPropertyBase<TValue> ?? throw new InvalidOperationException(), ownerType, metadata)
-        {
+            Owner = ownerType;
         }
 
         /// <summary>
@@ -58,26 +41,27 @@ namespace Avalonia
             AvaloniaPropertyMetadata metadata)
             : base(source, ownerType, metadata)
         {
+            Owner = ownerType;
         }
 
         /// <summary>
         /// Gets the type that registered the property.
         /// </summary>
-        public abstract Type Owner { get; }
+        public Type Owner { get; }
 
         /// <summary>
         /// Gets the value of the property on the instance.
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <returns>The property value.</returns>
-        internal abstract TValue InvokeGetter(IAvaloniaObject instance);
+        internal abstract TValue InvokeGetter(AvaloniaObject instance);
 
         /// <summary>
         /// Sets the value of the property on the instance.
         /// </summary>
         /// <param name="instance">The instance.</param>
         /// <param name="value">The value.</param>
-        internal abstract void InvokeSetter(IAvaloniaObject instance, BindingValue<TValue> value);
+        internal abstract void InvokeSetter(AvaloniaObject instance, BindingValue<TValue> value);
 
         /// <summary>
         /// Gets the unset value for the property on the specified type.
@@ -107,7 +91,7 @@ namespace Avalonia
         /// </summary>
         /// <typeparam name="T">The type.</typeparam>
         /// <param name="metadata">The metadata.</param>
-        public void OverrideMetadata<T>(DirectPropertyMetadata<TValue> metadata) where T : IAvaloniaObject
+        public void OverrideMetadata<T>(DirectPropertyMetadata<TValue> metadata) where T : AvaloniaObject
         {
             base.OverrideMetadata(typeof(T), metadata);
         }
@@ -122,40 +106,39 @@ namespace Avalonia
             base.OverrideMetadata(type, metadata);
         }
 
-        /// <inheritdoc/>
-        public override void Accept<TData>(IAvaloniaPropertyVisitor<TData> visitor, ref TData data)
+        internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
         {
-            visitor.Visit(this, ref data);
+            throw new InvalidOperationException("Cannot create EffectiveValue for direct property.");
         }
 
         /// <inheritdoc/>
-        internal override void RouteClearValue(IAvaloniaObject o)
+        internal override void RouteClearValue(AvaloniaObject o)
         {
             o.ClearValue<TValue>(this);
         }
 
         /// <inheritdoc/>
-        internal override object? RouteGetValue(IAvaloniaObject o)
+        internal override object? RouteGetValue(AvaloniaObject o)
         {
             return o.GetValue<TValue>(this);
         }
 
-        internal override object? RouteGetBaseValue(IAvaloniaObject o, BindingPriority maxPriority)
+        internal override object? RouteGetBaseValue(AvaloniaObject o)
         {
             return o.GetValue<TValue>(this);
         }
 
         /// <inheritdoc/>
         internal override IDisposable? RouteSetValue(
-            IAvaloniaObject o,
-            object value,
+            AvaloniaObject o,
+            object? value,
             BindingPriority priority)
         {
             var v = TryConvert(value);
 
             if (v.HasValue)
             {
-                o.SetValue<TValue>(this, (TValue)v.Value);
+                o.SetValue<TValue>(this, (TValue)v.Value!);
             }
             else if (v.Type == BindingValueType.UnsetValue)
             {
@@ -169,19 +152,18 @@ namespace Avalonia
             return null;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Routes an untyped Bind call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="source">The binding source.</param>
+        /// <param name="priority">The priority.</param>
         internal override IDisposable RouteBind(
-            IAvaloniaObject o,
-            IObservable<BindingValue<object>> source,
+            AvaloniaObject o,
+            IObservable<object?> source,
             BindingPriority priority)
         {
-            var adapter = TypedBindingAdapter<TValue>.Create(o, this, source);
-            return o.Bind<TValue>(this, adapter);
-        }
-
-        internal override void RouteInheritanceParentChanged(AvaloniaObject o, IAvaloniaObject oldParent)
-        {
-            throw new NotSupportedException("Direct properties do not support inheritance.");
+            return o.Bind(this, source);
         }
     }
 }

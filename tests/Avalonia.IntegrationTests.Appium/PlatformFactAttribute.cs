@@ -1,25 +1,46 @@
+#nullable enable
 using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Xunit;
 
-namespace Avalonia.IntegrationTests.Appium
+namespace Avalonia
 {
+    [Flags]
+    internal enum TestPlatforms
+    {
+        Windows = 0x01,
+        MacOS = 0x02,
+        Linux = 0x04,
+        All = Windows | MacOS | Linux,
+    }
+
     internal class PlatformFactAttribute : FactAttribute
     {
+        private readonly string? _reason;
+
+        public PlatformFactAttribute(TestPlatforms platforms, string? reason = null)
+        {
+            _reason = reason;
+            Platforms = platforms;
+        }
+
+        public TestPlatforms Platforms { get; }
+
         public override string? Skip
         {
-            get
-            {
-                if (SkipOnWindows && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    return "Ignored on Windows";
-                if (SkipOnOSX && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    return "Ignored on MacOS";
-                return null;
-            }
+            get => IsSupported() ? null : $"Ignored on {RuntimeInformation.OSDescription}" + (_reason is not null ? $" reason: \"{_reason}\"" : "");
             set => throw new NotSupportedException();
         }
-        public bool SkipOnOSX { get; set; }
-        public bool SkipOnWindows { get; set; }
+
+        private bool IsSupported()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return Platforms.HasAnyFlag(TestPlatforms.Windows);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return Platforms.HasAnyFlag(TestPlatforms.MacOS);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return Platforms.HasAnyFlag(TestPlatforms.Linux);
+            return false;
+        }
     }
 }

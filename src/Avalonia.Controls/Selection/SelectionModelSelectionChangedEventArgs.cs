@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Controls.Selection;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     public abstract class SelectionModelSelectionChangedEventArgs : EventArgs

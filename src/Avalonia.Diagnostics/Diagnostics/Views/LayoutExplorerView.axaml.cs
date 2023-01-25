@@ -4,6 +4,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Diagnostics.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.Views
 {
@@ -24,20 +25,20 @@ namespace Avalonia.Diagnostics.Views
         {
             InitializeComponent();
 
-            _borderArea = this.FindControl<ThicknessEditor>("BorderArea");
-            _paddingArea = this.FindControl<ThicknessEditor>("PaddingArea");
+            _borderArea = this.GetControl<ThicknessEditor>("BorderArea");
+            _paddingArea = this.GetControl<ThicknessEditor>("PaddingArea");
 
-            _horizontalSizeBegin = this.FindControl<Rectangle>("HorizontalSizeBegin");
-            _horizontalSizeEnd = this.FindControl<Rectangle>("HorizontalSizeEnd");
-            _verticalSizeBegin = this.FindControl<Rectangle>("VerticalSizeBegin");
-            _verticalSizeEnd = this.FindControl<Rectangle>("VerticalSizeEnd");
+            _horizontalSizeBegin = this.GetControl<Rectangle>("HorizontalSizeBegin");
+            _horizontalSizeEnd = this.GetControl<Rectangle>("HorizontalSizeEnd");
+            _verticalSizeBegin = this.GetControl<Rectangle>("VerticalSizeBegin");
+            _verticalSizeEnd = this.GetControl<Rectangle>("VerticalSizeEnd");
 
-            _horizontalSize = this.FindControl<Border>("HorizontalSize");
-            _verticalSize = this.FindControl<Border>("VerticalSize");
+            _horizontalSize = this.GetControl<Border>("HorizontalSize");
+            _verticalSize = this.GetControl<Border>("VerticalSize");
 
-            _contentArea = this.FindControl<Border>("ContentArea");
+            _contentArea = this.GetControl<Border>("ContentArea");
 
-            _layoutRoot = this.FindControl<Grid>("LayoutRoot");
+            _layoutRoot = this.GetControl<Grid>("LayoutRoot");
 
             void SubscribeToBounds(Visual visual)
             {
@@ -100,7 +101,7 @@ namespace Avalonia.Diagnostics.Views
                 }
             }
 
-            Point TranslateToRoot(Point point, IVisual from)
+            Point TranslateToRoot(Point point, Visual from)
             {
                 return from.TranslatePoint(point, _layoutRoot) ?? default;
             }

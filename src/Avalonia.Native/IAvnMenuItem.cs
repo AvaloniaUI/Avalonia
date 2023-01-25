@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Interop;
@@ -149,6 +149,11 @@ namespace Avalonia.Native.Interop.Impl
                 if (_subMenu == null)
                 {
                     _subMenu = __MicroComIAvnMenuProxy.Create(factory);
+
+                    if (item.Menu.GetValue(MacOSNativeMenuCommands.IsServicesSubmenuProperty))
+                    {
+                        factory.SetServicesMenu(_subMenu);
+                    }
 
                     _subMenu.Initialize(exporter, item.Menu, item.Header);
 

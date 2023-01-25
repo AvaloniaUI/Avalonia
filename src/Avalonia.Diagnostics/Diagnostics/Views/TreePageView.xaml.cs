@@ -20,8 +20,7 @@ namespace Avalonia.Diagnostics.Views
         public TreePageView()
         {
             InitializeComponent();
-            _tree = this.FindControl<TreeView>("tree");
-            _tree.ItemContainerGenerator.Index.Materialized += TreeViewItemMaterialized;
+            _tree = this.GetControl<TreeView>("tree");
 
             _adorner = new Panel
             {
@@ -36,6 +35,7 @@ namespace Avalonia.Diagnostics.Views
                     new Border { BorderBrush = new SolidColorBrush(Colors.Yellow, 0.5) }
                 },
             };
+            AdornerLayer.SetIsClipEnabled(_adorner, false);
         }
 
         protected void AddAdorner(object? sender, PointerEventArgs e)
@@ -47,7 +47,12 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var visual = (Visual)node.Visual;
+            var visual = node.Visual as Visual;
+
+            if (visual is null)
+            {
+                return;
+            }
 
             _currentLayer = AdornerLayer.GetAdornerLayer(visual);
 
@@ -95,31 +100,6 @@ namespace Avalonia.Diagnostics.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-        }
-
-        private void TreeViewItemMaterialized(object? sender, ItemContainerEventArgs e)
-        {
-            var item = (TreeViewItem)e.Containers[0].ContainerControl;
-            item.TemplateApplied += TreeViewItemTemplateApplied;
-        }
-
-        private void TreeViewItemTemplateApplied(object? sender, TemplateAppliedEventArgs e)
-        {
-            var item = (TreeViewItem)sender!;
-
-            // This depends on the default tree item template.
-            // We want to handle events in the item header but exclude events coming from children.
-            var header = item.FindDescendantOfType<Border>();
-
-            Debug.Assert(header != null);
-
-            if (header != null)
-            {
-                header.PointerEnter += AddAdorner;
-                header.PointerLeave += RemoveAdorner;
-            }
-
-            item.TemplateApplied -= TreeViewItemTemplateApplied;
         }
     }
 }

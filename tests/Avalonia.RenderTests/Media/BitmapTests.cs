@@ -69,8 +69,9 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
             var testName = nameof(FramebufferRenderResultsShouldBeUsableAsBitmap) + "_" + fmt;
             var fb = new Framebuffer(fmt, new PixelSize(80, 80));
-            var r = Avalonia.AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
-            using (var target = r.CreateRenderTarget(new object[] { fb }))
+            var r = Avalonia.AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+            using(var cpuContext = r.CreateBackendContext(null))
+            using (var target = cpuContext.CreateRenderTarget(new object[] { fb }))
             using (var ctx = target.CreateDrawingContext(null))
             {
                 ctx.Clear(Colors.Transparent);
@@ -102,9 +103,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData(PixelFormat.Bgra8888), InlineData(PixelFormat.Rgba8888)]
         public void WriteableBitmapShouldBeUsable(PixelFormat fmt)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             var writeableBitmap = new WriteableBitmap(new PixelSize(256, 256), new Vector(96, 96), fmt);
-#pragma warning restore CS0618 // Type or member is obsolete
 
             var data = new int[256 * 256];
             for (int y = 0; y < 256; y++)

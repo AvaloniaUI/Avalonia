@@ -1,14 +1,22 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿using System.Runtime.CompilerServices;
+using BenchmarkDotNet.Attributes;
 
 namespace Avalonia.Benchmarks.Base
 {
     [MemoryDiagnoser]
     public class DirectPropertyBenchmark
     {
+        private DirectClass _target = new();
+
+        public DirectPropertyBenchmark()
+        {
+            RuntimeHelpers.RunClassConstructor(typeof(DirectClass).TypeHandle);
+        }
+
         [Benchmark(Baseline = true)]
         public void SetAndRaiseOriginal()
         {
-            var obj = new DirectClass();
+            var obj = _target;
 
             for (var i = 0; i < 100; ++i)
             {
@@ -19,7 +27,7 @@ namespace Avalonia.Benchmarks.Base
         [Benchmark]
         public void SetAndRaiseSimple()
         {
-            var obj = new DirectClass();
+            var obj = _target;
 
             for (var i = 0; i < 100; ++i)
             {

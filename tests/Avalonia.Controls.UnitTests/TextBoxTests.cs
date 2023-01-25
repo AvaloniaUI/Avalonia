@@ -60,6 +60,28 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void TextBox_Should_Lose_Focus_When_Disabled()
+        {
+            using (UnitTestApplication.Start(FocusServices))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate()
+                };
+
+                target.ApplyTemplate();
+
+                var root = new TestRoot() { Child = target };
+
+                target.Focus();
+                Assert.True(target.IsFocused);
+                target.IsEnabled = false;
+                Assert.False(target.IsFocused);
+                Assert.False(target.IsEnabled);
+            }
+        }
+
+        [Fact]
         public void Opening_Context_Flyout_Does_not_Lose_Selection()
         {
             using (UnitTestApplication.Start(FocusServices))
@@ -115,6 +137,10 @@ namespace Avalonia.Controls.UnitTests
                     Text = "1234"
                 };
 
+                target.ApplyTemplate();
+                
+                target.Measure(Size.Infinity);
+                
                 target.CaretIndex = 3;
                 RaiseKeyEvent(target, Key.Right, 0);
 
@@ -132,6 +158,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "1234"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.A, KeyModifiers.Control);
 
@@ -175,43 +203,19 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Typing_Beginning_With_0_Should_Not_Modify_Text_When_Bound_To_Int()
-        {
-            using (UnitTestApplication.Start(Services))
-            {
-                var source = new Class1();
-                var target = new TextBox
-                {
-                    DataContext = source,
-                    Template = CreateTemplate(),
-                };
-
-                target.ApplyTemplate();
-                target.Bind(TextBox.TextProperty, new Binding(nameof(Class1.Foo), BindingMode.TwoWay));
-
-                Assert.Equal("0", target.Text);
-
-                target.CaretIndex = 1;
-                target.RaiseEvent(new TextInputEventArgs
-                {
-                    RoutedEvent = InputElement.TextInputEvent,
-                    Text = "2",
-                });
-
-                Assert.Equal("02", target.Text);
-            }
-        }
-
-        [Fact]
         public void Control_Backspace_Should_Remove_The_Word_Before_The_Caret_If_There_Is_No_Selection()
         {
             using (UnitTestApplication.Start(Services))
             {
                 TextBox textBox = new TextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
-                    CaretIndex = 5
+                    SelectionStart = 5,
+                    SelectionEnd = 5
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First| Second Third Fourth)
                 RaiseKeyEvent(textBox, Key.Back, KeyModifiers.Control);
@@ -248,9 +252,12 @@ namespace Avalonia.Controls.UnitTests
             {
                 TextBox textBox = new TextBox
                 {
+                    Template = CreateTemplate(),
                     Text = "First Second Third Fourth",
-                    CaretIndex = 19
+                    CaretIndex = 19,
                 };
+                
+                textBox.ApplyTemplate();
 
                 // (First Second Third |Fourth)
                 RaiseKeyEvent(textBox, Key.Delete, KeyModifiers.Control);
@@ -293,6 +300,7 @@ namespace Avalonia.Controls.UnitTests
 
                 textBox.SelectionStart = 2;
                 textBox.SelectionEnd = 2;
+                
                 Assert.Equal(2, textBox.CaretIndex);
             }
         }
@@ -335,6 +343,8 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = false,
                     Text = "1234"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -352,6 +362,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     AcceptsReturn = true
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -370,6 +382,8 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     NewLine = "Test"
                 };
+                
+                target.ApplyTemplate();
 
                 RaiseKeyEvent(target, Key.Enter, 0);
 
@@ -409,6 +423,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
+                
+                target.ApplyTemplate();
 
                 target.SelectionStart = 0;
                 target.SelectionEnd = 9;
@@ -431,6 +447,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
+                
+                target.ApplyTemplate();
 
                 target.SelectionStart = 8;
                 target.SelectionEnd = 9;
@@ -474,6 +492,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123456789"
                 };
+                
+                target.ApplyTemplate();
 
                 Assert.True(target.SelectedText == "");
 
@@ -494,6 +514,8 @@ namespace Avalonia.Controls.UnitTests
                     Template = CreateTemplate(),
                     Text = "0123"
                 };
+                
+                target.ApplyTemplate();
 
                 target.SelectedText = "AA";
                 Assert.True(target.Text == "AA0123");
@@ -578,7 +600,7 @@ namespace Avalonia.Controls.UnitTests
 
                 target1.Focus();
                 Assert.True(target1.IsFocused);
-                
+
                 RaiseKeyEvent(target1, key, KeyModifiers.None);
             }
         }
@@ -701,7 +723,9 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(Services))
             {
                 var source = new Class1 { Bar = "bar" };
-                var target = new TextBox { DataContext = source };
+                var target = new TextBox { Template = CreateTemplate(), DataContext = source };
+
+                target.ApplyTemplate();
 
                 target.Bind(TextBox.TextProperty, new Binding("Bar"));
 
@@ -737,13 +761,15 @@ namespace Avalonia.Controls.UnitTests
                     SelectionEnd = selectionEnd
                 };
                 
+                target.Measure(Size.Infinity);
+                
                 if (fromClipboard)
                 {
                     AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
                     
-                    var clipboard = AvaloniaLocator.CurrentMutable.GetService<IClipboard>();
+                    var clipboard = AvaloniaLocator.CurrentMutable.GetRequiredService<IClipboard>();
                     clipboard.SetTextAsync(textInput).GetAwaiter().GetResult();
-                    
+
                     RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
                     clipboard.ClearAsync().GetAwaiter().GetResult();
                 }
@@ -773,6 +799,7 @@ namespace Avalonia.Controls.UnitTests
                     AcceptsReturn = true,
                     AcceptsTab = true
                 };
+                target.ApplyTemplate();
                 target.SelectionStart = 1;
                 target.SelectionEnd = 3;
                 AvaloniaLocator.CurrentMutable
@@ -784,18 +811,267 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
+        [Fact]
+        public void Setting_SelectedText_Should_Fire_Single_Text_Changed_Notification()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123",
+                    AcceptsReturn = true,
+                    AcceptsTab = true,
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                var values = new List<string>();
+                target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
+
+                target.SelectedText = "A";
+
+                Assert.Equal(new[] { "0123", "0A3" }, values);
+            }
+        }
+
+        [Fact]
+        public void Entering_Text_With_SelectedText_Should_Fire_Single_Text_Changed_Notification()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "0123",
+                    AcceptsReturn = true,
+                    AcceptsTab = true,
+                    SelectionStart = 1,
+                    SelectionEnd = 3,
+                };
+
+                var values = new List<string>();
+                target.GetObservable(TextBox.TextProperty).Subscribe(x => values.Add(x));
+
+                RaiseTextEvent(target, "A");
+
+                Assert.Equal(new[] { "0123", "0A3" }, values);
+            }
+        }
+
+        [Fact]
+        public void Should_Fullfill_MaxLines_Contraint()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var target = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "ABC",
+                    MaxLines = 1,
+                    AcceptsReturn= true
+                };
+
+                target.Measure(Size.Infinity);
+
+                AvaloniaLocator.CurrentMutable.Bind<IClipboard>().ToSingleton<ClipboardStub>();
+
+                var clipboard = AvaloniaLocator.CurrentMutable.GetRequiredService<IClipboard>();
+                clipboard.SetTextAsync(Environment.NewLine).GetAwaiter().GetResult();
+
+                RaiseKeyEvent(target, Key.V, KeyModifiers.Control);
+                clipboard.ClearAsync().GetAwaiter().GetResult();
+
+                RaiseTextEvent(target, Environment.NewLine);
+
+                Assert.Equal("ABC", target.Text);
+            }
+        }
+
+        [Fact]
+        public void CanUndo_CanRedo_Is_False_When_Initialized()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    Text = "New Text"
+                };
+
+                tb.Measure(Size.Infinity);
+
+                Assert.False(tb.CanUndo);
+                Assert.False(tb.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void CanUndo_CanRedo_and_Programmatic_Undo_Redo_Works()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                };
+
+                tb.Measure(Size.Infinity);
+
+                // See GH #6024 for a bit more insight on when Undo/Redo snapshots are taken:
+                // - Every 'Space', but only when space is handled in OnKeyDown - Spaces in TextInput event won't work
+                // - Every 7 chars in a long word
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "123");
+
+                // NOTE: the spaces won't actually add spaces b/c they're sent only as key events and not Text events
+                //       so our final text is without spaces
+                Assert.Equal("ABCDEF123", tb.Text);
+
+                Assert.True(tb.CanUndo);
+
+                tb.Undo();
+
+                // Undo will take us back one step
+                Assert.Equal("ABCDEF", tb.Text);
+
+                Assert.True(tb.CanRedo);
+
+                tb.Redo();
+
+                // Redo should restore us
+                Assert.Equal("ABCDEF123", tb.Text);
+            }
+        }
+
+        [Fact]
+        public void Setting_UndoLimit_Clears_Undo_Redo()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                };
+
+                tb.Measure(Size.Infinity);
+
+                // This is all the same as the above test (CanUndo_CanRedo_and_Programmatic_Undo_Redo_Works)
+                // We do this to get the undo/redo stacks in a state where both are active
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "123");
+
+                Assert.Equal("ABCDEF123", tb.Text);
+                Assert.True(tb.CanUndo);
+                tb.Undo();
+                // Undo will take us back one step
+                Assert.Equal("ABCDEF", tb.Text);
+                Assert.True(tb.CanRedo);
+                tb.Redo();
+                // Redo should restore us
+                Assert.Equal("ABCDEF123", tb.Text);
+
+                // Change the undo limit, this should clear both stacks setting CanUndo and CanRedo to false
+                tb.UndoLimit = 1;
+
+                Assert.False(tb.CanUndo);
+                Assert.False(tb.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void Setting_IsUndoEnabled_To_False_Clears_Undo_Redo()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                };
+
+                tb.Measure(Size.Infinity);
+
+                // This is all the same as the above test (CanUndo_CanRedo_and_Programmatic_Undo_Redo_Works)
+                // We do this to get the undo/redo stacks in a state where both are active
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "123");
+
+                Assert.Equal("ABCDEF123", tb.Text);
+                Assert.True(tb.CanUndo);
+                tb.Undo();
+                // Undo will take us back one step
+                Assert.Equal("ABCDEF", tb.Text);
+                Assert.True(tb.CanRedo);
+                tb.Redo();
+                // Redo should restore us
+                Assert.Equal("ABCDEF123", tb.Text);
+
+                // Disable Undo/Redo, this should clear both stacks setting CanUndo and CanRedo to false
+                tb.IsUndoEnabled = false;
+
+                Assert.False(tb.CanUndo);
+                Assert.False(tb.CanRedo);
+            }
+        }
+
+        [Fact]
+        public void UndoLimit_Count_Is_Respected()
+        {
+            using (UnitTestApplication.Start(Services))
+            {
+                var tb = new TextBox
+                {
+                    Template = CreateTemplate(),
+                    UndoLimit = 3 // Something small for this test
+                };
+
+                tb.Measure(Size.Infinity);
+
+                // Push 3 undoable actions, we should only be able to recover 2
+                RaiseTextEvent(tb, "ABC");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "DEF");
+                RaiseKeyEvent(tb, Key.Space, KeyModifiers.None);
+                RaiseTextEvent(tb, "123");
+
+                Assert.Equal("ABCDEF123", tb.Text);
+
+                // Undo will take us back one step
+                tb.Undo();                
+                Assert.Equal("ABCDEF", tb.Text);
+
+                // Undo again
+                tb.Undo();
+                Assert.Equal("ABC", tb.Text);
+
+                // We now should not be able to undo again
+                Assert.False(tb.CanUndo);
+            }
+        }
+
         private static TestServices FocusServices => TestServices.MockThreadingInterface.With(
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
             inputManager: new InputManager(),
-            renderInterface: new MockPlatformRenderInterface(),
-            fontManagerImpl: new MockFontManagerImpl(),
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
             textShaperImpl: new MockTextShaperImpl(),
-            standardCursorFactory: Mock.Of<ICursorFactory>());
+            fontManagerImpl: new MockFontManagerImpl());
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<ICursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            renderInterface: new MockPlatformRenderInterface(),
+            textShaperImpl: new MockTextShaperImpl(), 
+            fontManagerImpl: new MockFontManagerImpl());
 
         private IControlTemplate CreateTemplate()
         {
@@ -805,15 +1081,22 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_TextPresenter",
                     [!!TextPresenter.TextProperty] = new Binding
                     {
-                        Path = "Text",
+                        Path = nameof(TextPresenter.Text),
                         Mode = BindingMode.TwoWay,
-                        Priority = BindingPriority.TemplatedParent,
+                        Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
+                    [!!TextPresenter.CaretIndexProperty] = new Binding
+                    {
+                        Path = nameof(TextPresenter.CaretIndex),
+                        Mode = BindingMode.TwoWay,
+                        Priority = BindingPriority.Template,
+                        RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
+                    }
                 }.RegisterInNameScope(scope));
         }
 
-        private void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
+        private static void RaiseKeyEvent(TextBox textBox, Key key, KeyModifiers inputModifiers)
         {
             textBox.RaiseEvent(new KeyEventArgs
             {
@@ -823,7 +1106,7 @@ namespace Avalonia.Controls.UnitTests
             });
         }
 
-        private void RaiseTextEvent(TextBox textBox, string text)
+        private static void RaiseTextEvent(TextBox textBox, string text)
         {
             textBox.RaiseEvent(new TextInputEventArgs
             {

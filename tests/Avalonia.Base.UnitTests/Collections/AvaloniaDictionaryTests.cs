@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
@@ -102,6 +103,16 @@ namespace Avalonia.Base.UnitTests.Collections
             Assert.Equal(-1, tracker.Args.OldStartingIndex);
             Assert.Equal(1, tracker.Args.OldItems.Count);
             Assert.Equal(new KeyValuePair<string, string>("foo", "bar"), tracker.Args.OldItems[0]);
+        }
+
+        [Fact]
+        public void Remove_Method_Should_Remove_Item_From_Collection()
+        {
+            var target = new AvaloniaDictionary<string, string>() { { "foo", "bar" } };
+            Assert.Equal(target.Count, 1);
+
+            target.Remove("foo");
+            Assert.Equal(target.Count, 0);
         }
 
         [Fact]

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
@@ -11,6 +11,8 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
+using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering;
 
 namespace Avalonia.DesignerSupport.Remote
@@ -30,7 +32,7 @@ namespace Avalonia.DesignerSupport.Remote
         public Action<Rect> Paint { get; set; }
         public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
         public Action Closed { get; set; }
         public Action LostFocus { get; set; }
         public IMouseDevice MouseDevice { get; } = new MouseDevice();
@@ -59,7 +61,10 @@ namespace Avalonia.DesignerSupport.Remote
                     }));
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer(root);
+        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer((Visual)root, () =>
+            new PlatformRenderInterfaceContextManager(null)
+                .CreateRenderTarget(Surfaces));
+        
         public void Dispose()
         {
         }
@@ -177,7 +182,9 @@ namespace Avalonia.DesignerSupport.Remote
         public bool IsClientAreaExtendedToDecorations { get; }
 
         public bool NeedsManagedDecorations => false;
-        
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 
@@ -189,7 +196,7 @@ namespace Avalonia.DesignerSupport.Remote
 
         public Task ClearAsync() => Task.CompletedTask;
         public Task SetDataObjectAsync(IDataObject data) => Task.CompletedTask;
-        public Task<string[]> GetFormatsAsync() => Task.FromResult(new string[0]);
+        public Task<string[]> GetFormatsAsync() => Task.FromResult(Array.Empty<string>());
 
         public Task<object> GetDataAsync(string format) => Task.FromResult((object)null);
     }
@@ -222,20 +229,47 @@ namespace Avalonia.DesignerSupport.Remote
         public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => new IconStub();
     }
 
-    class SystemDialogsStub : ISystemDialogImpl
-    {
-        public Task<string[]> ShowFileDialogAsync(FileDialog dialog, Window parent) =>
-            Task.FromResult((string[])null);
-
-        public Task<string> ShowFolderDialogAsync(OpenFolderDialog dialog, Window parent) =>
-            Task.FromResult((string)null);
-    }
-
     class ScreenStub : IScreenImpl
     {
         public int ScreenCount => 1;
 
         public IReadOnlyList<Screen> AllScreens { get; } =
             new Screen[] { new Screen(1, new PixelRect(0, 0, 4000, 4000), new PixelRect(0, 0, 4000, 4000), true) };
+
+        public Screen ScreenFromPoint(PixelPoint point)
+        {
+            return ScreenHelper.ScreenFromPoint(point, AllScreens);
+        }
+
+        public Screen ScreenFromRect(PixelRect rect)
+        {
+            return ScreenHelper.ScreenFromRect(rect, AllScreens);
+        }
+
+        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        {
+            return ScreenHelper.ScreenFromWindow(window, AllScreens);
+        }
+    }
+
+    internal class NoopStorageProvider : BclStorageProvider
+    {
+        public override bool CanOpen => false;
+        public override Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
+        {
+            return Task.FromResult<IReadOnlyList<IStorageFile>>(Array.Empty<IStorageFile>());
+        }
+
+        public override bool CanSave => false;
+        public override Task<IStorageFile> SaveFilePickerAsync(FilePickerSaveOptions options)
+        {
+            return Task.FromResult<IStorageFile>(null);
+        }
+
+        public override bool CanPickFolder => false;
+        public override Task<IReadOnlyList<IStorageFolder>> OpenFolderPickerAsync(FolderPickerOpenOptions options)
+        {
+            return Task.FromResult<IReadOnlyList<IStorageFolder>>(Array.Empty<IStorageFolder>());
+        }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia
@@ -42,9 +43,10 @@ namespace Avalonia
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
+        [UnconditionalSuppressMessage("Trimming", "IL2059", Justification = "If type was trimmed out, no properties were referenced")]
         public IReadOnlyList<AvaloniaProperty> GetRegistered(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             if (_registeredCache.TryGetValue(type, out var result))
             {
@@ -78,7 +80,7 @@ namespace Avalonia
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
         public IReadOnlyList<AvaloniaProperty> GetRegisteredAttached(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             if (_attachedCache.TryGetValue(type, out var result))
             {
@@ -109,7 +111,7 @@ namespace Avalonia
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
         public IReadOnlyList<AvaloniaProperty> GetRegisteredDirect(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             if (_directCache.TryGetValue(type, out var result))
             {
@@ -140,7 +142,7 @@ namespace Avalonia
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
         public IReadOnlyList<AvaloniaProperty> GetRegisteredInherited(Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
 
             if (_inheritedCache.TryGetValue(type, out var result))
             {
@@ -189,23 +191,23 @@ namespace Avalonia
         /// </summary>
         /// <param name="o">The object.</param>
         /// <returns>A collection of <see cref="AvaloniaProperty"/> definitions.</returns>
-        public IReadOnlyList<AvaloniaProperty> GetRegistered(IAvaloniaObject o)
+        public IReadOnlyList<AvaloniaProperty> GetRegistered(AvaloniaObject o)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
+            _ = o ?? throw new ArgumentNullException(nameof(o));
 
             return GetRegistered(o.GetType());
         }
 
         /// <summary>
-        /// Finds a direct property as registered on an object.
+        /// Gets a direct property as registered on an object.
         /// </summary>
         /// <param name="o">The object.</param>
         /// <param name="property">The direct property.</param>
         /// <returns>
-        /// The registered property or null if no matching property found.
+        /// The registered.
         /// </returns>
         public DirectPropertyBase<T> GetRegisteredDirect<T>(
-            IAvaloniaObject o,
+            AvaloniaObject o,
             DirectPropertyBase<T> property)
         {
             return FindRegisteredDirect(o, property) ??
@@ -223,12 +225,12 @@ namespace Avalonia
         /// <exception cref="InvalidOperationException">
         /// The property name contains a '.'.
         /// </exception>
-        public AvaloniaProperty FindRegistered(Type type, string name)
+        public AvaloniaProperty? FindRegistered(Type type, string name)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
 
-            if (name.Contains("."))
+            if (name.Contains('.'))
             {
                 throw new InvalidOperationException("Attached properties not supported.");
             }
@@ -260,10 +262,10 @@ namespace Avalonia
         /// <exception cref="InvalidOperationException">
         /// The property name contains a '.'.
         /// </exception>
-        public AvaloniaProperty FindRegistered(IAvaloniaObject o, string name)
+        public AvaloniaProperty? FindRegistered(AvaloniaObject o, string name)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(name != null);
+            _ = o ?? throw new ArgumentNullException(nameof(o));
+            _ = name ?? throw new ArgumentNullException(nameof(name));
 
             return FindRegistered(o.GetType(), name);
         }
@@ -276,8 +278,8 @@ namespace Avalonia
         /// <returns>
         /// The registered property or null if no matching property found.
         /// </returns>
-        public DirectPropertyBase<T> FindRegisteredDirect<T>(
-            IAvaloniaObject o,
+        public DirectPropertyBase<T>? FindRegisteredDirect<T>(
+            AvaloniaObject o,
             DirectPropertyBase<T> property)
         {
             if (property.Owner == o.GetType())
@@ -306,7 +308,7 @@ namespace Avalonia
         /// </summary>
         /// <param name="id">The property Id.</param>
         /// <returns>The registered property or null if no matching property found.</returns>
-        internal AvaloniaProperty FindRegistered(int id)
+        internal AvaloniaProperty? FindRegistered(int id)
         {
             return id < _properties.Count ? _properties[id] : null;
         }
@@ -319,8 +321,8 @@ namespace Avalonia
         /// <returns>True if the property is registered, otherwise false.</returns>
         public bool IsRegistered(Type type, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
+            _ = property ?? throw new ArgumentNullException(nameof(property));
 
             static bool ContainsProperty(IReadOnlyList<AvaloniaProperty> properties, AvaloniaProperty property)
             {
@@ -349,8 +351,8 @@ namespace Avalonia
         /// <returns>True if the property is registered, otherwise false.</returns>
         public bool IsRegistered(object o, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(o != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            _ = o ?? throw new ArgumentNullException(nameof(o));
+            _ = property ?? throw new ArgumentNullException(nameof(property));
 
             return IsRegistered(o.GetType(), property);
         }
@@ -362,13 +364,13 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <remarks>
         /// You won't usually want to call this method directly, instead use the
-        /// <see cref="AvaloniaProperty.Register{TOwner, TValue}(string, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{IAvaloniaObject, TValue, TValue}, Action{IAvaloniaObject, bool})"/>
+        /// <see cref="AvaloniaProperty.Register{TOwner, TValue}(string, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{AvaloniaObject, TValue, TValue}, Action{AvaloniaObject, bool})"/>
         /// method.
         /// </remarks>
         public void Register(Type type, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
+            _ = property ?? throw new ArgumentNullException(nameof(property));
 
             if (!_registered.TryGetValue(type, out var inner))
             {
@@ -413,13 +415,13 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <remarks>
         /// You won't usually want to call this method directly, instead use the
-        /// <see cref="AvaloniaProperty.RegisterAttached{THost, TValue}(string, Type, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{IAvaloniaObject, TValue, TValue})"/>
+        /// <see cref="AvaloniaProperty.RegisterAttached{THost, TValue}(string, Type, TValue, bool, Data.BindingMode, Func{TValue, bool}, Func{AvaloniaObject, TValue, TValue})"/>
         /// method.
         /// </remarks>
         public void RegisterAttached(Type type, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
-            Contract.Requires<ArgumentNullException>(property != null);
+            _ = type ?? throw new ArgumentNullException(nameof(type));
+            _ = property ?? throw new ArgumentNullException(nameof(property));
 
             if (!property.IsAttached)
             {

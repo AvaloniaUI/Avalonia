@@ -30,10 +30,10 @@ namespace Avalonia.Native
                         var screen = _native.GetScreen(i);
 
                         result[i] = new Screen(
-                            screen.PixelDensity,
+                            screen.Scaling,
                             screen.Bounds.ToAvaloniaPixelRect(),
                             screen.WorkingArea.ToAvaloniaPixelRect(),
-                            screen.Primary.FromComBool());
+                            screen.IsPrimary.FromComBool());
                     }
 
                     return result;
@@ -47,6 +47,21 @@ namespace Avalonia.Native
         {
             _native?.Dispose();
             _native = null;
+        }
+
+        public Screen ScreenFromPoint(PixelPoint point)
+        {
+            return ScreenHelper.ScreenFromPoint(point, AllScreens);
+        }
+
+        public Screen ScreenFromRect(PixelRect rect)
+        {
+            return ScreenHelper.ScreenFromRect(rect, AllScreens);
+        }
+
+        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        {
+            return ScreenHelper.ScreenFromWindow(window, AllScreens);
         }
     }
 }

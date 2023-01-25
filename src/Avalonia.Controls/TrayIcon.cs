@@ -6,9 +6,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
-using Avalonia.Utilities;
-
-#nullable enable
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -63,9 +61,15 @@ namespace Avalonia.Controls
                         args.NewValue.Value.CollectionChanged += Icons_CollectionChanged;
                     }
                 }
+                else
+                {
+                    throw new InvalidOperationException("TrayIcon.Icons must be set on the Application.");
+                }
             });
 
-            if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
+
+            if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
             {
                 lifetime.Exit += Lifetime_Exit;
             }
@@ -108,7 +112,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Icon"/> property.
         /// </summary>
-        public static readonly StyledProperty<WindowIcon> IconProperty =
+        public static readonly StyledProperty<WindowIcon?> IconProperty =
             Window.IconProperty.AddOwner<TrayIcon>();
 
         /// <summary>
@@ -123,9 +127,9 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<bool> IsVisibleProperty =
             Visual.IsVisibleProperty.AddOwner<TrayIcon>();
 
-        public static void SetIcons(AvaloniaObject o, TrayIcons trayIcons) => o.SetValue(IconsProperty, trayIcons);
+        public static void SetIcons(Application o, TrayIcons trayIcons) => o.SetValue(IconsProperty, trayIcons);
 
-        public static TrayIcons GetIcons(AvaloniaObject o) => o.GetValue(IconsProperty);
+        public static TrayIcons GetIcons(Application o) => o.GetValue(IconsProperty);
         
         /// <summary>
         /// Gets or sets the <see cref="Command"/> property of a TrayIcon.
@@ -158,7 +162,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the icon of the TrayIcon.
         /// </summary>
-        public WindowIcon Icon
+        public WindowIcon? Icon
         {
             get => GetValue(IconProperty);
             set => SetValue(IconProperty, value);
@@ -184,16 +188,21 @@ namespace Avalonia.Controls
 
         public INativeMenuExporter? NativeMenuExporter => _impl?.MenuExporter;
 
-        private static void Lifetime_Exit(object sender, ControlledApplicationLifetimeExitEventArgs e)
+        private static void Lifetime_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
         {
-            var trayIcons = GetIcons(Application.Current);
+            var app = Application.Current ?? throw new InvalidOperationException("Application not yet initialized.");
+            var trayIcons = GetIcons(app);
 
-            RemoveIcons(trayIcons);
+            if (trayIcons != null)
+            {
+                RemoveIcons(trayIcons);
+            }
         }
 
-        private static void Icons_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private static void Icons_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            RemoveIcons(e.OldItems.Cast<TrayIcon>());
+            if (e.OldItems is not null)
+                RemoveIcons(e.OldItems.Cast<TrayIcon>());
         }
 
         private static void RemoveIcons(IEnumerable<TrayIcon> icons)
@@ -204,25 +213,25 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == IconProperty)
             {
-                _impl?.SetIcon(Icon.PlatformImpl);
+                _impl?.SetIcon(Icon?.PlatformImpl);
             }
             else if (change.Property == IsVisibleProperty)
             {
-                _impl?.SetIsVisible(change.NewValue.GetValueOrDefault<bool>());
+                _impl?.SetIsVisible(change.GetNewValue<bool>());
             }
             else if (change.Property == ToolTipTextProperty)
             {
-                _impl?.SetToolTipText(change.NewValue.GetValueOrDefault<string?>());
+                _impl?.SetToolTipText(change.GetNewValue<string?>());
             }
             else if (change.Property == MenuProperty)
             {
-                _impl?.MenuExporter?.SetNativeMenu(change.NewValue.GetValueOrDefault<NativeMenu>());
+                _impl?.MenuExporter?.SetNativeMenu(change.GetNewValue<NativeMenu?>());
             }
         }
 

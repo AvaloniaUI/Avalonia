@@ -1,8 +1,9 @@
 using System;
-using System.Reflection;
+using Avalonia.Metadata;
 
 namespace Avalonia.Platform
 {
+    [Unstable]
     public interface IRuntimePlatform
     {
         IDisposable StartSystemTimer(TimeSpan interval, Action tick);
@@ -10,32 +11,29 @@ namespace Avalonia.Platform
         IUnmanagedBlob AllocBlob(int size);
     }
 
+    [Unstable]
     public interface IUnmanagedBlob : IDisposable
     {
         IntPtr Address { get; }
         int Size { get; }
         bool IsDisposed { get; }
-        
+
     }
 
-    public struct RuntimePlatformInfo
+    [Unstable]
+    public record struct RuntimePlatformInfo
     {
-        public OperatingSystemType OperatingSystem { get; set; }
+        public FormFactorType FormFactor => IsDesktop ? FormFactorType.Desktop :
+            IsMobile ? FormFactorType.Mobile : FormFactorType.Unknown;
         public bool IsDesktop { get; set; }
         public bool IsMobile { get; set; }
-        public bool IsCoreClr { get; set; }
-        public bool IsMono { get; set; }
-        public bool IsDotNetFramework { get; set; }
-        public bool IsUnix { get; set; }
     }
 
-    public enum OperatingSystemType
+    [Unstable]
+    public enum FormFactorType
     {
         Unknown,
-        WinNT,
-        Linux,
-        OSX,
-        Android,
-        iOS
+        Desktop,
+        Mobile
     }
 }

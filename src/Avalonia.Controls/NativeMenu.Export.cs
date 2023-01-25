@@ -1,7 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Avalonia.Controls.Platform;
-using Avalonia.Data;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -18,7 +17,7 @@ namespace Avalonia.Controls
         class NativeMenuInfo
         {
             public bool ChangingIsExported { get; set; }
-            public ITopLevelNativeMenuExporter Exporter { get; }
+            public ITopLevelNativeMenuExporter? Exporter { get; }
 
             public NativeMenuInfo(TopLevel target)
             {

@@ -5,8 +5,6 @@ using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Controls.Utils;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     public abstract class SelectionNodeBase<T> : ICollectionChangedListener
@@ -23,10 +21,12 @@ namespace Avalonia.Controls.Selection
             {
                 if (_source != value)
                 {
-                    ItemsView?.RemoveListener(this);
+                    if (ItemsView?.Inner is INotifyCollectionChanged inccOld)
+                        CollectionChangedEventManager.Instance.RemoveListener(inccOld, this);
                     _source = value;
-                    ItemsView = value is object ? ItemsSourceView<T>.GetOrCreate(value) : null;
-                    ItemsView?.AddListener(this);
+                    ItemsView = value is object ? ItemsSourceView.GetOrCreate<T>(value) : null;
+                    if (ItemsView?.Inner is INotifyCollectionChanged inccNew)
+                        CollectionChangedEventManager.Instance.AddListener(inccNew, this);
                 }
             }
         }
@@ -202,9 +202,7 @@ namespace Avalonia.Controls.Selection
                     {
                         for (var i = range.Begin; i <= range.End; ++i)
                         {
-#pragma warning disable CS8604
-                            removed.Add((T)items[i - index]);
-#pragma warning restore CS8604
+                            removed.Add((T)items[i - index]!);
                         }
                     }
                 }
@@ -244,23 +242,24 @@ namespace Avalonia.Controls.Selection
             {
                 case NotifyCollectionChangedAction.Add:
                     {
-                        var change = OnItemsAdded(e.NewStartingIndex, e.NewItems);
+                        var change = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
                         shiftIndex = change.ShiftIndex;
                         shiftDelta = change.ShiftDelta;
                         break;
                     }
                 case NotifyCollectionChangedAction.Remove:
                     {
-                        var change = OnItemsRemoved(e.OldStartingIndex, e.OldItems);
+                        var change = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
                         shiftIndex = change.ShiftIndex;
                         shiftDelta = change.ShiftDelta;
                         removed = change.RemovedItems;
                         break;
                     }
                 case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
                     {
-                        var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems);
-                        var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems);
+                        var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
+                        var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
                         shiftIndex = removeChange.ShiftIndex;
                         shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
                         removed = removeChange.RemovedItems;
@@ -294,16 +293,16 @@ namespace Avalonia.Controls.Selection
             // so bail.
             //
             // See unit test Handles_Selection_Made_In_CollectionChanged for more details.
-            if (ItemsView is object &&
+            if (ItemsView is not null &&
                 RangesEnabled &&
                 Ranges.Count > 0 &&
                 e.Action == NotifyCollectionChangedAction.Add)
             {
-                var lastIndex = Ranges.Last().End;
+                var lastIndex = Ranges[Ranges.Count - 1].End;
 
                 if (e.NewStartingIndex <= lastIndex)
                 {
-                    return lastIndex + e.NewItems.Count < ItemsView.Count;
+                    return lastIndex + e.NewItems!.Count < ItemsView.Count;
                 }
             }
 

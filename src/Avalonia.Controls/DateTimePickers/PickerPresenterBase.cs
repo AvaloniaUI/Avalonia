@@ -16,10 +16,10 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnDismiss()
         {
-            Dismissed.Invoke(this, EventArgs.Empty);
+            Dismissed?.Invoke(this, EventArgs.Empty);
         }
 
-        public event EventHandler Confirmed;
-        public event EventHandler Dismissed;
+        public event EventHandler? Confirmed;
+        public event EventHandler? Dismissed;
     }
 }

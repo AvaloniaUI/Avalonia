@@ -1,6 +1,7 @@
+using Foundation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Foundation;
+
 using UIKit;
 
 namespace Avalonia.iOS
@@ -8,6 +9,17 @@ namespace Avalonia.iOS
     public class AvaloniaAppDelegate<TApp> : UIResponder, IUIApplicationDelegate
         where TApp : Application, new()
     {
+        class SingleViewLifetime : ISingleViewApplicationLifetime
+        {
+            public AvaloniaView View;
+
+            public Control MainView
+            {
+                get => View.Content;
+                set => View.Content = value;
+            }
+        }
+
         protected virtual AppBuilder CustomizeAppBuilder(AppBuilder builder) => builder;
         
         [Export("window")]
@@ -16,12 +28,16 @@ namespace Avalonia.iOS
         [Export("application:didFinishLaunchingWithOptions:")]
         public bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {
-            var builder = AppBuilder.Configure<TApp>();
+            var builder = AppBuilder.Configure<TApp>().UseiOS();
             CustomizeAppBuilder(builder);
-            var lifetime = new Lifetime();
+
+            var lifetime = new SingleViewLifetime();
+
             builder.AfterSetup(_ =>
             {
                 Window = new UIWindow();
+                
+                
                 var view = new AvaloniaView();
                 lifetime.View = view;
                 Window.RootViewController = new UIViewController
@@ -31,19 +47,10 @@ namespace Avalonia.iOS
             });
             
             builder.SetupWithLifetime(lifetime);
-            
-            Window.Hidden = false;
-            return true;
-        }
 
-        class Lifetime : ISingleViewApplicationLifetime
-        {
-            public AvaloniaView View;
-            public Control MainView
-            {
-                get => View.Content;
-                set => View.Content = value;
-            }
+            Window.MakeKeyAndVisible();
+
+            return true;
         }
     }
 }

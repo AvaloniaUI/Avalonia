@@ -1,11 +1,8 @@
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Skia.Helpers;
-using Avalonia.Visuals.Media.Imaging;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -40,6 +37,13 @@ namespace Avalonia.Skia
             }
         }
 
+        public ImmutableBitmap(SKImage image)
+        {
+            _image = image;
+            PixelSize = new PixelSize(image.Width, image.Height);
+            Dpi = new Vector(96, 96);
+        }
+
         public ImmutableBitmap(ImmutableBitmap src, PixelSize destinationSize, BitmapInterpolationMode interpolationMode)
         {
             SKImageInfo info = new SKImageInfo(destinationSize.Width, destinationSize.Height, SKColorType.Bgra8888);
@@ -57,7 +61,8 @@ namespace Avalonia.Skia
         public ImmutableBitmap(Stream stream, int decodeSize, bool horizontal, BitmapInterpolationMode interpolationMode)
         {
             using (var skStream = new SKManagedStream(stream))
-            using (var codec = SKCodec.Create(skStream))
+            using (var skData = SKData.Create(skStream))
+            using (var codec = SKCodec.Create(skData))
             {
                 var info = codec.Info;
 
@@ -141,13 +146,13 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void Save(string fileName)
+        public void Save(string fileName, int? quality = null)
         {
             ImageSavingHelper.SaveImage(_image, fileName);
         }
 
         /// <inheritdoc />
-        public void Save(Stream stream)
+        public void Save(Stream stream, int? quality = null)
         {
             ImageSavingHelper.SaveImage(_image, stream);
         }

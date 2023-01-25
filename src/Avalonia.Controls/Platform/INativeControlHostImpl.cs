@@ -1,9 +1,11 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Platform
 {
+    [Unstable]
     public interface INativeControlHostImpl
     {
         INativeControlHostDestroyableControlHandle CreateDefaultChild(IPlatformHandle parent);
@@ -12,21 +14,25 @@ namespace Avalonia.Controls.Platform
         bool IsCompatibleWith(IPlatformHandle handle);
     }
 
+    [Unstable]
     public interface INativeControlHostDestroyableControlHandle : IPlatformHandle
     {
         void Destroy();
     }
 
+    [Unstable]
     public interface INativeControlHostControlTopLevelAttachment : IDisposable
     {
-        INativeControlHostImpl AttachedTo { get; set; }
+        INativeControlHostImpl? AttachedTo { get; set; }
+
         bool IsCompatibleWith(INativeControlHostImpl host);
         void HideWithSize(Size size);
         void ShowInBounds(Rect rect);
     }
 
+    [Unstable]
     public interface ITopLevelImplWithNativeControlHost
     {
-        INativeControlHostImpl NativeControlHost { get; }
+        INativeControlHostImpl? NativeControlHost { get; }
     }
 }

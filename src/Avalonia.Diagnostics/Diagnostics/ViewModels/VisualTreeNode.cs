@@ -1,21 +1,27 @@
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
+using Lifetimes = Avalonia.Controls.ApplicationLifetimes;
+using System.Linq;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
     internal class VisualTreeNode : TreeNode
     {
-        public VisualTreeNode(IVisual visual, TreeNode? parent, string? customName = null)
-            : base(visual, parent, customName)
+        public VisualTreeNode(AvaloniaObject avaloniaObject, TreeNode? parent, string? customName = null)
+            : base(avaloniaObject, parent, customName)
         {
-            Children = new VisualTreeNodeCollection(this, visual);
+            Children = avaloniaObject switch
+            {
+                Visual visual => new VisualTreeNodeCollection(this, visual),
+                Controls.Application host => new ApplicationHostVisuals(this, host),
+                _ => TreeNodeCollection.Empty
+            };
 
             if (Visual is IStyleable styleable)
                 IsInTemplate = styleable.TemplatedParent != null;
@@ -27,17 +33,17 @@ namespace Avalonia.Diagnostics.ViewModels
 
         public static VisualTreeNode[] Create(object control)
         {
-            return control is IVisual visual ?
+            return control is AvaloniaObject visual ?
                 new[] { new VisualTreeNode(visual, null) } :
                 Array.Empty<VisualTreeNode>();
         }
 
         internal class VisualTreeNodeCollection : TreeNodeCollection
         {
-            private readonly IVisual _control;
+            private readonly Visual _control;
             private readonly CompositeDisposable _subscriptions = new CompositeDisposable(2);
 
-            public VisualTreeNodeCollection(TreeNode owner, IVisual control)
+            public VisualTreeNodeCollection(TreeNode owner, Visual control)
                 : base(owner)
             {
                 _control = control;
@@ -48,19 +54,22 @@ namespace Avalonia.Diagnostics.ViewModels
                 _subscriptions.Dispose();
             }
 
-            private static IObservable<PopupRoot?>? GetHostedPopupRootObservable(IVisual visual)
+            private static IObservable<PopupRoot?>? GetHostedPopupRootObservable(Visual visual)
             {
                 static IObservable<PopupRoot?> GetPopupHostObservable(
                     IPopupHostProvider popupHostProvider,
                     string? providerName = null)
                 {
-                    return Observable.FromEvent<IPopupHost?>(
-                            x => popupHostProvider.PopupHostChanged += x,
-                            x => popupHostProvider.PopupHostChanged -= x)
+                    return Observable.Create<IPopupHost?>(observer =>
+                        {
+                            void Handler(IPopupHost? args) => observer.OnNext(args);
+                            popupHostProvider.PopupHostChanged += Handler;
+                            return Disposable.Create(() => popupHostProvider.PopupHostChanged -= Handler);
+                        })
                         .StartWith(popupHostProvider.PopupHost)
                         .Select(popupHost =>
                         {
-                            if (popupHost is IControl control)
+                            if (popupHost is Control control)
                                 return new PopupRoot(
                                     control,
                                     providerName != null ? $"{providerName} ({control.GetType().Name})" : null);
@@ -73,25 +82,39 @@ namespace Avalonia.Diagnostics.ViewModels
                 {
                     Popup p => GetPopupHostObservable(p),
                     Control c => Observable.CombineLatest(
-                            c.GetObservable(Control.ContextFlyoutProperty),
-                            c.GetObservable(Control.ContextMenuProperty),
-                            c.GetObservable(FlyoutBase.AttachedFlyoutProperty),
-                            c.GetObservable(ToolTipDiagnostics.ToolTipProperty),
-                            (ContextFlyout, ContextMenu, AttachedFlyout, ToolTip) =>
+                            new IObservable<IPopupHostProvider?>[]
                             {
-                                if (ContextMenu != null)
+                                c.GetObservable(Control.ContextFlyoutProperty),
+                                c.GetObservable(Control.ContextMenuProperty),
+                                c.GetObservable(FlyoutBase.AttachedFlyoutProperty),
+                                c.GetObservable(ToolTipDiagnostics.ToolTipProperty),
+                                c.GetObservable(Button.FlyoutProperty)
+                            })
+                        .Select(
+                            items =>
+                            {
+                                var contextFlyout = items[0];
+                                var contextMenu = (ContextMenu?)items[1];
+                                var attachedFlyout = items[2];
+                                var toolTip = items[3];
+                                var buttonFlyout = items[4];
+
+                                if (contextMenu != null)
                                     //Note: ContextMenus are special since all the items are added as visual children.
                                     //So we don't need to go via Popup
-                                    return Observable.Return<PopupRoot?>(new PopupRoot(ContextMenu));
+                                    return Observable.Return<PopupRoot?>(new PopupRoot(contextMenu));
 
-                                if (ContextFlyout != null)
-                                    return GetPopupHostObservable(ContextFlyout, "ContextFlyout");
+                                if (contextFlyout != null)
+                                    return GetPopupHostObservable(contextFlyout, "ContextFlyout");
 
-                                if (AttachedFlyout != null)
-                                    return GetPopupHostObservable(AttachedFlyout, "AttachedFlyout");
+                                if (attachedFlyout != null)
+                                    return GetPopupHostObservable(attachedFlyout, "AttachedFlyout");
 
-                                if (ToolTip != null)
-                                    return GetPopupHostObservable(ToolTip, "ToolTip");
+                                if (toolTip != null)
+                                    return GetPopupHostObservable(toolTip, "ToolTip");
+
+                                if (buttonFlyout != null)
+                                    return GetPopupHostObservable(buttonFlyout, "Flyout");
 
                                 return Observable.Return<PopupRoot?>(null);
                             })
@@ -130,21 +153,85 @@ namespace Avalonia.Diagnostics.ViewModels
 
                 _subscriptions.Add(
                     _control.VisualChildren.ForEachItem(
-                        (i, item) => nodes.Insert(i, new VisualTreeNode(item, Owner)),
+                        (i, item) => nodes.Insert(i, new VisualTreeNode((AvaloniaObject)item, Owner)),
                         (i, item) => nodes.RemoveAt(i),
                         () => nodes.Clear()));
             }
 
             private struct PopupRoot
             {
-                public PopupRoot(IControl root, string? customName = null)
+                public PopupRoot(Control root, string? customName = null)
                 {
                     Root = root;
                     CustomName = customName;
                 }
 
-                public IControl Root { get; }
+                public Control Root { get; }
                 public string? CustomName { get; }
+            }
+        }
+
+        internal class ApplicationHostVisuals : TreeNodeCollection
+        {
+            readonly Controls.Application _application;
+            CompositeDisposable _subscriptions = new CompositeDisposable(2);
+            public ApplicationHostVisuals(TreeNode owner, Controls.Application host) :
+                base(owner)
+            {
+                _application = host;
+            }
+
+            protected override void Initialize(AvaloniaList<TreeNode> nodes)
+            {
+                if (_application.ApplicationLifetime is Lifetimes.ISingleViewApplicationLifetime single &&
+                    single.MainView is not null)
+                {
+                    nodes.Add(new VisualTreeNode(single.MainView, Owner));
+                }
+                if (_application.ApplicationLifetime is Lifetimes.IClassicDesktopStyleApplicationLifetime classic)
+                {
+
+                    for (int i = 0; i < classic.Windows.Count; i++)
+                    {
+                        var window = classic.Windows[i];
+                        if (window is Views.MainWindow)
+                        {
+                            continue;
+                        }
+                        nodes.Add(new VisualTreeNode(window, Owner));
+                    }
+                    _subscriptions = new CompositeDisposable(2)
+                    {
+                        Window.WindowOpenedEvent.AddClassHandler(typeof(Window), (s,e)=>
+                            {
+                                if (s is Views.MainWindow)
+                                {
+                                    return;
+                                }
+                                nodes.Add(new VisualTreeNode((AvaloniaObject)s!,Owner));
+                            }),
+                        Window.WindowClosedEvent.AddClassHandler(typeof(Window), (s,e)=>
+                            {
+                                if (s is Views.MainWindow)
+                                {
+                                    return;
+                                }
+                                var item = nodes.FirstOrDefault(node=>object.ReferenceEquals(node.Visual,s));
+                                if(!(item is null))
+                                {
+                                    nodes.Remove(item);
+                                }
+                            }),
+                    };
+
+
+                }
+            }
+
+            public override void Dispose()
+            {
+                _subscriptions?.Dispose();
+                base.Dispose();
             }
         }
     }

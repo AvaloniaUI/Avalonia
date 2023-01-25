@@ -1,29 +1,38 @@
 using System;
 using Android.Content;
+using Android.Content.Res;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
+using Avalonia.Android.Platform;
 using Avalonia.Android.Platform.SkiaPlatform;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
+using Avalonia.Platform;
 using Avalonia.Rendering;
 
 namespace Avalonia.Android
 {
     public class AvaloniaView : FrameLayout
     {
-        private readonly EmbeddableControlRoot _root;
+        private EmbeddableControlRoot _root;
         private readonly ViewImpl _view;
 
-        private IDisposable? _timerSubscription;
+        private IDisposable _timerSubscription;
 
         public AvaloniaView(Context context) : base(context)
         {
-            _view = new ViewImpl(context);
+            _view = new ViewImpl(this);
             AddView(_view.View);
+
             _root = new EmbeddableControlRoot(_view);
             _root.Prepare();
+
+            this.SetBackgroundColor(global::Android.Graphics.Color.Transparent);
+            OnConfigurationChanged();
         }
+
+        internal TopLevelImpl TopLevelImpl => _view;
 
         public object Content
         {
@@ -65,10 +74,22 @@ namespace Avalonia.Android
                 _timerSubscription?.Dispose();
             }
         }
+        
+        protected override void OnConfigurationChanged(Configuration newConfig)
+        {
+            base.OnConfigurationChanged(newConfig);
+            OnConfigurationChanged();
+        }
+
+        private void OnConfigurationChanged()
+        {
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as AndroidPlatformSettings;
+            settings?.OnViewConfigurationChanged(Context);
+        }
 
         class ViewImpl : TopLevelImpl
         {
-            public ViewImpl(Context context) : base(context)
+            public ViewImpl(AvaloniaView avaloniaView) : base(avaloniaView)
             {
                 View.Focusable = true;
                 View.FocusChange += ViewImpl_FocusChange;

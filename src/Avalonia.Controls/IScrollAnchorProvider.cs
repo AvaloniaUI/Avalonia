@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-namespace Avalonia.Controls
+﻿namespace Avalonia.Controls
 {
     /// <summary>
     /// Specifies a contract for a scrolling control that supports scroll anchoring.
@@ -10,7 +8,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// The currently chosen anchor element to use for scroll anchoring.
         /// </summary>
-        IControl? CurrentAnchor { get; }
+        Control? CurrentAnchor { get; }
 
         /// <summary>
         /// Registers a control as a potential scroll anchor candidate.
@@ -18,7 +16,7 @@ namespace Avalonia.Controls
         /// <param name="element">
         /// A control within the subtree of the <see cref="IScrollAnchorProvider"/>.
         /// </param>
-        void RegisterAnchorCandidate(IControl element);
+        void RegisterAnchorCandidate(Control element);
 
         /// <summary>
         /// Unregisters a control as a potential scroll anchor candidate.
@@ -26,6 +24,6 @@ namespace Avalonia.Controls
         /// <param name="element">
         /// A control within the subtree of the <see cref="IScrollAnchorProvider"/>.
         /// </param>
-        void UnregisterAnchorCandidate(IControl element);
+        void UnregisterAnchorCandidate(Control element);
     }
 }

@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.ListBoxPage">
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.ListBoxPage"
+             x:DataType="viewModels:ListBoxPageViewModel">
   <DockPanel>
     <DockPanel.Styles>
       <Style Selector="ListBox ListBoxItem:nth-child(5n+3)">
@@ -13,7 +15,6 @@
       </Style>
     </DockPanel.Styles>
     <StackPanel DockPanel.Dock="Top" Margin="4">
-      <TextBlock Classes="h1">ListBox</TextBlock>
       <TextBlock Classes="h2">Hosts a collection of ListBoxItem.</TextBlock>
       <TextBlock Classes="h2">Each 5th item is highlighted with nth-child(5n+3) and nth-last-child(5n+4) rules.</TextBlock>
     </StackPanel>
@@ -22,6 +23,7 @@
       <CheckBox IsChecked="{Binding Toggle}">Toggle</CheckBox>
       <CheckBox IsChecked="{Binding AlwaysSelected}">AlwaysSelected</CheckBox>
       <CheckBox IsChecked="{Binding AutoScrollToSelectedItem}">AutoScrollToSelectedItem</CheckBox>
+      <CheckBox IsChecked="{Binding WrapSelection}">WrapSelection</CheckBox>
     </StackPanel>
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="4">
       <Button Command="{Binding AddItemCommand}">Add</Button>
@@ -30,7 +32,9 @@
     </StackPanel>
     <ListBox Items="{Binding Items}"
              Selection="{Binding Selection}"
+             DisplayMemberBinding="{Binding (viewModels:ItemModel).ID, StringFormat='{}Item {0:N0}'}"
              AutoScrollToSelectedItem="{Binding AutoScrollToSelectedItem}"
-             SelectionMode="{Binding SelectionMode^}"/>
+             SelectionMode="{Binding SelectionMode^}"
+             WrapSelection="{Binding WrapSelection}"/>
   </DockPanel>
 </UserControl>

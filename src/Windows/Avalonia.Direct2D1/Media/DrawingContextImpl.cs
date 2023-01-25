@@ -1,21 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Utilities;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
 using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
-using BitmapInterpolationMode = Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode;
+using BitmapInterpolationMode = Avalonia.Media.Imaging.BitmapInterpolationMode;
+using Avalonia.Metadata;
 
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
+    [Unstable]
     public class DrawingContextImpl : IDrawingContextImpl
     {
         private readonly IVisualBrushRenderer _visualBrushRenderer;
@@ -71,6 +74,12 @@ namespace Avalonia.Direct2D1.Media
         {
             get { return _deviceContext.Transform.ToAvalonia(); }
             set { _deviceContext.Transform = value.ToDirect2D(); }
+        }
+
+        public Matrix4x4 Transform4x4
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
         }
 
         /// <inheritdoc/>
@@ -337,24 +346,40 @@ namespace Avalonia.Direct2D1.Media
             }
         }
 
-        /// <summary>
-        /// Draws text.
-        /// </summary>
-        /// <param name="foreground">The foreground brush.</param>
-        /// <param name="origin">The upper-left corner of the text.</param>
-        /// <param name="text">The text.</param>
-        public void DrawText(IBrush foreground, Point origin, IFormattedTextImpl text)
+        /// <inheritdoc />
+        public void DrawEllipse(IBrush brush, IPen pen, Rect rect)
         {
-            if (!string.IsNullOrEmpty(text.Text))
-            {
-                var impl = (FormattedTextImpl)text;
+            var rc = rect.ToDirect2D();
 
-                using (var brush = CreateBrush(foreground, impl.Bounds.Size))
-                using (var renderer = new AvaloniaTextRenderer(this, _deviceContext, brush.PlatformBrush))
+            if (brush != null)
+            {
+                using (var b = CreateBrush(brush, rect.Size))
                 {
-                    if (brush.PlatformBrush != null)
+                    if (b.PlatformBrush != null)
                     {
-                        impl.TextLayout.Draw(renderer, (float)origin.X, (float)origin.Y);
+                        _deviceContext.FillEllipse(new Ellipse
+                        {
+                            Point = rect.Center.ToSharpDX(),
+                            RadiusX = (float)(rect.Width / 2),
+                            RadiusY = (float)(rect.Height / 2)
+                        }, b.PlatformBrush);
+                    }
+                }
+            }
+
+            if (pen?.Brush != null)
+            {
+                using (var wrapper = CreateBrush(pen.Brush, rect.Size))
+                using (var d2dStroke = pen.ToDirect2DStrokeStyle(_deviceContext))
+                {
+                    if (wrapper.PlatformBrush != null)
+                    {
+                        _deviceContext.DrawEllipse(new Ellipse
+                        {
+                            Point = rect.Center.ToSharpDX(),
+                            RadiusX = (float)(rect.Width / 2),
+                            RadiusY = (float)(rect.Height / 2)
+                        }, wrapper.PlatformBrush, (float)pen.Thickness, d2dStroke);
                     }
                 }
             }
@@ -365,13 +390,13 @@ namespace Avalonia.Direct2D1.Media
         /// </summary>
         /// <param name="foreground">The foreground.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
-            using (var brush = CreateBrush(foreground, glyphRun.Size))
+            using (var brush = CreateBrush(foreground, glyphRun.Item.Size))
             {
-                var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
+                var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
 
-                _renderTarget.DrawGlyphRun(glyphRun.BaselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun,
+                _renderTarget.DrawGlyphRun(glyphRun.Item.BaselineOrigin.ToSharpDX(), glyphRunImpl.GlyphRun,
                     brush.PlatformBrush, MeasuringMode.Natural);
             }
         }
@@ -384,7 +409,7 @@ namespace Avalonia.Direct2D1.Media
             }
             else
             {
-                var platform = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+                var platform = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
                 var dpi = new Vector(_deviceContext.DotsPerInch.Width, _deviceContext.DotsPerInch.Height);
                 var pixelSize = PixelSize.FromSizeWithDpi(size, dpi);
                 return (IDrawingContextLayerImpl)platform.CreateRenderTargetBitmap(pixelSize, dpi);
@@ -589,5 +614,6 @@ namespace Avalonia.Direct2D1.Media
         }
         
         public void Custom(ICustomDrawOperation custom) => custom.Render(this);
+        public object GetFeature(Type t) => null;
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 
-#nullable enable
-
 namespace Avalonia.Automation
 {
     public class AutomationPropertyChangedEventArgs : EventArgs

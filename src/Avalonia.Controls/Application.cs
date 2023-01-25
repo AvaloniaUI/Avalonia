@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Concurrency;
-using System.Threading;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -13,7 +11,6 @@ using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Threading;
-#nullable enable
 
 namespace Avalonia
 {
@@ -38,9 +35,8 @@ namespace Avalonia
         /// </summary>
         private DataTemplates? _dataTemplates;
 
-        private readonly Lazy<IClipboard> _clipboard =
-            new Lazy<IClipboard>(() => (IClipboard)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
-        private readonly Styler _styler = new Styler();
+        private readonly Lazy<IClipboard?> _clipboard =
+            new Lazy<IClipboard?>(() => (IClipboard?)AvaloniaLocator.Current.GetService(typeof(IClipboard)));
         private Styles? _styles;
         private IResourceDictionary? _resources;
         private bool _notifyingResourcesChanged;
@@ -85,7 +81,7 @@ namespace Avalonia
         /// <value>
         /// The current instance of the <see cref="Application"/> class.
         /// </value>
-        public static Application Current
+        public static Application? Current
         {
             get { return AvaloniaLocator.Current.GetService<Application>(); }
         }
@@ -125,7 +121,7 @@ namespace Avalonia
         /// <summary>
         /// Gets the application clipboard.
         /// </summary>
-        public IClipboard Clipboard => _clipboard.Value;
+        public IClipboard? Clipboard => _clipboard.Value;
 
         /// <summary>
         /// Gets the application's global resource dictionary.
@@ -177,13 +173,13 @@ namespace Avalonia
         /// </summary>
         public IApplicationLifetime? ApplicationLifetime { get; set; }
 
-        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesAdded
+        event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesAdded
         {
             add => _stylesAdded += value;
             remove => _stylesAdded -= value;
         }
 
-        event Action<IReadOnlyList<IStyle>> IGlobalStyles.GlobalStylesRemoved
+        event Action<IReadOnlyList<IStyle>>? IGlobalStyles.GlobalStylesRemoved
         {
             add => _stylesRemoved += value;
             remove => _stylesRemoved -= value;
@@ -233,8 +229,6 @@ namespace Avalonia
                 .Bind<IFocusManager>().ToConstant(FocusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
-                .Bind<IStyler>().ToConstant(_styler)
-                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
             
             // TODO: Fix this, for now we keep this behavior since someone might be relying on it in 0.9.x

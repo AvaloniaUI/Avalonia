@@ -2,70 +2,164 @@ using System;
 using System.Collections;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.MarkupExtensions;
-using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Markup.Xaml.XamlIl;
+using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Platform;
+using Avalonia.VisualTree;
+using ControlCatalog.Models;
 using ControlCatalog.Pages;
 
 namespace ControlCatalog
 {
     public class MainView : UserControl
     {
+        private readonly IPlatformSettings _platformSettings;
+
         public MainView()
         {
             AvaloniaXamlLoader.Load(this);
-            if (AvaloniaLocator.Current.GetService<IRuntimePlatform>().GetRuntimeInfo().IsDesktop)
+            _platformSettings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+            PlatformSettingsOnColorValuesChanged(_platformSettings, _platformSettings.GetColorValues());
+            
+            var sideBar = this.Get<TabControl>("Sidebar");
+
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime)
             {
-                IList tabItems = ((IList)this.FindControl<TabControl>("Sidebar").Items);
-                tabItems.Add(new TabItem()
-                {
-                    Header = "Dialogs",
-                    Content = new DialogsPage()
-                });
-                tabItems.Add(new TabItem()
+                var tabItems = (sideBar.Items as IList);
+                tabItems?.Add(new TabItem()
                 {
                     Header = "Screens",
                     Content = new ScreenPage()
                 });
-
             }
 
-            var themes = this.Find<ComboBox>("Themes");
+            var themes = this.Get<ComboBox>("Themes");
+            themes.SelectedItem = App.CurrentTheme;
             themes.SelectionChanged += (sender, e) =>
             {
-                switch (themes.SelectedIndex)
+                if (themes.SelectedItem is CatalogTheme theme)
                 {
-                    case 0:
-                        Application.Current.Styles[0] = App.FluentLight;
-                        break;
-                    case 1:
-                        Application.Current.Styles[0] = App.FluentDark;
-                        break;
-                    case 2:
-                        Application.Current.Styles[0] = App.DefaultLight;
-                        break;
-                    case 3:
-                        Application.Current.Styles[0] = App.DefaultDark;
-                        break;
+                    App.SetThemeVariant(theme);
+                    
+                    ((TopLevel?)this.GetVisualRoot())?.PlatformImpl?.SetFrameThemeVariant(theme switch
+                    {
+                        CatalogTheme.FluentLight => PlatformThemeVariant.Light,
+                        CatalogTheme.FluentDark => PlatformThemeVariant.Dark,
+                        CatalogTheme.SimpleLight => PlatformThemeVariant.Light,
+                        CatalogTheme.SimpleDark => PlatformThemeVariant.Dark,
+                        _ => throw new ArgumentOutOfRangeException()
+                    });
                 }
-            };            
+            };
 
-            var decorations = this.Find<ComboBox>("Decorations");
+            var flowDirections = this.Get<ComboBox>("FlowDirection");
+            flowDirections.SelectionChanged += (sender, e) =>
+            {
+                if (flowDirections.SelectedItem is FlowDirection flowDirection)
+                {
+                    TopLevel.GetTopLevel(this).FlowDirection = flowDirection;
+                }
+            };
+
+            var decorations = this.Get<ComboBox>("Decorations");
             decorations.SelectionChanged += (sender, e) =>
             {
-                if (VisualRoot is Window window)
-                    window.SystemDecorations = (SystemDecorations)decorations.SelectedIndex;
+                if (VisualRoot is Window window
+                    && decorations.SelectedItem is SystemDecorations systemDecorations)
+                {
+                    window.SystemDecorations = systemDecorations;
+                }
+            };
+
+            var transparencyLevels = this.Get<ComboBox>("TransparencyLevels");
+            IDisposable? topLevelBackgroundSideSetter = null, sideBarBackgroundSetter = null, paneBackgroundSetter = null;
+            transparencyLevels.SelectionChanged += (sender, e) =>
+            {
+                topLevelBackgroundSideSetter?.Dispose();
+                sideBarBackgroundSetter?.Dispose();
+                paneBackgroundSetter?.Dispose();
+                if (transparencyLevels.SelectedItem is WindowTransparencyLevel selected)
+                {
+                    var topLevel = (TopLevel)this.GetVisualRoot()!;
+                    topLevel.TransparencyLevelHint = selected;
+
+                    if (selected != WindowTransparencyLevel.None)
+                    {
+                        var transparentBrush = new ImmutableSolidColorBrush(Colors.White, 0);
+                        var semiTransparentBrush = new ImmutableSolidColorBrush(Colors.Gray, 0.2);
+                        topLevelBackgroundSideSetter = topLevel.SetValue(BackgroundProperty, transparentBrush, Avalonia.Data.BindingPriority.Style);
+                        sideBarBackgroundSetter = sideBar.SetValue(BackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
+                        paneBackgroundSetter = sideBar.SetValue(SplitView.PaneBackgroundProperty, semiTransparentBrush, Avalonia.Data.BindingPriority.Style);
+                    }
+                }
             };
         }
 
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            var decorations = this.Find<ComboBox>("Decorations");
+            var decorations = this.Get<ComboBox>("Decorations");
             if (VisualRoot is Window window)
                 decorations.SelectedIndex = (int)window.SystemDecorations;
+            
+            _platformSettings.ColorValuesChanged += PlatformSettingsOnColorValuesChanged;
+            PlatformSettingsOnColorValuesChanged(_platformSettings, _platformSettings.GetColorValues());
+        }
+
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromLogicalTree(e);
+            
+            _platformSettings.ColorValuesChanged -= PlatformSettingsOnColorValuesChanged;
+        }
+
+        private void PlatformSettingsOnColorValuesChanged(object? sender, PlatformColorValues e)
+        {
+            var themes = this.Get<ComboBox>("Themes");
+            var currentTheme = (CatalogTheme?)themes.SelectedItem ?? CatalogTheme.FluentLight;
+            var newTheme = (currentTheme, e.ThemeVariant) switch
+            {
+                (CatalogTheme.FluentDark, PlatformThemeVariant.Light) => CatalogTheme.FluentLight,
+                (CatalogTheme.FluentLight, PlatformThemeVariant.Dark) => CatalogTheme.FluentDark,
+                (CatalogTheme.SimpleDark, PlatformThemeVariant.Light) => CatalogTheme.SimpleLight,
+                (CatalogTheme.SimpleLight, PlatformThemeVariant.Dark) => CatalogTheme.SimpleDark,
+                _ => currentTheme
+            };
+            themes.SelectedItem = newTheme;
+
+            Application.Current!.Resources["SystemAccentColor"] = e.AccentColor1;
+            Application.Current.Resources["SystemAccentColorDark1"] = ChangeColorLuminosity(e.AccentColor1, -0.3);
+            Application.Current.Resources["SystemAccentColorDark2"] = ChangeColorLuminosity(e.AccentColor1, -0.5);
+            Application.Current.Resources["SystemAccentColorDark3"] = ChangeColorLuminosity(e.AccentColor1, -0.7);
+            Application.Current.Resources["SystemAccentColorLight1"] = ChangeColorLuminosity(e.AccentColor1, -0.3);
+            Application.Current.Resources["SystemAccentColorLight2"] = ChangeColorLuminosity(e.AccentColor1, -0.5);
+            Application.Current.Resources["SystemAccentColorLight3"] = ChangeColorLuminosity(e.AccentColor1, -0.7);
+
+            static Color ChangeColorLuminosity(Color color, double luminosityFactor)
+            {
+                var red = (double)color.R;
+                var green = (double)color.G;
+                var blue = (double)color.B;
+
+                if (luminosityFactor < 0)
+                {
+                    luminosityFactor = 1 + luminosityFactor;
+                    red *= luminosityFactor;
+                    green *= luminosityFactor;
+                    blue *= luminosityFactor;
+                }
+                else if (luminosityFactor >= 0)
+                {
+                    red = (255 - red) * luminosityFactor + red;
+                    green = (255 - green) * luminosityFactor + green;
+                    blue = (255 - blue) * luminosityFactor + blue;
+                }
+
+                return new Color(color.A, (byte)red, (byte)green, (byte)blue);
+            }
         }
     }
 }

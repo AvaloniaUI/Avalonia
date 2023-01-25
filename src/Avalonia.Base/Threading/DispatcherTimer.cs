@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Platform;
 
 namespace Avalonia.Threading
@@ -9,7 +9,7 @@ namespace Avalonia.Threading
     /// </summary>
     public class DispatcherTimer
     {
-        private IDisposable _timer;
+        private IDisposable? _timer;
 
         private readonly DispatcherPriority _priority;
 
@@ -58,7 +58,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// Raised when the timer ticks.
         /// </summary>
-        public event EventHandler Tick;
+        public event EventHandler? Tick;
 
         /// <summary>
         /// Gets or sets the interval at which the timer ticks.
@@ -108,7 +108,7 @@ namespace Avalonia.Threading
         /// <summary>
         /// Gets or sets user-defined data associated with the timer.
         /// </summary>
-        public object Tag
+        public object? Tag
         {
             get;
             set;
@@ -123,7 +123,7 @@ namespace Avalonia.Threading
         /// <param name="interval">The interval at which to tick.</param>
         /// <param name="priority">The priority to use.</param>
         /// <returns>An <see cref="IDisposable"/> used to cancel the timer.</returns>
-        public static IDisposable Run(Func<bool> action, TimeSpan interval, DispatcherPriority priority = DispatcherPriority.Normal)
+        public static IDisposable Run(Func<bool> action, TimeSpan interval, DispatcherPriority priority = default)
         {
             var timer = new DispatcherTimer(priority) { Interval = interval };
 
@@ -152,7 +152,7 @@ namespace Avalonia.Threading
         public static IDisposable RunOnce(
             Action action,
             TimeSpan interval,
-            DispatcherPriority priority = DispatcherPriority.Normal)
+            DispatcherPriority priority = default)
         {
             interval = (interval != TimeSpan.Zero) ? interval : TimeSpan.FromTicks(1);
             
@@ -176,13 +176,7 @@ namespace Avalonia.Threading
         {
             if (!IsEnabled)
             {
-                IPlatformThreadingInterface threading = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
-
-                if (threading == null)
-                {
-                    throw new Exception("Could not start timer: IPlatformThreadingInterface is not registered.");
-                }
-
+                var threading = AvaloniaLocator.Current.GetRequiredService<IPlatformThreadingInterface>();
                 _timer = threading.StartTimer(_priority, Interval, InternalTick);
             }
         }
@@ -194,7 +188,7 @@ namespace Avalonia.Threading
         {
             if (IsEnabled)
             {
-                _timer.Dispose();
+                _timer!.Dispose();
                 _timer = null;
             }
         }

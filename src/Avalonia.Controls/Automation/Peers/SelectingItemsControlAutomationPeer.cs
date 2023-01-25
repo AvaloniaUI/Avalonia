@@ -6,8 +6,6 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 using Avalonia.VisualTree;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public abstract class SelectingItemsControlAutomationPeer : ItemsControlAutomationPeer,
@@ -37,9 +35,9 @@ namespace Avalonia.Automation.Peers
 
                 foreach (var i in selection.SelectedIndexes)
                 {
-                    var container = owner.ItemContainerGenerator.ContainerFromIndex(i);
+                    var container = owner.ContainerFromIndex(i);
 
-                    if (container is Control c && ((IVisual)c).IsAttachedToVisualTree)
+                    if (container is Control c && c.IsAttachedToVisualTree)
                     {
                         var peer = GetOrCreate(c);
 
@@ -62,7 +60,7 @@ namespace Avalonia.Automation.Peers
             return (Owner as SelectingItemsControl)?.GetValue(ListBox.SelectionModeProperty) ?? SelectionMode.Single;
         }
 
-        protected virtual void OwnerPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        protected virtual void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == ListBox.SelectionProperty)
             {
@@ -73,7 +71,7 @@ namespace Avalonia.Automation.Peers
             }
         }
 
-        protected virtual void OwnerSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+        protected virtual void OwnerSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
         {
             RaiseSelectionChanged();
         }

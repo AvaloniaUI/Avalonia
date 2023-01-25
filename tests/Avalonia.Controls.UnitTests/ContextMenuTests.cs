@@ -29,8 +29,9 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 int openedCount = 0;
 
@@ -61,8 +62,9 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 target.RaiseEvent(new ContextRequestedEventArgs());
 
@@ -130,8 +132,9 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 int openedCount = 0;
 
@@ -158,8 +161,9 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 bool opened = false;
 
@@ -186,8 +190,9 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 target.ContextMenu = null;
 
@@ -207,8 +212,9 @@ namespace Avalonia.Controls.UnitTests
                 };
 
                 var window = new Window { Content = target };
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 sut.Open(target);
 
@@ -390,9 +396,10 @@ namespace Avalonia.Controls.UnitTests
 
                 var sp = new StackPanel { Children = { target1, target2 } };
                 var window = new Window { Content = sp };
-                
+
+                window.ApplyStyling();
                 window.ApplyTemplate();
-                window.Presenter.ApplyTemplate();
+                ((Control)window.Presenter).ApplyTemplate();
 
                 _mouse.Click(target1, MouseButton.Right);
 
@@ -443,6 +450,27 @@ namespace Avalonia.Controls.UnitTests
 
                 control.ContextMenu = target;
                 control.ContextMenu = null;
+            }
+        }
+
+        [Fact]
+        public void Should_Reset_Popup_Parent_On_Target_Detached()
+        {
+            using (Application())
+            {
+                var userControl = new UserControl();
+                var window = PreparedWindow(userControl);
+                window.Show();
+                
+                var menu = new ContextMenu();
+                userControl.ContextMenu = menu;
+                menu.Open();
+                
+                var popup = Assert.IsType<Popup>(menu.Parent);
+                Assert.NotNull(popup.Parent);
+                
+                window.Content = null;
+                Assert.Null(popup.Parent);
             }
         }
 
@@ -565,16 +593,17 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object content = null)
         {
             var renderer = new Mock<IRenderer>();
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             var windowImpl = Mock.Get(platform.CreateWindow());
             windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
             var w = new Window(windowImpl.Object) { Content = content };
+            w.ApplyStyling();
             w.ApplyTemplate();
-            w.Presenter.ApplyTemplate();
+            ((Control)w.Presenter).ApplyTemplate();
             return w;
         }
 

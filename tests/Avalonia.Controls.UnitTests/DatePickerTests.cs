@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
 
                 for(int i = 0; i < container.Children.Count; i++)
                 {
-                    if(container.Children[i] is TextBlock tb && tb.Name == "DayText")
+                    if(container.Children[i] is TextBlock tb && tb.Name == "PART_DayTextBlock")
                     {
                         dayText = tb;
                         break;
@@ -93,7 +93,7 @@ namespace Avalonia.Controls.UnitTests
 
                 for (int i = 0; i < container.Children.Count; i++)
                 {
-                    if (container.Children[i] is TextBlock tb && tb.Name == "MonthText")
+                    if (container.Children[i] is TextBlock tb && tb.Name == "PART_MonthTextBlock")
                     {
                         monthText = tb;
                         break;
@@ -131,7 +131,7 @@ namespace Avalonia.Controls.UnitTests
 
                 for (int i = 0; i < container.Children.Count; i++)
                 {
-                    if (container.Children[i] is TextBlock tb && tb.Name == "YearText")
+                    if (container.Children[i] is TextBlock tb && tb.Name == "PART_YearTextBlock")
                     {
                         yearText = tb;
                         break;
@@ -171,15 +171,15 @@ namespace Avalonia.Controls.UnitTests
 
                 for (int i = 0; i < container.Children.Count; i++)
                 {
-                    if (container.Children[i] is TextBlock tb && tb.Name == "YearText")
+                    if (container.Children[i] is TextBlock tb && tb.Name == "PART_YearTextBlock")
                     {
                         yearText = tb;
                     }
-                    else if (container.Children[i] is TextBlock tb1 && tb1.Name == "MonthText")
+                    else if (container.Children[i] is TextBlock tb1 && tb1.Name == "PART_MonthTextBlock")
                     {
                         monthText = tb1;
                     }
-                    else if (container.Children[i] is TextBlock tb2 && tb2.Name == "DayText")
+                    else if (container.Children[i] is TextBlock tb2 && tb2.Name == "PART_DayTextBlock")
                     {
                         dayText = tb2;
                     }
@@ -205,9 +205,10 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new MockFontManagerImpl(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new MockTextShaperImpl());
+            textShaperImpl: new MockTextShaperImpl(),
+            renderInterface: new MockPlatformRenderInterface());
 
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate((control, scope) =>
             {
@@ -218,34 +219,34 @@ namespace Avalonia.Controls.UnitTests
                 //Skip contentpresenter
                 var flyoutButton = new Button
                 {
-                    Name = "FlyoutButton"
+                    Name = "PART_FlyoutButton"
                 }.RegisterInNameScope(scope);
                 var contentGrid = new Grid
                 {
-                    Name = "ButtonContentGrid"
+                    Name = "PART_ButtonContentGrid"
                 }.RegisterInNameScope(scope);
                 var dayText = new TextBlock
                 {
-                    Name = "DayText"
+                    Name = "PART_DayTextBlock"
                 }.RegisterInNameScope(scope);
                 var monthText = new TextBlock
                 {
-                    Name = "MonthText"
+                    Name = "PART_MonthTextBlock"
                 }.RegisterInNameScope(scope);
                 var yearText = new TextBlock
                 {
-                    Name = "YearText"
+                    Name = "PART_YearTextBlock"
                 }.RegisterInNameScope(scope);
                 var firstSpacer = new Rectangle
                 {
-                    Name = "FirstSpacer"
+                    Name = "PART_FirstSpacer"
                 }.RegisterInNameScope(scope);
                 var secondSpacer = new Rectangle
                 {
-                    Name = "SecondSpacer"
+                    Name = "PART_SecondSpacer"
                 }.RegisterInNameScope(scope);
                
-                contentGrid.Children.AddRange(new IControl[] { dayText, monthText, yearText, firstSpacer, secondSpacer });
+                contentGrid.Children.AddRange(new Control[] { dayText, monthText, yearText, firstSpacer, secondSpacer });
                 flyoutButton.Content = contentGrid;
                 layoutRoot.Children.Add(flyoutButton);
                 return layoutRoot;

@@ -11,11 +11,11 @@ namespace Avalonia.Data
         /// Initializes a new instance of the <see cref="DataValidationException"/> class.
         /// </summary>
         /// <param name="errorData">Data of validation error.</param>
-        public DataValidationException(object errorData) : base(errorData?.ToString())
+        public DataValidationException(object? errorData) : base(errorData?.ToString())
         {
             ErrorData = errorData;
         }
 
-        public object ErrorData { get; }
+        public object? ErrorData { get; }
     }
 }

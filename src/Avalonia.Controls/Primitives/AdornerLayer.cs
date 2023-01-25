@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Specialized;
 using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Controls.Primitives
 {
@@ -29,12 +28,22 @@ namespace Avalonia.Controls.Primitives
         public static readonly AttachedProperty<bool> IsClipEnabledProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, bool>("IsClipEnabled", true);
 
+        /// <summary>
+        /// Allows for getting and setting of the adorner for control.
+        /// </summary>
+        public static readonly AttachedProperty<Control?> AdornerProperty =
+            AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, Control?>("Adorner");
+
         private static readonly AttachedProperty<AdornedElementInfo> s_adornedElementInfoProperty =
             AvaloniaProperty.RegisterAttached<AdornerLayer, Visual, AdornedElementInfo>("AdornedElementInfo");
+
+        private static readonly AttachedProperty<AdornerLayer?> s_savedAdornerLayerProperty =
+            AvaloniaProperty.RegisterAttached<Visual, Visual, AdornerLayer?>("SavedAdornerLayer");
 
         static AdornerLayer()
         {
             AdornedElementProperty.Changed.Subscribe(AdornedElementChanged);
+            AdornerProperty.Changed.Subscribe(AdornerChanged);
         }
 
         public AdornerLayer()
@@ -52,7 +61,7 @@ namespace Avalonia.Controls.Primitives
             adorner.SetValue(AdornedElementProperty, adorned);
         }
 
-        public static AdornerLayer? GetAdornerLayer(IVisual visual)
+        public static AdornerLayer? GetAdornerLayer(Visual visual)
         {
             return visual.FindAncestorOfType<VisualLayerManager>()?.AdornerLayer;
         }
@@ -67,19 +76,123 @@ namespace Avalonia.Controls.Primitives
             adorner.SetValue(IsClipEnabledProperty, isClipEnabled);
         }
 
+        public static Control? GetAdorner(Visual visual)
+        {
+            return visual.GetValue(AdornerProperty);
+        }
+
+        public static void SetAdorner(Visual visual, Control? adorner)
+        {
+            visual.SetValue(AdornerProperty, adorner);
+        }
+
+        private static void AdornerChanged(AvaloniaPropertyChangedEventArgs<Control?> e)
+        {
+            if (e.Sender is Visual visual)
+            {
+                var oldAdorner = e.OldValue.GetValueOrDefault();
+                var newAdorner = e.NewValue.GetValueOrDefault();
+
+                if (Equals(oldAdorner, newAdorner))
+                {
+                    return;
+                }
+
+                if (oldAdorner is { })
+                {
+                    visual.AttachedToVisualTree -= VisualOnAttachedToVisualTree;
+                    visual.DetachedFromVisualTree -= VisualOnDetachedFromVisualTree;
+                    Detach(visual, oldAdorner);
+                }
+
+                if (newAdorner is { })
+                {
+                    visual.AttachedToVisualTree += VisualOnAttachedToVisualTree;
+                    visual.DetachedFromVisualTree += VisualOnDetachedFromVisualTree;
+                    Attach(visual, newAdorner);
+                }
+            }
+        }
+
+        private static void VisualOnAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            if (sender is Visual visual)
+            {
+                var adorner = GetAdorner(visual);
+                if (adorner is { })
+                {
+                    Attach(visual, adorner);
+                }
+            }
+        }
+
+        private static void VisualOnDetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            if (sender is Visual visual)
+            {
+                var adorner = GetAdorner(visual);
+                if (adorner is { })
+                {
+                    Detach(visual, adorner);
+                }
+            }
+        }
+
+        private static void Attach(Visual visual, Control adorner)
+        {
+            var layer = AdornerLayer.GetAdornerLayer(visual);
+            AddVisualAdorner(visual, adorner, layer);
+            visual.SetValue(s_savedAdornerLayerProperty, layer);
+        }
+
+        private static void Detach(Visual visual, Control adorner)
+        {
+            var layer = visual.GetValue(s_savedAdornerLayerProperty);
+            RemoveVisualAdorner(visual, adorner, layer);
+            visual.ClearValue(s_savedAdornerLayerProperty);
+        }
+
+        private static void AddVisualAdorner(Visual visual, Control? adorner, AdornerLayer? layer)
+        {
+            if (adorner is null || layer == null || layer.Children.Contains(adorner))
+            {
+                return;
+            }
+
+            AdornerLayer.SetAdornedElement(adorner, visual);
+            AdornerLayer.SetIsClipEnabled(adorner, false);
+
+            ((ISetLogicalParent) adorner).SetParent(visual);
+            layer.Children.Add(adorner);
+        }
+
+        private static void RemoveVisualAdorner(Visual visual, Control? adorner, AdornerLayer? layer)
+        {
+            if (adorner is null || layer is null || !layer.Children.Contains(adorner))
+            {
+                return;
+            }
+
+            layer.Children.Remove(adorner);
+            ((ISetLogicalParent) adorner).SetParent(null);
+        }
+
         protected override Size MeasureOverride(Size availableSize)
         {
             foreach (var child in Children)
             {
-                var info = child.GetValue(s_adornedElementInfoProperty);
+                if (child is AvaloniaObject ao)
+                {
+                    var info = ao.GetValue(s_adornedElementInfoProperty);
 
-                if (info != null && info.Bounds.HasValue)
-                {
-                    child.Measure(info.Bounds.Value.Bounds.Size);
-                }
-                else
-                {
-                    child.Measure(availableSize);
+                    if (info != null && info.Bounds.HasValue)
+                    {
+                        child.Measure(info.Bounds.Value.Bounds.Size);
+                    }
+                    else
+                    {
+                        child.Measure(availableSize);
+                    }
                 }
             }
 
@@ -90,19 +203,22 @@ namespace Avalonia.Controls.Primitives
         {
             foreach (var child in Children)
             {
-                var info = child.GetValue(s_adornedElementInfoProperty);
-                var isClipEnabled = child.GetValue(IsClipEnabledProperty);
+                if (child is AvaloniaObject ao)
+                {
+                    var info = ao.GetValue(s_adornedElementInfoProperty);
+                    var isClipEnabled = ao.GetValue(IsClipEnabledProperty);
 
-                if (info != null && info.Bounds.HasValue)
-                {
-                    child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
-                    child.RenderTransformOrigin = new RelativePoint(new Point(0,0), RelativeUnit.Absolute);
-                    UpdateClip(child, info.Bounds.Value, isClipEnabled);
-                    child.Arrange(info.Bounds.Value.Bounds);
-                }
-                else
-                {
-                    child.Arrange(new Rect(finalSize));
+                    if (info != null && info.Bounds.HasValue)
+                    {
+                        child.RenderTransform = new MatrixTransform(info.Bounds.Value.Transform);
+                        child.RenderTransformOrigin = new RelativePoint(new Point(0, 0), RelativeUnit.Absolute);
+                        UpdateClip(child, info.Bounds.Value, isClipEnabled);
+                        child.Arrange(info.Bounds.Value.Bounds);
+                    }
+                    else
+                    {
+                        ArrangeChild((Control) child, finalSize);
+                    }
                 }
             }
 
@@ -117,7 +233,7 @@ namespace Avalonia.Controls.Primitives
             layer?.UpdateAdornedElement(adorner, adorned);
         }
 
-        private void UpdateClip(IControl control, TransformedBounds bounds, bool isEnabled)
+        private void UpdateClip(Control control, TransformedBounds bounds, bool isEnabled)
         {
             if (!isEnabled)
             {
@@ -142,12 +258,12 @@ namespace Avalonia.Controls.Primitives
             clip.Rect = clipBounds;
         }
 
-        private void ChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void ChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (Visual i in e.NewItems)
+                    foreach (Visual i in e.NewItems!)
                     {
                         UpdateAdornedElement(i, i.GetValue(AdornedElementProperty));
                     }
@@ -160,6 +276,9 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateAdornedElement(Visual adorner, Visual? adorned)
         {
+            if (adorner.CompositionVisual != null)
+                adorner.CompositionVisual.AdornedVisual = adorned?.CompositionVisual;
+            
             var info = adorner.GetValue(s_adornedElementInfoProperty);
 
             if (info != null)
@@ -180,11 +299,18 @@ namespace Avalonia.Controls.Primitives
                     adorner.SetValue(s_adornedElementInfoProperty, info);
                 }
 
-                info.Subscription = adorned.GetObservable(TransformedBoundsProperty).Subscribe(x =>
-                {
-                    info.Bounds = x;
-                    InvalidateMeasure();
-                });
+                if (adorner.CompositionVisual != null)
+                    info.Subscription = adorned.GetObservable(BoundsProperty).Subscribe(x =>
+                    {
+                        info.Bounds = new TransformedBounds(new Rect(adorned.Bounds.Size), new Rect(adorned.Bounds.Size), Matrix.Identity);
+                        InvalidateMeasure();
+                    });
+                else
+                    info.Subscription = adorned.GetObservable(TransformedBoundsProperty).Subscribe(x =>
+                    {
+                        info.Bounds = x;
+                        InvalidateMeasure();
+                    });
             }
         }
 

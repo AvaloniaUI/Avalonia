@@ -21,12 +21,12 @@ namespace Avalonia.Controls.Notifications
         /// Use <see cref="TimeSpan.Zero"/> for notifications that will remain open.</param>
         /// <param name="onClick">An Action to call when the notification is clicked.</param>
         /// <param name="onClose">An Action to call when the notification is closed.</param>
-        public Notification(string title,
-            string message,
+        public Notification(string? title,
+            string? message,
             NotificationType type = NotificationType.Information,
             TimeSpan? expiration = null,
-            Action onClick = null,
-            Action onClose = null)
+            Action? onClick = null,
+            Action? onClose = null)
         {
             Title = title;
             Message = message;
@@ -37,10 +37,10 @@ namespace Avalonia.Controls.Notifications
         }
 
         /// <inheritdoc/>
-        public string Title { get; private set; }
+        public string? Title { get; private set; }
 
         /// <inheritdoc/>
-        public string Message { get; private set; }
+        public string? Message { get; private set; }
 
         /// <inheritdoc/>
         public NotificationType Type { get; private set; }
@@ -49,9 +49,9 @@ namespace Avalonia.Controls.Notifications
         public TimeSpan Expiration { get; private set; }
 
         /// <inheritdoc/>
-        public Action OnClick { get; private set; }
+        public Action? OnClick { get; private set; }
 
         /// <inheritdoc/>
-        public Action OnClose { get; private set; }
+        public Action? OnClose { get; private set; }
     }
 }

@@ -7,7 +7,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    internal static class SKTypefaceCollectionCache
+    public static class SKTypefaceCollectionCache
     {
         private static readonly ConcurrentDictionary<FontFamily, SKTypefaceCollection> s_cachedCollections;
 
@@ -37,7 +37,7 @@ namespace Avalonia.Skia
 
             var typeFaceCollection = new SKTypefaceCollection();
 
-            var assetLoader = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
             foreach (var asset in fontAssets)
             {
@@ -51,13 +51,13 @@ namespace Avalonia.Skia
                 if (typeface == null)
                     throw new InvalidOperationException("Typeface could not be loaded.");
 
-                if (typeface.FamilyName != fontFamily.Name)
+                if (!typeface.FamilyName.Contains(fontFamily.Name))
                 {
                     continue;
                 }
 
                 var key = new Typeface(fontFamily, typeface.FontSlant.ToAvalonia(),
-                    (FontWeight)typeface.FontWeight);
+                    (FontWeight)typeface.FontWeight, (FontStretch)typeface.FontWidth);
 
                 typeFaceCollection.AddTypeface(key, typeface);
             }

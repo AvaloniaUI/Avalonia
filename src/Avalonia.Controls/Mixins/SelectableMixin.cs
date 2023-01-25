@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Interactivity;
 using Avalonia.Controls.Primitives;
-using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Mixins
 {
@@ -38,9 +38,9 @@ namespace Avalonia.Controls.Mixins
         /// <typeparam name="TControl">The control type.</typeparam>
         /// <param name="isSelected">The IsSelected property.</param>
         public static void Attach<TControl>(AvaloniaProperty<bool> isSelected)
-            where TControl : class, IControl
+            where TControl : Control
         {
-            Contract.Requires<ArgumentNullException>(isSelected != null);
+            _ = isSelected ?? throw new ArgumentNullException(nameof(isSelected));
 
             isSelected.Changed.Subscribe(x =>
             {

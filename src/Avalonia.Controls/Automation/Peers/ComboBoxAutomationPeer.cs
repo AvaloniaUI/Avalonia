@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class ComboBoxAutomationPeer : SelectingItemsControlAutomationPeer,
@@ -60,7 +58,7 @@ namespace Avalonia.Automation.Peers
             return null;
         }
 
-        protected override void OwnerPropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        protected override void OwnerPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             base.OwnerPropertyChanged(sender, e);
 
@@ -73,7 +71,7 @@ namespace Avalonia.Automation.Peers
             }
         }
 
-        private ExpandCollapseState ToState(bool value)
+        private static ExpandCollapseState ToState(bool value)
         {
             return value ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
         }

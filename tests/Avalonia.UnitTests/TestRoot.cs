@@ -24,13 +24,13 @@ namespace Avalonia.UnitTests
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
         }
 
-        public TestRoot(IControl child)
+        public TestRoot(Control child)
             : this(false, child)
         {
             Child = child;
         }
 
-        public TestRoot(bool useGlobalStyles, IControl child)
+        public TestRoot(bool useGlobalStyles, Control child)
             : this()
         {
             if (useGlobalStyles)
@@ -41,7 +41,7 @@ namespace Avalonia.UnitTests
             Child = child;
         }
 
-        public Size ClientSize { get; set; } = new Size(100, 100);
+        public Size ClientSize { get; set; } = new Size(1000, 1000);
 
         public Size MaxClientSize { get; set; } = Size.Infinity;
 
@@ -58,9 +58,7 @@ namespace Avalonia.UnitTests
         public IKeyboardNavigationHandler KeyboardNavigationHandler => null;
 
         public IInputElement PointerOverElement { get; set; }
-
-        public IMouseDevice MouseDevice { get; set; }
-
+        
         public bool ShowAccessKeys { get; set; }
 
         public IStyleHost StylingParent { get; set; }
@@ -103,12 +101,17 @@ namespace Avalonia.UnitTests
                         scope.Register(element.Name, element);
                 }
 
-                if(element is IVisual visual && (force || NameScope.GetNameScope(element) == null))
+                if(element is Visual visual && (force || NameScope.GetNameScope(element) == null))
                     foreach(var child in visual.GetVisualChildren())
                         if (child is StyledElement styledChild)
                             Visit(styledChild);
             }
             Visit(this, true);
+        }
+
+        protected override Size MeasureOverride(Size availableSize)
+        {
+            return base.MeasureOverride(ClientSize);
         }
     }
 }

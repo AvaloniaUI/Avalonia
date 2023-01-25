@@ -7,8 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-
-#nullable enable
+using Avalonia.Rendering;
 
 namespace Avalonia.Controls
 {
@@ -20,8 +19,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property.
         /// </summary>
-        public static readonly DirectProperty<Menu, bool> IsOpenProperty =
-            AvaloniaProperty.RegisterDirect<Menu, bool>(
+        public static readonly DirectProperty<MenuBase, bool> IsOpenProperty =
+            AvaloniaProperty.RegisterDirect<MenuBase, bool>(
                 nameof(IsOpen),
                 o => o.IsOpen);
 
@@ -42,7 +41,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="MenuBase"/> class.
         /// </summary>
-        public MenuBase()
+        protected MenuBase()
         {
             InteractionHandler = new DefaultMenuInteractionHandler(false);
         }
@@ -51,7 +50,7 @@ namespace Avalonia.Controls
         /// Initializes a new instance of the <see cref="MenuBase"/> class.
         /// </summary>
         /// <param name="interactionHandler">The menu interaction handler.</param>
-        public MenuBase(IMenuInteractionHandler interactionHandler)
+        protected MenuBase(IMenuInteractionHandler interactionHandler)
         {
             InteractionHandler = interactionHandler ?? throw new ArgumentNullException(nameof(interactionHandler));
         }
@@ -76,6 +75,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IMenuInteractionHandler IMenu.InteractionHandler => InteractionHandler;
 
+        IRenderRoot? IMenu.VisualRoot => VisualRoot;
+        
         /// <inheritdoc/>
         IMenuItem? IMenuElement.SelectedItem
         {
@@ -83,25 +84,18 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = ItemContainerGenerator.IndexFromContainer(value);
+                SelectedIndex = value is Control c ?
+                    IndexFromContainer(c) : -1;
             }
         }
 
         /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems
-        {
-            get
-            {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
-            }
-        }
+        IEnumerable<IMenuItem> IMenuElement.SubItems => GetRealizedContainers().OfType<IMenuItem>();
 
         /// <summary>
         /// Gets the interaction handler for the menu.
@@ -111,7 +105,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is opened.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> MenuOpened
+        public event EventHandler<RoutedEventArgs>? MenuOpened
         {
             add { AddHandler(MenuOpenedEvent, value); }
             remove { RemoveHandler(MenuOpenedEvent, value); }
@@ -120,7 +114,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Occurs when a <see cref="Menu"/> is closed.
         /// </summary>
-        public event EventHandler<RoutedEventArgs> MenuClosed
+        public event EventHandler<RoutedEventArgs>? MenuClosed
         {
             add { AddHandler(MenuClosedEvent, value); }
             remove { RemoveHandler(MenuClosedEvent, value); }
@@ -139,11 +133,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator<MenuItem>(this, MenuItem.HeaderProperty, null);
-        }
+        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)

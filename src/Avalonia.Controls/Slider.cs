@@ -42,6 +42,9 @@ namespace Avalonia.Controls
     /// <summary>
     /// A control that lets the user select from a range of values by moving a Thumb control along a Track.
     /// </summary>
+    [TemplatePart("PART_DecreaseButton", typeof(Button))]
+    [TemplatePart("PART_IncreaseButton", typeof(Button))]
+    [TemplatePart("PART_Track",          typeof(Track))]
     [PseudoClasses(":vertical", ":horizontal", ":pressed")]
     public class Slider : RangeBase
     {
@@ -73,7 +76,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="TickPlacement"/> property.
         /// </summary>
         public static readonly StyledProperty<TickPlacement> TickPlacementProperty =
-            AvaloniaProperty.Register<TickBar, TickPlacement>(nameof(TickPlacement), 0d);
+            AvaloniaProperty.Register<Slider, TickPlacement>(nameof(TickPlacement), 0d);
 
         /// <summary>
         /// Defines the <see cref="TicksProperty"/> property.
@@ -83,14 +86,14 @@ namespace Avalonia.Controls
 
         // Slider required parts
         private bool _isDragging = false;
-        private Track _track;
-        private Button _decreaseButton;
-        private Button _increaseButton;
-        private IDisposable _decreaseButtonPressDispose;
-        private IDisposable _decreaseButtonReleaseDispose;
-        private IDisposable _increaseButtonSubscription;
-        private IDisposable _increaseButtonReleaseDispose;
-        private IDisposable _pointerMovedDispose;
+        private Track? _track;
+        private Button? _decreaseButton;
+        private Button? _increaseButton;
+        private IDisposable? _decreaseButtonPressDispose;
+        private IDisposable? _decreaseButtonReleaseDispose;
+        private IDisposable? _increaseButtonSubscription;
+        private IDisposable? _increaseButtonReleaseDispose;
+        private IDisposable? _pointerMovedDispose;
 
         private const double Tolerance = 0.0001;
 
@@ -187,14 +190,14 @@ namespace Avalonia.Controls
             _increaseButtonSubscription?.Dispose();
             _increaseButtonReleaseDispose?.Dispose();
             _pointerMovedDispose?.Dispose();
-            
+
             _decreaseButton = e.NameScope.Find<Button>("PART_DecreaseButton");
             _track = e.NameScope.Find<Track>("PART_Track");
             _increaseButton = e.NameScope.Find<Button>("PART_IncreaseButton");
 
             if (_track != null)
             {
-                _track.IsThumbDragHandled = true;
+                _track.IgnoreThumbDrag = true;
             }
 
             if (_decreaseButton != null)
@@ -255,7 +258,7 @@ namespace Avalonia.Controls
 
             e.Handled = handled;
         }
-            
+
         private void MoveToNextTick(double direction)
         {
             if (direction == 0.0) return;
@@ -312,20 +315,26 @@ namespace Avalonia.Controls
             }
         }
 
-        private void TrackMoved(object sender, PointerEventArgs e)
+        private void TrackMoved(object? sender, PointerEventArgs e)
         {
+            if (!IsEnabled)
+            {
+                _isDragging = false;
+                return;
+            }
+
             if (_isDragging)
             {
                 MoveToPoint(e.GetCurrentPoint(_track));
             }
         }
 
-        private void TrackReleased(object sender, PointerReleasedEventArgs e)
+        private void TrackReleased(object? sender, PointerReleasedEventArgs e)
         {
             _isDragging = false;
         }
 
-        private void TrackPressed(object sender, PointerPressedEventArgs e)
+        private void TrackPressed(object? sender, PointerPressedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -336,16 +345,19 @@ namespace Avalonia.Controls
 
         private void MoveToPoint(PointerPoint posOnTrack)
         {
+            if (_track is null)
+                return;
+
             var orient = Orientation == Orientation.Horizontal;
-            var thumbLength = (orient 
-                ? _track.Thumb.Bounds.Width 
+            var thumbLength = (orient
+                ? _track.Thumb.Bounds.Width
                 : _track.Thumb.Bounds.Height) + double.Epsilon;
-            var trackLength = (orient 
-                ? _track.Bounds.Width 
+            var trackLength = (orient
+                ? _track.Bounds.Width
                 : _track.Bounds.Height) - thumbLength;
             var trackPos = orient ? posOnTrack.Position.X : posOnTrack.Position.Y;
             var logicalPos = MathUtilities.Clamp((trackPos - thumbLength * 0.5) / trackLength, 0.0d, 1.0d);
-            var invert = orient ? 
+            var invert = orient ?
                 IsDirectionReversed ? 1 : 0 :
                 IsDirectionReversed ? 0 : 1;
             var calcVal = Math.Abs(invert - logicalPos);
@@ -355,21 +367,24 @@ namespace Avalonia.Controls
             Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
         }
 
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == ValueProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
             if (change.Property == OrientationProperty)
             {
-                UpdatePseudoClasses(change.NewValue.GetValueOrDefault<Orientation>());
+                UpdatePseudoClasses(change.GetNewValue<Orientation>());
             }
         }
 

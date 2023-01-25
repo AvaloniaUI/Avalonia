@@ -15,7 +15,7 @@ namespace Avalonia.Native.Interop
         string[] ToStringArray();
     }
 
-    internal class AvnString : CallbackBase, IAvnString
+    internal class AvnString : NativeCallbackBase, IAvnString
     {
         private IntPtr _native;
         private int _nativeLen;

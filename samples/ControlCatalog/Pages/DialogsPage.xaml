@@ -1,17 +1,72 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl x:Class="ControlCatalog.Pages.DialogsPage"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.DialogsPage">
-  <StackPanel Orientation="Vertical" Spacing="4" Margin="4">
-      <CheckBox Name="UseFilters">Use filters</CheckBox>
-      <Button Name="OpenFile">_Open File</Button>
-      <Button Name="SaveFile">_Save File</Button>
-      <Button Name="SelectFolder">Select Fo_lder</Button>
-      <Button Name="OpenBoth">Select _Both</Button>
-      <Button Name="DecoratedWindow">Decorated _window</Button>
-      <Button Name="DecoratedWindowDialog">Decorated w_indow (dialog)</Button>
-      <Button Name="Dialog">_Dialog</Button>
-      <Button Name="DialogNoTaskbar">Dialog (_No taskbar icon)</Button>
-      <Button Name="OwnedWindow">Own_ed window</Button>
-      <Button Name="OwnedWindowNoTaskbar">Owned window (No tas_kbar icon)</Button>
+             xmlns:storage="clr-namespace:Avalonia.Platform.Storage;assembly=Avalonia.Base"
+             xmlns:generic="clr-namespace:System.Collections.Generic;assembly=System.Collections">
+  <StackPanel Margin="4"
+              Orientation="Vertical"
+              Spacing="4">
+
+    <TextBlock Text="Windows:" />
+
+    <Expander Header="Window dialogs">
+      <StackPanel Spacing="4">
+        <Button Name="DecoratedWindow">Decorated _window</Button>
+        <Button Name="DecoratedWindowDialog">Decorated w_indow (dialog)</Button>
+        <Button Name="Dialog" ToolTip.Tip="Shows a dialog">_Dialog</Button>
+        <Button Name="DialogNoTaskbar">Dialog (_No taskbar icon)</Button>
+        <Button Name="OwnedWindow">Own_ed window</Button>
+        <Button Name="OwnedWindowNoTaskbar">Owned window (No tas_kbar icon)</Button>
+      </StackPanel>
+    </Expander>
+
+    <TextBlock Margin="0,20,0,0" Text="Pickers:" />
+
+    <CheckBox Name="UseFilters">Use filters</CheckBox>
+    <Expander Header="FilePicker API">
+      <StackPanel Spacing="4">
+        <CheckBox Name="ForceManaged">Force managed dialog</CheckBox>
+        <CheckBox Name="OpenMultiple">Open multiple</CheckBox>
+        <Button Name="OpenFolderPicker">Select Fo_lder</Button>
+        <Button Name="OpenFilePicker">_Open File</Button>
+        <Button Name="SaveFilePicker">_Save File</Button>
+        <Button Name="OpenFileFromBookmark">Open File Bookmark</Button>
+        <Button Name="OpenFolderFromBookmark">Open Folder Bookmark</Button>
+      </StackPanel>
+    </Expander>
+    <Expander Header="Legacy OpenFileDialog">
+      <StackPanel Spacing="4">
+        <Button Name="OpenFile">_Open File</Button>
+        <Button Name="OpenMultipleFiles">Open _Multiple File</Button>
+        <Button Name="SaveFile">_Save File</Button>
+        <Button Name="SelectFolder">Select Fo_lder</Button>
+        <Button Name="OpenBoth">Select _Both</Button>
+      </StackPanel>
+    </Expander>
+
+    <AutoCompleteBox x:Name="CurrentFolderBox" Watermark="Write full path/uri or well known folder name">
+      <AutoCompleteBox.Items>
+        <generic:List x:TypeArguments="storage:WellKnownFolder">
+          <storage:WellKnownFolder>Desktop</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Documents</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Downloads</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Pictures</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Videos</storage:WellKnownFolder>
+          <storage:WellKnownFolder>Music</storage:WellKnownFolder>
+        </generic:List>
+      </AutoCompleteBox.Items>
+    </AutoCompleteBox>
+    
+    <TextBlock x:Name="PickerLastResultsVisible"
+               Classes="h2"
+               IsVisible="False"
+               Text="Last picker results:" />
+    <ItemsControl x:Name="PickerLastResults" />
+
+    <TextBox Name="BookmarkContainer" Watermark="Bookmark" />
+    <TextBox Name="OpenedFileContent"
+             MaxLines="10"
+             Watermark="Picked file content" />
+
   </StackPanel>
 </UserControl>

@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <LangVersion>latest</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputType>Library</OutputType>
     <IsPackable>false</IsPackable>
-    <LangVersion>latest</LangVersion>
     <AssemblyOriginatorKeyFile>..\..\build\avalonia.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>false</SignAssembly>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Avalonia.UnitTests\Assets\*.ttf" />
@@ -15,18 +14,12 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup\Avalonia.Markup.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Animation\Avalonia.Animation.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Input\Avalonia.Input.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Interactivity\Avalonia.Interactivity.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Layout\Avalonia.Layout.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Visuals\Avalonia.Visuals.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Styling\Avalonia.Styling.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Themes.Default\Avalonia.Themes.Default.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
   </ItemGroup>
-  <Import Project="..\..\src\Shared\PlatformSupport\PlatformSupport.projitems" Label="Shared" />
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\SharedVersion.props" />
+  <Import Project="..\..\build\HarfBuzzSharp.props" />
 </Project>

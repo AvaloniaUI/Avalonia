@@ -4,8 +4,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Selection;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class ListItemAutomationPeer : ContentControlAutomationPeer,
@@ -38,7 +36,7 @@ namespace Avalonia.Automation.Peers
 
             if (Owner.Parent is SelectingItemsControl parent)
             {
-                var index = parent.ItemContainerGenerator.IndexFromContainer(Owner);
+                var index = parent.IndexFromContainer(Owner);
 
                 if (index != -1)
                     parent.SelectedIndex = index;
@@ -52,7 +50,7 @@ namespace Avalonia.Automation.Peers
             if (Owner.Parent is ItemsControl parent &&
                 parent.GetValue(ListBox.SelectionProperty) is ISelectionModel selectionModel)
             {
-                var index = parent.ItemContainerGenerator.IndexFromContainer(Owner);
+                var index = parent.IndexFromContainer(Owner);
 
                 if (index != -1)
                     selectionModel.Select(index);

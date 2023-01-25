@@ -17,6 +17,6 @@ namespace Avalonia.Diagnostics
         /// <returns>
         /// The subscribers or null if no subscribers.
         /// </returns>
-        Delegate[] GetCollectionChangedSubscribers();
+        Delegate[]? GetCollectionChangedSubscribers();
     }
 }

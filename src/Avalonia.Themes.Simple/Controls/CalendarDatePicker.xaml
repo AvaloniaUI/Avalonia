@@ -1,0 +1,138 @@
+<!--
+  // (c) Copyright Microsoft Corporation.
+  // This source is subject to the Microsoft Public License (Ms-PL).
+  // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
+  // All other rights reserved.
+-->
+
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="using:System">
+  <ControlTheme x:Key="{x:Type CalendarDatePicker}"
+                TargetType="CalendarDatePicker">
+    <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}" />
+    <Setter Property="Padding" Value="4" />
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="*,Auto">
+
+          <Grid.Styles>
+
+            <Style Selector="Button.CalendarDropDown">
+              <Setter Property="Template">
+                <ControlTemplate>
+                  <Grid Width="19"
+                        Height="18"
+                        Margin="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource ThemeControlLowBrush}"
+                        ClipToBounds="False"
+                        ColumnDefinitions="*,*,*,*"
+                        RowDefinitions="23*,19*,19*,19*">
+
+                    <Border Name="Highlight"
+                            Grid.Row="0"
+                            Grid.RowSpan="4"
+                            Grid.ColumnSpan="4"
+                            Margin="-1"
+                            BorderBrush="{DynamicResource HighlightBrush}"
+                            BorderThickness="1" />
+                    <Border Name="Background"
+                            Grid.Row="1"
+                            Grid.RowSpan="3"
+                            Grid.ColumnSpan="4"
+                            Margin="0,-1,0,0"
+                            BorderBrush="{DynamicResource ThemeBorderHighBrush}"
+                            BorderThickness="1"
+                            CornerRadius=".5" />
+                    <Rectangle Grid.RowSpan="1"
+                               Grid.ColumnSpan="4"
+                               Fill="{DynamicResource ThemeAccentBrush}"
+                               Stroke="{DynamicResource ThemeBorderHighBrush}"
+                               StrokeThickness="1" />
+                    <TextBlock Grid.Row="1"
+                               Grid.RowSpan="3"
+                               Grid.Column="0"
+                               Grid.ColumnSpan="4"
+                               Margin="0,-1,0,0"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="{DynamicResource FontSizeSmall}"
+                               Foreground="{DynamicResource ThemeBorderHighBrush}"
+                               Text="{Binding Source={x:Static sys:DateTime.Today}, Path=Day}" />
+
+                    <Ellipse Grid.ColumnSpan="4"
+                             Width="3"
+                             Height="3"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             Fill="{DynamicResource ThemeControlLowBrush}"
+                             StrokeThickness="0" />
+                  </Grid>
+                </ControlTemplate>
+              </Setter>
+            </Style>
+
+            <Style Selector="Button.CalendarDropDown /template/ Border#Highlight">
+              <Setter Property="IsVisible" Value="False" />
+            </Style>
+            <Style Selector="Button.CalendarDropDown:pressed /template/ Border#Highlight">
+              <Setter Property="IsVisible" Value="True" />
+            </Style>
+
+            <Style Selector="Button.CalendarDropDown:pointerover /template/ Border#Background">
+              <Setter Property="Background" Value="{DynamicResource ThemeAccentBrush4}" />
+            </Style>
+
+          </Grid.Styles>
+
+          <TextBox Name="PART_TextBox"
+                   Grid.Column="0"
+                   Padding="{TemplateBinding Padding}"
+                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                   Background="{TemplateBinding Background}"
+                   BorderBrush="{TemplateBinding BorderBrush}"
+                   BorderThickness="{TemplateBinding BorderThickness}"
+                   CornerRadius="{TemplateBinding CornerRadius}"
+                   DataValidationErrors.Errors="{TemplateBinding (DataValidationErrors.Errors)}"
+                   UseFloatingWatermark="{TemplateBinding UseFloatingWatermark}"
+                   Watermark="{TemplateBinding Watermark}" />
+
+          <Button Name="PART_Button"
+                  Grid.Column="1"
+                  Width="20"
+                  Margin="2,0,2,0"
+                  Padding="0"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  Classes="CalendarDropDown"
+                  ClipToBounds="False"
+                  Focusable="False"
+                  Foreground="{TemplateBinding Foreground}" />
+
+          <Popup Name="PART_Popup"
+                 PlacementTarget="{TemplateBinding}"
+                 IsLightDismissEnabled="False">
+            <Calendar Name="PART_Calendar"
+                      DisplayDate="{TemplateBinding DisplayDate}"
+                      DisplayDateEnd="{TemplateBinding DisplayDateEnd}"
+                      DisplayDateStart="{TemplateBinding DisplayDateStart}"
+                      FirstDayOfWeek="{TemplateBinding FirstDayOfWeek}"
+                      IsTodayHighlighted="{TemplateBinding IsTodayHighlighted}"
+                      SelectedDate="{TemplateBinding SelectedDate,
+                                                     Mode=TwoWay}" />
+          </Popup>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:focus /template/ TextBox#PART_TextBox">
+      <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderHighBrush}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

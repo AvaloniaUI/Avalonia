@@ -6,8 +6,6 @@
 using System;
 using System.Collections.Generic;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     internal readonly struct IndexRange : IEquatable<IndexRange>
@@ -88,7 +86,7 @@ namespace Avalonia.Controls.Selection
             return hashCode;
         }
 
-        public override string ToString() => $"[{Begin}..{End}]";
+        public override string ToString() => FormattableString.Invariant($"[{Begin}..{End}]");
 
         public static bool operator ==(IndexRange left, IndexRange right) => left.Equals(right);
         public static bool operator !=(IndexRange left, IndexRange right) => !(left == right);

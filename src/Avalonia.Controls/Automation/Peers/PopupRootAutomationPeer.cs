@@ -1,8 +1,6 @@
 ﻿using System;
 using Avalonia.Controls.Primitives;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class PopupRootAutomationPeer : WindowBaseAutomationPeer
@@ -27,13 +25,13 @@ namespace Avalonia.Automation.Peers
             return parent;
         }
 
-        private void OnOpened(object sender, EventArgs e)
+        private void OnOpened(object? sender, EventArgs e)
         {
             ((PopupRoot)Owner).Opened -= OnOpened;
             StartTrackingFocus();
         }
 
-        private void OnClosed(object sender, EventArgs e)
+        private void OnClosed(object? sender, EventArgs e)
         {
             ((PopupRoot)Owner).Closed -= OnClosed;
             StopTrackingFocus();

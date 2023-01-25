@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using Avalonia.UnitTests;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
+using Avalonia.Threading;
 
 namespace Avalonia.Markup.UnitTests.Data
 {
@@ -122,7 +123,7 @@ namespace Avalonia.Markup.UnitTests.Data
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private WeakReference AssignValue(TestControl source, string val)
+        private static WeakReference AssignValue(TestControl source, string val)
         {
             var obj = new DummyObject(val);
 
@@ -160,6 +161,9 @@ namespace Avalonia.Markup.UnitTests.Data
             target.Bind(TextBlock.TextProperty, new Binding("Foo", BindingMode.OneTime));
             target.DataContext = source;
 
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
+            
             Assert.Equal(0, source.SubscriberCount);
         }
 
@@ -330,7 +334,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
+            var result = binding.Initiate(target, TextBox.TextProperty).Source;
 
             Assert.IsType<DefaultValueConverter>(((BindingExpression)result).Converter);
         }
@@ -346,7 +350,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Path = "Foo",
             };
 
-            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
+            var result = binding.Initiate(target, TextBox.TextProperty).Source;
 
             Assert.Same(converter.Object, ((BindingExpression)result).Converter);
         }
@@ -363,7 +367,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Path = "Bar",
             };
 
-            var result = binding.Initiate(target, TextBox.TextProperty).Subject;
+            var result = binding.Initiate(target, TextBox.TextProperty).Source;
 
             Assert.Same("foo", ((BindingExpression)result).ConverterParameter);
         }
@@ -608,7 +612,40 @@ namespace Avalonia.Markup.UnitTests.Data
                 root.DataContext = source;
             }
 
+            // Forces WeakEvent compact
+            Dispatcher.UIThread.RunJobs();
+            
             Assert.Equal(0, source.SubscriberCount);
+        }
+        
+        [Fact]
+        public void Binding_Can_Resolve_Property_From_IReflectableType_Type()
+        {
+            var source = new DynamicReflectableType { ["Foo"] = "foo" };
+            var target = new TwoWayBindingTest { DataContext = source };
+            var binding = new Binding
+            {
+                Path = "Foo",
+            };
+
+            target.Bind(TwoWayBindingTest.TwoWayProperty, binding);
+
+            Assert.Equal("foo", target.TwoWay);
+            source["Foo"] = "bar";
+            Assert.Equal("bar", target.TwoWay);
+            target.TwoWay = "baz";
+            Assert.Equal("baz", source["Foo"]);
+        }
+
+        [Fact]
+        public void Binding_To_Types_Should_Work()
+        {
+            var type = typeof(string);
+            var textBlock = new TextBlock() { DataContext = type };
+            using (textBlock.Bind(TextBlock.TextProperty, new Binding("Name")))
+            {
+                Assert.Equal("String", textBlock.Text);
+            };
         }
 
         private class StyledPropertyClass : AvaloniaObject

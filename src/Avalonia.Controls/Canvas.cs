@@ -1,6 +1,4 @@
-using System;
 using Avalonia.Input;
-using Avalonia.Layout;
 
 namespace Avalonia.Controls
 {
@@ -135,7 +133,7 @@ namespace Avalonia.Controls
         /// <param name="from">The control from which movement begins.</param>
         /// <param name="wrap">Whether to wrap around when the first or last item is reached.</param>
         /// <returns>The control.</returns>
-        IInputElement INavigableContainer.GetControl(NavigationDirection direction, IInputElement from, bool wrap)
+        IInputElement? INavigableContainer.GetControl(NavigationDirection direction, IInputElement? from, bool wrap)
         {
             // TODO: Implement this
             return null;
@@ -159,6 +157,48 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Arranges a single child.
+        /// </summary>
+        /// <param name="child">The child to arrange.</param>
+        /// <param name="finalSize">The size allocated to the canvas.</param>
+        protected virtual void ArrangeChild(Control child, Size finalSize)
+        {
+            double x = 0.0;
+            double y = 0.0;
+            double elementLeft = GetLeft(child);
+
+            if (!double.IsNaN(elementLeft))
+            {
+                x = elementLeft;
+            }
+            else
+            {
+                // Arrange with right.
+                double elementRight = GetRight(child);
+                if (!double.IsNaN(elementRight))
+                {
+                    x = finalSize.Width - child.DesiredSize.Width - elementRight;
+                }
+            }
+
+            double elementTop = GetTop(child);
+            if (!double.IsNaN(elementTop))
+            {
+                y = elementTop;
+            }
+            else
+            {
+                double elementBottom = GetBottom(child);
+                if (!double.IsNaN(elementBottom))
+                {
+                    y = finalSize.Height - child.DesiredSize.Height - elementBottom;
+                }
+            }
+
+            child.Arrange(new Rect(new Point(x, y), child.DesiredSize));
+        }
+
+        /// <summary>
         /// Arranges the control's children.
         /// </summary>
         /// <param name="finalSize">The size allocated to the control.</param>
@@ -167,39 +207,7 @@ namespace Avalonia.Controls
         {
             foreach (Control child in Children)
             {
-                double x = 0.0;
-                double y = 0.0;
-                double elementLeft = GetLeft(child);
-
-                if (!double.IsNaN(elementLeft))
-                {
-                    x = elementLeft;
-                }
-                else
-                {
-                    // Arrange with right.
-                    double elementRight = GetRight(child);
-                    if (!double.IsNaN(elementRight))
-                    {
-                        x = finalSize.Width - child.DesiredSize.Width - elementRight;
-                    }
-                }
-
-                double elementTop = GetTop(child);
-                if (!double.IsNaN(elementTop) )
-                {
-                    y = elementTop;
-                }
-                else
-                {
-                    double elementBottom = GetBottom(child);
-                    if (!double.IsNaN(elementBottom))
-                    {
-                        y = finalSize.Height - child.DesiredSize.Height - elementBottom;
-                    }
-                }
-
-                child.Arrange(new Rect(new Point(x, y), child.DesiredSize));
+                ArrangeChild(child, finalSize);
             }
 
             return finalSize;

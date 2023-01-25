@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Automation.Peers
 {
@@ -33,7 +32,7 @@ namespace Avalonia.Automation.Peers
         {
             var i = 0;
 
-            if (Owner.GetVisualRoot() is IVisual root &&
+            if (Owner.GetVisualRoot() is Visual root &&
                 root.TransformToVisual(Owner) is Matrix m)
             {
                 i = Owner.TextLayout.HitTestPoint(p.Transform(m)).TextPosition;
@@ -44,7 +43,7 @@ namespace Avalonia.Automation.Peers
 
         IReadOnlyList<Rect> ITextPeer.GetBounds(int start, int end)
         {
-            if (Owner.GetVisualRoot() is IVisual root &&
+            if (Owner.GetVisualRoot() is Visual root &&
                 Owner.TransformToVisual(root) is Matrix m)
             {
                 var source = Owner.TextLayout.HitTestTextRange(start, end - start);
@@ -59,8 +58,8 @@ namespace Avalonia.Automation.Peers
             return Array.Empty<Rect>();
         }
 
-        int ITextPeer.LineFromChar(int charIndex) => Owner.TextLayout.GetLineIndexFromCharacterIndex(charIndex);
-        int ITextPeer.LineIndex(int lineIndex) => Owner.TextLayout.TextLines[lineIndex].TextRange.Start;
+        int ITextPeer.LineFromChar(int charIndex) => Owner.TextLayout.GetLineIndexFromCharacterIndex(charIndex, false);
+        int ITextPeer.LineIndex(int lineIndex) => Owner.TextLayout.TextLines[lineIndex].FirstTextSourceIndex;
         void ITextPeer.ScrollIntoView(int start, int end) { }
         void ITextPeer.Select(int start, int end) => throw new NotSupportedException();
 

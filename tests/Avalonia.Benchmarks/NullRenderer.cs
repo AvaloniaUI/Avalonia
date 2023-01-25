@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
@@ -12,7 +13,7 @@ namespace Avalonia.Benchmarks
 #pragma warning disable CS0067
         public event EventHandler<SceneInvalidatedEventArgs> SceneInvalidated;
 #pragma warning restore CS0067
-        public void AddDirty(IVisual visual)
+        public void AddDirty(Visual visual)
         {
         }
 
@@ -20,15 +21,15 @@ namespace Avalonia.Benchmarks
         {
         }
 
-        public IEnumerable<IVisual> HitTest(Point p, IVisual root, Func<IVisual, bool> filter) => null;
+        public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool> filter) => null;
 
-        public IVisual HitTestFirst(Point p, IVisual root, Func<IVisual, bool> filter) => null;
+        public Visual HitTestFirst(Point p, Visual root, Func<Visual, bool> filter) => null;
 
         public void Paint(Rect rect)
         {
         }
 
-        public void RecalculateChildren(IVisual visual)
+        public void RecalculateChildren(Visual visual)
         {
         }
 
@@ -43,5 +44,7 @@ namespace Avalonia.Benchmarks
         public void Stop()
         {
         }
+
+        public ValueTask<object> TryGetRenderInterfaceFeature(Type featureType) => new(0);
     }
 }

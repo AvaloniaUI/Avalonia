@@ -18,19 +18,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Target"/> Direct property
         /// </summary>
-        public static readonly DirectProperty<Label, IInputElement> TargetProperty =
-            AvaloniaProperty.RegisterDirect<Label, IInputElement>(nameof(Target), lbl => lbl.Target, (lbl, inp) => lbl.Target = inp);
+        public static readonly DirectProperty<Label, IInputElement?> TargetProperty =
+            AvaloniaProperty.RegisterDirect<Label, IInputElement?>(nameof(Target), lbl => lbl.Target, (lbl, inp) => lbl.Target = inp);
 
         /// <summary>
         /// Label focus target storage field
         /// </summary>
-        private IInputElement _target;
+        private IInputElement? _target;
 
         /// <summary>
         /// Label focus Target
         /// </summary>
         [ResolveByName]
-        public IInputElement Target
+        public IInputElement? Target
         {
             get => _target;
             set => SetAndRaise(TargetProperty, ref _target, value);

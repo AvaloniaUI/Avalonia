@@ -1,20 +1,27 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.ApplicationLifetimes
 {
     /// <summary>
     /// Controls application lifetime in classic desktop style
     /// </summary>
+    [NotClientImplementable]
     public interface IClassicDesktopStyleApplicationLifetime : IControlledApplicationLifetime
     {
         /// <summary>
+        /// Tries to Shutdown the application. <see cref="ShutdownRequested" /> event can be used to cancel the shutdown.
+        /// </summary>
+        /// <param name="exitCode">An integer exit code for an application. The default exit code is 0.</param>
+        bool TryShutdown(int exitCode = 0);
+
+        /// <summary>
         /// Gets the arguments passed to the
-        /// <see cref="ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime{T}(T, string[], ShutdownMode)"/>
+        /// <see cref="ClassicDesktopStyleApplicationLifetimeExtensions.StartWithClassicDesktopLifetime(AppBuilder, string[], ShutdownMode)"/>
         /// method.
         /// </summary>
-        string[] Args { get; }
+        string[]? Args { get; }
         
         /// <summary>
         /// Gets or sets the <see cref="ShutdownMode"/>. This property indicates whether the application is shutdown explicitly or implicitly. 
@@ -32,7 +39,7 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// <value>
         /// The main window.
         /// </value>
-        Window MainWindow { get; set; }
+        Window? MainWindow { get; set; }
         
         IReadOnlyList<Window> Windows { get; }
 
@@ -52,6 +59,6 @@ namespace Avalonia.Controls.ApplicationLifetimes
         /// will try to close each non-owned open window, invoking the <see cref="Window.Closing"/> event on each and allowing
         /// each window to cancel the shutdown of the application. Windows cannot however prevent OS shutdown.
         /// </remarks>
-        event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+        event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
     }
 }

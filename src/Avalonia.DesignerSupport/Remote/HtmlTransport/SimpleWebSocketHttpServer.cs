@@ -72,7 +72,7 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 while (true)
                 {
                     line = await ReadLineAsync();
-                    if (line == "")
+                    if (string.IsNullOrEmpty(line))
                         break;
                     sp = line.Split(new[] {':'}, 2);
                     headers[sp[0]] = sp[1].TrimStart();
@@ -140,13 +140,13 @@ namespace Avalonia.DesignerSupport.Remote.HtmlTransport
                 IsWebsocketRequest = true;
                 if (headers.TryGetValue("Sec-WebSocket-Protocol", out h))
                     WebSocketProtocols = h.Split(',').Select(x => x.Trim()).ToArray();
-                else WebSocketProtocols = new string[0];
+                else WebSocketProtocols = Array.Empty<string>();
             }
         }
 
         public async Task RespondAsync(int code, byte[] data, string contentType)
         {
-            var headers = Encoding.UTF8.GetBytes($"HTTP/1.1 {code} {(HttpStatusCode)code}\r\nConnection: close\r\nContent-Type: {contentType}\r\nContent-Length: {data.Length}\r\n\r\n");
+            var headers = Encoding.UTF8.GetBytes(FormattableString.Invariant($"HTTP/1.1 {code} {(HttpStatusCode)code}\r\nConnection: close\r\nContent-Type: {contentType}\r\nContent-Length: {data.Length}\r\n\r\n"));
             await _stream.WriteAsync(headers, 0, headers.Length);
             await _stream.WriteAsync(data, 0, data.Length);
             _stream.Dispose();

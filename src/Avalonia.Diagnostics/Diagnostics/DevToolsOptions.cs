@@ -16,6 +16,7 @@ namespace Avalonia.Diagnostics
         /// Gets or sets a value indicating whether DevTools should be displayed as a child window
         /// of the window being inspected. The default value is true.
         /// </summary>
+        /// <remarks>This setting is ignored if DevTools is attached to <see cref="Application"/></remarks>
         public bool ShowAsChildWindow { get; set; } = true;
 
         /// <summary>
@@ -27,5 +28,22 @@ namespace Avalonia.Diagnostics
         /// Get or set the startup screen index where the DevTools window will be displayed.
         /// </summary>
         public int? StartupScreenIndex { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether DevTools should be displayed implemented interfaces on Control details. The default value is true.
+        /// </summary>
+        public bool ShowImplementedInterfaces { get; set; } = true;
+        
+        /// <summary>
+        /// Allow to customize SreenshotHandler
+        /// </summary>
+        /// <remarks>Default handler is <see cref="Screenshots.FilePickerHandler"/></remarks>
+        public IScreenshotHandler ScreenshotHandler { get; set; }
+          = Conventions.DefaultScreenshotHandler;
+
+        /// <summary>
+        /// Gets or sets whether DevTools should use the dark mode theme
+        /// </summary>
+        public bool UseDarkMode { get; set; }
     }
 }

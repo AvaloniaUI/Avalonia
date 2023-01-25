@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Data.Converters;
 using Avalonia.Metadata;
 
@@ -66,9 +66,9 @@ namespace Avalonia.Data
         }
 
         /// <inheritdoc/>
-        public InstancedBinding Initiate(
-            IAvaloniaObject target,
-            AvaloniaProperty targetProperty,
+        public InstancedBinding? Initiate(
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)
         {
@@ -80,12 +80,13 @@ namespace Avalonia.Data
             if (!string.IsNullOrWhiteSpace(StringFormat) &&
                 (targetType == typeof(string) || targetType == typeof(object)))
             {
-                converter = new StringFormatMultiValueConverter(StringFormat, converter);
+                converter = new StringFormatMultiValueConverter(StringFormat!, converter);
             }
 
             var children = Bindings.Select(x => x.Initiate(target, null));
 
-            var input = children.Select(x => x.Observable)
+            var input = children.Select(x => x?.Source)
+                                .Where(x => x is not null)!
                                 .CombineLatest()
                                 .Select(x => ConvertValue(x, targetType, converter))
                                 .Where(x => x != BindingOperations.DoNothing);
@@ -117,7 +118,7 @@ namespace Avalonia.Data
 
             var culture = CultureInfo.CurrentCulture;
             values = new System.Collections.ObjectModel.ReadOnlyCollection<object?>(values);
-            object converted;
+            object? converted;
             if (converter != null)
             {
                 converted = converter.Convert(values, targetType, ConverterParameter, culture);

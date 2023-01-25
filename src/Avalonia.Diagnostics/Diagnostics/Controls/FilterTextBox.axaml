@@ -1,7 +1,6 @@
 ﻿<Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Avalonia.Diagnostics.Controls"
-        x:CompileBindings="True"
         x:DataType="controls:FilterTextBox">
 
   <Design.PreviewWith>
@@ -19,7 +18,7 @@
                   Classes="textBoxClearButton"
                   ToolTip.Tip="Clear"
                   Cursor="Hand"
-                  Command="{ReflectionBinding $parent[TextBox].Clear}"
+                  Command="{Binding $parent[TextBox].Clear}"
                   Opacity="0.5" />
           <ToggleButton Classes="filter-text-box-toggle"
                         ToolTip.Tip="Match Case"

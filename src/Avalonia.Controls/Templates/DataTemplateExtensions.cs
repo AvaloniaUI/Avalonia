@@ -1,7 +1,5 @@
 using Avalonia.LogicalTree;
 
-#nullable enable
-
 namespace Avalonia.Controls.Templates
 {
     /// <summary>
@@ -20,8 +18,8 @@ namespace Avalonia.Controls.Templates
         /// </param>
         /// <returns>The data template or null if no matching data template was found.</returns>
         public static IDataTemplate? FindDataTemplate(
-            this IControl control,
-            object data,
+            this Control control,
+            object? data,
             IDataTemplate? primary = null)
         {
             if (primary?.Match(data) == true)
@@ -47,7 +45,7 @@ namespace Avalonia.Controls.Templates
                 currentTemplateHost = currentTemplateHost.LogicalParent;
             }
 
-            IGlobalDataTemplates global = AvaloniaLocator.Current.GetService<IGlobalDataTemplates>();
+            var global = AvaloniaLocator.Current.GetService<IGlobalDataTemplates>();
 
             if (global != null && global.IsDataTemplatesInitialized)
             {

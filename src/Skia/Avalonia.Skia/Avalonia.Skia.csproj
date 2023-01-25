@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <RootNamespace>Avalonia.Skia</RootNamespace>
     <AssemblyName>Avalonia.Skia</AssemblyName>
     <PackageId>Avalonia.Skia</PackageId>
     <IncludeLinuxSkia>true</IncludeLinuxSkia>
+    <IncludeWasmSkia>true</IncludeWasmSkia>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
@@ -16,5 +17,16 @@
   
   <Import Project="..\..\..\build\SkiaSharp.props" />
   <Import Project="..\..\..\build\HarfBuzzSharp.props" />
-  <Import Project="..\..\Shared\RenderHelpers\RenderHelpers.projitems" Label="Shared" />  
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
+
+  <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Skia.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Skia.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Benchmarks, PublicKey=$(AvaloniaPublicKey)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
 </Project>

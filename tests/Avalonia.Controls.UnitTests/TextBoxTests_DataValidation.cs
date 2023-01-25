@@ -86,9 +86,11 @@ namespace Avalonia.Controls.UnitTests
         }
 
         private static TestServices Services => TestServices.MockThreadingInterface.With(
-            standardCursorFactory: Mock.Of<ICursorFactory>());
+            standardCursorFactory: Mock.Of<ICursorFactory>(),
+            textShaperImpl: new MockTextShaperImpl(),
+            fontManagerImpl: new MockFontManagerImpl());
 
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<TextBox>((control, scope) =>
                 new TextPresenter
@@ -98,7 +100,7 @@ namespace Avalonia.Controls.UnitTests
                     {
                         Path = "Text",
                         Mode = BindingMode.TwoWay,
-                        Priority = BindingPriority.TemplatedParent,
+                        Priority = BindingPriority.Template,
                         RelativeSource = new RelativeSource(RelativeSourceMode.TemplatedParent),
                     },
                 }.RegisterInNameScope(scope));

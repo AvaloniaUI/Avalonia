@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using JetBrains.Annotations;
 using static Avalonia.X11.XLib;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 namespace Avalonia.X11
@@ -33,6 +32,7 @@ namespace Avalonia.X11
         public IntPtr LastActivityTimestamp { get; set; }
         public XVisualInfo? TransparentVisualInfo { get; set; }
         public bool HasXim { get; set; }
+        public bool HasXSync { get; set; }
         public IntPtr DefaultFontSet { get; set; }
         
         public unsafe X11Info(IntPtr display, IntPtr deferredDisplay, bool useXim)
@@ -100,6 +100,15 @@ namespace Avalonia.X11
             catch
             {
                 //Ignore, XI is not supported
+            }
+
+            try
+            {
+                HasXSync = XSyncInitialize(display, out _, out _) != Status.Success;
+            }
+            catch
+            {
+                //Ignore, XSync is not supported
             }
         }
     }

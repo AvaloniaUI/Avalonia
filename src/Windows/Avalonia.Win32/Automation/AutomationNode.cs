@@ -17,6 +17,7 @@ using AAP = Avalonia.Automation.Provider;
 namespace Avalonia.Win32.Automation
 {
     [ComVisible(true)]
+    [RequiresUnreferencedCode("Requires .NET COM interop")]
     internal partial class AutomationNode : MarshalByRefObject,
         IRawElementProviderSimple,
         IRawElementProviderSimple2,

@@ -6,8 +6,6 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     public class SelectionModel<T> : SelectionNodeBase<T>, ISelectionModel
@@ -78,8 +76,7 @@ namespace Avalonia.Controls.Selection
 
         public IReadOnlyList<int> SelectedIndexes => _selectedIndexes ??= new SelectedIndexes<T>(this);
 
-        [MaybeNull, AllowNull]
-        public T SelectedItem
+        public T? SelectedItem
         {
             get
             {
@@ -89,7 +86,7 @@ namespace Avalonia.Controls.Selection
                 }
                 else if (_initSelectedItems is object && _initSelectedItems.Count > 0)
                 {
-                    return (T)_initSelectedItems[0];
+                    return (T?)_initSelectedItems[0];
                 }
 
                 return default;
@@ -394,9 +391,7 @@ namespace Avalonia.Controls.Selection
             {
                 if (SingleSelect)
                 {
-#pragma warning disable CS8604
-                    removed = new List<T> { (T)items[SelectedIndex - index] };
-#pragma warning restore CS8604
+                    removed = new List<T> { (T)items[SelectedIndex - index]! };
                 }
 
                 _selectedIndex = GetFirstSelectedIndexFromRanges();
@@ -444,6 +439,7 @@ namespace Avalonia.Controls.Selection
 
             if ((e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex) ||
                 (e.Action == NotifyCollectionChangedAction.Replace && e.OldStartingIndex == oldSelectedIndex) ||
+                (e.Action == NotifyCollectionChangedAction.Move && e.OldStartingIndex == oldSelectedIndex) ||
                 e.Action == NotifyCollectionChangedAction.Reset)
             {
                 RaisePropertyChanged(nameof(SelectedItem));
@@ -466,12 +462,12 @@ namespace Avalonia.Controls.Selection
             {
                 if (e.NewStartingIndex <= _selectedIndex)
                 {
-                    return _selectedIndex + e.NewItems.Count < ItemsView.Count;
+                    return _selectedIndex + e.NewItems!.Count < ItemsView.Count;
                 }
 
                 if (e.NewStartingIndex <= _anchorIndex)
                 {
-                    return _anchorIndex + e.NewItems.Count < ItemsView.Count;
+                    return _anchorIndex + e.NewItems!.Count < ItemsView.Count;
                 }
             }
 
@@ -743,7 +739,7 @@ namespace Avalonia.Controls.Selection
             }
         }
 
-        public struct BatchUpdateOperation : IDisposable
+        public record struct BatchUpdateOperation : IDisposable
         {
             private readonly SelectionModel<T> _owner;
             private bool _isDisposed;

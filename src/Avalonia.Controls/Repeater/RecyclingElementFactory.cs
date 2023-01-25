@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Templates;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public class SelectTemplateEventArgs : EventArgs
     {
         public string? TemplateKey { get; set; }
         public object? DataContext { get; internal set; }
-        public IControl? Owner { get; internal set; }
+        public Control? Owner { get; internal set; }
     }
 
     public class RecyclingElementFactory : ElementFactory
@@ -39,7 +37,7 @@ namespace Avalonia.Controls
 
         public event EventHandler<SelectTemplateEventArgs>? SelectTemplateKey;
 
-        protected override IControl GetElementCore(ElementFactoryGetArgs args)
+        protected override Control GetElementCore(ElementFactoryGetArgs args)
         {
             if (_templates == null || _templates.Count == 0)
             {
@@ -71,7 +69,7 @@ namespace Avalonia.Controls
                 }
 
                 var dataTemplate = Templates[templateKey];
-                element = dataTemplate.Build(args.Data);
+                element = dataTemplate.Build(args.Data)!;
 
                 // Associate ReuseKey with element
                 RecyclePool.SetReuseKey(element, templateKey);
@@ -82,14 +80,14 @@ namespace Avalonia.Controls
 
         protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
         {
-            var element = args.Element;
+            var element = args.Element!;
             var key = RecyclePool.GetReuseKey(element);
             RecyclePool.PutElement(element, key, args.Parent);
         }
 
-        protected virtual string OnSelectTemplateKeyCore(object dataContext, IControl owner)
+        protected virtual string OnSelectTemplateKeyCore(object? dataContext, Control? owner)
         {
-            if (SelectTemplateKey is object)
+            if (SelectTemplateKey is not null)
             {
                 _args ??= new SelectTemplateEventArgs();
                 _args.TemplateKey = null;

@@ -7,11 +7,60 @@ namespace Avalonia.Markup.UnitTests.Parsers
 {
     public class SelectorParserTests
     {
+        static SelectorParserTests()
+        {
+            //Ensure the attached properties are registered before run tests
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Grid).TypeHandle);
+            System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(typeof(Auth).TypeHandle);
+        }
+
+        class Auth
+        {
+            public readonly static AttachedProperty<string> NameProperty =
+                AvaloniaProperty.RegisterAttached<Auth, AvaloniaObject, string>("Name");
+
+            public static string GetName(AvaloniaObject avaloniaObject) =>
+                avaloniaObject.GetValue(NameProperty);
+
+            public static void SetName(AvaloniaObject avaloniaObject, string value) =>
+                avaloniaObject.SetValue(NameProperty, value);
+        }
+
         [Fact]
         public void Parses_Boolean_Property_Selector()
         {
             var target = new SelectorParser((ns, type) => typeof(TextBlock));
             var result = target.Parse("TextBlock[IsPointerOver=True]");
+        }
+
+        [Fact]
+        public void Parses_AttacchedProperty_Selector_With_Namespace()
+        {
+            var target = new SelectorParser((ns, type) =>
+                {
+                    return (ns, type) switch
+                    {
+                        ("", nameof(TextBlock)) => typeof(TextBlock),
+                        ("l",nameof(Auth)) => typeof(Auth),
+                        _ => null
+                    };
+                });
+            var result = target.Parse("TextBlock[(l|Auth.Name)=Admin]");
+        }
+
+        [Fact]
+        public void Parses_AttacchedProperty_Selector()
+        {
+            var target = new SelectorParser((ns, type) =>
+            {
+                return (ns, type) switch
+                {
+                    ("", nameof(TextBlock)) => typeof(TextBlock),
+                    ("", nameof(Grid)) => typeof(Grid),
+                    _ => null
+                };
+            });
+            var result = target.Parse("TextBlock[(Grid.Column)=1]");
         }
 
         [Fact]

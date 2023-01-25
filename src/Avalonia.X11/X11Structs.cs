@@ -32,7 +32,9 @@ using System.Collections;
 using System.Drawing;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Diagnostics.CodeAnalysis;
 // ReSharper disable FieldCanBeMadeReadOnly.Global
 // ReSharper disable IdentifierTypo
 // ReSharper disable MemberCanBePrivate.Global
@@ -545,7 +547,7 @@ namespace Avalonia.X11 {
         {
             if (data == null)
                 throw new InvalidOperationException();
-            return *(T*)data;
+            return Unsafe.ReadUnaligned<T>(data);
         }
     }
 
@@ -653,14 +655,15 @@ namespace Avalonia.X11 {
 					return type.ToString ();
 			}
 		}
-		
+
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
 		public static string ToString (object ev)
 		{
 			string result = string.Empty;
 			Type type = ev.GetType ();
 			FieldInfo [] fields = type.GetFields (System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance);
 			for (int i = 0; i < fields.Length; i++) {
-				if (result != string.Empty) {
+				if (!string.IsNullOrEmpty(result)) {
 					result += ", ";
 				}
 				object value = fields [i].GetValue (ev);
@@ -1765,7 +1768,9 @@ namespace Avalonia.X11 {
 	}
     
     [StructLayout(LayoutKind.Sequential)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
     public unsafe struct XImage
+#pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public int width, height; /* size of image */
         public int xoffset; /* number of pixels offset in X direction */
@@ -1796,7 +1801,7 @@ namespace Avalonia.X11 {
         internal IntPtr green_mask;
         internal IntPtr blue_mask;
         internal int colormap_size;
-        internal int bits_per_rgb;		
+        internal int bits_per_rgb;
     }
 	
 	internal enum XIMFeedback

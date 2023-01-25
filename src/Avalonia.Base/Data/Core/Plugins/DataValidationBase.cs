@@ -11,7 +11,7 @@ namespace Avalonia.Data.Core.Plugins
     /// and convert any values received from the inner property accessor into
     /// <see cref="BindingNotification"/>s.
     /// </remarks>
-    public abstract class DataValidationBase : PropertyAccessorBase, IObserver<object>
+    public abstract class DataValidationBase : PropertyAccessorBase, IObserver<object?>
     {
         private readonly IPropertyAccessor _inner;
 
@@ -25,31 +25,31 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
-        public override Type PropertyType => _inner.PropertyType;
+        public override Type? PropertyType => _inner.PropertyType;
 
         /// <inheritdoc/>
-        public override object Value => _inner.Value;
+        public override object? Value => _inner.Value;
 
         /// <inheritdoc/>
-        public override bool SetValue(object value, BindingPriority priority) => _inner.SetValue(value, priority);
+        public override bool SetValue(object? value, BindingPriority priority) => _inner.SetValue(value, priority);
 
         /// <summary>
         /// Should never be called: the inner <see cref="IPropertyAccessor"/> should never notify
         /// completion.
         /// </summary>
-        void IObserver<object>.OnCompleted() { }
+        void IObserver<object?>.OnCompleted() { }
 
         /// <summary>
         /// Should never be called: the inner <see cref="IPropertyAccessor"/> should never notify
         /// an error.
         /// </summary>
-        void IObserver<object>.OnError(Exception error) { }
+        void IObserver<object?>.OnError(Exception error) { }
 
         /// <summary>
         /// Called when the inner <see cref="IPropertyAccessor"/> notifies with a new value.
         /// </summary>
         /// <param name="value">The value.</param>
-        void IObserver<object>.OnNext(object value) => InnerValueChanged(value);
+        void IObserver<object?>.OnNext(object? value) => InnerValueChanged(value);
 
         /// <summary>
         /// Begins listening to the inner <see cref="IPropertyAccessor"/>.
@@ -67,7 +67,7 @@ namespace Avalonia.Data.Core.Plugins
         /// Notifies the observer that the value has changed. The value will be wrapped in a
         /// <see cref="BindingNotification"/> if it is not already a binding notification.
         /// </remarks>
-        protected virtual void InnerValueChanged(object value)
+        protected virtual void InnerValueChanged(object? value)
         {
             var notification = value as BindingNotification ?? new BindingNotification(value);
             PublishValue(notification);

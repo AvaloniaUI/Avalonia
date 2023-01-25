@@ -2,8 +2,7 @@ using System;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
-
-#nullable enable
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Shapes
 {
@@ -294,7 +293,7 @@ namespace Avalonia.Controls.Shapes
                 return finalSize;
             }
 
-            return Size.Empty;
+            return default;
         }
 
         internal static (Size size, Matrix transform) CalculateSizeAndTransform(Size availableSize, Rect shapeBounds, Stretch Stretch)

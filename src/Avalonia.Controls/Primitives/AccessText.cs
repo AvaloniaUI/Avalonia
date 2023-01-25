@@ -1,6 +1,6 @@
-using System;
 using Avalonia.Automation.Peers;
 using Avalonia.Input;
+using Avalonia.Reactive;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 
@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// The access key handler for the current window.
         /// </summary>
-        private IAccessKeyHandler _accessKeys;
+        private IAccessKeyHandler? _accessKeys;
 
         /// <summary>
         /// Initializes static members of the <see cref="AccessText"/> class.
@@ -68,7 +68,7 @@ namespace Avalonia.Controls.Primitives
 
             if (underscore != -1 && ShowAccessKey)
             {
-                var rect = TextLayout.HitTestTextPosition(underscore);
+                var rect = TextLayout!.HitTestTextPosition(underscore);
                 var offset = new Vector(0, -1.5);
                 context.DrawLine(
                     new Pen(Foreground, 1),
@@ -78,9 +78,9 @@ namespace Avalonia.Controls.Primitives
         }
 
         /// <inheritdoc/>
-        protected override TextLayout CreateTextLayout(Size constraint, string text)
+        protected override TextLayout CreateTextLayout(string? text)
         {
-            return base.CreateTextLayout(constraint, RemoveAccessKeyMarker(text));
+            return base.CreateTextLayout(RemoveAccessKeyMarker(text));
         }
 
         /// <inheritdoc/>
@@ -112,7 +112,7 @@ namespace Avalonia.Controls.Primitives
             return new NoneAutomationPeer(this);
         }
 
-        internal static string RemoveAccessKeyMarker(string text)
+        internal static string? RemoveAccessKeyMarker(string? text)
         {
             if (!string.IsNullOrEmpty(text))
             {
@@ -147,7 +147,7 @@ namespace Avalonia.Controls.Primitives
         /// Called when the <see cref="TextBlock.Text"/> property changes.
         /// </summary>
         /// <param name="text">The new text.</param>
-        private void TextChanged(string text)
+        private void TextChanged(string? text)
         {
             var key = (char)0;
 

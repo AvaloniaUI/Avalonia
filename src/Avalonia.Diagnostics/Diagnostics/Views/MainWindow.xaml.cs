@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Controls.Diagnostics;
 using Avalonia.Controls.Primitives;
@@ -11,25 +10,41 @@ using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Avalonia.Themes.Simple;
 using Avalonia.VisualTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics.Views
 {
     internal class MainWindow : Window, IStyleHost
     {
-        private readonly IDisposable _keySubscription;
+        private readonly IDisposable? _inputSubscription;
         private readonly Dictionary<Popup, IDisposable> _frozenPopupStates;
-        private TopLevel? _root;
+        private AvaloniaObject? _root;
+        private PixelPoint _lastPointerPosition;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _keySubscription = InputManager.Instance.Process
-                .OfType<RawKeyEventArgs>()
-                .Where(x => x.Type == RawKeyEventType.KeyDown)
-                .Subscribe(RawKeyDown);
+            // Apply the SimpleTheme.Window theme; this must be done after the XAML is parsed as
+            // the theme is included in the MainWindow's XAML.
+            if (Theme is null && this.FindResource(typeof(Window)) is ControlTheme windowTheme)
+                Theme = windowTheme;
 
+            _inputSubscription = InputManager.Instance?.Process
+                .Subscribe(x =>
+                {
+                    if (x is RawPointerEventArgs pointerEventArgs)
+                    {
+                        _lastPointerPosition = ((Visual)x.Root).PointToScreen(pointerEventArgs.Position);
+                    }
+                    else if (x is RawKeyEventArgs keyEventArgs && keyEventArgs.Type == RawKeyEventType.KeyDown)
+                    {
+                        RawKeyDown(keyEventArgs);
+                    }
+                });
+            
             _frozenPopupStates = new Dictionary<Popup, IDisposable>();
 
             EventHandler? lh = default;
@@ -50,23 +65,23 @@ namespace Avalonia.Diagnostics.Views
             this.Opened += lh;
         }
 
-        public TopLevel? Root
+        public AvaloniaObject? Root
         {
             get => _root;
             set
             {
                 if (_root != value)
                 {
-                    if (_root != null)
+                    if (_root is ICloseable oldClosable)
                     {
-                        _root.Closed -= RootClosed;
+                        oldClosable.Closed -= RootClosed;
                     }
 
                     _root = value;
 
-                    if (_root != null)
+                    if (_root is  ICloseable newClosable)
                     {
-                        _root.Closed += RootClosed;
+                        newClosable.Closed += RootClosed;
                         DataContext = new MainViewModel(_root);
                     }
                     else
@@ -82,7 +97,7 @@ namespace Avalonia.Diagnostics.Views
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            _keySubscription.Dispose();
+            _inputSubscription?.Dispose();
 
             foreach (var state in _frozenPopupStates)
             {
@@ -91,9 +106,9 @@ namespace Avalonia.Diagnostics.Views
 
             _frozenPopupStates.Clear();
 
-            if (_root != null)
+            if (_root is ICloseable cloneable)
             {
-                _root.Closed -= RootClosed;
+                cloneable.Closed -= RootClosed;
                 _root = null;
             }
 
@@ -105,13 +120,11 @@ namespace Avalonia.Diagnostics.Views
             AvaloniaXamlLoader.Load(this);
         }
 
-        private IControl? GetHoveredControl(TopLevel topLevel)
+        private Control? GetHoveredControl(TopLevel topLevel)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var point = (topLevel as IInputRoot)?.MouseDevice?.GetPosition(topLevel) ?? default;
-#pragma warning restore CS0618 // Type or member is obsolete                
+            var point = topLevel.PointToClient(_lastPointerPosition);
 
-            return (IControl?)topLevel.GetVisualsAt(point, x =>
+            return (Control?)topLevel.GetVisualsAt(point, x =>
                 {
                     if (x is AdornerLayer || !x.IsVisible)
                     {
@@ -123,11 +136,11 @@ namespace Avalonia.Diagnostics.Views
                 .FirstOrDefault();
         }
 
-        private static List<PopupRoot> GetPopupRoots(IVisual root)
+        private static List<PopupRoot> GetPopupRoots(TopLevel root)
         {
             var popupRoots = new List<PopupRoot>();
 
-            void ProcessProperty<T>(IControl control, AvaloniaProperty<T> property)
+            void ProcessProperty<T>(Control control, AvaloniaProperty<T> property)
             {
                 if (control.GetValue(property) is IPopupHostProvider popupProvider
                     && popupProvider.PopupHost is PopupRoot popupRoot)
@@ -136,7 +149,7 @@ namespace Avalonia.Diagnostics.Views
                 }
             }
 
-            foreach (var control in root.GetVisualDescendants().OfType<IControl>())
+            foreach (var control in root.GetVisualDescendants().OfType<Control>())
             {
                 if (control is Popup p && p.Host is PopupRoot popupRoot)
                 {
@@ -147,6 +160,7 @@ namespace Avalonia.Diagnostics.Views
                 ProcessProperty(control, ContextMenuProperty);
                 ProcessProperty(control, FlyoutBase.AttachedFlyoutProperty);
                 ProcessProperty(control, ToolTipDiagnostics.ToolTipProperty);
+                ProcessProperty(control, Button.FlyoutProperty);
             }
 
             return popupRoots;
@@ -160,17 +174,25 @@ namespace Avalonia.Diagnostics.Views
                 return;
             }
 
-            var root = Root;
+            var root = vm.PointerOverRoot as TopLevel;
+
             if (root is null)
             {
                 return;
             }
 
+            if (root is PopupRoot pr && pr.ParentTopLevel != null)
+            {
+                root = pr.ParentTopLevel;
+            }
+
             switch (e.Modifiers)
             {
-                case RawInputModifiers.Control | RawInputModifiers.Shift:
+                case RawInputModifiers.Control when (e.Key == Key.LeftShift || e.Key == Key.RightShift):
+                case RawInputModifiers.Shift when (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl):
+                case RawInputModifiers.Shift | RawInputModifiers.Control:
                 {
-                    IControl? control = null;
+                    Control? control = null;
 
                     foreach (var popupRoot in GetPopupRoots(root))
                     {
@@ -238,7 +260,25 @@ namespace Avalonia.Diagnostics.Views
 
         private void RootClosed(object? sender, EventArgs e) => Close();
 
-        public void SetOptions(DevToolsOptions options) =>
+        public void SetOptions(DevToolsOptions options)
+        {
             (DataContext as MainViewModel)?.SetOptions(options);
+
+            if (options.UseDarkMode)
+            {
+                if (Styles[0] is SimpleTheme st)
+                {
+                    st.Mode = SimpleThemeMode.Dark;
+                }                
+            }
+        }
+
+        internal void SelectedControl(Control? control)
+        {
+            if (control is { })
+            {
+                (DataContext as MainViewModel)?.SelectControl(control);
+            }
+        }
     }
 }

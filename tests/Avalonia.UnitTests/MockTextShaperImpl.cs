@@ -1,37 +1,39 @@
 ﻿using System;
-using System.Globalization;
-using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Media.TextFormatting.Unicode;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 
 namespace Avalonia.UnitTests
 {
     public class MockTextShaperImpl : ITextShaperImpl
     {
-        public GlyphRun ShapeText(ReadOnlySlice<char> text, Typeface typeface, double fontRenderingEmSize, CultureInfo culture)
+        public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
-            var glyphTypeface = typeface.GlyphTypeface;
-            var glyphIndices = new ushort[text.Length];
-            var glyphCount = 0;
+            var typeface = options.Typeface;
+            var fontRenderingEmSize = options.FontRenderingEmSize;
+            var bidiLevel = options.BidiLevel;
+            var shapedBuffer = new ShapedBuffer(text, text.Length, typeface, fontRenderingEmSize, bidiLevel);
+            var targetInfos = shapedBuffer.GlyphInfos;
+            var textSpan = text.Span;
+            var textStartIndex = TextTestHelper.GetStartCharIndex(text);
 
-            for (var i = 0; i < text.Length;)
+            for (var i = 0; i < shapedBuffer.Length;)
             {
-                var index = i;
+                var glyphCluster = i + textStartIndex;
 
-                var codepoint = Codepoint.ReadAt(text, i, out var count);
+                var codepoint = Codepoint.ReadAt(textSpan, i, out var count);
+
+                var glyphIndex = typeface.GetGlyph(codepoint);
+
+                for (var j = 0; j < count; ++j)
+                {
+                    targetInfos[i + j] = new GlyphInfo(glyphIndex, glyphCluster, 10);
+                }
 
                 i += count;
-
-                var glyph = glyphTypeface.GetGlyph(codepoint);
-
-                glyphIndices[index] = glyph;
-
-                glyphCount++;
             }
 
-            return new GlyphRun(glyphTypeface, fontRenderingEmSize,
-                new ReadOnlySlice<ushort>(glyphIndices.AsMemory(0, glyphCount)), characters: text);
+            return shapedBuffer;
         }
     }
 }

@@ -2,10 +2,11 @@
 using Avalonia.Controls;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
-    public class ElementNameNode : ExpressionNode
+    internal class ElementNameNode : ExpressionNode
     {
         private readonly WeakReference<INameScope> _nameScope;
         private readonly string _name;
@@ -19,7 +20,7 @@ namespace Avalonia.Markup.Parsers.Nodes
 
         public override string Description => $"#{_name}";
 
-        protected override void StartListeningCore(WeakReference<object> reference)
+        protected override void StartListeningCore(WeakReference<object?> reference)
         {
             if (_nameScope.TryGetTarget(out var scope))
                 _subscription = NameScopeLocator.Track(scope, _name).Subscribe(ValueChanged);

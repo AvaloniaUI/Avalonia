@@ -9,7 +9,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
     class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
     {
         public WriteableWicBitmapImpl(Stream stream, int decodeSize, bool horizontal,
-            Avalonia.Visuals.Media.Imaging.BitmapInterpolationMode interpolationMode)
+            Avalonia.Media.Imaging.BitmapInterpolationMode interpolationMode)
         : base(stream, decodeSize, horizontal, interpolationMode)
         {
         }
@@ -52,7 +52,7 @@ namespace Avalonia.Direct2D1.Media.Imaging
             public IntPtr Address => _lock.Data.DataPointer;
             public PixelSize Size => _lock.Size.ToAvalonia();
             public int RowBytes => _lock.Stride;
-            public Vector Dpi { get; } = new Vector(96, 96);
+            public Vector Dpi => _parent.Dpi;
             public PixelFormat Format => _format;
 
         }

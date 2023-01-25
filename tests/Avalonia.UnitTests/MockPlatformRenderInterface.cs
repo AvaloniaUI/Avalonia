@@ -3,25 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
+using Avalonia.Rendering;
 using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class MockPlatformRenderInterface : IPlatformRenderInterface
+    public class MockPlatformRenderInterface : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
-        public IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return Mock.Of<IFormattedTextImpl>();
-        }
-
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
             return Mock.Of<IGeometryImpl>();
@@ -37,10 +27,40 @@ namespace Avalonia.UnitTests
             return Mock.Of<IGeometryImpl>(x => x.Bounds == rect);
         }
 
+        class MockRenderTarget : IRenderTarget
+        {
+            public void Dispose()
+            {
+                
+            }
+
+            public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+            {
+                var m = new Mock<IDrawingContextImpl>();
+                m.Setup(c => c.CreateLayer(It.IsAny<Size>()))
+                    .Returns(() =>
+                        {
+                            var r = new Mock<IDrawingContextLayerImpl>();
+                            r.Setup(r => r.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()))
+                                .Returns(CreateDrawingContext(null));
+                            return r.Object;
+                        }
+                    );
+                return m.Object;
+
+            }
+
+            public bool IsCorrupted => false;
+        }
+        
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
-            return Mock.Of<IRenderTarget>();
+            return new MockRenderTarget();
         }
+
+        public bool IsLost => false;
+
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -129,9 +149,32 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
-            return Mock.Of<IGlyphRunImpl>();
+            return new MockGlyphRun(glyphInfos);
+        }
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
+
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            return Mock.Of<IGeometryImpl>();
+        }
+
+        public IGlyphRunBuffer AllocateGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return Mock.Of<IGlyphRunBuffer>();
+        }
+
+        public IHorizontalGlyphRunBuffer AllocateHorizontalGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return Mock.Of<IHorizontalGlyphRunBuffer>();
+        }
+
+        public IPositionedGlyphRunBuffer AllocatePositionedGlyphRun(IGlyphTypeface glyphTypeface, float fontRenderingEmSize, int length)
+        {
+            return Mock.Of<IPositionedGlyphRunBuffer>();
         }
 
         public bool SupportsIndividualRoundRects { get; set; }
@@ -139,5 +182,8 @@ namespace Avalonia.UnitTests
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public void Dispose()
+        {
+        }
     }
 }

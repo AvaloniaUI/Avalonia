@@ -2,52 +2,93 @@ using System;
 using System.Windows.Input;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
     public class HotKeyManager
     {
-        public static readonly AttachedProperty<KeyGesture> HotKeyProperty
-            = AvaloniaProperty.RegisterAttached<Control, KeyGesture>("HotKey", typeof(HotKeyManager));
+        public static readonly AttachedProperty<KeyGesture?> HotKeyProperty
+            = AvaloniaProperty.RegisterAttached<Control, KeyGesture?>("HotKey", typeof(HotKeyManager));
 
         class HotkeyCommandWrapper : ICommand
         {
-            public HotkeyCommandWrapper(ICommandSource control)
+            readonly WeakReference reference;
+
+            public HotkeyCommandWrapper(Control control)
             {
-                CommandSource = control;
+                reference = new WeakReference(control);
             }
 
-            public readonly ICommandSource CommandSource;
+            public ICommand? GetCommand()
+            {
+                if (reference.Target is { } target)
+                {
+                    if (target is ICommandSource commandSource && commandSource.Command is { } command)
+                    {
+                        return command;
+                    }
+                    else if (target is IClickableControl { })
+                    {
+                        return this;
+                    }
+                }
+                return null;
+            }
 
-            private ICommand GetCommand() => CommandSource.Command;
+            public bool CanExecute(object? parameter)
+            {
+                if (reference.Target is { } target)
+                {
+                    if (target is ICommandSource commandSource && commandSource.Command is { } command)
+                    {
+                        return commandSource.IsEffectivelyEnabled
+                            && command.CanExecute(commandSource.CommandParameter) == true;
+                    }
+                    else if (target is IClickableControl clickable)
+                    {
+                        return clickable.IsEffectivelyEnabled;
+                    }
+                }
+                return false;
+            }
 
-            public bool CanExecute(object parameter) =>
-                CommandSource.Command?.CanExecute(CommandSource.CommandParameter) == true
-                && CommandSource.IsEffectivelyEnabled;
+            public void Execute(object? parameter)
+            {
+                if (reference.Target is { } target)
+                {
+                    if (target is ICommandSource commandSource && commandSource.Command is { } command)
+                    {
+                        command.Execute(commandSource.CommandParameter);
+                    }
+                    else if (target is IClickableControl { IsEffectivelyEnabled: true } clickable)
+                    {
+                        clickable.RaiseClick();
+                    }
+                }
+            }
 
-            public void Execute(object parameter) =>
-                GetCommand()?.Execute(CommandSource.CommandParameter);
 
 #pragma warning disable 67 // Event not used
-            public event EventHandler CanExecuteChanged;
+            public event EventHandler? CanExecuteChanged;
 #pragma warning restore 67
         }
 
 
         class Manager
         {
-            private readonly IControl _control;
-            private TopLevel _root;
-            private IDisposable _parentSub;
-            private IDisposable _hotkeySub;
-            private KeyGesture _hotkey;
+            private readonly Control _control;
+            private TopLevel? _root;
+            private IDisposable? _parentSub;
+            private IDisposable? _hotkeySub;
+            private KeyGesture? _hotkey;
             private readonly HotkeyCommandWrapper _wrapper;
-            private KeyBinding _binding;
+            private KeyBinding? _binding;
 
-            public Manager(IControl control)
+            public Manager(Control control)
             {
                 _control = control;
-                _wrapper = new HotkeyCommandWrapper(_control as ICommandSource);
+                _wrapper = new HotkeyCommandWrapper(_control);
             }
 
             public void Init()
@@ -56,14 +97,14 @@ namespace Avalonia.Controls
                 _parentSub = AncestorFinder.Create<TopLevel>(_control).Subscribe(OnParentChanged);
             }
 
-            private void OnParentChanged(TopLevel control)
+            private void OnParentChanged(TopLevel? control)
             {
                 Unregister();
                 _root = control;
                 Register();
             }
 
-            private void OnHotkeyChanged(KeyGesture hotkey)
+            private void OnHotkeyChanged(KeyGesture? hotkey)
             {
                 if (hotkey == null)
                     //Subscription will be recreated by static property watcher
@@ -95,8 +136,8 @@ namespace Avalonia.Controls
             void Stop()
             {
                 Unregister();
-                _parentSub.Dispose();
-                _hotkeySub.Dispose();
+                _parentSub?.Dispose();
+                _hotkeySub?.Dispose();
             }
         }
 
@@ -104,11 +145,14 @@ namespace Avalonia.Controls
         {
             HotKeyProperty.Changed.Subscribe(args =>
             {
-                var control = args.Sender as IControl;
-                if (args.OldValue != null || control == null || !(control is ICommandSource))
+                if (args.NewValue.Value is null)
+                    return;
+
+                var control = args.Sender as Control;
+                if (control is not IClickableControl)
                 {
-                    Logging.Logger.TryGet(Logging.LogEventLevel.Warning, Logging.LogArea.Control)?.
-                        Log(control, $"The element {args.Sender.GetType().Name} does not support binding a HotKey ({args.NewValue}).");
+                    Logging.Logger.TryGet(Logging.LogEventLevel.Warning, Logging.LogArea.Control)?.Log(control,
+                        $"The element {args.Sender.GetType().Name} does not implement IClickableControl and does not support binding a HotKey ({args.NewValue}).");
                     return;
                 }
 
@@ -116,6 +160,6 @@ namespace Avalonia.Controls
             });
         }
         public static void SetHotKey(AvaloniaObject target, KeyGesture value) => target.SetValue(HotKeyProperty, value);
-        public static KeyGesture GetHotKey(AvaloniaObject target) => target.GetValue(HotKeyProperty);
+        public static KeyGesture? GetHotKey(AvaloniaObject target) => target.GetValue(HotKeyProperty);
     }
 }

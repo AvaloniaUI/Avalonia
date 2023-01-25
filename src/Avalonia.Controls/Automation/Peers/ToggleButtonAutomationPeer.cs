@@ -1,8 +1,6 @@
 ﻿using Avalonia.Automation.Provider;
 using Avalonia.Controls.Primitives;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class ToggleButtonAutomationPeer : ContentControlAutomationPeer, IToggleProvider

@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Text;
 using Avalonia.Data;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Utilities;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
@@ -30,11 +29,8 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 
         public AvaloniaPropertyAccessor(WeakReference<AvaloniaObject> reference, AvaloniaProperty property)
         {
-            Contract.Requires<ArgumentNullException>(reference != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            _reference = reference;
-            _property = property;
+            _reference = reference ?? throw new ArgumentNullException(nameof(reference));;
+            _property = property ?? throw new ArgumentNullException(nameof(property));;
         }
 
         public AvaloniaObject Instance
@@ -72,18 +68,15 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         }
     }
 
-    internal class InpcPropertyAccessor : PropertyAccessorBase
+    internal class InpcPropertyAccessor : PropertyAccessorBase, IWeakEventSubscriber<PropertyChangedEventArgs>
     {
         protected readonly WeakReference<object> _reference;
         private readonly IPropertyInfo _property;
 
         public InpcPropertyAccessor(WeakReference<object> reference, IPropertyInfo property)
         {
-            Contract.Requires<ArgumentNullException>(reference != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-
-            _reference = reference;
-            _property = property;
+            _reference = reference ?? throw new ArgumentNullException(nameof(reference));
+            _property = property ?? throw new ArgumentNullException(nameof(property));
         }
 
         public override Type PropertyType => _property.PropertyType;
@@ -110,7 +103,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             return false;
         }
 
-        void OnNotifyPropertyChanged(object sender, PropertyChangedEventArgs e)
+        public void OnEvent(object sender, WeakEvent ev, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == _property.Name || string.IsNullOrEmpty(e.PropertyName))
             {
@@ -128,10 +121,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         {
             if (_reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
             {
-                WeakEventHandlerManager.Unsubscribe<PropertyChangedEventArgs, InpcPropertyAccessor>(
-                    inpc,
-                    nameof(INotifyPropertyChanged.PropertyChanged),
-                    OnNotifyPropertyChanged);
+                WeakEvents.PropertyChanged.Unsubscribe(inpc, this);
             }
         }
 
@@ -148,16 +138,11 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         private void SubscribeToChanges()
         {
             if (_reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
-            {
-                WeakEventHandlerManager.Subscribe<INotifyPropertyChanged, PropertyChangedEventArgs, InpcPropertyAccessor>(
-                    inpc,
-                    nameof(INotifyPropertyChanged.PropertyChanged),
-                    OnNotifyPropertyChanged);
-            }
+                WeakEvents.PropertyChanged.Subscribe(inpc, this);
         }
     }
 
-    internal class IndexerAccessor : InpcPropertyAccessor
+    internal class IndexerAccessor : InpcPropertyAccessor, IWeakEventSubscriber<NotifyCollectionChangedEventArgs>
     {
         private int _index;
 
@@ -172,27 +157,17 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         {
             base.SubscribeCore();
             if (_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged incc)
-            {
-                WeakEventHandlerManager.Subscribe<INotifyCollectionChanged, NotifyCollectionChangedEventArgs, IndexerAccessor>(
-                  incc,
-                  nameof(INotifyCollectionChanged.CollectionChanged),
-                  OnNotifyCollectionChanged);
-            }
+                WeakEvents.CollectionChanged.Subscribe(incc, this);
         }
 
         protected override void UnsubscribeCore()
         {
             base.UnsubscribeCore();
             if (_reference.TryGetTarget(out var o) && o is INotifyCollectionChanged incc)
-            {
-                WeakEventHandlerManager.Unsubscribe<NotifyCollectionChangedEventArgs, IndexerAccessor>(
-                  incc,
-                  nameof(INotifyCollectionChanged.CollectionChanged),
-                  OnNotifyCollectionChanged);
-            }
+                WeakEvents.CollectionChanged.Unsubscribe(incc, this);
         }
-
-        void OnNotifyCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+        
+        public void OnEvent(object sender, WeakEvent ev, NotifyCollectionChangedEventArgs args)
         {
             if (ShouldNotifyListeners(args))
             {

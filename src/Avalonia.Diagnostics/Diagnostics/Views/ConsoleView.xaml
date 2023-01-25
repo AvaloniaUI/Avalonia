@@ -1,6 +1,8 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Avalonia.Diagnostics.Views.ConsoleView">
+             xmlns:viewModels="using:Avalonia.Diagnostics.ViewModels"
+             x:Class="Avalonia.Diagnostics.Views.ConsoleView"
+             x:DataType="viewModels:ConsoleViewModel">
   <UserControl.Styles>
     <Style Selector="TextBox.console">
       <Setter Property="FontFamily" Value="/Assets/Fonts/SourceSansPro-Regular.ttf"/>
@@ -11,7 +13,7 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}">
             <DockPanel Margin="{TemplateBinding Padding}">
-              <TextBlock DockPanel.Dock="Left" Margin="0,0,4,0">></TextBlock>
+              <TextBlock DockPanel.Dock="Left" Margin="0,0,4,0"></TextBlock>
               <TextPresenter Name="PART_TextPresenter"
                              Text="{TemplateBinding Text, Mode=TwoWay}"
                              CaretIndex="{TemplateBinding CaretIndex}"
@@ -38,13 +40,12 @@
              BorderBrush="{DynamicResource ThemeControlMidBrush}"
              BorderThickness="0,0,0,1"
              FontFamily="/Assets/Fonts/SourceSansPro-Regular.ttf"
-             Items="{Binding History}"
-             VirtualizationMode="None">
+             Items="{Binding History}">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <StackPanel Orientation="Vertical">
             <DockPanel>
-              <TextBlock DockPanel.Dock="Left" Margin="0,0,4,0">></TextBlock>
+              <TextBlock DockPanel.Dock="Left" Margin="0,0,4,0"></TextBlock>
               <TextBlock Text="{Binding Input}"/>
             </DockPanel>
             <TextBlock Foreground="{Binding Foreground}" Text="{Binding Output}"/>

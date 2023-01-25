@@ -13,14 +13,6 @@ namespace Avalonia.ReactiveUI.UnitTests
     public class TransitioningContentControlTest
     {
         [Fact]
-        public void Transitioning_Control_Should_Derive_Template_From_Content_Control()
-        {
-            var target = new TransitioningContentControl();
-            var stylable = (IStyledElement)target;
-            Assert.Equal(typeof(ContentControl),stylable.StyleKey);
-        }
-
-        [Fact]
         public void Transitioning_Control_Template_Should_Be_Instantiated() 
         {
             var target = new TransitioningContentControl
@@ -32,15 +24,15 @@ namespace Avalonia.ReactiveUI.UnitTests
             target.ApplyTemplate();
             ((ContentPresenter)target.Presenter).UpdateChild();
 
-            var child = ((IVisual)target).VisualChildren.Single();
+            var child = ((Visual)target).GetVisualChildren().Single();
             Assert.IsType<Border>(child);
-            child = child.VisualChildren.Single();
+            child = child.GetVisualChildren().Single();
             Assert.IsType<ContentPresenter>(child);
-            child = child.VisualChildren.Single();
+            child = child.GetVisualChildren().Single();
             Assert.IsType<TextBlock>(child);
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ContentControl>((parent, scope) =>
             {

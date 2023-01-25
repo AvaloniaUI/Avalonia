@@ -2,12 +2,16 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Embedding;
+using Avalonia.Controls.Platform;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
+using Avalonia.iOS.Storage;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using CoreAnimation;
-using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
 using OpenGLES;
@@ -15,34 +19,57 @@ using UIKit;
 
 namespace Avalonia.iOS
 {
-    public partial class AvaloniaView : UIView
+    public partial class AvaloniaView : UIView, ITextInputMethodImpl
     {
         internal IInputRoot InputRoot { get; private set; }
         private TopLevelImpl _topLevelImpl;
         private EmbeddableControlRoot _topLevel;
         private TouchHandler _touches;
+        private ITextInputMethodClient _client;
 
         public AvaloniaView()
         {
             _topLevelImpl = new TopLevelImpl(this);
             _touches = new TouchHandler(this, _topLevelImpl);
             _topLevel = new EmbeddableControlRoot(_topLevelImpl);
+
             _topLevel.Prepare();
-            
+
             _topLevel.Renderer.Start();
-            
-            var l = (CAEAGLLayer) Layer;
+
+            var l = (CAEAGLLayer)Layer;
             l.ContentsScale = UIScreen.MainScreen.Scale;
             l.Opaque = true;
             l.DrawableProperties = new NSDictionary(
                 EAGLDrawableProperty.RetainedBacking, false,
                 EAGLDrawableProperty.ColorFormat, EAGLColorFormat.RGBA8
             );
-            _topLevelImpl.Surfaces = new[] {new EaglLayerSurface(l)};
+            _topLevelImpl.Surfaces = new[] { new EaglLayerSurface(l) };
             MultipleTouchEnabled = true;
         }
 
-        internal class TopLevelImpl : ITopLevelImpl
+        public override bool CanBecomeFirstResponder => true;
+
+        public override bool CanResignFirstResponder => true;
+
+        public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+        {
+            base.TraitCollectionDidChange(previousTraitCollection);
+            
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
+            settings?.TraitCollectionDidChange();
+        }
+
+        public override void TintColorDidChange()
+        {
+            base.TintColorDidChange();
+            
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
+            settings?.TraitCollectionDidChange();
+        }
+
+        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost,
+            ITopLevelImplWithStorageProvider
         {
             private readonly AvaloniaView _view;
             public AvaloniaView View => _view;
@@ -50,6 +77,8 @@ namespace Avalonia.iOS
             public TopLevelImpl(AvaloniaView view)
             {
                 _view = view;
+                NativeControlHost = new NativeControlHostImpl(_view);
+                StorageProvider = new IOSStorageProvider(view);
             }
 
             public void Dispose()
@@ -57,8 +86,9 @@ namespace Avalonia.iOS
                 // No-op
             }
 
-            public IRenderer CreateRenderer(IRenderRoot root) => new DeferredRenderer(root,
-                AvaloniaLocator.Current.GetService<IRenderLoop>());
+            public IRenderer CreateRenderer(IRenderRoot root) =>
+                new CompositingRenderer(root, Platform.Compositor, () => Surfaces);
+
 
             public void Invalidate(Rect rect)
             {
@@ -72,7 +102,7 @@ namespace Avalonia.iOS
 
             public Point PointToClient(PixelPoint point) => new Point(point.X, point.Y);
 
-            public PixelPoint PointToScreen(Point point) => new PixelPoint((int) point.X, (int) point.Y);
+            public PixelPoint PointToScreen(Point point) => new PixelPoint((int)point.X, (int)point.Y);
 
             public void SetCursor(ICursorImpl _)
             {
@@ -106,9 +136,30 @@ namespace Avalonia.iOS
             // legacy no-op
             public IMouseDevice MouseDevice { get; } = new MouseDevice();
             public WindowTransparencyLevel TransparencyLevel { get; }
-
+            
+            public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+            {
+                // TODO adjust status bar depending on full screen mode.
+                if (OperatingSystem.IsIOSVersionAtLeast(13))
+                {
+                    var uiStatusBarStyle = themeVariant switch
+                    {
+                        PlatformThemeVariant.Light => UIStatusBarStyle.DarkContent,
+                        PlatformThemeVariant.Dark => UIStatusBarStyle.LightContent,
+                        _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null)
+                    };
+                    
+                    // Consider using UIViewController.PreferredStatusBarStyle in the future.
+                    UIApplication.SharedApplication.SetStatusBarStyle(uiStatusBarStyle, true);
+                }
+            }
+            
             public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } =
                 new AcrylicPlatformCompensationLevels();
+
+            public ITextInputMethodImpl? TextInputMethod => _view;
+            public INativeControlHostImpl NativeControlHost { get; }
+            public IStorageProvider StorageProvider { get; }
         }
 
         [Export("layerClass")]

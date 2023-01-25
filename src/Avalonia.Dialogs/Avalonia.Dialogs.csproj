@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\*" />
+    <AvaloniaResource Include="**/*.xaml" />
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />
@@ -13,5 +14,12 @@
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- For managed dialogs dev testing -->
+    <InternalsVisibleTo Include="ControlCatalog, PublicKey=$(AvaloniaPublicKey)" />    
+  </ItemGroup>
+  
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

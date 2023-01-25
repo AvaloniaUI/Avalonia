@@ -1,8 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 
-#nullable enable
-
 namespace Avalonia.Automation.Peers
 {
     public class MenuItemAutomationPeer : ControlAutomationPeer

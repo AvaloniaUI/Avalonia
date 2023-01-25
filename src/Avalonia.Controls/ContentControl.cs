@@ -1,4 +1,5 @@
 using Avalonia.Collections;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
@@ -12,19 +13,20 @@ namespace Avalonia.Controls
     /// <summary>
     /// Displays <see cref="Content"/> according to a <see cref="FuncDataTemplate"/>.
     /// </summary>
+    [TemplatePart("PART_ContentPresenter", typeof(IContentPresenter))]
     public class ContentControl : TemplatedControl, IContentControl, IContentPresenterHost
     {
         /// <summary>
         /// Defines the <see cref="Content"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> ContentProperty =
-            AvaloniaProperty.Register<ContentControl, object>(nameof(Content));
+        public static readonly StyledProperty<object?> ContentProperty =
+            AvaloniaProperty.Register<ContentControl, object?>(nameof(Content));
 
         /// <summary>
         /// Defines the <see cref="ContentTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
-            AvaloniaProperty.Register<ContentControl, IDataTemplate>(nameof(ContentTemplate));
+        public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
+            AvaloniaProperty.Register<ContentControl, IDataTemplate?>(nameof(ContentTemplate));
 
         /// <summary>
         /// Defines the <see cref="HorizontalContentAlignment"/> property.
@@ -48,7 +50,7 @@ namespace Avalonia.Controls
         /// </summary>
         [Content]
         [DependsOn(nameof(ContentTemplate))]
-        public object Content
+        public object? Content
         {
             get { return GetValue(ContentProperty); }
             set { SetValue(ContentProperty, value); }
@@ -57,7 +59,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the data template used to display the content of the control.
         /// </summary>
-        public IDataTemplate ContentTemplate
+        public IDataTemplate? ContentTemplate
         {
             get { return GetValue(ContentTemplateProperty); }
             set { SetValue(ContentTemplateProperty, value); }
@@ -66,7 +68,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the presenter from the control's template.
         /// </summary>
-        public IContentPresenter Presenter
+        public IContentPresenter? Presenter
         {
             get;
             private set;
@@ -114,14 +116,19 @@ namespace Avalonia.Controls
             return false;
         }
 
-        private void ContentChanged(AvaloniaPropertyChangedEventArgs e)
+        protected virtual void ContentChanged(AvaloniaPropertyChangedEventArgs e)
         {
-            if (e.OldValue is ILogical oldChild)
+            UpdateLogicalTree(e.OldValue, e.NewValue);
+        }
+
+        protected void UpdateLogicalTree(object? toRemove, object? toAdd)
+        {
+            if (toRemove is ILogical oldChild)
             {
                 LogicalChildren.Remove(oldChild);
             }
 
-            if (e.NewValue is ILogical newChild)
+            if (toAdd is ILogical newChild)
             {
                 LogicalChildren.Add(newChild);
             }

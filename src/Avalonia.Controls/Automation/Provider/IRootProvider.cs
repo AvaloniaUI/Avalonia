@@ -2,8 +2,6 @@
 using Avalonia.Automation.Peers;
 using Avalonia.Platform;
 
-#nullable enable
-
 namespace Avalonia.Automation.Provider
 {
     public interface IRootProvider

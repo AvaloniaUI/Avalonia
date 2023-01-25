@@ -1,61 +1,62 @@
 using System;
+using Avalonia.OpenGL;
 using CoreAnimation;
 using OpenGLES;
-using OpenTK.Graphics.ES20;
 
 namespace Avalonia.iOS
 {
     public class LayerFbo
     {
         private readonly EAGLContext _context;
+        private readonly GlInterface _gl;
         private readonly CAEAGLLayer _layer;
         private int _framebuffer;
         private int _renderbuffer;
         private int _depthBuffer;
         private bool _disposed;
 
-        private LayerFbo(EAGLContext context, CAEAGLLayer layer, in int framebuffer, in int renderbuffer, in int depthBuffer)
+        private LayerFbo(EAGLContext context, GlInterface gl, CAEAGLLayer layer, int framebuffer, int renderbuffer, int depthBuffer)
         {
             _context = context;
+            _gl = gl;
             _layer = layer;
             _framebuffer = framebuffer;
             _renderbuffer = renderbuffer;
             _depthBuffer = depthBuffer;
         }
 
-        public static LayerFbo TryCreate(EAGLContext context, CAEAGLLayer layer)
+        public static LayerFbo TryCreate(EAGLContext context, GlInterface gl, CAEAGLLayer layer)
         {
             if (context != EAGLContext.CurrentContext)
                 return null;
-            GL.GenFramebuffers(1, out int fb);
-            GL.GenRenderbuffers(1, out int rb);
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, fb);
-            GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer,  rb);
-            context.RenderBufferStorage((uint) All.Renderbuffer, layer);
-            
-            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferSlot.ColorAttachment0, RenderbufferTarget.Renderbuffer, rb);
 
-            int w;
-            int h;
-            GL.GetRenderbufferParameter(RenderbufferTarget.Renderbuffer, RenderbufferParameterName.RenderbufferWidth, out w);
-            GL.GetRenderbufferParameter(RenderbufferTarget.Renderbuffer, RenderbufferParameterName.RenderbufferHeight, out h);
+            var rb = gl.GenRenderbuffer();
+            gl.BindRenderbuffer(GlConsts.GL_RENDERBUFFER,  rb);
+            context.RenderBufferStorage(GlConsts.GL_RENDERBUFFER, layer);
+
+            var fb = gl.GenFramebuffer();
+            gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, fb);
+            gl.FramebufferRenderbuffer(GlConsts.GL_FRAMEBUFFER, GlConsts.GL_COLOR_ATTACHMENT0, GlConsts.GL_RENDERBUFFER, rb);
             
-            GL.GenRenderbuffers(1, out int depthBuffer);
+            gl.GetRenderbufferParameteriv(GlConsts.GL_RENDERBUFFER, GlConsts.GL_RENDERBUFFER_WIDTH, out var w);
+            gl.GetRenderbufferParameteriv(GlConsts.GL_RENDERBUFFER, GlConsts.GL_RENDERBUFFER_HEIGHT, out var h);
+
+            var db = gl.GenRenderbuffer();
             
             //GL.BindRenderbuffer(RenderbufferTarget.Renderbuffer, depthBuffer);
             //GL.RenderbufferStorage(RenderbufferTarget.Renderbuffer, RenderbufferInternalFormat.DepthComponent16, w, h);
-            GL.FramebufferRenderbuffer(FramebufferTarget.Framebuffer, FramebufferSlot.DepthAttachment, RenderbufferTarget.Renderbuffer, depthBuffer);
+            gl.FramebufferRenderbuffer(GlConsts.GL_FRAMEBUFFER, GlConsts.GL_DEPTH_ATTACHMENT, GlConsts.GL_RENDERBUFFER, db);
 
-            var frameBufferError = GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer);
-            if(frameBufferError != FramebufferErrorCode.FramebufferComplete)
+            var frameBufferError = gl.CheckFramebufferStatus(GlConsts.GL_FRAMEBUFFER);
+            if(frameBufferError != GlConsts.GL_FRAMEBUFFER_COMPLETE)
             {
-                GL.DeleteFramebuffers(1, ref fb);
-                GL.DeleteRenderbuffers(1, ref depthBuffer);
-                GL.DeleteRenderbuffers(1, ref rb);
+                gl.DeleteFramebuffer(fb);
+                gl.DeleteRenderbuffer(db);
+                gl.DeleteRenderbuffer(rb);
                 return null;
             }
 
-            return new LayerFbo(context, layer, fb, rb, depthBuffer)
+            return new LayerFbo(context, gl, layer, fb, rb, db)
             {
                 Width = w,
                 Height = h
@@ -67,13 +68,13 @@ namespace Avalonia.iOS
 
         public void Bind()
         {
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, _framebuffer);
+            _gl.BindFramebuffer(GlConsts.GL_FRAMEBUFFER, _framebuffer);
         }
 
         public void Present()
         {
             Bind();
-            var success = _context.PresentRenderBuffer((uint) All.Renderbuffer);
+            var success = _context.PresentRenderBuffer(GlConsts.GL_RENDERBUFFER);
         }
 
         public void Dispose()
@@ -81,9 +82,9 @@ namespace Avalonia.iOS
             if(_disposed)
                 return;
             _disposed = true;
-            GL.DeleteFramebuffers(1, ref _framebuffer);
-            GL.DeleteRenderbuffers(1, ref _depthBuffer);
-            GL.DeleteRenderbuffers(1, ref _renderbuffer);
+            _gl.DeleteFramebuffer(_framebuffer);
+            _gl.DeleteRenderbuffer(_depthBuffer);
+            _gl.DeleteRenderbuffer(_renderbuffer);
             if (_context != EAGLContext.CurrentContext)
                 throw new InvalidOperationException("Associated EAGLContext is not current");
         }
@@ -92,15 +93,16 @@ namespace Avalonia.iOS
     class SizeSynchronizedLayerFbo : IDisposable
     {
         private readonly EAGLContext _context;
+        private readonly GlInterface _gl;
         private readonly CAEAGLLayer _layer;
         private LayerFbo _fbo;
-        private nfloat _oldLayerWidth, _oldLayerHeight, _oldLayerScale;
+        private double _oldLayerWidth, _oldLayerHeight, _oldLayerScale;
         
-        public SizeSynchronizedLayerFbo(EAGLContext context, CAEAGLLayer layer)
+        public SizeSynchronizedLayerFbo(EAGLContext context, GlInterface gl, CAEAGLLayer layer)
         {
             _context = context;
+            _gl = gl;
             _layer = layer;
-            
         }
 
         public bool Sync()
@@ -112,7 +114,7 @@ namespace Avalonia.iOS
                 return true;
             _fbo?.Dispose();
             _fbo = null;
-            _fbo = LayerFbo.TryCreate(_context, _layer);
+            _fbo = LayerFbo.TryCreate(_context, _gl, _layer);
             _oldLayerWidth = _layer.Bounds.Width;
             _oldLayerHeight = _layer.Bounds.Height;
             _oldLayerScale = _layer.ContentsScale;

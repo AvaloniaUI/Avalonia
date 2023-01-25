@@ -1,4 +1,5 @@
 using Avalonia.Controls.Primitives;
+using Avalonia.Metadata;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -12,7 +13,8 @@ namespace Avalonia.Controls.Presenters
     /// of a <see cref="TemplatedControl"/> then that signals that the visual child
     /// of the presenter is not a part of the template.
     /// </remarks>
-    public interface IPresenter : IControl, INamed
+    [NotClientImplementable]
+    public interface IPresenter : INamed
     {
     }
 }

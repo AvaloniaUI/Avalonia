@@ -8,7 +8,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Avalonia.UnitTests;
 using Xunit;
 
@@ -29,11 +29,111 @@ namespace Avalonia.Controls.UnitTests
             _helper.Down(target);
             _helper.Up(target);
             Assert.True(target.IsDropDownOpen);
+            Assert.True(target.Classes.Contains(ComboBox.pcDropdownOpen));
 
             _helper.Down(target);
             _helper.Up(target);
 
             Assert.False(target.IsDropDownOpen);
+            Assert.True(!target.Classes.Contains(ComboBox.pcDropdownOpen));
+        }
+
+        [Fact]
+        public void Clicking_On_Control_PseudoClass()
+        {
+            var target = new ComboBox
+            {
+                Items = new[] { "Foo", "Bar" },
+            };
+
+            _helper.Down(target);
+            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+            _helper.Up(target);
+            Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
+            Assert.True(target.Classes.Contains(ComboBox.pcDropdownOpen));
+
+            _helper.Down(target);
+            Assert.True(target.Classes.Contains(ComboBox.pcPressed));
+            _helper.Up(target);
+            Assert.True(!target.Classes.Contains(ComboBox.pcPressed));
+
+            Assert.False(target.IsDropDownOpen);
+            Assert.True(!target.Classes.Contains(ComboBox.pcDropdownOpen));
+        }
+
+        [Fact]
+        public void WrapSelection_Should_Work()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var items = new[]
+                {
+                    new ComboBoxItem() { Content = "bla" },
+                    new ComboBoxItem() { Content = "dd" },
+                    new ComboBoxItem() { Content = "sdf", IsEnabled = false }
+                };
+                var target = new ComboBox
+                {
+                    Items = items,
+                    Template = GetTemplate(),
+                    WrapSelection = true
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                ((Control)target.Presenter).ApplyTemplate();
+                target.Focus();
+                Assert.Equal(target.SelectedIndex, -1);
+                Assert.True(target.IsFocused);
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Up,
+                });
+                Assert.Equal(target.SelectedIndex, 1);
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+                Assert.Equal(target.SelectedIndex, 0);
+            }
+        }
+
+        [Fact]
+        public void Focuses_Next_Item_On_Key_Down()
+        {
+            using (UnitTestApplication.Start(TestServices.RealFocus))
+            {
+                var items = new[]
+                {
+                    new ComboBoxItem() { Content = "bla" },
+                    new ComboBoxItem() { Content = "dd", IsEnabled = false },
+                    new ComboBoxItem() { Content = "sdf" }
+                };
+                var target = new ComboBox
+                {
+                    Items = items,
+                    Template = GetTemplate()
+                };
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                ((Control)target.Presenter).ApplyTemplate();
+                target.Focus();
+                Assert.Equal(target.SelectedIndex, -1);
+                Assert.True(target.IsFocused);
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+                Assert.Equal(target.SelectedIndex, 0);
+                target.RaiseEvent(new KeyEventArgs
+                {
+                    RoutedEvent = InputElement.KeyDownEvent,
+                    Key = Key.Down,
+                });
+                Assert.Equal(target.SelectedIndex, 2);
+            }
         }
 
         [Fact]
@@ -67,7 +167,7 @@ namespace Avalonia.Controls.UnitTests
 
             var root = new TestRoot { Child = target };
             target.ApplyTemplate();
-            target.Presenter.ApplyTemplate();
+            ((Control)target.Presenter).ApplyTemplate();
 
             var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
             Assert.True(((ILogical)target).IsAttachedToLogicalTree);
@@ -81,7 +181,7 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(((ILogical)rectangle).IsAttachedToLogicalTree);
         }
 
-        private FuncControlTemplate GetTemplate()
+        private static FuncControlTemplate GetTemplate()
         {
             return new FuncControlTemplate<ComboBox>((parent, scope) =>
             {
@@ -104,7 +204,6 @@ namespace Avalonia.Controls.UnitTests
                             Child = new ItemsPresenter
                             {
                                 Name = "PART_ItemsPresenter",
-                                [!ItemsPresenter.ItemsProperty] = parent[!ComboBox.ItemsProperty],
                             }.RegisterInNameScope(scope)
                         }.RegisterInNameScope(scope)
                     }
@@ -186,7 +285,6 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ComboBox
                 {
                     Template = GetTemplate(),
-                    VirtualizationMode =  ItemVirtualizationMode.None
                 };
 
                 target.ApplyTemplate();
@@ -259,6 +357,105 @@ namespace Avalonia.Controls.UnitTests
 
 
                 Assert.Equal(1, count);
+            }
+        }
+
+        [Fact]
+        public void FlowDirection_Of_RectangleContent_Shuold_Be_LeftToRight()
+        {
+            var items = new[]
+            {
+                new ComboBoxItem()
+                { 
+                    Content = new Control()
+                }
+            };
+            var target = new ComboBox
+            {
+                FlowDirection = FlowDirection.RightToLeft,
+                Items = items,
+                Template = GetTemplate()
+            };
+
+            var root = new TestRoot(target);
+            target.ApplyTemplate();
+            target.SelectedIndex = 0;
+
+            var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+
+            Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
+        }
+
+        [Fact]
+        public void FlowDirection_Of_RectangleContent_Updated_After_InvalidateMirrorTransform()
+        {
+            var parentContent = new Decorator()
+            {
+                Child = new Control()
+            };
+            var items = new[]
+            { 
+                new ComboBoxItem()
+                {
+                    Content = parentContent.Child
+                }
+            };
+            var target = new ComboBox
+            {
+                Items = items,
+                Template = GetTemplate()
+            };
+
+            var root = new TestRoot(target);
+            target.ApplyTemplate();
+            target.SelectedIndex = 0;
+
+            var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+            Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
+
+            parentContent.FlowDirection = FlowDirection.RightToLeft;
+            target.FlowDirection = FlowDirection.RightToLeft;
+            
+            Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
+        }
+
+        [Fact]
+        public void FlowDirection_Of_RectangleContent_Updated_After_OpenPopup()
+        {
+            using (UnitTestApplication.Start(TestServices.StyledWindow))
+            {
+                var parentContent = new Decorator()
+                {
+                    Child = new Control()
+                };
+                var items = new[]
+                { 
+                    new ComboBoxItem()
+                    {
+                        Content = parentContent.Child
+                    }
+                };
+                var target = new ComboBox
+                {
+                    FlowDirection = FlowDirection.RightToLeft,
+                    Items = items,
+                    Template = GetTemplate()
+                };
+
+                var root = new TestRoot(target);
+                target.ApplyTemplate();
+                target.SelectedIndex = 0;
+
+                var rectangle = target.GetValue(ComboBox.SelectionBoxItemProperty) as Rectangle;
+                Assert.Equal(FlowDirection.LeftToRight, rectangle.FlowDirection);
+
+                parentContent.FlowDirection = FlowDirection.RightToLeft;
+
+                var popup = target.GetVisualDescendants().OfType<Popup>().First();
+                popup.PlacementTarget = new Window();
+                popup.Open();
+                
+                Assert.Equal(FlowDirection.RightToLeft, rectangle.FlowDirection);
             }
         }
     }

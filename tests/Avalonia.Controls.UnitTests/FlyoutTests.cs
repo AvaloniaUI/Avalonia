@@ -433,6 +433,48 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Should_Reset_Popup_Parent_On_Target_Detached()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var userControl = new UserControl();
+                var window = PreparedWindow(userControl);
+                window.Show();
+                
+                var flyout = new TestFlyout();
+                flyout.ShowAt(userControl);
+                
+                var popup = Assert.IsType<Popup>(flyout.Popup);
+                Assert.NotNull(popup.Parent);
+                
+                window.Content = null;
+                Assert.Null(popup.Parent);
+            }
+        }
+        
+        [Fact]
+        public void Should_Reset_Popup_Parent_On_Target_Attach_Following_Detach()
+        {
+            using (CreateServicesWithFocus())
+            {
+                var userControl = new UserControl();
+                var window = PreparedWindow(userControl);
+                window.Show();
+                
+                var flyout = new TestFlyout();
+                flyout.ShowAt(userControl);
+                
+                var popup = Assert.IsType<Popup>(flyout.Popup);
+                Assert.NotNull(popup.Parent);
+                
+                flyout.Hide();
+                
+                flyout.ShowAt(userControl);
+                Assert.NotNull(popup.Parent);
+            }
+        }
+
+        [Fact]
         public void ContextFlyout_Can_Be_Set_In_Styles()
         {
             using (CreateServicesWithFocus())
@@ -513,7 +555,7 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private IDisposable CreateServicesWithFocus()
+        private static IDisposable CreateServicesWithFocus()
         {
             return UnitTestApplication.Start(TestServices.StyledWindow.With(windowingPlatform:
                 new MockWindowingPlatform(null,
@@ -525,10 +567,10 @@ namespace Avalonia.Controls.UnitTests
                     keyboardDevice: () => new KeyboardDevice()));
         }
 
-        private Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object content = null)
         {
             var renderer = new Mock<IRenderer>();
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             var windowImpl = Mock.Get(platform.CreateWindow());
             windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
@@ -537,7 +579,7 @@ namespace Avalonia.Controls.UnitTests
             return w;
         }
 
-        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
+        private static PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             return new PointerPressedEventArgs(
@@ -548,6 +590,11 @@ namespace Avalonia.Controls.UnitTests
                 0,
                 new PointerPointProperties(RawInputModifiers.None, PointerUpdateKind.LeftButtonPressed),
                 KeyModifiers.None);
+        }
+        
+        public class TestFlyout : Flyout
+        {
+            public new Popup Popup => base.Popup;
         }
     }
 }

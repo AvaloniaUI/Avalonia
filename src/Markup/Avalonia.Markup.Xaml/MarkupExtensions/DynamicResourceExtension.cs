@@ -11,6 +11,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
     public class DynamicResourceExtension : IBinding
     {
         private object? _anchor;
+        private BindingPriority _priority;
 
         public DynamicResourceExtension()
         {
@@ -25,11 +26,14 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
 
         public IBinding ProvideValue(IServiceProvider serviceProvider)
         {
+            if (serviceProvider.IsInControlTemplate())
+                _priority = BindingPriority.Template;
+
             var provideTarget = serviceProvider.GetService<IProvideValueTarget>();
 
-            if (!(provideTarget.TargetObject is IStyledElement))
+            if (!(provideTarget.TargetObject is StyledElement))
             {
-                _anchor = serviceProvider.GetFirstParent<IStyledElement>() ??
+                _anchor = serviceProvider.GetFirstParent<StyledElement>() ??
                     serviceProvider.GetFirstParent<IResourceProvider>() ??
                     (object?)serviceProvider.GetFirstParent<IResourceHost>();
             }
@@ -38,9 +42,9 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
         }
 
         InstancedBinding? IBinding.Initiate(
-            IAvaloniaObject target,
-            AvaloniaProperty targetProperty,
-            object anchor,
+            AvaloniaObject target,
+            AvaloniaProperty? targetProperty,
+            object? anchor,
             bool enableDataValidation)
         {
             if (ResourceKey is null)
@@ -53,18 +57,18 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             if (control != null)
             {
                 var source = control.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
-                return InstancedBinding.OneWay(source);
+                return InstancedBinding.OneWay(source, _priority);
             }
             else if (_anchor is IResourceProvider resourceProvider)
             {
                 var source = resourceProvider.GetResourceObservable(ResourceKey, GetConverter(targetProperty));
-                return InstancedBinding.OneWay(source);
+                return InstancedBinding.OneWay(source, _priority);
             }
 
             return null;
         }
 
-        private Func<object?, object?>? GetConverter(AvaloniaProperty targetProperty)
+        private static Func<object?, object?>? GetConverter(AvaloniaProperty? targetProperty)
         {
             if (targetProperty?.PropertyType == typeof(IBrush))
             {

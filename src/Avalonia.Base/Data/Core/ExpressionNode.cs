@@ -2,34 +2,32 @@ using System;
 
 namespace Avalonia.Data.Core
 {
-    public abstract class ExpressionNode
+    internal abstract class ExpressionNode
     {
-        private static readonly object CacheInvalid = new object();
+        protected static readonly WeakReference<object?> UnsetReference = 
+            new WeakReference<object?>(AvaloniaProperty.UnsetValue);
 
-        protected static readonly WeakReference<object> UnsetReference = 
-            new WeakReference<object>(AvaloniaProperty.UnsetValue);
+        protected static readonly WeakReference<object?> NullReference =
+            new WeakReference<object?>(null);
 
-        protected static readonly WeakReference<object> NullReference =
-            new WeakReference<object>(null);
-
-        private WeakReference<object> _target = UnsetReference;
-        private Action<object> _subscriber;
+        private WeakReference<object?> _target = UnsetReference;
+        private Action<object?>? _subscriber;
         private bool _listening;
 
-        protected WeakReference<object> LastValue { get; private set; }
+        protected WeakReference<object?>? LastValue { get; private set; }
 
-        public abstract string Description { get; }
-        public ExpressionNode Next { get; set; }
+        public abstract string? Description { get; }
+        public ExpressionNode? Next { get; set; }
 
-        public WeakReference<object> Target
+        public WeakReference<object?> Target
         {
             get { return _target; }
             set
             {
-                Contract.Requires<ArgumentNullException>(value != null);
+                _ = value ?? throw new ArgumentNullException(nameof(value));
 
                 _target.TryGetTarget(out var oldTarget);
-                value.TryGetTarget(out object newTarget);
+                value.TryGetTarget(out var newTarget);
 
                 if (!ReferenceEquals(oldTarget, newTarget))
                 {
@@ -48,7 +46,7 @@ namespace Avalonia.Data.Core
             }
         }
 
-        public void Subscribe(Action<object> subscriber)
+        public void Subscribe(Action<object?> subscriber)
         {
             if (_subscriber != null)
             {
@@ -73,9 +71,9 @@ namespace Avalonia.Data.Core
             _subscriber = null;
         }
 
-        protected virtual void StartListeningCore(WeakReference<object> reference)
+        protected virtual void StartListeningCore(WeakReference<object?> reference)
         {
-            reference.TryGetTarget(out object target);
+            reference.TryGetTarget(out var target);
 
             ValueChanged(target);
         }
@@ -84,51 +82,57 @@ namespace Avalonia.Data.Core
         {
         }
 
-        protected virtual void NextValueChanged(object value)
+        protected virtual void NextValueChanged(object? value)
         {
+            if (_subscriber is null)
+                return;
+
             var bindingBroken = BindingNotification.ExtractError(value) as MarkupBindingChainException;
-            bindingBroken?.AddNode(Description);
+            bindingBroken?.AddNode(Description ?? "{empty}");
             _subscriber(value);
         }
 
-        protected void ValueChanged(object value) => ValueChanged(value, true);
+        protected void ValueChanged(object? value) => ValueChanged(value, true);
 
-        private void ValueChanged(object value, bool notify)
+        private void ValueChanged(object? value, bool notify)
         {
-            var notification = value as BindingNotification;
-
-            if (notification == null)
+            if (_subscriber is { } subscriber)
             {
-                LastValue = value != null ? new WeakReference<object>(value) : NullReference;
+                var notification = value as BindingNotification;
+                var next = Next;
 
-                if (Next != null)
+                if (notification == null)
                 {
-                    Next.Target = LastValue;
+                    LastValue = value != null ? new WeakReference<object?>(value) : NullReference;
+                    if (next != null)
+                    {
+                        next.Target = LastValue;
+                    }
+                    else if (notify)
+                    {
+                        subscriber(value);
+                    }
                 }
-                else if (notify)
+                else
                 {
-                    _subscriber(value);
-                }
-            }
-            else
-            {
-                LastValue = notification.Value != null ? new WeakReference<object>(notification.Value) : NullReference;
+                    LastValue = notification.Value != null ? new WeakReference<object?>(notification.Value) : NullReference;
 
-                if (Next != null)
-                {
-                    Next.Target = LastValue;
-                }
+                    if (next != null)
+                    {
+                        next.Target = LastValue;
+                    }
 
-                if (Next == null || notification.Error != null)
-                {
-                    _subscriber(value);
+                    if (next == null || notification.Error != null)
+                    {
+                        subscriber(value);
+                    }
                 }
             }
         }
 
         private void StartListening()
         {
-            _target.TryGetTarget(out object target);
+            _target.TryGetTarget(out var target);
 
             if (target == null)
             {
@@ -138,7 +142,7 @@ namespace Avalonia.Data.Core
             else if (target != AvaloniaProperty.UnsetValue)
             {
                 _listening = true;
-                StartListeningCore(_target);
+                StartListeningCore(_target!);
             }
             else
             {
@@ -153,7 +157,7 @@ namespace Avalonia.Data.Core
             _listening = false;
         }
 
-        private BindingNotification TargetNullNotification()
+        private static BindingNotification TargetNullNotification()
         {
             return new BindingNotification(
                 new MarkupBindingChainException("Null value"),

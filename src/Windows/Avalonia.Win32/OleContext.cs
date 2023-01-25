@@ -4,6 +4,8 @@ using System.Threading;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Avalonia.Win32.Interop;
+using Avalonia.Win32.Win32Com;
+using MicroCom.Runtime;
 
 namespace Avalonia.Win32
 {
@@ -46,7 +48,8 @@ namespace Avalonia.Win32
                 return false;
             }
 
-            return UnmanagedMethods.RegisterDragDrop(hwnd.Handle, target) == UnmanagedMethods.HRESULT.S_OK;
+            var trgPtr = target.GetNativeIntPtr();
+            return UnmanagedMethods.RegisterDragDrop(hwnd.Handle, trgPtr) == UnmanagedMethods.HRESULT.S_OK;
         }
 
         internal bool UnregisterDragDrop(IPlatformHandle hwnd)

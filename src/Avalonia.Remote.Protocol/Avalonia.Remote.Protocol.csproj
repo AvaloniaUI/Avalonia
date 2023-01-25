@@ -1,13 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <DefineConstants>AVALONIA_REMOTE_PROTOCOL;$(DefineConstants)</DefineConstants>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
     <PackageId>Avalonia.Remote.Protocol</PackageId>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\Avalonia.Input\Key.cs" />
+    <Compile Include="..\Avalonia.Base\Input\Key.cs" />
+    <Compile Include="..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Visible="False" />
   </ItemGroup>
   <Import Project="..\..\build\ApiDiff.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

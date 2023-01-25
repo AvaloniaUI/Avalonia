@@ -1,4 +1,4 @@
-﻿// (c) Copyright Microsoft Corporation.
+// (c) Copyright Microsoft Corporation.
 // This source is subject to the Microsoft Public License (Ms-PL).
 // Please see http://go.microsoft.com/fwlink/?LinkID=131993 for details.
 // All other rights reserved.
@@ -15,7 +15,7 @@ namespace Avalonia.Controls
 {
     public class DataGridTemplateColumn : DataGridColumn
     {
-        IDataTemplate _cellTemplate;
+        private IDataTemplate _cellTemplate;
 
         public static readonly DirectProperty<DataGridTemplateColumn, IDataTemplate> CellTemplateProperty =
             AvaloniaProperty.RegisterDirect<DataGridTemplateColumn, IDataTemplate>(
@@ -30,20 +30,72 @@ namespace Avalonia.Controls
             set { SetAndRaise(CellTemplateProperty, ref _cellTemplate, value); }
         }
 
-        private void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+        private IDataTemplate _cellEditingCellTemplate;
+
+        /// <summary>
+        /// Defines the <see cref="CellEditingTemplate"/> property.
+        /// </summary>
+        public static readonly DirectProperty<DataGridTemplateColumn, IDataTemplate> CellEditingTemplateProperty =
+                AvaloniaProperty.RegisterDirect<DataGridTemplateColumn, IDataTemplate>(
+                    nameof(CellEditingTemplate),
+                    o => o.CellEditingTemplate,
+                    (o, v) => o.CellEditingTemplate = v);
+
+        /// <summary>
+        /// Gets or sets the <see cref="IDataTemplate"/> which is used for the editing mode of the current <see cref="DataGridCell"/>
+        /// </summary>
+        /// <value>
+        /// An <see cref="IDataTemplate"/> for the editing mode of the current <see cref="DataGridCell"/>
+        /// </value>
+        /// <remarks>
+        /// If this property is <see langword="null"/> the column is read-only.
+        /// </remarks>
+        public IDataTemplate CellEditingTemplate
         {
-            var oldValue = (IDataTemplate)e.OldValue;
-            var value = (IDataTemplate)e.NewValue;
+            get => _cellEditingCellTemplate;
+            set => SetAndRaise(CellEditingTemplateProperty, ref _cellEditingCellTemplate, value);
         }
 
-        public DataGridTemplateColumn()
+        private bool _forceGenerateCellFromTemplate;
+
+        protected override void EndCellEdit()
         {
-            IsReadOnly = true;
+            //the next call to generate element should not resuse the current content as we need to exit edit mode
+            _forceGenerateCellFromTemplate = true;
+            base.EndCellEdit();
         }
 
-        protected override IControl GenerateElement(DataGridCell cell, object dataItem)
+        protected override Control GenerateElement(DataGridCell cell, object dataItem)
         {
-            if(CellTemplate != null)
+            if (CellTemplate != null)
+            {
+                if (_forceGenerateCellFromTemplate)
+                {
+                    _forceGenerateCellFromTemplate = false;
+                    return CellTemplate.Build(dataItem);
+                }
+                return (CellTemplate is IRecyclingDataTemplate recyclingDataTemplate)
+                    ? recyclingDataTemplate.Build(dataItem, cell.Content as Control)
+                    : CellTemplate.Build(dataItem);
+            }
+            if (Design.IsDesignMode)
+            {
+                return null;
+            }
+            else
+            {
+                throw DataGridError.DataGridTemplateColumn.MissingTemplateForType(typeof(DataGridTemplateColumn));
+            }
+        }
+
+        protected override Control GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding binding)
+        {
+            binding = null;
+            if(CellEditingTemplate != null)
+            {
+                return CellEditingTemplate.Build(dataItem);
+            }
+            else if (CellTemplate != null)
             {
                 return CellTemplate.Build(dataItem);
             }
@@ -57,25 +109,37 @@ namespace Avalonia.Controls
             }
         }
 
-        protected override IControl GenerateEditingElement(DataGridCell cell, object dataItem, out ICellEditBinding binding)
-        {
-            binding = null;
-            return GenerateElement(cell, dataItem);
-        }
-
-        protected override object PrepareCellForEdit(IControl editingElement, RoutedEventArgs editingEventArgs)
+        protected override object PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
         {
             return null;
         }
 
-        protected internal override void RefreshCellContent(IControl element, string propertyName)
+        protected internal override void RefreshCellContent(Control element, string propertyName)
         {
-            if(propertyName == nameof(CellTemplate) && element.Parent is DataGridCell cell)
+            var cell = element.Parent as DataGridCell;
+            if(propertyName == nameof(CellTemplate) && cell is not null)
             {
                 cell.Content = GenerateElement(cell, cell.DataContext);
             }
 
             base.RefreshCellContent(element, propertyName);
+        }
+        
+        public override bool IsReadOnly
+        {
+            get
+            {
+                if (CellEditingTemplate is null)
+                {
+                    return true;
+                }
+
+                return base.IsReadOnly;
+            }
+            set
+            {
+                base.IsReadOnly = value;
+            }
         }
     }
 }

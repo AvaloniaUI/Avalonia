@@ -4,18 +4,14 @@ using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
-using Avalonia.Visuals.Media.Imaging;
+using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
+using Microsoft.Diagnostics.Runtime;
 
 namespace Avalonia.Benchmarks
 {
-    internal class NullRenderingPlatform : IPlatformRenderInterface
+    internal class NullRenderingPlatform : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
-        public IFormattedTextImpl CreateFormattedText(string text, Typeface typeface, double fontSize, TextAlignment textAlignment,
-            TextWrapping wrapping, Size constraint, IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new NullFormattedTextImpl();
-        }
-
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
             return new MockStreamGeometryImpl();
@@ -50,6 +46,10 @@ namespace Avalonia.Benchmarks
         {
             throw new NotImplementedException();
         }
+
+        public bool IsLost => false;
+
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -118,9 +118,20 @@ namespace Avalonia.Benchmarks
             return new MockFontManagerImpl();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
-            return new NullGlyphRun();
+            return new MockStreamGeometryImpl();
+        }
+
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
+        {
+            return new MockGlyphRun(glyphInfos);
+        }
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext)
+        {
+            return this;
         }
 
         public bool SupportsIndividualRoundRects => true;
@@ -128,5 +139,9 @@ namespace Avalonia.Benchmarks
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public void Dispose()
+        {
+            
+        }
     }
 }

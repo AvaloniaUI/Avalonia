@@ -3,8 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-#nullable enable
-
 namespace Avalonia.Controls.Selection
 {
     public interface ISelectionModel : INotifyPropertyChanged
@@ -41,7 +39,7 @@ namespace Avalonia.Controls.Selection
             return new BatchUpdateOperation(model);
         }
 
-        public struct BatchUpdateOperation : IDisposable
+        public record struct BatchUpdateOperation : IDisposable
         {
             private readonly ISelectionModel _owner;
             private bool _isDisposed;

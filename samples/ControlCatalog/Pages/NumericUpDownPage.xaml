@@ -1,15 +1,17 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:sys="clr-namespace:System;assembly=netstandard"
-             x:Class="ControlCatalog.Pages.NumericUpDownPage">
+             xmlns:sys="using:System"
+             xmlns:converter="using:ControlCatalog.Converter"
+             xmlns:pages="using:ControlCatalog.Pages"
+             x:Class="ControlCatalog.Pages.NumericUpDownPage"
+             x:DataType="pages:NumbersPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4"
               MaxWidth="800">
-    <TextBlock Margin="2" Classes="h1">Numeric up-down control</TextBlock>
     <TextBlock Margin="2" Classes="h2" TextWrapping="Wrap">Numeric up-down control provides a TextBox with button spinners that allow incrementing and decrementing numeric values by using the spinner buttons, keyboard up/down arrows, or mouse wheel.</TextBlock>
 
     <TextBlock Margin="2,5,2,2" FontSize="14" FontWeight="Bold">Features:</TextBlock>
-    <Grid Margin="2" ColumnDefinitions="Auto,Auto,Auto,Auto" RowDefinitions="Auto,Auto">
-      <Grid Grid.Row="0" Grid.Column="0" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+    <WrapPanel Margin="-8,0">
+      <Grid Grid.Row="0" Grid.Column="0" Margin="8" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">ShowButtonSpinner:</TextBlock>
         <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding #upDown.ShowButtonSpinner}" VerticalAlignment="Center" Margin="2"/>
 
@@ -23,7 +25,7 @@
         <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding #upDown.ClipValueToMinMax}" VerticalAlignment="Center" Margin="2"/>
 
       </Grid>
-      <Grid Grid.Row="0" Grid.Column="1" Margin="10,2,2,2" ColumnDefinitions="Auto, 120" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+      <Grid Grid.Row="0" Grid.Column="1" Margin="8" ColumnDefinitions="Auto, 120" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="2">FormatString:</TextBlock>
         <ComboBox Grid.Row="0" Grid.Column="1" Items="{Binding Formats}" SelectedItem="{Binding SelectedFormat}"
                   VerticalAlignment="Center" Margin="2">
@@ -43,7 +45,7 @@
                   VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="2">CultureInfo:</TextBlock>
-        <ComboBox Grid.Row="2" Grid.Column="1" Items="{Binding Cultures}" SelectedItem="{Binding #upDown.CultureInfo}"
+        <ComboBox x:Name="CultureSelector" Grid.Row="2" Grid.Column="1" Items="{Binding Cultures}"
                   VerticalAlignment="Center" Margin="2"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="2">Watermark:</TextBlock>
@@ -52,51 +54,63 @@
         <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Margin="2">Text:</TextBlock>
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding #upDown.Text}" VerticalAlignment="Center" Margin="2" />
       </Grid>
-      <Grid Grid.Row="0" Grid.Column="2" Margin="10,2,2,2" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, Auto">
+      <Grid Grid.Row="0" Grid.Column="2" Margin="8" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto, Auto">
         <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Minimum:</TextBlock>
         <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding #upDown.Minimum}"
-                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
+                       NumberFormat="{Binding #upDown.NumberFormat}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Maximum:</TextBlock>
         <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding #upDown.Maximum}"
-                       CultureInfo="{Binding #upDown.CultureInfo}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
+                       NumberFormat="{Binding #upDown.NumberFormat}" VerticalAlignment="Center" Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Increment:</TextBlock>
         <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding #upDown.Increment}" VerticalAlignment="Center"
                        Margin="2" HorizontalAlignment="Center"/>
 
         <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Margin="10,2,2,2">Value:</TextBlock>
-        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding #upDown.Value}" VerticalAlignment="Center"
+        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding DecimalValue}" VerticalAlignment="Center"
                        Margin="2" HorizontalAlignment="Center"/>
 
 
       </Grid>
-    </Grid>
+    </WrapPanel>
 
     <WrapPanel Margin="2,10,2,2">
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="upDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of decimal NumericUpDown:</Label>
         <NumericUpDown Name="upDown" Minimum="0" Maximum="10" Increment="0.5"
-                       CultureInfo="en-US" VerticalAlignment="Center" Value="{Binding DecimalValue}"
+                       NumberFormat="{Binding #CultureSelector.SelectedItem, Converter={x:Static pages:NumericUpDownPage.CultureConverter}}"
+                       VerticalAlignment="Center" Value="{Binding DecimalValue}"
                        Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
       </StackPanel>
 
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="DoubleUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">Usage of double NumericUpDown:</Label>
         <NumericUpDown Name="DoubleUpDown" Minimum="0" Maximum="10" Increment="0.5"
-                       CultureInfo="en-US" VerticalAlignment="Center" Value="{Binding DoubleValue}"
+                       VerticalAlignment="Center" Value="{Binding DoubleValue}"
                        Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}"/>
       </StackPanel>
       
       <StackPanel Orientation="Vertical" Margin="10">
         <Label Target="ValidationUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown with Validation Errors:</Label>
         <NumericUpDown x:Name="ValidationUpDown" Minimum="0" Maximum="10" Increment="0.5"
-                       CultureInfo="en-US" VerticalAlignment="Center"
+                       VerticalAlignment="Center"
                        Watermark="Enter text" FormatString="{Binding SelectedFormat.Value}">
           <DataValidationErrors.Error>
             <sys:Exception /> 
           </DataValidationErrors.Error>
         </NumericUpDown>
+      </StackPanel>
+
+      <StackPanel Orientation="Vertical" Margin="10">
+        <Label Target="HexUpDown" FontSize="14" FontWeight="Bold" VerticalAlignment="Center">NumericUpDown in HEX mode:</Label>
+        <NumericUpDown x:Name="HexUpDown" Value="0"
+                       VerticalAlignment="Center">
+          <NumericUpDown.TextConverter>
+            <converter:HexConverter></converter:HexConverter>
+          </NumericUpDown.TextConverter>
+        </NumericUpDown>
+        
       </StackPanel>
     </WrapPanel>
 

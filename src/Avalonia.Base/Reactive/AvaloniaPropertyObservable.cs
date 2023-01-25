@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using Avalonia.Data;
 
 namespace Avalonia.Reactive
 {
     internal class AvaloniaPropertyObservable<T> : LightweightObservableBase<T>, IDescription
     {
-        private readonly WeakReference<IAvaloniaObject> _target;
+        private readonly WeakReference<AvaloniaObject> _target;
         private readonly AvaloniaProperty _property;
-        private T _value;
+        private Optional<T> _value;
 
         public AvaloniaPropertyObservable(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty property)
         {
-            _target = new WeakReference<IAvaloniaObject>(target);
+            _target = new WeakReference<AvaloniaObject>(target);
             _property = property;
         }
 
@@ -23,7 +24,7 @@ namespace Avalonia.Reactive
         {
             if (_target.TryGetTarget(out var target))
             {
-                _value = (T)target.GetValue(_property);
+                _value = (T)target.GetValue(_property)!;
                 target.PropertyChanged += PropertyChanged;
             }
         }
@@ -34,14 +35,17 @@ namespace Avalonia.Reactive
             {
                 target.PropertyChanged -= PropertyChanged;
             }
+
+            _value = default;
         }
 
         protected override void Subscribed(IObserver<T> observer, bool first)
         {
-            observer.OnNext(_value);
+            if (_value.HasValue)
+                observer.OnNext(_value.Value);
         }
 
-        private void PropertyChanged(object sender, AvaloniaPropertyChangedEventArgs e)
+        private void PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
             if (e.Property == _property)
             {
@@ -49,17 +53,18 @@ namespace Avalonia.Reactive
 
                 if (e is AvaloniaPropertyChangedEventArgs<T> typed)
                 {
-                    newValue = typed.Sender.GetValue(typed.Property);
+                    newValue = AvaloniaObjectExtensions.GetValue(e.Sender, typed.Property);
                 }
                 else
                 {
-                    newValue = (T)e.Sender.GetValue(e.Property);
+                    newValue = (T)e.Sender.GetValue(e.Property)!;
                 }
 
-                if (!EqualityComparer<T>.Default.Equals(newValue, _value))
+                if (!_value.HasValue ||
+                    !EqualityComparer<T>.Default.Equals(newValue, _value.Value))
                 {
                     _value = newValue;
-                    PublishNext(_value);
+                    PublishNext(_value.Value!);
                 }
             }
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Input;
 using Avalonia.Utilities;
@@ -9,6 +10,7 @@ namespace Avalonia.Data.Converters
     /// Provides a default set of value conversions for bindings that do not specify a value
     /// converter.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
     public class DefaultValueConverter : IValueConverter
     {
         /// <summary>
@@ -24,7 +26,7 @@ namespace Avalonia.Data.Converters
         /// <param name="parameter">A user-defined parameter.</param>
         /// <param name="culture">The culture to use.</param>
         /// <returns>The converted value.</returns>
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value == null)
             {
@@ -33,10 +35,17 @@ namespace Avalonia.Data.Converters
 
             if (typeof(ICommand).IsAssignableFrom(targetType) && value is Delegate d && d.Method.GetParameters().Length <= 1)
             {
-                return new MethodToCommandConverter(d);
+                if (d.Method.IsPrivate == false)
+                {
+                    return new MethodToCommandConverter(d);
+                }
+                else
+                {
+                    return new BindingNotification(new InvalidCastException("You can't bind to private methods!"), BindingErrorType.Error);
+                }
             }
 
-            if (TypeUtilities.TryConvert(targetType, value, culture, out object result))
+            if (TypeUtilities.TryConvert(targetType, value, culture, out var result))
             {
                 return result;
             }
@@ -63,7 +72,7 @@ namespace Avalonia.Data.Converters
         /// <param name="parameter">A user-defined parameter.</param>
         /// <param name="culture">The culture to use.</param>
         /// <returns>The converted value.</returns>
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return Convert(value, targetType, parameter, culture);
         }

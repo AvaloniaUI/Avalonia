@@ -1,6 +1,4 @@
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Avalonia.Reactive;
 
 namespace Avalonia.Data
@@ -10,7 +8,7 @@ namespace Avalonia.Data
         public static readonly object DoNothing = new DoNothingType();
 
         /// <summary>
-        /// Applies an <see cref="InstancedBinding"/> a property on an <see cref="IAvaloniaObject"/>.
+        /// Applies an <see cref="InstancedBinding"/> a property on an <see cref="AvaloniaObject"/>.
         /// </summary>
         /// <param name="target">The target object.</param>
         /// <param name="property">The property to bind.</param>
@@ -23,14 +21,14 @@ namespace Avalonia.Data
         /// </param>
         /// <returns>An <see cref="IDisposable"/> which can be used to cancel the binding.</returns>
         public static IDisposable Apply(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty property,
             InstancedBinding binding,
-            object anchor)
+            object? anchor)
         {
-            Contract.Requires<ArgumentNullException>(target != null);
-            Contract.Requires<ArgumentNullException>(property != null);
-            Contract.Requires<ArgumentNullException>(binding != null);
+            _ = target ?? throw new ArgumentNullException(nameof(target));
+            _ = property ?? throw new ArgumentNullException(nameof(property));
+            _ = binding ?? throw new ArgumentNullException(nameof(binding));
 
             var mode = binding.Mode;
 
@@ -43,45 +41,41 @@ namespace Avalonia.Data
             {
                 case BindingMode.Default:
                 case BindingMode.OneWay:
-                    return target.Bind(property, binding.Observable ?? binding.Subject, binding.Priority);
+                    return target.Bind(property, binding.Source, binding.Priority);
                 case BindingMode.TwoWay:
+                {
+                    if (binding.Source is not IObserver<object?> observer)
+                        throw new InvalidOperationException("InstancedBinding does not contain a subject.");
                     return new TwoWayBindingDisposable(
-                        target.Bind(property, binding.Subject, binding.Priority),
-                        target.GetObservable(property).Subscribe(binding.Subject));
+                        target.Bind(property, binding.Source, binding.Priority),
+                        target.GetObservable(property).Subscribe(observer));
+                }
                 case BindingMode.OneTime:
-                    var source = binding.Subject ?? binding.Observable;
+                {
+                    // Perf: Avoid allocating closure in the outer scope.
+                    var targetCopy = target;
+                    var propertyCopy = property;
+                    var bindingCopy = binding;
 
-                    if (source != null)
-                    {
-                        // Perf: Avoid allocating closure in the outer scope.
-                        var targetCopy = target;
-                        var propertyCopy = property;
-                        var bindingCopy = binding;
-
-                        return source
-                            .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
-                            .Take(1)
-                            .Subscribe(x => targetCopy.SetValue(
-                                propertyCopy,
-                                BindingNotification.ExtractValue(x),
-                                bindingCopy.Priority));
-                    }
-                    else
-                    {
-                        target.SetValue(property, binding.Value, binding.Priority);
-                        return Disposable.Empty;
-                    }
+                    return binding.Source
+                        .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
+                        .Take(1)
+                        .Subscribe(x => targetCopy.SetValue(
+                            propertyCopy,
+                            BindingNotification.ExtractValue(x),
+                            bindingCopy.Priority));
+                }
 
                 case BindingMode.OneWayToSource:
                 {
-                    // Perf: Avoid allocating closure in the outer scope.
-                    var bindingCopy = binding;
+                    if (binding.Source is not IObserver<object?> observer)
+                        throw new InvalidOperationException("InstancedBinding does not contain a subject.");
 
                     return Observable.CombineLatest(
-                        binding.Observable,
+                        binding.Source,
                         target.GetObservable(property),
                         (_, v) => v)
-                    .Subscribe(x => bindingCopy.Subject.OnNext(x));
+                    .Subscribe(x => observer.OnNext(x));
                 }
 
                 default:
@@ -91,14 +85,15 @@ namespace Avalonia.Data
 
         private sealed class TwoWayBindingDisposable : IDisposable
         {
-            private readonly IDisposable _first;
-            private readonly IDisposable _second;
+            private readonly IDisposable _toTargetSubscription;
+            private readonly IDisposable _fromTargetSubsription;
+
             private bool _isDisposed;
 
-            public TwoWayBindingDisposable(IDisposable first, IDisposable second)
+            public TwoWayBindingDisposable(IDisposable toTargetSubscription, IDisposable fromTargetSubsription)
             {
-                _first = first;
-                _second = second;
+                _toTargetSubscription = toTargetSubscription;
+                _fromTargetSubsription = fromTargetSubsription;
             }
 
             public void Dispose()
@@ -108,8 +103,8 @@ namespace Avalonia.Data
                     return;
                 }
 
-                _first.Dispose();
-                _second.Dispose();
+                _fromTargetSubsription.Dispose();
+                _toTargetSubscription.Dispose();
 
                 _isDisposed = true;
             }

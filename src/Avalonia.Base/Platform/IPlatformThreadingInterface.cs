@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Avalonia.Metadata;
 using Avalonia.Threading;
 
 namespace Avalonia.Platform
@@ -7,6 +8,7 @@ namespace Avalonia.Platform
     /// <summary>
     /// Provides platform-specific services relating to threading.
     /// </summary>
+    [Unstable]
     public interface IPlatformThreadingInterface
     {
         void RunLoop(CancellationToken cancellationToken);

@@ -10,6 +10,8 @@ using System;
 using System.ComponentModel;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Controls.Documents;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -18,21 +20,27 @@ namespace Avalonia.Controls
     /// </summary>
     public class DataGridTextColumn : DataGridBoundColumn
     {
-        private const string DATAGRID_TextColumnCellTextBlockMarginKey = "DataGridTextColumnCellTextBlockMargin";
-
+        private readonly Lazy<ControlTheme> _cellTextBoxTheme;
+        private readonly Lazy<ControlTheme> _cellTextBlockTheme;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Avalonia.Controls.DataGridTextColumn" /> class.
         /// </summary>
         public DataGridTextColumn()
         {
             BindingTarget = TextBox.TextProperty;
+
+            _cellTextBoxTheme = new Lazy<ControlTheme>(() =>
+                OwningGrid.TryFindResource("DataGridCellTextBoxTheme", out var theme) ? (ControlTheme)theme : null);
+            _cellTextBlockTheme = new Lazy<ControlTheme>(() =>
+                OwningGrid.TryFindResource("DataGridCellTextBlockTheme", out var theme) ? (ControlTheme)theme : null);
         }
 
         /// <summary>
         /// Identifies the FontFamily dependency property.
         /// </summary>
         public static readonly AttachedProperty<FontFamily> FontFamilyProperty =
-            TextBlock.FontFamilyProperty.AddOwner<DataGridTextColumn>();
+            TextElement.FontFamilyProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font name.
@@ -47,7 +55,7 @@ namespace Avalonia.Controls
         /// Identifies the FontSize dependency property.
         /// </summary>
         public static readonly AttachedProperty<double> FontSizeProperty =
-            TextBlock.FontSizeProperty.AddOwner<DataGridTextColumn>();
+            TextElement.FontSizeProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font size.
@@ -64,7 +72,7 @@ namespace Avalonia.Controls
         /// Identifies the FontStyle dependency property.
         /// </summary>
         public static readonly AttachedProperty<FontStyle> FontStyleProperty =
-            TextBlock.FontStyleProperty.AddOwner<DataGridTextColumn>();
+            TextElement.FontStyleProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font style.
@@ -79,7 +87,7 @@ namespace Avalonia.Controls
         /// Identifies the FontWeight dependency property.
         /// </summary>
         public static readonly AttachedProperty<FontWeight> FontWeightProperty =
-            TextBlock.FontWeightProperty.AddOwner<DataGridTextColumn>();
+            TextElement.FontWeightProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets the font weight or thickness.
@@ -91,10 +99,25 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
+        /// Identifies the FontStretch dependency property.
+        /// </summary>
+        public static readonly AttachedProperty<FontStretch> FontStretchProperty =
+            TextElement.FontStretchProperty.AddOwner<DataGridTextColumn>();
+
+        /// <summary>
+        /// Gets or sets the font weight or thickness.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get => GetValue(FontStretchProperty);
+            set => SetValue(FontStretchProperty, value);
+        }
+
+        /// <summary>
         /// Identifies the Foreground dependency property.
         /// </summary>
         public static readonly AttachedProperty<IBrush> ForegroundProperty =
-            TextBlock.ForegroundProperty.AddOwner<DataGridTextColumn>();
+            TextElement.ForegroundProperty.AddOwner<DataGridTextColumn>();
 
         /// <summary>
         /// Gets or sets a brush that describes the foreground of the column cells.
@@ -105,7 +128,7 @@ namespace Avalonia.Controls
             set => SetValue(ForegroundProperty, value);
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -124,7 +147,7 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="editingElement">The element that the column displays for a cell in editing mode.</param>
         /// <param name="uneditedValue">The previous, unedited value in the cell being edited.</param>
-        protected override void CancelCellEdit(IControl editingElement, object uneditedValue)
+        protected override void CancelCellEdit(Control editingElement, object uneditedValue)
         {
             if (editingElement is TextBox textBox)
             {
@@ -139,32 +162,38 @@ namespace Avalonia.Controls
         /// <param name="cell">The cell that will contain the generated element.</param>
         /// <param name="dataItem">The data item represented by the row that contains the intended cell.</param>
         /// <returns>A new <see cref="T:Avalonia.Controls.TextBox" /> control that is bound to the column's <see cref="P:Avalonia.Controls.DataGridBoundColumn.Binding" /> property value.</returns>
-        protected override IControl GenerateEditingElementDirect(DataGridCell cell, object dataItem)
+        protected override Control GenerateEditingElementDirect(DataGridCell cell, object dataItem)
         {
             var textBox = new TextBox
-            {
-                VerticalAlignment = VerticalAlignment.Stretch,
-                Background = new SolidColorBrush(Colors.Transparent)
+            {                
+                Name = "CellTextBox"
             };
+            if (_cellTextBoxTheme.Value is { } theme)
+            {
+                textBox.Theme = theme;
+            }
 
             SyncProperties(textBox);
 
             return textBox;
         }
-
+        
         /// <summary>
         /// Gets a read-only <see cref="T:Avalonia.Controls.TextBlock" /> element that is bound to the column's <see cref="P:Avalonia.Controls.DataGridBoundColumn.Binding" /> property value.
         /// </summary>
         /// <param name="cell">The cell that will contain the generated element.</param>
         /// <param name="dataItem">The data item represented by the row that contains the intended cell.</param>
         /// <returns>A new, read-only <see cref="T:Avalonia.Controls.TextBlock" /> element that is bound to the column's <see cref="P:Avalonia.Controls.DataGridBoundColumn.Binding" /> property value.</returns>
-        protected override IControl GenerateElement(DataGridCell cell, object dataItem)
+        protected override Control GenerateElement(DataGridCell cell, object dataItem)
         {
-            TextBlock textBlockElement = new TextBlock
+            var textBlockElement = new TextBlock
             {
-                [!Layoutable.MarginProperty] = new DynamicResourceExtension(DATAGRID_TextColumnCellTextBlockMarginKey),
-                VerticalAlignment = VerticalAlignment.Center
+                Name = "CellTextBlock"
             };
+            if (_cellTextBlockTheme.Value is { } theme)
+            {
+                textBlockElement.Theme = theme;
+            }
 
             SyncProperties(textBlockElement);
 
@@ -181,7 +210,7 @@ namespace Avalonia.Controls
         /// <param name="editingElement">The element that the column displays for a cell in editing mode.</param>
         /// <param name="editingEventArgs">Information about the user gesture that is causing a cell to enter editing mode.</param>
         /// <returns>The unedited value. </returns>
-        protected override object PrepareCellForEdit(IControl editingElement, RoutedEventArgs editingEventArgs)
+        protected override object PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
         {
             if (editingElement is TextBox textBox)
             {
@@ -210,11 +239,11 @@ namespace Avalonia.Controls
         /// Called by the DataGrid control when this column asks for its elements to be
         /// updated, because a property changed.
         /// </summary>
-        protected internal override void RefreshCellContent(IControl element, string propertyName)
+        protected internal override void RefreshCellContent(Control element, string propertyName)
         {
             if (element == null)
             {
-                throw new ArgumentNullException("element");
+                throw new ArgumentNullException(nameof(element));
             }
 
             if (element is AvaloniaObject content)

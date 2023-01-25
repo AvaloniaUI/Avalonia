@@ -11,7 +11,7 @@ namespace Avalonia.Utilities
         /// Tries to take a lock
         /// </summary>
         /// <returns>IDisposable if succeeded to obtain the lock</returns>
-        public IDisposable TryLock()
+        public IDisposable? TryLock()
         {
             if (Monitor.TryEnter(_lock))
                 return new UnlockDisposable(_lock);
@@ -29,7 +29,7 @@ namespace Avalonia.Utilities
 
         private sealed class UnlockDisposable : IDisposable
         {
-            private object _lock;
+            private object? _lock;
 
             public UnlockDisposable(object @lock)
             {
@@ -38,7 +38,7 @@ namespace Avalonia.Utilities
 
             public void Dispose()
             {
-                object @lock = Interlocked.Exchange(ref _lock, null);
+                object? @lock = Interlocked.Exchange(ref _lock, null);
 
                 if (@lock != null)
                 {

@@ -1,16 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <PackageId>Avalonia.Markup.Xaml.Loader</PackageId>
     <DefineConstants>$(DefineConstants);XAMLX_INTERNAL</DefineConstants>
   </PropertyGroup>
+  <!--Disable Net Perf. analyzer for submodule to avoid commit issue -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+  </PropertyGroup>
   <Import Project="IncludeXamlIlSre.props" />
+  <ItemGroup>
+    <Compile Include="..\..\Avalonia.Base\Utilities\StringBuilderCache.cs" Link="Utilities\StringBuilderCache.cs" />
+    <Compile Include="..\..\Avalonia.Base\Compatibility\TrimmingAttributes.cs" Link="TrimmingAttributes.cs" Visible="False" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
-  </ItemGroup>  
+  </ItemGroup>
+  <Import Project="..\..\..\build\DevAnalyzers.props" />
 </Project>

@@ -1,15 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Reactive.Linq;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.LogicalTree;
+using Avalonia.Styling;
 using Avalonia.UnitTests;
 using Avalonia.VisualTree;
-using Moq;
 using Xunit;
 
 namespace Avalonia.Controls.UnitTests.Presenters
@@ -22,12 +21,14 @@ namespace Avalonia.Controls.UnitTests.Presenters
         [Fact]
         public void Should_Register_With_Host_When_TemplatedParent_Set()
         {
-            var host = new Mock<IContentPresenterHost>();
-            var target = new ContentPresenter();
+            var host = new ContentControl();
+            var target = new ContentPresenter { Name = "PART_ContentPresenter" };
 
-            target.SetValue(Control.TemplatedParentProperty, host.Object);
+            Assert.Null(host.Presenter);
 
-            host.Verify(x => x.RegisterContentPresenter(target));
+            target.SetValue(Control.TemplatedParentProperty, host);
+
+            Assert.Same(target, host.Presenter);
         }
 
         [Fact]
@@ -322,7 +323,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Same(logicalParent, child.Parent);
 
             // InheritanceParent is exposed via StylingParent.
-            Assert.Same(target, ((IStyledElement)child).StylingParent);
+            Assert.Same(target, ((IStyleHost)child).StylingParent);
         }
 
         [Fact]
@@ -337,7 +338,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = null;
 
             // InheritanceParent is exposed via StylingParent.
-            Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
+            Assert.Same(logicalParent, ((IStyleHost)child).StylingParent);
         }
 
         [Fact]
@@ -353,7 +354,30 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.Null(target.Host);
         }
 
-        (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()
+        [Fact]
+        public void Content_Should_Become_DataContext_When_ControlTemplate_Is_Not_Null()
+        {
+            var (target, _) = CreateTarget();
+
+            var textBlock = new TextBlock
+            {
+                [!TextBlock.TextProperty] = new Binding("Name"),
+            };
+
+            var canvas = new Canvas()
+            {
+                Name = "Canvas"
+            };
+
+            target.ContentTemplate = new FuncDataTemplate<Canvas>((_, __) => textBlock);
+            target.Content = canvas;
+
+            Assert.NotNull(target.DataContext);
+            Assert.Equal(canvas, target.DataContext);
+            Assert.Equal("Canvas", textBlock.Text);
+        }
+
+        static (ContentPresenter presenter, ContentControl templatedParent) CreateTarget()
         {
             var templatedParent = new ContentControl
             {
@@ -370,9 +394,9 @@ namespace Avalonia.Controls.UnitTests.Presenters
             return ((ContentPresenter)templatedParent.Presenter, templatedParent);
         }
 
-        private class TestContentControl : ContentControl
+        private class TestContentControl : ContentControl, IContentPresenterHost
         {
-            public IControl Child { get; set; }
+            public Control Child { get; set; }
         }
 
         private class TestViewModel : INotifyPropertyChanged

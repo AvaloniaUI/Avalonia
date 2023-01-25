@@ -1,10 +1,11 @@
-﻿#nullable enable
+﻿using Avalonia.Metadata;
 
 namespace Avalonia.Controls
 {
     /// <summary>
     /// Represents a <see cref="MenuItem"/>.
     /// </summary>
+    [NotClientImplementable]
     public interface IMenuItem : IMenuElement
     {
         /// <summary>
@@ -37,7 +38,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the parent <see cref="IMenuElement"/>.
         /// </summary>
-        new IMenuElement? Parent { get; }
+        IMenuElement? Parent { get; }
 
         /// <summary>
         /// Raises a click event on the menu item.

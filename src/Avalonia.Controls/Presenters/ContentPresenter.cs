@@ -1,5 +1,6 @@
 using System;
 
+using Avalonia.Controls.Documents;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
@@ -8,6 +9,7 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -20,13 +22,13 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Defines the <see cref="Background"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BackgroundProperty =
+        public static readonly StyledProperty<IBrush?> BackgroundProperty =
             Border.BackgroundProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="BorderBrush"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> BorderBrushProperty =
+        public static readonly StyledProperty<IBrush?> BorderBrushProperty =
             Border.BorderBrushProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
@@ -46,25 +48,91 @@ namespace Avalonia.Controls.Presenters
         /// </summary>
         public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
             Border.BoxShadowProperty.AddOwner<ContentPresenter>();
-        
+
+        /// <summary>
+        /// Defines the <see cref="Foreground"/> property.
+        /// </summary>
+        public static readonly StyledProperty<IBrush?> ForegroundProperty =
+            TextElement.ForegroundProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="FontFamily"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontFamily> FontFamilyProperty =
+            TextElement.FontFamilyProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="FontSize"/> property.
+        /// </summary>
+        public static readonly StyledProperty<double> FontSizeProperty =
+            TextElement.FontSizeProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="FontStyle"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontStyle> FontStyleProperty =
+            TextElement.FontStyleProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="FontWeight"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontWeight> FontWeightProperty =
+            TextElement.FontWeightProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="FontStretch"/> property.
+        /// </summary>
+        public static readonly StyledProperty<FontStretch> FontStretchProperty =
+            TextElement.FontStretchProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="TextAlignment"/> property
+        /// </summary>
+        public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
+            TextBlock.TextAlignmentProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="TextWrapping"/> property
+        /// </summary>
+        public static readonly StyledProperty<TextWrapping> TextWrappingProperty =
+            TextBlock.TextWrappingProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="TextTrimming"/> property
+        /// </summary>
+        public static readonly StyledProperty<TextTrimming> TextTrimmingProperty =
+            TextBlock.TextTrimmingProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="LineHeight"/> property
+        /// </summary>
+        public static readonly StyledProperty<double> LineHeightProperty =
+            TextBlock.LineHeightProperty.AddOwner<ContentPresenter>();
+
+        /// <summary>
+        /// Defines the <see cref="MaxLines"/> property
+        /// </summary>
+        public static readonly StyledProperty<int> MaxLinesProperty =
+            TextBlock.MaxLinesProperty.AddOwner<ContentPresenter>();
+                
         /// <summary>
         /// Defines the <see cref="Child"/> property.
         /// </summary>
-        public static readonly DirectProperty<ContentPresenter, IControl> ChildProperty =
-            AvaloniaProperty.RegisterDirect<ContentPresenter, IControl>(
+        public static readonly DirectProperty<ContentPresenter, Control?> ChildProperty =
+            AvaloniaProperty.RegisterDirect<ContentPresenter, Control?>(
                 nameof(Child),
                 o => o.Child);
 
         /// <summary>
         /// Defines the <see cref="Content"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> ContentProperty =
+        public static readonly StyledProperty<object?> ContentProperty =
             ContentControl.ContentProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
         /// Defines the <see cref="ContentTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> ContentTemplateProperty =
+        public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
             ContentControl.ContentTemplateProperty.AddOwner<ContentPresenter>();
 
         /// <summary>
@@ -93,9 +161,9 @@ namespace Avalonia.Controls.Presenters
                 nameof(RecognizesAccessKey),
                 cp => cp.RecognizesAccessKey, (cp, value) => cp.RecognizesAccessKey = value);
 
-        private IControl _child;
+        private Control? _child;
         private bool _createdChild;
-        private IRecyclingDataTemplate _recyclingDataTemplate;
+        private IRecyclingDataTemplate? _recyclingDataTemplate;
         private readonly BorderRenderHelper _borderRenderer = new BorderRenderHelper();
         private bool _recognizesAccessKey;
 
@@ -107,9 +175,6 @@ namespace Avalonia.Controls.Presenters
             AffectsRender<ContentPresenter>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
             AffectsArrange<ContentPresenter>(HorizontalContentAlignmentProperty, VerticalContentAlignmentProperty);
             AffectsMeasure<ContentPresenter>(BorderThicknessProperty, PaddingProperty);
-            ContentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
-            ContentTemplateProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.ContentChanged(e));
-            TemplatedParentProperty.Changed.AddClassHandler<ContentPresenter>((x, e) => x.TemplatedParentChanged(e));
         }
 
         public ContentPresenter()
@@ -120,7 +185,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush with which to paint the background.
         /// </summary>
-        public IBrush Background
+        public IBrush? Background
         {
             get { return GetValue(BackgroundProperty); }
             set { SetValue(BackgroundProperty, value); }
@@ -129,7 +194,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets a brush with which to paint the border.
         /// </summary>
-        public IBrush BorderBrush
+        public IBrush? BorderBrush
         {
             get { return GetValue(BorderBrushProperty); }
             set { SetValue(BorderBrushProperty, value); }
@@ -163,9 +228,108 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
+        /// Gets or sets a brush used to paint the text.
+        /// </summary>
+        public IBrush? Foreground
+        {
+            get => GetValue(ForegroundProperty);
+            set => SetValue(ForegroundProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font family.
+        /// </summary>
+        public FontFamily FontFamily
+        {
+            get => GetValue(FontFamilyProperty);
+            set => SetValue(FontFamilyProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font size.
+        /// </summary>
+        public double FontSize
+        {
+            get => GetValue(FontSizeProperty);
+            set => SetValue(FontSizeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font style.
+        /// </summary>
+        public FontStyle FontStyle
+        {
+            get => GetValue(FontStyleProperty);
+            set => SetValue(FontStyleProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font weight.
+        /// </summary>
+        public FontWeight FontWeight
+        {
+            get => GetValue(FontWeightProperty);
+            set => SetValue(FontWeightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the font stretch.
+        /// </summary>
+        public FontStretch FontStretch
+        {
+            get => GetValue(FontStretchProperty);
+            set => SetValue(FontStretchProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text alignment
+        /// </summary>
+        public TextAlignment TextAlignment
+        {
+            get => GetValue(TextAlignmentProperty);
+            set => SetValue(TextAlignmentProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text wrapping
+        /// </summary>
+        public TextWrapping TextWrapping
+        {
+            get => GetValue(TextWrappingProperty);
+            set => SetValue(TextWrappingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text trimming
+        /// </summary>
+        public TextTrimming TextTrimming
+        {
+            get => GetValue(TextTrimmingProperty);
+            set => SetValue(TextTrimmingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the line height
+        /// </summary>
+        public double LineHeight
+        {
+            get => GetValue(LineHeightProperty);
+            set => SetValue(LineHeightProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the max lines
+        /// </summary>
+        public int MaxLines
+        {
+            get => GetValue(MaxLinesProperty);
+            set => SetValue(MaxLinesProperty, value);
+        }
+
+        /// <summary>
         /// Gets the control displayed by the presenter.
         /// </summary>
-        public IControl Child
+        public Control? Child
         {
             get { return _child; }
             private set { SetAndRaise(ChildProperty, ref _child, value); }
@@ -175,7 +339,7 @@ namespace Avalonia.Controls.Presenters
         /// Gets or sets the content to be displayed by the presenter.
         /// </summary>
         [DependsOn(nameof(ContentTemplate))]
-        public object Content
+        public object? Content
         {
             get { return GetValue(ContentProperty); }
             set { SetValue(ContentProperty, value); }
@@ -184,7 +348,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets or sets the data template used to display the content of the control.
         /// </summary>
-        public IDataTemplate ContentTemplate
+        public IDataTemplate? ContentTemplate
         {
             get { return GetValue(ContentTemplateProperty); }
             set { SetValue(ContentTemplateProperty, value); }
@@ -229,7 +393,7 @@ namespace Avalonia.Controls.Presenters
         /// <summary>
         /// Gets the host content control.
         /// </summary>
-        internal IContentPresenterHost Host { get; private set; }
+        internal IContentPresenterHost? Host { get; private set; }
 
         /// <inheritdoc/>
         public sealed override void ApplyTemplate()
@@ -237,6 +401,25 @@ namespace Avalonia.Controls.Presenters
             if (!_createdChild && ((ILogical)this).IsAttachedToLogicalTree)
             {
                 UpdateChild();
+            }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            switch (change.Property.Name)
+            {
+                case nameof(Content):
+                case nameof(ContentTemplate):
+                    ContentChanged(change);
+                    break;
+                case nameof(TemplatedParent):
+                    TemplatedParentChanged(change);
+                    break;
+                case nameof(UseLayoutRounding):
+                case nameof(BorderThickness):
+                    _layoutThickness = null;
+                    break;
             }
         }
 
@@ -254,8 +437,14 @@ namespace Avalonia.Controls.Presenters
         public void UpdateChild()
         {
             var content = Content;
+            UpdateChild(content);
+        }
+
+        private void UpdateChild(object? content)
+        {
+            var contentTemplate = ContentTemplate;
             var oldChild = Child;
-            var newChild = CreateChild();
+            var newChild = CreateChild(content, oldChild, contentTemplate);
             var logicalChildren = Host?.LogicalChildren ?? LogicalChildren;
 
             // Remove the old child if we're not recycling it.
@@ -271,7 +460,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             // Set the DataContext if the data isn't a control.
-            if (!(content is IControl))
+            if (contentTemplate is { } || !(content is Control))
             {
                 DataContext = content;
             }
@@ -299,6 +488,7 @@ namespace Avalonia.Controls.Presenters
             }
 
             _createdChild = true;
+
         }
 
         /// <inheritdoc/>
@@ -310,10 +500,43 @@ namespace Avalonia.Controls.Presenters
             InvalidateMeasure();
         }
 
+        private Thickness? _layoutThickness;
+        private double _scale;
+
+        private Thickness LayoutThickness
+        {
+            get
+            {
+                VerifyScale();
+
+                if (_layoutThickness == null)
+                {
+                    var borderThickness = BorderThickness;
+
+                    if (UseLayoutRounding)
+                        borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, _scale, _scale);
+
+                    _layoutThickness = borderThickness;
+                }
+
+                return _layoutThickness.Value;
+            }
+        }
+
+        private void VerifyScale()
+        {
+            var currentScale = LayoutHelper.GetLayoutScale(this);
+            if (MathUtilities.AreClose(currentScale, _scale))
+                return;
+
+            _scale = currentScale;
+            _layoutThickness = null;
+        }
+
         /// <inheritdoc/>
         public override void Render(DrawingContext context)
         {
-            _borderRenderer.Render(context, Bounds.Size, BorderThickness, CornerRadius, Background, BorderBrush,
+            _borderRenderer.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow);
         }
 
@@ -321,22 +544,27 @@ namespace Avalonia.Controls.Presenters
         /// Creates the child control.
         /// </summary>
         /// <returns>The child control or null.</returns>
-        protected virtual IControl CreateChild()
+        protected virtual Control? CreateChild()
         {
             var content = Content;
             var oldChild = Child;
-            var newChild = content as IControl;
+            return CreateChild(content, oldChild, ContentTemplate);
+        }
+
+        private Control? CreateChild(object? content, Control? oldChild, IDataTemplate? template)
+        {            
+            var newChild = content as Control;
 
             // We want to allow creating Child from the Template, if Content is null.
             // But it's important to not use DataTemplates, otherwise we will break content presenters in many places,
             // otherwise it will blow up every ContentPresenter without Content set.
-            if (newChild == null
-                && (content != null || ContentTemplate != null))
+            if ((newChild == null 
+                && (content != null || template != null)) || (newChild is { } && template is { }))
             {
-                var dataTemplate = this.FindDataTemplate(content, ContentTemplate) ?? 
+                var dataTemplate = this.FindDataTemplate(content, template) ??
                     (
-                        RecognizesAccessKey 
-                            ? FuncDataTemplate.Access 
+                        RecognizesAccessKey
+                            ? FuncDataTemplate.Access
                             : FuncDataTemplate.Default
                     );
 
@@ -376,13 +604,22 @@ namespace Avalonia.Controls.Presenters
         {
             if (Child == null) return finalSize;
 
-            var padding = Padding + BorderThickness;
+            var useLayoutRounding = UseLayoutRounding;
+            var scale = LayoutHelper.GetLayoutScale(this);
+            var padding = Padding;
+            var borderThickness = BorderThickness;
+
+            if (useLayoutRounding)
+            {
+                padding = LayoutHelper.RoundLayoutThickness(padding, scale, scale);
+                borderThickness = LayoutHelper.RoundLayoutThickness(borderThickness, scale, scale);
+            }
+
+            padding += borderThickness;
             var horizontalContentAlignment = HorizontalContentAlignment;
             var verticalContentAlignment = VerticalContentAlignment;
-            var useLayoutRounding = UseLayoutRounding;
             var availableSize = finalSize;
             var sizeForChild = availableSize;
-            var scale = LayoutHelper.GetLayoutScale(this);
             var originX = offset.X;
             var originY = offset.Y;
 
@@ -398,8 +635,8 @@ namespace Avalonia.Controls.Presenters
 
             if (useLayoutRounding)
             {
-                sizeForChild = LayoutHelper.RoundLayoutSize(sizeForChild, scale, scale);
-                availableSize = LayoutHelper.RoundLayoutSize(availableSize, scale, scale);
+                sizeForChild = LayoutHelper.RoundLayoutSizeUp(sizeForChild, scale, scale);
+                availableSize = LayoutHelper.RoundLayoutSizeUp(availableSize, scale, scale);
             }
 
             switch (horizontalContentAlignment)
@@ -446,7 +683,14 @@ namespace Avalonia.Controls.Presenters
 
             if (((ILogical)this).IsAttachedToLogicalTree)
             {
-                UpdateChild();
+                if (e.Property.Name == nameof(Content))
+                {
+                    UpdateChild(e.NewValue);
+                }
+                else
+                {
+                    UpdateChild();
+                }
             }
             else if (Child != null)
             {

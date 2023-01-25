@@ -7,8 +7,8 @@ using System;
 using System.Diagnostics;
 
 using Avalonia.Input;
-using Avalonia.Input.GestureRecognizers;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
@@ -17,8 +17,10 @@ namespace Avalonia.Controls.Primitives
     /// Used within the template of a <see cref="T:Avalonia.Controls.DataGrid" /> to specify the
     /// location in the control's visual tree where the rows are to be added.
     /// </summary>
-    public sealed class DataGridRowsPresenter : Panel
+    public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
     {
+        private EventHandler<ChildIndexChangedEventArgs> _childIndexChanged;
+
         public DataGridRowsPresenter()
         {
             AddHandler(Gestures.ScrollGestureEvent, OnScrollGesture);
@@ -42,6 +44,29 @@ namespace Avalonia.Controls.Primitives
             {
                 return availableSize.Height;
             }
+        }
+
+        event EventHandler<ChildIndexChangedEventArgs> IChildIndexProvider.ChildIndexChanged
+        {
+            add => _childIndexChanged += value;
+            remove => _childIndexChanged -= value;
+        }
+
+        int IChildIndexProvider.GetChildIndex(ILogical child)
+        {
+            return child is DataGridRow row
+                ? row.Index
+                : throw new InvalidOperationException("Invalid DataGrid child");
+        }
+
+        bool IChildIndexProvider.TryGetTotalCount(out int count)
+        {
+            return OwningGrid.DataConnection.TryGetCount(false, true, out count);
+        }
+
+        internal void InvalidateChildIndex(DataGridRow row)
+        {
+            _childIndexChanged?.Invoke(this, new ChildIndexChangedEventArgs(row));
         }
 
         /// <summary>
@@ -72,7 +97,7 @@ namespace Avalonia.Controls.Primitives
 
             OwningGrid.OnFillerColumnWidthNeeded(finalSize.Width);
 
-            double rowDesiredWidth = OwningGrid.ColumnsInternal.VisibleEdgedColumnsWidth + OwningGrid.ColumnsInternal.FillerColumn.FillerWidth;
+            double rowDesiredWidth = OwningGrid.RowHeadersDesiredWidth + OwningGrid.ColumnsInternal.VisibleEdgedColumnsWidth + OwningGrid.ColumnsInternal.FillerColumn.FillerWidth;
             double topEdge = -OwningGrid.NegVerticalOffset;
             foreach (Control element in OwningGrid.DisplayData.GetScrollingElements())
             {

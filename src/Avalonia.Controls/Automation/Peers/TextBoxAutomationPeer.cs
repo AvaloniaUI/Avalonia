@@ -4,9 +4,8 @@ using System.Linq;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Automation.Peers
 {
@@ -30,7 +29,7 @@ namespace Avalonia.Automation.Peers
         public string? PlaceholderText => Owner.Watermark;
         public SupportedTextSelection SupportedTextSelection => SupportedTextSelection.Single;
 
-        int ITextPeer.LineCount => Owner.Presenter?.FormattedText.GetLines().Count() ?? 1;
+        int ITextPeer.LineCount => Owner.Presenter?.TextLayout.TextLines.Count ?? 1;
         string ITextPeer.Text => Owner.Text ?? string.Empty;
 
         public event EventHandler? SelectedRangesChanged;
@@ -62,12 +61,15 @@ namespace Avalonia.Automation.Peers
 
         public ITextRangeProvider RangeFromPoint(Point p)
         {
+            if (Owner.Presenter is null)
+                return new AutomationTextRange(this, 0, 0);
+
             var i = 0;
 
-            if (Owner.GetVisualRoot() is IVisual root &&
+            if (Owner.GetVisualRoot() is Visual root &&
                 root.TransformToVisual(Owner) is Matrix m)
             {
-                i = Owner.Presenter.GetCaretIndex(p.Transform(m));
+                i = Owner.Presenter.TextLayout.HitTestPoint(p.Transform(m)).TextPosition;
             }
 
             return new AutomationTextRange(this, i, i);
@@ -80,13 +82,13 @@ namespace Avalonia.Automation.Peers
             if (Owner.Presenter is TextPresenter presenter &&
                 presenter.TransformedBounds is TransformedBounds t)
             {
-                var source = presenter.FormattedText.HitTestTextRange(start, end - start);
+                var source = presenter.TextLayout.HitTestTextRange(start, end - start);
                 var result = new List<Rect>();
 
                 foreach (var rect in source)
                 {
                     var r = rect.TransformToAABB(t.Transform).Intersect(t.Clip);
-                    if (!r.IsEmpty)
+                    if (!r.IsDefault)
                         result.Add(r);
                 }
 
@@ -104,7 +106,7 @@ namespace Avalonia.Automation.Peers
             var l = 0;
             var c = 0;
 
-            foreach (var line in Owner.Presenter.FormattedText.GetLines())
+            foreach (var line in Owner.Presenter.TextLayout.TextLines)
             {
                 if ((c += line.Length) > charIndex)
                     return l;
@@ -116,9 +118,12 @@ namespace Avalonia.Automation.Peers
 
         int ITextPeer.LineIndex(int lineIndex)
         {
+            if (Owner.Presenter is null)
+                return 0;
+
             var c = 0;
             var l = 0;
-            var lines = Owner.Presenter.FormattedText.GetLines();            
+            var lines = Owner.Presenter.TextLayout.TextLines;            
 
             foreach (var line in lines)
             {
@@ -135,8 +140,8 @@ namespace Avalonia.Automation.Peers
             if (Owner.Presenter is null || Owner.Scroll is null)
                 return;
 
-            var rects = Owner.Presenter.FormattedText.HitTestTextRange(start, end - start);
-            var rect = Rect.Empty;
+            var rects = Owner.Presenter.TextLayout.HitTestTextRange(start, end - start);
+            var rect = default(Rect);
 
             foreach (var r in rects)
                 rect = rect.Union(r);

@@ -2,17 +2,17 @@ using System;
 using System.Linq;
 using Avalonia.Logging;
 using Avalonia.OpenGL;
+using Avalonia.Platform;
 
 namespace Avalonia.Win32.OpenGl
 {
-    class WglPlatformOpenGlInterface : IPlatformOpenGlInterface
+    class WglPlatformOpenGlInterface : IPlatformGraphics
     {
         public WglContext PrimaryContext { get; }
-        IGlContext IPlatformOpenGlInterface.PrimaryContext => PrimaryContext;
-        public IGlContext CreateSharedContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, PrimaryContext);
-
-        public bool CanShareContexts => true;
-        public bool CanCreateContexts => true;
+        public bool UsesSharedContext => false;
+        IPlatformGraphicsContext IPlatformGraphics.CreateContext() => CreateContext();
+        public IPlatformGraphicsContext GetSharedContext() => throw new NotSupportedException();
+        
         public IGlContext CreateContext() => WglDisplay.CreateContext(new[] { PrimaryContext.Version }, null);
 
         private  WglPlatformOpenGlInterface(WglContext primary)

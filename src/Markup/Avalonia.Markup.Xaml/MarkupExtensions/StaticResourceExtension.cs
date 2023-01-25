@@ -34,40 +34,39 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
                 _ => null,
             };
 
-            if (provideTarget.TargetObject is Setter setter)
+            if (provideTarget.TargetObject is Setter { Property: not null } setter)
             {
                 targetType = setter.Property.PropertyType;
             }
-
-            // Look upwards though the ambient context for IResourceHosts and IResourceProviders
+            
+            // Look upwards though the ambient context for IResourceNodes
             // which might be able to give us the resource.
-            foreach (var e in stack.Parents)
+            foreach (var parent in stack.Parents)
             {
-                object value;
-
-                if (e is IResourceHost host && host.TryGetResource(ResourceKey, out value))
-                {
-                    return ColorToBrushConverter.Convert(value, targetType);
-                }
-                else if (e is IResourceProvider provider && provider.TryGetResource(ResourceKey, out value))
+                if (parent is IResourceNode node && node.TryGetResource(ResourceKey, out var value))
                 {
                     return ColorToBrushConverter.Convert(value, targetType);
                 }
             }
 
-            if (provideTarget.TargetObject is IControl target &&
+            if (provideTarget.TargetObject is Control target &&
                 provideTarget.TargetProperty is PropertyInfo property)
             {
-                DelayedBinding.Add(target, property, x => GetValue(x, targetType));
+                // This is stored locally to avoid allocating closure in the outer scope.
+                var localTargetType = targetType;
+                var localInstance = this;
+                
+                DelayedBinding.Add(target, property, x => localInstance.GetValue(x, localTargetType));
                 return AvaloniaProperty.UnsetValue;
             }
 
             throw new KeyNotFoundException($"Static resource '{ResourceKey}' not found.");
         }
 
-        private object GetValue(IStyledElement control, Type targetType)
+        private object GetValue(StyledElement control, Type targetType)
         {
             return ColorToBrushConverter.Convert(control.FindResource(ResourceKey), targetType);
         }
     }
 }
+

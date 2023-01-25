@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Xml.Linq;
 using Avalonia.Controls.Generators;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
@@ -12,8 +13,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-
-#nullable enable
 
 namespace Avalonia.Controls.Primitives
 {
@@ -96,7 +95,7 @@ namespace Avalonia.Controls.Primitives
         /// Defines the <see cref="IsTextSearchEnabled"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> IsTextSearchEnabledProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(IsTextSearchEnabled), false);
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(IsTextSearchEnabled), false);
 
         /// <summary>
         /// Event that should be raised by items that implement <see cref="ISelectable"/> to
@@ -113,10 +112,14 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public static readonly RoutedEvent<SelectionChangedEventArgs> SelectionChangedEvent =
             RoutedEvent.Register<SelectingItemsControl, SelectionChangedEventArgs>(
-                "SelectionChanged",
+                nameof(SelectionChanged),
                 RoutingStrategies.Bubble);
 
-        private static readonly IList Empty = Array.Empty<object>();
+        /// <summary>
+        /// Defines the <see cref="WrapSelection"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> WrapSelectionProperty =
+            AvaloniaProperty.Register<SelectingItemsControl, bool>(nameof(WrapSelection), defaultValue: false);
         private string _textSearchTerm = string.Empty;
         private DispatcherTimer? _textSearchTimer;
         private ISelectionModel? _selection;
@@ -138,7 +141,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Occurs when the control's selection changes.
         /// </summary>
-        public event EventHandler<SelectionChangedEventArgs> SelectionChanged
+        public event EventHandler<SelectionChangedEventArgs>? SelectionChanged
         {
             add { AddHandler(SelectionChangedEvent, value); }
             remove { RemoveHandler(SelectionChangedEvent, value); }
@@ -288,11 +291,11 @@ namespace Avalonia.Controls.Primitives
                             "collection is different to the Items on the control.");
                     }
 
-                    var oldSelection = _selection?.SelectedItems.ToList();
+                    var oldSelection = _selection?.SelectedItems.ToArray();
                     DeinitializeSelectionModel(_selection);
                     _selection = value;
 
-                    if (oldSelection?.Count > 0)
+                    if (oldSelection?.Length > 0)
                     {
                         RaiseEvent(new SelectionChangedEventArgs(
                             SelectionChangedEvent,
@@ -321,6 +324,16 @@ namespace Avalonia.Controls.Primitives
         {
             get { return GetValue(IsTextSearchEnabledProperty); }
             set { SetValue(IsTextSearchEnabledProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets a value which indicates whether to wrap around when the first
+        /// or last item is reached.
+        /// </summary>
+        public bool WrapSelection
+        {
+            get { return GetValue(WrapSelectionProperty); }
+            set { SetValue(WrapSelectionProperty, value); }
         }
 
         /// <summary>
@@ -365,19 +378,19 @@ namespace Avalonia.Controls.Primitives
         /// Scrolls the specified item into view.
         /// </summary>
         /// <param name="item">The item.</param>
-        public void ScrollIntoView(object item) => ScrollIntoView(IndexOf(Items, item));
+        public void ScrollIntoView(object item) => ScrollIntoView(ItemsView.IndexOf(item));
 
         /// <summary>
         /// Tries to get the container that was the source of an event.
         /// </summary>
         /// <param name="eventSource">The control that raised the event.</param>
         /// <returns>The container or null if the event did not originate in a container.</returns>
-        protected IControl? GetContainerFromEventSource(IInteractive? eventSource)
+        protected Control? GetContainerFromEventSource(object? eventSource)
         {
-            for (var current = eventSource as IVisual; current != null; current = current.VisualParent)
+            for (var current = eventSource as Visual; current != null; current = current.VisualParent)
             {
-                if (current is IControl control && control.LogicalParent == this &&
-                    ItemContainerGenerator?.IndexFromContainer(control) != -1)
+                if (current is Control control && control.Parent == this &&
+                    IndexFromContainer(control) != -1)
                 {
                     return control;
                 }
@@ -386,9 +399,9 @@ namespace Avalonia.Controls.Primitives
             return null;
         }
 
-        protected override void ItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            base.ItemsCollectionChanged(sender, e);
+            base.ItemsCollectionChanged(sender!, e);
 
             if (AlwaysSelected && SelectedIndex == -1 && ItemCount > 0)
             {
@@ -406,7 +419,7 @@ namespace Avalonia.Controls.Primitives
         {
             base.OnApplyTemplate(e);
 
-            void ExecuteScrollWhenLayoutUpdated(object sender, EventArgs e)
+            void ExecuteScrollWhenLayoutUpdated(object? sender, EventArgs e)
             {
                 LayoutUpdated -= ExecuteScrollWhenLayoutUpdated;
                 AutoScrollToSelectedItemIfNecessary();
@@ -418,56 +431,40 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
         {
-            base.OnContainersMaterialized(e);
+            base.PrepareContainerForItemOverride(element, item, index);
 
-            foreach (var container in e.Containers)
+            if ((element as ISelectable)?.IsSelected == true)
             {
-                if ((container.ContainerControl as ISelectable)?.IsSelected == true)
-                {
-                    Selection.Select(container.Index);
-                    MarkContainerSelected(container.ContainerControl, true);
-                }
-                else
-                {
-                    var selected = Selection.IsSelected(container.Index);
-                    MarkContainerSelected(container.ContainerControl, selected);
-                }
+                Selection.Select(index);
+                MarkContainerSelected(element, true);
+            }
+            else
+            {
+                var selected = Selection.IsSelected(index);
+                MarkContainerSelected(element, selected);
             }
         }
 
-        /// <inheritdoc/>
-        protected override void OnContainersDematerialized(ItemContainerEventArgs e)
+        protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
         {
-            base.OnContainersDematerialized(e);
-
-            var panel = (InputElement)Presenter.Panel;
-
-            if (panel != null)
-            {
-                foreach (var container in e.Containers)
-                {
-                    if (KeyboardNavigation.GetTabOnceActiveElement(panel) == container.ContainerControl)
-                    {
-                        KeyboardNavigation.SetTabOnceActiveElement(panel, null);
-                        break;
-                    }
-                }
-            }
+            base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
+            MarkContainerSelected(container, Selection.IsSelected(newIndex));
         }
 
-        protected override void OnContainersRecycled(ItemContainerEventArgs e)
+        protected internal override void ClearContainerForItemOverride(Control element)
         {
-            foreach (var i in e.Containers)
+            base.ClearContainerForItemOverride(element);
+
+            if (Presenter?.Panel is InputElement panel && 
+                KeyboardNavigation.GetTabOnceActiveElement(panel) == element)
             {
-                if (i.ContainerControl != null && i.Item != null)
-                {
-                    bool selected = Selection.IsSelected(i.Index);
-                    MarkContainerSelected(i.ContainerControl, selected);
-                }
+                KeyboardNavigation.SetTabOnceActiveElement(panel, null);
             }
+
+            if (element is ISelectable selectable)
+                MarkContainerSelected(element, false);
         }
 
         /// <inheritdoc/>
@@ -489,12 +486,16 @@ namespace Avalonia.Controls.Primitives
         /// enabled.
         /// </summary>
         /// <param name="property">The property.</param>
-        /// <param name="value">The new binding value for the property.</param>
-        protected override void UpdateDataValidation<T>(AvaloniaProperty<T> property, BindingValue<T> value)
+        /// <param name="state">The current data binding state.</param>
+        /// <param name="error">The current data binding error, if any.</param>
+        protected override void UpdateDataValidation(
+            AvaloniaProperty property,
+            BindingValueType state,
+            Exception? error)
         {
             if (property == SelectedItemProperty)
             {
-                DataValidationErrors.SetError(this, value.Error);
+                DataValidationErrors.SetError(this, error);
             }
         }
         
@@ -519,15 +520,27 @@ namespace Avalonia.Controls.Primitives
 
                 _textSearchTerm += e.Text;
 
-                bool match(ItemContainerInfo info) =>
-                    info.ContainerControl is IContentControl control &&
-                    control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
-
-                var info = ItemContainerGenerator.Containers.FirstOrDefault(match);
-
-                if (info != null)
+                bool Match(Control container)
                 {
-                    SelectedIndex = info.Index;
+                    if (container is AvaloniaObject ao && ao.IsSet(TextSearch.TextProperty))
+                    {
+                        var searchText = ao.GetValue(TextSearch.TextProperty);
+
+                        if (searchText?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            return true;
+                        }
+                    }
+
+                    return container is IContentControl control &&
+                           control.Content?.ToString()?.StartsWith(_textSearchTerm, StringComparison.OrdinalIgnoreCase) == true;
+                }
+
+                var container = GetRealizedContainers().FirstOrDefault(Match);
+
+                if (container != null)
+                {
+                    SelectedIndex = IndexFromContainer(container);
                 }
 
                 StartTextSearchTimer();
@@ -545,6 +558,10 @@ namespace Avalonia.Controls.Primitives
             if (!e.Handled)
             {
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
+
+                if (keymap is null)
+                    return;
+
                 bool Match(List<KeyGesture> gestures) => gestures.Any(g => g.Matches(e));
 
                 if (ItemCount > 0 &&
@@ -554,10 +571,18 @@ namespace Avalonia.Controls.Primitives
                     Selection.SelectAll();
                     e.Handled = true;
                 }
+                else if (e.Key == Key.Space || e.Key == Key.Enter)
+                {
+                    UpdateSelectionFromEventSource(
+                          e.Source,
+                          true,
+                          e.KeyModifiers.HasFlag(KeyModifiers.Shift),
+                          e.KeyModifiers.HasFlag(KeyModifiers.Control));
+                }
             }
         }
 
-        protected override void OnPropertyChanged<T>(AvaloniaPropertyChangedEventArgs<T> change)
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
 
@@ -567,7 +592,7 @@ namespace Avalonia.Controls.Primitives
             }
             if (change.Property == ItemsProperty && _updateState is null && _selection is object)
             {
-                var newValue = change.NewValue.GetValueOrDefault<IEnumerable>();
+                var newValue = change.GetNewValue<IEnumerable>();
                 _selection.Source = newValue;
 
                 if (newValue is null)
@@ -577,8 +602,12 @@ namespace Avalonia.Controls.Primitives
             }
             else if (change.Property == SelectionModeProperty && _selection is object)
             {
-                var newValue = change.NewValue.GetValueOrDefault<SelectionMode>();
+                var newValue = change.GetNewValue<SelectionMode>();
                 _selection.SingleSelect = !newValue.HasAllFlags(SelectionMode.Multiple);
+            }
+            else if (change.Property == WrapSelectionProperty)
+            {
+                WrapFocus = WrapSelection;
             }
         }
 
@@ -590,7 +619,7 @@ namespace Avalonia.Controls.Primitives
         /// <returns>True if the selection was moved; otherwise false.</returns>
         protected bool MoveSelection(NavigationDirection direction, bool wrap)
         {
-            var from = SelectedIndex != -1 ? ItemContainerGenerator.ContainerFromIndex(SelectedIndex) : null;
+            var from = SelectedIndex != -1 ? ContainerFromIndex(SelectedIndex) : null;
             return MoveSelection(from, direction, wrap);
         }
 
@@ -601,12 +630,12 @@ namespace Avalonia.Controls.Primitives
         /// <param name="direction">The direction to move.</param>
         /// <param name="wrap">Whether to wrap when the selection reaches the first or last item.</param>
         /// <returns>True if the selection was moved; otherwise false.</returns>
-        protected bool MoveSelection(IControl? from, NavigationDirection direction, bool wrap)
+        protected bool MoveSelection(Control? from, NavigationDirection direction, bool wrap)
         {
             if (Presenter?.Panel is INavigableContainer container &&
-                GetNextControl(container, direction, from, wrap) is IControl next)
+                GetNextControl(container, direction, from, wrap) is Control next)
             {
-                var index = ItemContainerGenerator.IndexFromContainer(next);
+                var index = IndexFromContainer(next);
 
                 if (index != -1)
                 {
@@ -626,12 +655,14 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
+        /// <param name="fromFocus">Wheter the event is a focus event</param>
         protected void UpdateSelection(
             int index,
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
-            bool rightButton = false)
+            bool rightButton = false,
+            bool fromFocus = false)
         {
             if (index < 0 || index >= ItemCount)
             {
@@ -660,22 +691,25 @@ namespace Avalonia.Controls.Primitives
                 Selection.Clear();
                 Selection.SelectRange(Selection.AnchorIndex, index);
             }
-            else if (multi && toggle)
+            else if (!fromFocus && toggle)
             {
-                if (Selection.IsSelected(index) == true)
+                if (multi)
                 {
-                    Selection.Deselect(index);
+                    if (Selection.IsSelected(index) == true)
+                    {
+                        Selection.Deselect(index);
+                    }
+                    else
+                    {
+                        Selection.Select(index);
+                    }
                 }
                 else
                 {
-                    Selection.Select(index);
+                    SelectedIndex = (SelectedIndex == index) ? -1 : index;
                 }
             }
-            else if (toggle)
-            {
-                SelectedIndex = (SelectedIndex == index) ? -1 : index;
-            }
-            else
+            else if (!toggle)
             {
                 using var operation = Selection.BatchUpdate();
                 Selection.Clear();
@@ -684,7 +718,7 @@ namespace Avalonia.Controls.Primitives
 
             if (Presenter?.Panel != null)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(index);
+                var container = ContainerFromIndex(index);
                 KeyboardNavigation.SetTabOnceActiveElement(
                     (InputElement)Presenter.Panel,
                     container);
@@ -699,18 +733,20 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
+        /// <param name="fromFocus">Wheter the event is a focus event</param>
         protected void UpdateSelection(
-            IControl container,
+            Control container,
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
-            bool rightButton = false)
+            bool rightButton = false,
+            bool fromFocus = false)
         {
-            var index = ItemContainerGenerator?.IndexFromContainer(container) ?? -1;
+            var index = IndexFromContainer(container);
 
             if (index != -1)
             {
-                UpdateSelection(index, select, rangeModifier, toggleModifier, rightButton);
+                UpdateSelection(index, select, rangeModifier, toggleModifier, rightButton, fromFocus);
             }
         }
 
@@ -723,22 +759,24 @@ namespace Avalonia.Controls.Primitives
         /// <param name="rangeModifier">Whether the range modifier is enabled (i.e. shift key).</param>
         /// <param name="toggleModifier">Whether the toggle modifier is enabled (i.e. ctrl key).</param>
         /// <param name="rightButton">Whether the event is a right-click.</param>
+        /// <param name="fromFocus">Wheter the event is a focus event</param>
         /// <returns>
         /// True if the event originated from a container that belongs to the control; otherwise
         /// false.
         /// </returns>
         protected bool UpdateSelectionFromEventSource(
-            IInteractive? eventSource,
+            object? eventSource,
             bool select = true,
             bool rangeModifier = false,
             bool toggleModifier = false,
-            bool rightButton = false)
+            bool rightButton = false,
+            bool fromFocus = false)
         {
             var container = GetContainerFromEventSource(eventSource);
 
             if (container != null)
             {
-                UpdateSelection(container, select, rangeModifier, toggleModifier, rightButton);
+                UpdateSelection(container, select, rangeModifier, toggleModifier, rightButton, fromFocus);
                 return true;
             }
 
@@ -751,7 +789,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnSelectionModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void OnSelectionModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(ISelectionModel.AnchorIndex))
             {
@@ -785,11 +823,11 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnSelectionModelSelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
+        private void OnSelectionModelSelectionChanged(object? sender, SelectionModelSelectionChangedEventArgs e)
         {
             void Mark(int index, bool selected)
             {
-                var container = ItemContainerGenerator.ContainerFromIndex(index);
+                var container = ContainerFromIndex(index);
 
                 if (container != null)
                 {
@@ -813,8 +851,8 @@ namespace Avalonia.Controls.Primitives
             {
                 var ev = new SelectionChangedEventArgs(
                     SelectionChangedEvent,
-                    e.DeselectedItems.ToList(),
-                    e.SelectedItems.ToList());
+                    e.DeselectedItems.ToArray(),
+                    e.SelectedItems.ToArray());
                 RaiseEvent(ev);
             }
         }
@@ -825,7 +863,7 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnSelectionModelLostSelection(object sender, EventArgs e)
+        private void OnSelectionModelLostSelection(object? sender, EventArgs e)
         {
             if (AlwaysSelected && Items is object)
             {
@@ -839,7 +877,7 @@ namespace Avalonia.Controls.Primitives
                 !_hasScrolledToSelectedItem &&
                 Presenter is object &&
                 Selection.AnchorIndex >= 0 &&
-                ((IVisual)this).IsAttachedToVisualTree)
+                IsAttachedToVisualTree)
             {
                 ScrollIntoView(Selection.AnchorIndex);
                 _hasScrolledToSelectedItem = true;
@@ -853,10 +891,10 @@ namespace Avalonia.Controls.Primitives
         private void ContainerSelectionChanged(RoutedEventArgs e)
         {
             if (!_ignoreContainerSelectionChanged &&
-                e.Source is IControl control &&
+                e.Source is Control control &&
                 e.Source is ISelectable selectable &&
-                control.LogicalParent == this &&
-                ItemContainerGenerator?.IndexFromContainer(control) != -1)
+                control.Parent == this &&
+                IndexFromContainer(control) != -1)
             {
                 UpdateSelection(control, selectable.IsSelected);
             }
@@ -873,7 +911,7 @@ namespace Avalonia.Controls.Primitives
         /// <param name="container">The container.</param>
         /// <param name="selected">Whether the control is selected</param>
         /// <returns>The previous selection state.</returns>
-        private bool MarkContainerSelected(IControl container, bool selected)
+        private bool MarkContainerSelected(Control container, bool selected)
         {
             try
             {
@@ -902,13 +940,13 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateContainerSelection()
         {
-            if (Presenter?.Panel is IPanel panel)
+            if (Presenter?.Panel is Panel panel)
             {
                 foreach (var container in panel.Children)
                 {
                     MarkContainerSelected(
                         container,
-                        Selection.IsSelected(ItemContainerGenerator.IndexFromContainer(container)));
+                        Selection.IsSelected(IndexFromContainer(container)));
                 }
             }
         }
@@ -956,7 +994,7 @@ namespace Avalonia.Controls.Primitives
                 RaiseEvent(new SelectionChangedEventArgs(
                     SelectionChangedEvent,
                     Array.Empty<object>(),
-                    Selection.SelectedItems.ToList()));
+                    Selection.SelectedItems.ToArray()));
             }
         }
 
@@ -1030,7 +1068,7 @@ namespace Avalonia.Controls.Primitives
             _textSearchTimer = null;
         }
 
-        private void TextSearchTimer_Tick(object sender, EventArgs e)
+        private void TextSearchTimer_Tick(object? sender, EventArgs e)
         {
             _textSearchTerm = string.Empty;
             StopTextSearchTimer();

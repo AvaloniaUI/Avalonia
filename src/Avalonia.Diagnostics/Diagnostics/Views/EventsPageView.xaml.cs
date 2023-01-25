@@ -19,7 +19,7 @@ namespace Avalonia.Diagnostics.Views
         public EventsPageView()
         {
             InitializeComponent();
-            _events = this.FindControl<ListBox>("EventsList");
+            _events = this.GetControl<ListBox>("EventsList");
         }
 
         public void NavigateTo(object sender, TappedEventArgs e)

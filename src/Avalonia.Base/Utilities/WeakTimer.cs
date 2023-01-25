@@ -23,8 +23,7 @@ namespace Avalonia.Utilities
 
         private void OnTick()
         {
-            IWeakTimerSubscriber subscriber;
-            if (!_subscriber.TryGetTarget(out subscriber) || !subscriber.Tick())
+            if (!_subscriber.TryGetTarget(out var subscriber) || !subscriber.Tick())
                 Stop();
         }
 

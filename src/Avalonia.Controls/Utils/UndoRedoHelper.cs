@@ -1,9 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Utils
 {
@@ -14,19 +9,25 @@ namespace Avalonia.Controls.Utils
         public interface IUndoRedoHost
         {
             TState UndoRedoState { get; set; }
+
+            void OnUndoStackChanged();
+
+            void OnRedoStackChanged();
         }
-
-
 
         private readonly LinkedList<TState> _states = new LinkedList<TState>();
 
-        private LinkedListNode<TState> _currentNode;
+        private LinkedListNode<TState>? _currentNode;
 
         /// <summary>
         /// Maximum number of states this helper can store for undo/redo.
         /// If -1, no limit is imposed.
         /// </summary>
         public int Limit { get; set; } = 10;
+
+        public bool CanUndo => _currentNode?.Previous != null;
+
+        public bool CanRedo => _currentNode?.Next != null;
 
         public UndoRedoHelper(IUndoRedoHost host)
         {
@@ -39,22 +40,25 @@ namespace Avalonia.Controls.Utils
             {
                 _currentNode = _currentNode.Previous;
                 _host.UndoRedoState = _currentNode.Value;
+                _host.OnUndoStackChanged();
+                _host.OnRedoStackChanged();
             }
         }
 
         public bool IsLastState => _currentNode != null && _currentNode.Next == null;
 
-        public bool TryGetLastState(out TState _state)
+        public bool TryGetLastState(out TState? _state)
         {
-            _state = default(TState);
+            _state = default;
             if (!IsLastState)
                 return false;
 
-            _state = _currentNode.Value;
+            _state = _currentNode!.Value;
             return true;
         }
 
         public bool HasState => _currentNode != null;
+
         public void UpdateLastState(TState state)
         {
             if (_states.Last != null)
@@ -72,6 +76,8 @@ namespace Avalonia.Controls.Utils
         {
             while (_currentNode?.Next != null)
                 _states.Remove(_currentNode.Next);
+
+            _host.OnRedoStackChanged();
         }
 
         public void Redo()
@@ -80,13 +86,15 @@ namespace Avalonia.Controls.Utils
             {
                 _currentNode = _currentNode.Next;
                 _host.UndoRedoState = _currentNode.Value;
+                _host.OnRedoStackChanged();
+                _host.OnUndoStackChanged();
             }
         }
 
         public void Snapshot()
         {
             var current = _host.UndoRedoState;
-            if (_currentNode == null || !_currentNode.Value.Equals(current))
+            if (_currentNode == null || !_currentNode.Value!.Equals(current))
             {
                 if (_currentNode?.Next != null)
                     DiscardRedo();
@@ -94,6 +102,9 @@ namespace Avalonia.Controls.Utils
                 _currentNode = _states.Last;
                 if (Limit != -1 && _states.Count > Limit)
                     _states.RemoveFirst();
+
+                _host.OnUndoStackChanged();
+                _host.OnRedoStackChanged();
             }
         }
 
@@ -101,6 +112,9 @@ namespace Avalonia.Controls.Utils
         {
             _states.Clear();
             _currentNode = null;
+
+            _host.OnUndoStackChanged();
+            _host.OnRedoStackChanged();
         }
     }
 }

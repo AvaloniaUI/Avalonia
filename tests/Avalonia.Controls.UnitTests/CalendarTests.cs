@@ -15,7 +15,7 @@ namespace Avalonia.Controls.UnitTests
                 first.Day == second.Day;
         }
 
-        [Fact(Skip ="FIX ME ASAP")]
+        [Fact]
         public void SelectedDatesChanged_Should_Fire_When_SelectedDate_Set()
         {
             bool handled = false;

@@ -9,11 +9,15 @@ namespace Avalonia.Controls
     /// <summary>
     /// A Toggle Switch control.
     /// </summary>
+    [TemplatePart("PART_MovingKnobs",         typeof(Panel))]
+    [TemplatePart("PART_OffContentPresenter", typeof(ContentPresenter))]
+    [TemplatePart("PART_OnContentPresenter",  typeof(ContentPresenter))]
+    [TemplatePart("PART_SwitchKnob",          typeof(Panel))]
     [PseudoClasses(":dragging")]
     public class ToggleSwitch : ToggleButton
     {
-        private Panel _knobsPanel;
-        private Panel _switchKnob;
+        private Panel? _knobsPanel;
+        private Panel? _switchKnob;
         private bool _knobsPanelPressed = false;
         private Point _switchStartPoint = new Point();
         private double _initLeft = -1;
@@ -43,31 +47,31 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="OffContent"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> OffContentProperty =
-         AvaloniaProperty.Register<ToggleSwitch, object>(nameof(OffContent), defaultValue: "Off");
+        public static readonly StyledProperty<object?> OffContentProperty =
+         AvaloniaProperty.Register<ToggleSwitch, object?>(nameof(OffContent), defaultValue: "Off");
 
         /// <summary>
         /// Defines the <see cref="OffContentTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> OffContentTemplateProperty =
-            AvaloniaProperty.Register<ToggleSwitch, IDataTemplate>(nameof(OffContentTemplate));
+        public static readonly StyledProperty<IDataTemplate?> OffContentTemplateProperty =
+            AvaloniaProperty.Register<ToggleSwitch, IDataTemplate?>(nameof(OffContentTemplate));
 
         /// <summary>
         /// Defines the <see cref="OnContent"/> property.
         /// </summary>
-        public static readonly StyledProperty<object> OnContentProperty =
-            AvaloniaProperty.Register<ToggleSwitch, object>(nameof(OnContent), defaultValue: "On");
+        public static readonly StyledProperty<object?> OnContentProperty =
+            AvaloniaProperty.Register<ToggleSwitch, object?>(nameof(OnContent), defaultValue: "On");
 
         /// <summary>
         /// Defines the <see cref="OnContentTemplate"/> property.
         /// </summary>
-        public static readonly StyledProperty<IDataTemplate> OnContentTemplateProperty =
-            AvaloniaProperty.Register<ToggleSwitch, IDataTemplate>(nameof(OnContentTemplate));
+        public static readonly StyledProperty<IDataTemplate?> OnContentTemplateProperty =
+            AvaloniaProperty.Register<ToggleSwitch, IDataTemplate?>(nameof(OnContentTemplate));
 
         /// <summary>
         /// Gets or Sets the Content that is displayed when in the On State.
         /// </summary>
-        public object OnContent
+        public object? OnContent
         {
             get { return GetValue(OnContentProperty); }
             set { SetValue(OnContentProperty, value); }
@@ -76,19 +80,19 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or Sets the Content that is displayed when in the Off State.
         /// </summary>
-        public object OffContent
+        public object? OffContent
         {
             get { return GetValue(OffContentProperty); }
             set { SetValue(OffContentProperty, value); }
         }
 
-        public IContentPresenter OffContentPresenter
+        public IContentPresenter? OffContentPresenter
         {
             get;
             private set;
         }
 
-        public IContentPresenter OnContentPresenter
+        public IContentPresenter? OnContentPresenter
         {
             get;
             private set;
@@ -97,7 +101,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or Sets the <see cref="IDataTemplate"/> used to display the <see cref="OffContent"/>.
         /// </summary>
-        public IDataTemplate OffContentTemplate
+        public IDataTemplate? OffContentTemplate
         {
             get { return GetValue(OffContentTemplateProperty); }
             set { SetValue(OffContentTemplateProperty, value); }
@@ -106,7 +110,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or Sets the <see cref="IDataTemplate"/> used to display the <see cref="OnContent"/>.
         /// </summary>
-        public IDataTemplate OnContentTemplate
+        public IDataTemplate? OnContentTemplate
         {
             get { return GetValue(OnContentTemplateProperty); }
             set { SetValue(OnContentTemplateProperty, value); }
@@ -161,8 +165,8 @@ namespace Avalonia.Controls
         {
             base.OnApplyTemplate(e);
 
-            _switchKnob = e.NameScope.Find<Panel>("SwitchKnob");
-            _knobsPanel = e.NameScope.Find<Panel>("MovingKnobs");
+            _switchKnob = e.NameScope.Find<Panel>("PART_SwitchKnob");
+            _knobsPanel = e.NameScope.Get<Panel>("PART_MovingKnobs");
             
             _knobsPanel.PointerPressed += KnobsPanel_PointerPressed;
             _knobsPanel.PointerReleased += KnobsPanel_PointerReleased;
@@ -174,20 +178,20 @@ namespace Avalonia.Controls
             }
         }
         
-        private void KnobsPanel_PointerPressed(object sender, Input.PointerPressedEventArgs e)
+        private void KnobsPanel_PointerPressed(object? sender, Input.PointerPressedEventArgs e)
         {
             _switchStartPoint = e.GetPosition(_switchKnob);
-            _initLeft = Canvas.GetLeft(_knobsPanel);
+            _initLeft = Canvas.GetLeft(_knobsPanel!);
             _isDragging = false;
             _knobsPanelPressed = true;
         }
 
-        private void KnobsPanel_PointerReleased(object sender, Input.PointerReleasedEventArgs e)
+        private void KnobsPanel_PointerReleased(object? sender, Input.PointerReleasedEventArgs e)
         {
             if (_isDragging)
             {
-                bool shouldBecomeChecked = Canvas.GetLeft(_knobsPanel) >= (_switchKnob.Bounds.Width / 2);
-                _knobsPanel.ClearValue(Canvas.LeftProperty);
+                bool shouldBecomeChecked = Canvas.GetLeft(_knobsPanel!) >= (_switchKnob!.Bounds.Width / 2);
+                _knobsPanel!.ClearValue(Canvas.LeftProperty);
 
                 PseudoClasses.Set(":dragging", false);
 
@@ -210,7 +214,7 @@ namespace Avalonia.Controls
             _knobsPanelPressed = false;
         }
 
-        private void KnobsPanel_PointerMoved(object sender, Input.PointerEventArgs e)
+        private void KnobsPanel_PointerMoved(object? sender, Input.PointerEventArgs e)
         {
             if (_knobsPanelPressed)
             {
@@ -224,7 +228,7 @@ namespace Avalonia.Controls
 
                 if (_isDragging)
                 {
-                    Canvas.SetLeft(_knobsPanel, System.Math.Min(_switchKnob.Bounds.Width, System.Math.Max(0, (_initLeft + difference.X))));
+                    Canvas.SetLeft(_knobsPanel!, System.Math.Min(_switchKnob!.Bounds.Width, System.Math.Max(0, (_initLeft + difference.X))));
                 }
             }
         }

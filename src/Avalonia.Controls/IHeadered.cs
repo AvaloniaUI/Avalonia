@@ -8,6 +8,6 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or set the header.
         /// </summary>
-        object Header { get; set; }
+        object? Header { get; set; }
     }
 }

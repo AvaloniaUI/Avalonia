@@ -5,9 +5,8 @@ using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Shared.PlatformSupport;
 using Avalonia.Styling;
-using Avalonia.Themes.Default;
+using Avalonia.Themes.Simple;
 using Avalonia.Rendering;
 using System.Reactive.Concurrency;
 using System.Collections.Generic;
@@ -21,11 +20,10 @@ namespace Avalonia.UnitTests
     {
         public static readonly TestServices StyledWindow = new TestServices(
             assetLoader: new AssetLoader(),
-            platform: new AppBuilder().RuntimePlatform,
+            platform: new StandardRuntimePlatform(),
             renderInterface: new MockPlatformRenderInterface(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            styler: new Styler(),
-            theme: () => CreateDefaultTheme(),
+            theme: () => CreateSimpleTheme(),
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true),
             fontManagerImpl: new MockFontManagerImpl(),
             textShaperImpl: new MockTextShaperImpl(),
@@ -40,9 +38,6 @@ namespace Avalonia.UnitTests
         public static readonly TestServices MockPlatformWrapper = new TestServices(
             platform: Mock.Of<IRuntimePlatform>());
 
-        public static readonly TestServices MockStyler = new TestServices(
-            styler: Mock.Of<IStyler>());
-
         public static readonly TestServices MockThreadingInterface = new TestServices(
             threadingInterface: Mock.Of<IPlatformThreadingInterface>(x => x.CurrentThreadIsLoopThread == true));
 
@@ -53,11 +48,18 @@ namespace Avalonia.UnitTests
             focusManager: new FocusManager(),
             keyboardDevice: () => new KeyboardDevice(),
             keyboardNavigation: new KeyboardNavigationHandler(),
-            inputManager: new InputManager());
+            inputManager: new InputManager(),
+            assetLoader: new AssetLoader(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new MockFontManagerImpl(),
+            textShaperImpl: new MockTextShaperImpl());
 
-        public static readonly TestServices RealStyler = new TestServices(
-            styler: new Styler());
-
+        public static readonly TestServices TextServices = new TestServices(
+            assetLoader: new AssetLoader(),
+            renderInterface: new MockPlatformRenderInterface(),
+            fontManagerImpl: new HarfBuzzFontManagerImpl(),
+            textShaperImpl: new HarfBuzzTextShaperImpl());
+        
         public TestServices(
             IAssetLoader assetLoader = null,
             IFocusManager focusManager = null,
@@ -69,10 +71,8 @@ namespace Avalonia.UnitTests
             IRuntimePlatform platform = null,
             IPlatformRenderInterface renderInterface = null,
             IRenderTimer renderLoop = null,
-            IScheduler scheduler = null,
             ICursorFactory standardCursorFactory = null,
-            IStyler styler = null,
-            Func<Styles> theme = null,
+            Func<IStyle> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
             IFontManagerImpl fontManagerImpl = null,
             ITextShaperImpl textShaperImpl = null,
@@ -90,9 +90,7 @@ namespace Avalonia.UnitTests
             RenderInterface = renderInterface;
             FontManagerImpl = fontManagerImpl;
             TextShaperImpl = textShaperImpl;
-            Scheduler = scheduler;
             StandardCursorFactory = standardCursorFactory;
-            Styler = styler;
             Theme = theme;
             ThreadingInterface = threadingInterface;
             WindowImpl = windowImpl;
@@ -110,10 +108,8 @@ namespace Avalonia.UnitTests
         public IPlatformRenderInterface RenderInterface { get; }
         public IFontManagerImpl FontManagerImpl { get; }
         public ITextShaperImpl TextShaperImpl { get; }
-        public IScheduler Scheduler { get; }
         public ICursorFactory StandardCursorFactory { get; }
-        public IStyler Styler { get; }
-        public Func<Styles> Theme { get; }
+        public Func<IStyle> Theme { get; }
         public IPlatformThreadingInterface ThreadingInterface { get; }
         public IWindowImpl WindowImpl { get; }
         public IWindowingPlatform WindowingPlatform { get; }
@@ -131,8 +127,7 @@ namespace Avalonia.UnitTests
             IRenderTimer renderLoop = null,
             IScheduler scheduler = null,
             ICursorFactory standardCursorFactory = null,
-            IStyler styler = null,
-            Func<Styles> theme = null,
+            Func<IStyle> theme = null,
             IPlatformThreadingInterface threadingInterface = null,
             IFontManagerImpl fontManagerImpl = null,
             ITextShaperImpl textShaperImpl = null,
@@ -151,54 +146,23 @@ namespace Avalonia.UnitTests
                 renderInterface: renderInterface ?? RenderInterface,
                 fontManagerImpl: fontManagerImpl ?? FontManagerImpl,
                 textShaperImpl: textShaperImpl ?? TextShaperImpl,
-                scheduler: scheduler ?? Scheduler,
                 standardCursorFactory: standardCursorFactory ?? StandardCursorFactory,
-                styler: styler ?? Styler,
                 theme: theme ?? Theme,
                 threadingInterface: threadingInterface ?? ThreadingInterface,
                 windowingPlatform: windowingPlatform ?? WindowingPlatform,
                 windowImpl: windowImpl ?? WindowImpl);
         }
 
-        private static Styles CreateDefaultTheme()
+        private static IStyle CreateSimpleTheme()
         {
-            var result = new Styles
-            {
-                new DefaultTheme(),
-            };
-
-            var baseLight = (IStyle)AvaloniaXamlLoader.Load(
-                new Uri("resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"));
-            result.Add(baseLight);
-
-            return result;
+            return new SimpleTheme { Mode = SimpleThemeMode.Light };
         }
 
         private static IPlatformRenderInterface CreateRenderInterfaceMock()
         {
             return Mock.Of<IPlatformRenderInterface>(x =>
-                x.CreateFormattedText(
-                    It.IsAny<string>(),
-                    It.IsAny<Typeface>(),
-                    It.IsAny<double>(),
-                    It.IsAny<TextAlignment>(),
-                    It.IsAny<TextWrapping>(),
-                    It.IsAny<Size>(),
-                    It.IsAny<IReadOnlyList<FormattedTextStyleSpan>>()) == Mock.Of<IFormattedTextImpl>() &&
                 x.CreateStreamGeometry() == Mock.Of<IStreamGeometryImpl>(
                     y => y.Open() == Mock.Of<IStreamGeometryContextImpl>()));
         }
-    }
-
-    public class AppBuilder : AppBuilderBase<AppBuilder>
-    {
-        public AppBuilder()
-            : base(new StandardRuntimePlatform(),
-                  builder => StandardRuntimePlatformServices.Register(builder.Instance?.GetType()
-                      ?.GetTypeInfo().Assembly))
-        {
-        }
-
-        protected override bool CheckSetup => false;
     }
 }

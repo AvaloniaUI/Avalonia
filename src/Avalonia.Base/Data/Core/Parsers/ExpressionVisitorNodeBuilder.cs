@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Avalonia.Data.Core.Parsers
 {
+    [RequiresUnreferencedCode(TrimmingMessages.ExpressionNodeRequiresUnreferencedCodeMessage)]
     class ExpressionVisitorNodeBuilder : ExpressionVisitor
     {
         private const string MultiDimensionalArrayGetterMethodName = "Get";
@@ -16,8 +18,8 @@ namespace Avalonia.Data.Core.Parsers
 
         static ExpressionVisitorNodeBuilder()
         {
-            AvaloniaObjectIndexer = typeof(AvaloniaObject).GetProperty("Item", new[] { typeof(AvaloniaProperty) });
-            CreateDelegateMethod = typeof(MethodInfo).GetMethod("CreateDelegate", new[] { typeof(Type), typeof(object) });
+            AvaloniaObjectIndexer = typeof(AvaloniaObject).GetProperty("Item", new[] { typeof(AvaloniaProperty) })!;
+            CreateDelegateMethod = typeof(MethodInfo).GetMethod("CreateDelegate", new[] { typeof(Type), typeof(object) })!;
         }
 
         public List<ExpressionNode> Nodes { get; }
@@ -81,7 +83,7 @@ namespace Avalonia.Data.Core.Parsers
             return node;
         }
 
-        private T GetArgumentExpressionValue<T>(Expression expr)
+        private static T GetArgumentExpressionValue<T>(Expression expr)
         {
             try
             {
@@ -162,7 +164,7 @@ namespace Avalonia.Data.Core.Parsers
             if (node.Method == CreateDelegateMethod)
             {
                 var visited = Visit(node.Arguments[1]);
-                Nodes.Add(new PropertyAccessorNode(GetArgumentExpressionValue<MethodInfo>(node.Object).Name, _enableDataValidation));
+                Nodes.Add(new PropertyAccessorNode(GetArgumentExpressionValue<MethodInfo>(node.Object!).Name, _enableDataValidation));
                 return node;
             }
             else if (node.Method.Name == StreamBindingExtensions.StreamBindingName || node.Method.Name.StartsWith(StreamBindingExtensions.StreamBindingName + '`'))
@@ -183,20 +185,20 @@ namespace Avalonia.Data.Core.Parsers
 
             if (property != null)
             {
-                return Visit(Expression.MakeIndex(node.Object, property, node.Arguments));
+                return Visit(Expression.MakeIndex(node.Object!, property, node.Arguments));
             }
-            else if (node.Object.Type.IsArray && node.Method.Name == MultiDimensionalArrayGetterMethodName)
+            else if (node.Object!.Type.IsArray && node.Method.Name == MultiDimensionalArrayGetterMethodName)
             {
                 return Visit(Expression.MakeIndex(node.Object, null, node.Arguments));
             }
 
-            throw new ExpressionParseException(0, $"Invalid method call in binding expression: '{node.Method.DeclaringType.AssemblyQualifiedName}.{node.Method.Name}'.");
+            throw new ExpressionParseException(0, $"Invalid method call in binding expression: '{node.Method.DeclaringType!.AssemblyQualifiedName}.{node.Method.Name}'.");
         }
 
-        private PropertyInfo TryGetPropertyFromMethod(MethodInfo method)
+        private static PropertyInfo? TryGetPropertyFromMethod(MethodInfo method)
         {
             var type = method.DeclaringType;
-            return type.GetRuntimeProperties().FirstOrDefault(prop => prop.GetMethod == method);
+            return type?.GetRuntimeProperties().FirstOrDefault(prop => prop.GetMethod == method);
         }
 
         protected override Expression VisitSwitch(SwitchExpression node)

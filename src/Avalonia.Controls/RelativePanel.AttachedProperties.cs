@@ -1,7 +1,5 @@
 ﻿using Avalonia.Layout;
 
-#nullable enable
-
 namespace Avalonia.Controls
 {
     public partial class RelativePanel

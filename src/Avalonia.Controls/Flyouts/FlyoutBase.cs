@@ -7,24 +7,18 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
-
-#nullable enable
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Primitives
 {
     public abstract class FlyoutBase : AvaloniaObject, IPopupHostProvider
     {
-        static FlyoutBase()
-        {
-            Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
-        }
-
         /// <summary>
         /// Defines the <see cref="IsOpen"/> property
         /// </summary>
-        private static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
-           AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
-               x => x.IsOpen);
+        public static readonly DirectProperty<FlyoutBase, bool> IsOpenProperty =
+            AvaloniaProperty.RegisterDirect<FlyoutBase, bool>(nameof(IsOpen),
+                x => x.IsOpen);
 
         /// <summary>
         /// Defines the <see cref="Target"/> property
@@ -46,6 +40,14 @@ namespace Avalonia.Controls.Primitives
                 x => x.ShowMode, (x, v) => x.ShowMode = v);
 
         /// <summary>
+        /// Defines the <see cref="OverlayInputPassThroughElement"/> property
+        /// </summary>
+        public static readonly DirectProperty<FlyoutBase, IInputElement?> OverlayInputPassThroughElementProperty =
+            Popup.OverlayInputPassThroughElementProperty.AddOwner<FlyoutBase>(
+                o => o._overlayInputPassThroughElement,
+                (o, v) => o._overlayInputPassThroughElement = v);
+
+        /// <summary>
         /// Defines the AttachedFlyout property
         /// </summary>
         public static readonly AttachedProperty<FlyoutBase?> AttachedFlyoutProperty =
@@ -59,6 +61,12 @@ namespace Avalonia.Controls.Primitives
         private PixelRect? _enlargePopupRectScreenPixelRect;
         private IDisposable? _transientDisposable;
         private Action<IPopupHost?>? _popupHostChangedHandler;
+        private IInputElement? _overlayInputPassThroughElement;
+
+        static FlyoutBase()
+        {
+            Control.ContextFlyoutProperty.Changed.Subscribe(OnContextFlyoutPropertyChanged);
+        }
 
         public FlyoutBase()
         {
@@ -103,11 +111,21 @@ namespace Avalonia.Controls.Primitives
             private set => SetAndRaise(TargetProperty, ref _target, value);
         }
 
+        /// <summary>
+        /// Gets or sets an element that should receive pointer input events even when underneath
+        /// the flyout's overlay.
+        /// </summary>
+        public IInputElement? OverlayInputPassThroughElement
+        {
+            get => _overlayInputPassThroughElement;
+            set => SetAndRaise(OverlayInputPassThroughElementProperty, ref _overlayInputPassThroughElement, value);
+        }
+
         IPopupHost? IPopupHostProvider.PopupHost => Popup?.Host;
 
-        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged 
-        { 
-            add => _popupHostChangedHandler += value; 
+        event Action<IPopupHost?>? IPopupHostProvider.PopupHostChanged
+        {
+            add => _popupHostChangedHandler += value;
             remove => _popupHostChangedHandler -= value;
         }
 
@@ -178,6 +196,8 @@ namespace Avalonia.Controls.Primitives
             IsOpen = false;
             Popup.IsOpen = false;
 
+            ((ISetLogicalParent)Popup).SetParent(null);
+
             // Ensure this isn't active
             _transientDisposable?.Dispose();
             _transientDisposable = null;
@@ -220,16 +240,19 @@ namespace Avalonia.Controls.Primitives
                 ((ISetLogicalParent)Popup).SetParent(null);
             }
 
-            if (Popup.PlacementTarget != placementTarget)
+            if (Popup.Parent == null || Popup.PlacementTarget != placementTarget)
             {
                 Popup.PlacementTarget = Target = placementTarget;
                 ((ISetLogicalParent)Popup).SetParent(placementTarget);
+                Popup.SetValue(StyledElement.TemplatedParentProperty, placementTarget.TemplatedParent);
             }
 
             if (Popup.Child == null)
             {
                 Popup.Child = CreatePresenter();
             }
+
+            Popup.OverlayInputPassThroughElement = OverlayInputPassThroughElement;
 
             if (CancelOpening())
             {
@@ -267,7 +290,7 @@ namespace Avalonia.Controls.Primitives
             return true;
         }
 
-        private void PlacementTarget_DetachedFromVisualTree(object sender, VisualTreeAttachmentEventArgs e)
+        private void PlacementTarget_DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
             _ = HideCore(false);
         }
@@ -303,14 +326,14 @@ namespace Avalonia.Controls.Primitives
                     return;
                 }
 
-                if (Popup?.Host is PopupRoot)
+                if (Popup?.Host is PopupRoot && pArgs.Root is Visual eventRoot)
                 {
                     // As long as the pointer stays within the enlargedPopupRect
                     // the flyout stays open. If it leaves, close it
                     // Despite working in screen coordinates, leaving the TopLevel
                     // window will not close this (as pointer events stop), which 
                     // does match UWP
-                    var pt = pArgs.Root.PointToScreen(pArgs.Position);
+                    var pt = eventRoot.PointToScreen(pArgs.Position);
                     if (!_enlargePopupRectScreenPixelRect?.Contains(pt) ?? false)
                     {
                         HideCore(false);
@@ -335,7 +358,7 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnOpened()
         {
-            Opened?.Invoke(this, null);
+            Opened?.Invoke(this, EventArgs.Empty);
         }
 
         protected virtual void OnClosing(CancelEventArgs args)
@@ -345,7 +368,7 @@ namespace Avalonia.Controls.Primitives
 
         protected virtual void OnClosed()
         {
-            Closed?.Invoke(this, null);
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -356,10 +379,13 @@ namespace Avalonia.Controls.Primitives
 
         private Popup CreatePopup()
         {
-            var popup = new Popup();
-            popup.WindowManagerAddShadowHint = false;
-            popup.IsLightDismissEnabled = true;
-            popup.OverlayDismissEventPassThrough = true;
+            var popup = new Popup
+            {
+                WindowManagerAddShadowHint = false,
+                IsLightDismissEnabled = true,
+                //Note: This is required to prevent Button.Flyout from opening the flyout again after dismiss.
+                OverlayDismissEventPassThrough = false
+            };
 
             popup.Opened += OnPopupOpened;
             popup.Closed += OnPopupClosed;
@@ -368,14 +394,14 @@ namespace Avalonia.Controls.Primitives
             return popup;
         }
 
-        private void OnPopupOpened(object sender, EventArgs e)
+        private void OnPopupOpened(object? sender, EventArgs e)
         {
             IsOpen = true;
 
-            _popupHostChangedHandler?.Invoke(Popup!.Host);
+            _popupHostChangedHandler?.Invoke(Popup.Host);
         }
 
-        private void OnPopupClosing(object sender, CancelEventArgs e)
+        private void OnPopupClosing(object? sender, CancelEventArgs e)
         {
             if (IsOpen)
             {
@@ -383,7 +409,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void OnPopupClosed(object sender, EventArgs e)
+        private void OnPopupClosed(object? sender, EventArgs e)
         {
             HideCore(false);
 
@@ -391,7 +417,7 @@ namespace Avalonia.Controls.Primitives
         }
 
         // This method is handling both popup logical tree and target logical tree.
-        private void OnPlacementTargetOrPopupKeyUp(object sender, KeyEventArgs e)
+        private void OnPlacementTargetOrPopupKeyUp(object? sender, KeyEventArgs e)
         {
             if (!e.Handled
                 && IsOpen
@@ -399,7 +425,7 @@ namespace Avalonia.Controls.Primitives
             {
                 var keymap = AvaloniaLocator.Current.GetService<PlatformHotkeyConfiguration>();
 
-                if (keymap.OpenContextMenu.Any(k => k.Matches(e)))
+                if (keymap?.OpenContextMenu.Any(k => k.Matches(e)) == true)
                 {
                     e.Handled = HideCore();
                 }
@@ -410,7 +436,7 @@ namespace Avalonia.Controls.Primitives
         {
             Size sz;
             // Popup.Child can't be null here, it was set in ShowAtCore.
-            if (Popup.Child!.DesiredSize == Size.Empty)
+            if (Popup.Child!.DesiredSize.IsDefault)
             {
                 // Popup may not have been shown yet. Measure content
                 sz = LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
@@ -432,7 +458,7 @@ namespace Avalonia.Controls.Primitives
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
             }
 
-            var trgtBnds = Target?.Bounds ?? Rect.Empty;
+            var trgtBnds = Target?.Bounds ?? default;
 
             switch (Placement)
             {
@@ -530,10 +556,10 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private static void OnControlContextRequested(object sender, ContextRequestedEventArgs e)
+        private static void OnControlContextRequested(object? sender, ContextRequestedEventArgs e)
         {
-            var control = (Control)sender;
             if (!e.Handled
+                && sender is Control control
                 && control.ContextFlyout is FlyoutBase flyout)
             {
                 if (control.ContextMenu != null)
@@ -562,7 +588,7 @@ namespace Avalonia.Controls.Primitives
             return eventArgs.Cancel;
         }
 
-        internal static void SetPresenterClasses(IControl? presenter, Classes classes)
+        internal static void SetPresenterClasses(Control? presenter, Classes classes)
         {
             if(presenter is null)
             {
@@ -572,7 +598,7 @@ namespace Avalonia.Controls.Primitives
             for (int i = presenter.Classes.Count - 1; i >= 0; i--)
             {
                 if (!classes.Contains(presenter.Classes[i]) &&
-                    !presenter.Classes[i].Contains(":"))
+                    !presenter.Classes[i].Contains(':'))
                 {
                     presenter.Classes.RemoveAt(i);
                 }

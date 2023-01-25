@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+﻿using System.Linq;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -17,20 +15,20 @@ namespace Avalonia.Platform
         private const RawInputModifiers MOUSE_INPUTMODIFIERS = RawInputModifiers.LeftMouseButton|RawInputModifiers.MiddleMouseButton|RawInputModifiers.RightMouseButton;
         private readonly IDragDropDevice _dragDrop;
         private readonly IInputManager _inputManager;
-        private readonly Subject<DragDropEffects> _result = new Subject<DragDropEffects>();
+        private readonly LightweightSubject<DragDropEffects> _result = new();
 
         private DragDropEffects _allowedEffects;
-        private IDataObject _draggedData;
-        private IInputRoot _lastRoot;
+        private IDataObject? _draggedData;
+        private IInputRoot? _lastRoot;
         private Point _lastPosition;
         private StandardCursorType _lastCursorType;
-        private object _originalCursor;
+        private object? _originalCursor;
         private RawInputModifiers? _initialInputModifiers;
 
         public InProcessDragSource()
         {
-            _inputManager = AvaloniaLocator.Current.GetService<IInputManager>();
-            _dragDrop = AvaloniaLocator.Current.GetService<IDragDropDevice>();
+            _inputManager = AvaloniaLocator.Current.GetRequiredService<IInputManager>();
+            _dragDrop = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
         }
 
         public async Task<DragDropEffects> DoDragDrop(PointerEventArgs triggerEvent, IDataObject data, DragDropEffects allowedEffects)
@@ -41,14 +39,28 @@ namespace Avalonia.Platform
             {
                 _draggedData = data;
                 _lastRoot = null;
-                _lastPosition = default(Point);
+                _lastPosition = default;
                 _allowedEffects = allowedEffects;
 
-                using (_inputManager.PreProcess.OfType<RawPointerEventArgs>().Subscribe(ProcessMouseEvents))
+                var inputObserver = new AnonymousObserver<RawInputEventArgs>(arg =>
                 {
-                    using (_inputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(ProcessKeyEvents))
+                    switch (arg)
                     {
-                        var effect = await _result.FirstAsync();
+                        case RawPointerEventArgs pointerEventArgs:
+                            ProcessMouseEvents(pointerEventArgs);
+                            break;
+                        case RawKeyEventArgs keyEventArgs:
+                            ProcessKeyEvents(keyEventArgs);
+                            break;
+                    }
+                }); 
+                
+                using (_inputManager.PreProcess.Subscribe(inputObserver))
+                {
+                    var tcs = new TaskCompletionSource<DragDropEffects>();
+                    using (_result.Subscribe(new AnonymousObserver<DragDropEffects>(tcs)))
+                    {
+                        var effect = await tcs.Task;
                         return effect;
                     }
                 }
@@ -60,16 +72,16 @@ namespace Avalonia.Platform
         {
             _lastPosition = pt;
 
-            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData, _allowedEffects, modifiers);
-            var tl = root.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
-            tl.PlatformImpl?.Input(rawEvent);
+            RawDragEvent rawEvent = new RawDragEvent(_dragDrop, type, root, pt, _draggedData!, _allowedEffects, modifiers);
+            var tl = (root as Visual)?.GetSelfAndVisualAncestors().OfType<TopLevel>().FirstOrDefault();
+            tl?.PlatformImpl?.Input?.Invoke(rawEvent);
 
             var effect = GetPreferredEffect(rawEvent.Effects & _allowedEffects, modifiers);
             UpdateCursor(root, effect);
             return effect;
         }
 
-        private DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
+        private static DragDropEffects GetPreferredEffect(DragDropEffects effect, RawInputModifiers modifiers)
         {
             if (effect == DragDropEffects.Copy || effect == DragDropEffects.Move || effect == DragDropEffects.Link || effect == DragDropEffects.None)
                 return effect; // No need to check for the modifiers.
@@ -80,7 +92,7 @@ namespace Avalonia.Platform
             return DragDropEffects.Move;
         }
 
-        private StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
+        private static StandardCursorType GetCursorForDropEffect(DragDropEffects effects)
         {
             if (effects.HasAllFlags(DragDropEffects.Copy))
                 return StandardCursorType.DragCopy;
@@ -91,7 +103,7 @@ namespace Avalonia.Platform
             return StandardCursorType.No;
         }
         
-        private void UpdateCursor(IInputRoot root, DragDropEffects effect)
+        private void UpdateCursor(IInputRoot? root, DragDropEffects effect)
         {
             if (_lastRoot != root)
             {
@@ -200,8 +212,8 @@ namespace Avalonia.Platform
 
                     if (e.Root != _lastRoot)
                     {
-                        if (_lastRoot != null)
-                            RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, _lastRoot.PointToClient(e.Root.PointToScreen(e.Position)), e.InputModifiers);
+                        if (_lastRoot is Visual lr && e.Root is Visual r)
+                            RaiseEventAndUpdateCursor(RawDragEventType.DragLeave, _lastRoot, lr.PointToClient(r.PointToScreen(e.Position)), e.InputModifiers);
                         RaiseEventAndUpdateCursor(RawDragEventType.DragEnter, e.Root, e.Position, e.InputModifiers);
                     }
                     else

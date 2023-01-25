@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using Avalonia.Controls;
@@ -8,17 +7,17 @@ using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
-using Avalonia.Visuals.Media.Imaging;
 using SharpDX.DirectWrite;
 using GlyphRun = Avalonia.Media.GlyphRun;
-using TextAlignment = Avalonia.Media.TextAlignment;
+using SharpDX.Mathematics.Interop;
 
 namespace Avalonia
 {
     public static class Direct2DApplicationExtensions
     {
-        public static T UseDirect2D1<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseDirect2D1(this AppBuilder builder)
         {
             builder.UseRenderingSubsystem(Direct2D1.Direct2D1Platform.Initialize, "Direct2D1");
             return builder;
@@ -115,26 +114,7 @@ namespace Avalonia.Direct2D1
             SharpDX.Configuration.EnableReleaseOnFinalizer = true;
         }
 
-        public IFormattedTextImpl CreateFormattedText(
-            string text,
-            Typeface typeface,
-            double fontSize,
-            TextAlignment textAlignment,
-            TextWrapping wrapping,
-            Size constraint,
-            IReadOnlyList<FormattedTextStyleSpan> spans)
-        {
-            return new FormattedTextImpl(
-                text,
-                typeface,
-                fontSize,
-                textAlignment,
-                wrapping,
-                constraint,
-                spans);
-        }
-
-        public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
+        private IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             foreach (var s in surfaces)
             {
@@ -177,6 +157,123 @@ namespace Avalonia.Direct2D1
         public IStreamGeometryImpl CreateStreamGeometry() => new StreamGeometryImpl();
         public IGeometryImpl CreateGeometryGroup(FillRule fillRule, IReadOnlyList<Geometry> children) => new GeometryGroupImpl(fillRule, children);
         public IGeometryImpl CreateCombinedGeometry(GeometryCombineMode combineMode, Geometry g1, Geometry g2) => new CombinedGeometryImpl(combineMode, g1, g2);
+
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
+        {
+            var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
+
+            var glyphCount = glyphInfos.Count;
+
+            var run = new SharpDX.DirectWrite.GlyphRun
+            {
+                FontFace = glyphTypefaceImpl.FontFace,
+                FontSize = (float)fontRenderingEmSize
+            };
+
+            var indices = new short[glyphCount];
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                indices[i] = (short)glyphInfos[i].GlyphIndex;
+            }
+
+            run.Indices = indices;
+
+            run.Advances = new float[glyphCount];
+
+            var width = 0.0;
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                var advance = glyphInfos[i].GlyphAdvance;
+
+                width += advance;
+
+                run.Advances[i] = (float)advance;
+            }
+
+            run.Offsets = new GlyphOffset[glyphCount];
+
+            for (var i = 0; i < glyphCount; i++)
+            {
+                var (x, y) = glyphInfos[i].GlyphOffset;
+
+                run.Offsets[i] = new GlyphOffset
+                {
+                    AdvanceOffset = (float)x,
+                    AscenderOffset = (float)y
+                };
+            }
+
+            var scale = fontRenderingEmSize / glyphTypeface.Metrics.DesignEmHeight;
+            var height = glyphTypeface.Metrics.LineSpacing * scale;
+
+            return new GlyphRunImpl(run, new Size(width, height), baselineOrigin);
+        }
+
+        class D2DApi : IPlatformRenderInterfaceContext
+        {
+            private readonly Direct2D1Platform _platform;
+
+            public D2DApi(Direct2D1Platform platform)
+            {
+                _platform = platform;
+            }
+            public object TryGetFeature(Type featureType) => null;
+
+            public void Dispose()
+            {
+            }
+
+            public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => _platform.CreateRenderTarget(surfaces);
+            public bool IsLost => false;
+        }
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) =>
+            new D2DApi(this);
+
+        public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
+        {
+            if (glyphRun.GlyphTypeface is not GlyphTypefaceImpl glyphTypeface)
+            {
+                throw new InvalidOperationException("PlatformImpl can't be null.");
+            }
+
+            var pathGeometry = new SharpDX.Direct2D1.PathGeometry(Direct2D1Factory);
+
+            using (var sink = pathGeometry.Open())
+            {
+                var glyphInfos = glyphRun.GlyphInfos;
+                var glyphs = new short[glyphInfos.Count];
+
+                for (int i = 0; i < glyphInfos.Count; i++)
+                {
+                    glyphs[i] = (short)glyphInfos[i].GlyphIndex;
+                }
+
+                glyphTypeface.FontFace.GetGlyphRunOutline((float)glyphRun.FontRenderingEmSize, glyphs, null, null, false, !glyphRun.IsLeftToRight, sink);
+
+                sink.Close();
+            }
+
+            var (baselineOriginX, baselineOriginY) = glyphRun.PlatformImpl.Item.BaselineOrigin;
+
+            var transformedGeometry = new SharpDX.Direct2D1.TransformedGeometry(
+                Direct2D1Factory,
+                pathGeometry,
+                new RawMatrix3x2(1.0f, 0.0f, 0.0f, 1.0f, (float)baselineOriginX, (float)baselineOriginY));
+
+            return new TransformedGeometryWrapper(transformedGeometry);
+        }
+
+        private class TransformedGeometryWrapper : GeometryImpl
+        {
+            public TransformedGeometryWrapper(SharpDX.Direct2D1.TransformedGeometry geometry) : base(geometry)
+            {
+
+            }
+        }
 
         /// <inheritdoc />
         public IBitmapImpl LoadBitmap(string fileName)
@@ -235,71 +332,6 @@ namespace Avalonia.Direct2D1
         public IBitmapImpl LoadBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
             return new WicBitmapImpl(format, alphaFormat, data, size, dpi, stride);
-        }
-
-        public IGlyphRunImpl CreateGlyphRun(GlyphRun glyphRun)
-        {
-            var glyphTypeface = (GlyphTypefaceImpl)glyphRun.GlyphTypeface.PlatformImpl;
-
-            var glyphCount = glyphRun.GlyphIndices.Length;
-
-            var run = new SharpDX.DirectWrite.GlyphRun
-            {
-                FontFace = glyphTypeface.FontFace,
-                FontSize = (float)glyphRun.FontRenderingEmSize
-            };
-
-            var indices = new short[glyphCount];
-
-            for (var i = 0; i < glyphCount; i++)
-            {
-                indices[i] = (short)glyphRun.GlyphIndices[i];
-            }
-
-            run.Indices = indices;
-
-            run.Advances = new float[glyphCount];
-
-            var scale = (float)(glyphRun.FontRenderingEmSize / glyphTypeface.DesignEmHeight);
-
-            if (glyphRun.GlyphAdvances.IsEmpty)
-            {
-                for (var i = 0; i < glyphCount; i++)
-                {
-                    var advance = glyphTypeface.GetGlyphAdvance(glyphRun.GlyphIndices[i]) * scale;
-
-                    run.Advances[i] = advance;
-                }
-            }
-            else
-            {
-                for (var i = 0; i < glyphCount; i++)
-                {
-                    var advance = (float)glyphRun.GlyphAdvances[i];
-
-                    run.Advances[i] = advance;
-                }
-            }
-
-            if (glyphRun.GlyphOffsets.IsEmpty)
-            {
-                return new GlyphRunImpl(run);
-            }
-
-            run.Offsets = new GlyphOffset[glyphCount];
-
-            for (var i = 0; i < glyphCount; i++)
-            {
-                var (x, y) = glyphRun.GlyphOffsets[i];
-
-                run.Offsets[i] = new GlyphOffset
-                {
-                    AdvanceOffset = (float)x,
-                    AscenderOffset = (float)y
-                };
-            }
-
-            return new GlyphRunImpl(run);
         }
 
         public bool SupportsIndividualRoundRects => false;

@@ -14,12 +14,12 @@ namespace Avalonia.Controls
         /// <summary>
         /// The registered access keys.
         /// </summary>
-        private readonly List<Tuple<string, IInputElement>> _registered = new List<Tuple<string, IInputElement>>();
+        private readonly List<(string AccessKey, IInputElement Element)> _registered = new();
 
         /// <summary>
         /// The window to which the handler belongs.
         /// </summary>
-        private IInputRoot _owner;
+        private IInputRoot? _owner;
 
         /// <summary>
         /// Gets or sets the window's main menu.
@@ -27,7 +27,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// This property is ignored as a menu item cannot have a main menu.
         /// </remarks>
-        public IMainMenu MainMenu { get; set; }
+        public IMainMenu? MainMenu { get; set; }
 
         /// <summary>
         /// Sets the owner of the access key handler.
@@ -38,7 +38,7 @@ namespace Avalonia.Controls
         /// </remarks>
         public void SetOwner(IInputRoot owner)
         {
-            Contract.Requires<ArgumentNullException>(owner != null);
+            _ = owner ?? throw new ArgumentNullException(nameof(owner));
 
             if (_owner != null)
             {
@@ -59,12 +59,12 @@ namespace Avalonia.Controls
         {
             var existing = _registered.FirstOrDefault(x => x.Item2 == element);
 
-            if (existing != null)
+            if (existing != default)
             {
                 _registered.Remove(existing);
             }
 
-            _registered.Add(Tuple.Create(accessKey.ToString().ToUpper(), element));
+            _registered.Add((accessKey.ToString().ToUpperInvariant(), element));
         }
 
         /// <summary>
@@ -84,13 +84,14 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
-        protected virtual void OnTextInput(object sender, TextInputEventArgs e)
+        protected virtual void OnTextInput(object? sender, TextInputEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(e.Text))
             {
-                var text = e.Text.ToUpper();
+                var text = e.Text;
                 var focus = _registered
-                    .FirstOrDefault(x => x.Item1 == text && x.Item2.IsEffectivelyVisible)?.Item2;
+                    .FirstOrDefault(x => string.Equals(x.AccessKey, text, StringComparison.OrdinalIgnoreCase)
+                        && x.Element.IsEffectivelyVisible).Element;
 
                 focus?.RaiseEvent(new RoutedEventArgs(AccessKeyHandler.AccessKeyPressedEvent));
 

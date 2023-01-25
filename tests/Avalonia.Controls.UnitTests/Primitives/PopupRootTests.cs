@@ -35,7 +35,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 var target = CreateTarget(new Window());
 
-                Assert.True(target.Presenter.IsAttachedToLogicalTree);
+                Assert.True(((ILogical)target.Presenter).IsAttachedToLogicalTree);
             }
         }
 
@@ -51,6 +51,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 };
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 target.ApplyTemplate();
@@ -78,9 +79,13 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
                 var templatedChild = ((Visual)target.Host).GetVisualChildren().Single();
                 
-                Assert.IsType<Panel>(templatedChild);
+                Assert.IsType<LayoutTransformControl>(templatedChild);
 
-                var visualLayerManager = templatedChild.GetVisualChildren().Skip(1).Single();
+                var panel = templatedChild.GetVisualChildren().Single();
+
+                Assert.IsType<Panel>(panel);
+
+                var visualLayerManager = panel.GetVisualChildren().Skip(1).Single();
 
                 Assert.IsType<VisualLayerManager>(visualLayerManager);
 
@@ -88,8 +93,8 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 Assert.IsType<ContentPresenter>(contentPresenter);
                 
                 
-                Assert.Equal((PopupRoot)target.Host, ((IControl)templatedChild).TemplatedParent);
-                Assert.Equal((PopupRoot)target.Host, ((IControl)contentPresenter).TemplatedParent);
+                Assert.Equal((PopupRoot)target.Host, ((Control)templatedChild).TemplatedParent);
+                Assert.Equal((PopupRoot)target.Host, ((Control)contentPresenter).TemplatedParent);
             }
         }
         
@@ -173,6 +178,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 };
                 window.Content = target;
 
+                window.ApplyStyling();
                 window.ApplyTemplate();
                 window.Presenter.ApplyTemplate();
                 target.ApplyTemplate();
@@ -321,7 +327,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             }
         }
 
-        private PopupRoot CreateTarget(TopLevel popupParent, IPopupImpl impl = null)
+        private static PopupRoot CreateTarget(TopLevel popupParent, IPopupImpl impl = null)
         {
             impl ??= popupParent.PlatformImpl.CreatePopup();
 
@@ -340,7 +346,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             return result;
         }
 
-        private class TemplatedControlWithPopup : TemplatedControl
+        private class TemplatedControlWithPopup : Avalonia.Controls.Primitives.TemplatedControl
         {
             public static readonly StyledProperty<Control> PopupContentProperty =
                 AvaloniaProperty.Register<TemplatedControlWithPopup, Control>(nameof(PopupContent));
