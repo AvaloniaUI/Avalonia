@@ -77,8 +77,8 @@ namespace Avalonia.FreeDesktop
 
             if (options.SuggestedFileName is { } currentName)
                 chooserOptions.Add("current_name", new DBusVariantItem("s", new DBusStringItem(currentName)));
-            if (options.SuggestedStartLocation?.TryGetUri(out var currentFolder) == true)
-                chooserOptions.Add("current_folder", new DBusVariantItem("s", new DBusStringItem(currentFolder.ToString())));
+            if (options.SuggestedStartLocation?.TryGetFullPath()  is { } folderPath)
+                chooserOptions.Add("current_folder", new DBusVariantItem("s", new DBusStringItem(folderPath)));
 
             objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
             var request = new OrgFreedesktopPortalRequest(_connection, "org.freedesktop.portal.Desktop", objectPath);
@@ -156,7 +156,11 @@ namespace Avalonia.FreeDesktop
 
                 any = true;
                 filters.Add(new DBusStructItem(
-                    new DBusItem[] { new DBusStringItem(fileType.Name), new DBusArrayItem(DBusType.Struct, extensions) }));
+                    new DBusItem[]
+                    {
+                        new DBusStringItem(fileType.Name),
+                        new DBusArrayItem(DBusType.Struct, extensions)
+                    }));
             }
 
             return any ? new DBusVariantItem("a(sa(us))", filters) : null;

@@ -156,7 +156,6 @@ namespace Avalonia.Input
 
                 interactive?.RaiseEvent(new GotFocusEventArgs
                 {
-                    RoutedEvent = InputElement.GotFocusEvent,
                     NavigationMethod = method,
                     KeyModifiers = keyModifiers,
                 });
