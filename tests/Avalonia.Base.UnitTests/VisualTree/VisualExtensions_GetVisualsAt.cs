@@ -15,16 +15,14 @@ namespace Avalonia.Base.UnitTests.VisualTree
         [Fact]
         public void Should_Find_Control()
         {
-            using (TestApplication())
+            Border target;
+            var services = new CompositorTestServices(new Size(200, 200))
             {
-                Border target;
-                var root = new TestRoot
+                TopLevel =
                 {
-                    Width = 200,
-                    Height = 200,
-                    Child = new StackPanel
+                    Content = new StackPanel
                     {
-                        Background = Brushes.White,
+                        Background = null,
                         Children =
                         {
                             (target = new Border
@@ -42,29 +40,25 @@ namespace Avalonia.Base.UnitTests.VisualTree
                         },
                         Orientation = Orientation.Horizontal,
                     }
-                };
+                }
+            };
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
-                root.Measure(Size.Infinity);
-                root.Arrange(new Rect(root.DesiredSize));
+            services.RunJobs();
+            var result = target.GetVisualsAt(new Point(50, 50));
 
-                var result = target.GetVisualsAt(new Point(50, 50));
+            Assert.Same(target, result.Single());
 
-                Assert.Same(target, result.Single());
-            }
         }
 
         [Fact]
         public void Should_Not_Find_Sibling_Control()
         {
-            using (TestApplication())
+            Border target;
+            var services = new CompositorTestServices(new Size(200, 200))
             {
-                Border target;
-                var root = new TestRoot
+                TopLevel =
                 {
-                    Width = 200,
-                    Height = 200,
-                    Child = new StackPanel
+                    Content = new StackPanel
                     {
                         Background = Brushes.White,
                         Children =
@@ -84,21 +78,12 @@ namespace Avalonia.Base.UnitTests.VisualTree
                         },
                         Orientation = Orientation.Horizontal,
                     }
-                };
+                }
+            };
+            services.RunJobs();
+            var result = target.GetVisualsAt(new Point(150, 50));
 
-                root.Renderer = new DeferredRenderer((IRenderRoot)root, null, root.CreateRenderTarget);
-                root.Measure(Size.Infinity);
-                root.Arrange(new Rect(root.DesiredSize));
-
-                var result = target.GetVisualsAt(new Point(150, 50));
-
-                Assert.Empty(result);
-            }
-        }
-
-        private static IDisposable TestApplication()
-        {
-            return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+            Assert.Empty(result);
         }
     }
 }

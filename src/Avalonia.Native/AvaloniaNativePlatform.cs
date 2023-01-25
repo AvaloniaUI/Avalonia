@@ -24,8 +24,7 @@ namespace Avalonia.Native
         static extern IntPtr CreateAvaloniaNative();
 
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
-        internal static Compositor? Compositor { get; private set; }
-        internal static PlatformRenderInterfaceContextManager? RenderInterface { get; private set; }
+        internal static Compositor Compositor { get; private set; } = null!;
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
@@ -140,14 +139,8 @@ namespace Avalonia.Native
                     // ignored
                 }
             }
-
-
-            if (_options.UseDeferredRendering && _options.UseCompositor)
-            {
-                Compositor = new Compositor(renderLoop, _platformGl);
-            }
-            else
-                RenderInterface = new PlatformRenderInterfaceContextManager(_platformGl);
+            
+            Compositor = new Compositor(renderLoop, _platformGl);
         }
 
         public ITrayIconImpl CreateTrayIcon()

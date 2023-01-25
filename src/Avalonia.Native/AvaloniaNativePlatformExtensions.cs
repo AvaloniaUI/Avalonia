@@ -31,20 +31,6 @@ namespace Avalonia
     public class AvaloniaNativePlatformOptions
     {
         /// <summary>
-        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
-        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
-        /// </remarks>
-        public bool UseDeferredRendering { get; set; } = true;
-        
-        /// <summary>
-        /// Enables new compositing rendering with UWP-like API
-        /// </summary>
-        public bool UseCompositor { get; set; } = true;
-
-        /// <summary>
         /// Determines whether to use GPU for rendering in your project. The default value is true.
         /// </summary>
         public bool UseGpu { get; set; } = true;

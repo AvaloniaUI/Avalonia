@@ -54,11 +54,8 @@ namespace Avalonia.Headless
         public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-            => AvaloniaHeadlessPlatform.Compositor != null
-                ? new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces)
-                : new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                    () => new PlatformRenderInterfaceContextManager(null).CreateRenderTarget(Surfaces), null);
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces);
 
         public void Invalidate(Rect rect)
         {

@@ -386,12 +386,6 @@ namespace Avalonia.Controls
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
         
         /// <inheritdoc/>
-        void IRenderRoot.Invalidate(Rect rect)
-        {
-            PlatformImpl?.Invalidate(rect);
-        }
-        
-        /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
             return PlatformImpl?.PointToClient(p) ?? default;

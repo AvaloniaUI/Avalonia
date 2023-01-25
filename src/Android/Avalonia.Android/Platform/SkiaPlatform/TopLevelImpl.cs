@@ -109,16 +109,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
-            AndroidPlatform.Options.UseCompositor
-                ? new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces)
-                : AndroidPlatform.Options.UseDeferredRendering
-                    ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                            () => AndroidPlatform.RenderInterface.CreateRenderTarget(Surfaces),
-                            AndroidPlatform.RenderInterface)
-                        { RenderOnlyOnRenderThread = true }
-                    : new ImmediateRenderer((Visual)root,
-                        () => AndroidPlatform.RenderInterface.CreateRenderTarget(Surfaces),
-                        AndroidPlatform.RenderInterface);
+            new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces);
 
         public virtual void Hide()
         {
