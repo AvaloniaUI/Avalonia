@@ -54,6 +54,7 @@ namespace Avalonia.Win32.Automation
             _runtimeId = new int[] { 3, GetHashCode() };
             Peer = peer;
             s_nodes.Add(peer, this);
+            InitializeTextProvider();
             peer.ChildrenChanged += Peer_ChildrenChanged;
             peer.PropertyChanged += Peer_PropertyChanged;
         }
@@ -118,6 +119,7 @@ namespace Avalonia.Win32.Automation
                 UiaPatternId.ScrollItem => this,
                 UiaPatternId.Selection => ThisIfPeerImplementsProvider<AAP.ISelectionProvider>(),
                 UiaPatternId.SelectionItem => ThisIfPeerImplementsProvider<AAP.ISelectionItemProvider>(),
+                UiaPatternId.Text => ThisIfPeerImplementsProvider<AAP.ITextProvider>(),
                 UiaPatternId.Toggle => ThisIfPeerImplementsProvider<AAP.IToggleProvider>(),
                 UiaPatternId.Value => ThisIfPeerImplementsProvider<AAP.IValueProvider>(),
                 _ => null,
@@ -137,6 +139,7 @@ namespace Avalonia.Win32.Automation
                 UiaPropertyId.Culture => CultureInfo.CurrentCulture.LCID,
                 UiaPropertyId.FrameworkId => "Avalonia",
                 UiaPropertyId.HasKeyboardFocus => InvokeSync(() => Peer.HasKeyboardFocus()),
+                UiaPropertyId.HelpText => GetHelpText(),
                 UiaPropertyId.IsContentElement => InvokeSync(() => Peer.IsContentElement()),
                 UiaPropertyId.IsControlElement => InvokeSync(() => Peer.IsControlElement()),
                 UiaPropertyId.IsEnabled => InvokeSync(() => Peer.IsEnabled()),
@@ -192,13 +195,23 @@ namespace Avalonia.Win32.Automation
             return peer is null ? null : s_nodes.GetValue(peer, Create);
         }
 
-        public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
+        public AutomationNode? GetRoot()
+        {
+            Dispatcher.UIThread.VerifyAccess();
 
-        IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
-        void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
-        void IInvokeProvider.Invoke() => InvokeSync((AAP.IInvokeProvider x) => x.Invoke());
+            var peer = Peer;
+            var parent = peer.GetParent();
 
-        protected void InvokeSync(Action action)
+            while (peer.GetProvider<AAP.IRootProvider>() is null && parent is object)
+            {
+                peer = parent;
+                parent = peer.GetParent();
+            }
+
+            return peer is object ? GetOrCreate(peer) : null;
+        }
+
+        public void InvokeSync(Action action)
         {
             if (Dispatcher.UIThread.CheckAccess())
                 action();
@@ -206,7 +219,7 @@ namespace Avalonia.Win32.Automation
                 Dispatcher.UIThread.InvokeAsync(action).Wait();
         }
 
-        protected T InvokeSync<T>(Func<T> func)
+        public T InvokeSync<T>(Func<T> func)
         {
             if (Dispatcher.UIThread.CheckAccess())
                 return func();
@@ -214,7 +227,7 @@ namespace Avalonia.Win32.Automation
                 return Dispatcher.UIThread.InvokeAsync(func).Result;
         }
 
-        protected void InvokeSync<TInterface>(Action<TInterface> action)
+        public void InvokeSync<TInterface>(Action<TInterface> action)
         {
             if (Peer.GetProvider<TInterface>() is TInterface i)
             {
@@ -233,7 +246,7 @@ namespace Avalonia.Win32.Automation
             }
         }
 
-        protected TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
+        public TResult InvokeSync<TInterface, TResult>(Func<TInterface, TResult> func)
         {
             if (Peer.GetProvider<TInterface>() is TInterface i)
             {
@@ -250,21 +263,40 @@ namespace Avalonia.Win32.Automation
             throw new NotSupportedException();
         }
 
-
-        private AutomationNode? GetRoot()
+        public Point ToClient(Point p)
         {
-            Dispatcher.UIThread.VerifyAccess();
+            return ToClient(PixelPoint.FromPoint(p, 1));
+        }
 
-            var peer = Peer;
-            var parent = peer.GetParent();
+        public Point ToClient(PixelPoint p)
+        {
+            return (GetRoot() as RootAutomationNode)?.ToClient(p) ?? default;
+        }
 
-            while (peer.GetProvider<AAP.IRootProvider>() is null && parent is object)
+        public static void Release(AutomationPeer peer) => s_nodes.Remove(peer);
+
+        IRawElementProviderSimple[]? IRawElementProviderFragment.GetEmbeddedFragmentRoots() => null;
+        void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
+        void IInvokeProvider.Invoke() => InvokeSync((AAP.IInvokeProvider x) => x.Invoke());
+
+        protected void RaiseEvent(UiaEventId eventId)
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(this, (int)eventId);
+        }
+
+        protected void RaiseEvent(AutomationNode node, UiaEventId eventId)
+        {
+            UiaCoreProviderApi.UiaRaiseAutomationEvent(node, (int)eventId);
+        }
+
+        private string? GetHelpText()
+        {
+            return InvokeSync(() =>
             {
-                peer = parent;
-                parent = peer.GetParent();
-            }
-
-            return peer is object ? GetOrCreate(peer) : null;
+                // Placeholder is exposed via HelpText on UIA but help text and placeholder are two
+                // separate properties on macOS. Try both of them here.
+                return Peer.GetProvider<AAP.ITextProvider>()?.PlaceholderText ?? Peer.GetHelpText();
+            });
         }
 
         private static AutomationNode Create(AutomationPeer peer)

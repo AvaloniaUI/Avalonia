@@ -20,8 +20,8 @@ namespace Avalonia.Win32.Interop.Automation
     {
         ITextRangeProvider [] GetSelection();
         ITextRangeProvider [] GetVisibleRanges();
-        ITextRangeProvider RangeFromChild(IRawElementProviderSimple childElement);
-        ITextRangeProvider RangeFromPoint(Point screenLocation);
+        ITextRangeProvider? RangeFromChild(IRawElementProviderSimple childElement);
+        ITextRangeProvider? RangeFromPoint(Point screenLocation);
         ITextRangeProvider DocumentRange { get; }
         SupportedTextSelection SupportedTextSelection { get; }
     }

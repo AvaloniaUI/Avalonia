@@ -77,7 +77,15 @@ namespace Avalonia.Win32.Automation
 
         public void FocusChanged(object? sender, EventArgs e)
         {
-            RaiseFocusChanged(GetOrCreate(Peer.GetFocus()));
+            if (GetOrCreate(Peer.GetFocus()) is AutomationNode node)
+                RaiseEvent(node, UiaEventId.AutomationFocusChanged);
+        }
+
+        public new Point ToClient(PixelPoint p)
+        {
+            if (WindowImpl is null)
+                return default;
+            return WindowImpl.PointToClient(p);
         }
 
         public Rect ToScreen(Rect rect)

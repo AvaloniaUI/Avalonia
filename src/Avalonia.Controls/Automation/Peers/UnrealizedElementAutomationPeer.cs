@@ -11,6 +11,7 @@ namespace Avalonia.Automation.Peers
         public void SetParent(AutomationPeer? parent) => TrySetParent(parent);
         protected override void BringIntoViewCore() => GetParent()?.BringIntoView();
         protected override Rect GetBoundingRectangleCore() => GetParent()?.GetBoundingRectangle() ?? default;
+        protected override string? GetHelpTextCore() => null;
         protected override IReadOnlyList<AutomationPeer> GetOrCreateChildrenCore() => Array.Empty<AutomationPeer>();
         protected override bool HasKeyboardFocusCore() => false;
         protected override bool IsContentElementCore() => false;

@@ -798,6 +798,9 @@ namespace Avalonia.Controls
             remove => RemoveHandler(TextChangingEvent, value);
         }
 
+        internal TextPresenter? Presenter => _presenter;
+        internal IScrollable? Scroll { get; private set; }
+
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             _presenter = e.NameScope.Get<TextPresenter>("PART_TextPresenter");
