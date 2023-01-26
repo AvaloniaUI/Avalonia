@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using Avalonia.Logging;
 using Avalonia.Platform.Storage;
 using UIKit;
@@ -99,6 +100,40 @@ internal class IOSStorageProvider : IStorageProvider
             ? new IOSStorageFolder(url) : null);
     }
 
+    public Task<IStorageFile?> TryGetFileFromPath(Uri filePath)
+    {
+        // TODO: research if it's possible, maybe with additional permissions.
+        return Task.FromResult<IStorageFile?>(null);
+    }
+
+    public Task<IStorageFolder?> TryGetFolderFromPath(Uri folderPath)
+    {
+        // TODO: research if it's possible, maybe with additional permissions.
+        return Task.FromResult<IStorageFolder?>(null);
+    }
+
+    public Task<IStorageFolder?> TryGetWellKnownFolder(WellKnownFolder wellKnownFolder)
+    {
+        var directoryType = wellKnownFolder switch
+        {
+            WellKnownFolder.Desktop => NSSearchPathDirectory.DesktopDirectory,
+            WellKnownFolder.Documents => NSSearchPathDirectory.DocumentDirectory,
+            WellKnownFolder.Downloads => NSSearchPathDirectory.DownloadsDirectory,
+            WellKnownFolder.Music => NSSearchPathDirectory.MusicDirectory,
+            WellKnownFolder.Pictures => NSSearchPathDirectory.PicturesDirectory,
+            WellKnownFolder.Videos => NSSearchPathDirectory.MoviesDirectory,
+            _ => throw new ArgumentOutOfRangeException(nameof(wellKnownFolder), wellKnownFolder, null)
+        };
+        
+        var uri = NSFileManager.DefaultManager.GetUrl(directoryType, NSSearchPathDomain.Local, null, true, out var error);
+        if (error != null)
+        {
+            throw new NSErrorException(error);
+        }
+
+        return Task.FromResult<IStorageFolder?>(new IOSStorageFolder(uri));
+    }
+
     public Task<IStorageFile?> SaveFilePickerAsync(FilePickerSaveOptions options)
     {
         return Task.FromException<IStorageFile?>(
@@ -127,17 +162,12 @@ internal class IOSStorageProvider : IStorageProvider
 
     private static NSUrl? GetUrlFromFolder(IStorageFolder? folder)
     {
-        if (folder is IOSStorageFolder iosFolder)
+        return folder switch
         {
-            return iosFolder.Url;
-        }
-
-        if (folder?.TryGetUri(out var fullPath) == true)
-        {
-            return fullPath;
-        }
-
-        return null;
+            IOSStorageFolder iosFolder => iosFolder.Url,
+            null => null,
+            _ => folder.Path
+        };
     }
 
     private Task<NSUrl[]> ShowPicker(UIDocumentPickerViewController documentPicker)

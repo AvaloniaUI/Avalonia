@@ -88,8 +88,8 @@ namespace Avalonia.FreeDesktop
 
             if (options.SuggestedFileName is { } currentName)
                 chooserOptions.Add("current_name", currentName);
-            if (options.SuggestedStartLocation?.TryGetUri(out var currentFolder) == true)
-                chooserOptions.Add("current_folder", Encoding.UTF8.GetBytes(currentFolder.ToString()));
+            if (options.SuggestedStartLocation?.TryGetFullPath() is { } folderPath)
+                chooserOptions.Add("current_folder", Encoding.UTF8.GetBytes(folderPath));
             objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
 
             var request = DBusHelper.Connection!.CreateProxy<IRequest>("org.freedesktop.portal.Request", objectPath);
@@ -131,7 +131,7 @@ namespace Avalonia.FreeDesktop
                 .Where(Directory.Exists)
                 .Select(path => new BclStorageFolder(new DirectoryInfo(path))).ToList();
         }
-
+        
         private static (string name, (uint style, string extension)[])[] ParseFilters(IReadOnlyList<FilePickerFileType>? fileTypes)
         {
             // Example: [('Images', [(0, '*.ico'), (1, 'image/png')]), ('Text', [(0, '*.txt')])]

@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
@@ -14,13 +17,41 @@ namespace Avalonia.Controls
     /// <summary>
     /// Arranges and virtualizes content on a single line that is oriented either horizontally or vertically.
     /// </summary>
-    public class VirtualizingStackPanel : VirtualizingPanel
+    public class VirtualizingStackPanel : VirtualizingPanel, IScrollSnapPointsInfo
     {
         /// <summary>
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
             StackLayout.OrientationProperty.AddOwner<VirtualizingStackPanel>();
+
+        /// <summary>
+        /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AreHorizontalSnapPointsRegularProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel, bool>(nameof(AreHorizontalSnapPointsRegular));
+
+        /// <summary>
+        /// Defines the <see cref="AreVerticalSnapPointsRegular"/> property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AreVerticalSnapPointsRegularProperty =
+            AvaloniaProperty.Register<VirtualizingStackPanel, bool>(nameof(AreVerticalSnapPointsRegular));
+
+        /// <summary>
+        /// Defines the <see cref="HorizontalSnapPointsChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> HorizontalSnapPointsChangedEvent =
+            RoutedEvent.Register<VirtualizingStackPanel, RoutedEventArgs>(
+                nameof(HorizontalSnapPointsChanged),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="VerticalSnapPointsChanged"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> VerticalSnapPointsChangedEvent =
+            RoutedEvent.Register<VirtualizingStackPanel, RoutedEventArgs>(
+                nameof(VerticalSnapPointsChanged),
+                RoutingStrategies.Bubble);
 
         private static readonly AttachedProperty<bool> ItemIsOwnContainerProperty =
             AvaloniaProperty.RegisterAttached<VirtualizingStackPanel, Control, bool>("ItemIsOwnContainer");
@@ -60,6 +91,42 @@ namespace Avalonia.Controls
         {
             get => GetValue(OrientationProperty);
             set => SetValue(OrientationProperty, value);
+        }
+
+        /// <summary>
+        /// Occurs when the measurements for horizontal snap points change.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? HorizontalSnapPointsChanged
+        {
+            add => AddHandler(HorizontalSnapPointsChangedEvent, value);
+            remove => RemoveHandler(HorizontalSnapPointsChangedEvent, value);
+        }
+
+        /// <summary>
+        /// Occurs when the measurements for vertical snap points change.
+        /// </summary>
+        public event EventHandler<RoutedEventArgs>? VerticalSnapPointsChanged
+        {
+            add => AddHandler(VerticalSnapPointsChangedEvent, value);
+            remove => RemoveHandler(VerticalSnapPointsChangedEvent, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether the horizontal snap points for the <see cref="VirtualizingStackPanel"/> are equidistant from each other.
+        /// </summary>
+        public bool AreHorizontalSnapPointsRegular
+        {
+            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
+            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
+        }
+
+        /// <summary>
+        /// Gets or sets whether the vertical snap points for the <see cref="VirtualizingStackPanel"/> are equidistant from each other.
+        /// </summary>
+        public bool AreVerticalSnapPointsRegular
+        {
+            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
+            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -145,6 +212,8 @@ namespace Avalonia.Controls
             finally
             {
                 _isInLayout = false;
+
+                RaiseEvent(new RoutedEventArgs(Orientation == Orientation.Horizontal ? HorizontalSnapPointsChangedEvent : VerticalSnapPointsChangedEvent));
             }
         }
 
@@ -226,7 +295,7 @@ namespace Avalonia.Controls
             {
                 if (toIndex < 0)
                     toIndex = count - 1;
-                else if (toIndex >= count - 1)
+                else if (toIndex >= count)
                     toIndex = 0;
             }
 
@@ -620,6 +689,167 @@ namespace Avalonia.Controls
 
             if (HasInvalidations(c))
                 Invalidate(c);
+        }
+
+        /// <inheritdoc/>
+        public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
+        {
+            var snapPoints = new List<double>();
+
+            switch (orientation)
+            {
+                case Orientation.Horizontal:
+                    if (AreHorizontalSnapPointsRegular)
+                        throw new InvalidOperationException();
+                    if (Orientation == Orientation.Horizontal)
+                    {
+                        var averageElementSize = EstimateElementSizeU();
+                        double snapPoint = 0;
+                        for (var i = 0; i < Items.Count; i++)
+                        {
+                            var container = ContainerFromIndex(i);
+                            if (container != null)
+                            {
+                                switch (snapPointsAlignment)
+                                {
+                                    case SnapPointsAlignment.Near:
+                                        snapPoint = container.Bounds.Left;
+                                        break;
+                                    case SnapPointsAlignment.Center:
+                                        snapPoint = container.Bounds.Center.X;
+                                        break;
+                                    case SnapPointsAlignment.Far:
+                                        snapPoint = container.Bounds.Right;
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                if (snapPoint == 0)
+                                {
+                                    switch (snapPointsAlignment)
+                                    {
+                                        case SnapPointsAlignment.Center:
+                                            snapPoint = averageElementSize / 2;
+                                            break;
+                                        case SnapPointsAlignment.Far:
+                                            snapPoint = averageElementSize;
+                                            break;
+                                    }
+                                }
+                                else
+                                    snapPoint += averageElementSize;
+                            }
+
+                            snapPoints.Add(snapPoint);
+                        }
+                    }
+                    break;
+                case Orientation.Vertical:
+                    if (AreVerticalSnapPointsRegular)
+                        throw new InvalidOperationException();
+                    if (Orientation == Orientation.Vertical)
+                    {
+                        var averageElementSize = EstimateElementSizeU();
+                        double snapPoint = 0;
+                        for (var i = 0; i < Items.Count; i++)
+                        {
+                            var container = ContainerFromIndex(i);
+                            if (container != null)
+                            {
+                                switch (snapPointsAlignment)
+                                {
+                                    case SnapPointsAlignment.Near:
+                                        snapPoint = container.Bounds.Top;
+                                        break;
+                                    case SnapPointsAlignment.Center:
+                                        snapPoint = container.Bounds.Center.Y;
+                                        break;
+                                    case SnapPointsAlignment.Far:
+                                        snapPoint = container.Bounds.Bottom;
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                if (snapPoint == 0)
+                                {
+                                    switch (snapPointsAlignment)
+                                    {
+                                        case SnapPointsAlignment.Center:
+                                            snapPoint = averageElementSize / 2;
+                                            break;
+                                        case SnapPointsAlignment.Far:
+                                            snapPoint = averageElementSize;
+                                            break;
+                                    }
+                                }
+                                else
+                                    snapPoint += averageElementSize;
+                            }
+
+                            snapPoints.Add(snapPoint);
+                        }
+                    }
+                    break;
+            }
+
+            return snapPoints;
+        }
+
+        /// <inheritdoc/>
+        public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
+        {
+            offset = 0f;
+            var firstRealizedChild = _realizedElements?.Elements.FirstOrDefault();
+
+            if (firstRealizedChild == null)
+            {
+                return 0;
+            }
+
+            double snapPoint = 0;
+
+            switch (Orientation)
+            {
+                case Orientation.Horizontal:
+                    if (!AreHorizontalSnapPointsRegular)
+                        throw new InvalidOperationException();
+
+                    snapPoint = firstRealizedChild.Bounds.Width;
+                    switch (snapPointsAlignment)
+                    {
+                        case SnapPointsAlignment.Near:
+                            offset = 0;
+                            break;
+                        case SnapPointsAlignment.Center:
+                            offset = (firstRealizedChild.Bounds.Right - firstRealizedChild.Bounds.Left) / 2;
+                            break;
+                        case SnapPointsAlignment.Far:
+                            offset = firstRealizedChild.Bounds.Width;
+                            break;
+                    }
+                    break;
+                case Orientation.Vertical:
+                    if (!AreVerticalSnapPointsRegular)
+                        throw new InvalidOperationException();
+                    snapPoint = firstRealizedChild.Bounds.Height;
+                    switch (snapPointsAlignment)
+                    {
+                        case SnapPointsAlignment.Near:
+                            offset = 0;
+                            break;
+                        case SnapPointsAlignment.Center:
+                            offset = (firstRealizedChild.Bounds.Bottom - firstRealizedChild.Bounds.Top) / 2;
+                            break;
+                        case SnapPointsAlignment.Far:
+                            offset = firstRealizedChild.Bounds.Height;
+                            break;
+                    }
+                    break;
+            }
+
+            return snapPoint;
         }
 
         /// <summary>

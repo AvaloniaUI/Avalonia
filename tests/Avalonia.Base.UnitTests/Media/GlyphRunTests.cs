@@ -188,7 +188,7 @@ namespace Avalonia.Base.UnitTests.Media
                 glyphInfos[i] = new GlyphInfo(0, glyphClusters[i], glyphAdvances[i]);
             }
 
-            return new GlyphRun(new MockGlyphTypeface(), 10, new string('a', count).AsMemory(), glyphInfos, bidiLevel);
+            return new GlyphRun(new MockGlyphTypeface(), 10, new string('a', count).AsMemory(), glyphInfos, biDiLevel: bidiLevel);
         }
     }
 }

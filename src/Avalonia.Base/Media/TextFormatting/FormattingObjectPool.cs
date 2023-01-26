@@ -93,16 +93,19 @@ namespace Avalonia.Media.TextFormatting
             [Conditional("DEBUG")]
             public void VerifyAllReturned()
             {
-                if (_pendingReturnCount > 0)
+                var pendingReturnCount = _pendingReturnCount;
+                _pendingReturnCount = 0;
+
+                if (pendingReturnCount > 0)
                 {
                     throw new InvalidOperationException(
-                        $"{_pendingReturnCount} RentedList<{typeof(T).Name} haven't been returned to the pool!");
+                        $"{pendingReturnCount} RentedList<{typeof(T).Name}> haven't been returned to the pool!");
                 }
 
-                if (_pendingReturnCount < 0)
+                if (pendingReturnCount < 0)
                 {
                     throw new InvalidOperationException(
-                        $"{-_pendingReturnCount} RentedList<{typeof(T).Name} extra lists have been returned to the pool!");
+                        $"{-pendingReturnCount} RentedList<{typeof(T).Name}> extra lists have been returned to the pool!");
                 }
             }
         }

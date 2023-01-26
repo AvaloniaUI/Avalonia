@@ -9,6 +9,7 @@ namespace ControlCatalog.Pages
     public class ScrollViewerPageViewModel : ViewModelBase
     {
         private bool _allowAutoHide;
+        private bool _enableInertia;
         private ScrollBarVisibility _horizontalScrollVisibility;
         private ScrollBarVisibility _verticalScrollVisibility;
 
@@ -25,12 +26,19 @@ namespace ControlCatalog.Pages
             HorizontalScrollVisibility = ScrollBarVisibility.Auto;
             VerticalScrollVisibility = ScrollBarVisibility.Auto;
             AllowAutoHide = true;
+            EnableInertia = true;
         }
 
         public bool AllowAutoHide
         {
             get => _allowAutoHide;
             set => this.RaiseAndSetIfChanged(ref _allowAutoHide, value);
+        }
+
+        public bool EnableInertia
+        {
+            get => _enableInertia;
+            set => this.RaiseAndSetIfChanged(ref _enableInertia, value);
         }
 
         public ScrollBarVisibility HorizontalScrollVisibility
