@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
@@ -13,7 +14,9 @@ namespace Avalonia.Input
         private readonly PointerPointProperties _properties;
         private readonly Lazy<IReadOnlyList<RawPointerPoint>?>? _previousPoints;
 
-        internal PointerEventArgs(RoutedEvent routedEvent,
+        [Unstable]
+        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
+        public PointerEventArgs(RoutedEvent routedEvent,
             object? source,
             IPointer pointer,
             Visual? rootVisual, Point rootVisualPosition,
