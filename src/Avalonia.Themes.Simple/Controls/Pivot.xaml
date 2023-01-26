@@ -1,0 +1,63 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type Pivot}"
+                TargetType="Pivot">
+    <Setter Property="Padding" Value="8" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Background="{TemplateBinding Background}"
+                HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                VerticalAlignment="{TemplateBinding VerticalAlignment}">
+          <DockPanel>
+            <ContentControl>
+              <Grid>
+                <PivotHeader Name="PART_Header"
+                             ItemTemplate="{TemplateBinding HeaderTemplate}"/>
+              </Grid>
+            </ContentControl>
+            <Border Name="PART_Border"
+                    Margin="{TemplateBinding Padding}"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
+              <Border.GestureRecognizers>
+                <ScrollGestureRecognizer CanHorizontallyScroll="True" />
+              </Border.GestureRecognizers>
+              <ScrollViewer Name="PART_ScrollViewer"
+                            HorizontalScrollBarVisibility="Hidden"
+                            VerticalScrollBarVisibility="Disabled"
+                            HorizontalAlignment="Stretch"
+                            HorizontalSnapPointsType="MandatorySingle"
+                            HorizontalSnapPointsAlignment="Near"
+                            IsScrollInertiaEnabled="False"
+                            VerticalAlignment="Stretch">
+                <ItemsPresenter Name="PART_ItemsPresenter"
+                                ItemsPanel="{TemplateBinding ItemsPanel}"/>
+              </ScrollViewer>
+            </Border>
+          </DockPanel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^[PivotHeaderPlacement=Top]">
+      <Setter Property="Padding" Value="0 4 0 0" />
+    </Style>
+    <Style Selector="^[PivotHeaderPlacement=Top] /template/ PivotHeader#PART_Header">
+      <Setter Property="DockPanel.Dock" Value="Top" />
+    </Style>
+    <Style Selector="^[PivotHeaderPlacement=Bottom] /template/ PivotHeader#PART_Header">
+      <Setter Property="DockPanel.Dock" Value="Bottom" />
+    </Style>
+    <Style Selector="^[PivotHeaderPlacement=Bottom]">
+      <Setter Property="Padding" Value="0 0 0 4" />
+    </Style>
+    <Style Selector="^[PivotHeaderPlacement=Top] /template/ DockPanel ContentControl">
+      <Setter Property="DockPanel.Dock" Value="Top" />
+    </Style>
+    <Style Selector="^[PivotHeaderPlacement=Bottom] /template/ DockPanel ContentControl">
+      <Setter Property="DockPanel.Dock" Value="Bottom" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

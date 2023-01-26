@@ -69,6 +69,10 @@
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/SelectableTextBlock.xaml"/>
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RefreshContainer.xaml" />
                 <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/RefreshVisualizer.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/Pivot.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PivotItem.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PivotHeader.xaml" />
+                <MergeResourceInclude Source="avares://Avalonia.Themes.Fluent/Controls/PivotHeaderItem.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

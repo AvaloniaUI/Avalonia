@@ -11,6 +11,26 @@
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
     <AvaloniaResource Include="**/*.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Controls\Pivot.xaml" />
+    <None Remove="Controls\PivotHeader.xaml" />
+    <None Remove="Controls\PivotHeaderItem.xaml" />
+    <None Remove="Controls\PivotItem.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Update="Controls\Pivot.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Update="Controls\PivotItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Update="Controls\PivotHeader.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+    <AvaloniaResource Update="Controls\PivotHeaderItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaResource>
+  </ItemGroup>
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\BuildTargets.targets" />
   <Import Project="..\..\build\ApiDiff.props" />

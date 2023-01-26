@@ -46,6 +46,7 @@ namespace Avalonia.Automation.Peers
         Table,
         TitleBar,
         Separator,
+        PivotItem
     }
 
     /// <summary>

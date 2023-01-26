@@ -1,0 +1,32 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type PivotHeader}"
+                TargetType="PivotHeader">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}">
+          <ScrollViewer
+            VerticalAlignment="Stretch"
+            HorizontalScrollBarVisibility="Hidden"
+            VerticalScrollBarVisibility="Disabled"
+            HorizontalAlignment="Stretch"
+            HorizontalSnapPointsAlignment="Near"
+            HorizontalSnapPointsType="MandatorySingle">
+            <ItemsPresenter Name="PART_ItemsPresenter"
+                            AreHorizontalSnapPointsRegular="False"
+                            ItemsPanel="{TemplateBinding ItemsPanel}"/>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="ItemsPanel">
+      <ItemsPanelTemplate>
+        <StackPanel Orientation="Horizontal" />
+      </ItemsPanelTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>

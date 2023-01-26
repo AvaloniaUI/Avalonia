@@ -503,8 +503,8 @@
     <Thickness x:Key="TabItemMargin">12,0,12,0</Thickness>
     <FontWeight x:Key="TabItemHeaderThemeFontWeight">SemiLight</FontWeight>
     <StaticResource x:Key="TabControlBackground" ResourceKey="SystemControlTransparentBrush" />
-          
-    <!-- Resources for TabItem -->
+
+  <!-- Resources for TabItem -->
     <StaticResource x:Key="TabItemHeaderBackgroundUnselected" ResourceKey="SystemControlTransparentBrush" />
     <StaticResource x:Key="TabItemHeaderBackgroundUnselectedPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
     <StaticResource x:Key="TabItemHeaderBackgroundUnselectedPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
@@ -639,5 +639,26 @@
 
     <!-- BaseResources for RefreshVisualizer.xaml -->
     <SolidColorBrush x:Key="RefreshVisualizerForeground" Color="White"/>
-    <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent"/> 
+    <SolidColorBrush x:Key="RefreshVisualizerBackground" Color="Transparent"/>
+
+    <!-- Resources for Pivot.xaml -->
+    <Thickness x:Key="PivotMargin">12,0,12,0</Thickness>
+    <x:Double x:Key="PivotHeaderItemFontSize">24</x:Double>
+    <StaticResource x:Key="PivotBackground" ResourceKey="SystemControlTransparentBrush" />
+    <FontWeight x:Key="PivotHeaderItemThemeFontWeight">SemiLight</FontWeight>
+    <StaticResource x:Key="PivotHeaderItemBackgroundUnselected" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundUnselectedPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundUnselectedPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundSelected" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundSelectedPointerOver" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundSelectedPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundUnselected" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundUnselectedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundUnselectedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundSelected" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundSelectedPointerOver" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundSelectedPressed" ResourceKey="SystemControlHighlightAltBaseMediumHighBrush" />
+    <StaticResource x:Key="PivotHeaderItemForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />    
+    <StaticResource x:Key="PivotHeaderItemSelectedPipeFill" ResourceKey="SystemControlHighlightAltAccentBrush" />
 </ResourceDictionary>

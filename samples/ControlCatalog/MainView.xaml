@@ -126,6 +126,9 @@
       <TabItem Header="OpenGL">
         <pages:OpenGlPage />
       </TabItem>
+        <TabItem Header="Pivot">
+          <pages:PivotPage />
+        </TabItem>
       <TabItem Header="Platform Information">
         <pages:PlatformInfoPage />
       </TabItem>

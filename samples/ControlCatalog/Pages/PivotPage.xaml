@@ -1,0 +1,86 @@
+<UserControl
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    x:Class="ControlCatalog.Pages.PivotPage"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:viewModels="using:ControlCatalog.ViewModels"
+    x:DataType="viewModels:PivotPageViewModel">
+    <DockPanel>
+        <TextBlock 
+            DockPanel.Dock="Top" 
+            Classes="h2"
+            Text="A Tabbed control with support for touch swipe gestures for page navigation"
+            Margin="4">          
+        </TextBlock>
+        <Grid 
+            RowDefinitions="Auto,*,*">
+            <DockPanel
+              Grid.Row="1"
+                Margin="4">
+                <TextBlock
+                    DockPanel.Dock="Top"
+                    Classes="h1"
+                    Text="From Inline PivotItems">
+                </TextBlock>
+                <Pivot
+                    Margin="0 16"
+                    PivotHeaderPlacement="{Binding TabPlacement}">
+                    <PivotItem Header="Arch">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock>This is the first page in the Pivot.</TextBlock>
+                            <Image Source="/Assets/delicate-arch-896885_640.jpg" Width="300"/>
+                        </StackPanel>
+                    </PivotItem>
+                    <PivotItem Header="Leaf">                       
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock>This is the second page in the Pivot.</TextBlock>
+                            <Image Source="/Assets/maple-leaf-888807_640.jpg" Width="300"/>
+                        </StackPanel>
+                    </PivotItem>
+                    <PivotItem Header="Disabled" IsEnabled="False">
+                        <TextBlock>You should not see this.</TextBlock>
+                    </PivotItem>
+                </Pivot>
+            </DockPanel>
+            <DockPanel
+                Grid.Row="2"
+                Margin="4">
+                <TextBlock
+                    DockPanel.Dock="Top"
+                    Classes="h1"
+                    Text="From DataTemplate">
+                </TextBlock>
+                <Pivot
+                    Items="{Binding Tabs}"
+                    Margin="0 16"
+                    HeaderDisplayMemberBinding="{Binding Header, x:DataType=viewModels:TabControlPageViewModelItem}"
+                    PivotHeaderPlacement="{Binding TabPlacement}">
+                    <Pivot.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:TabControlPageViewModelItem">
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <TextBlock Text="{Binding Text}"/>
+                                <Image Source="{Binding Image}" Width="300"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </Pivot.ItemTemplate>
+                    <Pivot.Styles>
+                        <Style Selector="PivotItem" x:DataType="viewModels:TabControlPageViewModelItem">
+                            <Setter Property="IsEnabled" Value="{Binding IsEnabled}"/>
+                        </Style>
+                    </Pivot.Styles>
+                </Pivot>
+            </DockPanel>
+            <StackPanel
+                Grid.Row="0"
+                Orientation="Horizontal"
+                Spacing="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <TextBlock VerticalAlignment="Center">Pivot Header Placement:</TextBlock>
+                <ComboBox SelectedIndex="{Binding TabPlacement, Mode=TwoWay}">
+                    <ComboBoxItem>Top</ComboBoxItem>
+                    <ComboBoxItem>Bottom</ComboBoxItem>
+                </ComboBox>
+            </StackPanel>
+        </Grid>
+    </DockPanel>
+</UserControl>

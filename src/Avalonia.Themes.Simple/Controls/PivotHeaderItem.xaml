@@ -1,0 +1,36 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <ControlTheme x:Key="{x:Type PivotHeaderItem}"
+                TargetType="PivotHeaderItem">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Margin" Value="16" />
+    <Setter Property="FontSize" Value="{DynamicResource FontSizeLarge}" />
+    <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundLowBrush}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+          Name="PART_LayoutRoot"
+          Background="{TemplateBinding Background}"
+          BorderBrush="{TemplateBinding BorderBrush}"
+          BorderThickness="{TemplateBinding BorderThickness}"
+          CornerRadius="{TemplateBinding CornerRadius}"
+          Padding="{TemplateBinding Padding}">
+          <Panel>
+            <ContentPresenter
+              Name="PART_ContentPresenter"
+              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+              Content="{TemplateBinding Content}"
+              ContentTemplate="{TemplateBinding ContentTemplate}"
+              FontFamily="{TemplateBinding FontFamily}"
+              FontSize="{TemplateBinding FontSize}"
+              FontWeight="{TemplateBinding FontWeight}" />
+          </Panel>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
