@@ -33,9 +33,10 @@ namespace Avalonia.Automation.Peers
                 Owner.TransformToVisual(root) is Matrix m)
             {
                 var source = Owner.TextLayout.HitTestTextRange(range.Start, range.Length);
+                var clip = Owner.CalculateEffectiveViewport();
                 var result = new List<Rect>();
                 foreach (var rect in source)
-                    result.Add(rect.TransformToAABB(m));
+                    result.Add(rect.Intersect(clip).TransformToAABB(m));
                 return result;
             }
 

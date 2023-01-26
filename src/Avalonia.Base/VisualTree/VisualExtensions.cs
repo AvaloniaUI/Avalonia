@@ -59,6 +59,20 @@ namespace Avalonia.VisualTree
         }
 
         /// <summary>
+        /// Calculates the effective viewport of a visual taking into account scrolling and clipping.
+        /// </summary>
+        /// <param name="visual">The visual.</param>
+        /// <returns>
+        /// The effective viewport of the visual, in the visual's own coordinate space.
+        /// </returns>
+        public static Rect CalculateEffectiveViewport(this Visual visual)
+        {
+            var viewport = new Rect(0, 0, double.PositiveInfinity, double.PositiveInfinity);
+            CalculateEffectiveViewport(visual, visual, ref viewport);
+            return viewport;
+        }
+
+        /// <summary>
         /// Tries to get the first common ancestor of two visuals.
         /// </summary>
         /// <param name="visual">The first visual.</param>
@@ -482,6 +496,38 @@ namespace Avalonia.VisualTree
                 })
                 .OrderBy(x => x, ZOrderElement.Comparer)
                 .Select(x => x.Element!);
+        }
+
+        private static void CalculateEffectiveViewport(Visual target, Visual control, ref Rect viewport)
+        {
+            // Recurse until the top level control.
+            if (control.VisualParent is object)
+            {
+                CalculateEffectiveViewport(target, control.VisualParent, ref viewport);
+            }
+            else
+            {
+                viewport = new Rect(control.Bounds.Size);
+            }
+
+            // Apply the control clip bounds if it's not the target control. We don't apply it to
+            // the target control because it may itself be clipped to bounds and if so the viewport
+            // we calculate would be of no use.
+            if (control != target && control.ClipToBounds)
+            {
+                viewport = control.Bounds.Intersect(viewport);
+            }
+
+            // Translate the viewport into this control's coordinate space.
+            viewport = viewport.Translate(-control.Bounds.Position);
+
+            if (control != target && control.RenderTransform is object)
+            {
+                var origin = control.RenderTransformOrigin.ToPixels(control.Bounds.Size);
+                var offset = Matrix.CreateTranslation(origin);
+                var renderTransform = (-offset) * control.RenderTransform.Value.Invert() * (offset);
+                viewport = viewport.TransformToAABB(renderTransform);
+            }
         }
 
         private static T? FindDescendantOfTypeCore<T>(Visual visual) where T : class

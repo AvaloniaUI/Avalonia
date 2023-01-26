@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
@@ -36,11 +35,12 @@ namespace Avalonia.Automation.Peers
             if (Owner.GetVisualRoot() is Visual root &&
                 Owner.Presenter?.TransformToVisual(root) is Matrix m)
             {
-                var source = Owner.Presenter?.TextLayout.HitTestTextRange(range.Start, range.Length)
+                var source = Owner.Presenter.TextLayout.HitTestTextRange(range.Start, range.Length)
                     ?? Array.Empty<Rect>();
+                var clip = Owner.Presenter.CalculateEffectiveViewport();
                 var result = new List<Rect>();
                 foreach (var rect in source)
-                    result.Add(rect.TransformToAABB(m));
+                    result.Add(rect.Intersect(clip).TransformToAABB(m));
                 return result;
             }
 
@@ -123,7 +123,6 @@ namespace Avalonia.Automation.Peers
         {
             return AutomationControlType.Edit;
         }
-
 
         private void OnSelectionChanged(int obj) => SelectedRangesChanged?.Invoke(this, EventArgs.Empty);
         private void OnTextChanged(string? text) => TextChanged?.Invoke(this, EventArgs.Empty);
