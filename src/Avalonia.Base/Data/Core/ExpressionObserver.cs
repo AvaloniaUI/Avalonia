@@ -11,7 +11,7 @@ namespace Avalonia.Data.Core
     /// <summary>
     /// Observes and sets the value of an expression on an object.
     /// </summary>
-    public class ExpressionObserver : LightweightObservableBase<object?>, IDescription
+    internal class ExpressionObserver : LightweightObservableBase<object?>, IDescription
     {
         /// <summary>
         /// An ordered collection of property accessor plugins that can be used to customize

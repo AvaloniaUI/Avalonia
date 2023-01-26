@@ -7,6 +7,8 @@
     
     <Manual Name="Avalonia.Platform.IGeometryImpl" Passthrough="true"/>
     <Manual Name="Avalonia.Media.IBrush" Passthrough="true"/>
+    <Manual Name="CompositionSurface" />
+    <Manual Name="CompositionDrawingSurface" />
     <Object Name="CompositionVisual" Abstract="true">
         <Property Name="Root" Type="CompositionTarget?" InternalSet="true" />
         <Property Name="Parent" Type="CompositionVisual?" InternalSet="true"  />
@@ -29,6 +31,9 @@
     <Object Name="CompositionContainerVisual" Inherits="CompositionVisual"/>
     <Object Name="CompositionSolidColorVisual" Inherits="CompositionContainerVisual">
         <Property Name="Color" Type="Avalonia.Media.Color" Animated="true" />
+    </Object>
+    <Object Name="CompositionSurfaceVisual" Inherits="CompositionContainerVisual">
+        <Property Name="Surface" Type="CompositionSurface?" />
     </Object>
     <List Name="CompositionVisualCollection" ItemType="CompositionVisual" CustomCtor="true"/>
     <Object Name="CompositionTarget" CustomServerCtor="true">

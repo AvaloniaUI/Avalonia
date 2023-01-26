@@ -19,7 +19,7 @@ namespace Avalonia.PropertyStore
         private T? _baseValue;
         private UncommonFields? _uncommon;
 
-        public EffectiveValue(AvaloniaObject owner, StyledPropertyBase<T> property)
+        public EffectiveValue(AvaloniaObject owner, StyledProperty<T> property)
         {
             Priority = BindingPriority.Unset;
             BasePriority = BindingPriority.Unset;
@@ -57,12 +57,12 @@ namespace Avalonia.PropertyStore
             Debug.Assert(priority != BindingPriority.LocalValue);
             UpdateValueEntry(value, priority);
 
-            SetAndRaiseCore(owner,  (StyledPropertyBase<T>)value.Property, GetValue(value), priority);
+            SetAndRaiseCore(owner,  (StyledProperty<T>)value.Property, GetValue(value), priority);
         }
 
         public void SetLocalValueAndRaise(
             ValueStore owner,
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             T value)
         {
             SetAndRaiseCore(owner, property, value, BindingPriority.LocalValue);
@@ -82,7 +82,7 @@ namespace Avalonia.PropertyStore
         {
             Debug.Assert(oldValue is not null || newValue is not null);
 
-            var p = (StyledPropertyBase<T>)property;
+            var p = (StyledProperty<T>)property;
             var o = oldValue is not null ? ((EffectiveValue<T>)oldValue).Value : _metadata.DefaultValue;
             var n = newValue is not null ? ((EffectiveValue<T>)newValue).Value : _metadata.DefaultValue;
             var priority = newValue is not null ? BindingPriority.Inherited : BindingPriority.Unset;
@@ -98,7 +98,7 @@ namespace Avalonia.PropertyStore
             Debug.Assert(Priority != BindingPriority.Animation);
             Debug.Assert(BasePriority != BindingPriority.Unset);
             UpdateValueEntry(null, BindingPriority.Animation);
-            SetAndRaiseCore(owner, (StyledPropertyBase<T>)property, _baseValue!, BasePriority);
+            SetAndRaiseCore(owner, (StyledProperty<T>)property, _baseValue!, BasePriority);
         }
 
         public override void CoerceValue(ValueStore owner, AvaloniaProperty property)
@@ -107,7 +107,7 @@ namespace Avalonia.PropertyStore
                 return;
             SetAndRaiseCore(
                 owner, 
-                (StyledPropertyBase<T>)property, 
+                (StyledProperty<T>)property, 
                 _uncommon._uncoercedValue!, 
                 Priority, 
                 _uncommon._uncoercedBaseValue!,
@@ -117,10 +117,10 @@ namespace Avalonia.PropertyStore
         public override void DisposeAndRaiseUnset(ValueStore owner, AvaloniaProperty property)
         {
             UnsubscribeValueEntries();
-            DisposeAndRaiseUnset(owner, (StyledPropertyBase<T>)property);
+            DisposeAndRaiseUnset(owner, (StyledProperty<T>)property);
         }
 
-        public void DisposeAndRaiseUnset(ValueStore owner, StyledPropertyBase<T> property)
+        public void DisposeAndRaiseUnset(ValueStore owner, StyledProperty<T> property)
         {
             BindingPriority priority;
             T oldValue;
@@ -156,7 +156,7 @@ namespace Avalonia.PropertyStore
 
         private void SetAndRaiseCore(
             ValueStore owner,
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             T value,
             BindingPriority priority)
         {
@@ -203,7 +203,7 @@ namespace Avalonia.PropertyStore
 
         private void SetAndRaiseCore(
             ValueStore owner,
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             T value,
             BindingPriority priority,
             T baseValue,

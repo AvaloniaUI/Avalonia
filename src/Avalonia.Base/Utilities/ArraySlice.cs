@@ -3,7 +3,6 @@
 // Ported from: https://github.com/SixLabors/Fonts/
 
 using System;
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -18,7 +17,6 @@ namespace Avalonia.Utilities
     /// </summary>
     /// <typeparam name="T">The type of item contained in the slice.</typeparam>
     internal readonly struct ArraySlice<T> : IReadOnlyList<T>
-        where T : struct
     {
         /// <summary>
         /// Gets an empty <see cref="ArraySlice{T}"/>
@@ -186,13 +184,6 @@ namespace Avalonia.Utilities
 
         /// <inheritdoc/>
         int IReadOnlyCollection<T>.Count => Length;
-
-        public void ReturnRent()
-        {
-            if (_data != null)
-            {
-                ArrayPool<T>.Shared.Return(_data);
-            }
-        }
     }
 }
+

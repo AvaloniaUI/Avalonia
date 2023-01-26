@@ -13,7 +13,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -319,12 +318,12 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem?)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = value is Control c ? ItemContainerGenerator.IndexFromContainer(c) : -1;
+                SelectedIndex = value is Control c ? IndexFromContainer(c) : -1;
             }
         }
 
@@ -691,7 +690,7 @@ namespace Avalonia.Controls
 
             if (selected != -1)
             {
-                var container = ItemContainerGenerator?.ContainerFromIndex(selected);
+                var container = ContainerFromIndex(selected);
                 container?.Focus();
             }
         }

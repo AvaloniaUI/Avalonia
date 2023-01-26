@@ -24,32 +24,33 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         public void BasicLatinTest()
         {
             var lineBreaker = new LineBreakEnumerator("Hello World\r\nThis is a test.");
+            LineBreak lineBreak;
 
-            Assert.True(lineBreaker.MoveNext());
-            Assert.Equal(6, lineBreaker.Current.PositionWrap);
-            Assert.False(lineBreaker.Current.Required);
+            Assert.True(lineBreaker.MoveNext(out lineBreak));
+            Assert.Equal(6, lineBreak.PositionWrap);
+            Assert.False(lineBreak.Required);
 
-            Assert.True(lineBreaker.MoveNext());
-            Assert.Equal(13, lineBreaker.Current.PositionWrap);
-            Assert.True(lineBreaker.Current.Required);
+            Assert.True(lineBreaker.MoveNext(out lineBreak));
+            Assert.Equal(13, lineBreak.PositionWrap);
+            Assert.True(lineBreak.Required);
 
-            Assert.True(lineBreaker.MoveNext());
-            Assert.Equal(18, lineBreaker.Current.PositionWrap);
-            Assert.False(lineBreaker.Current.Required);
+            Assert.True(lineBreaker.MoveNext(out lineBreak));
+            Assert.Equal(18, lineBreak.PositionWrap);
+            Assert.False(lineBreak.Required);
 
-            Assert.True(lineBreaker.MoveNext());
-            Assert.Equal(21, lineBreaker.Current.PositionWrap);
-            Assert.False(lineBreaker.Current.Required);
+            Assert.True(lineBreaker.MoveNext(out lineBreak));
+            Assert.Equal(21, lineBreak.PositionWrap);
+            Assert.False(lineBreak.Required);
 
-            Assert.True(lineBreaker.MoveNext());
-            Assert.Equal(23, lineBreaker.Current.PositionWrap);
-            Assert.False(lineBreaker.Current.Required);
+            Assert.True(lineBreaker.MoveNext(out lineBreak));
+            Assert.Equal(23, lineBreak.PositionWrap);
+            Assert.False(lineBreak.Required);
 
-            Assert.True(lineBreaker.MoveNext());
-            Assert.Equal(28, lineBreaker.Current.PositionWrap);
-            Assert.False(lineBreaker.Current.Required);
+            Assert.True(lineBreaker.MoveNext(out lineBreak));
+            Assert.Equal(28, lineBreak.PositionWrap);
+            Assert.False(lineBreak.Required);
 
-            Assert.False(lineBreaker.MoveNext());
+            Assert.False(lineBreaker.MoveNext(out lineBreak));
         }
 
 
@@ -72,9 +73,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
         {
             var breaks = new List<LineBreak>();
 
-            while (lineBreaker.MoveNext())
+            while (lineBreaker.MoveNext(out var lineBreak))
             {
-                breaks.Add(lineBreaker.Current);
+                breaks.Add(lineBreak);
             }
 
             return breaks;
@@ -104,9 +105,9 @@ namespace Avalonia.Base.UnitTests.Media.TextFormatting
 
             var foundBreaks = new List<int>();
             
-            while (lineBreaker.MoveNext())
+            while (lineBreaker.MoveNext(out var lineBreak))
             {
-                foundBreaks.Add(lineBreaker.Current.PositionWrap);
+                foundBreaks.Add(lineBreak.PositionWrap);
             }
             
             // Check the same

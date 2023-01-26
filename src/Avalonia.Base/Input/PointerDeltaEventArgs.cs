@@ -1,13 +1,17 @@
+using System;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
     public class PointerDeltaEventArgs : PointerEventArgs
     {
-        public Vector Delta { get; set; }
+        public Vector Delta { get; }
 
-        internal PointerDeltaEventArgs(RoutedEvent routedEvent, object? source, 
+        [Unstable]
+        [Obsolete("This constructor might be removed in 12.0.")]
+        public PointerDeltaEventArgs(RoutedEvent routedEvent, object? source, 
             IPointer pointer, Visual rootVisual, Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers, Vector delta) 
             : base(routedEvent, source, pointer, rootVisual, rootVisualPosition,

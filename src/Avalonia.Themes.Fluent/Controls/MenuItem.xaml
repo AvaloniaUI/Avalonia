@@ -92,6 +92,7 @@
 
               <ContentPresenter Name="PART_HeaderPresenter"
                                 Content="{TemplateBinding Header}"
+                                ContentTemplate="{TemplateBinding ItemTemplate}"
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Stretch"
                                 RecognizesAccessKey="True"
