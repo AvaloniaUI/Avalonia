@@ -128,7 +128,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             AvaloniaObjectSetStyledPropertyValue = AvaloniaObject
                 .FindMethod(m => m.IsPublic && !m.IsStatic && m.Name == "SetValue"
                                  && m.Parameters.Count == 3
-                                 && m.Parameters[0].Name == "StyledPropertyBase`1"
+                                 && m.Parameters[0].Name == "StyledProperty`1"
                                  && m.Parameters[2].Equals(BindingPriority));
             IBinding = cfg.TypeSystem.GetType("Avalonia.Data.IBinding");
             IDisposable = cfg.TypeSystem.GetType("System.IDisposable");

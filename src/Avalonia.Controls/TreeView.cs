@@ -575,7 +575,7 @@ namespace Avalonia.Controls
                     {
                         var previous = (TreeViewItem)parentItemsControl.ContainerFromIndex(index - 1)!;
                         result = previous.IsExpanded && previous.ItemCount > 0 ?
-                            (TreeViewItem)previous.ItemContainerGenerator.ContainerFromIndex(previous.ItemCount - 1)! :
+                            (TreeViewItem)previous.ContainerFromIndex(previous.ItemCount - 1)! :
                             previous;
                     }
                     else

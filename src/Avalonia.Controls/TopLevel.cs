@@ -608,12 +608,21 @@ namespace Avalonia.Controls
         /// <param name="e">The event args.</param>
         private void HandleInput(RawInputEventArgs e)
         {
-            if (e is RawPointerEventArgs pointerArgs)
+            if (PlatformImpl != null)
             {
-                pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
-            }
+                if (e is RawPointerEventArgs pointerArgs)
+                {
+                    pointerArgs.InputHitTestResult = this.InputHitTest(pointerArgs.Position);
+                }
 
-            _inputManager?.ProcessInput(e);
+                _inputManager?.ProcessInput(e);
+            }
+            else
+            {
+                Logger.TryGet(LogEventLevel.Warning, LogArea.Control)?.Log(
+                    this,
+                    "PlatformImpl is null, couldn't handle input.");
+            }
         }
 
         private void GlobalActualThemeVariantChanged(object? sender, EventArgs e)
@@ -636,6 +645,13 @@ namespace Avalonia.Controls
 
             if (focused == this)
                 KeyboardDevice.Instance?.SetFocusedElement(null, NavigationMethod.Unspecified, KeyModifiers.None);
+        }
+
+        protected override bool BypassFlowDirectionPolicies => true;
+
+        public override void InvalidateMirrorTransform()
+        {
+            // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
         }
 
         ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>

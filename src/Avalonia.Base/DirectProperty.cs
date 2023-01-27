@@ -33,6 +33,8 @@ namespace Avalonia
         {
             Getter = getter ?? throw new ArgumentNullException(nameof(getter));
             Setter = setter;
+            IsDirect = true;
+            IsReadOnly = setter is null;
         }
 
         /// <summary>
@@ -51,16 +53,9 @@ namespace Avalonia
         {
             Getter = getter ?? throw new ArgumentNullException(nameof(getter));
             Setter = setter;
+            IsDirect = true;
+            IsReadOnly = setter is null;
         }
-
-        /// <inheritdoc/>
-        public override bool IsDirect => true;
-
-        /// <inheritdoc/>
-        public override bool IsReadOnly => Setter == null;
-
-        /// <inheritdoc/>
-        public override Type Owner => typeof(TOwner);
 
         /// <summary>
         /// Gets the getter function.

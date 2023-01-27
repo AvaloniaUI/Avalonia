@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
 using Avalonia.Rendering.Composition;
+using Avalonia.Utilities;
 
 namespace ControlCatalog.Pages
 {
@@ -53,6 +54,7 @@ namespace ControlCatalog.Pages
                 {
                     _currentScale = 1;
                     compositionVisual.Scale = new Vector3(1,1,1);
+                    compositionVisual.Offset = default;
                     image.InvalidateMeasure();
                 }
             };
@@ -100,21 +102,25 @@ namespace ControlCatalog.Pages
             {
                 InitComposition(control!);
 
-                isZooming = true;
-
                 if(compositionVisual != null)
                 {
                     var scale = _currentScale * (float)e.Scale;
 
+                    if (scale <= 1)
+                    {
+                        scale = 1;
+                        compositionVisual.Offset = default;
+                    }
+
                     compositionVisual.Scale = new(scale, scale, 1);
+
+                    e.Handled = true;
                 }
             });
 
             control.AddHandler(Gestures.PinchEndedEvent, (s, e) =>
             {
                 InitComposition(control!);
-
-                isZooming = false;
 
                 if (compositionVisual != null)
                 {
@@ -126,11 +132,19 @@ namespace ControlCatalog.Pages
             {
                 InitComposition(control!);
 
-                if (compositionVisual != null && !isZooming)
+                if (compositionVisual != null && _currentScale != 1)
                 {
-                    currentOffset -= new Vector3((float)e.Delta.X, (float)e.Delta.Y, 0);
+                    currentOffset += new Vector3((float)e.Delta.X, (float)e.Delta.Y, 0);
 
-                    compositionVisual.Offset = currentOffset;
+                    var currentSize = control.Bounds.Size * _currentScale;
+
+                    currentOffset = new Vector3((float)MathUtilities.Clamp(currentOffset.X, 0, currentSize.Width - control.Bounds.Width),
+                        (float)MathUtilities.Clamp(currentOffset.Y, 0, currentSize.Height - control.Bounds.Height),
+                        0);
+
+                    compositionVisual.Offset = currentOffset * -1;
+
+                    e.Handled = true;
                 }
             });
         }
@@ -173,6 +187,8 @@ namespace ControlCatalog.Pages
                 if (ballCompositionVisual != null)
                 {
                     ballCompositionVisual.Offset = defaultOffset + new System.Numerics.Vector3((float)e.Delta.X * 0.4f, (float)e.Delta.Y * 0.4f, 0) * (inverse ? -1 : 1);
+
+                    e.Handled = true;
                 }
             });
 
@@ -187,11 +203,6 @@ namespace ControlCatalog.Pages
 
             void InitComposition(Control control)
             {
-                if (ballCompositionVisual != null)
-                {
-                    return;
-                }
-
                 ballCompositionVisual = ElementComposition.GetElementVisual(ball);
 
                 if (ballCompositionVisual != null)

@@ -35,4 +35,8 @@ public partial class Compositor
         new(this, new ServerCompositionSolidColorVisual(Server));
 
     public CompositionCustomVisual CreateCustomVisual(CompositionCustomVisualHandler handler) => new(this, handler);
+
+    public CompositionSurfaceVisual CreateSurfaceVisual() => new(this, new ServerCompositionSurfaceVisual(_server));
+
+    public CompositionDrawingSurface CreateDrawingSurface() => new(this);
 }

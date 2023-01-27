@@ -14,7 +14,7 @@ namespace Avalonia.Media.TextFormatting
         {
             ShapedBuffer = shapedBuffer;
             Properties = properties;
-            TextMetrics = new TextMetrics(properties.Typeface.GlyphTypeface, properties.FontRenderingEmSize);
+            TextMetrics = new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
         }
 
         public bool IsReversed { get; private set; }
@@ -40,25 +40,14 @@ namespace Avalonia.Media.TextFormatting
 
         public override Size Size => GlyphRun.Size;
 
-        public GlyphRun GlyphRun
-        {
-            get
-            {
-                if(_glyphRun is null)
-                {
-                    _glyphRun = CreateGlyphRun();
-                }
-
-                return _glyphRun;
-            }
-        }
+        public GlyphRun GlyphRun => _glyphRun ??= CreateGlyphRun();
 
         /// <inheritdoc/>
         public override void Draw(DrawingContext drawingContext, Point origin)
         {
             using (drawingContext.PushPreTransform(Matrix.CreateTranslation(origin)))
             {
-                if (GlyphRun.GlyphIndices.Count == 0)
+                if (GlyphRun.GlyphInfos.Count == 0)
                 {
                     return;
                 }
@@ -117,7 +106,7 @@ namespace Avalonia.Media.TextFormatting
 
             for (var i = 0; i < ShapedBuffer.Length; i++)
             {
-                var advance = ShapedBuffer.GlyphAdvances[i];
+                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
 
                 if (currentWidth + advance > availableWidth)
                 {
@@ -141,7 +130,7 @@ namespace Avalonia.Media.TextFormatting
 
             for (var i = ShapedBuffer.Length - 1; i >= 0; i--)
             {
-                var advance = ShapedBuffer.GlyphAdvances[i];
+                var advance = ShapedBuffer.GlyphInfos[i].GlyphAdvance;
 
                 if (width + advance > availableWidth)
                 {
@@ -195,11 +184,8 @@ namespace Avalonia.Media.TextFormatting
                 ShapedBuffer.GlyphTypeface,
                 ShapedBuffer.FontRenderingEmSize,
                 Text,
-                ShapedBuffer.GlyphIndices,
-                ShapedBuffer.GlyphAdvances,
-                ShapedBuffer.GlyphOffsets,
-                ShapedBuffer.GlyphClusters,
-                BidiLevel);
+                ShapedBuffer,
+                biDiLevel: BidiLevel);
         }
 
         public void Dispose()

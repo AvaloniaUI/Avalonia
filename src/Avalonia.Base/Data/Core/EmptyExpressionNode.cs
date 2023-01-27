@@ -1,6 +1,6 @@
 ﻿namespace Avalonia.Data.Core
 {
-    public class EmptyExpressionNode : ExpressionNode
+    internal class EmptyExpressionNode : ExpressionNode
     {
         public override string Description => ".";
     }
