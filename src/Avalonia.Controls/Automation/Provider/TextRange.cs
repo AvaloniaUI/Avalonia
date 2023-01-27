@@ -45,12 +45,12 @@ namespace Avalonia.Automation.Provider
         public static TextRange Empty => new(0, 0);
 
         /// <summary>
-        /// Creates a new <see cref="TextRange"/> from an inclusive start and end index.
+        /// Creates a new <see cref="TextRange"/> from an exclusive start and end index.
         /// </summary>
-        /// <param name="start">The inclusive start index of the range.</param>
-        /// <param name="end">The inclusive end index of the range.</param>
+        /// <param name="start">The exclusive start index of the range.</param>
+        /// <param name="end">The exclusive end index of the range.</param>
         /// <returns></returns>
-        public static TextRange FromInclusiveStartEnd(int start, int end)
+        public static TextRange FromStartEnd(int start, int end)
         {
             var s = Math.Min(start, end);
             var e = Math.Max(start, end);

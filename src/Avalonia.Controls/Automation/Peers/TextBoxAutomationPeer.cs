@@ -63,7 +63,7 @@ namespace Avalonia.Automation.Peers
 
         public IReadOnlyList<TextRange> GetSelection()
         {
-            var range = TextRange.FromInclusiveStartEnd(Owner.SelectionStart, Owner.SelectionEnd);
+            var range = TextRange.FromStartEnd(Owner.SelectionStart, Owner.SelectionEnd);
             return new[] { range };
         }
 

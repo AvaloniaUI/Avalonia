@@ -12,6 +12,8 @@ namespace Avalonia.Win32.Automation
     internal class AutomationTextRange : ITextRangeProvider
     {
         private readonly AutomationNode _owner;
+        private int _start;
+        private int _end;
 
         public AutomationTextRange(AutomationNode owner, TextRange range)
             : this(owner, range.Start, range.End)
@@ -21,13 +23,37 @@ namespace Avalonia.Win32.Automation
         public AutomationTextRange(AutomationNode owner, int start, int end)
         {
             _owner = owner;
-            Start = start;
-            End = end;
+            _start = start;
+            _end = end;
         }
 
-        public int Start { get; private set; }
-        public int End { get; private set; }
-        public TextRange Range => TextRange.FromInclusiveStartEnd(Start, End);
+        public int Start
+        {
+            get => _start;
+            private set
+            {
+                if (value < 0)
+                    throw new InvalidOperationException();
+                if (value > _end)
+                    _end = value;
+                _start = value;
+            }
+        }
+
+        public int End
+        {
+            get => _end;
+            private set
+            {
+                if (value < 0)
+                    throw new InvalidOperationException();
+                if (value < _start)
+                    _start = value;
+                _end = value;
+            }
+        }
+
+        public TextRange Range => new(Start, End);
 
         private AAP.ITextProvider InnerProvider => (AAP.ITextProvider)_owner.Peer;
 
@@ -410,7 +436,7 @@ namespace Avalonia.Win32.Automation
                 case TextUnit.Word:
                     for (moved = 0; moved > count && index > 0; moved--)
                     {
-                        for (index--; index < text.Length && IsWordBreak(text[index]); index--)
+                        for (index--; index >= 0 && IsWordBreak(text[index]); index--)
                             ;
                         for (index--; !AtWordBoundary(text, index); index--)
                             ;
