@@ -34,7 +34,7 @@ namespace Avalonia.FreeDesktop.DBusIme
         private bool _connecting;
         private string? _currentName;
         private DBusCallQueue _queue;
-        private bool _controlActive, _windowActive;
+        private bool _windowActive;
         private bool? _imeActive;
         private Rect _logicalRect;
         private PixelRect? _lastReportedRect;
@@ -49,14 +49,14 @@ namespace Avalonia.FreeDesktop.DBusIme
             _queue = new DBusCallQueue(QueueOnErrorAsync);
             Connection = connection;
             _knownNames = knownNames;
-            Watch();
+            _ = WatchAsync();
         }
 
         public ITextInputMethodClient Client => _client;
 
         public bool IsActive => _client is not null;
 
-        private async void Watch()
+        private async Task WatchAsync()
         {
             foreach (var name in _knownNames)
             {
@@ -124,7 +124,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                 Reset();
 
                 // Watch again
-                Watch();
+                _ = WatchAsync();
             }
         }
 
@@ -174,7 +174,7 @@ namespace Avalonia.FreeDesktop.DBusIme
             foreach(var d in _disposables)
                 d.Dispose();
             _disposables.Clear();
-            DisconnectAsync();
+            _ = DisconnectAsync();
             _currentName = null;
         }
 
@@ -190,7 +190,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                 if(!IsConnected)
                     return;
 
-                var active = _windowActive && _controlActive;
+                var active = _windowActive && IsActive;
                 if (active != _imeActive)
                 {
                     _imeActive = active;

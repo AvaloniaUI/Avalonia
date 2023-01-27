@@ -613,7 +613,7 @@ namespace Avalonia.Controls.Presenters
                         {
                             height = _verticalSnapPoint;
                         }
-                        else if(_verticalSnapPoints != null)
+                        else if(_verticalSnapPoints != null && _verticalSnapPoints.Count > 0)
                         {
                             double yOffset = Offset.Y;
                             switch (VerticalSnapPointsAlignment)
@@ -645,7 +645,7 @@ namespace Avalonia.Controls.Presenters
                         {
                             width = _horizontalSnapPoint;
                         }
-                        else if(_horizontalSnapPoints != null)
+                        else if(_horizontalSnapPoints != null && _horizontalSnapPoints.Count > 0)
                         {
                             double xOffset = Offset.X;
                             switch (VerticalSnapPointsAlignment)
