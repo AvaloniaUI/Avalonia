@@ -85,13 +85,13 @@ namespace Avalonia.Automation.Provider
         /// Retrieves the line number for the line that contains the specified character index.
         /// </summary>
         /// <param name="index">The character index.</param>
-        /// <returns>The line number, or -1 if the character index is invalid.</returns>
+        /// <returns>The 0-based line number, or -1 if the character index is invalid.</returns>
         int GetLineForIndex(int index);
 
         /// <summary>
         /// Retrieves a text range that encloses the specified line.
         /// </summary>
-        /// <param name="lineIndex">The index of the line.</param>
+        /// <param name="lineIndex">The 0-based index of the line.</param>
         TextRange GetLineRange(int lineIndex);
 
         /// <summary>
@@ -110,6 +110,10 @@ namespace Avalonia.Automation.Provider
         /// </summary>
         /// <param name="range">The text range.</param>
         /// <returns>The text.</returns>
+        /// <remarks>
+        /// The <paramref name="range"/> may be outside the <see cref="DocumentRange"/>, in which
+        /// case the start and end points should be constrained to the document range.
+        /// </remarks>
         string GetText(TextRange range);
 
         /// <summary>

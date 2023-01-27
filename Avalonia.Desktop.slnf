@@ -62,7 +62,8 @@
       "tests\\Avalonia.ReactiveUI.UnitTests\\Avalonia.ReactiveUI.UnitTests.csproj",
       "tests\\Avalonia.Skia.RenderTests\\Avalonia.Skia.RenderTests.csproj",
       "tests\\Avalonia.Skia.UnitTests\\Avalonia.Skia.UnitTests.csproj",
-      "tests\\Avalonia.UnitTests\\Avalonia.UnitTests.csproj"
+      "tests\\Avalonia.UnitTests\\Avalonia.UnitTests.csproj",
+      "tests\\Avalonia.Win32.UnitTests\\Avalonia.Win32.UnitTests.csproj"
     ]
   }
 }

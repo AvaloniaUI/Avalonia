@@ -270,6 +270,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.NUnit.UnitTests", "tests\Avalonia.Headless.NUnit.UnitTests\Avalonia.Headless.NUnit.UnitTests.csproj", "{2999D79E-3C20-4A90-B651-CA7E0AC92D35}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avalonia.Headless.XUnit.UnitTests", "tests\Avalonia.Headless.XUnit.UnitTests\Avalonia.Headless.XUnit.UnitTests.csproj", "{F83FC908-A4E3-40DE-B4CF-A4BA1E92CDB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Win32.UnitTests", "tests\Avalonia.Win32.UnitTests\Avalonia.Win32.UnitTests.csproj", "{DA23EE40-733D-4DC3-BD2E-DE8E263E6654}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -658,6 +659,10 @@ Global
 		{F83FC908-A4E3-40DE-B4CF-A4BA1E92CDB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F83FC908-A4E3-40DE-B4CF-A4BA1E92CDB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F83FC908-A4E3-40DE-B4CF-A4BA1E92CDB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA23EE40-733D-4DC3-BD2E-DE8E263E6654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA23EE40-733D-4DC3-BD2E-DE8E263E6654}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA23EE40-733D-4DC3-BD2E-DE8E263E6654}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA23EE40-733D-4DC3-BD2E-DE8E263E6654}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -742,6 +747,7 @@ Global
 		{4B8EBBEB-A1AD-49EC-8B69-B93ED15BFA64} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{2999D79E-3C20-4A90-B651-CA7E0AC92D35} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 		{F83FC908-A4E3-40DE-B4CF-A4BA1E92CDB3} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
+		{DA23EE40-733D-4DC3-BD2E-DE8E263E6654} = {C5A00AC3-B34C-4564-9BDD-2DA473EF4D8B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {87366D66-1391-4D90-8999-95A620AD786A}
