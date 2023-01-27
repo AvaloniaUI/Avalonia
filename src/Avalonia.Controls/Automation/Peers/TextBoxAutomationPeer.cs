@@ -75,12 +75,6 @@ namespace Avalonia.Automation.Peers
             return text.Substring(start, end - start);
         }
 
-        public IReadOnlyList<TextRange> GetVisibleRanges()
-        {
-            // Not sure this is necessary, QT just returns the document range too.
-            return new[] { DocumentRange };
-        }
-
         public TextRange RangeFromPoint(Point p)
         {
             if (Owner.Presenter is null)

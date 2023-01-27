@@ -62,8 +62,6 @@ namespace Avalonia.Automation.Peers
             return text.Substring(start, end - start);
         }
 
-        public IReadOnlyList<TextRange> GetVisibleRanges() => new[] { DocumentRange };
-
         public TextRange RangeFromPoint(Point p)
         {
             var i = 0;

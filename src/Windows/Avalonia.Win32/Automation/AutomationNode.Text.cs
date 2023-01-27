@@ -24,7 +24,7 @@ namespace Avalonia.Win32.Automation
             get => (UIA.SupportedTextSelection)InvokeSync<ITextProvider, SupportedTextSelection>(x => x.SupportedTextSelection);
         }
 
-        public UIA.ITextRangeProvider[] GetVisibleRanges() => GetRanges(x => x.GetVisibleRanges());
+        public UIA.ITextRangeProvider[] GetVisibleRanges() => new[] { DocumentRange };
 
         public UIA.ITextRangeProvider? RangeFromChild(UIA.IRawElementProviderSimple childElement) => null;
 

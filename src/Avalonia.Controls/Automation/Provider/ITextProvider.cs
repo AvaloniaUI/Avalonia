@@ -113,12 +113,6 @@ namespace Avalonia.Automation.Provider
         string GetText(TextRange range);
 
         /// <summary>
-        /// Retrieves a collection of disjoint text ranges from a text-based control where each
-        /// text range represents a contiguous span of visible text.
-        /// </summary>
-        IReadOnlyList<TextRange> GetVisibleRanges();
-
-        /// <summary>
         /// Returns the degenerate (empty) text range nearest to the specified coordinates.
         /// </summary>
         /// <param name="p">The point in top-level coordinates.</param>
