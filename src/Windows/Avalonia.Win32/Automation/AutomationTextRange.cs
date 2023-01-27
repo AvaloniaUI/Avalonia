@@ -32,8 +32,7 @@ namespace Avalonia.Win32.Automation
             get => _start;
             private set
             {
-                if (value < 0)
-                    throw new InvalidOperationException();
+                value = Math.Max(0, value);
                 if (value > _end)
                     _end = value;
                 _start = value;
@@ -45,8 +44,7 @@ namespace Avalonia.Win32.Automation
             get => _end;
             private set
             {
-                if (value < 0)
-                    throw new InvalidOperationException();
+                value = Math.Max(0, value);
                 if (value < _start)
                     _start = value;
                 _end = value;

@@ -20,7 +20,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Right_One_Char(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 0, 1);
 
             var result = range.Move(TextUnit.Character, 1);
@@ -33,7 +33,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Does_Not_Move_Right_From_Last_Char(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var start = peer.Text.Length - 1;
             var range = new AutomationTextRange(node, start, start + 1);
 
@@ -47,7 +47,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Degenerate_Right_One_Char(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 0, 0);
 
             var result = range.Move(TextUnit.Character, 1);
@@ -61,7 +61,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Right_To_Newline(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 0, 1);
 
             var result = range.Move(TextUnit.Character, 1);
@@ -74,7 +74,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Right_One_Surrogate_Pair(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var start = peer.GetLineRange(6).Start;
             var range = new AutomationTextRange(node, start, start + 2);
 
@@ -90,7 +90,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Left_One_Char(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 0, 1);
 
             var result = range.Move(TextUnit.Character, 1);
@@ -103,7 +103,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Does_Not_Move_Left_From_First_Char(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 0, 1);
 
             var result = range.Move(TextUnit.Character, -1);
@@ -116,7 +116,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Left_One_Surrogate_Pair(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var start = peer.GetLineRange(6).Start + 2;
             var range = new AutomationTextRange(node, start, start + 1);
 
@@ -130,7 +130,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Right_One_Word_With_Trailing_Newlines(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 0, 1);
 
             var result = range.Move(TextUnit.Word, 1);
@@ -148,7 +148,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Right_One_Word_With_Apostrophe(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var start = peer.GetLineRange(10).Start;
             var range = new AutomationTextRange(node, start, start + 1);
 
@@ -163,7 +163,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Left_To_Previous_Line_With_Trailing_Newlines(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var start = peer.GetLineRange(2).Start;
             var range = new AutomationTextRange(node, start, start + 1);
 
@@ -177,7 +177,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Down_To_Empty_Line(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 0, peer.Lines[0].Length);
 
             var result = range.Move(TextUnit.Line, 1);
@@ -190,7 +190,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Degenerate_Down_To_Empty_Line(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 0, 0);
 
             var result = range.Move(TextUnit.Line, 1);
@@ -204,7 +204,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Down_From_Mid_Line_To_Next_Line(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 2, 4);
 
             var result = range.Move(TextUnit.Line, 1);
@@ -217,7 +217,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Does_Not_Move_Down_From_Last_Line(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var start = peer.GetLineRange(peer.Lines.Count - 1).Start;
             var range = new AutomationTextRange(node, start, peer.Text.Length);
 
@@ -231,7 +231,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Up_To_Empty_Line(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var start = peer.GetLineRange(2).Start;
             var range = new AutomationTextRange(node, start, start + peer.Lines[2].Length);
 
@@ -245,7 +245,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Degenerate_Up_To_Empty_Line(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var start = peer.GetLineRange(2).Start;
             var range = new AutomationTextRange(node, start, start);
 
@@ -260,7 +260,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Moves_Up_From_Mid_Line_To_Next_Line(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var start = peer.GetLineRange(2).Start + 2;
             var range = new AutomationTextRange(node, start, start + 2);
 
@@ -274,7 +274,7 @@ public class AutomationTextRangeTests
         [ClassData(typeof(Newlines))]
         public void Does_Not_Move_Up_From_First_Line(string newline)
         {
-            var (node, peer) = CreateTestNode(newline);
+            var (node, peer) = CreateTestNode(newline: newline);
             var range = new AutomationTextRange(node, 0, peer.Lines[0].Length);
 
             var result = range.Move(TextUnit.Line, -1);
@@ -284,21 +284,22 @@ public class AutomationTextRangeTests
         }
     }
 
-    private static (AutomationNode, TestPeer) CreateTestNode(string newline)
+    public class MoveEndpointByUnit
     {
-        var peer = new TestPeer(newline);
-        return (new AutomationNode(peer), peer);
+        [Fact]
+        public void Moving_Back_A_Word_Works_With_Only_Symbols()
+        {
+            var (node, peer) = CreateTestNode(lines: "(___) ___-____");
+            var range = new AutomationTextRange(node, 0, 14);
+
+            range.MoveEndpointByUnit(TextPatternRangeEndpoint.End, TextUnit.Word, -1);
+        }
     }
 
-    private class TestPeer : ControlAutomationPeer, AAP.ITextProvider
+    private static (AutomationNode, TestPeer) CreateTestNode(string newline)
     {
-        private readonly string[] _lines;
-
-        public TestPeer(string newline)
-            : base(new Control())
+        var lines = new[]
         {
-            _lines = new[]
-            {
                 "Test text:" + newline,
                 newline,
                 "Lorem ipsum dolor sit amet, ",
@@ -311,6 +312,24 @@ public class AutomationTextRangeTests
                 "commodo consequat." + newline,
                 "We can't stop now"
             };
+
+        return CreateTestNode(lines);
+    }
+
+    private static (AutomationNode, TestPeer) CreateTestNode(params string[] lines)
+    {
+        var peer = new TestPeer(lines);
+        return (new AutomationNode(peer), peer);
+    }
+
+    private class TestPeer : ControlAutomationPeer, AAP.ITextProvider
+    {
+        private readonly string[] _lines;
+
+        public TestPeer(string[] lines)
+            : base(new Control())
+        {
+            _lines = lines;
         }
 
         public bool IsReadOnly => true;
@@ -322,8 +341,8 @@ public class AutomationTextRangeTests
         public AAP.SupportedTextSelection SupportedTextSelection { get; }
         public string Text => string.Concat(_lines);
 
-        public event EventHandler SelectedRangesChanged;
-        public event EventHandler TextChanged;
+        public event EventHandler? SelectedRangesChanged;
+        public event EventHandler? TextChanged;
 
         public IReadOnlyList<Rect> GetBounds(TextRange range)
         {
