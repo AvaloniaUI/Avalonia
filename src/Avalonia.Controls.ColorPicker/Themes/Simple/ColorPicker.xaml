@@ -245,11 +245,12 @@
                                        VerticalAlignment="Center" />
                           </Border>
                           <!-- Color updated in code-behind -->
+                          <!-- Max length must include an optional '#' prefix (#FFFFFFFF) -->
                           <TextBox x:Name="PART_HexTextBox"
                                    Grid.Column="1"
                                    AutomationProperties.Name="Hexadecimal Color"
                                    Height="32"
-                                   MaxLength="8"
+                                   MaxLength="9"
                                    HorizontalAlignment="Stretch"
                                    CornerRadius="0,0,0,0" />
                         </Grid>

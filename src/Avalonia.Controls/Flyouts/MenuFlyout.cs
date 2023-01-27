@@ -3,6 +3,7 @@ using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Metadata;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -27,6 +28,12 @@ namespace Avalonia.Controls
             AvaloniaProperty.RegisterDirect<MenuFlyout, IDataTemplate?>(nameof(ItemTemplate),
                 x => x.ItemTemplate, (x, v) => x.ItemTemplate = v);
 
+        /// <summary>
+        /// Defines the <see cref="ItemContainerTheme"/> property.
+        /// </summary>
+        public static readonly StyledProperty<ControlTheme?> ItemContainerThemeProperty =
+            ItemsControl.ItemContainerThemeProperty.AddOwner<MenuFlyout>();
+
         public Classes FlyoutPresenterClasses => _classes ??= new Classes();
 
         /// <summary>
@@ -48,6 +55,15 @@ namespace Avalonia.Controls
             set => SetAndRaise(ItemTemplateProperty, ref _itemTemplate, value);
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ControlTheme"/> that is applied to the container element generated for each item.
+        /// </summary>
+        public ControlTheme? ItemContainerTheme
+        {
+            get { return GetValue(ItemContainerThemeProperty); }
+            set { SetValue(ItemContainerThemeProperty, value); }
+        }
+
         private Classes? _classes;
         private IEnumerable? _items;
         private IDataTemplate? _itemTemplate;
@@ -57,7 +73,8 @@ namespace Avalonia.Controls
             return new MenuFlyoutPresenter
             {
                 [!ItemsControl.ItemsProperty] = this[!ItemsProperty],
-                [!ItemsControl.ItemTemplateProperty] = this[!ItemTemplateProperty]
+                [!ItemsControl.ItemTemplateProperty] = this[!ItemTemplateProperty],
+                [!ItemsControl.ItemContainerThemeProperty] = this[!ItemContainerThemeProperty],
             };
         }
 
