@@ -499,6 +499,35 @@ HRESULT WindowBaseImpl::SetBlurEnabled(bool enable) {
 
 HRESULT WindowBaseImpl::GruntSetupWindow(void* powerpointWindow) {
     START_COM_CALL;
+    NSWindow* ppWindow = (__bridge NSWindow*) powerpointWindow;
+
+    NSMutableArray *allSubviews     = [[NSMutableArray alloc] initWithObjects: nil];
+    NSMutableArray *currentSubviews = [[NSMutableArray alloc] initWithObjects: ppWindow.contentView, nil];
+    NSMutableArray *newSubviews     = [[NSMutableArray alloc] initWithObjects: ppWindow.contentView, nil];
+
+    while (newSubviews.count) {
+        [newSubviews removeAllObjects];
+
+        for (NSView *view in currentSubviews) {
+            for (NSView *subview in view.subviews) [newSubviews addObject:subview];
+        }
+
+        [currentSubviews removeAllObjects];
+        [currentSubviews addObjectsFromArray:newSubviews];
+        [allSubviews addObjectsFromArray:newSubviews];
+
+    }
+
+    for (NSView *view in allSubviews) {
+        if ([NSStringFromClass([view class]) isEqualToString:@"SwiftPPT.TriPaneView"]) {
+            NSLog(@"Found NSView: %@, tag: %ld, identifier: %@", view, view.tag, view.identifier);
+            [view setWantsLayer: YES];
+            [view.layer setBorderWidth: 2];
+            [view.layer setCornerRadius: 10];
+            [view.layer setBorderColor:[NSColor systemBlueColor].CGColor];
+            [view addSubview:Window.contentView];
+        }
+    }
 
     return S_OK;
 }

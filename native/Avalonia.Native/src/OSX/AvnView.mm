@@ -307,6 +307,8 @@
     _isLeftPressed = true;
     _lastMouseDownEvent = event;
     [self mouseEvent:event withType:LeftButtonDown];
+    // [super mouseDown:event];
+    // TODO: We need to find a proper way to send click through to powerpoint underneath
 }
 
 - (void)otherMouseDown:(NSEvent *)event

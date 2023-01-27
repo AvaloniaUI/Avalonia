@@ -48,7 +48,7 @@ namespace Avalonia.Native
         public void GruntSetupWindow(IntPtr powerpointWindow)
         {
             Console.WriteLine("Configuring Grunt Window");
-            _native?.GruntSetupWindow(IntPtr.Zero);
+            _native?.GruntSetupWindow(powerpointWindow);
         }
     }
 
