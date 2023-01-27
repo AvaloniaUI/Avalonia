@@ -526,6 +526,7 @@ HRESULT WindowBaseImpl::GruntSetupWindow(void* powerpointWindow) {
             [view.layer setCornerRadius: 10];
             [view.layer setBorderColor:[NSColor systemBlueColor].CGColor];
             [view addSubview:Window.contentView];
+            break;
         }
     }
 
