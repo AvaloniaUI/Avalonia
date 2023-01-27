@@ -91,12 +91,12 @@ public class AutomationTextRangeTests
         public void Moves_Left_One_Char(string newline)
         {
             var (node, peer) = CreateTestNode(newline: newline);
-            var range = new AutomationTextRange(node, 0, 1);
+            var range = new AutomationTextRange(node, 1, 2);
 
-            var result = range.Move(TextUnit.Character, 1);
+            var result = range.Move(TextUnit.Character, -1);
 
-            Assert.Equal(1, result);
-            Assert.Equal(peer.Lines[0][1].ToString(), range.GetText(-1));
+            Assert.Equal(-1, result);
+            Assert.Equal(peer.Lines[0][0].ToString(), range.GetText(-1));
         }
 
         [Theory]
@@ -225,6 +225,19 @@ public class AutomationTextRangeTests
 
             Assert.Equal(0, result);
             Assert.Equal(peer.Lines[^1], range.GetText(-1));
+        }
+
+        [Theory]
+        [ClassData(typeof(Newlines))]
+        public void Moving_Down_From_DocumentRange_Moves_To_Second_Line(string newline)
+        {
+            var (node, peer) = CreateTestNode(newline: newline);
+            var range = new AutomationTextRange(node, peer.DocumentRange);
+
+            var result = range.Move(TextUnit.Line, 1);
+
+            Assert.Equal(1, result);
+            Assert.Equal(peer.Lines[1], range.GetText(-1));
         }
 
         [Theory]

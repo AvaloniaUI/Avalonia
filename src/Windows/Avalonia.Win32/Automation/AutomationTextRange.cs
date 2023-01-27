@@ -51,7 +51,7 @@ namespace Avalonia.Win32.Automation
             }
         }
 
-        public TextRange Range => new(Start, End);
+        public TextRange Range => TextRange.FromStartEnd(Start, End);
 
         private AAP.ITextProvider InnerProvider => (AAP.ITextProvider)_owner.Peer;
 
