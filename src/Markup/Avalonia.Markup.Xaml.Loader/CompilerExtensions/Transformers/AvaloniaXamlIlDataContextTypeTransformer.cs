@@ -79,8 +79,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         {
                             var parentType = parentObject.Type.GetClrType();
 
-                            if (context.GetAvaloniaTypes().ItemsControl.IsDirectlyAssignableFrom(parentType)
-                                || context.GetAvaloniaTypes().ItemsRepeater.IsDirectlyAssignableFrom(parentType))
+                            if (context.GetAvaloniaTypes().ItemsControl.IsDirectlyAssignableFrom(parentType))
                             {
                                 inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject);
                             }

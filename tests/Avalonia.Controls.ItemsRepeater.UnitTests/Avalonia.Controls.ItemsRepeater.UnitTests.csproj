@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <Import Project="..\..\build\UnitTests.NetCore.targets" />
+  <Import Project="..\..\build\UnitTests.NetFX.props" />
+  <Import Project="..\..\build\Moq.props" />
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\Rx.props" />
+  <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
+  <Import Project="..\..\build\Base.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Avalonia.Controls.ItemsRepeater\Avalonia.Controls.ItemsRepeater.csproj" />
+    <ProjectReference Include="..\Avalonia.UnitTests\Avalonia.UnitTests.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+</Project>
