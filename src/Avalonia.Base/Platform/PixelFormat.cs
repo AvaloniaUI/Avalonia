@@ -16,7 +16,7 @@ namespace Avalonia.Platform
         Rgba64
     }
 
-    public struct PixelFormat : IEquatable<PixelFormat>
+    public record struct PixelFormat
     {
         internal PixelFormatEnum FormatEnum;
 
@@ -54,32 +54,7 @@ namespace Avalonia.Platform
         public static PixelFormat Rgb565 => PixelFormats.Rgb565;
         public static PixelFormat Rgba8888 => PixelFormats.Rgba8888;
         public static PixelFormat Bgra8888 => PixelFormats.Bgra8888;
-
-        public bool Equals(PixelFormat other)
-        {
-            return FormatEnum == other.FormatEnum;
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is PixelFormat other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)FormatEnum;
-        }
-
-        public static bool operator ==(PixelFormat left, PixelFormat right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(PixelFormat left, PixelFormat right)
-        {
-            return !left.Equals(right);
-        }
-
+        
         public override string ToString() => FormatEnum.ToString();
     }
 
