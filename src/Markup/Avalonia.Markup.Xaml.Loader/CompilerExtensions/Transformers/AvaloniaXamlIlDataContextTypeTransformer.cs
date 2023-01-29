@@ -95,16 +95,16 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                         {
                             inferredDataContextTypeNode = InferDataContextOfPresentedItem(context, on, parentObject, propertyName);
                         }
-
-                        if (inferredDataContextTypeNode is null
-                            // Only for IDataTemplate, as we want to notify user as early as possible,
-                            // and IDataTemplate cannot inherit DataType from the parent implicitly.
-                            && context.GetAvaloniaTypes().IDataTemplate.IsAssignableFrom(on.Type.GetClrType()))
-                        {
-                            // We can't infer the collection type and the currently calculated type is definitely wrong.
-                            // Notify the user that we were unable to infer the data context type if they use a compiled binding.
-                            inferredDataContextTypeNode = new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
-                        }
+                    }
+                    
+                    if (inferredDataContextTypeNode is null
+                        // Only for IDataTemplate, as we want to notify user as early as possible,
+                        // and IDataTemplate cannot inherit DataType from the parent implicitly.
+                        && context.GetAvaloniaTypes().IDataTemplate.IsAssignableFrom(on.Type.GetClrType()))
+                    {
+                        // We can't infer the collection type and the currently calculated type is definitely wrong.
+                        // Notify the user that we were unable to infer the data context type if they use a compiled binding.
+                        inferredDataContextTypeNode = new AvaloniaXamlIlUninferrableDataContextMetadataNode(on);
                     }
                 }
 
