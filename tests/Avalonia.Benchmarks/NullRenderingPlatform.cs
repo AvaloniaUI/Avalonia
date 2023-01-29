@@ -139,6 +139,8 @@ namespace Avalonia.Benchmarks
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
+
         public void Dispose()
         {
             

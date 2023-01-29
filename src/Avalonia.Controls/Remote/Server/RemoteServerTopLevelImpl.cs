@@ -292,7 +292,7 @@ namespace Avalonia.Controls.Remote.Server
             {
                 if (width > 0 && height > 0)
                 {
-                    _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), new PixelSize(width, height), width * bpp, _dpi, (PixelFormat)fmt,
+                    _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), new PixelSize(width, height), width * bpp, _dpi, new((PixelFormatEnum)fmt),
                         null);
                     Paint?.Invoke(new Rect(0, 0, width, height));
                 }
