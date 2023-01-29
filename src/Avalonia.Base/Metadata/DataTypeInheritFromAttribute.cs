@@ -3,11 +3,11 @@
 namespace Avalonia.Metadata;
 
 /// <summary>
-/// Hints the compiler how to resolve the compiled bindings data type for the collection-like controls' item specific properties.  
+/// Instructs the compiler to resolve the compiled bindings data type for the item-specific properties of collection-like controls. 
 /// </summary>
 /// <remarks>
-/// Typical example usage is a ListBox control, where DataTypeInheritFrom is defined on the ItemTemplate property,
-/// so template can try to inherit data type from the Items collection binding. 
+/// A typical usage example is a ListBox control, where DataTypeInheritFrom is defined on the ItemTemplate property,
+/// allowing the template to inherit the data type from the Items collection binding. 
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public sealed class DataTypeInheritFromAttribute : Attribute
@@ -15,20 +15,20 @@ public sealed class DataTypeInheritFromAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="DataTypeInheritFromAttribute"/> class.
     /// </summary>
-    /// <param name="ancestorProperty">Defines property name which items' type should used on the target property</param>
+    /// <param name="ancestorProperty">The name of the property whose item type should be used on the target property.</param>
     public DataTypeInheritFromAttribute(string ancestorProperty)
     {
         AncestorProperty = ancestorProperty;
     }
     
     /// <summary>
-    /// Defines property name which items' type should used on the target property.
+    /// The name of the property whose item type should be used on the target property.
     /// </summary>
     public string AncestorProperty { get; }
     
     /// <summary>
-    /// Defines ancestor type which should be used in a lookup for <see cref="AncestorProperty"/>.
-    /// If null, declaring type of the target property is used.
+    /// The ancestor type to be used in a lookup for the <see cref="AncestorProperty"/>.
+    /// If null, the declaring type of the target property is used.
     /// </summary>
     public Type? AncestorType { get; set; }
 }
