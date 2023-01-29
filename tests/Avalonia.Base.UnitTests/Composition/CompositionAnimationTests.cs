@@ -9,6 +9,7 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Expressions;
 using Avalonia.Rendering.Composition.Server;
 using Avalonia.Threading;
+using Avalonia.UnitTests;
 using Xunit;
 using Xunit.Sdk;
 
@@ -67,7 +68,7 @@ public class CompositionAnimationTests
     public void GenericCheck(AnimationData data)
     {
         var compositor =
-            new Compositor(new RenderLoop(new CompositorTestsBase.ManualRenderTimer(), new Dispatcher(null)), null);
+            new Compositor(new RenderLoop(new CompositorTestServices.ManualRenderTimer(), new Dispatcher(null)), null);
         var target = compositor.CreateSolidColorVisual();
         var ani = new ScalarKeyFrameAnimation(null);
         foreach (var frame in data.Frames)

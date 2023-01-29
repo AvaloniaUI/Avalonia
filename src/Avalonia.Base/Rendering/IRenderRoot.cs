@@ -26,12 +26,6 @@ namespace Avalonia.Rendering
         double RenderScaling { get; }
 
         /// <summary>
-        /// Adds a rectangle to the window's dirty region.
-        /// </summary>
-        /// <param name="rect">The rectangle.</param>
-        void Invalidate(Rect rect);
-
-        /// <summary>
         /// Converts a point from screen to client coordinates.
         /// </summary>
         /// <param name="point">The point in screen device coordinates.</param>

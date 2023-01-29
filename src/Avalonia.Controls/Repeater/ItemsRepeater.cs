@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -121,6 +122,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the template used to display each item.
         /// </summary>
+        [InheritDataTypeFromItems(nameof(Items))]
         public IDataTemplate? ItemTemplate
         {
             get => GetValue(ItemTemplateProperty);

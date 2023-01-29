@@ -24,26 +24,17 @@ namespace Avalonia.LinuxFramebuffer
             _inputBackend = inputBackend;
 
             Surfaces = new object[] { _outputBackend };
-
-            Invalidate(default);
             _inputBackend.Initialize(this, e => Input?.Invoke(e));
         }
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            var factory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            return factory?.Create(root, renderLoop) ?? new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor, () => Surfaces);
+            return new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor, () => Surfaces);
         }
 
         public void Dispose()
         {
             throw new NotSupportedException();
-        }
-
-
-        public void Invalidate(Rect rect)
-        {
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
