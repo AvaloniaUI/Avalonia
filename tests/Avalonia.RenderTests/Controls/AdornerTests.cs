@@ -68,6 +68,6 @@ public class AdornerTests : TestBase
         tree.Arrange(new Rect(size));
         
         await RenderToFile(tree);
-        CompareImages(skipImmediate: true, skipDeferred: true);
+        CompareImages(skipImmediate: true);
     }
 }

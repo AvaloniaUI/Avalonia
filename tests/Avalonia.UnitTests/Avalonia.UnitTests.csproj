@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <OutputType>Library</OutputType>
     <IsPackable>false</IsPackable>
-    <AssemblyOriginatorKeyFile>..\..\build\avalonia.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>false</SignAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
@@ -20,6 +18,7 @@
   </ItemGroup>
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\SharedVersion.props" />
   <Import Project="..\..\build\HarfBuzzSharp.props" />
+  <Import Project="..\..\build\XUnit.props" />
+  <Import Project="..\..\build\SharedVersion.props" />
 </Project>

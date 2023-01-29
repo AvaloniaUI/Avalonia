@@ -8,6 +8,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
@@ -378,11 +379,8 @@ namespace Avalonia.Controls.Primitives
 
             if (InheritsTransform && placementTarget is Control c)
             {
-                SubscribeToEventHandler<Control, EventHandler<AvaloniaPropertyChangedEventArgs>>(
-                    c,
-                    PlacementTargetPropertyChanged,
-                    (x, handler) => x.PropertyChanged += handler,
-                    (x, handler) => x.PropertyChanged -= handler).DisposeWith(handlerCleanup);
+                TransformTrackingHelper.Track(c, PlacementTargetTransformChanged)
+                    .DisposeWith(handlerCleanup);
             }
             else
             {
@@ -872,13 +870,11 @@ namespace Avalonia.Controls.Primitives
                 Close();
             }
         }
-        
-        private void PlacementTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+
+        private void PlacementTargetTransformChanged(Visual v, Matrix? matrix)
         {
-            if (_openState is not null && e.Property == Visual.TransformedBoundsProperty)
-            {
+            if (_openState is not null)
                 UpdateHostSizing(_openState.PopupHost, _openState.TopLevel, _openState.PlacementTarget);
-            }
         }
 
         private void WindowLostFocus()

@@ -10,9 +10,10 @@ namespace Avalonia.Skia
     /// <summary>
     /// Immutable Skia bitmap.
     /// </summary>
-    internal class ImmutableBitmap : IDrawableBitmapImpl
+    internal class ImmutableBitmap : IDrawableBitmapImpl, IReadableBitmapImpl
     {
         private readonly SKImage _image;
+        private readonly SKBitmap? _bitmap;
 
         /// <summary>
         /// Create immutable bitmap from given stream.
@@ -23,12 +24,13 @@ namespace Avalonia.Skia
             using (var skiaStream = new SKManagedStream(stream))
             {
                 using (var data = SKData.Create(skiaStream))
-                    _image = SKImage.FromEncodedData(data);
-
-                if (_image == null)
-                {
+                    _bitmap = SKBitmap.Decode(data);
+                
+                if (_bitmap == null)
                     throw new ArgumentException("Unable to load bitmap from provided data");
-                }
+
+                _bitmap.SetImmutable();
+                _image = SKImage.FromBitmap(_bitmap);
 
                 PixelSize = new PixelSize(_image.Width, _image.Height);
 
@@ -47,10 +49,10 @@ namespace Avalonia.Skia
         public ImmutableBitmap(ImmutableBitmap src, PixelSize destinationSize, BitmapInterpolationMode interpolationMode)
         {
             SKImageInfo info = new SKImageInfo(destinationSize.Width, destinationSize.Height, SKColorType.Bgra8888);
-            SKImage output = SKImage.Create(info);
-            src._image.ScalePixels(output.PeekPixels(), interpolationMode.ToSKFilterQuality());
-
-            _image = output;
+            _bitmap = new SKBitmap(info);
+            src._image.ScalePixels(_bitmap.PeekPixels(), interpolationMode.ToSKFilterQuality());
+            _bitmap.SetImmutable();
+            _image = SKImage.FromBitmap(_bitmap);
 
             PixelSize = new PixelSize(_image.Width, _image.Height);
 
@@ -71,8 +73,11 @@ namespace Avalonia.Skia
 
                 // decode the bitmap at the nearest size
                 var nearest = new SKImageInfo(supportedScale.Width, supportedScale.Height);
-                var bmp = SKBitmap.Decode(codec, nearest);
+                _bitmap = SKBitmap.Decode(codec, nearest);
 
+                if (_bitmap == null)
+                    throw new ArgumentException("Unable to load bitmap from provided data");
+                
                 // now scale that to the size that we want
                 var realScale = horizontal ? ((double)info.Height / info.Width) : ((double)info.Width / info.Height);
 
@@ -88,15 +93,16 @@ namespace Avalonia.Skia
                     desired = new SKImageInfo((int)(realScale * decodeSize), decodeSize);
                 }
 
-                if (bmp.Width != desired.Width || bmp.Height != desired.Height)
+                if (_bitmap.Width != desired.Width || _bitmap.Height != desired.Height)
                 {
-                    var scaledBmp = bmp.Resize(desired, interpolationMode.ToSKFilterQuality());
-                    bmp.Dispose();
-                    bmp = scaledBmp;
+                    var scaledBmp = _bitmap.Resize(desired, interpolationMode.ToSKFilterQuality());
+                    _bitmap.Dispose();
+                    _bitmap = scaledBmp;
                 }
+                
+                _bitmap!.SetImmutable();
 
-                _image = SKImage.FromBitmap(bmp);
-                bmp.Dispose();
+                _image = SKImage.FromBitmap(_bitmap);
 
                 if (_image == null)
                 {
@@ -121,9 +127,15 @@ namespace Avalonia.Skia
         /// <param name="data">Data pixels.</param>
         public ImmutableBitmap(PixelSize size, Vector dpi, int stride, PixelFormat format, AlphaFormat alphaFormat, IntPtr data)
         {
-            var imageInfo = new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), alphaFormat.ToSkAlphaType());
-
-            _image = SKImage.FromPixelCopy(imageInfo, data, stride);
+            using (var tmp = new SKBitmap())
+            {
+                tmp.InstallPixels(
+                    new SKImageInfo(size.Width, size.Height, format.ToSkColorType(), alphaFormat.ToSkAlphaType()),
+                    data);
+                _bitmap = tmp.Copy();
+            }
+            _bitmap!.SetImmutable();
+            _image = SKImage.FromBitmap(_bitmap);
 
             if (_image == null)
             {
@@ -143,6 +155,7 @@ namespace Avalonia.Skia
         public void Dispose()
         {
             _image.Dispose();
+            _bitmap?.Dispose();
         }
 
         /// <inheritdoc />
@@ -161,6 +174,15 @@ namespace Avalonia.Skia
         public void Draw(DrawingContextImpl context, SKRect sourceRect, SKRect destRect, SKPaint paint)
         {
             context.Canvas.DrawImage(_image, sourceRect, destRect, paint);
+        }
+
+        public PixelFormat? Format => _bitmap?.ColorType.ToAvalonia();
+        public ILockedFramebuffer Lock()
+        {
+            if (_bitmap == null)
+                throw new NotSupportedException();
+            return new LockedFramebuffer(_bitmap.GetPixels(), PixelSize, _bitmap.RowBytes, Dpi,
+                _bitmap.ColorType.ToAvalonia().Value, null);
         }
     }
 }

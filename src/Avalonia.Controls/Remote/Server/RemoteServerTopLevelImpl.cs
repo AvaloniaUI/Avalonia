@@ -11,6 +11,7 @@ using Avalonia.Platform;
 using Avalonia.Remote.Protocol;
 using Avalonia.Remote.Protocol.Input;
 using Avalonia.Remote.Protocol.Viewport;
+using Avalonia.Rendering;
 using Avalonia.Threading;
 using Key = Avalonia.Input.Key;
 using PixelFormat = Avalonia.Platform.PixelFormat;
@@ -19,7 +20,7 @@ using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
 namespace Avalonia.Controls.Remote.Server
 {
     [Unstable]
-    public class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferPlatformSurface
+    internal class RemoteServerTopLevelImpl : OffscreenTopLevelImplBase, IFramebufferPlatformSurface, ITopLevelImpl
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
         private LockedFramebuffer? _framebuffer;
@@ -28,7 +29,8 @@ namespace Avalonia.Controls.Remote.Server
         private long _lastReceivedFrame = -1;
         private long _nextFrameNumber = 1;
         private ClientViewportAllocatedMessage? _pendingAllocation;
-        private bool _invalidated;
+        private bool _queuedNextRender;
+        private bool _inRender;
         private Vector _dpi = new Vector(96, 96);
         private ProtocolPixelFormat[]? _supportedFormats;
 
@@ -38,6 +40,14 @@ namespace Avalonia.Controls.Remote.Server
             _transport.OnMessage += OnMessage;
 
             KeyboardDevice = AvaloniaLocator.Current.GetRequiredService<IKeyboardDevice>();
+            QueueNextRender();
+        }
+
+        IRenderer ITopLevelImpl.CreateRenderer(IRenderRoot root)
+        {
+            var r = (IRendererWithCompositor)base.CreateRenderer(root);
+            r.Compositor.AfterCommit += QueueNextRender;
+            return r;
         }
 
         private static RawPointerEventType GetAvaloniaEventType (Avalonia.Remote.Protocol.Input.MouseButton button, bool pressed)
@@ -125,7 +135,7 @@ namespace Avalonia.Controls.Remote.Server
                     lock(_lock)
                     {
                         _dpi = new Vector(renderInfo.DpiX, renderInfo.DpiY);
-                        _invalidated = true;
+                        _queuedNextRender = true;
                     }
                     
                     Dispatcher.UIThread.Post(RenderIfNeeded);
@@ -282,7 +292,7 @@ namespace Avalonia.Controls.Remote.Server
             {
                 if (width > 0 && height > 0)
                 {
-                    _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), new PixelSize(width, height), width * bpp, _dpi, (PixelFormat)fmt,
+                    _framebuffer = new LockedFramebuffer(handle.AddrOfPinnedObject(), new PixelSize(width, height), width * bpp, _dpi, new((PixelFormatEnum)fmt),
                         null);
                     Paint?.Invoke(new Rect(0, 0, width, height));
                 }
@@ -315,7 +325,7 @@ namespace Avalonia.Controls.Remote.Server
         {
             lock (_lock)
             {
-                if (_lastReceivedFrame != _lastSentFrame || !_invalidated || _supportedFormats == null)
+                if (_lastReceivedFrame != _lastSentFrame || !_queuedNextRender || _supportedFormats == null)
                     return;
 
             }
@@ -327,23 +337,25 @@ namespace Avalonia.Controls.Remote.Server
                     format = fmt;
                     break;
                 }
-            
+
+            _inRender = true;
             var frame = RenderFrame((int) ClientSize.Width, (int) ClientSize.Height, format);
             lock (_lock)
             {
                 _lastSentFrame = _nextFrameNumber++;
                 frame.SequenceId = _lastSentFrame;
-                _invalidated = false;
+                _queuedNextRender = false;
             }
+            _inRender = false;
             _transport.Send(frame);
         }
 
-        public override void Invalidate(Rect rect)
+        private void QueueNextRender()
         {
-            if (!IsDisposed)
+            if (!_inRender && !IsDisposed)
             {
-                _invalidated = true;
-                Dispatcher.UIThread.Post(RenderIfNeeded);
+                _queuedNextRender = true;
+                DispatcherTimer.RunOnce(RenderIfNeeded, TimeSpan.FromMilliseconds(2), DispatcherPriority.Background);
             }
         }
 
