@@ -127,7 +127,9 @@ namespace Avalonia.Input
 
     public class PointerPressedEventArgs : PointerEventArgs
     {
-        internal PointerPressedEventArgs(
+        [Unstable]
+        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
+        public PointerPressedEventArgs(
             object source,
             IPointer pointer,
             Visual rootVisual, Point rootVisualPosition,
@@ -146,7 +148,9 @@ namespace Avalonia.Input
 
     public class PointerReleasedEventArgs : PointerEventArgs
     {
-        internal PointerReleasedEventArgs(
+        [Unstable]
+        [Obsolete("This constructor might be removed in 12.0. For unit testing, consider using IHeadlessWindow mouse methods.")]
+        public PointerReleasedEventArgs(
             object source, IPointer pointer,
             Visual rootVisual, Point rootVisualPosition, ulong timestamp,
             PointerPointProperties properties, KeyModifiers modifiers,
@@ -167,7 +171,9 @@ namespace Avalonia.Input
     {
         public IPointer Pointer { get; }
 
-        internal PointerCaptureLostEventArgs(object source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
+        [Unstable]
+        [Obsolete("This constructor might be removed in 12.0. If you need to remove capture, use stable methods on the IPointer instance.,")]
+        public PointerCaptureLostEventArgs(object source, IPointer pointer) : base(InputElement.PointerCaptureLostEvent)
         {
             Pointer = pointer;
             Source = source;
