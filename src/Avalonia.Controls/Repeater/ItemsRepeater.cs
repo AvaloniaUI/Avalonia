@@ -11,6 +11,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Logging;
 using Avalonia.LogicalTree;
+using Avalonia.Metadata;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
 
@@ -121,6 +122,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the template used to display each item.
         /// </summary>
+        [InheritDataTypeFromItems(nameof(Items))]
         public IDataTemplate? ItemTemplate
         {
             get => GetValue(ItemTemplateProperty);
@@ -442,7 +444,7 @@ namespace Avalonia.Controls
                     var newDataSource = newEnumerable as ItemsSourceView;
                     if (newEnumerable != null && newDataSource == null)
                     {
-                        newDataSource = new ItemsSourceView(newEnumerable);
+                        newDataSource = ItemsSourceView.GetOrCreate(newEnumerable);
                     }
 
                     OnDataSourcePropertyChanged(ItemsSourceView, newDataSource);
@@ -628,7 +630,6 @@ namespace Avalonia.Controls
                 oldValue.CollectionChanged -= OnItemsSourceViewChanged;
             }
 
-            ItemsSourceView?.Dispose();
             ItemsSourceView = newValue;
 
             if (newValue != null)

@@ -110,7 +110,7 @@ namespace Avalonia.Skia.UnitTests.Media
                 if (glyphRun.IsLeftToRight)
                 {
                     var characterHit =
-                        glyphRun.GetCharacterHitFromDistance(glyphRun.Metrics.WidthIncludingTrailingWhitespace, out _);
+                        glyphRun.GetCharacterHitFromDistance(glyphRun.Size.Width, out _);
                     
                     Assert.Equal(glyphRun.Characters.Length, characterHit.FirstCharacterIndex + characterHit.TrailingLength);
                 }
@@ -134,11 +134,11 @@ namespace Avalonia.Skia.UnitTests.Media
 
                 foreach (var rect in rects)
                 {
-                    var currentCluster = glyphRun.GlyphClusters[index];
+                    var currentCluster = glyphRun.GlyphInfos[index].GlyphCluster;
 
-                    while (currentCluster == lastCluster && index + 1 < glyphRun.GlyphClusters.Count)
+                    while (currentCluster == lastCluster && index + 1 < glyphRun.GlyphInfos.Count)
                     {
-                        currentCluster = glyphRun.GlyphClusters[++index];
+                        currentCluster = glyphRun.GlyphInfos[++index].GlyphCluster;
                     }
 
                     //Non trailing edge
@@ -159,17 +159,17 @@ namespace Avalonia.Skia.UnitTests.Media
         {
             var height = glyphRun.Size.Height;
 
-            var currentX = glyphRun.IsLeftToRight ? 0d : glyphRun.Metrics.WidthIncludingTrailingWhitespace;
+            var currentX = glyphRun.IsLeftToRight ? 0d : glyphRun.Size.Width;
             
-            var rects = new List<Rect>(glyphRun.GlyphAdvances!.Count);
+            var rects = new List<Rect>(glyphRun.GlyphInfos!.Count);
 
             var lastCluster = -1;
 
-            for (var index = 0; index < glyphRun.GlyphAdvances.Count; index++)
+            for (var index = 0; index < glyphRun.GlyphInfos.Count; index++)
             {
-                var currentCluster = glyphRun.GlyphClusters![index];
+                var currentCluster = glyphRun.GlyphInfos[index].GlyphCluster;
                 
-                var advance = glyphRun.GlyphAdvances[index];
+                var advance = glyphRun.GlyphInfos[index].GlyphAdvance;
 
                 if (lastCluster != currentCluster)
                 {
@@ -216,11 +216,8 @@ namespace Avalonia.Skia.UnitTests.Media
                 shapedBuffer.GlyphTypeface,
                 shapedBuffer.FontRenderingEmSize,
                 shapedBuffer.Text,
-                shapedBuffer.GlyphIndices,
-                shapedBuffer.GlyphAdvances,
-                shapedBuffer.GlyphOffsets,
-                shapedBuffer.GlyphClusters,
-                shapedBuffer.BidiLevel);
+                shapedBuffer.GlyphInfos,
+                biDiLevel: shapedBuffer.BidiLevel);
 
             if(shapedBuffer.BidiLevel == 1)
             {
@@ -233,7 +230,7 @@ namespace Avalonia.Skia.UnitTests.Media
         private static IDisposable Start()
         {
             var disposable = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface
-                .With(renderInterface: new PlatformRenderInterface(null),
+                .With(renderInterface: new PlatformRenderInterface(),
                     textShaperImpl: new TextShaperImpl(),
                     fontManagerImpl: new CustomFontManagerImpl()));
 

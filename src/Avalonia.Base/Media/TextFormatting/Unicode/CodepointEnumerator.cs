@@ -4,35 +4,27 @@ namespace Avalonia.Media.TextFormatting.Unicode
 {
     public ref struct CodepointEnumerator
     {
-        private ReadOnlySpan<char> _text;
+        private readonly ReadOnlySpan<char> _text;
+        private int _offset;
 
         public CodepointEnumerator(ReadOnlySpan<char> text)
-        {
-            _text = text;
-            Current = Codepoint.ReplacementCodepoint;
-        }
-
-        /// <summary>
-        /// Gets the current <see cref="Codepoint"/>.
-        /// </summary>
-        public Codepoint Current { get; private set; }
+            => _text = text;
 
         /// <summary>
         /// Moves to the next <see cref="Codepoint"/>.
         /// </summary>
         /// <returns></returns>
-        public bool MoveNext()
+        public bool MoveNext(out Codepoint codepoint)
         {
-            if (_text.IsEmpty)
+            if ((uint)_offset >= (uint)_text.Length)
             {
-                Current = Codepoint.ReplacementCodepoint;
-
+                codepoint = Codepoint.ReplacementCodepoint;
                 return false;
             }
 
-            Current = Codepoint.ReadAt(_text, 0, out var count);
+            codepoint = Codepoint.ReadAt(_text, _offset, out var count);
 
-            _text = _text.Slice(count);
+            _offset += count;
 
             return true;
         }

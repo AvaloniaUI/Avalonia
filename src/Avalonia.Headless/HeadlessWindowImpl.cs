@@ -54,11 +54,8 @@ namespace Avalonia.Headless
         public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-            => AvaloniaHeadlessPlatform.Compositor != null
-                ? new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces)
-                : new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                    () => new PlatformRenderInterfaceContextManager(null).CreateRenderTarget(Surfaces), null);
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces);
 
         public void Invalidate(Rect rect)
         {
@@ -284,6 +281,18 @@ namespace Avalonia.Headless
                 button == 1 ? RawPointerEventType.MiddleButtonUp : RawPointerEventType.RightButtonUp,
                 point, modifiers));
         }
+        
+        void IHeadlessWindow.MouseWheel(Point point, Vector delta, RawInputModifiers modifiers)
+        {
+            Input?.Invoke(new RawMouseWheelEventArgs(MouseDevice, Timestamp, InputRoot,
+                point, delta, modifiers));
+        }
+        
+        void IHeadlessWindow.DragDrop(Point point, RawDragEventType type, IDataObject data, DragDropEffects effects, RawInputModifiers modifiers)
+        {
+            var device = AvaloniaLocator.Current.GetRequiredService<IDragDropDevice>();
+            Input?.Invoke(new RawDragEvent(device, type, InputRoot, point, data, effects, modifiers));
+        }
 
         void IWindowImpl.Move(PixelPoint point)
         {
@@ -342,6 +351,11 @@ namespace Avalonia.Headless
         }
 
         public void SetExtendClientAreaTitleBarHeightHint(double titleBarHeight)
+        {
+            
+        }
+        
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             
         }

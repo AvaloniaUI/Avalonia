@@ -70,7 +70,7 @@ namespace Avalonia.Data
 
         public WeakReference<INameScope>? NameScope { get; set; }
 
-        protected abstract ExpressionObserver CreateExpressionObserver(
+        private protected abstract ExpressionObserver CreateExpressionObserver(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor,
@@ -127,7 +127,7 @@ namespace Avalonia.Data
             return new InstancedBinding(subject, Mode, Priority);
         }
 
-        protected ExpressionObserver CreateDataContextObserver(
+        private protected ExpressionObserver CreateDataContextObserver(
             AvaloniaObject target,
             ExpressionNode node,
             bool targetIsDataContext,
@@ -162,7 +162,7 @@ namespace Avalonia.Data
             }
         }
 
-        protected ExpressionObserver CreateElementObserver(
+        private protected ExpressionObserver CreateElementObserver(
             StyledElement target,
             string elementName,
             ExpressionNode node)
@@ -178,7 +178,7 @@ namespace Avalonia.Data
             return result;
         }
 
-        protected ExpressionObserver CreateFindAncestorObserver(
+        private protected ExpressionObserver CreateFindAncestorObserver(
             StyledElement target,
             RelativeSource relativeSource,
             ExpressionNode node)
@@ -211,7 +211,7 @@ namespace Avalonia.Data
                 null);
         }
 
-        protected ExpressionObserver CreateSourceObserver(
+        private protected ExpressionObserver CreateSourceObserver(
             object source,
             ExpressionNode node)
         {
@@ -220,7 +220,7 @@ namespace Avalonia.Data
             return new ExpressionObserver(source, node);
         }
 
-        protected ExpressionObserver CreateTemplatedParentObserver(
+        private protected ExpressionObserver CreateTemplatedParentObserver(
             AvaloniaObject target,
             ExpressionNode node)
         {

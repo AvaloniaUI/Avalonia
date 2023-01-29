@@ -14,6 +14,8 @@ using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using Avalonia.Platform.Storage.FileIO;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
@@ -61,9 +63,15 @@ namespace Avalonia.DesignerSupport.Remote
                     }));
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) => new ImmediateRenderer((Visual)root, () =>
-            new PlatformRenderInterfaceContextManager(null)
-                .CreateRenderTarget(Surfaces));
+        class DummyRenderTimer : IRenderTimer
+        {
+            public event Action<TimeSpan> Tick;
+            public bool RunsInBackground => false;
+        }
+
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root,
+                new Compositor(new RenderLoop(new DummyRenderTimer(), Dispatcher.UIThread), null), () => Surfaces);
         
         public void Dispose()
         {
@@ -182,7 +190,9 @@ namespace Avalonia.DesignerSupport.Remote
         public bool IsClientAreaExtendedToDecorations { get; }
 
         public bool NeedsManagedDecorations => false;
-        
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }
 

@@ -384,25 +384,8 @@ namespace Avalonia.X11
         public Action<PixelPoint> PositionChanged { get; set; }
         public Action LostFocus { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-
-            if (customRendererFactory != null)
-                return customRendererFactory.Create(root, loop);
-
-            return _platform.Options.UseDeferredRendering
-                ? _platform.Options.UseCompositor
-                    ? new CompositingRenderer(root, this._platform.Compositor, () => Surfaces)
-                    : new DeferredRenderer(root, loop, () => _platform.RenderInterface.CreateRenderTarget(Surfaces), _platform.RenderInterface)
-                    {
-                        RenderOnlyOnRenderThread = true
-                    }
-                : new X11ImmediateRendererProxy((Visual)root, loop,
-                    () => _platform.RenderInterface.CreateRenderTarget(Surfaces),
-                    _platform.RenderInterface);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, _platform.Compositor, () => Surfaces);
 
         void OnEvent(ref XEvent ev)
         {
@@ -731,7 +714,7 @@ namespace Avalonia.X11
         void DispatchInput(RawInputEventArgs args)
         {
             Input?.Invoke(args);
-            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrWhiteSpace(text.Text))
+            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
                 Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
         }
 
@@ -1225,6 +1208,8 @@ namespace Avalonia.X11
 
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 

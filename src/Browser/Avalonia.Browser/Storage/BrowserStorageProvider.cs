@@ -116,6 +116,33 @@ internal class BrowserStorageProvider : IStorageProvider
         return item is not null ? new JSStorageFolder(item) : null;
     }
 
+    public Task<IStorageFile?> TryGetFileFromPath(Uri filePath)
+    {
+        return Task.FromResult<IStorageFile?>(null);
+    }
+
+    public Task<IStorageFolder?> TryGetFolderFromPath(Uri folderPath)
+    {
+        return Task.FromResult<IStorageFolder?>(null);
+    }
+
+    public async Task<IStorageFolder?> TryGetWellKnownFolder(WellKnownFolder wellKnownFolder)
+    {
+        await _lazyModule.Value;
+        var directory = StorageHelper.CreateWellKnownDirectory(wellKnownFolder switch
+        {
+            WellKnownFolder.Desktop => "desktop",
+            WellKnownFolder.Documents => "documents",
+            WellKnownFolder.Downloads => "downloads",
+            WellKnownFolder.Music => "music",
+            WellKnownFolder.Pictures => "pictures",
+            WellKnownFolder.Videos => "videos",
+            _ => throw new ArgumentOutOfRangeException(nameof(wellKnownFolder), wellKnownFolder, null)
+        });
+
+        return new JSStorageFolder(directory);
+    }
+
     private static (JSObject[]? types, bool excludeAllOption) ConvertFileTypes(IEnumerable<FilePickerFileType>? input)
     {
         var types = input?
@@ -145,12 +172,7 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
     internal JSObject FileHandle => _fileHandle ?? throw new ObjectDisposedException(nameof(JSStorageItem));
 
     public string Name => FileHandle.GetPropertyAsString("name") ?? string.Empty;
-
-    public bool TryGetUri([NotNullWhen(true)] out Uri? uri)
-    {
-        uri = new Uri(Name, UriKind.Relative);
-        return false;
-    }
+    public Uri Path => new Uri(Name, UriKind.Relative);
 
     public async Task<StorageItemProperties> GetBasicPropertiesAsync()
     {

@@ -13,7 +13,11 @@
                                   Background="{TemplateBinding Background}"
                                   CanHorizontallyScroll="{TemplateBinding CanHorizontallyScroll}"
                                   CanVerticallyScroll="{TemplateBinding CanVerticallyScroll}"
-                                  Content="{TemplateBinding Content}"
+                                  Content="{TemplateBinding Content}"                                  
+                                  HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
+                                  VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
+                                  HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
+                                  VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
                                   Extent="{TemplateBinding Extent,
                                                            Mode=TwoWay}"
                                   IsScrollChainingEnabled="{TemplateBinding IsScrollChainingEnabled}"

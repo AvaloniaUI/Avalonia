@@ -204,7 +204,6 @@ namespace Avalonia.Controls.UnitTests
                             Child = new ItemsPresenter
                             {
                                 Name = "PART_ItemsPresenter",
-                                [!ItemsPresenter.ItemsProperty] = parent[!ComboBox.ItemsProperty],
                             }.RegisterInNameScope(scope)
                         }.RegisterInNameScope(scope)
                     }
@@ -286,7 +285,6 @@ namespace Avalonia.Controls.UnitTests
                 var target = new ComboBox
                 {
                     Template = GetTemplate(),
-                    VirtualizationMode =  ItemVirtualizationMode.None
                 };
 
                 target.ApplyTemplate();

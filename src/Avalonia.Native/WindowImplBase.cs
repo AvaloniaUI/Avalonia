@@ -53,7 +53,6 @@ namespace Avalonia.Native
         protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
-        private bool _deferredRendering = false;
         private bool _gpu = false;
         private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
@@ -69,7 +68,6 @@ namespace Avalonia.Native
         {
             _factory = factory;
             _gpu = opts.UseGpu && glFeature != null;
-            _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
@@ -365,25 +363,10 @@ namespace Avalonia.Native
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            if (customRendererFactory != null)
-                return customRendererFactory.Create(root, loop);
-            
-            if (_deferredRendering)
+            return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor, () => Surfaces)
             {
-                if (AvaloniaNativePlatform.Compositor != null)
-                    return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor, () => Surfaces)
-                    {
-                        RenderOnlyOnRenderThread = false
-                    };
-                return new DeferredRenderer(root, loop,
-                    () => AvaloniaNativePlatform.RenderInterface!.CreateRenderTarget(Surfaces),
-                    AvaloniaNativePlatform.RenderInterface);
-            }
-
-            return new ImmediateRenderer((Visual)root,
-                () => AvaloniaNativePlatform.RenderInterface!.CreateRenderTarget(Surfaces), AvaloniaNativePlatform.RenderInterface);
+                RenderOnlyOnRenderThread = false
+            };
         }
 
         public virtual void Dispose()
@@ -518,6 +501,11 @@ namespace Avalonia.Native
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            _native.SetFrameThemeVariant((AvnPlatformThemeVariant)themeVariant);
+        }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0, 0);
 

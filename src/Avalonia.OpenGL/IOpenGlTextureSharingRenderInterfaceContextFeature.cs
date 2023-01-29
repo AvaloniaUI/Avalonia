@@ -1,6 +1,6 @@
+using System;
 using System.Collections.Generic;
-using Avalonia.OpenGL.Imaging;
-using Avalonia.Platform;
+using Avalonia.Rendering.Composition;
 
 namespace Avalonia.OpenGL
 {
@@ -8,6 +8,13 @@ namespace Avalonia.OpenGL
     {
         bool CanCreateSharedContext { get; }
         IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null);
-        IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi);
+        ICompositionImportableOpenGlSharedTexture CreateSharedTextureForComposition(IGlContext context, PixelSize size);
+    }
+
+    public interface ICompositionImportableOpenGlSharedTexture : ICompositionImportableSharedGpuContextImage
+    {
+        int TextureId { get; }
+        int InternalFormat { get; }
+        PixelSize Size { get; }
     }
 }

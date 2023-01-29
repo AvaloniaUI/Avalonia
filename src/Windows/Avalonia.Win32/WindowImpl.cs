@@ -558,32 +558,8 @@ namespace Avalonia.Win32
             _maxSize = maxSize;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-
-            if (customRendererFactory != null)
-                return customRendererFactory.Create(root, loop);
-
-            if (Win32Platform.Compositor != null)
-                return new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
-
-            return Win32Platform.UseDeferredRendering
-                ? _isUsingComposition
-                    ? new DeferredRenderer(root, loop, 
-                        () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
-                        Win32Platform.RenderInterface)
-                    {
-                        RenderOnlyOnRenderThread = true
-                    }
-                    : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock,
-                        renderTargetFactory: () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
-                        renderInterface: Win32Platform.RenderInterface)
-                : new ImmediateRenderer((Visual)root, 
-                    () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
-                    Win32Platform.RenderInterface);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
 
         public void Resize(Size value, PlatformResizeReason reason)
         {
@@ -805,6 +781,19 @@ namespace Avalonia.Win32
             _topmost = value;
         }
 
+        public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            if (Win32Platform.WindowsVersion.Build >= 22000)
+            {
+                var pvUseBackdropBrush = themeVariant == PlatformThemeVariant.Dark ? 1 : 0;
+                DwmSetWindowAttribute(
+                    _hwnd,
+                    (int)DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE,
+                    &pvUseBackdropBrush,
+                    sizeof(int));
+            }
+        }
+        
         protected virtual IntPtr CreateWindowOverride(ushort atom)
         {
             return CreateWindowEx(

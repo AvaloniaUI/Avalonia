@@ -19,9 +19,7 @@
                 CornerRadius="{TemplateBinding CornerRadius}"
                 Padding="{TemplateBinding Padding}">
           <ItemsPresenter Name="PART_ItemsPresenter"
-                          Items="{TemplateBinding Items}"
-                          ItemsPanel="{TemplateBinding ItemsPanel}"
-                          ItemTemplate="{TemplateBinding ItemTemplate}" />
+                          ItemsPanel="{TemplateBinding ItemsPanel}" />
         </Border>
       </ControlTemplate>
     </Setter>
