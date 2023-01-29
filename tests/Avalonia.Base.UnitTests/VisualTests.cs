@@ -150,7 +150,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Attaching_To_Visual_Tree_Should_Invalidate_Visual()
         {
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var child = new Decorator();
             var root = new TestRoot
             {
@@ -165,7 +165,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Detaching_From_Visual_Tree_Should_Invalidate_Visual()
         {
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var child = new Decorator();
             var root = new TestRoot
             {
@@ -307,7 +307,7 @@ namespace Avalonia.Base.UnitTests
         public void Changing_ZIndex_Should_InvalidateVisual()
         {
             Canvas canvas1;
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var root = new TestRoot
             {
                 Child = new StackPanel
@@ -331,7 +331,7 @@ namespace Avalonia.Base.UnitTests
         {
             Canvas canvas1;
             StackPanel stackPanel;
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var root = new TestRoot
             {
                 Child = stackPanel = new StackPanel

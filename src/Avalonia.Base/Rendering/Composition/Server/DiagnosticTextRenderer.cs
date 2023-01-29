@@ -1,0 +1,66 @@
+﻿using System;
+using Avalonia.Media;
+using Avalonia.Platform;
+
+namespace Avalonia.Rendering.Composition.Server
+{
+    /// <summary>
+    /// A class used to render diagnostic strings (only!), with caching of ASCII glyph runs.
+    /// </summary>
+    internal sealed class DiagnosticTextRenderer
+    {
+        private const char FirstChar = (char)32;
+        private const char LastChar = (char)126;
+
+        private readonly GlyphRun[] _runs = new GlyphRun[LastChar - FirstChar + 1];
+
+        public double MaxHeight { get; }
+
+        public DiagnosticTextRenderer(IGlyphTypeface typeface, double fontRenderingEmSize)
+        {
+            var chars = new char[LastChar - FirstChar + 1];
+            for (var c = FirstChar; c <= LastChar; c++)
+            {
+                var index = c - FirstChar;
+                chars[index] = c;
+                var glyph = typeface.GetGlyph(c);
+                var run = new GlyphRun(typeface, fontRenderingEmSize, chars.AsMemory(index, 1), new[] { glyph });
+                _runs[index] = run;
+                MaxHeight = Math.Max(run.Size.Height, MaxHeight);
+            }
+        }
+
+        public Size MeasureAsciiText(ReadOnlySpan<char> text)
+        {
+            var width = 0.0;
+            var height = 0.0;
+
+            foreach (var c in text)
+            {
+                var effectiveChar = c is >= FirstChar and <= LastChar ? c : ' ';
+                var run = _runs[effectiveChar - FirstChar];
+                width += run.Size.Width;
+                height = Math.Max(height, run.Size.Height);
+            }
+
+            return new Size(width, height);
+        }
+
+        public void DrawAsciiText(IDrawingContextImpl context, ReadOnlySpan<char> text, IBrush foreground)
+        {
+            var offset = 0.0;
+            var originalTransform = context.Transform;
+
+            foreach (var c in text)
+            {
+                var effectiveChar = c is >= FirstChar and <= LastChar ? c : ' ';
+                var run = _runs[effectiveChar - FirstChar];
+                context.Transform = originalTransform * Matrix.CreateTranslation(offset, 0.0);
+                context.DrawGlyphRun(foreground, run.PlatformImpl);
+                offset += run.Size.Width;
+            }
+
+            context.Transform = originalTransform;
+        }
+    }
+}

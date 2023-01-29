@@ -39,8 +39,8 @@
     <Object Name="CompositionTarget" CustomServerCtor="true">
         <Property Name="Root" Type="CompositionVisual?"/>
         <Property Name="IsEnabled" Type="bool"/>
-        <Property Name="DrawDirtyRects" Type="bool"/>
-        <Property Name="DrawFps" Type="bool"/>
+        <Property Name="DebugOverlays" Type="RendererDebugOverlays"/>
+        <Property Name="LastLayoutPassTiming" Type="LayoutPassTiming"/>
         <Property Name="Scaling" Type="double"/>
         <Property Name="Size" Type="Size" />
     </Object>
