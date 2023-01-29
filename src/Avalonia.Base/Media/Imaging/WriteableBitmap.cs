@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Avalonia.Platform;
 
 namespace Avalonia.Media.Imaging
@@ -34,6 +35,31 @@ namespace Avalonia.Media.Imaging
         private WriteableBitmap(IBitmapImpl impl, BitmapMemory? pixelFormatMemory = null) : base(impl)
         {
             _pixelFormatMemory = pixelFormatMemory;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WriteableBitmap"/> class with existing pixel data
+        /// The data is copied to the bitmap
+        /// </summary>
+        /// <param name="format">The pixel format.</param>
+        /// <param name="alphaFormat">The alpha format.</param>
+        /// <param name="data">The pointer to the source bytes.</param>
+        /// <param name="size">The size of the bitmap in device pixels.</param>
+        /// <param name="dpi">The DPI of the bitmap.</param>
+        /// <param name="stride">The number of bytes per row.</param>
+        public unsafe WriteableBitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
+            : this(size, dpi, format, alphaFormat)
+        {
+            var minStride = (format.BitsPerPixel * size.Width + 7) / 8;
+            if (minStride > stride)
+                throw new ArgumentOutOfRangeException(nameof(stride));
+
+            using (var locked = Lock())
+            {
+                for (var y = 0; y < size.Height; y++)
+                    Unsafe.CopyBlock((locked.Address + locked.RowBytes * y).ToPointer(),
+                        (data + y * stride).ToPointer(), (uint)minStride);
+            }
         }
 
         public override PixelFormat? Format => _pixelFormatMemory?.Format ?? base.Format;

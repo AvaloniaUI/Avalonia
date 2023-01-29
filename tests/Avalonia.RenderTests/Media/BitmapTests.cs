@@ -167,10 +167,17 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             if (!File.Exists(Path.Combine(OutputPath, expectedName + ".expected.png")))
                 expectedName = Path.Combine(relativeFilesDir, "Default");
 
-            foreach (var writable in new[] { false, true })
+            var names = new[]
             {
-                var testName = nameof(BitmapsShouldSupportTranscoders_Lenna) + "_" + formatName +
-                               (writable ? "_Writeable" : "_Normal");
+                "_Writeable",
+                "_WriteableInitialized",
+                "_Normal"
+            };
+            
+            foreach (var step in new[] { 0,1,2 })
+            {
+
+                var testName = nameof(BitmapsShouldSupportTranscoders_Lenna) + "_" + formatName + names[step];
 
                 var path = System.IO.Path.Combine(OutputPath, testName + ".out.png");
                 fixed (byte* pData = data)
@@ -178,7 +185,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                     Bitmap? b = null;
                     try
                     {
-                        if (writable)
+                        if (step == 0)
                         {
                             var bmp = new WriteableBitmap(size, new Vector(96, 96), new PixelFormat(format),
                                 alphaFormat);
@@ -194,15 +201,20 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                             }
 
                             b = bmp;
+                        }
+                        else if (step == 1)
+                            b = new WriteableBitmap(new PixelFormat(format), alphaFormat, new IntPtr(pData),
+                                size, new Vector(96, 96), stride);
+                        else
+                            b = new Bitmap(new PixelFormat(format), alphaFormat, new IntPtr(pData),
+                                size, new Vector(96, 96), stride);
+
+                        if (step < 2)
+                        {
                             var copyTo = new byte[data.Length];
                             fixed (byte* pCopyTo = copyTo)
                                 b.CopyPixels(default, new IntPtr(pCopyTo), copyTo.Length, stride);
                             Assert.Equal(data.ToArray(), copyTo);
-                        }
-                        else
-                        {
-                            b = new Bitmap(new PixelFormat(format), alphaFormat, new IntPtr(pData),
-                                size, new Vector(96, 96), stride);
                         }
 
                         b.Save(path);
