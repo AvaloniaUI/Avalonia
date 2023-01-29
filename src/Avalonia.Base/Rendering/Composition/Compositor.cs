@@ -37,6 +37,8 @@ namespace Avalonia.Rendering.Composition
         private List<Action> _pendingServerCompositorJobs = new();
 
         internal IEasing DefaultEasing { get; }
+
+        internal event Action? AfterCommit;
         
 
         /// <summary>
@@ -88,6 +90,7 @@ namespace Avalonia.Rendering.Composition
             {
                 if (_invokeBeforeCommitWrite.Count > 0)
                     RequestCommitAsync();
+                AfterCommit?.Invoke();
             }
         }
         

@@ -112,11 +112,6 @@ namespace Avalonia.Platform
         IRenderer CreateRenderer(IRenderRoot root);
 
         /// <summary>
-        /// Invalidates a rect on the toplevel.
-        /// </summary>
-        void Invalidate(Rect rect);
-
-        /// <summary>
         /// Sets the <see cref="IInputRoot"/> for the toplevel.
         /// </summary>
         void SetInputRoot(IInputRoot inputRoot);

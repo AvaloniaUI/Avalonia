@@ -30,10 +30,6 @@ namespace RenderDemo
                {
                    OverlayPopups = true,
                })
-               .With(new X11PlatformOptions
-               {
-                   UseCompositor = true
-               })
                 .UsePlatformDetect()
                 .LogToTrace();
     }
