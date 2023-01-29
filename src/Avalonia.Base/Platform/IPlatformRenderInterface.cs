@@ -197,6 +197,8 @@ namespace Avalonia.Platform
         /// Default <see cref="PixelFormat"/> used on this platform.
         /// </summary>
         public PixelFormat DefaultPixelFormat { get; }
+
+        bool IsSupportedBitmapPixelFormat(PixelFormat format);
     }
 
     [Unstable]
