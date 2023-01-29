@@ -83,8 +83,16 @@ public class CompositingRenderer : IRendererWithCompositor
     }
 
     /// <inheritdoc/>
-    public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter)
+    public IEnumerable<Visual> HitTest(Point p, Visual? root, Func<Visual, bool>? filter)
     {
+        CompositionVisual? rootVisual = null;
+        if (root != null)
+        {
+            if (root.CompositionVisual == null)
+                yield break;
+            rootVisual = root.CompositionVisual;
+        }
+        
         Func<CompositionVisual, bool>? f = null;
         if (filter != null)
             f = v =>
@@ -93,8 +101,8 @@ public class CompositingRenderer : IRendererWithCompositor
                     return filter(dlv.Visual);
                 return true;
             };
-        
-        var res = CompositionTarget.TryHitTest(p, f);
+
+        var res = CompositionTarget.TryHitTest(p, rootVisual, f);
         if(res == null)
             yield break;
         foreach(var v in res)
@@ -257,6 +265,7 @@ public class CompositingRenderer : IRendererWithCompositor
         _recalculateChildren.Clear();
         CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
+        TriggerSceneInvalidatedOnBatchCompletion(_compositor.RequestCommitAsync());
     }
 
     private async void TriggerSceneInvalidatedOnBatchCompletion(Task batchCompletion)
