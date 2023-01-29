@@ -37,7 +37,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 bindingResultType = transformed.BindingResultType;
                 binding.Arguments[0] = transformed;
             }
-            if (binding.Arguments.Count > 0 && binding.Arguments[0] is XamlIlBindingPathNode alreadyTransformed)
+            else if (binding.Arguments.Count > 0 && binding.Arguments[0] is XamlIlBindingPathNode alreadyTransformed)
             {
                 bindingResultType = alreadyTransformed.BindingResultType;
             }
