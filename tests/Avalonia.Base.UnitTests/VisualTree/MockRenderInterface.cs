@@ -91,6 +91,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
         public bool SupportsIndividualRoundRects { get; set; }
         public AlphaFormat DefaultAlphaFormat { get; }
         public PixelFormat DefaultPixelFormat { get; }
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
 
         public IFontManagerImpl CreateFontManager()
         {

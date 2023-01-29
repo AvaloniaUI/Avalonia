@@ -351,7 +351,7 @@ namespace Avalonia
         /// <returns>The new <see cref="PixelRect"/>.</returns>
         public PixelRect WithHeight(int height)
         {
-            return new PixelRect(X, Y, Width, Height);
+            return new PixelRect(X, Y, Width, height);
         }
 
         /// <summary>

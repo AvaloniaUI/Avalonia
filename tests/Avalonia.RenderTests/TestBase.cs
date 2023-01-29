@@ -190,9 +190,9 @@ namespace Avalonia.Direct2D1.RenderTests
             }
         }
 
-        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "")
+        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "", string expectedName = null)
         {
-            var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
+            var expectedPath = Path.Combine(OutputPath, (expectedName ?? testName) + ".expected.png");
             var actualPath = Path.Combine(OutputPath, testName + ".out.png");
 
             using (var expected = Image.Load<Rgba32>(expectedPath))

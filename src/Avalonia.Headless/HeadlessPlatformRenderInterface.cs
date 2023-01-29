@@ -30,6 +30,7 @@ namespace Avalonia.Headless
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
 
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new HeadlessGeometryStub(rect);
 
@@ -352,6 +353,8 @@ namespace Avalonia.Headless
             {
 
             }
+
+            public PixelFormat? Format { get; }
 
             public ILockedFramebuffer Lock()
             {
