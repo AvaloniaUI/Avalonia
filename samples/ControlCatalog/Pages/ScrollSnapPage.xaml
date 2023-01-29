@@ -8,7 +8,7 @@
              x:DataType="pages:ScrollSnapPageViewModel">
   <StackPanel Orientation="Vertical" Spacing="4">
     <TextBlock TextWrapping="Wrap"
-               Classes="h2">Scrollviewer can snap supported content both vertically and horizontally. Snapping occurs from scrolling with touch or pen, or using the pointer wheel.</TextBlock>
+               Classes="h2">Scrollviewer can snap supported content both vertically and horizontally. Snapping occurs from scrolling with touch or pen.</TextBlock>
 
     <Grid RowDefinitions="Auto, Auto, Auto, Auto, Auto">
       <StackPanel Orientation="Horizontal"

@@ -154,6 +154,8 @@ namespace Avalonia.Skia
             }
         }
 
+        public PixelFormat? Format => _bitmap.ColorType.ToAvalonia();
+
         /// <inheritdoc />
         public ILockedFramebuffer Lock() => new BitmapFramebuffer(this, _bitmap);
 

@@ -30,7 +30,6 @@ namespace Avalonia.X11
         public X11Info Info { get; private set; }
         public IX11Screens X11Screens { get; private set; }
         public Compositor Compositor { get; private set; }
-        public PlatformRenderInterfaceContextManager RenderInterface { get; private set; }
         public IScreenImpl Screens { get; private set; }
         public X11PlatformOptions Options { get; private set; }
         public IntPtr OrphanedWindow { get; private set; }
@@ -103,12 +102,8 @@ namespace Avalonia.X11
             }
 
             var gl = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
-            
-            if (options.UseCompositor)
-                Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
-            else
-                RenderInterface = new(gl);
 
+            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), gl);
         }
 
         public IntPtr DeferredDisplay { get; set; }
@@ -226,18 +221,7 @@ namespace Avalonia
         /// The default value is true.
         /// </summary>
         public bool UseDBusFilePicker { get; set; } = true;
-
-        /// <summary>
-        /// Deferred renderer would be used when set to true. Immediate renderer when set to false. The default value is true.
-        /// </summary>
-        /// <remarks>
-        /// Avalonia has two rendering modes: Immediate and Deferred rendering.
-        /// Immediate re-renders the whole scene when some element is changed on the scene. Deferred re-renders only changed elements.
-        /// </remarks>
-        public bool UseDeferredRendering { get; set; } = true;
-
-        public bool UseCompositor { get; set; } = true;
-
+        
         /// <summary>
         /// Determines whether to use IME.
         /// IME would be enabled by default if the current user input language is one of the following: Mandarin, Japanese, Vietnamese or Korean.

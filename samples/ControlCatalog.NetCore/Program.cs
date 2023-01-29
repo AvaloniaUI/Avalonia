@@ -55,8 +55,7 @@ namespace ControlCatalog.NetCore
                 return builder
                     .UseHeadless(new AvaloniaHeadlessPlatformOptions
                     {
-                        UseHeadlessDrawing = true,
-                        UseCompositor = true
+                        UseHeadlessDrawing = true
                     })
                     .AfterSetup(_ =>
                     {

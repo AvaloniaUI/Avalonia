@@ -36,12 +36,7 @@ namespace Avalonia
         /// </summary>
         public static readonly DirectProperty<Visual, Rect> BoundsProperty =
             AvaloniaProperty.RegisterDirect<Visual, Rect>(nameof(Bounds), o => o.Bounds);
-
-        public static readonly DirectProperty<Visual, TransformedBounds?> TransformedBoundsProperty =
-            AvaloniaProperty.RegisterDirect<Visual, TransformedBounds?>(
-                nameof(TransformedBounds),
-                o => o.TransformedBounds);
-
+        
         /// <summary>
         /// Defines the <see cref="ClipToBounds"/> property.
         /// </summary>
@@ -116,7 +111,6 @@ namespace Avalonia
                 (s, h) => s.Invalidated -= h);
 
         private Rect _bounds;
-        private TransformedBounds? _transformedBounds;
         private IRenderRoot? _visualRoot;
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
@@ -171,11 +165,6 @@ namespace Avalonia
             get { return _bounds; }
             protected set { SetAndRaise(BoundsProperty, ref _bounds, value); }
         }
-
-        /// <summary>
-        /// Gets the bounds of the control relative to the window, accounting for rendering transforms.
-        /// </summary>
-        public TransformedBounds? TransformedBounds => _transformedBounds;
 
         /// <summary>
         /// Gets or sets a value indicating whether the control should be clipped to its bounds.
@@ -521,11 +510,6 @@ namespace Avalonia
             }
 
             return CompositionVisual;
-        }
-
-        internal void SetTransformedBounds(TransformedBounds? value)
-        {
-            SetAndRaise(TransformedBoundsProperty, ref _transformedBounds, value);
         }
 
         /// <summary>
