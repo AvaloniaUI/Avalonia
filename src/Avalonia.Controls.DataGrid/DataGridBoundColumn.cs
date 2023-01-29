@@ -7,6 +7,7 @@ using Avalonia.Data;
 using System;
 using Avalonia.Controls.Utils;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Metadata;
 using Avalonia.Reactive;
 
 namespace Avalonia.Controls
@@ -24,6 +25,7 @@ namespace Avalonia.Controls
         /// </summary>
         //TODO Binding
         [AssignBinding]
+        [DataTypeInheritFrom(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
         public virtual IBinding Binding
         {
             get
