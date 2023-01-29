@@ -1948,10 +1948,10 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
     public class DataGridLikeColumn
     {
         [AssignBinding]
-        [DataTypeInheritFrom(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
+        [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
         public IBinding Binding { get; set; }
         
-        [DataTypeInheritFrom(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
+        [InheritDataTypeFromItems(nameof(DataGridLikeControl.Items), AncestorType = typeof(DataGridLikeControl))]
         public IDataTemplate Template { get; set; }
     }
 }

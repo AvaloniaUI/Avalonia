@@ -24,7 +24,7 @@ namespace Avalonia.Controls
                 (o, v) => o.CellTemplate = v);
 
         [Content]
-        [DataTypeInheritFrom(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
+        [InheritDataTypeFromItems(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
         public IDataTemplate CellTemplate
         {
             get { return _cellTemplate; }
@@ -51,7 +51,7 @@ namespace Avalonia.Controls
         /// <remarks>
         /// If this property is <see langword="null"/> the column is read-only.
         /// </remarks>
-        [DataTypeInheritFrom(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
+        [InheritDataTypeFromItems(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
         public IDataTemplate CellEditingTemplate
         {
             get => _cellEditingCellTemplate;

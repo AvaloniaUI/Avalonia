@@ -72,7 +72,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 {
                     // Infer data type from collection binding on a control that displays items.
                     var property = context.ParentNodes().OfType<XamlPropertyAssignmentNode>().FirstOrDefault();
-                    var attributeType = context.GetAvaloniaTypes().DataTypeInheritFromAttribute;
+                    var attributeType = context.GetAvaloniaTypes().InheritDataTypeFromItemsAttribute;
                     var attribute = property?.Property?.GetClrProperty().CustomAttributes
                         .FirstOrDefault(a => a.Type == attributeType);
     

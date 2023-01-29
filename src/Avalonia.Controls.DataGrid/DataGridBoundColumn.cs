@@ -25,7 +25,7 @@ namespace Avalonia.Controls
         /// </summary>
         //TODO Binding
         [AssignBinding]
-        [DataTypeInheritFrom(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
+        [InheritDataTypeFromItems(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
         public virtual IBinding Binding
         {
             get
