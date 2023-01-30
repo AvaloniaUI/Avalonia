@@ -16,7 +16,7 @@ internal ref struct CombinedSpan3<T>
 
     public int Length => Span1.Length + Span2.Length + Span3.Length;
 
-    void CopyFromSpan(ReadOnlySpan<T> from, int offset, ref Span<T> to)
+    static void CopyFromSpan(ReadOnlySpan<T> from, int offset, ref Span<T> to)
     {
         if(to.Length == 0)
             return;

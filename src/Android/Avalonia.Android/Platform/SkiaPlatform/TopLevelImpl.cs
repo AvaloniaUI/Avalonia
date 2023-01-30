@@ -8,7 +8,6 @@ using Android.Runtime;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
-using Avalonia.Android.OpenGL;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -27,11 +26,14 @@ using Avalonia.Rendering.Composition;
 using Java.Lang;
 using Math = System.Math;
 using AndroidRect = Android.Graphics.Rect;
+using Window = Android.Views.Window;
+using Android.Graphics.Drawables;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
+        ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
+        ITopLevelWithSystemNavigationManager
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
@@ -47,7 +49,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _pointerHelper = new AndroidMotionEventsHelper(this);
-            _gl = GlPlatformSurface.TryCreate(this);
+            _gl = new EglGlPlatformSurface(this);
             _framebuffer = new FramebufferManager(this);
 
             RenderScaling = _view.Scaling;
@@ -57,6 +59,8 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
             NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
             StorageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
+
+            SystemNavigationManager = new AndroidSystemNavigationManager(avaloniaView.Context as IActivityNavigationService);
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -105,11 +109,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
-            AndroidPlatform.Options.UseCompositor
-                ? new CompositingRenderer(root, AndroidPlatform.Compositor)
-                : AndroidPlatform.Options.UseDeferredRendering
-                    ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
-                    : new ImmediateRenderer((Visual)root);
+            new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces);
 
         public virtual void Hide()
         {
@@ -279,11 +279,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public Action LostFocus { get; set; }
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            // TODO adjust status bar depending on full screen mode.
+        }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
 
-        IntPtr EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
 
         public PixelSize Size => _view.Size;
 
@@ -295,9 +300,91 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         
         public IStorageProvider StorageProvider { get; }
 
+        public ISystemNavigationManager SystemNavigationManager { get; }
+
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
-            throw new NotImplementedException();
+            if (TransparencyLevel != transparencyLevel)
+            {
+                bool isBelowR = Build.VERSION.SdkInt < BuildVersionCodes.R;
+                bool isAboveR = Build.VERSION.SdkInt > BuildVersionCodes.R;
+                if (_view.Context is AvaloniaMainActivity activity)
+                {
+                    switch (transparencyLevel)
+                    {
+                        case WindowTransparencyLevel.AcrylicBlur:
+                        case WindowTransparencyLevel.ForceAcrylicBlur:
+                        case WindowTransparencyLevel.Mica:
+                        case WindowTransparencyLevel.None:
+                            if (!isBelowR)
+                            {
+                                activity.SetTranslucent(false);
+                            }
+                            if (isAboveR)
+                            {
+                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+
+                                var attr = activity.Window?.Attributes;
+                                if (attr != null)
+                                {
+                                    attr.BlurBehindRadius = 0;
+
+                                    activity.Window.Attributes = attr;
+                                }
+                            }
+                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
+
+                            if(transparencyLevel != WindowTransparencyLevel.None)
+                            {
+                                return;
+                            }
+                            break;
+                        case WindowTransparencyLevel.Transparent:
+                            if (!isBelowR)
+                            {
+                                activity.SetTranslucent(true);
+                            }
+                            if (isAboveR)
+                            {
+                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+
+                                var attr = activity.Window?.Attributes;
+                                if (attr != null)
+                                {
+                                    attr.BlurBehindRadius = 0;
+
+                                    activity.Window.Attributes = attr;
+                                }
+                            }
+                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                            break;
+                        case WindowTransparencyLevel.Blur:
+                            if (isAboveR)
+                            {
+                                activity.SetTranslucent(true);
+                                activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
+
+                                var attr = activity.Window?.Attributes;
+                                if (attr != null)
+                                {
+                                    attr.BlurBehindRadius = 120;
+
+                                    activity.Window.Attributes = attr;
+                                }
+                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                            }
+                            else
+                            {
+                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
+
+                                return;
+                            }
+                            break;
+                    }
+                    TransparencyLevel = transparencyLevel;
+                }
+            }
         }
     }
 

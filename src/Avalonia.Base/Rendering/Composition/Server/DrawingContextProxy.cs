@@ -86,7 +86,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
         _impl.DrawEllipse(brush, pen, rect);
     }
 
-    public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+    public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
     {
         _impl.DrawGlyphRun(foreground, glyphRun);
     }
@@ -163,7 +163,7 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
         public CompositionDrawList? VisualBrushDrawList { get; set; }
         public Size GetRenderTargetSize(IVisualBrush brush)
         {
-            return VisualBrushDrawList?.Size ?? Size.Empty;
+            return VisualBrushDrawList?.Size ?? default;
         }
 
         public void RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)

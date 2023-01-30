@@ -166,6 +166,8 @@ namespace Avalonia.Markup.Xaml.UnitTests.Data
         [Fact]
         public void Binding_Method_To_Command_Collected()
         {
+            using var app = UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
+
             WeakReference<ViewModel> MakeRef()
             {
                 var weakVm = new WeakReference<ViewModel>(null);

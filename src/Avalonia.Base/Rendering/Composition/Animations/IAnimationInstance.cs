@@ -6,7 +6,7 @@ using Avalonia.Rendering.Composition.Server;
 
 namespace Avalonia.Rendering.Composition.Animations
 {
-    internal interface IAnimationInstance
+    internal interface IAnimationInstance : IServerClockItem
     {
         ServerObject TargetObject { get; }
         ExpressionVariant Evaluate(TimeSpan now, ExpressionVariant currentValue);

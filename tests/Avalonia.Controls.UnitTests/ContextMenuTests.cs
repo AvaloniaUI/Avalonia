@@ -593,10 +593,10 @@ namespace Avalonia.Controls.UnitTests
             }
         }
 
-        private Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object content = null)
         {
             var renderer = new Mock<IRenderer>();
-            var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+            var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
             var windowImpl = Mock.Get(platform.CreateWindow());
             windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 

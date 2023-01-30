@@ -564,7 +564,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             using (CreateServices())
             {
                 var renderer = new Mock<IRenderer>();
-                var platform = AvaloniaLocator.Current.GetService<IWindowingPlatform>();
+                var platform = AvaloniaLocator.Current.GetRequiredService<IWindowingPlatform>();
                 var windowImpl = Mock.Get(platform.CreateWindow());
                 windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer.Object);
 
@@ -1075,7 +1075,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
        
-        private PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
+        private static PointerPressedEventArgs CreatePointerPressedEventArgs(Window source, Point p)
         {
             var pointer = new Pointer(Pointer.GetNextFreeId(), PointerType.Mouse, true);
             return new PointerPressedEventArgs(
@@ -1088,7 +1088,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
                 KeyModifiers.None);
         }
 
-        private Window PreparedWindow(object content = null)
+        private static Window PreparedWindow(object content = null)
         {
             var w = new Window { Content = content };
             w.ApplyStyling();
@@ -1115,10 +1115,7 @@ namespace Avalonia.Controls.UnitTests.Primitives
             {
                 Name = "popup",
                 PlacementTarget = control,
-                Child = new ItemsPresenter
-                {
-                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
-                }
+                Child = new ItemsPresenter(),
             }.RegisterInNameScope(scope);
         }
 

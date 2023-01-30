@@ -68,7 +68,7 @@ namespace Avalonia.Controls.UnitTests
             control.ApplyTemplate();
             return control;
         }
-        private TextBox GetTextBox(NumericUpDown control)
+        private static TextBox GetTextBox(NumericUpDown control)
         {
             return control.GetTemplateChildren()
                           .OfType<ButtonSpinner>()
@@ -76,7 +76,7 @@ namespace Avalonia.Controls.UnitTests
                           .OfType<TextBox>()
                           .First();
         }
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate<NumericUpDown>((control, scope) =>
             {

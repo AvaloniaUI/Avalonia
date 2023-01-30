@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Subjects;
+using Avalonia.Reactive;
 
 namespace Avalonia.Interactivity
 {
@@ -13,8 +13,8 @@ namespace Avalonia.Interactivity
 
     public class RoutedEvent
     {
-        private readonly Subject<(object, RoutedEventArgs)> _raised = new Subject<(object, RoutedEventArgs)>();
-        private readonly Subject<RoutedEventArgs> _routeFinished = new Subject<RoutedEventArgs>();
+        private readonly LightweightSubject<(object, RoutedEventArgs)> _raised = new();
+        private readonly LightweightSubject<RoutedEventArgs> _routeFinished = new();
 
         public RoutedEvent(
             string name,

@@ -42,7 +42,7 @@ namespace Avalonia.Utilities
             {
                 if (!_singleValue.HasValue || !EqualityComparer<TKey>.Default.Equals(_singleValue.Value.Key, key))
                 {
-                    value = default(TValue);
+                    value = default;
                     return false;
                 }
                 else

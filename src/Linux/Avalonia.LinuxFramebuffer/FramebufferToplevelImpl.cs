@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -24,26 +24,17 @@ namespace Avalonia.LinuxFramebuffer
             _inputBackend = inputBackend;
 
             Surfaces = new object[] { _outputBackend };
-
-            Invalidate(default(Rect));
             _inputBackend.Initialize(this, e => Input?.Invoke(e));
         }
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            var factory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-            var renderLoop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            return factory?.Create(root, renderLoop) ?? new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor);
+            return new CompositingRenderer(root, LinuxFramebufferPlatform.Compositor, () => Surfaces);
         }
 
         public void Dispose()
         {
             throw new NotSupportedException();
-        }
-
-
-        public void Invalidate(Rect rect)
-        {
         }
 
         public void SetInputRoot(IInputRoot inputRoot)
@@ -82,6 +73,8 @@ namespace Avalonia.LinuxFramebuffer
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) { }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
     }

@@ -1,8 +1,5 @@
 using System;
-using System.Linq;
-using Avalonia.Data;
-using Avalonia.LogicalTree;
-using Avalonia.Styling;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {

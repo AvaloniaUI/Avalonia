@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using Avalonia.Utilities;
-
-namespace Avalonia.Media.TextFormatting
+﻿namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// A collapsing properties to collapse whole line toward the end
@@ -15,7 +12,7 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="ellipsis">Text used as collapsing symbol.</param>
         /// <param name="width">Width in which collapsing is constrained to.</param>
         /// <param name="textRunProperties">Text run properties of ellipsis symbol.</param>
-        public TextTrailingCharacterEllipsis(ReadOnlySlice<char> ellipsis, double width, TextRunProperties textRunProperties)
+        public TextTrailingCharacterEllipsis(string ellipsis, double width, TextRunProperties textRunProperties)
         {
             Width = width;
             Symbol = new TextCharacters(ellipsis, textRunProperties);
@@ -27,7 +24,8 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override TextRun Symbol { get; }
 
-        public override List<DrawableTextRun>? Collapse(TextLine textLine)
+        /// <inheritdoc />
+        public override TextRun[]? Collapse(TextLine textLine)
         {
             return TextEllipsisHelper.Collapse(textLine, this, false);
         }

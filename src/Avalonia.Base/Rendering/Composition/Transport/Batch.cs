@@ -29,7 +29,7 @@ namespace Avalonia.Rendering.Composition.Transport
 
         
         public BatchStreamData Changes { get; private set; }
-        public TimeSpan CommitedAt { get; set; }
+        public TimeSpan CommittedAt { get; set; }
         
         public void Complete()
         {

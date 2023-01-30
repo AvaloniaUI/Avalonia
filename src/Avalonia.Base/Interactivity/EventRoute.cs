@@ -143,10 +143,7 @@ namespace Avalonia.Interactivity
                 // If we've got to a new control then call any RoutedEvent.Raised listeners.
                 if (entry.Target != lastTarget)
                 {
-                    if (!e.Handled)
-                    {
-                        _event.InvokeRaised(entry.Target, e);
-                    }
+                    _event.InvokeRaised(entry.Target, e);
 
                     // If this is a direct event and we've already raised events then we're finished.
                     if (e.Route == RoutingStrategies.Direct && lastTarget is object)

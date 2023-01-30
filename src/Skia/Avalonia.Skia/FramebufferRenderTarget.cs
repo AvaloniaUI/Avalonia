@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -60,6 +60,8 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(createInfo, _preFramebufferCopyHandler, canvas, framebuffer);
         }
+
+        public bool IsCorrupted => false;
 
         /// <summary>
         /// Check if two images info are compatible.

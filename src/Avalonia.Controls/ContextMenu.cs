@@ -15,6 +15,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Avalonia.Automation;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -313,11 +314,6 @@ namespace Avalonia.Controls
         { 
             add => _popupHostChangedHandler += value; 
             remove => _popupHostChangedHandler -= value;
-        }
-
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
         }
 
         private void Open(Control control, Control placementTarget, bool requestedByPointer)

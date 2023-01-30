@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <SupportedPlatform Remove="@(SupportedPlatform)" />
     <SupportedPlatform Include="browser" />
   </ItemGroup>
 
   <Import Project="..\..\..\build\NullableEnable.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.0-*" />

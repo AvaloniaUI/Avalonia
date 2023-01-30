@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using JetBrains.Annotations;
 using static Avalonia.X11.XLib;
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 namespace Avalonia.X11

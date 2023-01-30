@@ -15,6 +15,4 @@
       <Name>ControlCatalog</Name>
     </ProjectReference>
   </ItemGroup>
-
-  <Import Project="..\..\..\build\Rx.props" />
 </Project>

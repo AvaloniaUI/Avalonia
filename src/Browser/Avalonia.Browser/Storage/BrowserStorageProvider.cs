@@ -13,7 +13,6 @@ namespace Avalonia.Browser.Storage;
 
 internal record FilePickerAcceptType(string Description, IReadOnlyDictionary<string, IReadOnlyList<string>> Accept);
 
-[SupportedOSPlatform("browser")]
 internal class BrowserStorageProvider : IStorageProvider
 {
     internal const string PickerCancelMessage = "The user aborted a request";
@@ -30,11 +29,11 @@ internal class BrowserStorageProvider : IStorageProvider
         await _lazyModule.Value;
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
-        var (types, exludeAll) = ConvertFileTypes(options.FileTypeFilter);
+        var (types, excludeAll) = ConvertFileTypes(options.FileTypeFilter);
 
         try
         {
-            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, exludeAll);
+            using var items = await StorageHelper.OpenFileDialog(startIn, options.AllowMultiple, types, excludeAll);
             if (items is null)
             {
                 return Array.Empty<IStorageFile>();
@@ -64,11 +63,11 @@ internal class BrowserStorageProvider : IStorageProvider
         await _lazyModule.Value;
         var startIn = (options.SuggestedStartLocation as JSStorageItem)?.FileHandle;
 
-        var (types, exludeAll) = ConvertFileTypes(options.FileTypeChoices);
+        var (types, excludeAll) = ConvertFileTypes(options.FileTypeChoices);
 
         try
         {
-            var item = await StorageHelper.SaveFileDialog(startIn, options.SuggestedFileName, types, exludeAll);
+            var item = await StorageHelper.SaveFileDialog(startIn, options.SuggestedFileName, types, excludeAll);
             return item is not null ? new JSStorageFile(item) : null;
         }
         catch (JSException ex) when (ex.Message.Contains(PickerCancelMessage, StringComparison.Ordinal))
@@ -117,6 +116,33 @@ internal class BrowserStorageProvider : IStorageProvider
         return item is not null ? new JSStorageFolder(item) : null;
     }
 
+    public Task<IStorageFile?> TryGetFileFromPath(Uri filePath)
+    {
+        return Task.FromResult<IStorageFile?>(null);
+    }
+
+    public Task<IStorageFolder?> TryGetFolderFromPath(Uri folderPath)
+    {
+        return Task.FromResult<IStorageFolder?>(null);
+    }
+
+    public async Task<IStorageFolder?> TryGetWellKnownFolder(WellKnownFolder wellKnownFolder)
+    {
+        await _lazyModule.Value;
+        var directory = StorageHelper.CreateWellKnownDirectory(wellKnownFolder switch
+        {
+            WellKnownFolder.Desktop => "desktop",
+            WellKnownFolder.Documents => "documents",
+            WellKnownFolder.Downloads => "downloads",
+            WellKnownFolder.Music => "music",
+            WellKnownFolder.Pictures => "pictures",
+            WellKnownFolder.Videos => "videos",
+            _ => throw new ArgumentOutOfRangeException(nameof(wellKnownFolder), wellKnownFolder, null)
+        });
+
+        return new JSStorageFolder(directory);
+    }
+
     private static (JSObject[]? types, bool excludeAllOption) ConvertFileTypes(IEnumerable<FilePickerFileType>? input)
     {
         var types = input?
@@ -128,9 +154,9 @@ internal class BrowserStorageProvider : IStorageProvider
             types = null;
         }
 
-        var inlcudeAll = input?.Contains(FilePickerFileTypes.All) == true || types is null;
+        var includeAll = input?.Contains(FilePickerFileTypes.All) == true || types is null;
 
-        return (types, !inlcudeAll);
+        return (types, !includeAll);
     }
 }
 
@@ -146,12 +172,7 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
     internal JSObject FileHandle => _fileHandle ?? throw new ObjectDisposedException(nameof(JSStorageItem));
 
     public string Name => FileHandle.GetPropertyAsString("name") ?? string.Empty;
-
-    public bool TryGetUri([NotNullWhen(true)] out Uri? uri)
-    {
-        uri = new Uri(Name, UriKind.Relative);
-        return false;
-    }
+    public Uri Path => new Uri(Name, UriKind.Relative);
 
     public async Task<StorageItemProperties> GetBasicPropertiesAsync()
     {

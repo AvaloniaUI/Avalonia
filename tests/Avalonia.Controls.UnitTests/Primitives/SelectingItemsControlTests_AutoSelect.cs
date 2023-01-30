@@ -119,13 +119,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
             Assert.Equal(new[] { ":selected" }, target.Presenter.Panel.Children[0].Classes);
         }
 
-        private FuncControlTemplate Template()
+        private static FuncControlTemplate Template()
         {
             return new FuncControlTemplate<SelectingItemsControl>((control, scope) =>
                 new ItemsPresenter
                 {
                     Name = "itemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = control[~ItemsControl.ItemsProperty],
                     [~ItemsPresenter.ItemsPanelProperty] = control[~ItemsControl.ItemsPanelProperty],
                 }.RegisterInNameScope(scope));
         }

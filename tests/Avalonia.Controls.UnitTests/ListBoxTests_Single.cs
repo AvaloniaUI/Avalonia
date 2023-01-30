@@ -33,7 +33,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Tab,
             });
 
@@ -53,7 +52,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
             });
 
@@ -73,7 +71,6 @@ namespace Avalonia.Controls.UnitTests
 
             target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
             {
-                RoutedEvent = InputElement.GotFocusEvent,
                 NavigationMethod = NavigationMethod.Directional,
                 KeyModifiers = KeyModifiers.Control
             });
@@ -96,7 +93,6 @@ namespace Avalonia.Controls.UnitTests
 
                 target.Presenter.Panel.Children[0].RaiseEvent(new GotFocusEventArgs
                 {
-                    RoutedEvent = InputElement.GotFocusEvent,
                     NavigationMethod = NavigationMethod.Directional,
                     KeyModifiers = KeyModifiers.Control
                 });
@@ -324,7 +320,6 @@ namespace Avalonia.Controls.UnitTests
                 Content = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent.GetObservable(ItemsControl.ItemsProperty).ToBinding(),
                 }.RegisterInNameScope(scope)
             };
         }
@@ -339,7 +334,7 @@ namespace Avalonia.Controls.UnitTests
             }.RegisterInNameScope(scope);
         }
 
-        private void ApplyTemplate(ListBox target)
+        private static void ApplyTemplate(ListBox target)
         {
             // Apply the template to the ListBox itself.
             target.ApplyTemplate();

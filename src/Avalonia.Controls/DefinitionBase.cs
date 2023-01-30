@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Avalonia.Reactive;
 using Avalonia.Utilities;
 
 namespace Avalonia.Controls
@@ -805,14 +806,12 @@ namespace Avalonia.Controls
         /// <param name="properties">The properties.</param>
         protected static void AffectsParentMeasure(params AvaloniaProperty[] properties)
         {
-            void Invalidate(AvaloniaPropertyChangedEventArgs e)
-            {
-                (e.Sender as DefinitionBase)?.Parent?.InvalidateMeasure();
-            }
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e => (e.Sender as DefinitionBase)?.Parent?.InvalidateMeasure());
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(Invalidate);
+                property.Changed.Subscribe(invalidateObserver);
             }
         }
     }

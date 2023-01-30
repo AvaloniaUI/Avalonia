@@ -17,7 +17,6 @@ namespace Avalonia.Utilities
     /// </summary>
     /// <typeparam name="T">The type of item contained in the slice.</typeparam>
     internal readonly struct ArraySlice<T> : IReadOnlyList<T>
-        where T : struct
     {
         /// <summary>
         /// Gets an empty <see cref="ArraySlice{T}"/>
@@ -112,14 +111,6 @@ namespace Avalonia.Utilities
         }
 
         /// <summary>
-        /// Defines an implicit conversion of a <see cref="ArraySlice{T}"/> to a <see cref="ReadOnlySlice{T}"/>
-        /// </summary>
-        public static implicit operator ReadOnlySlice<T>(ArraySlice<T> slice)
-        {
-            return new ReadOnlySlice<T>(slice._data, 0, slice.Length, slice.Start);
-        }
-
-        /// <summary>
         /// Defines an implicit conversion of an array to a <see cref="ArraySlice{T}"/>
         /// </summary>
         public static implicit operator ArraySlice<T>(T[] array) => new ArraySlice<T>(array, 0, array.Length);
@@ -195,3 +186,4 @@ namespace Avalonia.Utilities
         int IReadOnlyCollection<T>.Count => Length;
     }
 }
+

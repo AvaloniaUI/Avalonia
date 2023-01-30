@@ -31,7 +31,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsThreeState"/> property.
         /// </summary>
-        public static StyledProperty<bool> IsThreeStateProperty =
+        public static readonly StyledProperty<bool> IsThreeStateProperty =
             CheckBox.IsThreeStateProperty.AddOwner<DataGridCheckBoxColumn>();
 
         /// <summary>
@@ -192,14 +192,14 @@ namespace Avalonia.Controls
                     
                     void OnLayoutUpdated(object sender, EventArgs e)
                     {
-                        if(!editingCheckBox.Bounds.IsEmpty)
+                        if(!editingCheckBox.Bounds.IsDefault)
                         {
                             editingCheckBox.LayoutUpdated -= OnLayoutUpdated;
                             ProcessPointerArgs();
                         }
                     }
 
-                    if(editingCheckBox.Bounds.IsEmpty)
+                    if(editingCheckBox.Bounds.IsDefault)
                     {
                         editingCheckBox.LayoutUpdated += OnLayoutUpdated;
                     }

@@ -32,9 +32,7 @@
                 VerticalAlignment="{TemplateBinding VerticalAlignment}">
           <DockPanel>
             <ItemsPresenter Name="PART_ItemsPresenter"
-                            Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
                             DockPanel.Dock="{TemplateBinding TabStripPlacement}" />
             <ContentPresenter Name="PART_SelectedContentHost"
                               Margin="{TemplateBinding Padding}"

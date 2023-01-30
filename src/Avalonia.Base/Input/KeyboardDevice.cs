@@ -25,7 +25,7 @@ namespace Avalonia.Input
 
         public IInputElement? FocusedElement => _focusedElement;
 
-        private void ClearFocusWithinAncestors(IInputElement? element)
+        private static void ClearFocusWithinAncestors(IInputElement? element)
         {
             var el = element;
             
@@ -156,7 +156,6 @@ namespace Avalonia.Input
 
                 interactive?.RaiseEvent(new GotFocusEventArgs
                 {
-                    RoutedEvent = InputElement.GotFocusEvent,
                     NavigationMethod = method,
                     KeyModifiers = keyModifiers,
                 });

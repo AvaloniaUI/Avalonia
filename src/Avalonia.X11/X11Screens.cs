@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using static Avalonia.X11.XLib;
-using JetBrains.Annotations;
 
 namespace Avalonia.X11
 {

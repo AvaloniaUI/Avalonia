@@ -27,6 +27,7 @@ extern IAvnMenuItem* CreateAppMenuItem();
 extern IAvnMenuItem* CreateAppMenuItemSeparator();
 extern IAvnApplicationCommands* CreateApplicationCommands();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
+extern IAvnPlatformSettings* CreatePlatformSettings();
 extern void SetAppMenu(IAvnMenu *menu);
 extern void SetServicesMenu (IAvnMenu* menu);
 extern IAvnMenu* GetAppMenu ();

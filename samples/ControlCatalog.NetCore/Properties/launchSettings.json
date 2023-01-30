@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ControlCatalog.NetCore": {
+      "commandName": "Project"
+    },
+    "Dxgi": {
+      "commandName": "Project",
+      "commandLineArgs": "--dxgi"
+    }
+  }
+}

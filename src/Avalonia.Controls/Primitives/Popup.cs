@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Diagnostics;
@@ -9,13 +8,13 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
+using Avalonia.Input.TextInput;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using Avalonia.Media;
-using Avalonia.Utilities;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -360,7 +359,7 @@ namespace Avalonia.Controls.Primitives
                 return;
             }
             
-            var topLevel = placementTarget.VisualRoot as TopLevel;
+            var topLevel = TopLevel.GetTopLevel(placementTarget);
 
             if (topLevel == null)
             {
@@ -380,11 +379,8 @@ namespace Avalonia.Controls.Primitives
 
             if (InheritsTransform && placementTarget is Control c)
             {
-                SubscribeToEventHandler<Control, EventHandler<AvaloniaPropertyChangedEventArgs>>(
-                    c,
-                    PlacementTargetPropertyChanged,
-                    (x, handler) => x.PropertyChanged += handler,
-                    (x, handler) => x.PropertyChanged -= handler).DisposeWith(handlerCleanup);
+                TransformTrackingHelper.Track(c, PlacementTargetTransformChanged)
+                    .DisposeWith(handlerCleanup);
             }
             else
             {
@@ -639,7 +635,7 @@ namespace Avalonia.Controls.Primitives
             return Disposable.Create((unsubscribe, target, handler), state => state.unsubscribe(state.target, state.handler));
         }
 
-        private void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
+        private static void WindowManagerAddShadowHintChanged(IPopupHost host, bool hint)
         {
             if(host is PopupRoot pr && pr.PlatformImpl is not null)
             {
@@ -769,7 +765,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        private void PassThroughEvent(PointerPressedEventArgs e)
+        private static void PassThroughEvent(PointerPressedEventArgs e)
         {
             if (e.Source is LightDismissOverlayLayer layer &&
                 layer.GetVisualRoot() is InputElement root)
@@ -874,13 +870,11 @@ namespace Avalonia.Controls.Primitives
                 Close();
             }
         }
-        
-        private void PlacementTargetPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+
+        private void PlacementTargetTransformChanged(Visual v, Matrix? matrix)
         {
-            if (_openState is not null && e.Property == Visual.TransformedBoundsProperty)
-            {
+            if (_openState is not null)
                 UpdateHostSizing(_openState.PopupHost, _openState.TopLevel, _openState.PlacementTarget);
-            }
         }
 
         private void WindowLostFocus()

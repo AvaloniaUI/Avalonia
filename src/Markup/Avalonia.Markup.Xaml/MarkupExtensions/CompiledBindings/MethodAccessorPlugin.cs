@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 using Avalonia.Data;
@@ -21,11 +22,13 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
             _delegateType = delegateType;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public bool Match(object obj, string propertyName)
         {
             throw new InvalidOperationException("The MethodAccessorPlugin does not support dynamic matching");
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.PropertyAccessorsRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object?> reference, string propertyName)
         {
             Debug.Assert(_method.Name == propertyName);

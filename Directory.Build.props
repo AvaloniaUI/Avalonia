@@ -7,5 +7,6 @@
       <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
       <MSBuildEnableWorkloadResolver>false</MSBuildEnableWorkloadResolver>
       <RunApiCompat>False</RunApiCompat>
+      <LangVersion>11</LangVersion>
   </PropertyGroup>
 </Project>

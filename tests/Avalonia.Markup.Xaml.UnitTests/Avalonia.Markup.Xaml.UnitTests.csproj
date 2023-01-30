@@ -3,7 +3,6 @@
     <TargetFrameworks>net6.0;net47</TargetFrameworks>
     <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\UnitTests.NetFX.props" />
@@ -30,6 +29,7 @@
     </AvaloniaResource>
     <AvaloniaResource Include="Xaml\XamlIlClassWithPrecompiledXaml.xaml" />
     <AvaloniaResource Include="Xaml\XamlIlClassWithCustomProperty.xaml" />
+    <AvaloniaResource Include="Xaml\StyleWithServiceProvider.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Avalonia.IntegrationTests.Appium\PlatformFactAttribute.cs">

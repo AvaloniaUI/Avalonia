@@ -2,7 +2,7 @@ using Avalonia.Input.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Utils;
@@ -961,12 +961,10 @@ namespace Avalonia.Controls
 
                 var length = 0;
 
-                var graphemeEnumerator = new GraphemeEnumerator(input.AsMemory());
+                var graphemeEnumerator = new GraphemeEnumerator(input.AsSpan());
 
-                while (graphemeEnumerator.MoveNext())
+                while (graphemeEnumerator.MoveNext(out var grapheme))
                 {
-                    var grapheme = graphemeEnumerator.Current;
-
                     if (grapheme.FirstCodepoint.IsBreakChar)
                     {
                         if (lineCount + 1 > MaxLines)
@@ -979,7 +977,7 @@ namespace Avalonia.Controls
                         }
                     }
 
-                    length += grapheme.Text.Length;
+                    length += grapheme.Length;
                 }
 
                 if (length < input.Length)
@@ -1473,7 +1471,11 @@ namespace Avalonia.Controls
 
                         _wordSelectionStart = SelectionStart;
 
-                        SelectionEnd = StringUtils.NextWord(text, index);
+                        if (!StringUtils.IsEndOfWord(text, index))
+                        {
+                            SelectionEnd = StringUtils.NextWord(text, index);
+                        }
+
                         break;
                     case 3:
                         _wordSelectionStart = -1;
@@ -1588,7 +1590,7 @@ namespace Avalonia.Controls
 
         private int CoerceCaretIndex(int value) => CoerceCaretIndex(value, Text);
 
-        private int CoerceCaretIndex(int value, string? text)
+        private static int CoerceCaretIndex(int value, string? text)
         {
             if (text == null)
             {

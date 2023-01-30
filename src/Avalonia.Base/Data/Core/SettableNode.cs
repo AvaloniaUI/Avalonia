@@ -2,7 +2,7 @@
 
 namespace Avalonia.Data.Core
 {
-    public abstract class SettableNode : ExpressionNode
+    internal abstract class SettableNode : ExpressionNode
     {
         public bool SetTargetValue(object? value, BindingPriority priority)
         {

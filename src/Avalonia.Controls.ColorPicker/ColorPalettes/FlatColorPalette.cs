@@ -289,8 +289,8 @@ namespace Avalonia.Controls
         };
 
         // See: https://htmlcolorcodes.com/assets/downloads/flat-design-colors/flat-design-color-chart.png
-        protected static Color[,]? _colorChart = null;
-        protected static object _colorChartMutex = new object();
+        private static Color[,]? _colorChart = null;
+        private static readonly object _colorChartMutex = new();
 
         /// <summary>
         /// Initializes all color chart colors.

@@ -34,7 +34,6 @@ namespace Avalonia.Controls
         }
 
         private const int DATAGRIDCOLUMNHEADER_resizeRegionWidth = 5;
-        private const double DATAGRIDCOLUMNHEADER_separatorThickness = 1;
         private const int DATAGRIDCOLUMNHEADER_columnsDragTreshold = 5;
 
         private bool _areHandlersSuspended;
@@ -674,7 +673,7 @@ namespace Avalonia.Controls
             };
             if (OwningGrid.ColumnHeaderTheme is {} columnHeaderTheme)
             {
-                dragIndicator.SetValue(ThemeProperty, columnHeaderTheme, BindingPriority.TemplatedParent);
+                dragIndicator.SetValue(ThemeProperty, columnHeaderTheme, BindingPriority.Template);
             }
 
             dragIndicator.PseudoClasses.Add(":dragIndicator");

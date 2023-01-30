@@ -4,7 +4,6 @@ using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Platform;
 using Avalonia.Utilities;
-using JetBrains.Annotations;
 
 namespace Avalonia.Controls.Utils
 {

@@ -11,6 +11,7 @@ using Avalonia.Logging;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Metadata;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Server;
@@ -35,12 +36,7 @@ namespace Avalonia
         /// </summary>
         public static readonly DirectProperty<Visual, Rect> BoundsProperty =
             AvaloniaProperty.RegisterDirect<Visual, Rect>(nameof(Bounds), o => o.Bounds);
-
-        public static readonly DirectProperty<Visual, TransformedBounds?> TransformedBoundsProperty =
-            AvaloniaProperty.RegisterDirect<Visual, TransformedBounds?>(
-                nameof(TransformedBounds),
-                o => o.TransformedBounds);
-
+        
         /// <summary>
         /// Defines the <see cref="ClipToBounds"/> property.
         /// </summary>
@@ -90,6 +86,14 @@ namespace Avalonia
             AvaloniaProperty.Register<Visual, RelativePoint>(nameof(RenderTransformOrigin), defaultValue: RelativePoint.Center);
 
         /// <summary>
+        /// Defines the <see cref="FlowDirection"/> property.
+        /// </summary>
+        public static readonly AttachedProperty<FlowDirection> FlowDirectionProperty =
+            AvaloniaProperty.RegisterAttached<Visual, Visual, FlowDirection>(
+                nameof(FlowDirection),
+                inherits: true);
+
+        /// <summary>
         /// Defines the <see cref="VisualParent"/> property.
         /// </summary>
         public static readonly DirectProperty<Visual, Visual?> VisualParentProperty =
@@ -107,7 +111,6 @@ namespace Avalonia
                 (s, h) => s.Invalidated -= h);
 
         private Rect _bounds;
-        private TransformedBounds? _transformedBounds;
         private IRenderRoot? _visualRoot;
         private Visual? _visualParent;
         private bool _hasMirrorTransform;
@@ -162,11 +165,6 @@ namespace Avalonia
             get { return _bounds; }
             protected set { SetAndRaise(BoundsProperty, ref _bounds, value); }
         }
-
-        /// <summary>
-        /// Gets the bounds of the control relative to the window, accounting for rendering transforms.
-        /// </summary>
-        public TransformedBounds? TransformedBounds => _transformedBounds;
 
         /// <summary>
         /// Gets or sets a value indicating whether the control should be clipped to its bounds.
@@ -264,6 +262,15 @@ namespace Avalonia
         }
 
         /// <summary>
+        /// Gets or sets the text flow direction.
+        /// </summary>
+        public FlowDirection FlowDirection
+        {
+            get => GetValue(FlowDirectionProperty);
+            set => SetValue(FlowDirectionProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the Z index of the control.
         /// </summary>
         /// <remarks>
@@ -307,6 +314,36 @@ namespace Avalonia
         internal Visual? VisualParent => _visualParent;
 
         /// <summary>
+        /// Gets a value indicating whether control bypass FlowDirecton policies.
+        /// </summary>
+        /// <remarks>
+        /// Related to FlowDirection system and returns false as default, so if 
+        /// <see cref="FlowDirection"/> is RTL then control will get a mirror presentation. 
+        /// For controls that want to avoid this behavior, override this property and return true.
+        /// </remarks>
+        protected virtual bool BypassFlowDirectionPolicies => false;
+
+        /// <summary>
+        /// Gets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="visual">The control.</param>
+        /// <returns>The flow direction.</returns>
+        public static FlowDirection GetFlowDirection(Visual visual)
+        {
+            return visual.GetValue(FlowDirectionProperty);
+        }
+
+        /// <summary>
+        /// Sets the value of the attached <see cref="FlowDirectionProperty"/> on a control.
+        /// </summary>
+        /// <param name="visual">The control.</param>
+        /// <param name="value">The property value to set.</param>
+        public static void SetFlowDirection(Visual visual, FlowDirection value)
+        {
+            visual.SetValue(FlowDirectionProperty, value);
+        }
+
+        /// <summary>
         /// Invalidates the visual and queues a repaint.
         /// </summary>
         public void InvalidateVisual()
@@ -320,7 +357,10 @@ namespace Avalonia
         /// <param name="context">The drawing context.</param>
         public virtual void Render(DrawingContext context)
         {
-            Contract.Requires<ArgumentNullException>(context != null);
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
         }
 
         /// <summary>
@@ -337,52 +377,71 @@ namespace Avalonia
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Visual
         {
-            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
-            {
-                if (e.Sender is T sender)
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e =>
                 {
-                    sender.InvalidateVisual();
-                }
-            }
-
-            static void InvalidateAndSubscribe(AvaloniaPropertyChangedEventArgs e)
-            {
-                if (e.Sender is T sender)
+                    if (e.Sender is T sender)
+                    {
+                        sender.InvalidateVisual();
+                    }
+                });
+            
+            
+            var invalidateAndSubscribeObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e =>
                 {
-                    if (e.OldValue is IAffectsRender oldValue)
+                    if (e.Sender is T sender)
                     {
-                        if (sender._affectsRenderWeakSubscriber != null)
+                        if (e.OldValue is IAffectsRender oldValue)
                         {
-                            InvalidatedWeakEvent.Unsubscribe(oldValue, sender._affectsRenderWeakSubscriber);
+                            if (sender._affectsRenderWeakSubscriber != null)
+                            {
+                                InvalidatedWeakEvent.Unsubscribe(oldValue, sender._affectsRenderWeakSubscriber);
+                            }
                         }
-                    }
 
-                    if (e.NewValue is IAffectsRender newValue)
-                    {
-                        if (sender._affectsRenderWeakSubscriber == null)
+                        if (e.NewValue is IAffectsRender newValue)
                         {
-                            sender._affectsRenderWeakSubscriber = new TargetWeakEventSubscriber<Visual, EventArgs>(
-                                sender, static (target, _, _, _) =>
-                                {
-                                    target.InvalidateVisual();
-                                });
+                            if (sender._affectsRenderWeakSubscriber == null)
+                            {
+                                sender._affectsRenderWeakSubscriber = new TargetWeakEventSubscriber<Visual, EventArgs>(
+                                    sender, static (target, _, _, _) =>
+                                    {
+                                        target.InvalidateVisual();
+                                    });
+                            }
+                            InvalidatedWeakEvent.Subscribe(newValue, sender._affectsRenderWeakSubscriber);
                         }
-                        InvalidatedWeakEvent.Subscribe(newValue, sender._affectsRenderWeakSubscriber);
-                    }
 
-                    sender.InvalidateVisual();
-                }
-            }
+                        sender.InvalidateVisual();
+                    }
+                });
 
             foreach (var property in properties)
             {
                 if (property.CanValueAffectRender())
                 {
-                    property.Changed.Subscribe(e => InvalidateAndSubscribe(e));
+                    property.Changed.Subscribe(invalidateAndSubscribeObserver);
                 }
                 else
                 {
-                    property.Changed.Subscribe(e => Invalidate(e));
+                    property.Changed.Subscribe(invalidateObserver);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == FlowDirectionProperty)
+            {
+                InvalidateMirrorTransform();
+
+                foreach (var child in VisualChildren)
+                {
+                    child.InvalidateMirrorTransform();
                 }
             }
         }
@@ -414,9 +473,11 @@ namespace Avalonia
             {
                 AttachToCompositor(compositingRenderer.Compositor);
             }
+            InvalidateMirrorTransform();
             OnAttachedToVisualTree(e);
             AttachedToVisualTree?.Invoke(this, e);
             InvalidateVisual();
+            _visualRoot.Renderer?.RecalculateChildren(_visualParent!);
 
             if (ZIndex != 0 && VisualParent is Visual parent)
                 parent.HasNonUniformZIndexChildren = true;
@@ -451,11 +512,6 @@ namespace Avalonia
             return CompositionVisual;
         }
 
-        internal void SetTransformedBounds(TransformedBounds? value)
-        {
-            SetAndRaise(TransformedBoundsProperty, ref _transformedBounds, value);
-        }
-
         /// <summary>
         /// Calls the <see cref="OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs)"/> method 
         /// for this control and all of its visual descendants.
@@ -476,6 +532,9 @@ namespace Avalonia
             OnDetachedFromVisualTree(e);
             if (CompositionVisual != null)
             {
+                if (ChildCompositionVisual != null)
+                    CompositionVisual.Children.Remove(ChildCompositionVisual);
+                
                 CompositionVisual.DrawList = null;
                 CompositionVisual = null;
             }
@@ -549,23 +608,22 @@ namespace Avalonia
         /// Called when a visual's <see cref="RenderTransform"/> changes.
         /// </summary>
         /// <param name="e">The event args.</param>
-        private static void RenderTransformChanged(AvaloniaPropertyChangedEventArgs e)
+        private static void RenderTransformChanged(AvaloniaPropertyChangedEventArgs<ITransform?> e)
         {
             var sender = e.Sender as Visual;
 
             if (sender?.VisualRoot != null)
             {
-                var oldValue = e.OldValue as Transform;
-                var newValue = e.NewValue as Transform;
+                var (oldValue, newValue) = e.GetOldAndNewValue<ITransform?>();
 
-                if (oldValue != null)
+                if (oldValue is Transform oldTransform)
                 {
-                    oldValue.Changed -= sender.RenderTransformChanged;
+                    oldTransform.Changed -= sender.RenderTransformChanged;
                 }
 
-                if (newValue != null)
+                if (newValue is Transform newTransform)
                 {
-                    newValue.Changed += sender.RenderTransformChanged;
+                    newTransform.Changed += sender.RenderTransformChanged;
                 }
                 
                 sender.InvalidateVisual();
@@ -680,6 +738,33 @@ namespace Avalonia
                 
                 visual.SetVisualParent(parent);
             }
+        }
+
+        /// <summary>
+        /// Computes the <see cref="HasMirrorTransform"/> value according to the 
+        /// <see cref="FlowDirection"/> and <see cref="BypassFlowDirectionPolicies"/>
+        /// </summary>
+        public virtual void InvalidateMirrorTransform()
+        {
+            var flowDirection = this.FlowDirection;
+            var parentFlowDirection = FlowDirection.LeftToRight;
+
+            bool bypassFlowDirectionPolicies = BypassFlowDirectionPolicies;
+            bool parentBypassFlowDirectionPolicies = false;
+
+            var parent = VisualParent;
+            if (parent != null)
+            {
+                parentFlowDirection = parent.FlowDirection;
+                parentBypassFlowDirectionPolicies = parent.BypassFlowDirectionPolicies;
+            }
+
+            bool thisShouldBeMirrored = flowDirection == FlowDirection.RightToLeft && !bypassFlowDirectionPolicies;
+            bool parentShouldBeMirrored = parentFlowDirection == FlowDirection.RightToLeft && !parentBypassFlowDirectionPolicies;
+
+            bool shouldApplyMirrorTransform = thisShouldBeMirrored != parentShouldBeMirrored;
+
+            HasMirrorTransform = shouldApplyMirrorTransform;
         }
     }
 }

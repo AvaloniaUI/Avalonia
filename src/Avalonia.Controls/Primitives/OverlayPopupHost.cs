@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -123,7 +123,7 @@ namespace Avalonia.Controls.Primitives
        
         public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver)
         {
-            var platform = (target.GetVisualRoot() as TopLevel)?.PlatformImpl?.CreatePopup();
+            var platform = TopLevel.GetTopLevel(target)?.PlatformImpl?.CreatePopup();
             if (platform != null)
                 return new PopupRoot((TopLevel)target.GetVisualRoot()!, platform, dependencyResolver);
             

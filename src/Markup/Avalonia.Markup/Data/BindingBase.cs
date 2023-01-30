@@ -1,13 +1,9 @@
-﻿
 using System;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Parsers;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
@@ -74,13 +70,14 @@ namespace Avalonia.Data
 
         public WeakReference<INameScope>? NameScope { get; set; }
 
-        protected abstract ExpressionObserver CreateExpressionObserver(
+        private protected abstract ExpressionObserver CreateExpressionObserver(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor,
             bool enableDataValidation);
 
         /// <inheritdoc/>
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
         public InstancedBinding? Initiate(
             AvaloniaObject target,
             AvaloniaProperty? targetProperty,
@@ -130,7 +127,7 @@ namespace Avalonia.Data
             return new InstancedBinding(subject, Mode, Priority);
         }
 
-        protected ExpressionObserver CreateDataContextObserver(
+        private protected ExpressionObserver CreateDataContextObserver(
             AvaloniaObject target,
             ExpressionNode node,
             bool targetIsDataContext,
@@ -165,7 +162,7 @@ namespace Avalonia.Data
             }
         }
 
-        protected ExpressionObserver CreateElementObserver(
+        private protected ExpressionObserver CreateElementObserver(
             StyledElement target,
             string elementName,
             ExpressionNode node)
@@ -181,7 +178,7 @@ namespace Avalonia.Data
             return result;
         }
 
-        protected ExpressionObserver CreateFindAncestorObserver(
+        private protected ExpressionObserver CreateFindAncestorObserver(
             StyledElement target,
             RelativeSource relativeSource,
             ExpressionNode node)
@@ -214,7 +211,7 @@ namespace Avalonia.Data
                 null);
         }
 
-        protected ExpressionObserver CreateSourceObserver(
+        private protected ExpressionObserver CreateSourceObserver(
             object source,
             ExpressionNode node)
         {
@@ -223,7 +220,7 @@ namespace Avalonia.Data
             return new ExpressionObserver(source, node);
         }
 
-        protected ExpressionObserver CreateTemplatedParentObserver(
+        private protected ExpressionObserver CreateTemplatedParentObserver(
             AvaloniaObject target,
             ExpressionNode node)
         {
@@ -246,6 +243,7 @@ namespace Avalonia.Data
             // Content property is bound to a value which becomes the ContentPresenter's 
             // DataContext - it is from this that the child hosted by the ContentPresenter needs to
             // inherit its DataContext.
+
             return target.GetObservable(Visual.VisualParentProperty)
                 .Select(x =>
                 {
@@ -254,7 +252,7 @@ namespace Avalonia.Data
                 }).Switch();
         }
 
-        private class UpdateSignal : SingleSubscriberObservableBase<Unit>
+        private class UpdateSignal : SingleSubscriberObservableBase<ValueTuple>
         {
             private readonly AvaloniaObject _target;
             private readonly AvaloniaProperty _property;
@@ -279,7 +277,7 @@ namespace Avalonia.Data
             {
                 if (e.Property == _property)
                 {
-                    PublishNext(Unit.Default);
+                    PublishNext(default);
                 }
             }
         }

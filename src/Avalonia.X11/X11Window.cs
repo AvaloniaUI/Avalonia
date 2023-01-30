@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
@@ -59,6 +58,7 @@ namespace Avalonia.X11
         private TransparencyHelper _transparencyHelper;
         private RawEventGrouper _rawEventGrouper;
         private bool _useRenderWindow = false;
+        private bool _usePositioningFlags = false;
 
         enum XSyncState
         {
@@ -76,7 +76,7 @@ namespace Avalonia.X11
             _touch = new TouchDevice();
             _keyboard = platform.KeyboardDevice;
 
-            var glfeature = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
+            var glfeature = AvaloniaLocator.Current.GetService<IPlatformGraphics>();
             XSetWindowAttributes attr = new XSetWindowAttributes();
             var valueMask = default(SetWindowValuemask);
 
@@ -98,13 +98,13 @@ namespace Avalonia.X11
             // OpenGL seems to be do weird things to it's current window which breaks resize sometimes
             _useRenderWindow = glfeature != null;
             
-            var glx = glfeature as GlxPlatformOpenGlInterface;
+            var glx = glfeature as GlxPlatformGraphics;
             if (glx != null)
                 visualInfo = *glx.Display.VisualInfo;
             else if (glfeature == null)
                 visualInfo = _x11.TransparentVisualInfo;
 
-            var egl = glfeature as EglPlatformOpenGlInterface;
+            var egl = glfeature as EglPlatformGraphics;
             
             var visual = IntPtr.Zero;
             var depth = 24;
@@ -178,11 +178,9 @@ namespace Avalonia.X11
             
             if (egl != null)
                 surfaces.Insert(0,
-                    new EglGlPlatformSurface(egl,
-                        new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
+                    new EglGlPlatformSurface(new SurfaceInfo(this, _x11.DeferredDisplay, _handle, _renderHandle)));
             if (glx != null)
-                surfaces.Insert(0, new GlxGlPlatformSurface(glx.Display, glx.DeferredContext,
-                    new SurfaceInfo(this, _x11.Display, _handle, _renderHandle)));
+                surfaces.Insert(0, new GlxGlPlatformSurface(new SurfaceInfo(this, _x11.Display, _handle, _renderHandle)));
 
             surfaces.Add(Handle);
 
@@ -302,7 +300,10 @@ namespace Avalonia.X11
                 min_height = min.Height
             };
             hints.height_inc = hints.width_inc = 1;
-            var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc | XSizeHintsFlags.PPosition | XSizeHintsFlags.PSize;
+            var flags = XSizeHintsFlags.PMinSize | XSizeHintsFlags.PResizeInc;
+            if (_usePositioningFlags)
+                flags |= XSizeHintsFlags.PPosition | XSizeHintsFlags.PSize;
+            
             // People might be passing double.MaxValue
             if (max.Width < 100000 && max.Height < 100000)
             {
@@ -358,7 +359,7 @@ namespace Avalonia.X11
         public Action<double> ScalingChanged { get; set; }
         public Action Deactivated { get; set; }
         public Action Activated { get; set; }
-        public Func<bool> Closing { get; set; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
         public Action<WindowState> WindowStateChanged { get; set; }
 
         public Action<WindowTransparencyLevel> TransparencyLevelChanged
@@ -383,23 +384,8 @@ namespace Avalonia.X11
         public Action<PixelPoint> PositionChanged { get; set; }
         public Action LostFocus { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-
-            if (customRendererFactory != null)
-                return customRendererFactory.Create(root, loop);
-
-            return _platform.Options.UseDeferredRendering
-                ? _platform.Options.UseCompositor
-                    ? new CompositingRenderer(root, this._platform.Compositor)
-                    : new DeferredRenderer(root, loop)
-                    {
-                        RenderOnlyOnRenderThread = true
-                    }
-                : (IRenderer)new X11ImmediateRendererProxy((Visual)root, loop);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, _platform.Compositor, () => Surfaces);
 
         void OnEvent(ref XEvent ev)
         {
@@ -544,7 +530,7 @@ namespace Avalonia.X11
                 {
                     if (ev.ClientMessageEvent.ptr1 == _x11.Atoms.WM_DELETE_WINDOW)
                     {
-                        if (Closing?.Invoke() != true)
+                        if (Closing?.Invoke(WindowCloseReason.WindowClosing) != true)
                             Dispose();
                     }
                     else if (ev.ClientMessageEvent.ptr1 == _x11.Atoms._NET_WM_SYNC_REQUEST)
@@ -683,7 +669,7 @@ namespace Avalonia.X11
 
         }
 
-        RawInputModifiers TranslateModifiers(XModifierMask state)
+        static RawInputModifiers TranslateModifiers(XModifierMask state)
         {
             var rv = default(RawInputModifiers);
             if (state.HasAllFlags(XModifierMask.Button1Mask))
@@ -728,7 +714,7 @@ namespace Avalonia.X11
         void DispatchInput(RawInputEventArgs args)
         {
             Input?.Invoke(args);
-            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrWhiteSpace(text.Text))
+            if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
                 Input?.Invoke(new RawTextInputEventArgs(_keyboard, args.Timestamp, _inputRoot, text.Text));
         }
 
@@ -960,6 +946,12 @@ namespace Avalonia.X11
             get => _position ?? default;
             set
             {
+                if(!_usePositioningFlags)
+                {
+                    _usePositioningFlags = true;
+                    UpdateSizeHints(null);
+                }
+                
                 var changes = new XWindowChanges
                 {
                     x = (int)value.X,
@@ -1216,6 +1208,8 @@ namespace Avalonia.X11
 
         public WindowTransparencyLevel TransparencyLevel =>
             _transparencyHelper?.CurrentLevel ?? WindowTransparencyLevel.None;
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 

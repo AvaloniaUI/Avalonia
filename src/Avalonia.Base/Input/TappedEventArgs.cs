@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 
@@ -7,7 +8,7 @@ namespace Avalonia.Input
     {
         private readonly PointerEventArgs lastPointerEventArgs;
 
-        internal TappedEventArgs(RoutedEvent routedEvent, PointerEventArgs lastPointerEventArgs)
+        public TappedEventArgs(RoutedEvent routedEvent, PointerEventArgs lastPointerEventArgs)
             : base(routedEvent)
         {
             this.lastPointerEventArgs = lastPointerEventArgs;

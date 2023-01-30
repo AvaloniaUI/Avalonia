@@ -39,7 +39,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         {
         }
 
-        private TextLayout Create(string text,
+        private static TextLayout Create(string text,
             string fontFamily,
             double fontSize,
             FontStyle fontStyle,
@@ -56,7 +56,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             return formattedText;
         }
 
-        private TextLayout Create(string text, double fontSize)
+        private static TextLayout Create(string text, double fontSize)
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, TextAlignment.Left,
@@ -64,7 +64,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 -1);
         }
 
-        private TextLayout Create(string text, double fontSize, TextAlignment alignment, double widthConstraint)
+        private static TextLayout Create(string text, double fontSize, TextAlignment alignment, double widthConstraint)
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, alignment,
@@ -72,7 +72,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
                 widthConstraint);
         }
 
-        private TextLayout Create(string text, double fontSize, TextWrapping wrap, double widthConstraint)
+        private static TextLayout Create(string text, double fontSize, TextWrapping wrap, double widthConstraint)
         {
             return Create(text, FontName, fontSize,
                 FontStyle.Normal, TextAlignment.Left,
@@ -186,7 +186,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
         [InlineData("x", 0, 200, 200 - 7.20, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 0, 200, 171.20, 0, 7.20, FontSizeHeight)]
         [InlineData(stringword, 3, 200, 200 - 7.20, 0, 7.20, FontSizeHeight)]
-        public void Should_HitTestPosition_RigthAlign_Correctly(
+        public void Should_HitTestPosition_RightAlign_Correctly(
                                                     string input, int index, double widthConstraint,
                                                     double x, double y, double width, double height)
         {

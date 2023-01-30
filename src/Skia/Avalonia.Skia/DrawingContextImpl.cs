@@ -10,7 +10,6 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using Avalonia.Media.Imaging;
-using JetBrains.Annotations;
 using SkiaSharp;
 
 namespace Avalonia.Skia
@@ -225,9 +224,9 @@ namespace Avalonia.Skia
             var impl = (GeometryImpl) geometry;
             var size = geometry.Bounds.Size;
 
-            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default(PaintWrapper))
+            using (var fill = brush != null ? CreatePaint(_fillPaint, brush, size) : default)
             using (var stroke = pen?.Brush != null ? CreatePaint(_strokePaint, pen, 
-                size.Inflate(new Thickness(pen?.Thickness / 2 ?? 0))) : default(PaintWrapper))
+                size.Inflate(new Thickness(pen?.Thickness / 2 ?? 0))) : default)
             {
                 if (fill.Paint != null)
                 {
@@ -280,7 +279,7 @@ namespace Avalonia.Skia
             }
         }
 
-        SKRect AreaCastingShadowInHole(
+        static SKRect AreaCastingShadowInHole(
             SKRect hole_rect,
             float shadow_blur,
             float shadow_spread,
@@ -362,7 +361,7 @@ namespace Avalonia.Skia
 
             foreach (var boxShadow in boxShadows)
             {
-                if (!boxShadow.IsEmpty && !boxShadow.IsInset)
+                if (!boxShadow.IsDefault && !boxShadow.IsInset)
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
@@ -418,7 +417,7 @@ namespace Avalonia.Skia
 
             foreach (var boxShadow in boxShadows)
             {
-                if (!boxShadow.IsEmpty && boxShadow.IsInset)
+                if (!boxShadow.IsDefault && boxShadow.IsInset)
                 {
                     using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
                     {
@@ -493,15 +492,15 @@ namespace Avalonia.Skia
         }
        
         /// <inheritdoc />
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
             CheckLease();
-            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Size))
+            using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Item.Size))
             {
-                var glyphRunImpl = (GlyphRunImpl)glyphRun.GlyphRunImpl;
+                var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
 
-                Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.BaselineOrigin.X,
-                    (float)glyphRun.BaselineOrigin.Y, paintWrapper.Paint);
+                Canvas.DrawText(glyphRunImpl.TextBlob, (float)glyphRun.Item.BaselineOrigin.X,
+                    (float)glyphRun.Item.BaselineOrigin.Y, paintWrapper.Paint);
             }
         }
 
@@ -675,13 +674,14 @@ namespace Avalonia.Skia
             }
         }
 
-        [CanBeNull]
-        public object GetFeature(Type t)
+#nullable enable
+        public object? GetFeature(Type t)
         {
             if (t == typeof(ISkiaSharpApiLeaseFeature))
                 return new SkiaLeaseFeature(this);
             return null;
         }
+#nullable restore
 
         /// <summary>
         /// Configure paint wrapper for using gradient brush.
@@ -689,7 +689,7 @@ namespace Avalonia.Skia
         /// <param name="paintWrapper">Paint wrapper.</param>
         /// <param name="targetSize">Target size.</param>
         /// <param name="gradientBrush">Gradient brush.</param>
-        private void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
+        private static void ConfigureGradientBrush(ref PaintWrapper paintWrapper, Size targetSize, IGradientBrush gradientBrush)
         {
             var tileMode = gradientBrush.SpreadMethod.ToSKShaderTileMode();
             var stopColors = gradientBrush.GradientStops.Select(s => s.Color.ToSKColor()).ToArray();
@@ -1137,11 +1137,14 @@ namespace Avalonia.Skia
             if (pen.DashStyle?.Dashes != null && pen.DashStyle.Dashes.Count > 0)
             {
                 var srcDashes = pen.DashStyle.Dashes;
-                var dashesArray = new float[srcDashes.Count];
 
-                for (var i = 0; i < srcDashes.Count; ++i)
+                var count = srcDashes.Count % 2 == 0 ? srcDashes.Count : srcDashes.Count * 2;
+
+                var dashesArray = new float[count];
+
+                for (var i = 0; i < count; ++i)
                 {
-                    dashesArray[i] = (float) srcDashes[i] * paint.StrokeWidth;
+                    dashesArray[i] = (float) srcDashes[i % srcDashes.Count] * paint.StrokeWidth;
                 }
 
                 var offset = (float)(pen.DashStyle.Offset * pen.Thickness);

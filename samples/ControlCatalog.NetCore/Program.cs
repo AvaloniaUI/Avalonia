@@ -55,8 +55,7 @@ namespace ControlCatalog.NetCore
                 return builder
                     .UseHeadless(new AvaloniaHeadlessPlatformOptions
                     {
-                        UseHeadlessDrawing = true,
-                        UseCompositor = true
+                        UseHeadlessDrawing = true
                     })
                     .AfterSetup(_ =>
                     {
@@ -98,6 +97,15 @@ namespace ControlCatalog.NetCore
             {
                 SilenceConsole();
                 return builder.StartLinuxDrm(args, scaling: GetScaling());
+            }
+            else if (args.Contains("--dxgi"))
+            {
+                builder.With(new Win32PlatformOptions()
+                {
+                    UseLowLatencyDxgiSwapChain = true,
+                    UseWindowsUIComposition = false
+                });
+                return builder.StartWithClassicDesktopLifetime(args);
             }
             else
                 return builder.StartWithClassicDesktopLifetime(args);

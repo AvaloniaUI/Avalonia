@@ -35,7 +35,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions
             };
         }
 
-        protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
+        private protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty targetProperty, object anchor, bool enableDataValidation)
         {
             if (Source != null)
             {

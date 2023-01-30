@@ -20,7 +20,8 @@ namespace Avalonia.Input.Platform
             WholeWordTextActionModifiers = wholeWordTextActionModifiers;
             Copy = new List<KeyGesture>
             {
-                new KeyGesture(Key.C, commandModifiers)
+                new KeyGesture(Key.C, commandModifiers),
+                new KeyGesture(Key.Insert, KeyModifiers.Control)
             };
             Cut = new List<KeyGesture>
             {
@@ -28,7 +29,8 @@ namespace Avalonia.Input.Platform
             };
             Paste = new List<KeyGesture>
             {
-                new KeyGesture(Key.V, commandModifiers)
+                new KeyGesture(Key.V, commandModifiers),
+                new KeyGesture(Key.Insert, KeyModifiers.Shift)
             };
             Undo = new List<KeyGesture>
             {
@@ -79,6 +81,10 @@ namespace Avalonia.Input.Platform
             {
                 new KeyGesture(Key.Apps)
             };
+            Back = new List<KeyGesture>
+            {
+                new KeyGesture(Key.Left, KeyModifiers.Alt)
+            };
         }
 
         public KeyModifiers CommandModifiers { get; set; }
@@ -99,5 +105,6 @@ namespace Avalonia.Input.Platform
         public List<KeyGesture> MoveCursorToTheStartOfDocumentWithSelection { get; set; }
         public List<KeyGesture> MoveCursorToTheEndOfDocumentWithSelection { get; set; }
         public List<KeyGesture> OpenContextMenu { get; set; }
+        public List<KeyGesture> Back { get; set; }
     }
 }

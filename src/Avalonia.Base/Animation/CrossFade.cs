@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Animation.Easings;
@@ -10,7 +10,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Animation
 {
     /// <summary>
-    /// Defines a cross-fade animation between two <see cref="IVisual"/>s.
+    /// Defines a cross-fade animation between two <see cref="Visual"/>s.
     /// </summary>
     public class CrossFade : IPageTransition
     {
@@ -108,7 +108,7 @@ namespace Avalonia.Animation
             }
 
             var tasks = new List<Task>();
-            using (var disposables = new CompositeDisposable())
+            using (var disposables = new CompositeDisposable(1))
             {
                 if (to != null)
                 {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia.Media.TextFormatting.Unicode;
@@ -31,12 +30,12 @@ namespace Avalonia.Visuals.UnitTests.Media.TextFormatting
         private bool Run(BiDiClassData t)
         {
             var bidi = new BidiAlgorithm();
-            var bidiData = new BidiData(t.ParagraphLevel);
+            var bidiData = new BidiData { ParagraphEmbeddingLevel = t.ParagraphLevel };
         
             var text = Encoding.UTF32.GetString(MemoryMarshal.Cast<int, byte>(t.CodePoints).ToArray());
 
             // Append
-            bidiData.Append(text.AsMemory());
+            bidiData.Append(text);
 
             // Act
             for (int i = 0; i < 10; i++)

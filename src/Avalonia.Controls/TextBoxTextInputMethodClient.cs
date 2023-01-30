@@ -77,9 +77,9 @@ namespace Avalonia.Controls
 
             foreach (var run in textLine.TextRuns)
             {
-                if(run.Text.Length > 0)
+                if(run.Length > 0)
                 {
-#if NET6_0
+#if NET6_0_OR_GREATER
                     builder.Append(run.Text.Span);
 #else
                     builder.Append(run.Text.Span.ToArray());

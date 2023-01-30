@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Reactive.Subjects;
 using Avalonia.Data.Converters;
 using Avalonia.Reactive;
 using Avalonia.Styling;
@@ -13,7 +12,7 @@ namespace Avalonia.Data
     public class TemplateBinding : SingleSubscriberObservableBase<object?>,
         IBinding,
         IDescription,
-        ISubject<object?>,
+        IAvaloniaSubject<object?>,
         ISetterValue
     {
         private bool _isSetterValue;
@@ -138,9 +137,9 @@ namespace Avalonia.Data
                     templatedParent.GetValue(Property) :
                     _target.TemplatedParent;
 
-                if (Converter is not null && _targetType is not null)
+                if (Converter is not null)
                 {
-                    value = Converter.Convert(value, _targetType, ConverterParameter, CultureInfo.CurrentCulture);
+                    value = Converter.Convert(value, _targetType ?? typeof(object), ConverterParameter, CultureInfo.CurrentCulture);
                 }
 
                 PublishNext(value);

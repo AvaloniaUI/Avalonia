@@ -1,20 +1,15 @@
 using System;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
-using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
-using Avalonia.LogicalTree;
 using Avalonia.Markup.Parsers;
-using Avalonia.Reactive;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Data
 {
     /// <summary>
     /// A XAML binding.
     /// </summary>
+    [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
     public class Binding : BindingBase
     {
         /// <summary>
@@ -61,7 +56,7 @@ namespace Avalonia.Data
         /// </summary>
         public Func<string, string, Type>? TypeResolver { get; set; }
 
-        protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
+        private protected override ExpressionObserver CreateExpressionObserver(AvaloniaObject target, AvaloniaProperty? targetProperty, object? anchor, bool enableDataValidation)
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 

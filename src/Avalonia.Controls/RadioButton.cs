@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls.Primitives;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
@@ -179,7 +180,7 @@ namespace Avalonia.Controls
                     var siblings = parent
                         .GetVisualChildren()
                         .OfType<RadioButton>()
-                        .Where(x => x != this);
+                        .Where(x => x != this && string.IsNullOrEmpty(x.GroupName));
 
                     foreach (var sibling in siblings)
                     {

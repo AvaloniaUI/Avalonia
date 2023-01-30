@@ -1,5 +1,8 @@
-﻿using Avalonia.Controls;
+﻿using System;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Media.Immutable;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog.Pages

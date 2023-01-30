@@ -20,7 +20,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Find_Controls_At_Point()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             var border = new Border
             {
@@ -40,7 +40,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Not_Find_Empty_Controls_At_Point()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             var border = new Border
             {
@@ -59,7 +59,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Not_Find_Invisible_Controls_At_Point()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             Border visible, border;
             s.TopLevel.Content = border = new Border
@@ -82,10 +82,43 @@ public class CompositorHitTestingTests : CompositorTestsBase
         }
     }
     
+    [Theory,
+        InlineData(false, false),
+        InlineData(true, false),
+        InlineData(false, true),
+        InlineData(true, true),
+    ]
+    public void HitTest_Should_Find_Zero_Opacity_Controls_At_Point(bool parent, bool child)
+    {
+        
+        using (var s = new CompositorTestServices(new Size(200, 200)))
+        {
+            Border visible, border;
+            s.TopLevel.Content = border = new Border
+            {
+                Width = 100,
+                Height = 100,
+                Background = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Opacity = parent ? 0 : 1,
+                Child = visible = new Border
+                {
+                    Opacity = child ? 0 : 1,
+                    Background = Brushes.Red,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                }
+            };
+
+            s.AssertHitTest(new Point(100, 100), null, visible, border);
+        }
+    }
+    
     [Fact]
     public void HitTest_Should_Not_Find_Control_Outside_Point()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             var border = new Border
             {
@@ -105,7 +138,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Return_Top_Controls_First()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             Panel container = new Panel
             {
@@ -140,7 +173,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Return_Top_Controls_First_With_ZIndex()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             Panel container = new Panel
             {
@@ -186,7 +219,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Find_Control_Translated_Outside_Parent_Bounds()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             Border target;
             Panel container = new Panel
@@ -226,7 +259,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Not_Find_Control_Outside_Parent_Bounds_When_Clipped()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             Border target;
             Panel container = new Panel
@@ -266,7 +299,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Not_Find_Control_Outside_Scroll_Viewport()
     {
-        using (var s = new CompositorServices(new Size(100, 200)))
+        using (var s = new CompositorTestServices(new Size(100, 200)))
         {
             Border target;
             Border item1;
@@ -340,7 +373,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Not_Find_Path_When_Outside_Fill()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             Path path = new Path
             {
@@ -359,7 +392,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Respect_Geometry_Clip()
     {
-        using (var s = new CompositorServices(new Size(400, 400)))
+        using (var s = new CompositorTestServices(new Size(400, 400)))
         {
             Canvas canvas;
             Border border = new Border
@@ -389,7 +422,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Accommodate_ICustomHitTest()
     {
-        using (var s = new CompositorServices(new Size(300, 200)))
+        using (var s = new CompositorTestServices(new Size(300, 200)))
         {
             Border border = new CustomHitTestBorder
             {
@@ -412,7 +445,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Should_Not_Hit_Controls_Next_Pixel()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             Border targetRectangle;
 
@@ -437,7 +470,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
     [Fact]
     public void HitTest_Filter_Should_Filter_Out_Children()
     {
-        using (var s = new CompositorServices(new Size(200, 200)))
+        using (var s = new CompositorTestServices(new Size(200, 200)))
         {
             Border child, parent;
             s.TopLevel.Content = parent = new Border
@@ -460,7 +493,7 @@ public class CompositorHitTestingTests : CompositorTestsBase
         }
     }
 
-    private IDisposable TestApplication()
+    private static IDisposable TestApplication()
     {
         return UnitTestApplication.Start(TestServices.MockPlatformRenderInterface);
     }

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -106,6 +106,8 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
         }
+
+        public bool IsCorrupted => _gpu?.IsLost == true;
 
         /// <inheritdoc />
         public Vector Dpi { get; }

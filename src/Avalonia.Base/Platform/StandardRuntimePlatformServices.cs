@@ -1,4 +1,5 @@
 using System.Reflection;
+using Avalonia.Compatibility;
 using Avalonia.Platform.Internal;
 using Avalonia.Platform.Interop;
 
@@ -18,15 +19,9 @@ namespace Avalonia.Platform
 #if NET6_0_OR_GREATER
                     new Net6Loader()
 #else
-                    standardPlatform.GetRuntimeInfo().OperatingSystem switch
-                    {
-                        OperatingSystemType.WinNT => (IDynamicLibraryLoader)new Win32Loader(),
-                        OperatingSystemType.OSX => new UnixLoader(),
-                        OperatingSystemType.Linux => new UnixLoader(),
-                        OperatingSystemType.Android => new UnixLoader(),
-                        // iOS, WASM, ...
-                        _ => new NotSupportedLoader()
-                    }
+                    OperatingSystemEx.IsWindows() ? (IDynamicLibraryLoader)new Win32Loader()
+                        : OperatingSystemEx.IsMacOS() || OperatingSystemEx.IsLinux() || OperatingSystemEx.IsAndroid() ? new UnixLoader()
+                        : new NotSupportedLoader()
 #endif
                 );
         }

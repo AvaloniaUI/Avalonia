@@ -43,7 +43,7 @@ namespace Avalonia.PropertyStore
         }
 
         public IDisposable AddBinding<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<BindingValue<T>> source,
             BindingPriority priority)
         {
@@ -71,7 +71,7 @@ namespace Avalonia.PropertyStore
         }
 
         public IDisposable AddBinding<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<T> source,
             BindingPriority priority)
         {
@@ -99,7 +99,7 @@ namespace Avalonia.PropertyStore
         }
 
         public IDisposable AddBinding<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<object?> source,
             BindingPriority priority)
         {
@@ -165,7 +165,7 @@ namespace Avalonia.PropertyStore
             }
         }
 
-        public IDisposable? SetValue<T>(StyledPropertyBase<T> property, T value, BindingPriority priority)
+        public IDisposable? SetValue<T>(StyledProperty<T> property, T value, BindingPriority priority)
         {
             if (property.ValidateValue?.Invoke(value) == false)
             {
@@ -219,7 +219,7 @@ namespace Avalonia.PropertyStore
             return GetDefaultValue(property);
         }
 
-        public T GetValue<T>(StyledPropertyBase<T> property)
+        public T GetValue<T>(StyledProperty<T> property)
         {
             if (_effectiveValues.TryGetValue(property, out var v))
                 return ((EffectiveValue<T>)v).Value;
@@ -248,7 +248,7 @@ namespace Avalonia.PropertyStore
                 v.CoerceValue(this, property);
         }
 
-        public Optional<T> GetBaseValue<T>(StyledPropertyBase<T> property)
+        public Optional<T> GetBaseValue<T>(StyledProperty<T> property)
         {
             if (TryGetEffectiveValue(property, out var v) &&
                 ((EffectiveValue<T>)v).TryGetBaseValue(out var baseValue))
@@ -450,7 +450,7 @@ namespace Avalonia.PropertyStore
         /// <param name="oldValue">The old value of the property.</param>
         /// <param name="value">The effective value instance.</param>
         public void OnInheritedEffectiveValueChanged<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             T oldValue,
             EffectiveValue<T> value)
         {
@@ -475,7 +475,7 @@ namespace Avalonia.PropertyStore
         /// </summary>
         /// <param name="property">The property whose value changed.</param>
         /// <param name="oldValue">The old value of the property.</param>
-        public void OnInheritedEffectiveValueDisposed<T>(StyledPropertyBase<T> property, T oldValue)
+        public void OnInheritedEffectiveValueDisposed<T>(StyledProperty<T> property, T oldValue)
         {
             Debug.Assert(property.Inherits);
 
@@ -520,7 +520,7 @@ namespace Avalonia.PropertyStore
         /// <param name="oldValue">The old value of the property.</param>
         /// <param name="newValue">The new value of the property.</param>
         public void OnAncestorInheritedValueChanged<T>(
-            StyledPropertyBase<T> property, 
+            StyledProperty<T> property, 
             T oldValue,
             T newValue)
         {

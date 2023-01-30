@@ -379,7 +379,7 @@
                   HorizontalAlignment="Center"
                   VerticalAlignment="Center">
             <Path Fill="{TemplateBinding Foreground}"
-                  Data="{StaticResource DataGridRowGroupHeaderIconOpenedPath}"
+                  Data="{StaticResource DataGridRowGroupHeaderIconClosedPath}"
                   HorizontalAlignment="Right"
                   VerticalAlignment="Center"
                   Stretch="Uniform" />
@@ -387,7 +387,7 @@
         </ControlTemplate>
       </Setter>
       <Style Selector="^:checked /template/ Path">
-        <Setter Property="Data" Value="{StaticResource DataGridRowGroupHeaderIconClosedPath}" />
+        <Setter Property="Data" Value="{StaticResource DataGridRowGroupHeaderIconOpenedPath}" />
       </Style>
     </ControlTheme>
 

@@ -4,14 +4,11 @@
 // All other rights reserved. 
 
 using Avalonia.Data;
-using Avalonia.Utilities;
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Subjects;
-using Avalonia.Reactive;
-using System.Diagnostics;
 using Avalonia.Controls.Utils;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Metadata;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls
 {
@@ -28,6 +25,7 @@ namespace Avalonia.Controls
         /// </summary>
         //TODO Binding
         [AssignBinding]
+        [InheritDataTypeFromItems(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
         public virtual IBinding Binding
         {
             get
@@ -116,9 +114,9 @@ namespace Avalonia.Controls
 
             if (result != null)
             {
-                if(result.Subject != null)
+                if(result.Source is IAvaloniaSubject<object> subject)
                 {
-                    var bindingHelper = new CellEditBinding(result.Subject);
+                    var bindingHelper = new CellEditBinding(subject);
                     var instanceBinding = new InstancedBinding(bindingHelper.InternalSubject, result.Mode, result.Priority); 
 
                     BindingOperations.Apply(target, property, instanceBinding, null);

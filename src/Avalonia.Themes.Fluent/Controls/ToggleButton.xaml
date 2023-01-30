@@ -10,8 +10,6 @@
     </Border>
   </Design.PreviewWith>
 
-  <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
-
   <ControlTheme x:Key="{x:Type ToggleButton}" TargetType="ToggleButton">
     <Setter Property="Background" Value="{DynamicResource ToggleButtonBackground}" />
     <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
