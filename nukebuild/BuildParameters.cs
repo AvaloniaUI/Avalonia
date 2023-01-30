@@ -110,6 +110,11 @@ public partial class Build
                     // Use AssemblyVersion with Build as version
                     Version += "-cibuild" + int.Parse(Environment.GetEnvironmentVariable("BUILD_BUILDID")).ToString("0000000") + "-beta";
                 }
+                else
+                {
+                    // Always add branch to version tag when in nuget release mode
+                    Version += $"-{AzurePipelines.Instance.SourceBranchName}";
+                }
 
                 PublishTestResults = true;
             }
