@@ -15,8 +15,9 @@ class AvaloniaXamlIlDuplicateSettersChecker : IXamlAstTransformer
             return node;
         }
 
-        var fullName = objectNode.Type.GetClrType().FullName;
-        if (fullName is not ("Avalonia.Styling.Style" or "Avalonia.Styling.ControlTheme"))
+        var nodeType = objectNode.Type.GetClrType();
+        if (!context.GetAvaloniaTypes().Style.IsAssignableFrom(nodeType) &&
+            !context.GetAvaloniaTypes().ControlTheme.IsAssignableFrom(nodeType))
         {
             return node;
         }
