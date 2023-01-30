@@ -67,8 +67,8 @@ public partial class Build
             SkipPreviewer = b.SkipPreviewer;
 
             // CONFIGURATION
-            MainRepo = "https://github.com/AvaloniaUI/Avalonia";
-            MasterBranch = "refs/heads/master";
+            MainRepo = "https://github.com/Altua/Avalonia";
+            MasterBranch = "refs/heads/main";
             ReleaseBranchPrefix = "refs/heads/release/";
             ReleaseConfiguration = "Release";
             MSBuildSolution = RootDirectory / "dirs.proj";
