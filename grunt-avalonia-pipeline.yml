@@ -133,6 +133,15 @@ jobs:
       artifactName: 'NuGetOSX'
     condition: succeeded()
 
+  - task: DotNetCoreCLI@2
+    displayName: Push OSX native package
+    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
+    inputs:
+      command: 'push'
+      packagesToPush: '$(Build.SourcesDirectory)/artifacts/nuget/Altua.Native.*.nupkg'
+      nuGetFeedType: 'internal'
+      publishVstsFeed: 'a0b0aaaa-c5cc-43c6-af3e-60bcbbc1f245'
+
 - job: Windows
   pool:
     vmImage: 'windows-2022'
