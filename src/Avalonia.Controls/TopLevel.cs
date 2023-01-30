@@ -216,9 +216,9 @@ namespace Avalonia.Controls
             _pointerOverPreProcessor = new PointerOverPreProcessor(this);
             _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
 
-            if(impl is ITopLevelWithSystemNavigationManager topLevelWithSystemNavigation)
+            if(impl.TryGetFeature<ISystemNavigationManagerImpl>() is {} systemNavigationManager)
             {
-                topLevelWithSystemNavigation.SystemNavigationManager.BackRequested += (s, e) =>
+                systemNavigationManager.BackRequested += (s, e) =>
                 {
                     e.RoutedEvent = BackRequestedEvent;
                     RaiseEvent(e);
@@ -382,7 +382,7 @@ namespace Avalonia.Controls
         
         public IStorageProvider StorageProvider => _storageProvider
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
-            ?? (PlatformImpl as ITopLevelImplWithStorageProvider)?.StorageProvider
+            ?? PlatformImpl?.TryGetFeature<IStorageProvider>()
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
         
         /// <inheritdoc/>
@@ -616,7 +616,6 @@ namespace Avalonia.Controls
             // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
         }
 
-        ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
-            (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
+        ITextInputMethodImpl? ITextInputMethodRoot.InputMethod => PlatformImpl?.TryGetFeature<ITextInputMethodImpl>();
     }
 }

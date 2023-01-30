@@ -35,6 +35,7 @@ public abstract class PointerTestsBase
         impl.DefaultValue = DefaultValue.Mock;
         impl.SetupAllProperties();
         impl.SetupGet(r => r.RenderScaling).Returns(1);
+        impl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
         impl.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>())).Returns(renderer);
         impl.Setup(r => r.PointToScreen(It.IsAny<Point>())).Returns<Point>(p => new PixelPoint((int)p.X, (int)p.Y));
         impl.Setup(r => r.PointToClient(It.IsAny<PixelPoint>())).Returns<PixelPoint>(p => new Point(p.X, p.Y));

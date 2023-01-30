@@ -4,11 +4,11 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android.Platform
 {
-    internal class AndroidSystemNavigationManager : ISystemNavigationManager
+    internal class AndroidSystemNavigationManagerImpl : ISystemNavigationManagerImpl
     {
         public event EventHandler<RoutedEventArgs> BackRequested;
 
-        public AndroidSystemNavigationManager(IActivityNavigationService? navigationService)
+        public AndroidSystemNavigationManagerImpl(IActivityNavigationService? navigationService)
         {
             if(navigationService != null)
             {
