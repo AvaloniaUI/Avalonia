@@ -138,7 +138,7 @@ jobs:
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
     inputs:
       command: 'push'
-      packagesToPush: '$(Build.SourcesDirectory)/artifacts/nuget/Altua.Native.*.nupkg'
+      packagesToPush: '$(Build.SourcesDirectory)/artifacts/nuget/Avalonia.Native.*.nupkg'
       nuGetFeedType: 'internal'
       publishVstsFeed: 'a0b0aaaa-c5cc-43c6-af3e-60bcbbc1f245'
 
