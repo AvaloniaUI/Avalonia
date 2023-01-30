@@ -203,5 +203,7 @@ public class CompositorTestServices : IDisposable
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
+        
+        public object TryGetFeature(Type featureType) => null;
     }
 }

@@ -11,7 +11,7 @@ using Avalonia.Threading;
 
 namespace Avalonia.DesignerSupport.Remote
 {
-    class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl, ITopLevelImplWithStorageProvider
+    class PreviewerWindowImpl : RemoteServerTopLevelImpl, IWindowImpl
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
 
@@ -92,8 +92,16 @@ namespace Avalonia.DesignerSupport.Remote
 
         public bool NeedsManagedDecorations => false;
 
-        public IStorageProvider StorageProvider => new NoopStorageProvider();
-
+        public override object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return new NoopStorageProvider();
+            }
+            
+            return base.TryGetFeature(featureType);
+        }
+        
         public void Activate()
         {
         }

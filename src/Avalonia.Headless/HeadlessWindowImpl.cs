@@ -18,7 +18,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
-    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow, ITopLevelImplWithStorageProvider
+    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow
     {
         private IKeyboardDevice _keyboard;
         private Stopwatch _st = Stopwatch.StartNew();
@@ -247,8 +247,15 @@ namespace Avalonia.Headless
         public Action LostFocus { get; set; }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
+        public object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return new NoopStorageProvider();
+            }
 
-        public IStorageProvider StorageProvider => new NoopStorageProvider();
+            return null;
+        }
 
         void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
         {
