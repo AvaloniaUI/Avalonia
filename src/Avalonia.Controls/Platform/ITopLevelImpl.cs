@@ -51,7 +51,7 @@ namespace Avalonia.Platform
     /// <see cref="IPopupImpl"/>.
     /// </remarks>
     [Unstable]
-    public interface ITopLevelImpl : IDisposable
+    public interface ITopLevelImpl : IOptionalFeatureProvider, IDisposable
     {
         /// <summary>
         /// Gets the client size of the toplevel.
