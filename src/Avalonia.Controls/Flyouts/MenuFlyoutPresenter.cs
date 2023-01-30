@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
@@ -33,11 +32,6 @@ namespace Avalonia.Controls
         public override void Open()
         {
             throw new NotSupportedException("Use MenuFlyout.ShowAt(Control) instead");
-        }
-
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)

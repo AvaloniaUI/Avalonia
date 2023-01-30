@@ -134,10 +134,10 @@ namespace Avalonia.Win32
                         }
                     }
 
-                    if (folder?.TryGetUri(out var folderPath) == true)
+                    if (folder?.TryGetFullPath() is { } folderPath)
                     {
                         var riid = UnmanagedMethods.ShellIds.IShellItem;
-                        if (UnmanagedMethods.SHCreateItemFromParsingName(folderPath.LocalPath, IntPtr.Zero, ref riid, out var directoryShellItem)
+                        if (UnmanagedMethods.SHCreateItemFromParsingName(folderPath, IntPtr.Zero, ref riid, out var directoryShellItem)
                             == (uint)UnmanagedMethods.HRESULT.S_OK)
                         {
                             var proxy = MicroComRuntime.CreateProxyFor<IShellItem>(directoryShellItem, true);

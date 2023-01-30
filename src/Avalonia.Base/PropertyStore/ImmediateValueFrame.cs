@@ -15,7 +15,7 @@ namespace Avalonia.PropertyStore
         }
 
         public TypedBindingEntry<T> AddBinding<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<BindingValue<T>> source)
         {
             var e = new TypedBindingEntry<T>(this, property, source);
@@ -24,7 +24,7 @@ namespace Avalonia.PropertyStore
         }
 
         public TypedBindingEntry<T> AddBinding<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<T> source)
         {
             var e = new TypedBindingEntry<T>(this, property, source);
@@ -33,7 +33,7 @@ namespace Avalonia.PropertyStore
         }
 
         public SourceUntypedBindingEntry<T> AddBinding<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             IObservable<object?> source)
         {
             var e = new SourceUntypedBindingEntry<T>(this, property, source);
@@ -41,7 +41,7 @@ namespace Avalonia.PropertyStore
             return e;
         }
 
-        public ImmediateValueEntry<T> AddValue<T>(StyledPropertyBase<T> property, T value)
+        public ImmediateValueEntry<T> AddValue<T>(StyledProperty<T> property, T value)
         {
             var e = new ImmediateValueEntry<T>(this, property, value);
             Add(e);

@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Avalonia.OpenGL;
-using Avalonia.OpenGL.Imaging;
 using Avalonia.Platform;
 using SkiaSharp;
 
@@ -32,10 +30,5 @@ namespace Avalonia.Skia
         SKSurface Surface { get; }
         bool CanBlit { get; }
         void Blit(SKCanvas canvas);
-    }
-
-    public interface IOpenGlAwareSkiaGpu : ISkiaGpu
-    {
-        IOpenGlBitmapImpl CreateOpenGlBitmap(PixelSize size, Vector dpi);
     }
 }

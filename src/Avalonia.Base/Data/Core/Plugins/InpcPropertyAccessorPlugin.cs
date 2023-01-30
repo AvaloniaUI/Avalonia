@@ -11,7 +11,7 @@ namespace Avalonia.Data.Core.Plugins
     /// Reads a property from a standard C# object that optionally supports the
     /// <see cref="INotifyPropertyChanged"/> interface.
     /// </summary>
-    public class InpcPropertyAccessorPlugin : IPropertyAccessorPlugin
+    internal class InpcPropertyAccessorPlugin : IPropertyAccessorPlugin
     {
         private readonly Dictionary<(Type, string), PropertyInfo?> _propertyLookup =
             new Dictionary<(Type, string), PropertyInfo?>();

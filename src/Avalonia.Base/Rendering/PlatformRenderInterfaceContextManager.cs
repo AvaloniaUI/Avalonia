@@ -6,9 +6,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.Rendering;
 
-[Unstable]
-// TODO: Make it internal once legacy renderers are removed
-public class PlatformRenderInterfaceContextManager
+internal class PlatformRenderInterfaceContextManager
 {
     private readonly IPlatformGraphics? _graphics;
     private IPlatformRenderInterfaceContext? _backend;
@@ -49,6 +47,8 @@ public class PlatformRenderInterfaceContextManager
             return _backend!;
         }
     }
+
+    internal IPlatformGraphicsContext? GpuContext => _gpuContext?.Value;
 
     public IDisposable EnsureCurrent()
     {

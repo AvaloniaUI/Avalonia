@@ -6,6 +6,7 @@ import { Caniuse } from "./avalonia/caniuse";
 import { StreamHelper } from "./avalonia/stream";
 import { ShareHelper } from "./avalonia/share";
 import { NativeControlHost } from "./avalonia/nativeControlHost";
+import { NavigationHelper } from "./avalonia/navigationHelper";
 
 async function registerAvaloniaModule(api: RuntimeAPI): Promise<void> {
     api.setModuleImports("avalonia", {
@@ -17,7 +18,8 @@ async function registerAvaloniaModule(api: RuntimeAPI): Promise<void> {
         AvaloniaDOM,
         StreamHelper,
         ShareHelper,
-        NativeControlHost
+        NativeControlHost,
+        NavigationHelper
     });
 }
 export {
@@ -30,6 +32,7 @@ export {
     StreamHelper,
     ShareHelper,
     NativeControlHost,
+    NavigationHelper,
 
     registerAvaloniaModule
 };

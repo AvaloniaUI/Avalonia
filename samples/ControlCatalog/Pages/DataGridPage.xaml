@@ -1,7 +1,9 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:local="using:ControlCatalog.Models"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.DataGridPage">
+             xmlns:pages="clr-namespace:ControlCatalog.Pages"
+             x:Class="ControlCatalog.Pages.DataGridPage"
+             x:DataType="pages:DataGridPage">
   <UserControl.Resources>
     <local:GDPValueConverter x:Key="GDPConverter" />
     <DataTemplate x:Key="Demo.DataTemplates.CountryHeader" x:DataType="local:Country">
@@ -33,7 +35,7 @@
             <DataGrid.Columns>
               <!-- Using HeaderTemplate -->
               <DataGridTextColumn Header="Country" HeaderTemplate="{StaticResource Demo.DataTemplates.CountryHeader}" Binding="{Binding Name}"  Width="6*" x:DataType="local:Country" />
-              <DataGridTextColumn Header="Region" Binding="{CompiledBinding Region}" Width="4*" x:DataType="local:Country" />
+              <DataGridTextColumn Header="Region" Binding="{Binding Region}" Width="4*" x:DataType="local:Country" />
               <DataGridTextColumn Header="Population" Binding="{Binding Population}" Width="3*" x:DataType="local:Country" />
               <DataGridTextColumn Header="Area" Binding="{Binding Area}" Width="3*" x:DataType="local:Country" />
               <DataGridTextColumn Header="GDP" Binding="{Binding GDP}" Width="3*"
@@ -90,19 +92,21 @@
       </TabItem>
       <TabItem x:Name="EditableTab" Header="Editable">
         <Grid RowDefinitions="*,Auto">
-          <DataGrid Name="dataGridEdit" Margin="12" Grid.Row="0">
+          <!-- Example of columns inheriting the data type from the Items source -->
+          <DataGrid Name="dataGridEdit" Margin="12" Grid.Row="0"
+                    Items="{Binding DataGrid3Source}">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" x:DataType="local:Person" />
-              <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" x:DataType="local:Person" />
-              <DataGridCheckBoxColumn Header="Is Banned" Binding="{Binding IsBanned}" Width="*" IsThreeState="{Binding #IsThreeStateCheckBox.IsChecked, Mode=OneWay}" x:DataType="local:Person" />
-              <DataGridTemplateColumn Header="Age" >
+              <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" />
+              <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" />
+              <DataGridCheckBoxColumn Header="Is Banned" Binding="{Binding IsBanned}" Width="*" IsThreeState="{Binding #IsThreeStateCheckBox.IsChecked, Mode=OneWay}" />
+              <DataGridTemplateColumn Header="Age">
                 <DataGridTemplateColumn.CellTemplate>
-                  <DataTemplate DataType="local:Person">
+                  <DataTemplate>
                     <TextBlock Text="{Binding Age, StringFormat='{}{0} years'}" VerticalAlignment="Center" HorizontalAlignment="Center" />
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
                 <DataGridTemplateColumn.CellEditingTemplate>
-                  <DataTemplate DataType="local:Person">
+                  <DataTemplate>
                     <NumericUpDown Value="{Binding Age}" FormatString="N0" HorizontalAlignment="Stretch" Minimum="0" Maximum="120" TemplateApplied="NumericUpDown_OnTemplateApplied" />
                   </DataTemplate>
                 </DataGridTemplateColumn.CellEditingTemplate>

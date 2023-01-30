@@ -26,7 +26,7 @@ namespace Avalonia.PropertyStore
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
         public static bool TryConvertAndValidate<T>(
-            StyledPropertyBase<T> property,
+            StyledProperty<T> property,
             object? value, 
             [MaybeNullWhen(false)] out T result)
         {

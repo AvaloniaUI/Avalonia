@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Utilities
 {
@@ -9,32 +11,27 @@ namespace Avalonia.Utilities
     /// <typeparam name="T2">Value type</typeparam>
     internal sealed class BidiDictionary<T1, T2> where T1 : notnull where T2 : notnull
     {
-        public Dictionary<T1, T2> Forward { get; } = new Dictionary<T1, T2>();
+        private Dictionary<T1, T2> _forward = new();
+        private Dictionary<T2, T1> _reverse = new();
 
-        public Dictionary<T2, T1> Reverse { get; } = new Dictionary<T2, T1>();
-
-        public void Clear()
+        public void ClearThenResetIfTooLarge()
         {
-            Forward.Clear();
-            Reverse.Clear();
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _forward);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _reverse);
         }
 
         public void Add(T1 key, T2 value)
         {
-            Forward.Add(key, value);
-            Reverse.Add(value, key);
+            _forward.Add(key, value);
+            _reverse.Add(value, key);
         }
 
-#pragma warning disable CS8601
-        public bool TryGetValue(T1 key, out T2 value) => Forward.TryGetValue(key, out value);
-#pragma warning restore CS8601
+        public bool TryGetValue(T1 key, [MaybeNullWhen(false)] out T2 value) => _forward.TryGetValue(key, out value);
 
-#pragma warning disable CS8601
-        public bool TryGetKey(T2 value, out T1 key) => Reverse.TryGetValue(value, out key);
-#pragma warning restore CS8601
+        public bool TryGetKey(T2 value, [MaybeNullWhen(false)] out T1 key) => _reverse.TryGetValue(value, out key);
 
-        public bool ContainsKey(T1 key) => Forward.ContainsKey(key);
+        public bool ContainsKey(T1 key) => _forward.ContainsKey(key);
 
-        public bool ContainsValue(T2 value) => Reverse.ContainsKey(value);
+        public bool ContainsValue(T2 value) => _reverse.ContainsKey(value);
     }
 }

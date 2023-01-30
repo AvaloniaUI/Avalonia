@@ -15,7 +15,7 @@ namespace Avalonia.Controls.Notifications
     /// </summary>
     [TemplatePart("PART_Items", typeof(Panel))]
     [PseudoClasses(":topleft", ":topright", ":bottomleft", ":bottomright")]
-    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager, ICustomSimpleHitTest
+    public class WindowNotificationManager : TemplatedControl, IManagedNotificationManager
     {
         private IList? _items;
 
@@ -160,7 +160,5 @@ namespace Avalonia.Controls.Notifications
             PseudoClasses.Set(":bottomleft", position == NotificationPosition.BottomLeft);
             PseudoClasses.Set(":bottomright", position == NotificationPosition.BottomRight);
         }
-
-        public bool HitTest(Point point) => VisualChildren.HitTestCustom(point);
     }
 }

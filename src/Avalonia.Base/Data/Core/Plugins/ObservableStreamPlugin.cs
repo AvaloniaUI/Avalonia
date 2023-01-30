@@ -10,12 +10,12 @@ namespace Avalonia.Data.Core.Plugins
     /// Handles binding to <see cref="IObservable{T}"/>s for the '^' stream binding operator.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
-    public class ObservableStreamPlugin : IStreamPlugin
+    internal class ObservableStreamPlugin : IStreamPlugin
     {
         private static MethodInfo? s_observableGeneric;
         private static MethodInfo? s_observableSelect;
 
-        [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicProperties, "Avalonia.Data.Core.Plugins.ObservableStreamPlugin", "Avalonia.Base")]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.NonPublicMethods, "Avalonia.Data.Core.Plugins.ObservableStreamPlugin", "Avalonia.Base")]
         public ObservableStreamPlugin()
         {
             

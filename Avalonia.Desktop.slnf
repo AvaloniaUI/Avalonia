@@ -5,6 +5,7 @@
       "packages\\Avalonia\\Avalonia.csproj",
       "samples\\ControlCatalog.NetCore\\ControlCatalog.NetCore.csproj",
       "samples\\ControlCatalog\\ControlCatalog.csproj",
+      "samples\\GpuInterop\\GpuInterop.csproj",
       "samples\\IntegrationTestApp\\IntegrationTestApp.csproj",
       "samples\\MiniMvvm\\MiniMvvm.csproj",
       "samples\\SampleControls\\ControlSamples.csproj",

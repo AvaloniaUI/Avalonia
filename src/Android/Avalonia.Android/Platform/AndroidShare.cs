@@ -46,9 +46,9 @@ namespace Avalonia.Android.Platform
 
             foreach (var file in files)
             {
-                if (file.TryGetUri(out var uri))
+                if (file.Path != null)
                 {
-                    uris.Add(Uri.Parse(uri.AbsoluteUri));
+                    uris.Add(Uri.Parse(file.Path.AbsoluteUri));
                 }
 
                 var fileMimeType = MimeTypeMap.Singleton.GetMimeTypeFromExtension(Path.GetExtension(file.Name).Remove(0, 1));

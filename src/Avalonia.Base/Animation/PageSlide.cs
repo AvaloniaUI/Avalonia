@@ -79,7 +79,6 @@ namespace Avalonia.Animation
                 var animation = new Animation
                 {
                     Easing = SlideOutEasing,
-                    FillMode = FillMode.Forward,
                     Children =
                     {
                         new KeyFrame
@@ -110,7 +109,6 @@ namespace Avalonia.Animation
                 to.IsVisible = true;
                 var animation = new Animation
                 {
-                    FillMode = FillMode.Forward,
                     Easing = SlideInEasing,
                     Children =
                     {

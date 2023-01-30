@@ -40,14 +40,14 @@ namespace Avalonia.Media.TextFormatting
         }
 
         /// <inheritdoc cref="ITextShaperImpl.ShapeText"/>
-        public ShapedBuffer ShapeText(CharacterBufferReference text, int length, TextShaperOptions options = default)
+        public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options = default)
         {
-            return _platformImpl.ShapeText(text, length, options);
+            return _platformImpl.ShapeText(text, options);
         }
 
         public ShapedBuffer ShapeText(string text, TextShaperOptions options = default)
         {
-            return ShapeText(new CharacterBufferReference(text), text.Length, options);
+            return ShapeText(text.AsMemory(), options);
         }
     }
 }

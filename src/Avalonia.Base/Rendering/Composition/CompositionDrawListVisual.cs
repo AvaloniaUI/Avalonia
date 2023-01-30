@@ -61,9 +61,6 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
             return false;
         if (custom != null)
         {
-            // Simulate the old behavior
-            // TODO: Change behavior once legacy renderers are removed
-            pt += new Point(Offset.X, Offset.Y);
             return custom.HitTest(pt);
         }
 

@@ -169,9 +169,9 @@ namespace Avalonia.Controls.PullToRefresh
                 visualizerComposition.ImplicitAnimations = animation;
             }
 
-            if(_scrollViewer != null && _scrollViewer.Content is Visual visual)
+            if(_scrollViewer != null)
             {
-                var scollContentComposition = ElementComposition.GetElementVisual(visual);
+                var scollContentComposition = ElementComposition.GetElementVisual(_scrollViewer);
 
                 if(scollContentComposition != null)
                 {

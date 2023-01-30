@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security;
 using System.Threading.Tasks;
-using Avalonia.Metadata;
 
 namespace Avalonia.Platform.Storage.FileIO;
 
-[Unstable]
-public class BclStorageFolder : IStorageBookmarkFolder
+internal class BclStorageFolder : IStorageBookmarkFolder
 {
-    private readonly DirectoryInfo _directoryInfo;
-
     public BclStorageFolder(string path)
     {
-        _directoryInfo = new DirectoryInfo(path);
-        if (!_directoryInfo.Exists)
+        DirectoryInfo = new DirectoryInfo(path);
+        if (!DirectoryInfo.Exists)
         {
             throw new ArgumentException("Directory must exist");
         }
@@ -25,29 +20,46 @@ public class BclStorageFolder : IStorageBookmarkFolder
 
     public BclStorageFolder(DirectoryInfo directoryInfo)
     {
-        _directoryInfo = directoryInfo ?? throw new ArgumentNullException(nameof(directoryInfo));
-        if (!_directoryInfo.Exists)
+        DirectoryInfo = directoryInfo ?? throw new ArgumentNullException(nameof(directoryInfo));
+        if (!DirectoryInfo.Exists)
         {
             throw new ArgumentException("Directory must exist", nameof(directoryInfo));
         }
     }
 
-    public string Name => _directoryInfo.Name;
+    public string Name => DirectoryInfo.Name;
+
+    public DirectoryInfo DirectoryInfo { get; }
 
     public bool CanBookmark => true;
 
+    public Uri Path
+    {
+        get
+        {
+            try
+            {
+                return StorageProviderHelpers.FilePathToUri(DirectoryInfo.FullName);
+            }
+            catch (SecurityException)
+            {
+                return new Uri(DirectoryInfo.Name, UriKind.Relative);
+            }
+        }
+    }
+    
     public Task<StorageItemProperties> GetBasicPropertiesAsync()
     {
         var props = new StorageItemProperties(
             null,
-            _directoryInfo.CreationTimeUtc,
-            _directoryInfo.LastAccessTimeUtc);
+            DirectoryInfo.CreationTimeUtc,
+            DirectoryInfo.LastAccessTimeUtc);
         return Task.FromResult(props);
     }
 
     public Task<IStorageFolder?> GetParentAsync()
     {
-        if (_directoryInfo.Parent is { } directory)
+        if (DirectoryInfo.Parent is { } directory)
         {
             return Task.FromResult<IStorageFolder?>(new BclStorageFolder(directory));
         }
@@ -56,9 +68,9 @@ public class BclStorageFolder : IStorageBookmarkFolder
 
     public Task<IReadOnlyList<IStorageItem>> GetItemsAsync()
     {
-         var items = _directoryInfo.GetDirectories()
+         var items = DirectoryInfo.GetDirectories()
             .Select(d => (IStorageItem)new BclStorageFolder(d))
-            .Concat(_directoryInfo.GetFiles().Select(f => new BclStorageFile(f)))
+            .Concat(DirectoryInfo.GetFiles().Select(f => new BclStorageFile(f)))
             .ToArray();
 
          return Task.FromResult<IReadOnlyList<IStorageItem>>(items);
@@ -66,30 +78,13 @@ public class BclStorageFolder : IStorageBookmarkFolder
 
     public virtual Task<string?> SaveBookmarkAsync()
     {
-        return Task.FromResult<string?>(_directoryInfo.FullName);
+        return Task.FromResult<string?>(DirectoryInfo.FullName);
     }
     
     public Task ReleaseBookmarkAsync()
     {
         // No-op
         return Task.CompletedTask;
-    }
-
-    public bool TryGetUri([NotNullWhen(true)] out Uri? uri)
-    {
-        try
-        {
-            uri = Path.IsPathRooted(_directoryInfo.FullName) ?
-                new Uri(new Uri("file://"), _directoryInfo.FullName) :
-                new Uri(_directoryInfo.FullName, UriKind.Relative);
-
-            return true;
-        }
-        catch (SecurityException)
-        {
-            uri = null;
-            return false;
-        }
     }
 
     protected virtual void Dispose(bool disposing)

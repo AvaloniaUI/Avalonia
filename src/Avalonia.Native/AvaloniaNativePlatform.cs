@@ -24,8 +24,7 @@ namespace Avalonia.Native
         static extern IntPtr CreateAvaloniaNative();
 
         internal static readonly KeyboardDevice KeyboardDevice = new KeyboardDevice();
-        internal static Compositor? Compositor { get; private set; }
-        internal static PlatformRenderInterfaceContextManager? RenderInterface { get; private set; }
+        internal static Compositor Compositor { get; private set; } = null!;
 
         public static AvaloniaNativePlatform Initialize(IntPtr factory, AvaloniaNativePlatformOptions options)
         {
@@ -104,7 +103,7 @@ namespace Avalonia.Native
                 .Bind<ICursorFactory>().ToConstant(new CursorFactory(_factory.CreateCursorFactory()))
                 .Bind<IPlatformIconLoader>().ToSingleton<IconLoader>()
                 .Bind<IKeyboardDevice>().ToConstant(KeyboardDevice)
-                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
+                .Bind<IPlatformSettings>().ToConstant(new NativePlatformSettings(_factory.CreatePlatformSettings()))
                 .Bind<IWindowingPlatform>().ToConstant(this)
                 .Bind<IClipboard>().ToConstant(new ClipboardImpl(_factory.CreateClipboard()))
                 .Bind<IRenderTimer>().ToConstant(new DefaultRenderTimer(60))
@@ -140,14 +139,8 @@ namespace Avalonia.Native
                     // ignored
                 }
             }
-
-
-            if (_options.UseDeferredRendering && _options.UseCompositor)
-            {
-                Compositor = new Compositor(renderLoop, _platformGl);
-            }
-            else
-                RenderInterface = new PlatformRenderInterfaceContextManager(_platformGl);
+            
+            Compositor = new Compositor(renderLoop, _platformGl);
         }
 
         public ITrayIconImpl CreateTrayIcon()
