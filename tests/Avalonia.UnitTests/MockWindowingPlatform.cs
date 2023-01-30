@@ -35,6 +35,8 @@ namespace Avalonia.UnitTests
             windowImpl.Setup(x => x.Screen).Returns(CreateScreenMock().Object);
             windowImpl.Setup(x => x.Position).Returns(() => position);
 
+            windowImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
+
             windowImpl.Setup(x => x.CreatePopup()).Returns(() =>
             {
                 return CreatePopupMock(windowImpl.Object).Object;
@@ -95,6 +97,7 @@ namespace Avalonia.UnitTests
             popupImpl.Setup(x => x.RenderScaling).Returns(1);
             popupImpl.Setup(x => x.PopupPositioner).Returns(positioner);
 
+            popupImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
             popupImpl.Setup(x => x.Dispose()).Callback(() =>
             {
                 popupImpl.Object.Closed?.Invoke();
