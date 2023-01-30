@@ -349,7 +349,6 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
-
         [Fact]
         public void Style_Can_Use_NthChild_Selector_With_ListBox()
         {
@@ -372,21 +371,22 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 };
 
                 var list = window.FindControl<ListBox>("list");
-                list.VirtualizationMode = ItemVirtualizationMode.Simple;
                 list.Items = collection;
 
                 window.Show();
 
-                IEnumerable<IBrush> GetColors() => list.Presenter.Panel.Children.Cast<ListBoxItem>().Select(t => t.Background);
+                IEnumerable<IBrush> GetColors() => list.GetRealizedContainers().Cast<ListBoxItem>().Select(t => t.Background);
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Green, Brushes.Transparent }, GetColors());
 
                 collection.Remove(Brushes.Green);
+                window.LayoutManager.ExecuteLayoutPass();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue }, GetColors());
 
                 collection.Add(Brushes.Violet);
                 collection.Add(Brushes.Black);
+                window.LayoutManager.ExecuteLayoutPass();
 
                 Assert.Equal(new[] { Brushes.Transparent, Brushes.Blue, Brushes.Transparent, Brushes.Black }, GetColors());
             }

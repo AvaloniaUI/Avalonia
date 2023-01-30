@@ -24,14 +24,13 @@ using Avalonia.Rendering.Composition;
 using Java.Lang;
 using Math = System.Math;
 using AndroidRect = Android.Graphics.Rect;
+using Window = Android.Views.Window;
 using Android.Graphics.Drawables;
 using Android.OS;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
-        ITopLevelWithPlatformFeedback
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
@@ -39,6 +38,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
+        private readonly INativeControlHostImpl _nativeControlHost;
+        private readonly IStorageProvider _storageProvider;
+        private readonly ISystemNavigationManagerImpl _systemNavigationManager;
+        private readonly IPlatformFeedback _platformFeedback;
+
         private ViewImpl _view;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -55,10 +59,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
 
-            NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
-            StorageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
+            _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
+            _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
+            _platformFeedback = new AndroidPlatformFeedback(avaloniaView);
 
-            PlatformFeedback = new AndroidPlatformFeedback(avaloniaView);
+            _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -107,16 +112,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
-            AndroidPlatform.Options.UseCompositor
-                ? new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces)
-                : AndroidPlatform.Options.UseDeferredRendering
-                    ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                            () => AndroidPlatform.RenderInterface.CreateRenderTarget(Surfaces),
-                            AndroidPlatform.RenderInterface)
-                        { RenderOnlyOnRenderThread = true }
-                    : new ImmediateRenderer((Visual)root,
-                        () => AndroidPlatform.RenderInterface.CreateRenderTarget(Surfaces),
-                        AndroidPlatform.RenderInterface);
+            new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces);
 
         public virtual void Hide()
         {
@@ -288,6 +284,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            // TODO adjust status bar depending on full screen mode.
+        }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
@@ -295,14 +296,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public PixelSize Size => _view.Size;
 
         public double Scaling => RenderScaling;
-
-        public ITextInputMethodImpl TextInputMethod => _textInputMethod;
-
-        public INativeControlHostImpl NativeControlHost { get; }
-        
-        public IStorageProvider StorageProvider { get; }
-
-        public IPlatformFeedback PlatformFeedback { get; }
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
@@ -387,6 +380,36 @@ namespace Avalonia.Android.Platform.SkiaPlatform
                     TransparencyLevel = transparencyLevel;
                 }
             }
+        }
+        
+        public virtual object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return _storageProvider;
+            }
+
+            if (featureType == typeof(ITextInputMethodImpl))
+            {
+                return _textInputMethod;
+            }
+
+            if (featureType == typeof(ISystemNavigationManagerImpl))
+            {
+                return _systemNavigationManager;
+            }
+
+            if (featureType == typeof(INativeControlHostImpl))
+            {
+                return _nativeControlHost;
+            }
+
+            if (featureType == typeof(IPlatformFeedback))
+            {
+                return _platformFeedback;
+            }
+
+            return null;
         }
     }
 

@@ -20,13 +20,13 @@ public interface IStorageItem : IDisposable
     string Name { get; }
 
     /// <summary>
-    /// Gets the full file-system path of the item, if the item has a path.
+    /// Gets the file-system path of the item.
     /// </summary>
     /// <remarks>
     /// Android backend might return file path with "content:" scheme.
     /// Browser and iOS backends might return relative uris.
     /// </remarks>
-    bool TryGetUri([NotNullWhen(true)] out Uri? uri);
+    Uri Path { get; }
 
     /// <summary>
     /// Gets the basic properties of the current item.

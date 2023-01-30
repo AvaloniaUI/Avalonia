@@ -251,6 +251,12 @@ namespace Avalonia
         /// <param name="transform">The transform.</param>
         /// <returns>The transformed point.</returns>
         public Point Transform(Matrix transform) => transform.Transform(this);
+        
+        internal Point Transform(Matrix4x4 matrix)
+        {
+            var vec = Vector2.Transform(new Vector2((float)X, (float)Y), matrix);
+            return new Point(vec.X, vec.Y);
+        }
 
         /// <summary>
         /// Returns a new point with the specified X coordinate.

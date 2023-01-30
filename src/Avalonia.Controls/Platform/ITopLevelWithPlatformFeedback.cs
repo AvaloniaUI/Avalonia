@@ -8,6 +8,6 @@ namespace Avalonia.Controls.Platform
 {
     public interface ITopLevelWithPlatformFeedback
     {
-        IPlatformFeedback PlatformFeedback { get; }
+        IPlatformFeedback _platformFeedback { get; }
     }
 }

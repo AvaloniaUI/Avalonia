@@ -168,9 +168,7 @@
                               HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                               VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
                   <ItemsPresenter Name="PART_ItemsPresenter"
-                                  HorizontalAlignment="Stretch"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  Items="{TemplateBinding Items}">
+                                  HorizontalAlignment="Stretch">
                     <ItemsPresenter.ItemsPanel>
                       <ItemsPanelTemplate>
                         <StackPanel x:Name="HamburgerItemsPanel"

@@ -1610,12 +1610,9 @@ namespace Avalonia.Media
 
                 var thatFormatRider = new SpanRider(_that._formatRuns, _that._latestPosition, textSourceCharacterIndex);
 
+                var text = _that._text.AsMemory(textSourceCharacterIndex, thatFormatRider.Length);
                 TextRunProperties properties = (GenericTextRunProperties)thatFormatRider.CurrentElement!;
-
-                var textCharacters = new TextCharacters(_that._text, textSourceCharacterIndex, thatFormatRider.Length,
-                    properties);
-
-                return textCharacters;
+                return new TextCharacters(text, properties);
             }
         }
     }

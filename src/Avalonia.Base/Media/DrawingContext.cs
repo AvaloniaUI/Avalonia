@@ -246,7 +246,7 @@ namespace Avalonia.Media
 
             if (foreground != null)
             {
-                PlatformImpl.DrawGlyphRun(foreground, glyphRun);
+                PlatformImpl.DrawGlyphRun(foreground, glyphRun.PlatformImpl);
             }
         }
 
