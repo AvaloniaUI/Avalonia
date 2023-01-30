@@ -5,6 +5,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 
 namespace Avalonia.Base.UnitTests.VisualTree
 {
@@ -14,6 +15,8 @@ namespace Avalonia.Base.UnitTests.VisualTree
         {
             throw new NotImplementedException();
         }
+
+        public bool IsLost => false;
 
         public object TryGetFeature(Type featureType) => null;
 
@@ -74,7 +77,8 @@ namespace Avalonia.Base.UnitTests.VisualTree
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
             throw new NotImplementedException();
         }
@@ -87,6 +91,7 @@ namespace Avalonia.Base.UnitTests.VisualTree
         public bool SupportsIndividualRoundRects { get; set; }
         public AlphaFormat DefaultAlphaFormat { get; }
         public PixelFormat DefaultPixelFormat { get; }
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
 
         public IFontManagerImpl CreateFontManager()
         {

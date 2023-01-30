@@ -98,6 +98,9 @@ namespace Avalonia.OpenGL.Egl
         [GetProcAddress("eglCreateWindowSurface")]
         public partial IntPtr CreateWindowSurface(IntPtr display, IntPtr config, IntPtr window, int[] attrs);
 
+        [GetProcAddress("eglBindTexImage")]
+        public partial int BindTexImage(IntPtr display, IntPtr surface, int buffer);
+
         [GetProcAddress("eglGetConfigAttrib")]
         public partial bool GetConfigAttrib(IntPtr display, IntPtr config, int attr, out int rv);
         

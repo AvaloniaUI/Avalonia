@@ -15,7 +15,7 @@
     <Import Project="..\..\build\TrimmingEnable.props" />
 
   <ItemGroup>
-    <Compile Remove="..\Shared\SourceGeneratorAttributes.cs"/>
-    <None Include="..\Shared\SourceGeneratorAttributes.cs" Visible="false"/>
+    <Compile Remove="..\Shared\SourceGeneratorAttributes.cs" />
+    <None Include="..\Shared\SourceGeneratorAttributes.cs" Visible="false" />
   </ItemGroup>
 </Project>

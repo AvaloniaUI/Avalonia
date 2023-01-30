@@ -1,33 +1,48 @@
 using System;
 using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Skia;
 using Avalonia.UnitTests;
 using BenchmarkDotNet.Attributes;
 
 namespace Avalonia.Benchmarks.Text;
 
 [MemoryDiagnoser]
+[MinIterationTime(150)]
+[MaxWarmupCount(15)]
 public class HugeTextLayout : IDisposable
 {
+    private static readonly Random s_rand = new();
+    private static readonly bool s_useSkia = true;
+
     private readonly IDisposable _app;
-    private string[] _manySmallStrings;
-    private static Random _rand = new Random();
-    
+    private readonly string[] _manySmallStrings;
+
     private static string RandomString(int length)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&?%$@";
-        return new string(Enumerable.Repeat(chars, length).Select(s => s[_rand.Next(s.Length)]).ToArray());
+        return new string(Enumerable.Repeat(chars, length).Select(s => s[s_rand.Next(s.Length)]).ToArray());
     }
 
     public HugeTextLayout()
     {
-        _manySmallStrings = Enumerable.Range(0, 1000).Select(x => RandomString(_rand.Next(2, 15))).ToArray();
-        _app = UnitTestApplication.Start(
-            TestServices.StyledWindow.With(
-                renderInterface: new NullRenderingPlatform(),
-                threadingInterface: new NullThreadingPlatform(),
-                standardCursorFactory: new NullCursorFactory()));
+        _manySmallStrings = Enumerable.Range(0, 1000).Select(_ => RandomString(s_rand.Next(2, 15))).ToArray();
+
+        var testServices = TestServices.StyledWindow.With(
+            renderInterface: new NullRenderingPlatform(),
+            threadingInterface: new NullThreadingPlatform(),
+            standardCursorFactory: new NullCursorFactory());
+
+        if (s_useSkia)
+        {
+            testServices = testServices.With(
+                textShaperImpl: new TextShaperImpl(),
+                fontManagerImpl: new FontManagerImpl());
+        }
+
+        _app = UnitTestApplication.Start(testServices);
     }
     
     private const string Text = @"Though, the objectives of the development of the prominent landmarks can be neglected in most cases, it should be realized that after the completion of the strategic decision gives rise to The Expertise of Regular Program (Carlton Cartwright in The Book of the Key Factor) 
@@ -43,7 +58,13 @@ Admitting that the possibility of achieving the results of the constructive crit
 Everyone understands what it takes to the draft analysis and prior decisions and early design solutions. In any case, we can systematically change the mechanism of the sources and influences of the continuing financing doctrine. This could exceedingly be a result of a task analysis the hardware maintenance. The real reason of the strategic planning seemingly the influence on eventual productivity. Everyone understands what it takes to the well-known practice. Therefore, the concept of the productivity boost can be treated as the only solution the driving factor. 
 It may reveal how the matters of peculiar interest slowly the goals and objectives or the diverse sources of information the positive influence of any major outcomes complete failure of the supposed theory.  
 In respect that the structure of the sufficient amount poses problems and challenges for both the set of related commands and controls and the ability bias.";
-    
+
+    [Params(false, true)]
+    public bool Wrap { get; set; }
+
+    [Params(false, true)]
+    public bool Trim { get; set; }
+
     [Benchmark]
     public TextLayout BuildTextLayout() => MakeLayout(Text);
 
@@ -68,10 +89,47 @@ In respect that the structure of the sufficient amount poses problems and challe
     public TextLayout BuildEmojisTextLayout() => MakeLayout(Emojis);
 
     [Benchmark]
-    public TextLayout[] BuildManySmallTexts() => _manySmallStrings.Select(MakeLayout).ToArray();
+    public TextLayout[] BuildManySmallTexts()
+    {
+        var results = new TextLayout[_manySmallStrings.Length];
 
-    private static TextLayout MakeLayout(string str) 
-        => new TextLayout(str, Typeface.Default, 12d, Brushes.Black, maxWidth:120);
+        for (var i = 0; i < _manySmallStrings.Length; i++)
+        {
+            results[i] = MakeLayout(_manySmallStrings[i]);
+        }
+
+        return results;
+    }
+
+    [Benchmark]
+    public void VirtualizeTextBlocks()
+    {
+        var blocks = new TextBlock[10];
+        for (var i = 0; i < blocks.Length; i++)
+        {
+            blocks[i] = new TextBlock
+            {
+                Width = 120,
+                Height = 32,
+            };
+        }
+
+        for (int i = 0, j = 0; i < _manySmallStrings.Length; i++, j = j < blocks.Length - 1 ? j + 1 : 0)
+        {
+            blocks[j].Text = _manySmallStrings[i];
+            blocks[j].Measure(new Size(200, 200));
+        }
+    }
+
+    private TextLayout MakeLayout(string str)
+    {
+        var wrapping = Wrap ? TextWrapping.WrapWithOverflow : TextWrapping.NoWrap;
+        var trimming = Trim ? TextTrimming.CharacterEllipsis : TextTrimming.None;
+        var layout = new TextLayout(str, Typeface.Default, 12d, Brushes.Black, maxWidth: 120,
+            textTrimming: trimming, textWrapping: wrapping);
+        layout.Dispose();
+        return layout;
+    }
 
     public void Dispose()
     {

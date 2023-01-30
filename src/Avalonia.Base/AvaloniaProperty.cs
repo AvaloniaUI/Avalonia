@@ -107,22 +107,22 @@ namespace Avalonia
         /// <summary>
         /// Gets a value indicating whether the property inherits its value.
         /// </summary>
-        public virtual bool Inherits => false;
+        public bool Inherits { get; private protected set; }
 
         /// <summary>
         /// Gets a value indicating whether this is an attached property.
         /// </summary>
-        public virtual bool IsAttached => false;
+        public bool IsAttached { get; private protected set; }
 
         /// <summary>
         /// Gets a value indicating whether this is a direct property.
         /// </summary>
-        public virtual bool IsDirect => false;
+        public bool IsDirect { get; private protected set; }
 
         /// <summary>
         /// Gets a value indicating whether this is a readonly property.
         /// </summary>
-        public virtual bool IsReadOnly => false;
+        public bool IsReadOnly { get; private protected set; }
 
         /// <summary>
         /// Gets an observable that is fired when this property changes on any

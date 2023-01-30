@@ -21,10 +21,12 @@ namespace Avalonia.Controls.Selection
             {
                 if (_source != value)
                 {
-                    ItemsView?.RemoveListener(this);
+                    if (ItemsView?.Inner is INotifyCollectionChanged inccOld)
+                        CollectionChangedEventManager.Instance.RemoveListener(inccOld, this);
                     _source = value;
-                    ItemsView = value is object ? ItemsSourceView<T>.GetOrCreate(value) : null;
-                    ItemsView?.AddListener(this);
+                    ItemsView = value is object ? ItemsSourceView.GetOrCreate<T>(value) : null;
+                    if (ItemsView?.Inner is INotifyCollectionChanged inccNew)
+                        CollectionChangedEventManager.Instance.AddListener(inccNew, this);
                 }
             }
         }
@@ -254,6 +256,7 @@ namespace Avalonia.Controls.Selection
                         break;
                     }
                 case NotifyCollectionChangedAction.Replace:
+                case NotifyCollectionChangedAction.Move:
                     {
                         var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
                         var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);

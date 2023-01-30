@@ -139,7 +139,6 @@ namespace Avalonia.ReactiveUI.UnitTests
                 Child = new ItemsPresenter
                 {
                     Name = "PART_ItemsPresenter",
-                    [~ItemsPresenter.ItemsProperty] = parent[~ItemsControl.ItemsProperty],
                 }.RegisterInNameScope(scope)
             });
         }

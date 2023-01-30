@@ -5,6 +5,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Xunit;
 
 #if AVALONIA_SKIA
@@ -170,11 +171,16 @@ namespace Avalonia.Direct2D1.RenderTests.Media
 
                 var advance = glyphTypeface.GetGlyphAdvance(glyphIndices[0]) * scale;
 
-                var advances = new[] { advance, advance, advance};
+                var glyphInfos = new[]
+                {
+                    new GlyphInfo(glyphIndices[0], 0, advance),
+                    new GlyphInfo(glyphIndices[1], 1, advance),
+                    new GlyphInfo(glyphIndices[2], 2, advance)
+                };
 
                 var characters = new[] { 'A', 'B', 'C' };
 
-                GlyphRun = new GlyphRun(glyphTypeface, 100, characters, glyphIndices, advances);
+                GlyphRun = new GlyphRun(glyphTypeface, 100, characters, glyphInfos);
             }
 
             public GlyphRun GlyphRun { get; }

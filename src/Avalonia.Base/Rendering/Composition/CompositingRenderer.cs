@@ -28,7 +28,7 @@ public class CompositingRenderer : IRendererWithCompositor
     private HashSet<Visual> _dirty = new();
     private HashSet<Visual> _recalculateChildren = new();
     private bool _queuedUpdate;
-    private Action<Task> _update;
+    private Action _update;
     private bool _updating;
 
     internal CompositionTarget CompositionTarget;
@@ -70,7 +70,7 @@ public class CompositingRenderer : IRendererWithCompositor
         if(_queuedUpdate)
             return;
         _queuedUpdate = true;
-        _compositor.InvokeBeforeNextCommit(_update);
+        _compositor.RequestCompositionUpdate(_update);
     }
     
     /// <inheritdoc/>
@@ -83,8 +83,16 @@ public class CompositingRenderer : IRendererWithCompositor
     }
 
     /// <inheritdoc/>
-    public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter)
+    public IEnumerable<Visual> HitTest(Point p, Visual? root, Func<Visual, bool>? filter)
     {
+        CompositionVisual? rootVisual = null;
+        if (root != null)
+        {
+            if (root.CompositionVisual == null)
+                yield break;
+            rootVisual = root.CompositionVisual;
+        }
+        
         Func<CompositionVisual, bool>? f = null;
         if (filter != null)
             f = v =>
@@ -93,8 +101,8 @@ public class CompositingRenderer : IRendererWithCompositor
                     return filter(dlv.Visual);
                 return true;
             };
-        
-        var res = CompositionTarget.TryHitTest(p, f);
+
+        var res = CompositionTarget.TryHitTest(p, rootVisual, f);
         if(res == null)
             yield break;
         foreach(var v in res)
@@ -257,6 +265,7 @@ public class CompositingRenderer : IRendererWithCompositor
         _recalculateChildren.Clear();
         CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
+        TriggerSceneInvalidatedOnBatchCompletion(_compositor.RequestCommitAsync());
     }
 
     private async void TriggerSceneInvalidatedOnBatchCompletion(Task batchCompletion)
@@ -265,7 +274,7 @@ public class CompositingRenderer : IRendererWithCompositor
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
     }
     
-    private void Update(Task batchCompletion)
+    private void Update()
     {
         if(_updating)
             return;

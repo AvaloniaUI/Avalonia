@@ -961,14 +961,10 @@ namespace Avalonia.Controls
 
                 var length = 0;
 
-                var inputRange = new CharacterBufferRange(new CharacterBufferReference(input), input.Length);
+                var graphemeEnumerator = new GraphemeEnumerator(input.AsSpan());
 
-                var graphemeEnumerator = new GraphemeEnumerator(inputRange);
-
-                while (graphemeEnumerator.MoveNext())
+                while (graphemeEnumerator.MoveNext(out var grapheme))
                 {
-                    var grapheme = graphemeEnumerator.Current;
-
                     if (grapheme.FirstCodepoint.IsBreakChar)
                     {
                         if (lineCount + 1 > MaxLines)

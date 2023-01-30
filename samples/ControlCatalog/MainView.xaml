@@ -147,8 +147,11 @@
       <TabItem Header="RelativePanel">
         <pages:RelativePanelPage />
       </TabItem>
-        <TabItem Header="ScrollViewer">
+      <TabItem Header="ScrollViewer">
         <pages:ScrollViewerPage />
+      </TabItem>
+      <TabItem Header="ScrollViewer Snapping">
+        <pages:ScrollSnapPage />
       </TabItem>
       <TabItem Header="Slider">
         <pages:SliderPage />
