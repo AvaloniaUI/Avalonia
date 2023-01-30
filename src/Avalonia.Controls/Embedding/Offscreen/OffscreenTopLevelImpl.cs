@@ -94,5 +94,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
         public IPopupImpl? CreatePopup() => null;
+        
+        public virtual object? TryGetFeature(Type featureType) => null;
     }
 }
