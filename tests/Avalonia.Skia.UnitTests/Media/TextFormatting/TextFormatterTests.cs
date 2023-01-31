@@ -242,9 +242,15 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             {
                 var defaultProperties = new GenericTextRunProperties(Typeface.Default);
 
-                var textSource = new SingleBufferTextSource(text, defaultProperties);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.WrapWithOverflow);
+
+                var textSource = new SingleBufferTextSource("ABCDEFHFFHFJHKHFK", defaultProperties, true);
 
                 var formatter = new TextFormatterImpl();
+
+                var line = formatter.FormatLine(textSource, 0, 33, paragraphProperties);
+
+                textSource = new SingleBufferTextSource(text, defaultProperties);
 
                 var numberOfLines = 0;
 
@@ -253,8 +259,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 while (currentPosition < text.Length)
                 {
                     var textLine =
-                        formatter.FormatLine(textSource, currentPosition, 1,
-                            new GenericTextParagraphProperties(defaultProperties, textWrap: TextWrapping.WrapWithOverflow));
+                        formatter.FormatLine(textSource, currentPosition, 1, paragraphProperties);
 
                     if (text.Length - currentPosition > expectedCharactersPerLine)
                     {
