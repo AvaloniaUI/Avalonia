@@ -12,6 +12,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
 using Key = Avalonia.Input.Key;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using MouseButton = System.Windows.Input.MouseButton;
@@ -90,8 +91,7 @@ namespace Avalonia.Win32.Interop.Wpf
         
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            var mgr = new PlatformRenderInterfaceContextManager(null);
-            return new ImmediateRenderer((Visual)root, () => mgr.CreateRenderTarget(_surfaces), mgr);
+            return new CompositingRenderer(root, Win32Platform.Compositor, () => _surfaces);
         }
 
         public void Dispose()
@@ -134,7 +134,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 drawingContext.DrawImage(ImageSource, new System.Windows.Rect(0, 0, ActualWidth, ActualHeight));
         }
 
-        void ITopLevelImpl.Invalidate(Rect rect) => InvalidateVisual();
+
 
         void ITopLevelImpl.SetInputRoot(IInputRoot inputRoot) => _inputRoot = inputRoot;
 
