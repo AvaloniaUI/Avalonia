@@ -261,5 +261,7 @@ namespace Avalonia.Win32.Interop.Wpf
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant) { }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 1, 1);
+        
+        public object TryGetFeature(Type featureType) => null;
     }
 }
