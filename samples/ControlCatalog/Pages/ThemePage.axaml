@@ -1,0 +1,79 @@
+﻿<UserControl x:Class="ControlCatalog.Pages.ThemePage"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:pages="clr-namespace:ControlCatalog.Pages"
+             d:DesignWidth="300"
+             mc:Ignorable="d">
+
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="DemoBackground">Black</SolidColorBrush>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="DemoBackground">White</SolidColorBrush>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="{x:Static pages:ThemePage.Pink}">
+          <SolidColorBrush x:Key="DemoBackground">#ffe5ea</SolidColorBrush>
+          <SolidColorBrush x:Key="NormalBackgroundBrush" Color="#ffc0cb" />
+          <SolidColorBrush x:Key="PointerOverBackgroundBrush" Color="#ffb3c0" />
+          <SolidColorBrush x:Key="PressedBackgroundBrush" Color="#ff4d6c" />
+          <SolidColorBrush x:Key="NormalBorderBrush" Color="#ff8096" />
+          <SolidColorBrush x:Key="PointerOverBorderBrush" Color="#ff8096" />
+          <SolidColorBrush x:Key="PressedBorderBrush" Color="#ff4d6c" />
+
+          <!-- Override colors for fluent theme -->
+          <StaticResource x:Key="ButtonBackground" ResourceKey="NormalBackgroundBrush" />
+          <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="PointerOverBackgroundBrush" />
+          <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="PressedBackgroundBrush" />
+          <StaticResource x:Key="ButtonBorderBrush" ResourceKey="NormalBorderBrush" />
+          <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="PointerOverBorderBrush" />
+          <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="PressedBorderBrush" />
+          <StaticResource x:Key="TextControlBackground" ResourceKey="NormalBackgroundBrush" />
+          <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="PointerOverBackgroundBrush" />
+          <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="PointerOverBackgroundBrush" />
+          <StaticResource x:Key="TextControlBorderBrush" ResourceKey="NormalBorderBrush" />
+          <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="PointerOverBorderBrush" />
+          <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="PressedBorderBrush" />
+          <StaticResource x:Key="ComboBoxBackground" ResourceKey="NormalBackgroundBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundPointerOver" ResourceKey="PointerOverBackgroundBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="PressedBackgroundBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="NormalBorderBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="PointerOverBorderBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="PressedBorderBrush" />
+          <!-- Override colors for default theme -->
+          <StaticResource x:Key="ThemeControlMidBrush" ResourceKey="NormalBackgroundBrush" />
+          <StaticResource x:Key="ThemeControlHighBrush" ResourceKey="PressedBackgroundBrush" />
+          <StaticResource x:Key="ThemeBorderLowBrush" ResourceKey="NormalBorderBrush" />
+          <StaticResource x:Key="ThemeBorderMidBrush" ResourceKey="PointerOverBorderBrush" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+
+  <ThemeVariantScope x:Name="ThemeVariantScope">
+    <Border Background="{DynamicResource DemoBackground}"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Left"
+            Padding="4"
+            CornerRadius="4">
+      <Grid RowDefinitions="Auto, 4, Auto, 4, Auto, 4, Auto" ColumnDefinitions="150, 150">
+        <ComboBox Grid.Column="0" Grid.Row="0" x:Name="Selector" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <TextBlock Text="{Binding TargetNullValue=Unset}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+        <TextBlock Grid.Column="0" Grid.Row="2" Text="Username:" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="0" Grid.Row="4" Text="Password:" VerticalAlignment="Center" />
+        <TextBox Grid.Column="1" Grid.Row="2" Watermark="Input here" HorizontalAlignment="Stretch" />
+        <TextBox Grid.Column="1" Grid.Row="4" Watermark="Input here" HorizontalAlignment="Stretch" />
+        <Button Grid.Column="1" Grid.Row="6" Content="Login" HorizontalAlignment="Stretch" />
+      </Grid>
+    </Border>
+  </ThemeVariantScope>
+</UserControl>

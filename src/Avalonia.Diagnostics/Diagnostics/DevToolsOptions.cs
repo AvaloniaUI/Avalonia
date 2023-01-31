@@ -1,4 +1,6 @@
-﻿using Avalonia.Input;
+﻿using System;
+using Avalonia.Input;
+using Avalonia.Styling;
 
 namespace Avalonia.Diagnostics
 {
@@ -42,8 +44,8 @@ namespace Avalonia.Diagnostics
           = Conventions.DefaultScreenshotHandler;
 
         /// <summary>
-        /// Gets or sets whether DevTools should use the dark mode theme
+        /// Gets or sets whether DevTools theme.
         /// </summary>
-        public bool UseDarkMode { get; set; }
+        public ThemeVariant? ThemeVariant { get; set; }
     }
 }
