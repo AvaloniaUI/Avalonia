@@ -448,13 +448,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.True(style.Resources.Count > 0);
 
-            style.TryGetResource("Brush", out var brush);
+            style.TryGetResource("Brush", null, out var brush);
 
             Assert.NotNull(brush);
             Assert.IsAssignableFrom<ISolidColorBrush>(brush);
             Assert.Equal(Colors.White, ((ISolidColorBrush)brush).Color);
 
-            style.TryGetResource("Double", out var d);
+            style.TryGetResource("Double", null, out var d);
 
             Assert.Equal(10.0, d);
         }
