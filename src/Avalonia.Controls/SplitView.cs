@@ -206,24 +206,24 @@ namespace Avalonia.Controls
 
                 if (value)
                 {
-                    OnPaneOpening(this, EventArgs.Empty);
+                    OnPaneOpening(EventArgs.Empty);
                     SetAndRaise(IsPaneOpenProperty, ref _isPaneOpen, value);
 
                     PseudoClasses.Add(":open");
                     PseudoClasses.Remove(":closed");
-                    OnPaneOpened(this, EventArgs.Empty);
+                    OnPaneOpened(EventArgs.Empty);
                 }
                 else
                 {
                     SplitViewPaneClosingEventArgs args = new SplitViewPaneClosingEventArgs(false);
-                    OnPaneClosing(this, args);
+                    OnPaneClosing(args);
                     if (!args.Cancel)
                     {
                         SetAndRaise(IsPaneOpenProperty, ref _isPaneOpen, value);
 
                         PseudoClasses.Add(":closed");
                         PseudoClasses.Remove(":open");
-                        OnPaneClosed(this, EventArgs.Empty);
+                        OnPaneClosed(EventArgs.Empty);
                     }
                 }
             }
@@ -394,24 +394,24 @@ namespace Avalonia.Controls
             return (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay);
         }
 
-        protected virtual void OnPaneOpening(SplitView sender, EventArgs args)
+        protected virtual void OnPaneOpening(EventArgs args)
         {
-            PaneOpening?.Invoke(sender, args);
+            PaneOpening?.Invoke(this, args);
         }
 
-        protected virtual void OnPaneOpened(SplitView sender, EventArgs args)
+        protected virtual void OnPaneOpened(EventArgs args)
         {
-            PaneOpened?.Invoke(sender, args);
+            PaneOpened?.Invoke(this, args);
         }
 
-        protected virtual void OnPaneClosing(SplitView sender, SplitViewPaneClosingEventArgs args)
+        protected virtual void OnPaneClosing(SplitViewPaneClosingEventArgs args)
         {
-            PaneClosing?.Invoke(sender, args);
+            PaneClosing?.Invoke(this, args);
         }
 
-        protected virtual void OnPaneClosed(SplitView sender, EventArgs args)
+        protected virtual void OnPaneClosed(EventArgs args)
         {
-            PaneClosed?.Invoke(sender, args);
+            PaneClosed?.Invoke(this, args);
         }
 
         private void OnCompactPaneLengthChanged(AvaloniaPropertyChangedEventArgs e)
