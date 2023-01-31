@@ -18,7 +18,7 @@ namespace ControlCatalog.Pages
 
             selector.Items = new[]
             {
-                new ThemeVariant("Default"),
+                ThemeVariant.Default,
                 ThemeVariant.Dark,
                 ThemeVariant.Light,
                 Pink

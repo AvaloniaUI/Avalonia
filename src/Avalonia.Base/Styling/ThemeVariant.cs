@@ -5,20 +5,60 @@ using Avalonia.Platform;
 
 namespace Avalonia.Styling;
 
+/// <summary>
+/// Specifies a UI theme variant that should be used for the 
+/// </summary>
 [TypeConverter(typeof(ThemeVariantTypeConverter))]
-public sealed record ThemeVariant(object Key)
-{ 
+public sealed record ThemeVariant
+{
+    /// <summary>
+    /// Creates a new instance of the <see cref="ThemeVariant"/>
+    /// </summary>
+    /// <param name="key">Key of the theme variant by which variants are compared.</param>
+    /// <param name="inheritVariant">Reference to a theme variant which should be used, if resource wasn't found for the requested variant.</param>
+    /// <exception cref="ArgumentException">Thrown if inheritVariant is a reference to the <see cref="ThemeVariant.Default"/> which is ambiguous value to inherit.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if key is null.</exception>
     public ThemeVariant(object key, ThemeVariant? inheritVariant)
-        : this(key)
     {
+        Key = key ?? throw new ArgumentNullException(nameof(key));
         InheritVariant = inheritVariant;
+
+        if (inheritVariant == Default)
+        {
+            throw new ArgumentException("Inheriting default theme variant is not supported.", nameof(inheritVariant));
+        }
     }
 
-    public static ThemeVariant Default { get; } = new(nameof(Default));
-    public static ThemeVariant Light { get; } = new(nameof(Light));
-    public static ThemeVariant Dark { get; } = new(nameof(Dark));
+    private ThemeVariant(object key)
+    {
+        Key = key;
+    }
+    
+    /// <summary>
+    /// Key of the theme variant by which variants are compared.
+    /// </summary>
+    public object Key { get; }
+    
+    /// <summary>
+    /// Reference to a theme variant which should be used, if resource wasn't found for the requested variant.
+    /// </summary>
+    public ThemeVariant? InheritVariant { get; }
 
-    public ThemeVariant? InheritVariant { get; init; }
+    /// <summary>
+    /// Inherit theme variant from the parent. If set on Application, system theme is inherited.
+    /// Using Default as the ResourceDictionary.Key marks this dictionary as a fallback in case the theme variant or resource key is not found in other theme dictionaries.
+    /// </summary>
+    public static ThemeVariant Default { get; } = new(nameof(Default));
+
+    /// <summary>
+    /// Use the Light theme variant.
+    /// </summary>
+    public static ThemeVariant Light { get; } = new(nameof(Light));
+
+    /// <summary>
+    /// Use the Dark theme variant.
+    /// </summary>
+    public static ThemeVariant Dark { get; } = new(nameof(Dark));
 
     public override string ToString()
     {
@@ -35,7 +75,7 @@ public sealed record ThemeVariant(object Key)
         return Key == other?.Key;
     }
 
-    public static ThemeVariant FromPlatformThemeVariant(PlatformThemeVariant themeVariant)
+    public static explicit operator ThemeVariant(PlatformThemeVariant themeVariant)
     {
         return themeVariant switch
         {
@@ -45,19 +85,19 @@ public sealed record ThemeVariant(object Key)
         };
     }
 
-    public PlatformThemeVariant? ToPlatformThemeVariant()
+    public static explicit operator PlatformThemeVariant?(ThemeVariant themeVariant)
     {
-        if (this == Light)
+        if (themeVariant == Light)
         {
             return PlatformThemeVariant.Light;
         }
-        else if (this == Dark)
+        else if (themeVariant == Dark)
         {
             return PlatformThemeVariant.Dark;
         }
-        else if (InheritVariant is { } inheritVariant)
+        else if (themeVariant.InheritVariant is { } inheritVariant)
         {
-            return inheritVariant.ToPlatformThemeVariant();
+            return (PlatformThemeVariant?)inheritVariant;
         }
 
         return null;

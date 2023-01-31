@@ -6,10 +6,12 @@ using Avalonia.Styling;
 using Moq;
 using Xunit;
 
-namespace Avalonia.Markup.Xaml.UnitTests;
+namespace Avalonia.Markup.Xaml.UnitTests.Xaml;
 
 public class ThemeDictionariesTests : XamlTestBase
 {
+    public static ThemeVariant Custom { get; } = new(nameof(Custom), ThemeVariant.Light);
+
     [Fact]
     public void DynamicResource_Updated_When_Control_Theme_Changed()
     {
@@ -353,13 +355,14 @@ public class ThemeDictionariesTests : XamlTestBase
 
         Assert.Equal(Colors.Red, ((ISolidColorBrush)border.Background)!.Color);
     }
-    
+
     [Fact]
     public void Custom_Theme_Can_Be_Defined_In_ThemeDictionaries()
     {
         var themeVariantScope = (ThemeVariantScope)AvaloniaRuntimeXamlLoader.Load(@"
 <ThemeVariantScope xmlns='https://github.com/avaloniaui'
               xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+              xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'
               RequestedThemeVariant='Light'>
     <ThemeVariantScope.Resources>
         <ResourceDictionary>
@@ -370,7 +373,7 @@ public class ThemeDictionariesTests : XamlTestBase
                 <ResourceDictionary x:Key='Light'>
                     <SolidColorBrush x:Key='DemoBackground'>White</SolidColorBrush>
                 </ResourceDictionary>
-                <ResourceDictionary x:Key='Custom'>
+                <ResourceDictionary x:Key='{x:Static local:ThemeDictionariesTests.Custom}'>
                     <SolidColorBrush x:Key='DemoBackground'>Pink</SolidColorBrush>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
@@ -380,9 +383,9 @@ public class ThemeDictionariesTests : XamlTestBase
     <Border Name='border' Background='{DynamicResource DemoBackground}'/>
 </ThemeVariantScope>");
         var border = (Border)themeVariantScope.Child!;
-        
-        themeVariantScope.RequestedThemeVariant = new ThemeVariant("Custom");
 
+        themeVariantScope.RequestedThemeVariant = Custom;
+        
         Assert.Equal(Colors.Pink, ((ISolidColorBrush)border.Background)!.Color);
     }
     

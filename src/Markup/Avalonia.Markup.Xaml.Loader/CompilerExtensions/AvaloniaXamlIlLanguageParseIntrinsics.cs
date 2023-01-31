@@ -302,13 +302,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                     result = new XamlStaticExtensionNode(new XamlAstObjectNode(node, node.Type), themeVariantTypeRef, foundConstProperty.Name);
                     return true;
                 }
-
-                result = new XamlAstNewClrObjectNode(node, themeVariantTypeRef, types.ThemeVariantConstructor,
-                    new List<IXamlAstValueNode>()
-                    {
-                        new XamlConstantNode(node, context.Configuration.WellKnownTypes.String, variantText)
-                    });
-                return true;
             }
 
             result = null;
