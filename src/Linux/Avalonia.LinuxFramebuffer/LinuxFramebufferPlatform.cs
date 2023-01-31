@@ -23,37 +23,21 @@ using Avalonia.Threading;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    internal class LinuxFramebufferIconLoaderStub : IPlatformIconLoader
+    internal class LinuxFramebufferPlatform
     {
-        private class IconStub : IWindowIconImpl
-        {
-            public void Save(Stream outputStream)
-            {
-
-            }
-        }
-
-        public IWindowIconImpl LoadIcon(string fileName) => new IconStub();
-
-        public IWindowIconImpl LoadIcon(Stream stream) => new IconStub();
-
-        public IWindowIconImpl LoadIcon(IBitmapImpl bitmap) => new IconStub();
-    }
-    
-    class LinuxFramebufferPlatform
-    {
-        IOutputBackend _fb;
-        public static ManualRawEventGrouperDispatchQueue EventGrouperDispatchQueue = new();
+        private readonly IOutputBackend _fb;
+        private static readonly Stopwatch s_st = new ();
+        internal static uint Timestamp => (uint)s_st.ElapsedTicks;
+        public static InternalPlatformThreadingInterface? Threading { get; private set; }
 
         internal static Compositor Compositor { get; private set; } = null!;
-       
         
-        LinuxFramebufferPlatform(IOutputBackend backend)
+        private LinuxFramebufferPlatform(IOutputBackend backend)
         {
             _fb = backend;
         }
-        
-        void Initialize()
+
+        private void Initialize()
         {
             if (_fb is IGlOutputBackend gl)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl.PlatformGraphics);
@@ -67,6 +51,7 @@ namespace Avalonia.LinuxFramebuffer
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IPlatformIconLoader>().ToSingleton<LinuxFramebufferIconLoaderStub>()
                 .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
+                .Bind<IPlatformIconLoader>().ToConstant(new LinuxFramebufferIconLoader())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
             
             Compositor = new Compositor(AvaloniaLocator.Current.GetService<IPlatformGraphics>());
@@ -84,18 +69,13 @@ namespace Avalonia.LinuxFramebuffer
         }
     }
 
-    class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
+    internal class LinuxFramebufferLifetime : IControlledApplicationLifetime, ISingleViewApplicationLifetime
     {
         private readonly IOutputBackend _fb;
         private readonly IInputBackend? _inputBackend;
         private EmbeddableControlRoot? _topLevel;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         public CancellationToken Token => _cts.Token;
-
-        public LinuxFramebufferLifetime(IOutputBackend fb)
-        {
-            _fb = fb;
-        }
 
         public LinuxFramebufferLifetime(IOutputBackend fb, IInputBackend? input)
         {
@@ -141,7 +121,7 @@ namespace Avalonia.LinuxFramebuffer
 
         public void Start(string[] args)
         {
-            Startup?.Invoke(this, new ControlledApplicationLifetimeStartupEventArgs(args));
+            Startup?.Invoke(this, new(args));
         }
 
         public void Shutdown(int exitCode)

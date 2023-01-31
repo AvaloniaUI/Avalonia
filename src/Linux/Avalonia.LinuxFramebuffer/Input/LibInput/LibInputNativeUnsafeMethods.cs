@@ -175,6 +175,9 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         public extern static libinput_key libinput_event_keyboard_get_key(IntPtr ev);
 
         [DllImport(LibInput)]
+        public extern static double libinput_event_pointer_get_scroll_value_v120(IntPtr ev, LibInputPointerAxis axis);
+        
+        [DllImport(LibInput)]
         public extern static libinput_key_state libinput_event_keyboard_get_key_state(IntPtr ev);
 
         [DllImport(LibInput)]
@@ -183,5 +186,20 @@ namespace Avalonia.LinuxFramebuffer.Input.LibInput
         //https://wayland.freedesktop.org/libinput/doc/latest/api/group__device.html#gaf21b51406529ee8d39a5b13a9ad428c0
         [DllImport(LibInput)]
         public extern static IntPtr libinput_device_ref(IntPtr device);
+        
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_device_uref(IntPtr device);
+        
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_event_get_device(IntPtr ev);
+        
+        [DllImport(LibInput)]
+        public extern static double libinput_event_pointer_get_axis_value (IntPtr ev, LibInputPointerAxis axis); 
+        
+        [DllImport(LibInput)]
+        public extern static IntPtr libinput_event_get_keyboard_event(IntPtr ev);
+
+        [DllImport(LibInput)]
+        public extern static libinput_key libinput_event_keyboard_get_key(IntPtr ev);
     }
 }

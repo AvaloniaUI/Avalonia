@@ -10,7 +10,7 @@ using __u32 = System.UInt32;
 
 namespace Avalonia.LinuxFramebuffer
 {
-    unsafe class NativeUnsafeMethods
+    static unsafe class NativeUnsafeMethods
     {
         [DllImport("libc", EntryPoint = "open", SetLastError = true)]
         public static extern int open(string pathname, int flags, int mode);
@@ -33,7 +33,6 @@ namespace Avalonia.LinuxFramebuffer
         [DllImport("libc", EntryPoint = "select", SetLastError = true)]
         public static extern int select(int nfds, void* rfds, void* wfds, void* exfds, IntPtr* timevals);
 
-
         [DllImport("libc", EntryPoint = "poll", SetLastError = true)]
         public static extern int poll(pollfd* fds, uint nfds, int timeout);
 
@@ -52,13 +51,13 @@ namespace Avalonia.LinuxFramebuffer
         public static extern input_absinfo* libevdev_get_abs_info(IntPtr dev, int code);
         
         [DllImport("libc")]
-        public extern static int epoll_create1(int size);
+        public static extern int epoll_create1(int size);
 
         [DllImport("libc")]
-        public extern static int epoll_ctl(int epfd, int op, int fd, ref epoll_event __event);
+        public static extern int epoll_ctl(int epfd, int op, int fd, ref epoll_event __event);
 
         [DllImport("libc")]
-        public extern static int epoll_wait(int epfd, epoll_event* events, int maxevents, int timeout);
+        public static extern int epoll_wait(int epfd, epoll_event* events, int maxevents, int timeout);
         
         public const int EPOLLIN = 1;
         public const int EPOLL_CTL_ADD = 1;

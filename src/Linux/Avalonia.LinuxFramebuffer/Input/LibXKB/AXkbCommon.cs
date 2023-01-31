@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Avalonia.Input;
@@ -16,11 +17,11 @@ internal static class AXkbCommon
         {XKB_KEY_Escape,                  Key.Escape},
         {XKB_KEY_Tab,                     Key.Tab},
         {XKB_KEY_ISO_Left_Tab,            Key.OemBackTab},
-        {XKB_KEY_BackSpace,               Key.Delete},         //TODO: no found avalonia
+        {XKB_KEY_BackSpace,               Key.Back},         //TODO: no found avalonia
         {XKB_KEY_Return,                  Key.Return},
         {XKB_KEY_Insert,                  Key.Insert},
         {XKB_KEY_Delete,                  Key.Delete},
-        {XKB_KEY_Clear,                   Key.Delete},
+        {XKB_KEY_Clear,                   Key.Clear},
         {XKB_KEY_Pause,                   Key.Pause},
         {XKB_KEY_Print,                   Key.Print},
         /* TODO: no found avalonia 
@@ -76,7 +77,7 @@ internal static class AXkbCommon
         {XKB_KEY_KP_Prior,                Key.PageUp},
         {XKB_KEY_KP_Next,                 Key.PageDown},
         {XKB_KEY_KP_End,                  Key.End},
-        {XKB_KEY_KP_Begin,                Key.Clear},
+        {XKB_KEY_KP_Begin,                Key.Home},
         {XKB_KEY_KP_Insert,               Key.Insert},
         {XKB_KEY_KP_Delete,               Key.Delete},
     //    {XKB_KEY_KP_Equal,                Key.Equal}, // TODO: no found avalonia
@@ -374,7 +375,7 @@ internal static class AXkbCommon
         */
     };
 
-    static bool isLatin1(uint sym) =>
+    private static bool isLatin1(uint sym) =>
         sym <= 0xff;
 
     internal static RawInputModifiers GetModifiers(xkb_state state)
@@ -397,7 +398,7 @@ internal static class AXkbCommon
     {
         uint layout;
         uint sym = XKB_KEY_NoSymbol;
-        using xkb_keymap keymap = xkb_state_get_keymap(state);
+        using var keymap = xkb_state_get_keymap(state);
         var layoutCount = xkb_keymap_num_layouts_for_key(keymap, keycode);
         var currentLayout = xkb_state_key_get_layout(state, keycode);
         // Look at user layouts in the order in which they are defined in system
@@ -445,11 +446,9 @@ internal static class AXkbCommon
                 {
                     using var fs = xkb_state_new(keymap);
                     var prevSym = xkb_state_key_get_one_sym(fs, code);
-                    if (prevSym == sym)
-                    {
-                        sym = XKB_KEY_NoSymbol;
-                        break;
-                    }
+                    if (prevSym != sym) continue;
+                    sym = XKB_KEY_NoSymbol;
+                    break;
                 }
             }
         }
@@ -457,7 +456,7 @@ internal static class AXkbCommon
         return sym;
     }
 
-    internal static Key KeysymToAvaloniaKey(uint keysym
+    internal static (Key, string Text) KeysymToAvaloniaKey(uint keysym
         , RawInputModifiers modifiers
         , xkb_state state
         , uint code)
@@ -483,13 +482,13 @@ internal static class AXkbCommon
             }
         }
 
-        return keysymToQtKey_internal(keysym, modifiers, state, code, false, false);
+        return keysymToQtKey_internal(keysym, modifiers, state, code);
     }
 
-    static (uint lower, uint upper) qt_UCSConvertCase(char code)
-        => (char.ToLower(code), char.ToUpper(code));
+    private static (uint lower, uint upper) qt_UCSConvertCase(char code)
+        => (char.ToLowerInvariant(code), char.ToUpperInvariant(code));
 
-    static (uint lower, uint upper) xkbcommon_XConvertCase(uint sym)
+    private static (uint lower, uint upper) xkbcommon_XConvertCase(uint sym)
     {
         uint lower, upper;
         /* Latin 1 keysym */
@@ -516,102 +515,151 @@ internal static class AXkbCommon
         switch (sym >> 8)
         {
             case 1: /* Latin 2 */
-                /* Assume the KeySym is a legal value (ignore discontinuities) */
-                if (sym == XKB_KEY_Aogonek)
-                    lower = XKB_KEY_aogonek;
-                else if (sym >= XKB_KEY_Lstroke && sym <= XKB_KEY_Sacute)
-                    lower += (XKB_KEY_lstroke - XKB_KEY_Lstroke);
-                else if (sym >= XKB_KEY_Scaron && sym <= XKB_KEY_Zacute)
-                    lower += (XKB_KEY_scaron - XKB_KEY_Scaron);
-                else if (sym >= XKB_KEY_Zcaron && sym <= XKB_KEY_Zabovedot)
-                    lower += (XKB_KEY_zcaron - XKB_KEY_Zcaron);
-                else if (sym == XKB_KEY_aogonek)
-                    upper = XKB_KEY_Aogonek;
-                else if (sym >= XKB_KEY_lstroke && sym <= XKB_KEY_sacute)
-                    upper -= (XKB_KEY_lstroke - XKB_KEY_Lstroke);
-                else if (sym >= XKB_KEY_scaron && sym <= XKB_KEY_zacute)
-                    upper -= (XKB_KEY_scaron - XKB_KEY_Scaron);
-                else if (sym >= XKB_KEY_zcaron && sym <= XKB_KEY_zabovedot)
-                    upper -= (XKB_KEY_zcaron - XKB_KEY_Zcaron);
-                else if (sym >= XKB_KEY_Racute && sym <= XKB_KEY_Tcedilla)
-                    lower += (XKB_KEY_racute - XKB_KEY_Racute);
-                else if (sym >= XKB_KEY_racute && sym <= XKB_KEY_tcedilla)
-                    upper -= (XKB_KEY_racute - XKB_KEY_Racute);
+                switch (sym)
+                {
+                    /* Assume the KeySym is a legal value (ignore discontinuities) */
+                    case XKB_KEY_Aogonek:
+                        lower = XKB_KEY_aogonek;
+                        break;
+                    case >= XKB_KEY_Lstroke and <= XKB_KEY_Sacute:
+                        lower += (XKB_KEY_lstroke - XKB_KEY_Lstroke);
+                        break;
+                    case >= XKB_KEY_Scaron and <= XKB_KEY_Zacute:
+                        lower += (XKB_KEY_scaron - XKB_KEY_Scaron);
+                        break;
+                    case >= XKB_KEY_Zcaron and <= XKB_KEY_Zabovedot:
+                        lower += (XKB_KEY_zcaron - XKB_KEY_Zcaron);
+                        break;
+                    case XKB_KEY_aogonek:
+                        upper = XKB_KEY_Aogonek;
+                        break;
+                    case >= XKB_KEY_lstroke and <= XKB_KEY_sacute:
+                        upper -= (XKB_KEY_lstroke - XKB_KEY_Lstroke);
+                        break;
+                    case >= XKB_KEY_scaron and <= XKB_KEY_zacute:
+                        upper -= (XKB_KEY_scaron - XKB_KEY_Scaron);
+                        break;
+                    case >= XKB_KEY_zcaron and <= XKB_KEY_zabovedot:
+                        upper -= (XKB_KEY_zcaron - XKB_KEY_Zcaron);
+                        break;
+                    case >= XKB_KEY_Racute and <= XKB_KEY_Tcedilla:
+                        lower += (XKB_KEY_racute - XKB_KEY_Racute);
+                        break;
+                    case >= XKB_KEY_racute and <= XKB_KEY_tcedilla:
+                        upper -= (XKB_KEY_racute - XKB_KEY_Racute);
+                        break;
+                }
                 break;
             case 2: /* Latin 3 */
-                /* Assume the KeySym is a legal value (ignore discontinuities) */
-                if (sym >= XKB_KEY_Hstroke && sym <= XKB_KEY_Hcircumflex)
-                    lower += (XKB_KEY_hstroke - XKB_KEY_Hstroke);
-                else if (sym >= XKB_KEY_Gbreve && sym <= XKB_KEY_Jcircumflex)
-                    lower += (XKB_KEY_gbreve - XKB_KEY_Gbreve);
-                else if (sym >= XKB_KEY_hstroke && sym <= XKB_KEY_hcircumflex)
-                    upper -= (XKB_KEY_hstroke - XKB_KEY_Hstroke);
-                else if (sym >= XKB_KEY_gbreve && sym <= XKB_KEY_jcircumflex)
-                    upper -= (XKB_KEY_gbreve - XKB_KEY_Gbreve);
-                else if (sym >= XKB_KEY_Cabovedot && sym <= XKB_KEY_Scircumflex)
-                    lower += (XKB_KEY_cabovedot - XKB_KEY_Cabovedot);
-                else if (sym >= XKB_KEY_cabovedot && sym <= XKB_KEY_scircumflex)
-                    upper -= (XKB_KEY_cabovedot - XKB_KEY_Cabovedot);
+                switch (sym)
+                {
+                    /* Assume the KeySym is a legal value (ignore discontinuities) */
+                    case >= XKB_KEY_Hstroke and <= XKB_KEY_Hcircumflex:
+                        lower += (XKB_KEY_hstroke - XKB_KEY_Hstroke);
+                        break;
+                    case >= XKB_KEY_Gbreve and <= XKB_KEY_Jcircumflex:
+                        lower += (XKB_KEY_gbreve - XKB_KEY_Gbreve);
+                        break;
+                    case >= XKB_KEY_hstroke and <= XKB_KEY_hcircumflex:
+                        upper -= (XKB_KEY_hstroke - XKB_KEY_Hstroke);
+                        break;
+                    case >= XKB_KEY_gbreve and <= XKB_KEY_jcircumflex:
+                        upper -= (XKB_KEY_gbreve - XKB_KEY_Gbreve);
+                        break;
+                    case >= XKB_KEY_Cabovedot and <= XKB_KEY_Scircumflex:
+                        lower += (XKB_KEY_cabovedot - XKB_KEY_Cabovedot);
+                        break;
+                    case >= XKB_KEY_cabovedot and <= XKB_KEY_scircumflex:
+                        upper -= (XKB_KEY_cabovedot - XKB_KEY_Cabovedot);
+                        break;
+                }
                 break;
             case 3: /* Latin 4 */
-                /* Assume the KeySym is a legal value (ignore discontinuities) */
-                if (sym >= XKB_KEY_Rcedilla && sym <= XKB_KEY_Tslash)
-                    lower += (XKB_KEY_rcedilla - XKB_KEY_Rcedilla);
-                else if (sym >= XKB_KEY_rcedilla && sym <= XKB_KEY_tslash)
-                    upper -= (XKB_KEY_rcedilla - XKB_KEY_Rcedilla);
-                else if (sym == XKB_KEY_ENG)
-                    lower = XKB_KEY_eng;
-                else if (sym == XKB_KEY_eng)
-                    upper = XKB_KEY_ENG;
-                else if (sym >= XKB_KEY_Amacron && sym <= XKB_KEY_Umacron)
-                    lower += (XKB_KEY_amacron - XKB_KEY_Amacron);
-                else if (sym >= XKB_KEY_amacron && sym <= XKB_KEY_umacron)
-                    upper -= (XKB_KEY_amacron - XKB_KEY_Amacron);
+                switch (sym)
+                {
+                    /* Assume the KeySym is a legal value (ignore discontinuities) */
+                    case >= XKB_KEY_Rcedilla and <= XKB_KEY_Tslash:
+                        lower += (XKB_KEY_rcedilla - XKB_KEY_Rcedilla);
+                        break;
+                    case >= XKB_KEY_rcedilla and <= XKB_KEY_tslash:
+                        upper -= (XKB_KEY_rcedilla - XKB_KEY_Rcedilla);
+                        break;
+                    case XKB_KEY_ENG:
+                        lower = XKB_KEY_eng;
+                        break;
+                    case XKB_KEY_eng:
+                        upper = XKB_KEY_ENG;
+                        break;
+                    case >= XKB_KEY_Amacron and <= XKB_KEY_Umacron:
+                        lower += (XKB_KEY_amacron - XKB_KEY_Amacron);
+                        break;
+                    case >= XKB_KEY_amacron and <= XKB_KEY_umacron:
+                        upper -= (XKB_KEY_amacron - XKB_KEY_Amacron);
+                        break;
+                }
                 break;
             case 6: /* Cyrillic */
-                /* Assume the KeySym is a legal value (ignore discontinuities) */
-                if (sym >= XKB_KEY_Serbian_DJE && sym <= XKB_KEY_Serbian_DZE)
-                    lower -= (XKB_KEY_Serbian_DJE - XKB_KEY_Serbian_dje);
-                else if (sym >= XKB_KEY_Serbian_dje && sym <= XKB_KEY_Serbian_dze)
-                    upper += (XKB_KEY_Serbian_DJE - XKB_KEY_Serbian_dje);
-                else if (sym >= XKB_KEY_Cyrillic_YU && sym <= XKB_KEY_Cyrillic_HARDSIGN)
-                    lower -= (XKB_KEY_Cyrillic_YU - XKB_KEY_Cyrillic_yu);
-                else if (sym >= XKB_KEY_Cyrillic_yu && sym <= XKB_KEY_Cyrillic_hardsign)
-                    upper += (XKB_KEY_Cyrillic_YU - XKB_KEY_Cyrillic_yu);
+                switch (sym)
+                {
+                    /* Assume the KeySym is a legal value (ignore discontinuities) */
+                    case >= XKB_KEY_Serbian_DJE and <= XKB_KEY_Serbian_DZE:
+                        lower -= (XKB_KEY_Serbian_DJE - XKB_KEY_Serbian_dje);
+                        break;
+                    case >= XKB_KEY_Serbian_dje and <= XKB_KEY_Serbian_dze:
+                        upper += (XKB_KEY_Serbian_DJE - XKB_KEY_Serbian_dje);
+                        break;
+                    case >= XKB_KEY_Cyrillic_YU and <= XKB_KEY_Cyrillic_HARDSIGN:
+                        lower -= (XKB_KEY_Cyrillic_YU - XKB_KEY_Cyrillic_yu);
+                        break;
+                    case >= XKB_KEY_Cyrillic_yu and <= XKB_KEY_Cyrillic_hardsign:
+                        upper += (XKB_KEY_Cyrillic_YU - XKB_KEY_Cyrillic_yu);
+                        break;
+                }
                 break;
             case 7: /* Greek */
-                /* Assume the KeySym is a legal value (ignore discontinuities) */
-                if (sym >= XKB_KEY_Greek_ALPHAaccent && sym <= XKB_KEY_Greek_OMEGAaccent)
-                    lower += (XKB_KEY_Greek_alphaaccent - XKB_KEY_Greek_ALPHAaccent);
-                else if (sym >= XKB_KEY_Greek_alphaaccent && sym <= XKB_KEY_Greek_omegaaccent &&
-                     sym != XKB_KEY_Greek_iotaaccentdieresis &&
-                     sym != XKB_KEY_Greek_upsilonaccentdieresis)
-                    upper -= (XKB_KEY_Greek_alphaaccent - XKB_KEY_Greek_ALPHAaccent);
-                else if (sym >= XKB_KEY_Greek_ALPHA && sym <= XKB_KEY_Greek_OMEGA)
-                    lower += (XKB_KEY_Greek_alpha - XKB_KEY_Greek_ALPHA);
-                else if (sym >= XKB_KEY_Greek_alpha && sym <= XKB_KEY_Greek_omega &&
-                     sym != XKB_KEY_Greek_finalsmallsigma)
-                    upper -= (XKB_KEY_Greek_alpha - XKB_KEY_Greek_ALPHA);
+                switch (sym)
+                {
+                    /* Assume the KeySym is a legal value (ignore discontinuities) */
+                    case >= XKB_KEY_Greek_ALPHAaccent and <= XKB_KEY_Greek_OMEGAaccent:
+                        lower += (XKB_KEY_Greek_alphaaccent - XKB_KEY_Greek_ALPHAaccent);
+                        break;
+                    case >= XKB_KEY_Greek_alphaaccent and <= XKB_KEY_Greek_omegaaccent when sym != XKB_KEY_Greek_iotaaccentdieresis &&
+                                                                                            sym != XKB_KEY_Greek_upsilonaccentdieresis:
+                        upper -= (XKB_KEY_Greek_alphaaccent - XKB_KEY_Greek_ALPHAaccent);
+                        break;
+                    case >= XKB_KEY_Greek_ALPHA and <= XKB_KEY_Greek_OMEGA:
+                        lower += (XKB_KEY_Greek_alpha - XKB_KEY_Greek_ALPHA);
+                        break;
+                    case >= XKB_KEY_Greek_alpha and <= XKB_KEY_Greek_omega when sym != XKB_KEY_Greek_finalsmallsigma:
+                        upper -= (XKB_KEY_Greek_alpha - XKB_KEY_Greek_ALPHA);
+                        break;
+                }
                 break;
             case 0x13: /* Latin 9 */
-                if (sym == XKB_KEY_OE)
-                    lower = XKB_KEY_oe;
-                else if (sym == XKB_KEY_oe)
-                    upper = XKB_KEY_OE;
-                else if (sym == XKB_KEY_Ydiaeresis)
-                    lower = XKB_KEY_ydiaeresis;
+                switch (sym)
+                {
+                    case XKB_KEY_OE:
+                        lower = XKB_KEY_oe;
+                        break;
+                    case XKB_KEY_oe:
+                        upper = XKB_KEY_OE;
+                        break;
+                    case XKB_KEY_Ydiaeresis:
+                        lower = XKB_KEY_ydiaeresis;
+                        break;
+                }
                 break;
         }
         return (lower, upper);
     }
 
 
-    static uint qxkbcommon_xkb_keysym_to_upper(uint ks)
+    private static uint qxkbcommon_xkb_keysym_to_upper(uint ks)
     {
         return xkbcommon_XConvertCase(ks).upper;
     }
 
-    static string lookupString(xkb_state state, uint code)
+    private static string lookupString(xkb_state state, uint code)
     {
         var size = xkb_state_key_get_utf8(state, code, null, 0);
         if (size == 0)
@@ -623,7 +671,7 @@ internal static class AXkbCommon
         return buffer.ToString();
     }
 
-    static string lookupStringNoKeysymTransformations(uint keysym)
+    private static string lookupStringNoKeysymTransformations(uint keysym)
     {
         System.Text.StringBuilder buffer = new(32);
         var size = -1;
@@ -634,71 +682,70 @@ internal static class AXkbCommon
         }
         if (size == 0)
             return string.Empty; // the keysym does not have a Unicode representation
-        return buffer.ToString(0, size - 1);
+        return buffer.ToString(0, Math.Min(buffer.Length, size - 1));
     }
 
-    static bool ContainsUnicodeDigitCharacter(string input)
+    private static bool ContainsUnicodeDigitCharacter(string input)
     {
-        const int MaxAnsiCode = 255;
+        const int maxAnsiCode = 255;
 
-        return input.Any(c => char.IsDigit(c) && c > MaxAnsiCode);
+        return input.Any(c => char.IsDigit(c) && c > maxAnsiCode);
     }
 
-    static Key keysymToQtKey_internal(uint keysym
+    private static (Key, string Text) keysymToQtKey_internal(uint keysym
         , RawInputModifiers modifiers
         , xkb_state state
-        , uint code
-        , bool superAsMeta
-        , bool hyperAsMeta)
+        , uint code)
     {
         uint? qtKey = default;
 
-        // lookup from direct mapping
-        // Avalonia has not key F25-F35
-        if (keysym >= XKB_KEY_F1 && keysym <= XKB_KEY_F24)
+        switch (keysym)
         {
-            // function keys
-            qtKey = F1 + (keysym - XKB_KEY_F1);
-        }
-        else if (keysym >= XKB_KEY_KP_0 && keysym <= XKB_KEY_KP_9)
-        {
-            // numeric keypad keys
-            qtKey = (uint)Key.NumPad0 + (keysym - XKB_KEY_KP_0);
-        }
-        else if (isLatin1(keysym))
-        {
-            // Upper-case first, since Qt::Keys are defined in terms of their
-            // upper-case versions.
-            qtKey = qxkbcommon_xkb_keysym_to_upper(keysym);
-            // Upper-casing a Latin1 character might move it out of Latin1 range,
-            // for example U+00B5 MICRO SIGN, which upper-case equivalent is
-            // U+039C GREEK CAPITAL LETTER MU. If that's the case, then map the
-            // original lower-case character.
-            if (!isLatin1(qtKey.Value))
-                qtKey = keysym;
-        }
-        else
-        {
-            if (s_SysKeyToAvKeyMap.TryGetValue(keysym, out var k))
+            // lookup from direct mapping
+            // Avalonia has not key F25-F35
+            case >= XKB_KEY_F1 and <= XKB_KEY_F24:
+                // function keys
+                qtKey = F1 + (keysym - XKB_KEY_F1);
+                break;
+            case >= XKB_KEY_KP_0 and <= XKB_KEY_KP_9:
+                // numeric keypad keys
+                qtKey = (uint)Key.NumPad0 + (keysym - XKB_KEY_KP_0);
+                break;
+            default:
             {
-                return k;
+                if (isLatin1(keysym))
+                {
+                    // Upper-case first, since Qt::Keys are defined in terms of their
+                    // upper-case versions.
+                    qtKey = qxkbcommon_xkb_keysym_to_upper(keysym);
+                    // Upper-casing a Latin1 character might move it out of Latin1 range,
+                    // for example U+00B5 MICRO SIGN, which upper-case equivalent is
+                    // U+039C GREEK CAPITAL LETTER MU. If that's the case, then map the
+                    // original lower-case character.
+                    if (!isLatin1(qtKey.Value))
+                        qtKey = keysym;
+                }
+                else
+                {
+                    if (s_SysKeyToAvKeyMap.TryGetValue(keysym, out var k))
+                    {
+                        return (k, default);
+                    }
+                }
+
+                break;
             }
         }
 
         // lookup from unicode
-        string text;
-        if (!state.IsInvalid || modifiers.HasFlag(RawInputModifiers.Control))
-        {
-            // Control modifier changes the text to ASCII control character, therefore we
-            // can't use this text to map keysym to a qt key. We can use the same keysym
-            // (it is not affectd by transformation) to obtain untransformed text. For details
-            // see "Appendix A. Default Symbol Transformations" in the XKB specification.
-            text = lookupStringNoKeysymTransformations(keysym);
-        }
-        else
-        {
-            text = lookupString(state, code);
-        }
+        // Control modifier changes the text to ASCII control character, therefore we
+        // can't use this text to map keysym to a qt key. We can use the same keysym
+        // (it is not affected by transformation) to obtain untransformed text. For details
+        // see "Appendix A. Default Symbol Transformations" in the XKB specification.
+        var text = !state.IsInvalid || modifiers.HasFlag(RawInputModifiers.Control) 
+            ? lookupStringNoKeysymTransformations(keysym)
+            : lookupString(state, code);
+        
         if (!string.IsNullOrWhiteSpace(text))
         {
             var c = text[0];
@@ -711,13 +758,11 @@ internal static class AXkbCommon
             }
             else
             {
-
-
-                qtKey = (uint)char.ToUpper(text[0]) - 17;
+                qtKey = (uint)char.ToUpperInvariant(c) - 21;
             }
         }
 
-        return (Key)qtKey;
+        return ((Key)qtKey,text);
     }
 
 }
