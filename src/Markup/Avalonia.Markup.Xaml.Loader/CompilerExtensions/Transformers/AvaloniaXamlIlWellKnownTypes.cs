@@ -68,6 +68,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlConstructor FontFamilyConstructorUriName { get; }
         public IXamlType Thickness { get; }
         public IXamlConstructor ThicknessFullConstructor { get; }
+        public IXamlType ThemeVariant { get; }
         public IXamlType Point { get; }
         public IXamlConstructor PointFullConstructor { get; }
         public IXamlType Vector { get; }
@@ -190,6 +191,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Uri = cfg.TypeSystem.GetType("System.Uri");
             FontFamily = cfg.TypeSystem.GetType("Avalonia.Media.FontFamily");
             FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
+            ThemeVariant = cfg.TypeSystem.GetType("Avalonia.Styling.ThemeVariant");
 
             (IXamlType, IXamlConstructor) GetNumericTypeInfo(string name, IXamlType componentType, int componentCount)
             {

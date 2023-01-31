@@ -155,7 +155,7 @@ namespace Avalonia.UnitTests
 
         private static IStyle CreateSimpleTheme()
         {
-            return new SimpleTheme { Mode = SimpleThemeMode.Light };
+            return new SimpleTheme();
         }
 
         private static IPlatformRenderInterface CreateRenderInterfaceMock()

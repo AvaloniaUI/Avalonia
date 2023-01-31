@@ -13,9 +13,6 @@
     <ProjectReference Include="..\Avalonia.Win32\Avalonia.Win32.csproj" />
     <ProjectReference Include="..\Avalonia.Direct2D1\Avalonia.Direct2D1.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\Avalonia.Win32\Interop\UnmanagedMethods.cs" Link="UnmanagedMethods.cs" />
-  </ItemGroup>
 
   <Import Project="..\..\..\build\SharpDX.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
