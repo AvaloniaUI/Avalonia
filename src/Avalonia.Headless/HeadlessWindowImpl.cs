@@ -18,7 +18,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Headless
 {
-    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow, ITopLevelImplWithStorageProvider
+    class HeadlessWindowImpl : IWindowImpl, IPopupImpl, IFramebufferPlatformSurface, IHeadlessWindow
     {
         private IKeyboardDevice _keyboard;
         private Stopwatch _st = Stopwatch.StartNew();
@@ -54,11 +54,8 @@ namespace Avalonia.Headless
         public Action<Size, PlatformResizeReason> Resized { get; set; }
         public Action<double> ScalingChanged { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-            => AvaloniaHeadlessPlatform.Compositor != null
-                ? new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces)
-                : new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                    () => new PlatformRenderInterfaceContextManager(null).CreateRenderTarget(Surfaces), null);
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, AvaloniaHeadlessPlatform.Compositor, () => Surfaces);
 
         public void Invalidate(Rect rect)
         {
@@ -250,8 +247,15 @@ namespace Avalonia.Headless
         public Action LostFocus { get; set; }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
+        public object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return new NoopStorageProvider();
+            }
 
-        public IStorageProvider StorageProvider => new NoopStorageProvider();
+            return null;
+        }
 
         void IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers)
         {

@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Input;
 using Moq;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -28,12 +27,16 @@ namespace Avalonia.UnitTests
             var clientSize = new Size(initialWidth,  initialHeight);
 
             windowImpl.SetupAllProperties();
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(() => RendererMocks.CreateRenderer().Object);
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.Setup(x => x.Screen).Returns(CreateScreenMock().Object);
             windowImpl.Setup(x => x.Position).Returns(() => position);
+
+            windowImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
 
             windowImpl.Setup(x => x.CreatePopup()).Returns(() =>
             {
@@ -90,11 +93,14 @@ namespace Avalonia.UnitTests
             var positioner = new ManagedPopupPositioner(positionerHelper);
 
             popupImpl.SetupAllProperties();
+            popupImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(() => RendererMocks.CreateRenderer().Object);
             popupImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             popupImpl.Setup(x => x.RenderScaling).Returns(1);
             popupImpl.Setup(x => x.PopupPositioner).Returns(positioner);
 
+            popupImpl.Setup(r => r.TryGetFeature(It.IsAny<Type>())).Returns(null);
             popupImpl.Setup(x => x.Dispose()).Callback(() =>
             {
                 popupImpl.Object.Closed?.Invoke();

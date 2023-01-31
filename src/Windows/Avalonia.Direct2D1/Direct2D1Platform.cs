@@ -339,5 +339,8 @@ namespace Avalonia.Direct2D1
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Bgra8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) =>
+            format == PixelFormats.Bgra8888 
+            || format == PixelFormats.Rgba8888;
     }
 }
