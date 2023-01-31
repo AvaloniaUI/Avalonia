@@ -275,7 +275,15 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
-            // TODO adjust status bar depending on full screen mode.
+            if(_insetsManager != null)
+            {
+                _insetsManager.SystemBarTheme = themeVariant switch
+                {
+                    PlatformThemeVariant.Light => SystemBarTheme.Light,
+                    PlatformThemeVariant.Dark => SystemBarTheme.Dark,
+                    _ => null,
+                };
+            }
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
