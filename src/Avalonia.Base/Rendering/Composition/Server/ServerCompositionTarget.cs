@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Diagnostics;
 using System.Threading;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -21,11 +21,12 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private readonly ServerCompositor _compositor;
         private readonly Func<IEnumerable<object>> _surfaces;
+        private readonly DiagnosticTextRenderer _diagnosticTextRenderer;
         private static long s_nextId = 1;
-        public long Id { get; }
-        public ulong Revision { get; private set; }
         private IRenderTarget? _renderTarget;
-        private FpsCounter _fpsCounter = new FpsCounter(Typeface.Default.GlyphTypeface);
+        private FpsCounter? _fpsCounter;
+        private FrameTimeGraph? _renderTimeGraph;
+        private FrameTimeGraph? _layoutTimeGraph;
         private Rect _dirtyRect;
         private Random _random = new();
         private Size _layerSize;
@@ -35,17 +36,33 @@ namespace Avalonia.Rendering.Composition.Server
         private HashSet<ServerCompositionVisual> _attachedVisuals = new();
         private Queue<ServerCompositionVisual> _adornerUpdateQueue = new();
 
+        public long Id { get; }
+        public ulong Revision { get; private set; }
         public ICompositionTargetDebugEvents? DebugEvents { get; set; }
         public ReadbackIndices Readback { get; } = new();
         public int RenderedVisuals { get; set; }
 
-        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces) :
-            base(compositor)
+        private FpsCounter FpsCounter
+            => _fpsCounter ??= new FpsCounter(_diagnosticTextRenderer);
+
+        private FrameTimeGraph LayoutTimeGraph
+            => _layoutTimeGraph ??= CreateTimeGraph("Layout");
+
+        private FrameTimeGraph RenderTimeGraph
+            => _renderTimeGraph ??= CreateTimeGraph("Render");
+
+        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces,
+            DiagnosticTextRenderer diagnosticTextRenderer)
+            : base(compositor)
         {
             _compositor = compositor;
             _surfaces = surfaces;
+            _diagnosticTextRenderer = diagnosticTextRenderer;
             Id = Interlocked.Increment(ref s_nextId);
         }
+
+        private FrameTimeGraph CreateTimeGraph(string title)
+            => new(360, new Size(360.0, 64.0), 1000.0 / 60.0, title, _diagnosticTextRenderer);
 
         partial void OnIsEnabledChanged()
         {
@@ -62,7 +79,33 @@ namespace Avalonia.Rendering.Composition.Server
                     v.Deactivate();
             }
         }
-        
+
+        partial void OnDebugOverlaysChanged()
+        {
+            if ((DebugOverlays & RendererDebugOverlays.Fps) == 0)
+            {
+                _fpsCounter?.Reset();
+            }
+
+            if ((DebugOverlays & RendererDebugOverlays.LayoutTimeGraph) == 0)
+            {
+                _layoutTimeGraph?.Reset();
+            }
+
+            if ((DebugOverlays & RendererDebugOverlays.RenderTimeGraph) == 0)
+            {
+                _renderTimeGraph?.Reset();
+            }
+        }
+
+        partial void OnLastLayoutPassTimingChanged()
+        {
+            if ((DebugOverlays & RendererDebugOverlays.LayoutTimeGraph) != 0)
+            {
+                LayoutTimeGraph.AddFrameValue(LastLayoutPassTiming.Elapsed.TotalMilliseconds);
+            }
+        }
+
         partial void DeserializeChangesExtra(BatchStreamReader c)
         {
             _redrawRequested = true;
@@ -92,7 +135,10 @@ namespace Avalonia.Rendering.Composition.Server
                 return;
 
             Revision++;
-            
+
+            var captureTiming = (DebugOverlays & RendererDebugOverlays.RenderTimeGraph) != 0;
+            var startingTimestamp = captureTiming ? Stopwatch.GetTimestamp() : 0L;
+
             // Update happens in a separate phase to extend dirty rect if needed
             Root.Update(this);
 
@@ -137,30 +183,66 @@ namespace Avalonia.Rendering.Composition.Server
                     targetContext.DrawBitmap(RefCountable.CreateUnownedNotClonable(_layer), 1,
                         new Rect(_layerSize),
                         new Rect(Size), BitmapInterpolationMode.LowQuality);
-                
-                
-                if (DrawDirtyRects)
+
+                if (DebugOverlays != RendererDebugOverlays.None)
                 {
-                    targetContext.DrawRectangle(new ImmutableSolidColorBrush(
-                            new Color(30, (byte)_random.Next(255), (byte)_random.Next(255),
-                                (byte)_random.Next(255)))
-                        , null, _dirtyRect);
+                    if (captureTiming)
+                    {
+                        var elapsed = StopwatchHelper.GetElapsedTime(startingTimestamp);
+                        RenderTimeGraph.AddFrameValue(elapsed.TotalMilliseconds);
+                    }
+
+                    DrawOverlays(targetContext);
                 }
 
-                if (DrawFps)
-                {
-                    var nativeMem = ByteSizeHelper.ToString((ulong)(
-                        (Compositor.BatchMemoryPool.CurrentUsage + Compositor.BatchMemoryPool.CurrentPool)  *
-                                                    Compositor.BatchMemoryPool.BufferSize), false);
-                    var managedMem = ByteSizeHelper.ToString((ulong)(
-                        (Compositor.BatchObjectPool.CurrentUsage + Compositor.BatchObjectPool.CurrentPool) *
-                                                                     Compositor.BatchObjectPool.ArraySize *
-                                                                     IntPtr.Size), false);
-                    _fpsCounter.RenderFps(targetContext, FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} R:{RenderedVisuals:0000}"));
-                }
                 RenderedVisuals = 0;
 
                 _dirtyRect = default;
+            }
+        }
+
+        private void DrawOverlays(IDrawingContextImpl targetContext)
+        {
+            if ((DebugOverlays & RendererDebugOverlays.DirtyRects) != 0)
+            {
+                targetContext.DrawRectangle(
+                    new ImmutableSolidColorBrush(
+                        new Color(30, (byte)_random.Next(255), (byte)_random.Next(255), (byte)_random.Next(255))),
+                    null,
+                    _dirtyRect);
+            }
+
+            if ((DebugOverlays & RendererDebugOverlays.Fps) != 0)
+            {
+                var nativeMem = ByteSizeHelper.ToString((ulong) (
+                    (Compositor.BatchMemoryPool.CurrentUsage + Compositor.BatchMemoryPool.CurrentPool) *
+                    Compositor.BatchMemoryPool.BufferSize), false);
+                var managedMem = ByteSizeHelper.ToString((ulong) (
+                    (Compositor.BatchObjectPool.CurrentUsage + Compositor.BatchObjectPool.CurrentPool) *
+                    Compositor.BatchObjectPool.ArraySize *
+                    IntPtr.Size), false);
+                FpsCounter.RenderFps(targetContext,
+                    FormattableString.Invariant($"M:{managedMem} / N:{nativeMem} R:{RenderedVisuals:0000}"));
+            }
+
+            var top = 0.0;
+
+            void DrawTimeGraph(FrameTimeGraph graph)
+            {
+                top += 8.0;
+                targetContext.Transform = Matrix.CreateTranslation(Size.Width - graph.Size.Width - 8.0, top);
+                graph.Render(targetContext);
+                top += graph.Size.Height;
+            }
+
+            if ((DebugOverlays & RendererDebugOverlays.LayoutTimeGraph) != 0)
+            {
+                DrawTimeGraph(LayoutTimeGraph);
+            }
+
+            if ((DebugOverlays & RendererDebugOverlays.RenderTimeGraph) != 0)
+            {
+                DrawTimeGraph(RenderTimeGraph);
             }
         }
 

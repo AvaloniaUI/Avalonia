@@ -26,6 +26,20 @@
                         IsHitTestVisible="False" />
             </MenuItem.Icon>
           </MenuItem>
+          <MenuItem Command="{Binding ToggleDrawLayoutTimeGraph}" Header="Draw layout time graph">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsChecked="{Binding DrawLayoutTimeGraph}"
+                        IsHitTestVisible="False" />
+            </MenuItem.Icon>
+          </MenuItem>
+          <MenuItem Command="{Binding ToggleDrawRenderTimeGraph}" Header="Draw render time graph">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsChecked="{Binding DrawRenderTimeGraph}"
+                        IsHitTestVisible="False" />
+            </MenuItem.Icon>
+          </MenuItem>
         </MenuItem>
         <MenuItem Header="Tests">
           <MenuItem Command="{Binding ResizeWindow}" Header="Resize window" />
