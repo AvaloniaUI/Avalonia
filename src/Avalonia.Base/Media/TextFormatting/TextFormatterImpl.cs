@@ -780,10 +780,10 @@ namespace Avalonia.Media.TextFormatting
                                             currentPosition = currentLength + lineBreak.PositionWrap;
                                         }
 
-                                        //if (currentPosition == 0 && measuredLength > 0)
-                                        //{
-                                        //    currentPosition = measuredLength;
-                                        //}
+                                        if (currentPosition == 0 && measuredLength > 0)
+                                        {
+                                            currentPosition = measuredLength;
+                                        }
 
                                         breakFound = true;
 
