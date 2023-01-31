@@ -1,49 +1,66 @@
-﻿using System.Reactive;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MiniMvvm;
 
 namespace RenderDemo.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private bool drawDirtyRects = false;
-        private bool drawFps = true;
-        private double width = 800;
-        private double height = 600;
+        private bool _drawDirtyRects;
+        private bool _drawFps = true;
+        private bool _drawLayoutTimeGraph;
+        private bool _drawRenderTimeGraph;
+        private double _width = 800;
+        private double _height = 600;
 
         public MainWindowViewModel()
         {
             ToggleDrawDirtyRects = MiniCommand.Create(() => DrawDirtyRects = !DrawDirtyRects);
             ToggleDrawFps = MiniCommand.Create(() => DrawFps = !DrawFps);
+            ToggleDrawLayoutTimeGraph = MiniCommand.Create(() => DrawLayoutTimeGraph = !DrawLayoutTimeGraph);
+            ToggleDrawRenderTimeGraph = MiniCommand.Create(() => DrawRenderTimeGraph = !DrawRenderTimeGraph);
             ResizeWindow = MiniCommand.CreateFromTask(ResizeWindowAsync);
         }
 
         public bool DrawDirtyRects
         {
-            get => drawDirtyRects;
-            set => this.RaiseAndSetIfChanged(ref drawDirtyRects, value);
+            get => _drawDirtyRects;
+            set => RaiseAndSetIfChanged(ref _drawDirtyRects, value);
         }
 
         public bool DrawFps
         {
-            get => drawFps;
-            set => this.RaiseAndSetIfChanged(ref drawFps, value);
+            get => _drawFps;
+            set => RaiseAndSetIfChanged(ref _drawFps, value);
+        }
+
+        public bool DrawLayoutTimeGraph
+        {
+            get => _drawLayoutTimeGraph;
+            set => RaiseAndSetIfChanged(ref _drawLayoutTimeGraph, value);
+        }
+
+        public bool DrawRenderTimeGraph
+        {
+            get => _drawRenderTimeGraph;
+            set => RaiseAndSetIfChanged(ref _drawRenderTimeGraph, value);
         }
 
         public double Width
         {
-            get => width;
-            set => this.RaiseAndSetIfChanged(ref width, value);
+            get => _width;
+            set => RaiseAndSetIfChanged(ref _width, value);
         }
 
         public double Height
         {
-            get => height;
-            set => this.RaiseAndSetIfChanged(ref height, value);
+            get => _height;
+            set => RaiseAndSetIfChanged(ref _height, value);
         }
 
         public MiniCommand ToggleDrawDirtyRects { get; }
         public MiniCommand ToggleDrawFps { get; }
+        public MiniCommand ToggleDrawLayoutTimeGraph { get; }
+        public MiniCommand ToggleDrawRenderTimeGraph { get; }
         public MiniCommand ResizeWindow { get; }
 
         private async Task ResizeWindowAsync()
