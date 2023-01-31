@@ -37,6 +37,9 @@ namespace Avalonia.Win32
 
                 if (egl != null && egl.PlatformApi == AngleOptions.PlatformApi.DirectX11)
                 {
+                    AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphicsOpenGlContextFactory>()
+                        .ToConstant(egl);
+                    
                     if (opts.UseWindowsUIComposition)
                     {
                         WinUiCompositorConnection.TryCreateAndRegister();

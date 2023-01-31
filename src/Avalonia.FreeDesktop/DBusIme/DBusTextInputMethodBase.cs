@@ -34,7 +34,7 @@ namespace Avalonia.FreeDesktop.DBusIme
         private bool _connecting;
         private string? _currentName;
         private DBusCallQueue _queue;
-        private bool _controlActive, _windowActive;
+        private bool _windowActive;
         private bool? _imeActive;
         private Rect _logicalRect;
         private PixelRect? _lastReportedRect;
@@ -189,7 +189,7 @@ namespace Avalonia.FreeDesktop.DBusIme
                 if(!IsConnected)
                     return;
                 
-                var active = _windowActive && _controlActive;
+                var active = _windowActive && IsActive;
                 if (active != _imeActive)
                 {
                     _imeActive = active;

@@ -394,10 +394,10 @@ namespace Avalonia.Controls
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 IsPressed = true;
-                e.Handled = true;
 
                 if (ClickMode == ClickMode.Press)
                 {
+                    e.Handled = true;
                     OnClick();
                 }
             }
@@ -411,11 +411,11 @@ namespace Avalonia.Controls
             if (IsPressed && e.InitialPressMouseButton == MouseButton.Left)
             {
                 IsPressed = false;
-                e.Handled = true;
 
                 if (ClickMode == ClickMode.Release &&
                     this.GetVisualsAt(e.GetPosition(this)).Any(c => this == c || this.IsVisualAncestorOf(c)))
                 {
+                    e.Handled = true;
                     OnClick();
                 }
             }

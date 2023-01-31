@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using Avalonia.Media.TextFormatting.Unicode;
+using static Avalonia.Media.TextFormatting.FormattingObjectPool;
 
 namespace Avalonia.Media.TextFormatting
 {
@@ -10,82 +10,34 @@ namespace Avalonia.Media.TextFormatting
     public class TextCharacters : TextRun
     {
         /// <summary>
-        /// Construct a run of text content from character array
+        /// Constructs a run for text content from a string.
         /// </summary>
-        public TextCharacters(
-            char[] characterArray,
-            int offsetToFirstChar,
-            int length,
-            TextRunProperties textRunProperties
-            ) :
-            this(
-                new CharacterBufferReference(characterArray, offsetToFirstChar),
-                length,
-                textRunProperties
-                )
-        { }
-
-
-        /// <summary>
-        /// Construct a run for text content from string 
-        /// </summary>
-        public TextCharacters(
-            string characterString,
-            TextRunProperties textRunProperties
-            ) :
-            this(
-                characterString,
-                0,  // offsetToFirstChar
-                (characterString == null) ? 0 : characterString.Length,
-                textRunProperties
-                )
-        { }
-
-        /// <summary>
-        /// Construct a run for text content from string
-        /// </summary>
-        public TextCharacters(
-            string characterString,
-            int offsetToFirstChar,
-            int length,
-            TextRunProperties textRunProperties
-            ) :
-            this(
-                new CharacterBufferReference(characterString, offsetToFirstChar),
-                length,
-                textRunProperties
-                )
-        { }
-
-        /// <summary>
-        /// Internal constructor of TextContent
-        /// </summary>
-        public TextCharacters(
-            CharacterBufferReference characterBufferReference,
-            int length,
-            TextRunProperties textRunProperties
-            )
+        public TextCharacters(string text, TextRunProperties textRunProperties)
+            : this(text.AsMemory(), textRunProperties)
         {
-            if (length <= 0)
-            {
-                throw new ArgumentOutOfRangeException("length", "ParameterMustBeGreaterThanZero");
-            }
+        }
 
+        /// <summary>
+        /// Constructs a run for text content from a memory region.
+        /// </summary>
+        public TextCharacters(ReadOnlyMemory<char> text, TextRunProperties textRunProperties)
+        {
             if (textRunProperties.FontRenderingEmSize <= 0)
             {
-                throw new ArgumentOutOfRangeException("textRunProperties.FontRenderingEmSize", "ParameterMustBeGreaterThanZero");
+                throw new ArgumentOutOfRangeException(nameof(textRunProperties), textRunProperties.FontRenderingEmSize,
+                    $"Invalid {nameof(TextRunProperties.FontRenderingEmSize)}");
             }
 
-            CharacterBufferReference = characterBufferReference;
-            Length = length;
+            Text = text;
             Properties = textRunProperties;
         }
 
         /// <inheritdoc />
-        public override int Length { get; }
+        public override int Length
+            => Text.Length;
 
         /// <inheritdoc />
-        public override CharacterBufferReference CharacterBufferReference { get; }
+        public override ReadOnlyMemory<char> Text { get; }
 
         /// <inheritdoc />
         public override TextRunProperties Properties { get; }
@@ -94,104 +46,103 @@ namespace Avalonia.Media.TextFormatting
         /// Gets a list of <see cref="UnshapedTextRun"/>.
         /// </summary>
         /// <returns>The shapeable text characters.</returns>
-        internal IReadOnlyList<UnshapedTextRun> GetShapeableCharacters(CharacterBufferRange characterBufferRange, sbyte biDiLevel, ref TextRunProperties? previousProperties)
+        internal void GetShapeableCharacters(ReadOnlyMemory<char> text, sbyte biDiLevel,
+            FontManager fontManager, ref TextRunProperties? previousProperties, RentedList<TextRun> results)
         {
-            var shapeableCharacters = new List<UnshapedTextRun>(2);
+            var properties = Properties;
 
-            while (characterBufferRange.Length > 0)
+            while (!text.IsEmpty)
             {
-                var shapeableRun = CreateShapeableRun(characterBufferRange, Properties, biDiLevel, ref previousProperties);
+                var shapeableRun = CreateShapeableRun(text, properties, biDiLevel, fontManager, ref previousProperties);
 
-                shapeableCharacters.Add(shapeableRun);
+                results.Add(shapeableRun);
 
-                characterBufferRange = characterBufferRange.Skip(shapeableRun.Length);
+                text = text.Slice(shapeableRun.Length);
 
                 previousProperties = shapeableRun.Properties;
             }
-
-            return shapeableCharacters;
         }
 
         /// <summary>
         /// Creates a shapeable text run with unique properties.
         /// </summary>
-        /// <param name="characterBufferRange">The character buffer range to create text runs from.</param>
+        /// <param name="text">The characters to create text runs from.</param>
         /// <param name="defaultProperties">The default text run properties.</param>
         /// <param name="biDiLevel">The bidi level of the run.</param>
+        /// <param name="fontManager">The font manager to use.</param>
         /// <param name="previousProperties"></param>
         /// <returns>A list of shapeable text runs.</returns>
-        private static UnshapedTextRun CreateShapeableRun(CharacterBufferRange characterBufferRange,
-            TextRunProperties defaultProperties, sbyte biDiLevel, ref TextRunProperties? previousProperties)
+        private static UnshapedTextRun CreateShapeableRun(ReadOnlyMemory<char> text,
+            TextRunProperties defaultProperties, sbyte biDiLevel, FontManager fontManager,
+            ref TextRunProperties? previousProperties)
         {
             var defaultTypeface = defaultProperties.Typeface;
-            var currentTypeface = defaultTypeface;
+            var defaultGlyphTypeface = defaultProperties.CachedGlyphTypeface;
             var previousTypeface = previousProperties?.Typeface;
+            var previousGlyphTypeface = previousProperties?.CachedGlyphTypeface;
+            var textSpan = text.Span;
 
-            if (TryGetShapeableLength(characterBufferRange, currentTypeface, null, out var count, out var script))
+            if (TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, out var count, out var script))
             {
-                if (script == Script.Common && previousTypeface is not null)
+                if (script == Script.Common && previousGlyphTypeface is not null)
                 {
-                    if (TryGetShapeableLength(characterBufferRange, previousTypeface.Value, null, out var fallbackCount, out _))
+                    if (TryGetShapeableLength(textSpan, previousGlyphTypeface, null, out var fallbackCount, out _))
                     {
-                        return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, fallbackCount,
-                            defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
+                        return new UnshapedTextRun(text.Slice(0, fallbackCount),
+                            defaultProperties.WithTypeface(previousTypeface!.Value), biDiLevel);
                     }
                 }
 
-                return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, count, defaultProperties.WithTypeface(currentTypeface),
+                return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(defaultTypeface),
                     biDiLevel);
             }
 
-            if (previousTypeface is not null)
+            if (previousGlyphTypeface is not null)
             {
-                if (TryGetShapeableLength(characterBufferRange, previousTypeface.Value, defaultTypeface, out count, out _))
+                if (TryGetShapeableLength(textSpan, previousGlyphTypeface, defaultGlyphTypeface, out count, out _))
                 {
-                    return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, count,
-                        defaultProperties.WithTypeface(previousTypeface.Value), biDiLevel);
+                    return new UnshapedTextRun(text.Slice(0, count),
+                        defaultProperties.WithTypeface(previousTypeface!.Value), biDiLevel);
                 }
             }
 
             var codepoint = Codepoint.ReplacementCodepoint;
 
-            var codepointEnumerator = new CodepointEnumerator(characterBufferRange.Skip(count));
+            var codepointEnumerator = new CodepointEnumerator(text.Slice(count).Span);
 
-            while (codepointEnumerator.MoveNext())
+            while (codepointEnumerator.MoveNext(out var cp))
             {
-                if (codepointEnumerator.Current.IsWhiteSpace)
+                if (cp.IsWhiteSpace)
                 {
                     continue;
                 }
 
-                codepoint = codepointEnumerator.Current;
+                codepoint = cp;
 
                 break;
             }
 
             //ToDo: Fix FontFamily fallback
             var matchFound =
-                FontManager.Current.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
+                fontManager.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
                     defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
-                    out currentTypeface);
+                    out var fallbackTypeface);
 
-            if (matchFound && TryGetShapeableLength(characterBufferRange, currentTypeface, defaultTypeface, out count, out _))
+            var fallbackGlyphTypeface = fontManager.GetOrAddGlyphTypeface(fallbackTypeface);
+
+            if (matchFound && TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, out count, out _))
             {
                 //Fallback found
-                return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, count, defaultProperties.WithTypeface(currentTypeface),
+                return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(fallbackTypeface),
                     biDiLevel);
             }
 
             // no fallback found
-            currentTypeface = defaultTypeface;
+            var enumerator = new GraphemeEnumerator(textSpan);
 
-            var glyphTypeface = currentTypeface.GlyphTypeface;
-
-            var enumerator = new GraphemeEnumerator(characterBufferRange);
-
-            while (enumerator.MoveNext())
+            while (enumerator.MoveNext(out var grapheme))
             {
-                var grapheme = enumerator.Current;
-
-                if (!grapheme.FirstCodepoint.IsWhiteSpace && glyphTypeface.TryGetGlyph(grapheme.FirstCodepoint, out _))
+                if (!grapheme.FirstCodepoint.IsWhiteSpace && defaultGlyphTypeface.TryGetGlyph(grapheme.FirstCodepoint, out _))
                 {
                     break;
                 }
@@ -199,51 +150,49 @@ namespace Avalonia.Media.TextFormatting
                 count += grapheme.Length;
             }
 
-            return new UnshapedTextRun(characterBufferRange.CharacterBufferReference, count, defaultProperties, biDiLevel);
+            return new UnshapedTextRun(text.Slice(0, count), defaultProperties, biDiLevel);
         }
 
         /// <summary>
         /// Tries to get a shapeable length that is supported by the specified typeface.
         /// </summary>
-        /// <param name="characterBufferRange">The character buffer range to shape.</param>
-        /// <param name="typeface">The typeface that is used to find matching characters.</param>
-        /// <param name="defaultTypeface"></param>
+        /// <param name="text">The characters to shape.</param>
+        /// <param name="glyphTypeface">The typeface that is used to find matching characters.</param>
+        /// <param name="defaultGlyphTypeface">The default typeface.</param>
         /// <param name="length">The shapeable length.</param>
         /// <param name="script"></param>
         /// <returns></returns>
         internal static bool TryGetShapeableLength(
-            CharacterBufferRange characterBufferRange,
-            Typeface typeface,
-            Typeface? defaultTypeface,
+            ReadOnlySpan<char> text,
+            IGlyphTypeface glyphTypeface,
+            IGlyphTypeface? defaultGlyphTypeface,
             out int length,
             out Script script)
         {
             length = 0;
             script = Script.Unknown;
 
-            if (characterBufferRange.Length == 0)
+            if (text.IsEmpty)
             {
                 return false;
             }
 
-            var font = typeface.GlyphTypeface;
-            var defaultFont = defaultTypeface?.GlyphTypeface;
+            var enumerator = new GraphemeEnumerator(text);
 
-            var enumerator = new GraphemeEnumerator(characterBufferRange);
-
-            while (enumerator.MoveNext())
+            while (enumerator.MoveNext(out var currentGrapheme))
             {
-                var currentGrapheme = enumerator.Current;
+                var currentCodepoint = currentGrapheme.FirstCodepoint;
+                var currentScript = currentCodepoint.Script;
 
-                var currentScript = currentGrapheme.FirstCodepoint.Script;
-
-                if (!currentGrapheme.FirstCodepoint.IsWhiteSpace && defaultFont != null && defaultFont.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                if (!currentCodepoint.IsWhiteSpace
+                    && defaultGlyphTypeface != null
+                    && defaultGlyphTypeface.TryGetGlyph(currentCodepoint, out _))
                 {
                     break;
                 }
 
                 //Stop at the first missing glyph
-                if (!currentGrapheme.FirstCodepoint.IsBreakChar && !font.TryGetGlyph(currentGrapheme.FirstCodepoint, out _))
+                if (!currentCodepoint.IsBreakChar && !glyphTypeface.TryGetGlyph(currentCodepoint, out _))
                 {
                     break;
                 }

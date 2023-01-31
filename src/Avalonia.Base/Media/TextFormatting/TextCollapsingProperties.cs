@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Avalonia.Media.TextFormatting
+﻿namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// Properties of text collapsing.
@@ -21,6 +19,6 @@ namespace Avalonia.Media.TextFormatting
         /// Collapses given text line.
         /// </summary>
         /// <param name="textLine">Text line to collapse.</param>
-        public abstract List<TextRun>? Collapse(TextLine textLine);
+        public abstract TextRun[]? Collapse(TextLine textLine);
     }
 }

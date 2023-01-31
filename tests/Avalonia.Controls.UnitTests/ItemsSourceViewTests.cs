@@ -15,7 +15,7 @@ namespace Avalonia.Controls.UnitTests
         public void Only_Subscribes_To_Source_CollectionChanged_When_CollectionChanged_Subscribed()
         {
             var source = new AvaloniaList<string>();
-            var target = new ItemsSourceView<string>(source);
+            var target = ItemsSourceView.GetOrCreate(source);
             var debug = (INotifyCollectionChangedDebug)source;
 
             Assert.Null(debug.GetCollectionChangedSubscribers());
@@ -32,17 +32,10 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
-        public void Cannot_Wrap_An_ItemsSourceView_In_Another()
-        {
-            var source = new ItemsSourceView<string>(new string[0]);
-            Assert.Throws<ArgumentException>(() => new ItemsSourceView<string>(source));
-        }
-
-        [Fact]
         public void Cannot_Create_ItemsSourceView_With_Collection_That_Implements_INCC_But_Not_List()
         {
             var source = new InvalidCollection();
-            Assert.Throws<ArgumentException>(() => new ItemsSourceView<string>(source));
+            Assert.Throws<ArgumentException>(() => ItemsSourceView.GetOrCreate(source));
         }
 
         private class InvalidCollection : INotifyCollectionChanged, IEnumerable<string>

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Avalonia.Media.TextFormatting.Unicode
+﻿namespace Avalonia.Media.TextFormatting.Unicode
 {
     /// <summary>
     /// Represents the smallest unit of a writing system of any given language.
@@ -20,12 +18,12 @@ namespace Avalonia.Media.TextFormatting.Unicode
         public Codepoint FirstCodepoint { get; }
 
         /// <summary>
-        /// The Offset to the FirstCodepoint
+        /// Gets the starting code unit offset of this grapheme inside its containing text.
         /// </summary>
         public int Offset { get; }
 
         /// <summary>
-        /// The length of the grapheme cluster
+        /// Gets the length of this grapheme, in code units.
         /// </summary>
         public int Length { get; }
     }

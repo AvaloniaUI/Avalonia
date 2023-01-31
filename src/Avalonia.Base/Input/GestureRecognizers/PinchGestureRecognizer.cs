@@ -57,7 +57,10 @@ namespace Avalonia.Input
 
                     var scale = distance / _initialDistance;
 
-                    _target?.RaiseEvent(new PinchEventArgs(scale, _origin));
+                    var pinchEventArgs = new PinchEventArgs(scale, _origin);
+                    _target?.RaiseEvent(pinchEventArgs);
+
+                    e.Handled = pinchEventArgs.Handled;
                 }
             }
         }

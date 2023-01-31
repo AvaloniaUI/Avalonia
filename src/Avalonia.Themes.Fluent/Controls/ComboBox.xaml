@@ -128,11 +128,8 @@
                 <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                               VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
                   <ItemsPresenter Name="PART_ItemsPresenter"
-                                  Items="{TemplateBinding Items}"
                                   Margin="{DynamicResource ComboBoxDropdownContentMargin}"
-                                  ItemsPanel="{TemplateBinding ItemsPanel}"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  VirtualizationMode="{TemplateBinding VirtualizationMode}" />
+                                  ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </ScrollViewer>
               </Border>
             </Popup>

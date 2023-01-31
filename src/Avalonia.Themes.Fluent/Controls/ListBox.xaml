@@ -29,16 +29,17 @@
                 BorderThickness="{TemplateBinding BorderThickness}"
                 CornerRadius="{TemplateBinding CornerRadius}">
           <ScrollViewer Name="PART_ScrollViewer"
+                        VerticalSnapPointsType="{TemplateBinding (ScrollViewer.VerticalSnapPointsType)}"
+                        HorizontalSnapPointsType="{TemplateBinding (ScrollViewer.HorizontalSnapPointsType)}"
                         HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
                         VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
                         IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                         AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
             <ItemsPresenter Name="PART_ItemsPresenter"
-                            Items="{TemplateBinding Items}"
+                            AreVerticalSnapPointsRegular="{TemplateBinding AreVerticalSnapPointsRegular}"
+                            AreHorizontalSnapPointsRegular="{TemplateBinding AreHorizontalSnapPointsRegular}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
-                            Margin="{TemplateBinding Padding}"
-                            VirtualizationMode="{TemplateBinding VirtualizationMode}" />
+                            Margin="{TemplateBinding Padding}"/>
           </ScrollViewer>
         </Border>
       </ControlTemplate>

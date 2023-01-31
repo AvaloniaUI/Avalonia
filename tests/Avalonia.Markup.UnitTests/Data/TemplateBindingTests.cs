@@ -248,6 +248,38 @@ namespace Avalonia.Markup.UnitTests.Data
             // binding is initiated.
             Assert.Equal(new[] { "foo" }, converter.Values);
         }
+        
+        [Fact]
+        public void Should_Execute_Converter_Without_Specific_TargetType()
+        {
+            // See https://github.com/AvaloniaUI/Avalonia/issues/9766
+            var source = new Button
+            {
+                Template = new FuncControlTemplate<Button>((parent, _) =>
+                    new ContentPresenter
+                    {
+                        [~ContentPresenter.IsVisibleProperty] = new MultiBinding
+                        {
+                            Converter = BoolConverters.And,
+                            Bindings =
+                            {
+                                new TemplateBinding(ContentControl.ContentProperty)
+                                {
+                                    Converter = ObjectConverters.IsNotNull
+                                }
+                            }
+                        }
+                    }),
+            };
+
+            source.ApplyTemplate();
+
+            var target = (ContentPresenter)source.GetVisualChildren().Single();
+
+            Assert.False(target.IsVisible);
+            source.Content = "foo";
+            Assert.True(target.IsVisible);
+        }
 
         private class PrefixConverter : IValueConverter
         {

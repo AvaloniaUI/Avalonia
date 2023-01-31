@@ -32,7 +32,7 @@ internal class FpsCounter
         {
             var s = new string((char)c, 1);
             var glyph = typeface.GetGlyph((uint)(s[0]));
-            _runs[c - FirstChar] = new GlyphRun(typeface, 18, s.ToArray(), new ushort[] { glyph });
+            _runs[c - FirstChar] = new GlyphRun(typeface, 18, s.AsMemory(), new ushort[] { glyph });
         }
     }
 
@@ -72,7 +72,7 @@ internal class FpsCounter
         {
             var run = _runs[ch - FirstChar];
             context.Transform = Matrix.CreateTranslation(offset, 0);
-            context.DrawGlyphRun(Brushes.White, run);
+            context.DrawGlyphRun(Brushes.White, run.PlatformImpl);
             offset += run.Size.Width;
         }
     }

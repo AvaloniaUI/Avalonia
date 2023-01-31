@@ -6,7 +6,6 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Native.Interop;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Native
 {
@@ -26,7 +25,7 @@ namespace Avalonia.Native
             if (element == null)
                 return null;
             var visual = (Visual)element;
-            return visual.GetVisualRoot() as TopLevel;
+            return TopLevel.GetTopLevel(visual);
         }
 
         class DndCallback : NativeCallbackBase, IAvnDndResultCallback
