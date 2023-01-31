@@ -21,9 +21,9 @@ namespace Avalonia.Rendering.Composition.Server
     {
         private readonly ServerCompositor _compositor;
         private readonly Func<IEnumerable<object>> _surfaces;
+        private readonly DiagnosticTextRenderer _diagnosticTextRenderer;
         private static long s_nextId = 1;
         private IRenderTarget? _renderTarget;
-        private DiagnosticTextRenderer? _diagnosticTextRenderer;
         private FpsCounter? _fpsCounter;
         private FrameTimeGraph? _renderTimeGraph;
         private FrameTimeGraph? _layoutTimeGraph;
@@ -42,11 +42,8 @@ namespace Avalonia.Rendering.Composition.Server
         public ReadbackIndices Readback { get; } = new();
         public int RenderedVisuals { get; set; }
 
-        private DiagnosticTextRenderer DiagnosticTextRenderer
-            => _diagnosticTextRenderer ??= new DiagnosticTextRenderer(Typeface.Default.GlyphTypeface, 12.0);
-
         private FpsCounter FpsCounter
-            => _fpsCounter ??= new FpsCounter(DiagnosticTextRenderer);
+            => _fpsCounter ??= new FpsCounter(_diagnosticTextRenderer);
 
         private FrameTimeGraph LayoutTimeGraph
             => _layoutTimeGraph ??= CreateTimeGraph("Layout");
@@ -54,16 +51,18 @@ namespace Avalonia.Rendering.Composition.Server
         private FrameTimeGraph RenderTimeGraph
             => _renderTimeGraph ??= CreateTimeGraph("Render");
 
-        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces) :
-            base(compositor)
+        public ServerCompositionTarget(ServerCompositor compositor, Func<IEnumerable<object>> surfaces,
+            DiagnosticTextRenderer diagnosticTextRenderer)
+            : base(compositor)
         {
             _compositor = compositor;
             _surfaces = surfaces;
+            _diagnosticTextRenderer = diagnosticTextRenderer;
             Id = Interlocked.Increment(ref s_nextId);
         }
 
         private FrameTimeGraph CreateTimeGraph(string title)
-            => new(360, new Size(360.0, 64.0), 1000.0 / 60.0, title, DiagnosticTextRenderer);
+            => new(360, new Size(360.0, 64.0), 1000.0 / 60.0, title, _diagnosticTextRenderer);
 
         partial void OnIsEnabledChanged()
         {

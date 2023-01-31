@@ -44,7 +44,7 @@ internal sealed class FrameTimeGraph
         _graphPen = new ImmutablePen(Brushes.Blue);
         _frameValues = new double[maxFrames];
         _size = size;
-        _headerSize = new Size(size.Width, textRenderer.MaxHeight + HeaderPadding * 2.0);
+        _headerSize = new Size(size.Width, textRenderer.GetMaxHeight() + HeaderPadding * 2.0);
         _graphSize = new Size(size.Width, size.Height - _headerSize.Height);
         _defaultMaxY = defaultMaxY;
         _title = title;

@@ -14,7 +14,21 @@ namespace Avalonia.Rendering.Composition.Server
 
         private readonly GlyphRun[] _runs = new GlyphRun[LastChar - FirstChar + 1];
 
-        public double MaxHeight { get; }
+        public double GetMaxHeight()
+        {
+            var maxHeight = 0.0;
+
+            for (var c = FirstChar; c <= LastChar; c++)
+            {
+                var height = _runs[c - FirstChar].Size.Height;
+                if (height > maxHeight)
+                {
+                    maxHeight = height;
+                }
+            }
+
+            return maxHeight;
+        }
 
         public DiagnosticTextRenderer(IGlyphTypeface typeface, double fontRenderingEmSize)
         {
@@ -24,9 +38,7 @@ namespace Avalonia.Rendering.Composition.Server
                 var index = c - FirstChar;
                 chars[index] = c;
                 var glyph = typeface.GetGlyph(c);
-                var run = new GlyphRun(typeface, fontRenderingEmSize, chars.AsMemory(index, 1), new[] { glyph });
-                _runs[index] = run;
-                MaxHeight = Math.Max(run.Size.Height, MaxHeight);
+                _runs[index] = new GlyphRun(typeface, fontRenderingEmSize, chars.AsMemory(index, 1), new[] { glyph });
             }
         }
 
