@@ -1285,13 +1285,11 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun textRun:
                         {
-                            var properties = textRun.Properties;
-                            var textMetrics =
-                                new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
+                            var textMetrics = textRun.TextMetrics;
 
-                            if (fontRenderingEmSize < properties.FontRenderingEmSize)
+                            if (fontRenderingEmSize < textMetrics.FontRenderingEmSize)
                             {
-                                fontRenderingEmSize = properties.FontRenderingEmSize;
+                                fontRenderingEmSize = textMetrics.FontRenderingEmSize;
 
                                 if (ascent > textMetrics.Ascent)
                                 {
