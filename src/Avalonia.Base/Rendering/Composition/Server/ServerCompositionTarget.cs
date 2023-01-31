@@ -192,7 +192,7 @@ namespace Avalonia.Rendering.Composition.Server
                         RenderTimeGraph.AddFrameValue(elapsed.TotalMilliseconds);
                     }
 
-                    DrawOverlays(targetContext, layerSize);
+                    DrawOverlays(targetContext);
                 }
 
                 RenderedVisuals = 0;
@@ -201,7 +201,7 @@ namespace Avalonia.Rendering.Composition.Server
             }
         }
 
-        private void DrawOverlays(IDrawingContextImpl targetContext, Size layerSize)
+        private void DrawOverlays(IDrawingContextImpl targetContext)
         {
             if ((DebugOverlays & RendererDebugOverlays.DirtyRects) != 0)
             {
@@ -230,7 +230,7 @@ namespace Avalonia.Rendering.Composition.Server
             void DrawTimeGraph(FrameTimeGraph graph)
             {
                 top += 8.0;
-                targetContext.Transform = Matrix.CreateTranslation(layerSize.Width - graph.Size.Width - 8.0, top);
+                targetContext.Transform = Matrix.CreateTranslation(Size.Width - graph.Size.Width - 8.0, top);
                 graph.Render(targetContext);
                 top += graph.Size.Height;
             }
