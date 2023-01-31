@@ -1,5 +1,4 @@
 ﻿using System;
-using Avalonia.VisualTree;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Rendering.Composition;
@@ -12,15 +11,9 @@ namespace Avalonia.Rendering
     public interface IRenderer : IDisposable
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the renderer should draw an FPS counter.
+        /// Gets a value indicating whether the renderer should draw specific diagnostics.
         /// </summary>
-        bool DrawFps { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the renderer should draw a visual representation
-        /// of its dirty rectangles.
-        /// </summary>
-        bool DrawDirtyRects { get; set; }
+        RendererDiagnostics Diagnostics { get; }
 
         /// <summary>
         /// Raised when a portion of the scene has been invalidated.
