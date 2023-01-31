@@ -563,7 +563,10 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 var textLine =
                     formatter.FormatLine(textSource, 0, 33, paragraphProperties);
 
-                Assert.NotNull(textLine.TextLineBreak?.RemainingRuns);
+                var remainingRunsLineBreak = Assert.IsType<WrappingTextLineBreak>(textLine.TextLineBreak);
+                var remainingRuns = remainingRunsLineBreak.AcquireRemainingRuns();
+                Assert.NotNull(remainingRuns);
+                Assert.NotEmpty(remainingRuns);
             }
         }
 
