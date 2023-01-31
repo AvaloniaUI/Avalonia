@@ -25,6 +25,9 @@ internal static partial class StorageHelper
     public static partial Task<JSObject?> SaveFileDialog(JSObject? startIn, string? suggestedName,
         [JSMarshalAs<JSType.Array<JSType.Any>>] object[]? types, bool excludeAcceptAllOption);
 
+    [JSImport("StorageItem.createWellKnownDirectory", AvaloniaModule.StorageModuleName)]
+    public static partial JSObject CreateWellKnownDirectory(string wellKnownDirectory);
+    
     [JSImport("StorageProvider.openBookmark", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> OpenBookmark(string key);
 

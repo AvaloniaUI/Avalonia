@@ -41,6 +41,11 @@ namespace Avalonia.Skia
 
         public PixelFormat DefaultPixelFormat { get; }
 
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) =>
+            format == PixelFormats.Rgb565
+            || format == PixelFormats.Bgra8888
+            || format == PixelFormats.Rgba8888;
+
         public IGeometryImpl CreateEllipseGeometry(Rect rect) => new EllipseGeometryImpl(rect);
 
         public IGeometryImpl CreateLineGeometry(Point p1, Point p2) => new LineGeometryImpl(p1, p2);

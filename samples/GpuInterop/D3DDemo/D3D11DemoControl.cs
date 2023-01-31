@@ -2,21 +2,17 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using SharpDX;
-using SharpDX.Direct2D1;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using Buffer = SharpDX.Direct3D11.Buffer;
-using DeviceContext = SharpDX.Direct2D1.DeviceContext;
 using DxgiFactory1 = SharpDX.DXGI.Factory1;
 using Matrix = SharpDX.Matrix;
 using D3DDevice = SharpDX.Direct3D11.Device;
-using DxgiResource = SharpDX.DXGI.Resource;
 using FeatureLevel = SharpDX.Direct3D.FeatureLevel;
 using Vector3 = SharpDX.Vector3;
 
@@ -80,7 +76,10 @@ public class D3D11DemoControl : DrawingSurfaceDemoBase
         if (pixelSize == default)
             return;
         if (pixelSize != _lastSize)
+        {
+            _lastSize = pixelSize;
             Resize(pixelSize);
+        }
         using (_swapchain.BeginDraw(pixelSize, out var renderView))
         {
             

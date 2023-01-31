@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering;
+using Avalonia.Rendering.Composition;
+using Avalonia.Threading;
 
 namespace Avalonia.Controls.Embedding.Offscreen
 {
@@ -13,7 +16,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
     {
         private double _scaling = 1;
         private Size _clientSize;
-        private PlatformRenderInterfaceContextManager _renderInterface = new(null);
+        private ManualRenderTimer _manualRenderTimer = new();
 
         public IInputRoot? InputRoot { get; private set; }
         public bool IsDisposed { get; private set; }
@@ -23,10 +26,19 @@ namespace Avalonia.Controls.Embedding.Offscreen
             IsDisposed = true;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root) =>
-            new ImmediateRenderer((Visual)root, () => _renderInterface.CreateRenderTarget(Surfaces), _renderInterface);
+        class ManualRenderTimer : IRenderTimer
+        {
+            static Stopwatch St = Stopwatch.StartNew(); 
+            public event Action<TimeSpan>? Tick;
+            public bool RunsInBackground => false;
+            public void TriggerTick() => Tick?.Invoke(St.Elapsed);
+        }
 
-        public abstract void Invalidate(Rect rect);
+
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, new Compositor(new RenderLoop(_manualRenderTimer, Dispatcher.UIThread), null),
+                () => Surfaces);
+
         public abstract IEnumerable<object> Surfaces { get; }
 
         public Size ClientSize
@@ -82,5 +94,7 @@ namespace Avalonia.Controls.Embedding.Offscreen
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
         public IPopupImpl? CreatePopup() => null;
+        
+        public virtual object? TryGetFeature(Type featureType) => null;
     }
 }

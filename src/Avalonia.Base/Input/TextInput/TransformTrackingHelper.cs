@@ -105,5 +105,13 @@ namespace Avalonia.Input.TextInput
             UnsubscribeFromParents();
             UpdateMatrix();
         }
+
+        public static IDisposable Track(Visual visual, Action<Visual, Matrix?> cb)
+        {
+            var rv = new TransformTrackingHelper();
+            rv.MatrixChanged += () => cb(visual, rv.Matrix);
+            rv.SetVisual(visual);
+            return rv;
+        }
     }
 }

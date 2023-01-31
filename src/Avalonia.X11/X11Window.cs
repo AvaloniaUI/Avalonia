@@ -27,11 +27,7 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client,
-        ITopLevelImplWithNativeMenuExporter,
-        ITopLevelImplWithNativeControlHost,
-        ITopLevelImplWithTextInputMethod,
-        ITopLevelImplWithStorageProvider
+    unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -43,6 +39,9 @@ namespace Avalonia.X11
         private readonly MouseDevice _mouse;
         private readonly TouchDevice _touch;
         private readonly IKeyboardDevice _keyboard;
+        private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
+        private readonly IStorageProvider _storageProvider;
+        private readonly X11NativeControlHost _nativeControlHost;
         private PixelPoint? _position;
         private PixelSize _realSize;
         private IntPtr _handle;
@@ -199,8 +198,8 @@ namespace Avalonia.X11
             if(_popup)
                 PopupPositioner = new ManagedPopupPositioner(new ManagedPopupPositionerPopupImplHelper(popupParent, MoveResize));
             if (platform.Options.UseDBusMenu)
-                NativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
-            NativeControlHost = new X11NativeControlHost(_platform, this);
+                _nativeMenuExporter = DBusMenuExporter.TryCreateTopLevelNativeMenu(_handle);
+            _nativeControlHost = new X11NativeControlHost(_platform, this);
             InitializeIme();
             
             XChangeProperty(_x11.Display, _handle, _x11.Atoms.WM_PROTOCOLS, _x11.Atoms.XA_ATOM, 32,
@@ -213,7 +212,7 @@ namespace Avalonia.X11
                     _x11.Atoms.XA_CARDINAL, 32, PropertyMode.Replace, ref _xSyncCounter, 1);
             }
 
-            StorageProvider = new CompositeStorageProvider(new Func<Task<IStorageProvider>>[]
+            _storageProvider = new CompositeStorageProvider(new Func<Task<IStorageProvider>>[]
             {
                 () => _platform.Options.UseDBusFilePicker ? DBusSystemDialog.TryCreate(Handle) : Task.FromResult<IStorageProvider>(null),
                 () => GtkSystemDialog.TryCreate(this),
@@ -384,25 +383,8 @@ namespace Avalonia.X11
         public Action<PixelPoint> PositionChanged { get; set; }
         public Action LostFocus { get; set; }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-
-            if (customRendererFactory != null)
-                return customRendererFactory.Create(root, loop);
-
-            return _platform.Options.UseDeferredRendering
-                ? _platform.Options.UseCompositor
-                    ? new CompositingRenderer(root, this._platform.Compositor, () => Surfaces)
-                    : new DeferredRenderer(root, loop, () => _platform.RenderInterface.CreateRenderTarget(Surfaces), _platform.RenderInterface)
-                    {
-                        RenderOnlyOnRenderThread = true
-                    }
-                : new X11ImmediateRendererProxy((Visual)root, loop,
-                    () => _platform.RenderInterface.CreateRenderTarget(Surfaces),
-                    _platform.RenderInterface);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, _platform.Compositor, () => Surfaces);
 
         void OnEvent(ref XEvent ev)
         {
@@ -813,6 +795,31 @@ namespace Avalonia.X11
             Cleanup();            
         }
 
+        public virtual object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(ITopLevelNativeMenuExporter))
+            {
+                return _nativeMenuExporter;
+            }
+            
+            if (featureType == typeof(IStorageProvider))
+            {
+                return _storageProvider;
+            }
+
+            if (featureType == typeof(ITextInputMethodImpl))
+            {
+                return _ime;
+            }
+
+            if (featureType == typeof(INativeControlHostImpl))
+            {
+                return _nativeControlHost;
+            }
+
+            return null;
+        }
+        
         void Cleanup()
         {
             if (_rawEventGrouper != null)
@@ -1212,9 +1219,6 @@ namespace Avalonia.X11
         }
 
         public IPopupPositioner PopupPositioner { get; }
-        public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
-        public INativeControlHostImpl NativeControlHost { get; }
-        public ITextInputMethodImpl TextInputMethod => _ime;
 
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel) =>
             _transparencyHelper?.SetTransparencyRequest(transparencyLevel);
@@ -1231,8 +1235,6 @@ namespace Avalonia.X11
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0.8, 0.8);
 
         public bool NeedsManagedDecorations => false;
-
-        public IStorageProvider StorageProvider { get; }
 
         public class SurfacePlatformHandle : IPlatformNativeSurfaceHandle
         {
