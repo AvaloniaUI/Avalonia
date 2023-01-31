@@ -7,5 +7,5 @@ namespace Avalonia.Rendering
     /// </summary>
     /// <param name="PassCounter">The number of the layout pass.</param>
     /// <param name="Elapsed">The elapsed time during the layout pass.</param>
-    public readonly record struct LayoutPassTiming(int PassCounter, TimeSpan Elapsed);
+    internal readonly record struct LayoutPassTiming(int PassCounter, TimeSpan Elapsed);
 }

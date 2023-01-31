@@ -31,7 +31,7 @@ namespace Avalonia.Rendering
         /// <summary>
         /// Gets or sets the last layout pass timing that the renderer may display.
         /// </summary>
-        public LayoutPassTiming LastLayoutPassTiming
+        internal LayoutPassTiming LastLayoutPassTiming
         {
             get => _lastLayoutPassTiming;
             set
