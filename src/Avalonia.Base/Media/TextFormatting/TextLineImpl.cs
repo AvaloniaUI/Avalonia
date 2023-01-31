@@ -172,9 +172,21 @@ namespace Avalonia.Media.TextFormatting
 
             distance -= Start;
 
+            var firstRunIndex = 0;
+
+            if (_textRuns[firstRunIndex] is TextEndOfLine)
+            {
+                firstRunIndex++;
+            }
+
+            if(firstRunIndex >= _textRuns.Length)
+            {
+                return new CharacterHit(FirstTextSourceIndex);
+            }
+
             if (distance <= 0)
             {
-                var firstRun = _textRuns[0];
+                var firstRun = _textRuns[firstRunIndex];
 
                 return GetRunCharacterHit(firstRun, FirstTextSourceIndex, 0);
             }

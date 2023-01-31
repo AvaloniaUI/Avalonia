@@ -57,7 +57,7 @@ namespace Avalonia.Media.TextFormatting
                             textSourceLength,
                             paragraphWidth, paragraphProperties, resolvedFlowDirection, nextLineBreak);
 
-                        textLine.FinalizeLine();
+                            textLine.FinalizeLine();
 
                         return textLine;
                     }
@@ -236,49 +236,49 @@ namespace Avalonia.Media.TextFormatting
                     switch (currentRun)
                     {
                         case UnshapedTextRun shapeableRun:
-                        {
-                            groupedRuns.Clear();
-                            groupedRuns.Add(shapeableRun);
-
-                            var text = shapeableRun.Text;
-                            var properties = shapeableRun.Properties;
-
-                            while (index + 1 < processedRuns.Count)
                             {
-                                if (processedRuns[index + 1] is not UnshapedTextRun nextRun)
+                                groupedRuns.Clear();
+                                groupedRuns.Add(shapeableRun);
+
+                                var text = shapeableRun.Text;
+                                var properties = shapeableRun.Properties;
+
+                                while (index + 1 < processedRuns.Count)
                                 {
+                                    if (processedRuns[index + 1] is not UnshapedTextRun nextRun)
+                                    {
+                                        break;
+                                    }
+
+                                    if (shapeableRun.BidiLevel == nextRun.BidiLevel
+                                        && TryJoinContiguousMemories(text, nextRun.Text, out var joinedText)
+                                        && CanShapeTogether(properties, nextRun.Properties))
+                                    {
+                                        groupedRuns.Add(nextRun);
+                                        index++;
+                                        shapeableRun = nextRun;
+                                        text = joinedText;
+                                        continue;
+                                    }
+
                                     break;
                                 }
 
-                                if (shapeableRun.BidiLevel == nextRun.BidiLevel
-                                    && TryJoinContiguousMemories(text, nextRun.Text, out var joinedText)
-                                    && CanShapeTogether(properties, nextRun.Properties))
-                                {
-                                    groupedRuns.Add(nextRun);
-                                    index++;
-                                    shapeableRun = nextRun;
-                                    text = joinedText;
-                                    continue;
-                                }
+                                var shaperOptions = new TextShaperOptions(
+                                    properties.CachedGlyphTypeface,
+                                    properties.FontRenderingEmSize, shapeableRun.BidiLevel, properties.CultureInfo,
+                                    paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
+
+                                ShapeTogether(groupedRuns, text, shaperOptions, textShaper, shapedRuns);
 
                                 break;
                             }
-
-                            var shaperOptions = new TextShaperOptions(
-                                properties.CachedGlyphTypeface,
-                                properties.FontRenderingEmSize, shapeableRun.BidiLevel, properties.CultureInfo,
-                                paragraphProperties.DefaultIncrementalTab, paragraphProperties.LetterSpacing);
-
-                            ShapeTogether(groupedRuns, text, shaperOptions, textShaper, shapedRuns);
-
-                            break;
-                        }
                         default:
-                        {
-                            shapedRuns.Add(currentRun);
+                            {
+                                shapedRuns.Add(currentRun);
 
-                            break;
-                        }
+                                break;
+                            }
                     }
                 }
             }
@@ -699,7 +699,7 @@ namespace Avalonia.Media.TextFormatting
                 switch (currentRun)
                 {
                     case ShapedTextRun:
-                    {
+                        {
                             var lineBreaker = new LineBreakEnumerator(currentRun.Text.Span);
 
                             while (lineBreaker.MoveNext(out var lineBreak))
@@ -741,7 +741,7 @@ namespace Avalonia.Media.TextFormatting
                                                 break;
                                             }
 
-                                            while (lineBreaker.MoveNext(out lineBreak) && index < textRuns.Count)
+                                            while (lineBreaker.MoveNext(out lineBreak))
                                             {
                                                 currentPosition += lineBreak.PositionWrap;
 
@@ -765,6 +765,11 @@ namespace Avalonia.Media.TextFormatting
                                         else
                                         {
                                             currentPosition = currentLength + lineBreak.PositionWrap;
+                                        }
+
+                                        if (currentPosition == 0 && measuredLength > 0)
+                                        {
+                                            currentPosition = measuredLength;
                                         }
 
                                         breakFound = true;
