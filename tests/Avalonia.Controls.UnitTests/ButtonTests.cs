@@ -134,16 +134,16 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Raises_Click()
         {
-            var renderer = Mock.Of<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var pt = new Point(50, 50);
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+            renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
 
             var target = new TestButton()
             {
                 Bounds = new Rect(0, 0, 100, 100),
-                Renderer = renderer
+                Renderer = renderer.Object
             };
 
             bool clicked = false;
@@ -166,16 +166,16 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_Does_Not_Raise_Click_When_PointerReleased_Outside()
         {
-            var renderer = Mock.Of<IRenderer>();
-            
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+            var renderer = RendererMocks.CreateRenderer();
+
+            renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
 
             var target = new TestButton()
             {
                 Bounds = new Rect(0, 0, 100, 100),
-                Renderer = renderer
+                Renderer = renderer.Object
             };
 
             bool clicked = false;
@@ -199,9 +199,9 @@ namespace Avalonia.Controls.UnitTests
         [Fact]
         public void Button_With_RenderTransform_Raises_Click()
         {
-            var renderer = Mock.Of<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var pt = new Point(150, 50);
-            Mock.Get(renderer).Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
+            renderer.Setup(r => r.HitTest(It.IsAny<Point>(), It.IsAny<Visual>(), It.IsAny<Func<Visual, bool>>()))
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
                     new Visual[] { r } : new Visual[0]);
@@ -210,7 +210,7 @@ namespace Avalonia.Controls.UnitTests
             {
                 Bounds = new Rect(0, 0, 100, 100),
                 RenderTransform = new TranslateTransform { X = 100, Y = 0 },
-                Renderer = renderer
+                Renderer = renderer.Object
             };
 
             //actual bounds of button should  be 100,0,100,100 x -> translated 100 pixels
