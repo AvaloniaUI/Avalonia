@@ -14,6 +14,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
@@ -393,7 +394,9 @@ namespace Avalonia.Controls
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
             ?? PlatformImpl?.TryGetFeature<IStorageProvider>()
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
-        
+
+        public IInsetsManager? InsetsManager => PlatformImpl?.TryGetFeature<IInsetsManager>();
+
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
         {
