@@ -110,6 +110,8 @@ namespace Avalonia.Controls.UnitTests
         public void IsVisible_Should_Be_False_Atfer_Impl_Signals_Close()
         {
             var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(() => RendererMocks.CreateRenderer().Object);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
             windowImpl.SetupProperty(x => x.Closed);
@@ -129,6 +131,8 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_IsVisible_True_Shows_Window()
         {
             var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(() => RendererMocks.CreateRenderer().Object);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
@@ -145,6 +149,8 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_IsVisible_False_Hides_Window()
         {
             var windowImpl = new Mock<IPopupImpl>();
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(() => RendererMocks.CreateRenderer().Object);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
 
@@ -163,7 +169,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
+                var renderer = RendererMocks.CreateRenderer();
                 var target = new TestWindowBase(renderer.Object);
 
                 target.Show();
@@ -194,7 +200,7 @@ namespace Avalonia.Controls.UnitTests
 
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
+                var renderer = RendererMocks.CreateRenderer();
                 var target = new TestWindowBase(renderer.Object);
 
                 target.Show();
@@ -209,7 +215,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
+                var renderer = RendererMocks.CreateRenderer();
                 var windowImpl = new Mock<IPopupImpl>();
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -240,11 +246,14 @@ namespace Avalonia.Controls.UnitTests
             public bool IsClosed { get; private set; }
 
             public TestWindowBase(IRenderer renderer = null)
-                : base(Mock.Of<IWindowBaseImpl>(x => 
-                    x.RenderScaling == 1 &&
-                    x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer))
+                : base(CreateWindowsBaseImplMock(renderer ?? RendererMocks.CreateRenderer().Object))
             {
             }
+
+            private static IWindowBaseImpl CreateWindowsBaseImplMock(IRenderer renderer)
+                => Mock.Of<IWindowBaseImpl>(x =>
+                    x.RenderScaling == 1 &&
+                    x.CreateRenderer(It.IsAny<IRenderRoot>()) == renderer);
 
             public TestWindowBase(IWindowBaseImpl impl)
                 : base(impl)

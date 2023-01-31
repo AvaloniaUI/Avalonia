@@ -3,8 +3,9 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Logging;
+using Avalonia.Rendering;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
+using Avalonia.Utilities;
 
 #nullable enable
 
@@ -24,6 +25,7 @@ namespace Avalonia.Layout
         private bool _disposed;
         private bool _queued;
         private bool _running;
+        private int _totalPassCount;
 
         public LayoutManager(ILayoutRoot owner)
         {
@@ -32,6 +34,8 @@ namespace Avalonia.Layout
         }
 
         public virtual event EventHandler? LayoutUpdated;
+
+        internal Action<LayoutPassTiming>? LayoutPassTimed { get; set; }
 
         /// <inheritdoc/>
         public virtual void InvalidateMeasure(Layoutable control)
@@ -116,10 +120,9 @@ namespace Avalonia.Layout
 
             if (!_running)
             {
-                Stopwatch? stopwatch = null;
-
                 const LogEventLevel timingLogLevel = LogEventLevel.Information;
-                bool captureTiming = Logger.IsEnabled(timingLogLevel, LogArea.Layout);
+                var captureTiming = LayoutPassTimed is not null || Logger.IsEnabled(timingLogLevel, LogArea.Layout);
+                var startingTimestamp = 0L;
 
                 if (captureTiming)
                 {
@@ -129,8 +132,7 @@ namespace Avalonia.Layout
                         _toMeasure.Count,
                         _toArrange.Count);
 
-                    stopwatch = new Stopwatch();
-                    stopwatch.Start();
+                    startingTimestamp = Stopwatch.GetTimestamp();
                 }
 
                 _toMeasure.BeginLoop(MaxPasses);
@@ -139,6 +141,7 @@ namespace Avalonia.Layout
                 try
                 {
                     _running = true;
+                    ++_totalPassCount;
 
                     for (var pass = 0; pass < MaxPasses; ++pass)
                     {
@@ -160,9 +163,10 @@ namespace Avalonia.Layout
 
                 if (captureTiming)
                 {
-                    stopwatch!.Stop();
+                    var elapsed = StopwatchHelper.GetElapsedTime(startingTimestamp);
+                    LayoutPassTimed?.Invoke(new LayoutPassTiming(_totalPassCount, elapsed));
 
-                    Logger.TryGet(timingLogLevel, LogArea.Layout)?.Log(this, "Layout pass finished in {Time}", stopwatch.Elapsed);
+                    Logger.TryGet(timingLogLevel, LogArea.Layout)?.Log(this, "Layout pass finished in {Time}", elapsed);
                 }
             }
 
