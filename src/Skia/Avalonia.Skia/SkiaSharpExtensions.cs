@@ -127,6 +127,17 @@ namespace Avalonia.Skia
             throw new ArgumentException("Unknown pixel format: " + fmt);
         }
 
+        public static PixelFormat? ToAvalonia(this SKColorType colorType)
+        {
+            if (colorType == SKColorType.Rgb565)
+                return PixelFormats.Rgb565;
+            if (colorType == SKColorType.Bgra8888)
+                return PixelFormats.Bgra8888;
+            if (colorType == SKColorType.Rgba8888)
+                return PixelFormats.Rgba8888;
+            return null;
+        }
+
         public static PixelFormat ToPixelFormat(this SKColorType fmt)
         {
             if (fmt == SKColorType.Rgb565)

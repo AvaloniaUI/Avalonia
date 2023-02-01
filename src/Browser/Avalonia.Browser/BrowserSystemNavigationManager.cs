@@ -5,11 +5,11 @@ using Avalonia.Platform;
 
 namespace Avalonia.Browser
 {
-    internal class BrowserSystemNavigationManager : ISystemNavigationManager
+    internal class BrowserSystemNavigationManagerImpl : ISystemNavigationManagerImpl
     {
         public event EventHandler<RoutedEventArgs>? BackRequested;
 
-        public BrowserSystemNavigationManager()
+        public BrowserSystemNavigationManagerImpl()
         {
             NavigationHelper.AddBackHandler(() =>
             {

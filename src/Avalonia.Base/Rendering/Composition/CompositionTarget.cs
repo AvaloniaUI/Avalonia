@@ -28,16 +28,15 @@ namespace Avalonia.Rendering.Composition
         /// <summary>
         /// Attempts to perform a hit-tst
         /// </summary>
-        /// <param name="point"></param>
-        /// <param name="filter"></param>
         /// <returns></returns>
-        public PooledList<CompositionVisual>? TryHitTest(Point point, Func<CompositionVisual, bool>? filter)
+        public PooledList<CompositionVisual>? TryHitTest(Point point, CompositionVisual? root, Func<CompositionVisual, bool>? filter)
         {
             Server.Readback.NextRead();
-            if (Root == null)
+            root ??= Root;
+            if (root == null)
                 return null;
             var res = new PooledList<CompositionVisual>();
-            HitTestCore(Root, point, res, filter);
+            HitTestCore(root, point, res, filter);
             return res;
         }
 

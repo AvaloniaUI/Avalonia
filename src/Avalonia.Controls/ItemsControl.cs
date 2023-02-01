@@ -168,6 +168,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets or sets the data template used to display the items in the control.
         /// </summary>
+        [InheritDataTypeFromItems(nameof(Items))]
         public IDataTemplate? ItemTemplate
         {
             get { return GetValue(ItemTemplateProperty); }

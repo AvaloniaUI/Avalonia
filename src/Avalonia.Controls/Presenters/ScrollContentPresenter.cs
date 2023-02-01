@@ -15,7 +15,6 @@ namespace Avalonia.Controls.Presenters
     public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable, IScrollAnchorProvider
     {
         private const double EdgeDetectionTolerance = 0.1;
-        private const int ProximityPoints = 10;
 
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
@@ -607,30 +606,6 @@ namespace Avalonia.Controls.Presenters
                 if (Extent.Height > Viewport.Height)
                 {
                     double height = isLogical ? scrollable!.ScrollSize.Height : 50;
-                    if(VerticalSnapPointsType == SnapPointsType.MandatorySingle && Content is IScrollSnapPointsInfo)
-                    {
-                        if(_areVerticalSnapPointsRegular)
-                        {
-                            height = _verticalSnapPoint;
-                        }
-                        else if(_verticalSnapPoints != null)
-                        {
-                            double yOffset = Offset.Y;
-                            switch (VerticalSnapPointsAlignment)
-                            {
-                                case SnapPointsAlignment.Center:
-                                    yOffset += Viewport.Height / 2;
-                                    break;
-                                case SnapPointsAlignment.Far:
-                                    yOffset += Viewport.Height;
-                                    break;
-                            }
-
-                            var snapPoint = FindNearestSnapPoint(_verticalSnapPoints, yOffset, out var lowerSnapPoint);
-
-                            height = snapPoint - lowerSnapPoint;
-                        }
-                    }
                     y += -delta.Y * height;
                     y = Math.Max(y, 0);
                     y = Math.Min(y, Extent.Height - Viewport.Height);
@@ -639,30 +614,6 @@ namespace Avalonia.Controls.Presenters
                 if (Extent.Width > Viewport.Width)
                 {
                     double width = isLogical ? scrollable!.ScrollSize.Width : 50;
-                    if (HorizontalSnapPointsType == SnapPointsType.MandatorySingle && Content is IScrollSnapPointsInfo)
-                    {
-                        if (_areHorizontalSnapPointsRegular)
-                        {
-                            width = _horizontalSnapPoint;
-                        }
-                        else if(_horizontalSnapPoints != null)
-                        {
-                            double xOffset = Offset.X;
-                            switch (VerticalSnapPointsAlignment)
-                            {
-                                case SnapPointsAlignment.Center:
-                                    xOffset += Viewport.Width / 2;
-                                    break;
-                                case SnapPointsAlignment.Far:
-                                    xOffset += Viewport.Width;
-                                    break;
-                            }
-
-                            var snapPoint = FindNearestSnapPoint(_horizontalSnapPoints, xOffset, out var lowerSnapPoint);
-
-                            width = snapPoint - lowerSnapPoint;
-                        }
-                    }
                     x += -delta.X * width;
                     x = Math.Max(x, 0);
                     x = Math.Min(x, Extent.Width - Viewport.Width);

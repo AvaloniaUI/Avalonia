@@ -16,7 +16,6 @@ namespace ControlCatalog
         private readonly Styles _themeStylesContainer = new();
         private FluentTheme? _fluentTheme;
         private SimpleTheme? _simpleTheme;
-        private IResourceDictionary? _fluentBaseLightColors, _fluentBaseDarkColors;
         private IStyle? _colorPickerFluent, _colorPickerSimple;
         private IStyle? _dataGridFluent, _dataGridSimple;
         
@@ -33,16 +32,12 @@ namespace ControlCatalog
 
             _fluentTheme = new FluentTheme();
             _simpleTheme = new SimpleTheme();
-            _simpleTheme.Resources.MergedDictionaries.Add((IResourceDictionary)Resources["FluentAccentColors"]!);
-            _simpleTheme.Resources.MergedDictionaries.Add((IResourceDictionary)Resources["FluentBaseColors"]!);
             _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
             _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
             _dataGridFluent = (IStyle)Resources["DataGridFluent"]!;
             _dataGridSimple = (IStyle)Resources["DataGridSimple"]!;
-            _fluentBaseLightColors = (IResourceDictionary)Resources["FluentBaseLightColors"]!;
-            _fluentBaseDarkColors = (IResourceDictionary)Resources["FluentBaseDarkColors"]!;
             
-            SetThemeVariant(CatalogTheme.FluentLight);
+            SetCatalogThemes(CatalogTheme.Fluent);
         }
 
         public override void OnFrameworkInitializationCompleted()
@@ -61,19 +56,12 @@ namespace ControlCatalog
 
         private CatalogTheme _prevTheme;
         public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme; 
-        public static void SetThemeVariant(CatalogTheme theme)
+        public static void SetCatalogThemes(CatalogTheme theme)
         {
             var app = (App)Current!;
             var prevTheme = app._prevTheme;
             app._prevTheme = theme;
-            var shouldReopenWindow = theme switch
-            {
-                CatalogTheme.FluentLight => prevTheme is CatalogTheme.SimpleDark or CatalogTheme.SimpleLight,
-                CatalogTheme.FluentDark => prevTheme is CatalogTheme.SimpleDark or CatalogTheme.SimpleLight,
-                CatalogTheme.SimpleLight => prevTheme is CatalogTheme.FluentDark or CatalogTheme.FluentLight,
-                CatalogTheme.SimpleDark => prevTheme is CatalogTheme.FluentDark or CatalogTheme.FluentLight,
-                _ => throw new ArgumentOutOfRangeException(nameof(theme), theme, null)
-            };
+            var shouldReopenWindow = prevTheme != theme;
             
             if (app._themeStylesContainer.Count == 0)
             {
@@ -81,36 +69,16 @@ namespace ControlCatalog
                 app._themeStylesContainer.Add(new Style());
                 app._themeStylesContainer.Add(new Style());
             }
-            
-            if (theme == CatalogTheme.FluentLight)
+
+            if (theme == CatalogTheme.Fluent)
             {
-                app._fluentTheme!.Mode = FluentThemeMode.Light;
-                app._themeStylesContainer[0] = app._fluentTheme;
+                app._themeStylesContainer[0] = app._fluentTheme!;
                 app._themeStylesContainer[1] = app._colorPickerFluent!;
                 app._themeStylesContainer[2] = app._dataGridFluent!;
             }
-            else if (theme == CatalogTheme.FluentDark)
+            else if (theme == CatalogTheme.Simple)
             {
-                app._fluentTheme!.Mode = FluentThemeMode.Dark;
-                app._themeStylesContainer[0] = app._fluentTheme;
-                app._themeStylesContainer[1] = app._colorPickerFluent!;
-                app._themeStylesContainer[2] = app._dataGridFluent!;
-            }
-            else if (theme == CatalogTheme.SimpleLight)
-            {
-                app._simpleTheme!.Mode = SimpleThemeMode.Light;
-                app._simpleTheme.Resources.MergedDictionaries.Remove(app._fluentBaseDarkColors!);
-                app._simpleTheme.Resources.MergedDictionaries.Add(app._fluentBaseLightColors!);
-                app._themeStylesContainer[0] = app._simpleTheme;
-                app._themeStylesContainer[1] = app._colorPickerSimple!;
-                app._themeStylesContainer[2] = app._dataGridSimple!;
-            }
-            else if (theme == CatalogTheme.SimpleDark)
-            {
-                app._simpleTheme!.Mode = SimpleThemeMode.Dark;
-                app._simpleTheme.Resources.MergedDictionaries.Remove(app._fluentBaseLightColors!);
-                app._simpleTheme.Resources.MergedDictionaries.Add(app._fluentBaseDarkColors!);
-                app._themeStylesContainer[0] = app._simpleTheme;
+                app._themeStylesContainer[0] = app._simpleTheme!;
                 app._themeStylesContainer[1] = app._colorPickerSimple!;
                 app._themeStylesContainer[2] = app._dataGridSimple!;
             }
