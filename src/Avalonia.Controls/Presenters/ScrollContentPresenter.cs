@@ -15,7 +15,6 @@ namespace Avalonia.Controls.Presenters
     public class ScrollContentPresenter : ContentPresenter, IPresenter, IScrollable, IScrollAnchorProvider
     {
         private const double EdgeDetectionTolerance = 0.1;
-        private const int ProximityPoints = 10;
 
         /// <summary>
         /// Defines the <see cref="CanHorizontallyScroll"/> property.
