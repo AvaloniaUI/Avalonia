@@ -22,7 +22,7 @@
           <SolidColorBrush x:Key="DataGridDetailsPresenterBackgroundBrush" Color="{DynamicResource SystemChromeMediumLowColor}" />
 
         </ResourceDictionary>
-        <ResourceDictionary x:Key="Light">
+        <ResourceDictionary x:Key="Default">
           <SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush" Color="{DynamicResource SystemBaseMediumColor}" />
           <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="{DynamicResource SystemAltHighColor}" />
           <SolidColorBrush x:Key="DataGridColumnHeaderHoveredBackgroundBrush" Color="{DynamicResource SystemListLowColor}" />
