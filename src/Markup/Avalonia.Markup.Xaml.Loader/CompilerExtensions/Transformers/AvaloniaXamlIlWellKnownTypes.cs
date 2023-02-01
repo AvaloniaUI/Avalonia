@@ -112,6 +112,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
         public IXamlType UriKind { get; }
         public IXamlConstructor UriConstructor { get; }
+        public IXamlType Style { get; }
+        public IXamlType ControlTheme { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -250,6 +252,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     XamlIlTypes.Object));
             UriKind = cfg.TypeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });
+            Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
+            ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
         }
     }
 
