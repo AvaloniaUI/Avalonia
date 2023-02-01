@@ -79,6 +79,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
             AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
 
+        /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
+        public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
+            ThemeVariantScope.ActualThemeVariantProperty.AddOwner<Application>();
+        
+        /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
+        public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
+            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
+        
         /// <summary>
         /// Defines the <see cref="BackRequested"/> event.
         /// </summary>
@@ -96,7 +104,7 @@ namespace Avalonia.Controls
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private readonly IPlatformRenderInterface? _renderInterface;
         private readonly IGlobalStyles? _globalStyles;
-        private readonly IGlobalThemeVariantProvider? _applicationThemeHost;
+        private readonly IThemeVariantHost? _applicationThemeHost;
         private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
         private readonly IDisposable? _pointerOverPreProcessorSubscription;
         private readonly IDisposable? _backGestureSubscription;
@@ -153,7 +161,7 @@ namespace Avalonia.Controls
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
-            _applicationThemeHost = TryGetService<IGlobalThemeVariantProvider>(dependencyResolver);
+            _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
 
@@ -633,7 +641,7 @@ namespace Avalonia.Controls
 
         private void GlobalActualThemeVariantChanged(object? sender, EventArgs e)
         {
-            SetValue(ActualThemeVariantProperty, ((IGlobalThemeVariantProvider)sender!).ActualThemeVariant, BindingPriority.Template);
+            SetValue(ActualThemeVariantProperty, ((IThemeVariantHost)sender!).ActualThemeVariant, BindingPriority.Template);
         }
 
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)

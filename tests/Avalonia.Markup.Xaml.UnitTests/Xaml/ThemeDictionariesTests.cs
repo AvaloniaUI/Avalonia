@@ -185,9 +185,9 @@ public class ThemeDictionariesTests : XamlTestBase
     {
         using (AvaloniaLocator.EnterScope())
         {
-            var applicationThemeHost = new Mock<IGlobalThemeVariantProvider>();
+            var applicationThemeHost = new Mock<IThemeVariantHost>();
             applicationThemeHost.SetupGet(h => h.ActualThemeVariant).Returns(ThemeVariant.Dark);
-            AvaloniaLocator.CurrentMutable.Bind<IGlobalThemeVariantProvider>().ToConstant(applicationThemeHost.Object);
+            AvaloniaLocator.CurrentMutable.Bind<IThemeVariantHost>().ToConstant(applicationThemeHost.Object);
 
             var themeVariantScope = (ThemeVariantScope)AvaloniaRuntimeXamlLoader.Load(@"
 <ThemeVariantScope xmlns='https://github.com/avaloniaui'
