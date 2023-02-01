@@ -142,6 +142,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
                 throw new NotImplementedException();
             }
 
+            public ThemeVariant ThemeVariant 
+            {
+                get { throw new NotImplementedException(); }
+            }
+            public event EventHandler ThemeVariantChanged;
+
             public void DetachStyles()
             {
                 throw new NotImplementedException();

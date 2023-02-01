@@ -68,6 +68,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlConstructor FontFamilyConstructorUriName { get; }
         public IXamlType Thickness { get; }
         public IXamlConstructor ThicknessFullConstructor { get; }
+        public IXamlType ThemeVariant { get; }
         public IXamlType Point { get; }
         public IXamlConstructor PointFullConstructor { get; }
         public IXamlType Vector { get; }
@@ -111,6 +112,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlMethod ResourceDictionaryDeferredAdd { get; }
         public IXamlType UriKind { get; }
         public IXamlConstructor UriConstructor { get; }
+        public IXamlType Style { get; }
+        public IXamlType ControlTheme { get; }
 
         public AvaloniaXamlIlWellKnownTypes(TransformerConfiguration cfg)
         {
@@ -190,6 +193,7 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             Uri = cfg.TypeSystem.GetType("System.Uri");
             FontFamily = cfg.TypeSystem.GetType("Avalonia.Media.FontFamily");
             FontFamilyConstructorUriName = FontFamily.GetConstructor(new List<IXamlType> { Uri, XamlIlTypes.String });
+            ThemeVariant = cfg.TypeSystem.GetType("Avalonia.Styling.ThemeVariant");
 
             (IXamlType, IXamlConstructor) GetNumericTypeInfo(string name, IXamlType componentType, int componentCount)
             {
@@ -248,6 +252,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                     XamlIlTypes.Object));
             UriKind = cfg.TypeSystem.GetType("System.UriKind");
             UriConstructor = Uri.GetConstructor(new List<IXamlType>() { cfg.WellKnownTypes.String, UriKind });
+            Style = cfg.TypeSystem.GetType("Avalonia.Styling.Style");
+            ControlTheme = cfg.TypeSystem.GetType("Avalonia.Styling.ControlTheme");
         }
     }
 

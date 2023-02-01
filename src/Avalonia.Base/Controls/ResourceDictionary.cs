@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Avalonia.Collections;
 using Avalonia.Controls.Templates;
+using Avalonia.Media;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -15,6 +18,7 @@ namespace Avalonia.Controls
         private Dictionary<object, object?>? _inner;
         private IResourceHost? _owner;
         private AvaloniaList<IResourceProvider>? _mergedDictionaries;
+        private AvaloniaDictionary<ThemeVariant, IResourceProvider>? _themeDictionary;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResourceDictionary"/> class.
@@ -69,14 +73,14 @@ namespace Avalonia.Controls
                     _mergedDictionaries.ForEachItem(
                         x =>
                         {
-                            if (Owner is object)
+                            if (Owner is not null)
                             {
                                 x.AddOwner(Owner);
                             }
                         },
                         x =>
                         {
-                            if (Owner is object)
+                            if (Owner is not null)
                             {
                                 x.RemoveOwner(Owner);
                             }
@@ -85,6 +89,34 @@ namespace Avalonia.Controls
                 }
 
                 return _mergedDictionaries;
+            }
+        }
+
+        public IDictionary<ThemeVariant, IResourceProvider> ThemeDictionaries
+        {
+            get
+            {
+                if (_themeDictionary == null)
+                {
+                    _themeDictionary = new AvaloniaDictionary<ThemeVariant, IResourceProvider>(2);
+                    _themeDictionary.ForEachItem(
+                        (_, x) =>
+                        {
+                            if (Owner is not null)
+                            {
+                                x.AddOwner(Owner);
+                            }
+                        },
+                        (_, x) =>
+                        {
+                            if (Owner is not null)
+                            {
+                                x.RemoveOwner(Owner);
+                            }
+                        },
+                        () => throw new NotSupportedException("Dictionary reset not supported"));
+                }
+                return _themeDictionary;
             }
         }
 
@@ -152,16 +184,47 @@ namespace Avalonia.Controls
             return false;
         }
 
-        public bool TryGetResource(object key, out object? value)
+        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             if (TryGetValue(key, out value))
                 return true;
+
+            if (_themeDictionary is not null)
+            {
+                IResourceProvider? themeResourceProvider;
+                if (theme is not null && theme != ThemeVariant.Default)
+                {
+                    if (_themeDictionary.TryGetValue(theme, out themeResourceProvider)
+                        && themeResourceProvider.TryGetResource(key, theme, out value))
+                    {
+                        return true;
+                    }
+
+                    var themeInherit = theme.InheritVariant;
+                    while (themeInherit is not null)
+                    {
+                        if (_themeDictionary.TryGetValue(themeInherit, out themeResourceProvider)
+                            && themeResourceProvider.TryGetResource(key, theme, out value))
+                        {
+                            return true;
+                        }
+        
+                        themeInherit = themeInherit.InheritVariant;
+                    }
+                }
+
+                if (_themeDictionary.TryGetValue(ThemeVariant.Default, out themeResourceProvider)
+                    && themeResourceProvider.TryGetResource(key, theme, out value))
+                {
+                    return true;
+                }
+            }
 
             if (_mergedDictionaries != null)
             {
                 for (var i = _mergedDictionaries.Count - 1; i >= 0; --i)
                 {
-                    if (_mergedDictionaries[i].TryGetResource(key, out value))
+                    if (_mergedDictionaries[i].TryGetResource(key, theme, out value))
                     {
                         return true;
                     }
@@ -248,9 +311,17 @@ namespace Avalonia.Controls
 
             var hasResources = _inner?.Count > 0;
             
-            if (_mergedDictionaries is object)
+            if (_mergedDictionaries is not null)
             {
                 foreach (var i in _mergedDictionaries)
+                {
+                    i.AddOwner(owner);
+                    hasResources |= i.HasResources;
+                }
+            }
+            if (_themeDictionary is not null)
+            {
+                foreach (var i in _themeDictionary.Values)
                 {
                     i.AddOwner(owner);
                     hasResources |= i.HasResources;
@@ -273,9 +344,17 @@ namespace Avalonia.Controls
 
                 var hasResources = _inner?.Count > 0;
 
-                if (_mergedDictionaries is object)
+                if (_mergedDictionaries is not null)
                 {
                     foreach (var i in _mergedDictionaries)
+                    {
+                        i.RemoveOwner(owner);
+                        hasResources |= i.HasResources;
+                    }
+                }
+                if (_themeDictionary is not null)
+                {
+                    foreach (var i in _themeDictionary.Values)
                     {
                         i.RemoveOwner(owner);
                         hasResources |= i.HasResources;
