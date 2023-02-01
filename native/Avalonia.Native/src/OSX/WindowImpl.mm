@@ -66,7 +66,7 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
         _isModal = isDialog;
 
         WindowBaseImpl::Show(activate, isDialog);
-
+        GetWindowState(&_actualWindowState);
         HideOrShowTrafficLights();
 
         return SetWindowState(_lastWindowState);
