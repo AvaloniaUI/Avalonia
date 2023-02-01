@@ -23,7 +23,7 @@ namespace Avalonia.Controls
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            StackLayout.OrientationProperty.AddOwner<VirtualizingStackPanel>();
+            StackPanel.OrientationProperty.AddOwner<VirtualizingStackPanel>();
 
         /// <summary>
         /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.

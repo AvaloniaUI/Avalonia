@@ -56,7 +56,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
         public IXamlType DataTemplate { get; }
         public IXamlType IDataTemplate { get; }
         public IXamlType ItemsControl { get; }
-        public IXamlType ItemsRepeater { get; }
         public IXamlType ReflectionBindingExtension { get; }
 
         public IXamlType RelativeSource { get; }
@@ -184,7 +183,6 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
             DataTemplate = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.Templates.DataTemplate");
             IDataTemplate = cfg.TypeSystem.GetType("Avalonia.Controls.Templates.IDataTemplate");
             ItemsControl = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsControl");
-            ItemsRepeater = cfg.TypeSystem.GetType("Avalonia.Controls.ItemsRepeater");
             ReflectionBindingExtension = cfg.TypeSystem.GetType("Avalonia.Markup.Xaml.MarkupExtensions.ReflectionBindingExtension");
             RelativeSource = cfg.TypeSystem.GetType("Avalonia.Data.RelativeSource");
             UInt = cfg.TypeSystem.GetType("System.UInt32");
