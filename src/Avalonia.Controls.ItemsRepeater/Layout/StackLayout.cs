@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Specialized;
+using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Logging;
 
@@ -25,13 +26,13 @@ namespace Avalonia.Layout
         /// Defines the <see cref="Orientation"/> property.
         /// </summary>
         public static readonly StyledProperty<Orientation> OrientationProperty =
-            AvaloniaProperty.Register<StackLayout, Orientation>(nameof(Orientation), Orientation.Vertical);
+            StackPanel.OrientationProperty.AddOwner<StackPanel>();
 
         /// <summary>
         /// Defines the <see cref="Spacing"/> property.
         /// </summary>
         public static readonly StyledProperty<double> SpacingProperty =
-            AvaloniaProperty.Register<StackLayout, double>(nameof(Spacing));
+            StackPanel.SpacingProperty.AddOwner<StackLayout>();
 
         private readonly OrientationBasedMeasures _orientation = new OrientationBasedMeasures();
 

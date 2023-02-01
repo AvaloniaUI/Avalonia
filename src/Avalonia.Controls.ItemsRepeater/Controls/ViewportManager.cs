@@ -67,7 +67,7 @@ namespace Avalonia.Controls
                         // be a direct child of ours, or even an indirect child. We need to walk up the tree starting
                         // from anchorElement to figure out what child of ours (if any) to use as the suggested element.
                         var child = anchorElement;
-                        var parent = child.VisualParent as Control;
+                        var parent = child.GetVisualParent() as Control;
 
                         while (parent != null)
                         {
@@ -78,7 +78,7 @@ namespace Avalonia.Controls
                             }
 
                             child = parent;
-                            parent = parent.VisualParent as Control;
+                            parent = parent.GetVisualParent() as Control;
                         }
                     }
                 }
@@ -369,11 +369,11 @@ namespace Avalonia.Controls
         private Control? GetImmediateChildOfRepeater(Control descendant)
         {
             var targetChild = descendant;
-            var parent = (Control?)descendant.VisualParent;
+            var parent = (Control?)descendant.GetVisualParent();
             while (parent != null && parent != _owner)
             {
                 targetChild = parent;
-                parent = (Control?)parent.VisualParent;
+                parent = (Control?)parent.GetVisualParent();
             }
 
             if (parent == null)
@@ -471,7 +471,7 @@ namespace Avalonia.Controls
                         break;
                     }
 
-                    parent = parent.VisualParent;
+                    parent = parent.GetVisualParent();
                 }
 
                 if (!_managingViewportDisabled)
