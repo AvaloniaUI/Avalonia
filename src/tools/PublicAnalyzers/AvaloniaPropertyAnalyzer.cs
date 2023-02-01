@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Avalonia.Analyzers;
 
@@ -136,7 +138,9 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         context.RegisterCompilationStartAction(c => new CompileAnalyzer(c));
     }
 
-    private static bool IsAvaloniaPropertyType(INamedTypeSymbol type, params INamedTypeSymbol[] propertyTypes)
+    private static bool IsAvaloniaPropertyType(INamedTypeSymbol type, params INamedTypeSymbol[] propertyTypes) => IsAvaloniaPropertyType(type, propertyTypes.AsEnumerable());
+    
+    private static bool IsAvaloniaPropertyType(INamedTypeSymbol type, IEnumerable<INamedTypeSymbol> propertyTypes)
     {
         if (type.IsGenericType)
         {
@@ -159,6 +163,27 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Follows assignments and conversions back to their source.
+    /// </summary>
+    private static IOperation ResolveOperationSource(IOperation operation)
+    {
+        while (true)
+        {
+            switch (operation)
+            {
+                case IConversionOperation conversion:
+                    operation = conversion.Operand;
+                    break;
+                case ISimpleAssignmentOperation assignment:
+                    operation = assignment.Value;
+                    break;
+                default:
+                    return operation;
+            }
+        }
     }
 
     private static bool IsValidAvaloniaPropertyStorage(IFieldSymbol field) => field.IsStatic && field.IsReadOnly;
@@ -199,12 +224,12 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         /// <summary>
         /// Gets the type which registered the property, and all types which have added themselves as owners.
         /// </summary>
-        public ConcurrentBag<INamedTypeSymbol> OwnerTypes { get; } = new();
+        public ConcurrentBag<TypeReference> OwnerTypes { get; } = new();
 
         /// <summary>
         /// Gets a dictionary which maps fields and properties which were initialized with this AvaloniaProperty to the TOwner specified at each assignment.
         /// </summary>
-        public ConcurrentDictionary<ISymbol, INamedTypeSymbol> AssignedTo { get; } = new(SymbolEqualityComparer.Default);
+        public ConcurrentDictionary<ISymbol, TypeReference> AssignedTo { get; } = new(SymbolEqualityComparer.Default);
 
         /// <summary>
         /// Gets properties which provide convenient access to the AvaloniaProperty on an instance of an AvaloniaObject.
@@ -238,6 +263,17 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    private readonly struct TypeReference
+    {
+        public INamedTypeSymbol Type { get; }
+        public Location Location { get; }
+
+        public TypeReference(INamedTypeSymbol type, Location location)
+        {
+            Type = type;
+            Location = location;
+        }
+    }
 }
 
 [Serializable]
