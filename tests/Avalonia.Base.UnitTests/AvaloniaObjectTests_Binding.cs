@@ -1285,6 +1285,24 @@ namespace Avalonia.Base.UnitTests
             subscription.Dispose();
         }
 
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        public void Binding_Producing_UnsetValue_Does_Not_Cause_Unsubscribe(BindingPriority priority)
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<string>>();
+            
+            target.Bind(Class1.FooProperty, source, priority);
+
+            source.OnNext("foo");
+            Assert.Equal("foo", target.GetValue(Class1.FooProperty));
+            source.OnNext(BindingValue<string>.Unset);
+            Assert.Equal("foodefault", target.GetValue(Class1.FooProperty));
+            source.OnNext("bar");
+            Assert.Equal("bar", target.GetValue(Class1.FooProperty));
+        }
+
         [Fact]
         public void Produces_Correct_Values_And_Base_Values_With_Multiple_Animation_Bindings()
         {

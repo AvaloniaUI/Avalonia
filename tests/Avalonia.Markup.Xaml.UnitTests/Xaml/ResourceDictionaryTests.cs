@@ -307,7 +307,30 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
                 Assert.True(buttonResources.ContainsDeferredKey("Red"));
             }
         }
-        
+
+        [Fact]
+        public void Dynamically_Changing_Referenced_Resources_Works_With_DynamicResource()
+        {
+            var xaml = @"
+<UserControl xmlns='https://github.com/avaloniaui'
+     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+  <UserControl.Resources>
+    <Color x:Key='color'>Red</Color>
+    <SolidColorBrush x:Key='brush' Color='{DynamicResource color}' />
+  </UserControl.Resources>
+</UserControl>";
+
+            var userControl = (UserControl)AvaloniaRuntimeXamlLoader.Load(xaml);
+
+            Assert.Equal(Colors.Red, ((ISolidColorBrush)userControl.FindResource("brush")!).Color);
+
+            userControl.Resources.Remove("color");
+            Assert.Equal(default, ((ISolidColorBrush)userControl.FindResource("brush")!).Color);
+
+            userControl.Resources.Add("color", Colors.Blue);
+            Assert.Equal(Colors.Blue, ((ISolidColorBrush)userControl.FindResource("brush")!).Color);
+        }
+
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(
