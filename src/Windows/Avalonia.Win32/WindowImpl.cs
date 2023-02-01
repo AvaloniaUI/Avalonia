@@ -35,10 +35,7 @@ namespace Avalonia.Win32
     /// Window implementation for Win32 platform.
     /// </summary>
     [Unstable]
-    public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithNativeControlHost,
-        ITopLevelImplWithTextInputMethod,
-        ITopLevelImplWithStorageProvider
+    public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
     {
         private static readonly List<WindowImpl> s_instances = new List<WindowImpl>();
 
@@ -83,6 +80,7 @@ namespace Avalonia.Win32
         private readonly bool _wmPointerEnabled;
 
         private Win32NativeControlHost _nativeControlHost;
+        private IStorageProvider _storageProvider;
         private WndProc _wndProcDelegate;
         private string _className;
         private IntPtr _hwnd;
@@ -183,7 +181,7 @@ namespace Avalonia.Win32
             }
 
             Screen = new ScreenImpl();
-            StorageProvider = new Win32StorageProvider(this);
+            _storageProvider = new Win32StorageProvider(this);
 
             _nativeControlHost = new Win32NativeControlHost(this, _isUsingComposition);
             s_instances.Add(this);
@@ -322,6 +320,26 @@ namespace Avalonia.Win32
 
         private bool IsMouseInPointerEnabled => _wmPointerEnabled && IsMouseInPointerEnabled();
 
+        public object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(ITextInputMethodImpl))
+            {
+                return Imm32InputMethod.Current;
+            }
+
+            if (featureType == typeof(INativeControlHostImpl))
+            {
+                return _nativeControlHost;
+            }
+            
+            if (featureType == typeof(IStorageProvider))
+            {
+                return _storageProvider;
+            }
+
+            return null;
+        }
+        
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
             TransparencyLevel = EnableBlur(transparencyLevel);
@@ -558,32 +576,8 @@ namespace Avalonia.Win32
             _maxSize = maxSize;
         }
 
-        public IRenderer CreateRenderer(IRenderRoot root)
-        {
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-
-            if (customRendererFactory != null)
-                return customRendererFactory.Create(root, loop);
-
-            if (Win32Platform.Compositor != null)
-                return new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
-
-            return Win32Platform.UseDeferredRendering
-                ? _isUsingComposition
-                    ? new DeferredRenderer(root, loop, 
-                        () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
-                        Win32Platform.RenderInterface)
-                    {
-                        RenderOnlyOnRenderThread = true
-                    }
-                    : (IRenderer)new DeferredRenderer(root, loop, rendererLock: _rendererLock,
-                        renderTargetFactory: () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
-                        renderInterface: Win32Platform.RenderInterface)
-                : new ImmediateRenderer((Visual)root, 
-                    () => Win32Platform.RenderInterface.CreateRenderTarget(Surfaces),
-                    Win32Platform.RenderInterface);
-        }
+        public IRenderer CreateRenderer(IRenderRoot root) =>
+            new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
 
         public void Resize(Size value, PlatformResizeReason reason)
         {
@@ -1488,10 +1482,6 @@ namespace Avalonia.Win32
 
             public void Dispose() => _owner._resizeReason = _restore;
         }
-
-        public ITextInputMethodImpl TextInputMethod => Imm32InputMethod.Current;
-
-        public IStorageProvider StorageProvider { get; }
 
         private class WindowImplPlatformHandle : IPlatformNativeSurfaceHandle
         {

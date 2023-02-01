@@ -74,16 +74,16 @@ namespace Avalonia.Styling
 
         public event EventHandler? OwnerChanged;
 
-        public bool TryGetResource(object key, out object? result)
+        public bool TryGetResource(object key, ThemeVariant? themeVariant, out object? result)
         {
-            if (_resources is not null && _resources.TryGetResource(key, out result))
+            if (_resources is not null && _resources.TryGetResource(key, themeVariant, out result))
                 return true;
 
             if (_children is not null)
             {
                 for (var i = 0; i < _children.Count; ++i)
                 {
-                    if (_children[i].TryGetResource(key, out result))
+                    if (_children[i].TryGetResource(key, themeVariant, out result))
                         return true;
                 }
             }

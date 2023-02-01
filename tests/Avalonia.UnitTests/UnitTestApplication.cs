@@ -10,6 +10,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Concurrency;
 using Avalonia.Input.Platform;
 using Avalonia.Animation;
+using Avalonia.Media;
 
 namespace Avalonia.UnitTests
 {
@@ -69,6 +70,10 @@ namespace Avalonia.UnitTests
                 .Bind<ICursorFactory>().ToConstant(Services.StandardCursorFactory)
                 .Bind<IWindowingPlatform>().ToConstant(Services.WindowingPlatform)
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
+            
+            // This is a hack to make tests work, we need to refactor the way font manager is registered
+            // See https://github.com/AvaloniaUI/Avalonia/issues/10081
+            AvaloniaLocator.CurrentMutable.Bind<FontManager>().ToConstant((FontManager)null!);
             var theme = Services.Theme?.Invoke();
 
             if (theme is Style styles)

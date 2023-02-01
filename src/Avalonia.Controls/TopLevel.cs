@@ -1,9 +1,10 @@
 using System;
+using System.ComponentModel;
 using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Platform;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
@@ -17,7 +18,6 @@ using Avalonia.Platform.Storage;
 using Avalonia.Rendering;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using Avalonia.VisualTree;
 using Avalonia.Input.Platform;
 using System.Linq;
 
@@ -96,6 +96,7 @@ namespace Avalonia.Controls
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private readonly IPlatformRenderInterface? _renderInterface;
         private readonly IGlobalStyles? _globalStyles;
+        private readonly IGlobalThemeVariantProvider? _applicationThemeHost;
         private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
         private readonly IDisposable? _pointerOverPreProcessorSubscription;
         private readonly IDisposable? _backGestureSubscription;
@@ -106,6 +107,7 @@ namespace Avalonia.Controls
         private Border? _transparencyFallbackBorder;
         private TargetWeakEventSubscriber<TopLevel, ResourcesChangedEventArgs>? _resourcesChangesSubscriber;
         private IStorageProvider? _storageProvider;
+        private LayoutDiagnosticBridge? _layoutDiagnosticBridge;
         
         /// <summary>
         /// Initializes static members of the <see cref="TopLevel"/> class.
@@ -114,16 +116,6 @@ namespace Avalonia.Controls
         {
             KeyboardNavigation.TabNavigationProperty.OverrideDefaultValue<TopLevel>(KeyboardNavigationMode.Cycle);
             AffectsMeasure<TopLevel>(ClientSizeProperty);
-
-            TransparencyLevelHintProperty.Changed.AddClassHandler<TopLevel>(
-                (tl, e) => 
-                {
-                    if (tl.PlatformImpl != null)
-                    {
-                        tl.PlatformImpl.SetTransparencyLevelHint((WindowTransparencyLevel)e.NewValue!);
-                        tl.HandleTransparencyLevelChanged(tl.PlatformImpl.TransparencyLevel);
-                    }
-                });
         }
 
         /// <summary>
@@ -161,6 +153,7 @@ namespace Avalonia.Controls
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
+            _applicationThemeHost = TryGetService<IGlobalThemeVariantProvider>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
 
@@ -191,10 +184,15 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesAdded += ((IStyleHost)this).StylesAdded;
                 _globalStyles.GlobalStylesRemoved += ((IStyleHost)this).StylesRemoved;
             }
+            if (_applicationThemeHost is { })
+            {
+                SetValue(ActualThemeVariantProperty, _applicationThemeHost.ActualThemeVariant, BindingPriority.Template);
+                _applicationThemeHost.ActualThemeVariantChanged += GlobalActualThemeVariantChanged;
+            }
 
             ClientSize = impl.ClientSize;
             FrameSize = impl.FrameSize;
-            
+
             this.GetObservable(PointerOverElementProperty)
                 .Select(
                     x => (x as InputElement)?.GetObservable(CursorProperty) ?? Observable.Empty<Cursor>())
@@ -216,9 +214,9 @@ namespace Avalonia.Controls
             _pointerOverPreProcessor = new PointerOverPreProcessor(this);
             _pointerOverPreProcessorSubscription = _inputManager?.PreProcess.Subscribe(_pointerOverPreProcessor);
 
-            if(impl is ITopLevelWithSystemNavigationManager topLevelWithSystemNavigation)
+            if(impl.TryGetFeature<ISystemNavigationManagerImpl>() is {} systemNavigationManager)
             {
-                topLevelWithSystemNavigation.SystemNavigationManager.BackRequested += (s, e) =>
+                systemNavigationManager.BackRequested += (s, e) =>
                 {
                     e.RoutedEvent = BackRequestedEvent;
                     RaiseEvent(e);
@@ -315,6 +313,13 @@ namespace Avalonia.Controls
             set => SetValue(TransparencyBackgroundFallbackProperty, value);
         }
 
+        /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariant"/>
+        public ThemeVariant? RequestedThemeVariant
+        {
+            get => GetValue(RequestedThemeVariantProperty);
+            set => SetValue(RequestedThemeVariantProperty, value);
+        }
+
         /// <summary>
         /// Occurs when physical Back Button is pressed or a back navigation has been requested.
         /// </summary>
@@ -328,8 +333,17 @@ namespace Avalonia.Controls
         {
             get
             {
-                if (_layoutManager == null)
+                if (_layoutManager is null)
+                {
                     _layoutManager = CreateLayoutManager();
+
+                    if (_layoutManager is LayoutManager typedLayoutManager && Renderer is not null)
+                    {
+                        _layoutDiagnosticBridge = new LayoutDiagnosticBridge(Renderer.Diagnostics, typedLayoutManager);
+                        _layoutDiagnosticBridge.SetupBridge();
+                    }
+                }
+
                 return _layoutManager;
             }
         }
@@ -382,14 +396,8 @@ namespace Avalonia.Controls
         
         public IStorageProvider StorageProvider => _storageProvider
             ??= AvaloniaLocator.Current.GetService<IStorageProviderFactory>()?.CreateProvider(this)
-            ?? (PlatformImpl as ITopLevelImplWithStorageProvider)?.StorageProvider
+            ?? PlatformImpl?.TryGetFeature<IStorageProvider>()
             ?? throw new InvalidOperationException("StorageProvider platform implementation is not available.");
-        
-        /// <inheritdoc/>
-        void IRenderRoot.Invalidate(Rect rect)
-        {
-            PlatformImpl?.Invalidate(rect);
-        }
         
         /// <inheritdoc/>
         Point IRenderRoot.PointToClient(PixelPoint p)
@@ -411,6 +419,24 @@ namespace Avalonia.Controls
         public static TopLevel? GetTopLevel(Visual? visual)
         {
             return visual == null ? null : visual.VisualRoot as TopLevel;
+        }
+        
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == TransparencyLevelHintProperty)
+            {
+                if (PlatformImpl != null)
+                {
+                    PlatformImpl.SetTransparencyLevelHint(change.GetNewValue<WindowTransparencyLevel>());
+                    HandleTransparencyLevelChanged(PlatformImpl.TransparencyLevel);
+                }
+            }
+            else if (change.Property == ActualThemeVariantProperty)
+            {
+                PlatformImpl?.SetFrameThemeVariant((PlatformThemeVariant?)change.GetNewValue<ThemeVariant>() ?? PlatformThemeVariant.Light);
+            }
         }
         
         /// <summary>
@@ -437,9 +463,16 @@ namespace Avalonia.Controls
                 _globalStyles.GlobalStylesAdded -= ((IStyleHost)this).StylesAdded;
                 _globalStyles.GlobalStylesRemoved -= ((IStyleHost)this).StylesRemoved;
             }
+            if (_applicationThemeHost is { })
+            {
+                _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
+            }
 
             Renderer?.Dispose();
             Renderer = null!;
+
+            _layoutDiagnosticBridge?.Dispose();
+            _layoutDiagnosticBridge = null;
 
             _pointerOverPreProcessor?.OnCompleted();
             _pointerOverPreProcessorSubscription?.Dispose();
@@ -598,6 +631,11 @@ namespace Avalonia.Controls
             }
         }
 
+        private void GlobalActualThemeVariantChanged(object? sender, EventArgs e)
+        {
+            SetValue(ActualThemeVariantProperty, ((IGlobalThemeVariantProvider)sender!).ActualThemeVariant, BindingPriority.Template);
+        }
+
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)
         {
             _pointerOverPreProcessor?.SceneInvalidated(e.DirtyRect);
@@ -622,7 +660,50 @@ namespace Avalonia.Controls
             // Do nothing becuase TopLevel should't apply MirrorTransform on himself.
         }
 
-        ITextInputMethodImpl? ITextInputMethodRoot.InputMethod =>
-            (PlatformImpl as ITopLevelImplWithTextInputMethod)?.TextInputMethod;
+        ITextInputMethodImpl? ITextInputMethodRoot.InputMethod => PlatformImpl?.TryGetFeature<ITextInputMethodImpl>();
+
+        /// <summary>
+        /// Provides layout pass timing from the layout manager to the renderer, for diagnostics purposes.
+        /// </summary>
+        private sealed class LayoutDiagnosticBridge : IDisposable
+        {
+            private readonly RendererDiagnostics _diagnostics;
+            private readonly LayoutManager _layoutManager;
+            private bool _isHandling;
+
+            public LayoutDiagnosticBridge(RendererDiagnostics diagnostics, LayoutManager layoutManager)
+            {
+                _diagnostics = diagnostics;
+                _layoutManager = layoutManager;
+
+                diagnostics.PropertyChanged += OnDiagnosticsPropertyChanged;
+            }
+
+            public void SetupBridge()
+            {
+                var needsHandling = (_diagnostics.DebugOverlays & RendererDebugOverlays.LayoutTimeGraph) != 0;
+                if (needsHandling != _isHandling)
+                {
+                    _isHandling = needsHandling;
+                    _layoutManager.LayoutPassTimed = needsHandling
+                        ? timing => _diagnostics.LastLayoutPassTiming = timing
+                        : null;
+                }
+            }
+
+            private void OnDiagnosticsPropertyChanged(object? sender, PropertyChangedEventArgs e)
+            {
+                if (e.PropertyName == nameof(RendererDiagnostics.DebugOverlays))
+                {
+                    SetupBridge();
+                }
+            }
+
+            public void Dispose()
+            {
+                _diagnostics.PropertyChanged -= OnDiagnosticsPropertyChanged;
+                _layoutManager.LayoutPassTimed = null;
+            }
+        }
     }
 }

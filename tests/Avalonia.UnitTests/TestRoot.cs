@@ -1,9 +1,7 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Styling;
@@ -18,7 +16,7 @@ namespace Avalonia.UnitTests
 
         public TestRoot()
         {
-            Renderer = Mock.Of<IRenderer>();
+            Renderer = RendererMocks.CreateRenderer().Object;
             LayoutManager = new LayoutManager(this);
             IsVisible = true;
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);

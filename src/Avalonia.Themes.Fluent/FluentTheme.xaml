@@ -6,13 +6,10 @@
       <ResourceDictionary.MergedDictionaries>
         <MergeResourceInclude Source="/Accents/AccentColors.xaml" />
         <MergeResourceInclude Source="/Accents/Base.xaml" />
+        <MergeResourceInclude Source="/Accents/FluentControlResources.xaml" />
       </ResourceDictionary.MergedDictionaries>
       
       <!-- These are not part of MergedDictionaries so we can add or remove them easier -->
-      <ResourceInclude x:Key="BaseDark" Source="/Accents/BaseDark.xaml" />
-      <ResourceInclude x:Key="FluentDark" Source="/Accents/FluentControlResourcesDark.xaml" />
-      <ResourceInclude x:Key="BaseLight" Source="/Accents/BaseLight.xaml" />
-      <ResourceInclude x:Key="FluentLight" Source="/Accents/FluentControlResourcesLight.xaml" />
       <StyleInclude x:Key="CompactStyles" Source="/DensityStyles/Compact.xaml" />
     </ResourceDictionary>
   </Styles.Resources>
