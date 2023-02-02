@@ -29,7 +29,7 @@ internal static class VulkanMemoryHelper
         AccessFlags destinationAccessMask,
         uint mipLevels)
     {
-        var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.ImageAspectColorBit, 0, mipLevels, 0, 1);
+        var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.ColorBit, 0, mipLevels, 0, 1);
 
         var barrier = new ImageMemoryBarrier
         {
@@ -46,8 +46,8 @@ internal static class VulkanMemoryHelper
 
         api.CmdPipelineBarrier(
             commandBuffer,
-            PipelineStageFlags.PipelineStageAllCommandsBit,
-            PipelineStageFlags.PipelineStageAllCommandsBit,
+            PipelineStageFlags.AllCommandsBit,
+            PipelineStageFlags.AllCommandsBit,
             0,
             0,
             null,

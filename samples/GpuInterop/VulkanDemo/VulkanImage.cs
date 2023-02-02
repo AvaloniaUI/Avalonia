@@ -54,8 +54,8 @@ public unsafe class VulkanImage : IDisposable
             Size = size;
             MipLevels = 1;//mipLevels;
             _imageUsageFlags =
-                ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferDstBit |
-                ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageSampledBit;
+                ImageUsageFlags.ColorAttachmentBit | ImageUsageFlags.TransferDstBit |
+                ImageUsageFlags.TransferSrcBit | ImageUsageFlags.SampledBit;
             
             //MipLevels = MipLevels != 0 ? MipLevels : (uint)Math.Floor(Math.Log(Math.Max(Size.Width, Size.Height), 2));
 
@@ -72,19 +72,19 @@ public unsafe class VulkanImage : IDisposable
             {
                 PNext = exportable ? &externalMemoryCreateInfo : null,
                 SType = StructureType.ImageCreateInfo,
-                ImageType = ImageType.ImageType2D,
+                ImageType = ImageType.Type2D,
                 Format = Format,
                 Extent =
                     new Extent3D((uint?)Size.Width,
                         (uint?)Size.Height, 1),
                 MipLevels = MipLevels,
                 ArrayLayers = 1,
-                Samples = SampleCountFlags.SampleCount1Bit,
+                Samples = SampleCountFlags.Count1Bit,
                 Tiling = Tiling,
                 Usage = _imageUsageFlags,
                 SharingMode = SharingMode.Exclusive,
                 InitialLayout = ImageLayout.Undefined,
-                Flags = ImageCreateFlags.ImageCreateMutableFormatBit
+                Flags = ImageCreateFlags.CreateMutableFormatBit
             };
 
             Api
@@ -128,7 +128,7 @@ public unsafe class VulkanImage : IDisposable
                 MemoryTypeIndex = (uint)VulkanMemoryHelper.FindSuitableMemoryTypeIndex(
                     Api,
                     _physicalDevice,
-                    memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit)
+                    memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.DeviceLocalBit)
             };
 
             Api.AllocateMemory(_device, memoryAllocateInfo, null,
@@ -146,7 +146,7 @@ public unsafe class VulkanImage : IDisposable
                 ComponentSwizzle.Identity,
                 ComponentSwizzle.Identity);
 
-            AspectFlags = ImageAspectFlags.ImageAspectColorBit;
+            AspectFlags = ImageAspectFlags.ColorBit;
 
             var subresourceRange = new ImageSubresourceRange(AspectFlags, 0, MipLevels, 0, 1);
 
@@ -154,7 +154,7 @@ public unsafe class VulkanImage : IDisposable
             {
                 SType = StructureType.ImageViewCreateInfo,
                 Image = InternalHandle.Value,
-                ViewType = ImageViewType.ImageViewType2D,
+                ViewType = ImageViewType.Type2D,
                 Format = Format,
                 Components = componentMapping,
                 SubresourceRange = subresourceRange
@@ -168,7 +168,7 @@ public unsafe class VulkanImage : IDisposable
 
             _currentLayout = ImageLayout.Undefined;
 
-            TransitionLayout(ImageLayout.ColorAttachmentOptimal, AccessFlags.AccessNoneKhr);
+            TransitionLayout(ImageLayout.ColorAttachmentOptimal, AccessFlags.NoneKhr);
         }
 
         public int ExportFd()
