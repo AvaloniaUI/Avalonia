@@ -660,6 +660,90 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
             }
         }
 
+        [Fact]
+        public void Should_Return_Null_For_Empty_TextSource()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties);
+                var textSource = new EmptyTextSource();
+
+                var textLine = TextFormatter.Current.FormatLine(textSource, 0, double.PositiveInfinity, paragraphProperties);
+
+                Assert.Null(textLine);
+            }
+        }
+
+        [Fact]
+        public void Should_Retain_TextEndOfParagraph_With_TextWrapping()
+        {
+            using (Start())
+            {
+                var defaultRunProperties = new GenericTextRunProperties(Typeface.Default);
+                var paragraphProperties = new GenericTextParagraphProperties(defaultRunProperties, textWrap: TextWrapping.Wrap);
+
+                var text = "Hello World";
+
+                var textSource = new SimpleTextSource(text, defaultRunProperties);
+
+                var pos = 0;
+
+                TextLineBreak previousLineBreak = null;
+                TextLine textLine = null;
+
+                while (pos < text.Length)
+                {
+                    textLine = TextFormatter.Current.FormatLine(textSource, pos, 30, paragraphProperties, previousLineBreak);
+
+                    pos += textLine.Length;
+
+                    previousLineBreak = textLine.TextLineBreak;
+                }
+
+                Assert.NotNull(textLine);
+
+                Assert.NotNull(textLine.TextLineBreak.TextEndOfLine);
+            }
+        }
+
+        protected readonly record struct SimpleTextSource : ITextSource
+        {
+            private readonly string _text;
+            private readonly TextRunProperties _defaultProperties;
+
+            public SimpleTextSource(string text, TextRunProperties defaultProperties)
+            {
+                _text = text;
+                _defaultProperties = defaultProperties;
+            }
+
+            public TextRun? GetTextRun(int textSourceIndex)
+            {
+                if (textSourceIndex > _text.Length)
+                {
+                    return new TextEndOfParagraph();
+                }
+
+                var runText = _text.AsMemory(textSourceIndex);
+
+                if (runText.IsEmpty)
+                {
+                    return new TextEndOfParagraph();
+                }
+
+                return new TextCharacters(runText, _defaultProperties);
+            }
+        }
+
+        private class EmptyTextSource : ITextSource
+        {
+            public TextRun GetTextRun(int textSourceIndex)
+            {
+                return null;
+            }
+        }
+
         private class EndOfLineTextSource : ITextSource
         {
             public TextRun GetTextRun(int textSourceIndex)

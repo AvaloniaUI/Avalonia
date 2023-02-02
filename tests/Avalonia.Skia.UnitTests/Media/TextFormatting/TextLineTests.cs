@@ -604,19 +604,19 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 textBounds = textLine.GetTextBounds(0, 20);
 
-                Assert.Equal(2, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
 
                 Assert.Equal(144.0234375, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 30);
 
-                Assert.Equal(3, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
 
                 Assert.Equal(216.03515625, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 40);
 
-                Assert.Equal(4, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
 
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width));
             }
@@ -847,7 +847,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var textBounds = textLine.GetTextBounds(0, textLine.Length);
 
-                Assert.Equal(6, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
                 Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(0, 1);
@@ -857,7 +857,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 textBounds = textLine.GetTextBounds(0, firstRun.Length + 1);
 
-                Assert.Equal(2, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
                 Assert.Equal(firstRun.Size.Width + 14, textBounds.Sum(x => x.Rectangle.Width));
 
                 textBounds = textLine.GetTextBounds(1, firstRun.Length);
@@ -867,7 +867,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 textBounds = textLine.GetTextBounds(0, 1 + firstRun.Length);
 
-                Assert.Equal(2, textBounds.Count);
+                Assert.Equal(1, textBounds.Count);
                 Assert.Equal(firstRun.Size.Width + 14, textBounds.Sum(x => x.Rectangle.Width));
             }
         }
@@ -958,6 +958,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 Assert.Equal(secondRun.Size.Width, textBounds[1].Rectangle.Width);
                 Assert.Equal(7.201171875, textBounds[0].Rectangle.Width);
+
                 Assert.Equal(textLine.Start + 7.201171875, textBounds[0].Rectangle.Right);
                 Assert.Equal(textLine.Start + firstRun.Size.Width, textBounds[1].Rectangle.Left);
 

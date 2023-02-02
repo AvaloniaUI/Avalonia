@@ -18,7 +18,7 @@ namespace Avalonia.Media.TextFormatting
         [ThreadStatic] private static BidiAlgorithm? t_bidiAlgorithm;
 
         /// <inheritdoc cref="TextFormatter.FormatLine"/>
-        public override TextLine FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
+        public override TextLine? FormatLine(ITextSource textSource, int firstTextSourceIndex, double paragraphWidth,
             TextParagraphProperties paragraphProperties, TextLineBreak? previousLineBreak = null)
         {
             TextLineBreak? nextLineBreak = null;
@@ -40,6 +40,11 @@ namespace Avalonia.Media.TextFormatting
             {
                 fetchedRuns = FetchTextRuns(textSource, firstTextSourceIndex, objectPool, out var textEndOfLine,
                     out var textSourceLength);
+
+                if (fetchedRuns.Count == 0)
+                {
+                    return null;
+                }
 
                 shapedTextRuns = ShapeTextRuns(fetchedRuns, paragraphProperties, objectPool, fontManager,
                     out var resolvedFlowDirection);
@@ -491,16 +496,7 @@ namespace Avalonia.Media.TextFormatting
 
             while (textRunEnumerator.MoveNext())
             {
-                var textRun = textRunEnumerator.Current;
-
-                if (textRun == null)
-                {
-                    textRuns.Add(new TextEndOfParagraph());
-
-                    textSourceLength += TextRun.DefaultTextSourceLength;
-
-                    break;
-                }
+                TextRun textRun = textRunEnumerator.Current!;
 
                 if (textRun is TextEndOfLine textEndOfLine)
                 {
