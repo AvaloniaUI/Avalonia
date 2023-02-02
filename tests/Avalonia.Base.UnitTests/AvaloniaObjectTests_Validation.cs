@@ -78,6 +78,20 @@ namespace Avalonia.Base.UnitTests
             Assert.Equal(11, target.GetValue(Class1.FooProperty));
         }
 
+        [Theory]
+        [InlineData(BindingPriority.LocalValue)]
+        [InlineData(BindingPriority.Style)]
+        public void Reverts_To_DefaultValue_If_Style_Binding_Fails_Validation_3(BindingPriority priority)
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<int>>();
+
+            target.Bind(Class1.FooProperty, source, priority);
+            source.OnNext(150);
+
+            Assert.Equal(11, target.GetValue(Class1.FooProperty));
+        }
+
         [Fact]
         public void Reverts_To_DefaultValue_Even_In_Presence_Of_Other_Bindings()
         {
