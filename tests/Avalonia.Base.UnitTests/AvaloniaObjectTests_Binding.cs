@@ -373,6 +373,20 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
+        public void LocalValue_Bind_Generic_To_ValueType_Accepts_UnsetValue()
+        {
+            var target = new Class1();
+            var source = new Subject<BindingValue<double>>();
+
+            target.Bind(Class1.QuxProperty, source);
+            source.OnNext(6.7);
+            source.OnNext(BindingValue<double>.Unset);
+
+            Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
+            Assert.True(target.IsSet(Class1.QuxProperty));
+        }
+
+        [Fact]
         public void LocalValue_Bind_NonGeneric_To_ValueType_Accepts_UnsetValue()
         {
             var target = new Class1();
@@ -383,7 +397,7 @@ namespace Avalonia.Base.UnitTests
             source.OnNext(AvaloniaProperty.UnsetValue);
 
             Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
-            Assert.False(target.IsSet(Class1.QuxProperty));
+            Assert.True(target.IsSet(Class1.QuxProperty));
         }
 
         [Fact]
@@ -397,7 +411,7 @@ namespace Avalonia.Base.UnitTests
             source.OnNext(AvaloniaProperty.UnsetValue);
 
             Assert.Equal(5.6, target.GetValue(Class1.QuxProperty));
-            Assert.False(target.IsSet(Class1.QuxProperty));
+            Assert.True(target.IsSet(Class1.QuxProperty));
         }
 
         [Fact]

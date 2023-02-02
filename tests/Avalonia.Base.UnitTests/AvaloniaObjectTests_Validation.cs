@@ -66,7 +66,7 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Reverts_To_Lower_Priority_If_Style_Binding_Fails_Validation()
+        public void Reverts_To_DefaultValue_If_Style_Binding_Fails_Validation_2()
         {
             var target = new Class1();
             var source = new Subject<int>();
@@ -75,7 +75,7 @@ namespace Avalonia.Base.UnitTests
             target.Bind(Class1.FooProperty, source, BindingPriority.StyleTrigger);
             source.OnNext(150);
 
-            Assert.Equal(10, target.GetValue(Class1.FooProperty));
+            Assert.Equal(11, target.GetValue(Class1.FooProperty));
         }
 
         [Fact]
