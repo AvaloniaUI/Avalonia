@@ -39,7 +39,8 @@ namespace Avalonia.Rendering.Composition.Expressions
         }
     }
 
-    internal class PrettyPrintStringAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Field)]
+    internal sealed class PrettyPrintStringAttribute : Attribute
     {
         public string Name { get; }
 

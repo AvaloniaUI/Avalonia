@@ -3,7 +3,7 @@ using System;
 namespace Avalonia.OpenGL
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    class GlMinVersionEntryPoint : Attribute
+    sealed class GlMinVersionEntryPoint : Attribute
     {
         public GlMinVersionEntryPoint(string entry, int minVersionMajor, int minVersionMinor)
         {
@@ -28,7 +28,7 @@ namespace Avalonia.OpenGL
     }
     
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    class GlExtensionEntryPoint : Attribute
+    sealed class GlExtensionEntryPoint : Attribute
     {
         public GlExtensionEntryPoint(string entry, string extension)
         {
