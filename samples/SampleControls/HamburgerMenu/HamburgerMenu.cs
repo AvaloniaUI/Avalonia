@@ -52,6 +52,14 @@ namespace ControlSamples
                 var (oldBounds, newBounds) = change.GetOldAndNewValue<Rect>();
                 EnsureSplitViewMode(oldBounds, newBounds);
             }
+
+            if (change.Property == SelectedItemProperty)
+            {
+                if (_splitView is not null && _splitView.DisplayMode == SplitViewDisplayMode.Overlay)
+                {
+                    _splitView.SetValue(SplitView.IsPaneOpenProperty, false, Avalonia.Data.BindingPriority.Animation);
+                }
+            }
         }
 
         private void EnsureSplitViewMode(Rect oldBounds, Rect newBounds)
@@ -60,12 +68,12 @@ namespace ControlSamples
             {
                 var threshold = ExpandedModeThresholdWidth;
 
-                if (newBounds.Width >= threshold && oldBounds.Width < threshold)
+                if (newBounds.Width >= threshold)
                 {
                     _splitView.DisplayMode = SplitViewDisplayMode.Inline;
                     _splitView.IsPaneOpen = true;
                 }
-                else if (newBounds.Width < threshold && oldBounds.Width >= threshold)
+                else if (newBounds.Width < threshold)
                 {
                     _splitView.DisplayMode = SplitViewDisplayMode.Overlay;
                     _splitView.IsPaneOpen = false;
