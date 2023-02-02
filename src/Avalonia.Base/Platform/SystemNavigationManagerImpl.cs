@@ -5,13 +5,7 @@ using Avalonia.Metadata;
 namespace Avalonia.Platform
 {
     [Unstable]
-    public interface ITopLevelWithSystemNavigationManager
-    {
-        ISystemNavigationManager SystemNavigationManager { get; }
-    }
-
-    [Unstable]
-    public interface ISystemNavigationManager
+    public interface ISystemNavigationManagerImpl
     {
         public event EventHandler<RoutedEventArgs>? BackRequested;
     }

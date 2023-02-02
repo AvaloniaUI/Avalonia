@@ -257,7 +257,7 @@ namespace Avalonia.Direct2D1
                 sink.Close();
             }
 
-            var (baselineOriginX, baselineOriginY) = glyphRun.PlatformImpl.Item.BaselineOrigin;
+            var (baselineOriginX, baselineOriginY) = glyphRun.BaselineOrigin;
 
             var transformedGeometry = new SharpDX.Direct2D1.TransformedGeometry(
                 Direct2D1Factory,

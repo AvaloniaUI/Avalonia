@@ -58,7 +58,7 @@ namespace Avalonia.Controls
         private void UpdateHost()
         {
             _queuedForMoveResize = false;
-            _currentHost = (_currentRoot?.PlatformImpl as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
+            _currentHost = _currentRoot?.PlatformImpl?.TryGetFeature<INativeControlHostImpl>();
             
             if (_currentHost != null)
             {

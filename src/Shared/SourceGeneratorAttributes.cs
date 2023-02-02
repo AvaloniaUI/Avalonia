@@ -16,7 +16,9 @@ namespace Avalonia.SourceGenerator
     }
     
     
-    internal class GetProcAddressAttribute : Attribute
+
+    [AttributeUsage(AttributeTargets.Method)]
+    internal sealed class GetProcAddressAttribute : Attribute
     {
         public GetProcAddressAttribute(string proc)
         {
@@ -39,11 +41,14 @@ namespace Avalonia.SourceGenerator
         }
     }
 
-    internal class GenerateEnumValueDictionaryAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Method)]
+    internal sealed class GenerateEnumValueDictionaryAttribute : Attribute
     {
     }
     
-    internal class GenerateEnumValueListAttribute : Attribute
+
+    [AttributeUsage(AttributeTargets.Method)]
+    internal sealed class GenerateEnumValueListAttribute : Attribute
     {
     }
 }

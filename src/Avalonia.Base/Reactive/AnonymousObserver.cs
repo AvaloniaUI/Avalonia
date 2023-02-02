@@ -1,9 +1,14 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Avalonia.Reactive;
 
-internal class AnonymousObserver<T> : IObserver<T>
+/// <summary>
+/// Class to create an <see cref="IObserver{T}"/> instance from delegate-based implementations of the On* methods.
+/// </summary>
+/// <typeparam name="T">The type of the elements in the sequence.</typeparam>
+public class AnonymousObserver<T> : IObserver<T>
 {
     private static readonly Action<Exception> ThrowsOnError = ex => throw ex;
     private static readonly Action NoOpCompleted = () => { };  

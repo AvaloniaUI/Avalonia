@@ -6,12 +6,6 @@ using Avalonia.Styling;
 
 namespace Avalonia.Themes.Fluent
 {
-    public enum FluentThemeMode
-    {
-        Light,
-        Dark,
-    }
-
     public enum DensityStyle
     {
         Normal,
@@ -23,10 +17,6 @@ namespace Avalonia.Themes.Fluent
     /// </summary>
     public class FluentTheme : Styles
     {
-        private readonly IResourceDictionary _baseDark;
-        private readonly IResourceDictionary _fluentDark;
-        private readonly IResourceDictionary _baseLight;
-        private readonly IResourceDictionary _fluentLight;
         private readonly Styles _compactStyles;
 
         /// <summary>
@@ -37,13 +27,8 @@ namespace Avalonia.Themes.Fluent
         {
             AvaloniaXamlLoader.Load(sp, this);
             
-            _baseDark = (IResourceDictionary)GetAndRemove("BaseDark");
-            _fluentDark = (IResourceDictionary)GetAndRemove("FluentDark");
-            _baseLight = (IResourceDictionary)GetAndRemove("BaseLight");
-            _fluentLight = (IResourceDictionary)GetAndRemove("FluentLight");
             _compactStyles = (Styles)GetAndRemove("CompactStyles");
-            
-            EnsureThemeVariants();
+
             EnsureCompactStyles();
 
             object GetAndRemove(string key)
@@ -54,21 +39,9 @@ namespace Avalonia.Themes.Fluent
                 return val;
             }
         }
-
-        public static readonly StyledProperty<FluentThemeMode> ModeProperty =
-            AvaloniaProperty.Register<FluentTheme, FluentThemeMode>(nameof(Mode));
-
+        
         public static readonly StyledProperty<DensityStyle> DensityStyleProperty =
             AvaloniaProperty.Register<FluentTheme, DensityStyle>(nameof(DensityStyle));
-
-        /// <summary>
-        /// Gets or sets the mode of the fluent theme (light, dark).
-        /// </summary>
-        public FluentThemeMode Mode
-        {
-            get => GetValue(ModeProperty);
-            set => SetValue(ModeProperty, value);
-        }
 
         /// <summary>
         /// Gets or sets the density style of the fluent theme (normal, compact).
@@ -82,32 +55,10 @@ namespace Avalonia.Themes.Fluent
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
-            
-            if (change.Property == ModeProperty)
-            {
-                EnsureThemeVariants();
-            }
 
             if (change.Property == DensityStyleProperty)
             {
                 EnsureCompactStyles();
-            }
-        }
-
-        private void EnsureThemeVariants()
-        {
-            var themeVariantResource1 = Mode == FluentThemeMode.Dark ? _baseDark : _baseLight;
-            var themeVariantResource2 = Mode == FluentThemeMode.Dark ? _fluentDark : _fluentLight;
-            var dict = Resources.MergedDictionaries;
-            if (dict.Count == 0)
-            {
-                dict.Add(themeVariantResource1);
-                dict.Add(themeVariantResource2);
-            }
-            else
-            {
-                dict[0] = themeVariantResource1;
-                dict[1] = themeVariantResource2;
             }
         }
 

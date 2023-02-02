@@ -86,12 +86,12 @@ public unsafe class VulkanContext : IDisposable
                 var debugCreateInfo = new DebugUtilsMessengerCreateInfoEXT
                 {
                     SType = StructureType.DebugUtilsMessengerCreateInfoExt,
-                    MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityVerboseBitExt |
-                                      DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityWarningBitExt |
-                                      DebugUtilsMessageSeverityFlagsEXT.DebugUtilsMessageSeverityErrorBitExt,
-                    MessageType = DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeGeneralBitExt |
-                                  DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypeValidationBitExt |
-                                  DebugUtilsMessageTypeFlagsEXT.DebugUtilsMessageTypePerformanceBitExt,
+                    MessageSeverity = DebugUtilsMessageSeverityFlagsEXT.VerboseBitExt |
+                                      DebugUtilsMessageSeverityFlagsEXT.WarningBitExt |
+                                      DebugUtilsMessageSeverityFlagsEXT.ErrorBitExt,
+                    MessageType = DebugUtilsMessageTypeFlagsEXT.GeneralBitExt |
+                                  DebugUtilsMessageTypeFlagsEXT.ValidationBitExt |
+                                  DebugUtilsMessageTypeFlagsEXT.PerformanceBitExt,
                     PfnUserCallback = new PfnDebugUtilsMessengerCallbackEXT(LogCallback),
                 };
 

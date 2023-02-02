@@ -35,11 +35,14 @@ namespace Avalonia.Rendering.Composition
         private Task? _pendingBatch;
         private readonly object _pendingBatchLock = new();
         private List<Action> _pendingServerCompositorJobs = new();
+        private DiagnosticTextRenderer? _diagnosticTextRenderer;
 
         internal IEasing DefaultEasing { get; }
 
+        private DiagnosticTextRenderer DiagnosticTextRenderer
+            => _diagnosticTextRenderer ??= new(Typeface.Default.GlyphTypeface, 12.0);
+
         internal event Action? AfterCommit;
-        
 
         /// <summary>
         /// Creates a new compositor on a specified render loop that would use a particular GPU

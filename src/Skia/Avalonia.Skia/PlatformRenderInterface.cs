@@ -86,7 +86,7 @@ namespace Avalonia.Skia
 
             SKPath path = new SKPath();
 
-            var (currentX, currentY) = glyphRun.PlatformImpl.Item.BaselineOrigin;
+            var (currentX, currentY) = glyphRun.BaselineOrigin;
 
             for (var i = 0; i < glyphRun.GlyphInfos.Count; i++)
             {
