@@ -225,6 +225,10 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="IBinding"/> instance used to obtain the 
+        /// <see cref="SelectedValue"/> property
+        /// </summary>
         [AssignBinding]
         public IBinding? SelectedValueBinding
         {
@@ -232,6 +236,10 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(SelectedValueBindingProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the value of the selected item, obtained using 
+        /// <see cref="SelectedValueBinding"/>
+        /// </summary>
         public object? SelectedValue
         {
             get => GetValue(SelectedValueProperty);
