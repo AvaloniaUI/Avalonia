@@ -77,8 +77,17 @@ namespace Avalonia.PropertyStore
 
                 LoggingUtils.LogIfNecessary(owner.Owner, property, value);
 
-                var effectiveValue = value.HasValue ? value.Value : instance.GetCachedDefaultValue();
-                owner.SetValue(property, effectiveValue, BindingPriority.LocalValue);
+                if (value.HasValue)
+                {
+                    var effectiveValue = value.Value;
+                    if (property.ValidateValue?.Invoke(effectiveValue) == false)
+                        effectiveValue = instance.GetCachedDefaultValue();
+                    owner.SetValue(property, effectiveValue, BindingPriority.LocalValue);
+                }
+                else
+                {
+                    owner.SetValue(property, instance.GetCachedDefaultValue(), BindingPriority.LocalValue);
+                }
             }
 
             if (value.Type is BindingValueType.DoNothing or BindingValueType.DataValidationError)
