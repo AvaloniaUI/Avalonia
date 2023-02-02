@@ -96,18 +96,18 @@
           <DataGrid Name="dataGridEdit" Margin="12" Grid.Row="0"
                     Items="{Binding DataGrid3Source}">
             <DataGrid.Columns>
-              <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" />
-              <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" />
-              <DataGridCheckBoxColumn Header="Is Banned" Binding="{Binding IsBanned}" Width="*" IsThreeState="{Binding #IsThreeStateCheckBox.IsChecked, Mode=OneWay}" />
+              <DataGridTextColumn Header="First Name" Binding="{Binding FirstName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" x:DataType="local:Person" />
+              <DataGridTextColumn Header="Last" Binding="{Binding LastName}" Width="2*" FontSize="{Binding #FontSizeSlider.Value, Mode=OneWay}" x:DataType="local:Person" />
+              <DataGridCheckBoxColumn Header="Is Banned" Binding="{Binding IsBanned}" Width="*" IsThreeState="{Binding #IsThreeStateCheckBox.IsChecked, Mode=OneWay}" x:DataType="local:Person" />
               <DataGridTemplateColumn Header="Age">
                 <DataGridTemplateColumn.CellTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding Age, StringFormat='{}{0} years'}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding Age, StringFormat='{}{0} years'}" VerticalAlignment="Center" HorizontalAlignment="Center" x:DataType="local:Person" />
                   </DataTemplate>
                 </DataGridTemplateColumn.CellTemplate>
                 <DataGridTemplateColumn.CellEditingTemplate>
                   <DataTemplate>
-                    <NumericUpDown Value="{Binding Age}" FormatString="N0" HorizontalAlignment="Stretch" Minimum="0" Maximum="120" TemplateApplied="NumericUpDown_OnTemplateApplied" />
+                    <NumericUpDown Value="{Binding Age}" FormatString="N0" HorizontalAlignment="Stretch" Minimum="0" Maximum="120" TemplateApplied="NumericUpDown_OnTemplateApplied" x:DataType="local:Person" />
                   </DataTemplate>
                 </DataGridTemplateColumn.CellEditingTemplate>
               </DataGridTemplateColumn>
