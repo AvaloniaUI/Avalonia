@@ -76,7 +76,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        "An AvaloniaProperty should be stored in a field or property which contains its name. For example, a property named \"Brush\" should be assigned to a field called \"BrushProperty\".",
+        "An AvaloniaProperty should be stored in a field or property which contains its name. For example, a property named \"Brush\" should be assigned to a field called \"BrushProperty\".\nPrivate symbols are exempt from this diagnostic.",
         NameCollisionTag);
 
     private static readonly DiagnosticDescriptor AccessorSideEffects = new(

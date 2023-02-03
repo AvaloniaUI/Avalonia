@@ -61,7 +61,7 @@ public partial class AvaloniaPropertyAnalyzer
             _avaloniaPropertyAddOwnerMethods = _allAvaloniaPropertyTypes
                 .SelectMany(t => t.GetMembers("AddOwner").OfType<IMethodSymbol>()).ToImmutableHashSet(methodComparer);
 
-            FindAvaloniaPropertySymbols(context.Compilation, context.CancellationToken);
+            RegisterAvaloniaPropertySymbols(context.Compilation, context.CancellationToken);
 
             context.RegisterOperationAction(AnalyzeFieldInitializer, OperationKind.FieldInitializer);
             context.RegisterOperationAction(AnalyzePropertyInitializer, OperationKind.PropertyInitializer);
@@ -80,7 +80,7 @@ public partial class AvaloniaPropertyAnalyzer
         private bool IsAvaloniaPropertyStorage(IFieldSymbol symbol) => symbol.Type is INamedTypeSymbol namedType && IsAvaloniaPropertyType(namedType, _allAvaloniaPropertyTypes);
         private bool IsAvaloniaPropertyStorage(IPropertySymbol symbol) => symbol.Type is INamedTypeSymbol namedType && IsAvaloniaPropertyType(namedType, _allAvaloniaPropertyTypes);
 
-        private void FindAvaloniaPropertySymbols(Compilation compilation, CancellationToken cancellationToken)
+        private void RegisterAvaloniaPropertySymbols(Compilation compilation, CancellationToken cancellationToken)
         {
             var namespaceStack = new Stack<INamespaceSymbol>();
             namespaceStack.Push(compilation.GlobalNamespace);
@@ -394,6 +394,7 @@ public partial class AvaloniaPropertyAnalyzer
             }
         }
 
+        /// <seealso cref="InappropriatePropertyAssignment"/>
         private void AnalyzeFieldInitializer(OperationAnalysisContext context)
         {
             var operation = (IFieldInitializerOperation)context.Operation;
@@ -422,6 +423,7 @@ public partial class AvaloniaPropertyAnalyzer
             }
         }
 
+        /// <seealso cref="InappropriatePropertyAssignment"/>
         private void AnalyzePropertyInitializer(OperationAnalysisContext context)
         {
             var operation = (IPropertyInitializerOperation)context.Operation;
@@ -449,6 +451,7 @@ public partial class AvaloniaPropertyAnalyzer
             }
         }
 
+        /// <seealso cref="InappropriatePropertyAssignment"/>
         private void AnalyzeAssignment(OperationAnalysisContext context)
         {
             var operation = (IAssignmentOperation)context.Operation;
@@ -480,9 +483,11 @@ public partial class AvaloniaPropertyAnalyzer
             }
         }
 
+        /// <seealso cref="PropertyNameMismatch"/>
+        /// <seealso cref="OwnerDoesNotMatchOuterType"/>
         private void AnalyzeInitializer_Shared(OperationAnalysisContext context, ISymbol assignmentSymbol, AvaloniaPropertyDescription description)
         {
-            if (!assignmentSymbol.Name.Contains(description.Name))
+            if (!assignmentSymbol.Name.Contains(description.Name) && assignmentSymbol.DeclaredAccessibility != Accessibility.Private)
             {
                 context.ReportDiagnostic(Diagnostic.Create(PropertyNameMismatch, assignmentSymbol.Locations[0],
                     description.Name, assignmentSymbol));
@@ -503,6 +508,11 @@ public partial class AvaloniaPropertyAnalyzer
             }
         }
 
+        /// <seealso cref="AmbiguousPropertyName"/>
+        /// <seealso cref="PropertyTypeMismatch"/>
+        /// <seealso cref="AssociatedAvaloniaProperty"/>
+        /// <seealso cref="InconsistentAccessibility"/>
+        /// <seealso cref="MissingAccessor"/>
         private void StartPropertySymbolAnalysis(SymbolStartAnalysisContext context)
         {
             var property = (IPropertySymbol)context.Symbol;
@@ -571,6 +581,7 @@ public partial class AvaloniaPropertyAnalyzer
             }
         }
 
+        /// <seealso cref="AccessorSideEffects"/>
         private void AnalyzePropertyMethods(CodeBlockAnalysisContext context)
         {
             if (context.OwningSymbol is not IMethodSymbol { AssociatedSymbol: IPropertySymbol property } method)
