@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.CodeAnalysis;
@@ -135,7 +136,13 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
 
-        context.RegisterCompilationStartAction(c => new CompileAnalyzer(c));
+        context.RegisterCompilationStartAction(c =>
+        {
+            if (c.Compilation.GetTypeByMetadataName("Avalonia.AvaloniaObject") is { } avaloniaObjectType)
+            {
+                new CompileAnalyzer(c, avaloniaObjectType);
+            }
+        });
     }
 
     private static bool IsAvaloniaPropertyType(INamedTypeSymbol type, params INamedTypeSymbol[] propertyTypes) => IsAvaloniaPropertyType(type, propertyTypes.AsEnumerable());
@@ -224,23 +231,57 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         /// <summary>
         /// Gets the type which registered the property, and all types which have added themselves as owners.
         /// </summary>
-        public ConcurrentBag<TypeReference> OwnerTypes { get; } = new();
+        public IReadOnlyCollection<TypeReference> OwnerTypes { get; private set; }
+        private ConcurrentBag<TypeReference>? _ownerTypes = new();
 
         /// <summary>
         /// Gets a dictionary which maps fields and properties which were initialized with this AvaloniaProperty to the TOwner specified at each assignment.
         /// </summary>
-        public ConcurrentDictionary<ISymbol, TypeReference> AssignedTo { get; } = new(SymbolEqualityComparer.Default);
+        public IReadOnlyDictionary<ISymbol, TypeReference> AssignedTo { get; private set; }
+        private ConcurrentDictionary<ISymbol, TypeReference>? _assignedTo = new(SymbolEqualityComparer.Default);
 
         /// <summary>
         /// Gets properties which provide convenient access to the AvaloniaProperty on an instance of an AvaloniaObject.
         /// </summary>
-        public ConcurrentBag<IPropertySymbol> PropertyWrappers { get; } = new();
+        public IReadOnlyCollection<IPropertySymbol> PropertyWrappers { get; private set; }
+        private ConcurrentBag<IPropertySymbol>? _propertyWrappers = new();
 
         public AvaloniaPropertyDescription(string name, INamedTypeSymbol propertyType, INamedTypeSymbol valueType)
         {
             Name = name;
             PropertyType = propertyType;
             ValueType = valueType;
+
+            OwnerTypes = _ownerTypes;
+            PropertyWrappers = _propertyWrappers;
+            AssignedTo = _assignedTo;
+        }
+
+        private const string SealedError = "PropertyDescription has been sealed.";
+
+        public void AddOwner(TypeReference owner) => (_ownerTypes ?? throw new InvalidOperationException(SealedError)).Add(owner);
+
+        public void AddPropertyWrapper(IPropertySymbol property) => (_propertyWrappers ?? throw new InvalidOperationException(SealedError)).Add(property);
+
+        public void AddAssignment(ISymbol assignmentTarget, TypeReference ownerType) => (_assignedTo ?? throw new InvalidOperationException(SealedError)).TryAdd(assignmentTarget, ownerType);
+
+        public AvaloniaPropertyDescription Seal()
+        {
+            if (_ownerTypes == null || _propertyWrappers == null || _assignedTo == null)
+            {
+                return this;
+            }
+
+            OwnerTypes = _ownerTypes.ToImmutableHashSet();
+            _ownerTypes = null;
+
+            PropertyWrappers = _propertyWrappers.ToImmutableHashSet<IPropertySymbol>(SymbolEqualityComparer.Default);
+            _propertyWrappers = null;
+
+            AssignedTo = new ReadOnlyDictionary<ISymbol, TypeReference>(_assignedTo);
+            _assignedTo = null;
+
+            return this;
         }
 
         /// <summary>
@@ -273,6 +314,14 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
             Type = type;
             Location = location;
         }
+    }
+
+    private class SymbolEqualityComparer<T> : IEqualityComparer<T> where T : ISymbol
+    {
+        public bool Equals(T x, T y) => SymbolEqualityComparer.Default.Equals(x, y);
+        public int GetHashCode(T obj) => SymbolEqualityComparer.Default.GetHashCode(obj);
+
+        public static SymbolEqualityComparer<T> Default { get; } = new();
     }
 }
 

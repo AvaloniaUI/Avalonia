@@ -20,9 +20,12 @@ public partial class AvaloniaPropertyAnalyzer
         /// <summary>
         /// A dictionary that maps field/property symbols to the AvaloniaProperty objects assigned to them.
         /// </summary>
-        private readonly ConcurrentDictionary<ISymbol, AvaloniaPropertyDescription> _avaloniaProperyDescriptions = new(SymbolEqualityComparer.Default);
+        private ImmutableDictionary<ISymbol, AvaloniaPropertyDescription> _avaloniaPropertyDescriptions = null!;
 
-        private readonly ConcurrentDictionary<IPropertySymbol, ImmutableArray<AvaloniaPropertyDescription>> _clrPropertyToAvaloniaProperties = new(SymbolEqualityComparer.Default);
+        /// <summary>
+        /// Maps properties onto all AvaloniaProperty objects that they may be intended to represent.
+        /// </summary>
+        private ImmutableDictionary<IPropertySymbol, ImmutableArray<AvaloniaPropertyDescription>> _clrPropertyToAvaloniaProperties = null!;
 
         private readonly INamedTypeSymbol _stringType;
         private readonly INamedTypeSymbol _avaloniaObjectType;
@@ -36,12 +39,14 @@ public partial class AvaloniaPropertyAnalyzer
         private readonly ImmutableHashSet<IMethodSymbol> _avaloniaPropertyRegisterMethods;
         private readonly ImmutableHashSet<IMethodSymbol> _avaloniaPropertyAddOwnerMethods;
 
-        public CompileAnalyzer(CompilationStartAnalysisContext context)
+        public CompileAnalyzer(CompilationStartAnalysisContext context, INamedTypeSymbol avaloniaObjectType)
         {
+            var methodComparer = SymbolEqualityComparer<IMethodSymbol>.Default;
+
             _stringType = GetTypeOrThrow("System.String");
-            _avaloniaObjectType = GetTypeOrThrow("Avalonia.AvaloniaObject");
-            _getValueMethods = _avaloniaObjectType.GetMembers("GetValue").OfType<IMethodSymbol>().ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
-            _setValueMethods = _avaloniaObjectType.GetMembers("SetValue").OfType<IMethodSymbol>().ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+            _avaloniaObjectType = avaloniaObjectType;
+            _getValueMethods = _avaloniaObjectType.GetMembers("GetValue").OfType<IMethodSymbol>().ToImmutableHashSet(methodComparer);
+            _setValueMethods = _avaloniaObjectType.GetMembers("SetValue").OfType<IMethodSymbol>().ToImmutableHashSet(methodComparer);
 
             _avaloniaPropertyType = GetTypeOrThrow("Avalonia.AvaloniaProperty");
             _styledPropertyType = GetTypeOrThrow("Avalonia.StyledProperty`1");
@@ -49,12 +54,12 @@ public partial class AvaloniaPropertyAnalyzer
             _directPropertyType = GetTypeOrThrow("Avalonia.DirectProperty`2");
 
             _avaloniaPropertyRegisterMethods = _avaloniaPropertyType.GetMembers()
-                .OfType<IMethodSymbol>().Where(m => m.Name.StartsWith("Register")).ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+                .OfType<IMethodSymbol>().Where(m => m.Name.StartsWith("Register")).ToImmutableHashSet(methodComparer);
 
             _allAvaloniaPropertyTypes = new[] { _styledPropertyType, _attachedPropertyType, _directPropertyType }.ToImmutableArray();
 
             _avaloniaPropertyAddOwnerMethods = _allAvaloniaPropertyTypes
-                .SelectMany(t => t.GetMembers("AddOwner").OfType<IMethodSymbol>()).ToImmutableHashSet<IMethodSymbol>(SymbolEqualityComparer.Default);
+                .SelectMany(t => t.GetMembers("AddOwner").OfType<IMethodSymbol>()).ToImmutableHashSet(methodComparer);
 
             FindAvaloniaPropertySymbols(context.Compilation, context.CancellationToken);
 
@@ -101,6 +106,8 @@ public partial class AvaloniaPropertyAnalyzer
             }
 
             var avaloniaPropertyStorageSymbols = new ConcurrentBag<ISymbol>();
+
+            var propertyDescriptions = new ConcurrentDictionary<ISymbol, AvaloniaPropertyDescription>(SymbolEqualityComparer.Default);
 
             // key initializes value
             var fieldInitializations = new ConcurrentDictionary<ISymbol, ISymbol>(SymbolEqualityComparer.Default);
@@ -192,9 +199,9 @@ public partial class AvaloniaPropertyAnalyzer
             });
 
             // we have recorded every Register and AddOwner call. Now follow assignment chains.
-            foreach (var root in fieldInitializations.Keys.Intersect(_avaloniaProperyDescriptions.Keys, SymbolEqualityComparer.Default).ToArray())
+            foreach (var root in fieldInitializations.Keys.Intersect(propertyDescriptions.Keys, SymbolEqualityComparer.Default).ToArray())
             {
-                var propertyDescription = _avaloniaProperyDescriptions[root];
+                var propertyDescription = propertyDescriptions[root];
                 var owner = propertyDescription.AssignedTo[root];
 
                 var current = root;
@@ -202,20 +209,57 @@ public partial class AvaloniaPropertyAnalyzer
                 {
                     var target = fieldInitializations[current];
 
-                    propertyDescription.AssignedTo[target] = owner; // This loop handles simple assignment operations, so do NOT change the owner
-                    _avaloniaProperyDescriptions[target] = propertyDescription;
+                    propertyDescription.AddAssignment(target, owner); // This loop handles simple assignment operations, so do NOT change the owner
+                    propertyDescriptions[target] = propertyDescription;
 
                     fieldInitializations.TryGetValue(target, out current);
                 }
                 while (current != null);
             }
 
+            var clrPropertyWrapCandidates = new ConcurrentBag<(IPropertySymbol, AvaloniaPropertyDescription)>();
+
+            var propertyDescriptionsByName = propertyDescriptions.Values.ToLookup(p => p.Name, p => (property: p, owners: p.OwnerTypes.Select(t => t.Type).ToImmutableHashSet(SymbolEqualityComparer.Default)));
+
+            // Detect CLR properties that provide syntatic wrapping around an AvaloniaProperty (or potentially multiple, which leads to a warning diagnostic)
+            Parallel.ForEach(propertyDescriptions.Values, propertyDescription =>
+            {
+                var nameMatches = propertyDescriptionsByName[propertyDescription.Name];
+
+                foreach (var ownerType in propertyDescription.OwnerTypes.Select(o => o.Type).Distinct(SymbolEqualityComparer<INamedTypeSymbol>.Default))
+                {
+                    if (ownerType.GetMembers(propertyDescription.Name).OfType<IPropertySymbol>().SingleOrDefault() is not { IsStatic: false } clrProperty)
+                    {
+                        continue;
+                    }
+
+                    propertyDescription.AddPropertyWrapper(clrProperty);
+                    clrPropertyWrapCandidates.Add((clrProperty, propertyDescription));
+
+                    var current = ownerType.BaseType;
+                    while (current != null)
+                    {
+                        foreach (var otherProp in nameMatches.Where(t => t.owners.Contains(current)).Select(t => t.property))
+                        {
+                            clrPropertyWrapCandidates.Add((clrProperty, otherProp));
+                        }
+
+                        current = current.BaseType;
+                    }
+                }
+            });
+
+            // convert our dictionaries to immutable form
+            _clrPropertyToAvaloniaProperties = clrPropertyWrapCandidates.ToLookup(t => t.Item1, t => t.Item2, SymbolEqualityComparer<IPropertySymbol>.Default)
+                .ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.ToImmutableArray(), SymbolEqualityComparer<IPropertySymbol>.Default);
+            _avaloniaPropertyDescriptions = propertyDescriptions.ToImmutableDictionary(kvp => kvp.Key, kvp => kvp.Value.Seal(), SymbolEqualityComparer.Default);
+
             void RegisterAssignment(ISymbol target, IOperation value)
             {
                 switch (ResolveOperationSource(value))
                 {
                     case IInvocationOperation invocation:
-                        RegisterInitializer_Invocation(invocation, target);
+                        RegisterInitializer_Invocation(invocation, target, propertyDescriptions);
                         break;
                     case IFieldReferenceOperation fieldRef when IsAvaloniaPropertyStorage(fieldRef.Field):
                         fieldInitializations[fieldRef.Field] = target;
@@ -227,7 +271,7 @@ public partial class AvaloniaPropertyAnalyzer
             }
         }
 
-        private void RegisterInitializer_Invocation(IInvocationOperation invocation, ISymbol target)
+        private void RegisterInitializer_Invocation(IInvocationOperation invocation, ISymbol target, ConcurrentDictionary<ISymbol, AvaloniaPropertyDescription> propertyDescriptions)
         {
             try
             {
@@ -293,16 +337,16 @@ public partial class AvaloniaPropertyAnalyzer
                             name = propertyReference.Property.Name;
                             break;
                         case IFieldReferenceOperation fieldRef when SymbolEquals(fieldRef.Type, _stringType) && fieldRef.ConstantValue is { HasValue: true } constantValue:
-                            name = (string) fieldRef.ConstantValue.Value!;
+                            name = (string)fieldRef.ConstantValue.Value!;
                             break;
                         default:
                             return;
                     }
 
-                    var description = _avaloniaProperyDescriptions.GetOrAdd(target, s => new AvaloniaPropertyDescription(name, propertyType, propertyValueTypeRef.Type));
+                    var description = propertyDescriptions.GetOrAdd(target, s => new AvaloniaPropertyDescription(name, propertyType, propertyValueTypeRef.Type));
                     description.Name = name;
-                    description.AssignedTo[target] = ownerTypeRef;
-                    description.OwnerTypes.Add(ownerTypeRef);
+                    description.AddAssignment(target, ownerTypeRef);
+                    description.AddOwner(ownerTypeRef);
                 }
                 else if (_avaloniaPropertyAddOwnerMethods.Contains(invocation.TargetMethod.OriginalDefinition)) // This is a call to one of the AddOwner methods
                 {
@@ -328,7 +372,7 @@ public partial class AvaloniaPropertyAnalyzer
 
                     var propertyValueType = AvaloniaPropertyType_GetValueType(propertyType);
 
-                    var description = _avaloniaProperyDescriptions.GetOrAdd(target, s =>
+                    var description = propertyDescriptions.GetOrAdd(target, s =>
                     {
                         string inferredName = target.Name;
 
@@ -340,8 +384,8 @@ public partial class AvaloniaPropertyAnalyzer
                         return new AvaloniaPropertyDescription(inferredName, (INamedTypeSymbol)invocation.TargetMethod.ReturnType, propertyValueType);
                     });
 
-                    description.AssignedTo[target] = ownerTypeRef;
-                    description.OwnerTypes.Add(ownerTypeRef);
+                    description.AddAssignment(target, ownerTypeRef);
+                    description.AddOwner(ownerTypeRef);
                 }
             }
             catch (Exception ex)
@@ -358,7 +402,7 @@ public partial class AvaloniaPropertyAnalyzer
             {
                 try
                 {
-                    if (!_avaloniaProperyDescriptions.TryGetValue(field, out var description))
+                    if (!_avaloniaPropertyDescriptions.TryGetValue(field, out var description))
                     {
                         continue;
                     }
@@ -386,7 +430,7 @@ public partial class AvaloniaPropertyAnalyzer
             {
                 try
                 {
-                    if (!_avaloniaProperyDescriptions.TryGetValue(property, out var description))
+                    if (!_avaloniaPropertyDescriptions.TryGetValue(property, out var description))
                     {
                         continue;
                     }
@@ -418,7 +462,7 @@ public partial class AvaloniaPropertyAnalyzer
                     _ => (default(ISymbol), false),
                 };
 
-                if (target == null || !_avaloniaProperyDescriptions.TryGetValue(target, out var description))
+                if (target == null || !_avaloniaPropertyDescriptions.TryGetValue(target, out var description))
                 {
                     return;
                 }
@@ -464,20 +508,10 @@ public partial class AvaloniaPropertyAnalyzer
             var property = (IPropertySymbol)context.Symbol;
             try
             {
-                var avaloniaPropertyDescriptions = GetAvaloniaPropertiesForType(property.ContainingType).ToLookup(d => d.Name);
-
-                var candidateTargetProperties = avaloniaPropertyDescriptions[property.Name].ToImmutableArray();
-
-                switch (candidateTargetProperties.Length)
+                if (!_clrPropertyToAvaloniaProperties.TryGetValue(property, out var candidateTargetProperties))
                 {
-                    case 0:
                         return; // does not refer to an AvaloniaProperty
-                    case 1:
-                        candidateTargetProperties[0].PropertyWrappers.Add(property);
-                        break;
                 }
-
-                _clrPropertyToAvaloniaProperties[property] = candidateTargetProperties;
 
                 context.RegisterSymbolEndAction(context =>
                 {
@@ -632,20 +666,6 @@ public partial class AvaloniaPropertyAnalyzer
             }
 
             throw new ArgumentException($"{type} is not a recognised AvaloniaProperty ({_styledPropertyType}, {_attachedPropertyType}, {_directPropertyType}).", nameof(type));
-        }
-
-        private ImmutableHashSet<AvaloniaPropertyDescription> GetAvaloniaPropertiesForType(ITypeSymbol type)
-        {
-            var properties = new List<AvaloniaPropertyDescription>();
-
-            var current = type;
-            while (current != null)
-            {
-                properties.AddRange(current.GetMembers().Intersect(_avaloniaProperyDescriptions.Keys, SymbolEqualityComparer.Default).Select(s => _avaloniaProperyDescriptions[s]));
-                current = current.BaseType;
-            }
-
-            return properties.ToImmutableHashSet();
         }
     }
 }
