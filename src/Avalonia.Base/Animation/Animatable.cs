@@ -29,7 +29,7 @@ namespace Avalonia.Animation
         private bool _transitionsEnabled = true;
         private bool _isSubscribedToTransitionsCollection = false;
         private Dictionary<ITransition, TransitionState>? _transitionState;
-        private NotifyCollectionChangedEventHandler _collectionChanged;
+        private NotifyCollectionChangedEventHandler? _collectionChanged;
         private NotifyCollectionChangedEventHandler TransitionsCollectionChangedHandler => 
             _collectionChanged ??= TransitionsCollectionChanged;
 
