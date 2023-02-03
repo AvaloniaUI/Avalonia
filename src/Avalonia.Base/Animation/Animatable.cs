@@ -27,6 +27,7 @@ namespace Avalonia.Animation
             AvaloniaProperty.Register<Animatable, Transitions?>(nameof(Transitions));
 
         private bool _transitionsEnabled = true;
+        private bool _isSubscribedToTransitionsCollection = false;
         private Dictionary<ITransition, TransitionState>? _transitionState;
 
         /// <summary>
@@ -62,6 +63,11 @@ namespace Avalonia.Animation
 
                 if (Transitions is object)
                 {
+                    if (!_isSubscribedToTransitionsCollection)
+                    {
+                        _isSubscribedToTransitionsCollection = true;
+                        Transitions.CollectionChanged += TransitionsCollectionChanged;
+                    }
                     AddTransitions(Transitions);
                 }
             }
@@ -72,7 +78,7 @@ namespace Avalonia.Animation
         /// </summary>
         /// <remarks>
         /// This method should not be called from user code, it will be called automatically by the framework
-        /// when a control is added to the visual tree.
+        /// when a control is removed from the visual tree.
         /// </remarks>
         protected void DisableTransitions()
         {
@@ -82,6 +88,11 @@ namespace Avalonia.Animation
 
                 if (Transitions is object)
                 {
+                    if (_isSubscribedToTransitionsCollection)
+                    {
+                        _isSubscribedToTransitionsCollection = false;
+                        Transitions.CollectionChanged -= TransitionsCollectionChanged;
+                    }
                     RemoveTransitions(Transitions);
                 }
             }
@@ -110,6 +121,7 @@ namespace Avalonia.Animation
                     }
 
                     newTransitions.CollectionChanged += TransitionsCollectionChanged;
+                    _isSubscribedToTransitionsCollection = true;
                     AddTransitions(toAdd);
                 }
 
