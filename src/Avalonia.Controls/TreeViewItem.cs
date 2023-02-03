@@ -257,7 +257,7 @@ namespace Avalonia.Controls
                 Dispatcher.UIThread.Post(this.BringIntoView); // must use the Dispatcher, otherwise the TreeView doesn't scroll
             }
         }
-        
+
         /// <summary>
         /// Invoked when the <see cref="InputElement.DoubleTapped"/> event occurs in the header.
         /// </summary>
