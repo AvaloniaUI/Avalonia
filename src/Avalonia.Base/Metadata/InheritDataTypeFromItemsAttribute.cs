@@ -25,9 +25,9 @@ public sealed class InheritDataTypeFromItemsAttribute : Attribute
     /// The name of the property whose item type should be used on the target property.
     /// </summary>
     public string AncestorItemsProperty { get; }
-    
+
     /// <summary>
-    /// The ancestor type to be used in a lookup for the <see cref="AncestorProperty"/>.
+    /// The ancestor type to be used in a lookup for the <see cref="AncestorItemsProperty"/>.
     /// If null, the declaring type of the target property is used.
     /// </summary>
     public Type? AncestorType { get; set; }
