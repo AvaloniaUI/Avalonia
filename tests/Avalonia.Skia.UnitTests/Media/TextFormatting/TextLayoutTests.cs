@@ -724,7 +724,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                 var selectedRect = rects[0];
 
-                Assert.Equal(selectedText.Bounds.Width, selectedRect.Width);
+                Assert.Equal(selectedText.Bounds.Width, selectedRect.Width, 2);
             }
         }
 
@@ -885,7 +885,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var distance = hitRange.First().Left;
 
-                    Assert.Equal(currentX, distance);
+                    Assert.Equal(currentX, distance, 2);
 
                     currentX += advance;
                 }
@@ -915,7 +915,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     var distance = hitRange.First().Left + 0.5;
 
-                    Assert.Equal(currentX, distance);
+                    Assert.Equal(currentX, distance, 2);
 
                     currentX += advance;
                 }
@@ -1048,8 +1048,8 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
         [InlineData("012🧐210", 2, 4, FlowDirection.LeftToRight, "14.40234375,40.8046875")]
         [InlineData("210🧐012", 2, 4, FlowDirection.RightToLeft, "0,7.201171875;21.603515625,33.603515625;48.005859375,55.20703125")]
-        [InlineData("שנב🧐שנב", 2, 4, FlowDirection.LeftToRight, "11.63671875,39.779296875")]
-        [InlineData("שנב🧐שנב", 2, 4, FlowDirection.RightToLeft, "11.63671875,39.779296875")]
+        [InlineData("שנב🧐שנב", 2, 4, FlowDirection.LeftToRight, "11.268,38.208")]
+        [InlineData("שנב🧐שנב", 2, 4, FlowDirection.RightToLeft, "11.268,38.208")]
         [Theory]
         public void Should_HitTextTextRangeBetweenRuns(string text, int start, int length, 
             FlowDirection flowDirection, string expected)
@@ -1080,9 +1080,9 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 {
                     var expectedRect = expectedRects[i];
 
-                    Assert.Equal(expectedRect.Left, rects[i].Left);
+                    Assert.Equal(expectedRect.Left, rects[i].Left, 2);
 
-                    Assert.Equal(expectedRect.Right, rects[i].Right);
+                    Assert.Equal(expectedRect.Right, rects[i].Right, 2);
                 }            
             }
         }

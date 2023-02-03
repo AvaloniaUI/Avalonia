@@ -90,6 +90,12 @@ namespace Avalonia.Skia.UnitTests.Media
                         skTypeface = typefaceCollection.Get(typeface);
                         break;
                     }
+                case "Noto Sans Hebrew":
+                    {
+                        var typefaceCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(_hebrewTypeface.FontFamily);
+                        skTypeface = typefaceCollection.Get(typeface);
+                        break;
+                    }
                 case FontFamily.DefaultFontFamilyName:
                 case "Noto Mono":
                     {

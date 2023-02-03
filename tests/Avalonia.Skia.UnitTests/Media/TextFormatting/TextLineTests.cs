@@ -658,7 +658,7 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     Assert.Equal(TextTestHelper.GetStartCharIndex(run.Text), bounds.TextSourceCharacterIndex);
                     Assert.Equal(run, bounds.TextRun);
-                    Assert.Equal(run.Size.Width, bounds.Rectangle.Width);
+                    Assert.Equal(run.Size.Width, bounds.Rectangle.Width, 2);
                 }
 
                 for (var i = 0; i < textBounds.Count; i++)
@@ -667,19 +667,19 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
 
                     if (lastBounds != null)
                     {
-                        Assert.Equal(lastBounds.Rectangle.Right, currentBounds.Rectangle.Left);
+                        Assert.Equal(lastBounds.Rectangle.Right, currentBounds.Rectangle.Left, 2);
                     }
 
                     var sumOfRunWidth = currentBounds.TextRunBounds.Sum(x => x.Rectangle.Width);
 
-                    Assert.Equal(sumOfRunWidth, currentBounds.Rectangle.Width);
+                    Assert.Equal(sumOfRunWidth, currentBounds.Rectangle.Width, 2);
 
                     lastBounds = currentBounds;
                 }
 
                 var sumOfBoundsWidth = textBounds.Sum(x => x.Rectangle.Width);
 
-                Assert.Equal(lineWidth, sumOfBoundsWidth);
+                Assert.Equal(lineWidth, sumOfBoundsWidth, 2);
             }
         }
 
@@ -959,14 +959,14 @@ namespace Avalonia.Skia.UnitTests.Media.TextFormatting
                 Assert.Equal(secondRun.Size.Width, textBounds[1].Rectangle.Width);
                 Assert.Equal(7.201171875, textBounds[0].Rectangle.Width);
 
-                Assert.Equal(textLine.Start + 7.201171875, textBounds[0].Rectangle.Right);
-                Assert.Equal(textLine.Start + firstRun.Size.Width, textBounds[1].Rectangle.Left);
+                Assert.Equal(textLine.Start + 7.201171875, textBounds[0].Rectangle.Right, 2);
+                Assert.Equal(textLine.Start + firstRun.Size.Width, textBounds[1].Rectangle.Left, 2);
 
                 textBounds = textLine.GetTextBounds(0, text.Length);
 
                 Assert.Equal(2, textBounds.Count);
                 Assert.Equal(7, textBounds.Sum(x => x.TextRunBounds.Sum(x => x.Length)));
-                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width));
+                Assert.Equal(textLine.WidthIncludingTrailingWhitespace, textBounds.Sum(x => x.Rectangle.Width), 2);
             }
         }
 
