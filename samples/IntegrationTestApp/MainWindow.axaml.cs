@@ -5,9 +5,13 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
 using Microsoft.CodeAnalysis;
+using Avalonia.Controls.Primitives;
+using Avalonia.Threading;
+using Avalonia.Controls.Primitives.PopupPositioning;
 
 namespace IntegrationTestApp
 {
@@ -96,6 +100,88 @@ namespace IntegrationTestApp
             }
         }
 
+        private void ShowTransparentWindow()
+        {
+            // Show a background window to make sure the color behind the transparent window is
+            // a known color (green).
+            var backgroundWindow = new Window
+            {
+                Title = "Transparent Window Background",
+                Name = "TransparentWindowBackground",
+                Width = 300,
+                Height = 300,
+                Background = Brushes.Green,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            };
+
+            // This is the transparent window with a red circle.
+            var window = new Window
+            {
+                Title = "Transparent Window",
+                Name = "TransparentWindow",
+                SystemDecorations = SystemDecorations.None,
+                Background = Brushes.Transparent,
+                TransparencyLevelHint = WindowTransparencyLevel.Transparent,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Width = 200,
+                Height = 200,
+                Content = new Border
+                {
+                    Background = Brushes.Red,
+                    CornerRadius = new CornerRadius(100),
+                }
+            };
+
+            window.PointerPressed += (_, _) =>
+            {
+                window.Close();
+                backgroundWindow.Close();
+            };
+
+            backgroundWindow.Show(this);
+            window.Show(backgroundWindow);
+        }
+
+        private void ShowTransparentPopup()
+        {
+            var popup = new Popup
+            {
+                WindowManagerAddShadowHint = false,
+                PlacementMode = PlacementMode.AnchorAndGravity,
+                PlacementAnchor = PopupAnchor.Top,
+                PlacementGravity = PopupGravity.Bottom,
+                Width= 200,
+                Height= 200,
+                Child = new Border
+                {
+                    Background = Brushes.Red,
+                    CornerRadius = new CornerRadius(100),
+                }
+            };
+
+            // Show a background window to make sure the color behind the transparent window is
+            // a known color (green).
+            var backgroundWindow = new Window
+            {
+                Title = "Transparent Popup Background",
+                Name = "TransparentPopupBackground",
+                Width = 200,
+                Height = 200,
+                Background = Brushes.Green,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Content = new Border
+                {
+                    Name = "PopupContainer",
+                    Child = popup,
+                }
+            };
+
+            backgroundWindow.PointerPressed += (_, _) => backgroundWindow.Close();
+            backgroundWindow.Show(this);
+
+            popup.Open();
+        }
+
         private void SendToBack()
         {
             var lifetime = (ClassicDesktopStyleApplicationLifetime)Application.Current!.ApplicationLifetime!;
@@ -135,7 +221,11 @@ namespace IntegrationTestApp
             if (source?.Name == "ListBoxSelectionClear")
                 this.FindControl<ListBox>("BasicListBox").SelectedIndex = -1;
             if (source?.Name == "MenuClickedMenuItemReset")
-                this.FindControl<TextBlock>("ClickedMenuItem").Text = "None";
+                this.Get<TextBlock>("ClickedMenuItem").Text = "None";
+            if (source?.Name == "ShowTransparentWindow")
+                ShowTransparentWindow();
+            if (source?.Name == "ShowTransparentPopup")
+                ShowTransparentPopup();
             if (source?.Name == "ShowWindow")
                 ShowWindow();
             if (source?.Name == "SendToBack")
