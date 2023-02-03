@@ -118,7 +118,16 @@ namespace Avalonia.IntegrationTests.Appium
                 Thread.Sleep(1000);
 
                 var newWindows = session.FindElements(By.XPath("/XCUIElementTypeApplication/XCUIElementTypeWindow"));
-                var newWindowTitles = newWindows.ToDictionary(x => x.Text);
+                
+                // Try to find the new window by looking for a window with a title that didn't exist before the button
+                // was clicked. Sometimes it seems that when a window becomes fullscreen, all other windows in the
+                // application lose their titles, so filter out windows with no title (this may have started happening
+                // with macOS 13.1?)
+                var newWindowTitles = newWindows
+                    .Select(x => (x.Text, x))
+                    .Where(x => !string.IsNullOrEmpty(x.Text))
+                    .ToDictionary(x => x.Text, x => x.x);
+
                 var newWindowTitle = Assert.Single(newWindowTitles.Keys.Except(oldWindowTitles.Keys));
 
                 return Disposable.Create(() =>

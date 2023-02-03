@@ -9,9 +9,9 @@
   <Window.DataTemplates>
     <diag:ViewLocator/>
   </Window.DataTemplates>
-  
+
   <Window.Styles>
-    <SimpleTheme Mode="Light"/>
+    <SimpleTheme />
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml"/>
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/ThicknessEditor.axaml" />
     <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/FilterTextBox.axaml" />

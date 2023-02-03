@@ -15,6 +15,7 @@
       "src\\Avalonia.Build.Tasks\\Avalonia.Build.Tasks.csproj",
       "src\\Avalonia.Controls.ColorPicker\\Avalonia.Controls.ColorPicker.csproj",
       "src\\Avalonia.Controls.DataGrid\\Avalonia.Controls.DataGrid.csproj",
+      "src\\Avalonia.Controls.ItemsRepeater\\Avalonia.Controls.ItemsRepeater.csproj",
       "src\\Avalonia.Controls\\Avalonia.Controls.csproj",
       "src\\Avalonia.DesignerSupport\\Avalonia.DesignerSupport.csproj",
       "src\\Avalonia.Desktop\\Avalonia.Desktop.csproj",

@@ -276,6 +276,38 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
             }
         }
 
+        [Fact]
+        public void Closest_Resource_Should_Be_Referenced()
+        {
+            using (StyledWindow())
+            {
+                var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+    <Window.Resources>
+        <SolidColorBrush x:Key='Red' Color='Red' />
+        <StaticResource x:Key='Red2' ResourceKey='Red' />
+    </Window.Resources>
+    <Button>
+        <Button.Resources>
+            <SolidColorBrush x:Key='Red' Color='Blue' />
+        </Button.Resources>
+    </Button>
+</Window>";
+                var window = (Window)AvaloniaRuntimeXamlLoader.Load(xaml);
+                var windowResources = (ResourceDictionary)window.Resources;
+                var buttonResources = (ResourceDictionary)((Button)window.Content!).Resources;
+                
+                var brush = Assert.IsType<SolidColorBrush>(windowResources["Red2"]);
+                Assert.Equal(Colors.Red, brush.Color);
+                
+                Assert.False(windowResources.ContainsDeferredKey("Red"));
+                Assert.False(windowResources.ContainsDeferredKey("Red2"));
+
+                Assert.True(buttonResources.ContainsDeferredKey("Red"));
+            }
+        }
+        
         private IDisposable StyledWindow(params (string, string)[] assets)
         {
             var services = TestServices.StyledWindow.With(

@@ -41,7 +41,7 @@ namespace Avalonia.Platform
     /// The fallback module will only be initialized if the Skia-specific module is not applicable.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
-    public class ExportAvaloniaModuleAttribute : Attribute
+    public sealed class ExportAvaloniaModuleAttribute : Attribute
     {
         public ExportAvaloniaModuleAttribute(string name, Type moduleType)
         {

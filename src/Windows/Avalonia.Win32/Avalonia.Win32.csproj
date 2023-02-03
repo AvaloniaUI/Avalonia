@@ -27,4 +27,7 @@
   <PropertyGroup Label="Warnings">
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Avalonia.Win32.Interop, PublicKey=$(AvaloniaPublicKey)"/>
+  </ItemGroup>
 </Project>

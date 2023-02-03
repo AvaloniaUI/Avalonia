@@ -172,9 +172,21 @@ namespace Avalonia.Media.TextFormatting
 
             distance -= Start;
 
+            var firstRunIndex = 0;
+
+            if (_textRuns[firstRunIndex] is TextEndOfLine)
+            {
+                firstRunIndex++;
+            }
+
+            if(firstRunIndex >= _textRuns.Length)
+            {
+                return new CharacterHit(FirstTextSourceIndex);
+            }
+
             if (distance <= 0)
             {
-                var firstRun = _textRuns[0];
+                var firstRun = _textRuns[firstRunIndex];
 
                 return GetRunCharacterHit(firstRun, FirstTextSourceIndex, 0);
             }
@@ -1285,13 +1297,11 @@ namespace Avalonia.Media.TextFormatting
                 {
                     case ShapedTextRun textRun:
                         {
-                            var properties = textRun.Properties;
-                            var textMetrics =
-                                new TextMetrics(properties.CachedGlyphTypeface, properties.FontRenderingEmSize);
+                            var textMetrics = textRun.TextMetrics;
 
-                            if (fontRenderingEmSize < properties.FontRenderingEmSize)
+                            if (fontRenderingEmSize < textMetrics.FontRenderingEmSize)
                             {
-                                fontRenderingEmSize = properties.FontRenderingEmSize;
+                                fontRenderingEmSize = textMetrics.FontRenderingEmSize;
 
                                 if (ascent > textMetrics.Ascent)
                                 {

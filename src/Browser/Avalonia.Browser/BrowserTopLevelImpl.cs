@@ -19,8 +19,7 @@ using Avalonia.Rendering.Composition;
 
 namespace Avalonia.Browser
 {
-    internal class BrowserTopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider,
-        ITopLevelWithSystemNavigationManager
+    internal class BrowserTopLevelImpl : ITopLevelImpl
     {
         private Size _clientSize;
         private IInputRoot? _inputRoot;
@@ -29,6 +28,9 @@ namespace Avalonia.Browser
         private readonly TouchDevice _touchDevice;
         private readonly PenDevice _penDevice;
         private string _currentCursor = CssCursor.Default;
+        private readonly INativeControlHostImpl _nativeControlHost;
+        private readonly IStorageProvider _storageProvider;
+        private readonly ISystemNavigationManagerImpl _systemNavigationManager;
 
         public BrowserTopLevelImpl(AvaloniaView avaloniaView)
         {
@@ -38,7 +40,9 @@ namespace Avalonia.Browser
             AcrylicCompensationLevels = new AcrylicPlatformCompensationLevels(1, 1, 1);
             _touchDevice = new TouchDevice();
             _penDevice = new PenDevice();
-            NativeControlHost = _avaloniaView.GetNativeControlHostImpl();
+            _nativeControlHost = _avaloniaView.GetNativeControlHostImpl();
+            _storageProvider = new BrowserStorageProvider();
+            _systemNavigationManager = new BrowserSystemNavigationManagerImpl();
         }
 
         public ulong Timestamp => (ulong)_sw.ElapsedMilliseconds;
@@ -236,11 +240,29 @@ namespace Avalonia.Browser
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; }
 
-        public ITextInputMethodImpl TextInputMethod => _avaloniaView;
+        public object? TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return _storageProvider;
+            }
 
-        public INativeControlHostImpl? NativeControlHost { get; }
-        public IStorageProvider StorageProvider { get; } = new BrowserStorageProvider();
+            if (featureType == typeof(ITextInputMethodImpl))
+            {
+                return _avaloniaView;
+            }
 
-        public ISystemNavigationManager SystemNavigationManager { get; } = new BrowserSystemNavigationManager();
+            if (featureType == typeof(ISystemNavigationManagerImpl))
+            {
+                return _systemNavigationManager;
+            }
+
+            if (featureType == typeof(INativeControlHostImpl))
+            {
+                return _nativeControlHost;
+            }
+
+            return null;
+        }
     }
 }

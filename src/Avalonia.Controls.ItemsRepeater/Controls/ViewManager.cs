@@ -256,7 +256,7 @@ namespace Avalonia.Controls
 
         public void UpdatePin(Control element, bool addPin)
         {
-            var parent = element.VisualParent;
+            var parent = element.GetVisualParent();
             var child = (Visual)element;
 
             while (parent != null)
@@ -283,7 +283,7 @@ namespace Avalonia.Controls
                 }
 
                 child = parent;
-                parent = child.VisualParent;
+                parent = child.GetVisualParent();
             }
         }
 
@@ -656,7 +656,7 @@ namespace Avalonia.Controls
             // that handlers can walk up the tree in case they want to find their IndexPath in the 
             // nested case.
             var children = repeater.Children;
-            if (element.VisualParent != repeater)
+            if (element.GetVisualParent() != repeater)
             {
                 children.Add(element);
             }
@@ -701,7 +701,7 @@ namespace Avalonia.Controls
 
             if (FocusManager.Instance?.Current is Visual child)
             {
-                var parent = child.VisualParent;
+                var parent = child.GetVisualParent();
                 var owner = _owner;
 
                 // Find out if the focused element belongs to one of our direct
@@ -722,7 +722,7 @@ namespace Avalonia.Controls
                     }
 
                     child = parent;
-                    parent = child?.VisualParent;
+                    parent = child?.GetVisualParent();
                 }
             }
 

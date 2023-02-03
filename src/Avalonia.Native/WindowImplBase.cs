@@ -47,7 +47,7 @@ namespace Avalonia.Native
     }
 
     internal abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+        IFramebufferPlatformSurface
     {
         protected readonly IAvaloniaNativeFactory _factory;
         protected IInputRoot _inputRoot;
@@ -62,6 +62,7 @@ namespace Avalonia.Native
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
+        private IStorageProvider _storageProvider;
 
         internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature)
@@ -72,7 +73,6 @@ namespace Avalonia.Native
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
             _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
-            StorageProvider = new SystemDialogs(this, _factory.CreateSystemDialogs());
         }
 
         protected void Init(IAvnWindowBase window, IAvnScreens screens)
@@ -87,6 +87,7 @@ namespace Avalonia.Native
             _savedLogicalSize = ClientSize;
             _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
+            _storageProvider = new SystemDialogs(this, _factory.CreateSystemDialogs());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
@@ -508,9 +509,21 @@ namespace Avalonia.Native
         }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0, 0);
+        public virtual object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(INativeControlHostImpl))
+            {
+                return _nativeControlHost;
+            }
+            
+            if (featureType == typeof(IStorageProvider))
+            {
+                return _storageProvider;
+            }
+
+            return null;
+        }
 
         public IPlatformHandle Handle { get; private set; }
-
-        public IStorageProvider StorageProvider { get; }
     }
 }

@@ -145,10 +145,14 @@ dotnet_diagnostic.CS1591.severity = suggestion
 
 # CS0162: Remove unreachable code
 dotnet_diagnostic.CS0162.severity = error
+# CA1018: Mark attributes with AttributeUsageAttribute
+dotnet_diagnostic.CA1018.severity = error
 # CA1304: Specify CultureInfo
 dotnet_diagnostic.CA1304.severity = warning
 # CA1802: Use literals where appropriate
 dotnet_diagnostic.CA1802.severity = warning
+# CA1813: Avoid unsealed attributes
+dotnet_diagnostic.CA1813.severity = error
 # CA1815: Override equals and operator equals on value types
 dotnet_diagnostic.CA1815.severity = warning
 # CA1820: Test for empty strings using string length

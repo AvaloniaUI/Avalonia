@@ -68,17 +68,18 @@ namespace Avalonia.iOS
             settings?.TraitCollectionDidChange();
         }
 
-        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost,
-            ITopLevelImplWithStorageProvider
+        internal class TopLevelImpl : ITopLevelImpl
         {
             private readonly AvaloniaView _view;
+            private readonly INativeControlHostImpl _nativeControlHost;
+            private readonly IStorageProvider _storageProvider;
             public AvaloniaView View => _view;
 
             public TopLevelImpl(AvaloniaView view)
             {
                 _view = view;
-                NativeControlHost = new NativeControlHostImpl(_view);
-                StorageProvider = new IOSStorageProvider(view);
+                _nativeControlHost = new NativeControlHostImpl(_view);
+                _storageProvider = new IOSStorageProvider(view);
             }
 
             public void Dispose()
@@ -157,9 +158,25 @@ namespace Avalonia.iOS
             public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } =
                 new AcrylicPlatformCompensationLevels();
 
-            public ITextInputMethodImpl? TextInputMethod => _view;
-            public INativeControlHostImpl NativeControlHost { get; }
-            public IStorageProvider StorageProvider { get; }
+            public object? TryGetFeature(Type featureType)
+            {
+                if (featureType == typeof(IStorageProvider))
+                {
+                    return _storageProvider;
+                }
+
+                if (featureType == typeof(ITextInputMethodImpl))
+                {
+                    return _view;
+                }
+
+                if (featureType == typeof(INativeControlHostImpl))
+                {
+                    return _nativeControlHost;
+                }
+
+                return null;
+            }
         }
 
         [Export("layerClass")]
