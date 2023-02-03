@@ -8,7 +8,7 @@
     <Compile Include="..\Avalonia.RenderTests\**\*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\Avalonia.RenderTests\**\*.ttf" />
+    <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />

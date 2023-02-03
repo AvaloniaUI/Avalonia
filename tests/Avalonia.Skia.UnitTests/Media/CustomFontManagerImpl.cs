@@ -17,6 +17,8 @@ namespace Avalonia.Skia.UnitTests.Media
             new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Mono");
         private readonly Typeface _arabicTypeface =
            new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Sans Arabic");
+        private readonly Typeface _hebrewTypeface =
+         new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Sans Hebrew");
         private readonly Typeface _italicTypeface =
             new Typeface("resm:Avalonia.Skia.UnitTests.Assets?assembly=Avalonia.Skia.UnitTests#Noto Sans", FontStyle.Italic);
         private readonly Typeface _emojiTypeface =
@@ -24,7 +26,7 @@ namespace Avalonia.Skia.UnitTests.Media
 
         public CustomFontManagerImpl()
         {
-            _customTypefaces = new[] { _emojiTypeface, _italicTypeface, _arabicTypeface, _defaultTypeface };
+            _customTypefaces = new[] { _emojiTypeface, _italicTypeface, _arabicTypeface, _hebrewTypeface, _defaultTypeface };
             _defaultFamilyName = _defaultTypeface.FontFamily.FamilyNames.PrimaryFamilyName;
         }
 
