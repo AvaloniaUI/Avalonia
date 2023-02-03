@@ -501,7 +501,7 @@ namespace Avalonia.Native
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
+        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
