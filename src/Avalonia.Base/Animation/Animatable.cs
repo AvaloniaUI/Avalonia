@@ -29,12 +29,9 @@ namespace Avalonia.Animation
         private bool _transitionsEnabled = true;
         private bool _isSubscribedToTransitionsCollection = false;
         private Dictionary<ITransition, TransitionState>? _transitionState;
-        readonly NotifyCollectionChangedEventHandler _collectionChanged;
-
-        public Animatable()
-        {
-            _collectionChanged = TransitionsCollectionChanged;
-        }
+        private NotifyCollectionChangedEventHandler _collectionChanged;
+        private NotifyCollectionChangedEventHandler TransitionsCollectionChangedHandler => 
+            _collectionChanged ??= TransitionsCollectionChanged;
 
         /// <summary>
         /// Gets or sets the clock which controls the animations on the control.
@@ -72,7 +69,7 @@ namespace Avalonia.Animation
                     if (!_isSubscribedToTransitionsCollection)
                     {
                         _isSubscribedToTransitionsCollection = true;
-                        transitions.CollectionChanged += _collectionChanged;
+                        transitions.CollectionChanged += TransitionsCollectionChangedHandler;
                     }
                     AddTransitions(transitions);
                 }
@@ -97,7 +94,7 @@ namespace Avalonia.Animation
                     if (_isSubscribedToTransitionsCollection)
                     {
                         _isSubscribedToTransitionsCollection = false;
-                        transitions.CollectionChanged -= _collectionChanged;
+                        transitions.CollectionChanged -= TransitionsCollectionChangedHandler;
                     }
                     RemoveTransitions(transitions);
                 }
@@ -126,7 +123,7 @@ namespace Avalonia.Animation
                         toAdd = newTransitions.Except(oldTransitions).ToList();
                     }
 
-                    newTransitions.CollectionChanged += _collectionChanged;
+                    newTransitions.CollectionChanged += TransitionsCollectionChangedHandler;
                     _isSubscribedToTransitionsCollection = true;
                     AddTransitions(toAdd);
                 }
@@ -140,7 +137,7 @@ namespace Avalonia.Animation
                         toRemove = oldTransitions.Except(newTransitions).ToList();
                     }
 
-                    oldTransitions.CollectionChanged -= _collectionChanged;
+                    oldTransitions.CollectionChanged -= TransitionsCollectionChangedHandler;
                     RemoveTransitions(toRemove);
                 }
             }
