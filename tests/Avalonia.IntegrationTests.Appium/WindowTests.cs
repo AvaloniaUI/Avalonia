@@ -202,7 +202,7 @@ namespace Avalonia.IntegrationTests.Appium
             window.Click();
 
             var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot.AsByteArray);
-            var topLeftColor = img[1, 1];
+            var topLeftColor = img[10, 10];
             var centerColor = img[img.Width / 2, img.Height / 2];
 
             Assert.Equal(new Rgba32(0, 128, 0), topLeftColor);
@@ -223,7 +223,7 @@ namespace Avalonia.IntegrationTests.Appium
             window.Click();
 
             var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot.AsByteArray);
-            var topLeftColor = img[1, 1];
+            var topLeftColor = img[10, 10];
             var centerColor = img[img.Width / 2, img.Height / 2];
 
             Assert.Equal(new Rgba32(0, 128, 0), topLeftColor);
