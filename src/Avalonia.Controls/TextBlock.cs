@@ -720,6 +720,16 @@ namespace Avalonia.Controls
 
             var padding = LayoutHelper.RoundLayoutThickness(Padding, scale, scale);
 
+            if (HasComplexContent)
+            {
+                ArrangeComplexContent(TextLayout, padding);
+            }
+
+            if (MathUtilities.AreClose(_constraint.Inflate(padding).Width, finalSize.Width))
+            {
+                return finalSize;
+            }
+
             _constraint = new Size(Math.Ceiling(finalSize.Deflate(padding).Width), double.PositiveInfinity);
 
             _textLayout?.Dispose();
@@ -727,31 +737,36 @@ namespace Avalonia.Controls
 
             if (HasComplexContent)
             {
-                var currentY = padding.Top;
-
-                foreach (var textLine in TextLayout.TextLines)
-                {
-                    var currentX = padding.Left + textLine.Start;
-
-                    foreach (var run in textLine.TextRuns)
-                    {
-                        if (run is DrawableTextRun drawable)
-                        {
-                            if (drawable is EmbeddedControlRun controlRun
-                                && controlRun.Control is Control control)
-                            {
-                                control.Arrange(new Rect(new Point(currentX, currentY), control.DesiredSize));
-                            }
-
-                            currentX += drawable.Size.Width;
-                        }
-                    }
-
-                    currentY += textLine.Height;
-                }
+                ArrangeComplexContent(TextLayout, padding);
             }
 
             return finalSize;
+        }
+
+        private static void ArrangeComplexContent(TextLayout textLayout, Thickness padding)
+        {
+            var currentY = padding.Top;
+
+            foreach (var textLine in textLayout.TextLines)
+            {
+                var currentX = padding.Left + textLine.Start;
+
+                foreach (var run in textLine.TextRuns)
+                {
+                    if (run is DrawableTextRun drawable)
+                    {
+                        if (drawable is EmbeddedControlRun controlRun
+                            && controlRun.Control is Control control)
+                        {
+                            control.Arrange(new Rect(new Point(currentX, currentY), control.DesiredSize));
+                        }
+
+                        currentX += drawable.Size.Width;
+                    }
+                }
+
+                currentY += textLine.Height;
+            }
         }
 
         protected override AutomationPeer OnCreateAutomationPeer()
@@ -892,7 +907,7 @@ namespace Avalonia.Controls
                     return textRun;
                 }
 
-                return null;
+                return new TextEndOfParagraph();
             }
         }
     }
