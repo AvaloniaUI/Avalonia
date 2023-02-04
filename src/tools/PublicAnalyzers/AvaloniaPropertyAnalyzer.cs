@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -18,7 +19,8 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private const string TypeMismatchTag = "TypeMismatch";
     private const string NameCollisionTag = "NameCollision";
-    private const string AssociatedPropertyTag = "AssociatedProperty";
+    private const string AssociatedClrPropertyTag = "AssociatedClrProperty";
+    private const string InappropriateReadWriteTag = "InappropriateReadWrite";
 
     private static readonly DiagnosticDescriptor AssociatedAvaloniaProperty = new(
         "AVP0001",
@@ -28,7 +30,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Info,
         isEnabledByDefault: false,
         "This informational diagnostic identifies which AvaloniaProperty a CLR property is associated with.",
-        AssociatedPropertyTag);
+        AssociatedClrPropertyTag);
 
     private static readonly DiagnosticDescriptor InappropriatePropertyAssignment = new(
         "AVP1000",
@@ -39,15 +41,34 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true,
         "AvaloniaProperty objects have static lifetimes and should be stored accordingly. Do not multiply construct the same property.");
 
+    private static readonly DiagnosticDescriptor InappropriatePropertyRegistration = new(
+        "AVP1001",
+        "Ensure that the same AvaloniaProperty cannot be registered twice",
+        "Unsafe registration: {0} should be called only in static constructors or static initializers",
+        Category,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        "AvaloniaProperty objects have static lifetimes and should be created only once. To ensure this, only call Register or AddOwner in static constructors or static initializers.");
+
     private static readonly DiagnosticDescriptor OwnerDoesNotMatchOuterType = new(
         "AVP1010",
-        "Avaloniaproperty objects should declare their owner to be the type in which they are stored",
+        "AvaloniaProperty objects should be owned be the type in which they are stored",
         "Type mismatch: AvaloniaProperty owner is {0}, which is not the containing type",
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         "The owner of an AvaloniaProperty should generally be the containing type. This ensures that the property can be used as expected in XAML.",
         TypeMismatchTag);
+
+    private static readonly DiagnosticDescriptor UnexpectedPropertyAccess = new(
+        "AVP1011",
+        "An AvaloniaObject should be the owner of each AvaloniaProperty it reads or writes on itself",
+        "Unexpected property use: {0} is neither owned by nor attached to {1}",
+        Category,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        "It is possible to use any AvaloniaProperty with any AvaloniaObject. However, each AvaloniaProperty an object uses on itself should be either owned by that object, or attached to that object.",
+        InappropriateReadWriteTag);
 
     private static readonly DiagnosticDescriptor DuplicatePropertyName = new(
         "AVP1020",
@@ -87,7 +108,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call any user CLR properties. To execute code before or after the property is set, create a Coerce method or a PropertyChanged subscriber.",
-        AssociatedPropertyTag);
+        AssociatedClrPropertyTag);
 
     private static readonly DiagnosticDescriptor MissingAccessor = new(
         "AVP1031",
@@ -97,7 +118,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call CLR properties on the owning type. Not providing both CLR property accessors is ineffective.",
-        AssociatedPropertyTag);
+        AssociatedClrPropertyTag);
 
     private static readonly DiagnosticDescriptor InconsistentAccessibility = new(
         "AVP1032",
@@ -107,7 +128,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call CLR properties on the owning type. Defining a CLR property with different acessibility from its associated AvaloniaProperty is ineffective.",
-        AssociatedPropertyTag);
+        AssociatedClrPropertyTag);
 
     private static readonly DiagnosticDescriptor PropertyTypeMismatch = new(
         "AVP1040",
@@ -117,12 +138,18 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call CLR properties on the owning type. A CLR property changing the value type (even when an implicit cast is possible) is ineffective and can lead to InvalidCastException to be thrown.",
-        TypeMismatchTag, AssociatedPropertyTag);
+        TypeMismatchTag, AssociatedClrPropertyTag);
+
+    private static readonly SymbolDisplayFormat TypeQualifiedName = new(
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes,
+        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType);
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         AssociatedAvaloniaProperty,
         InappropriatePropertyAssignment,
+        InappropriatePropertyRegistration,
         OwnerDoesNotMatchOuterType,
+        UnexpectedPropertyAccess,
         DuplicatePropertyName,
         AmbiguousPropertyName,
         PropertyNameMismatch,
@@ -193,6 +220,31 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         }
     }
 
+    private static IOperation ResolveOperationTarget(IOperation operation)
+    {
+        while (true)
+        {
+            switch (operation)
+            {
+                case IConversionOperation conversion:
+                    operation = conversion.Parent!;
+                    break;
+                case ISimpleAssignmentOperation assignment:
+                    operation = assignment.Target;
+                    break;
+                default:
+                    return operation;
+            }
+        }
+    }
+
+    private static ISymbol? GetReferencedFieldOrProperty(IOperation? operation) => operation == null ? null : ResolveOperationSource(operation) switch
+    {
+        IFieldReferenceOperation fieldRef => fieldRef.Field,
+        IPropertyReferenceOperation propertyRef => propertyRef.Property,
+        _ => null,
+    };
+
     private static bool IsValidAvaloniaPropertyStorage(IFieldSymbol field) => field.IsStatic && field.IsReadOnly;
     private static bool IsValidAvaloniaPropertyStorage(IPropertySymbol field) => field.IsStatic && field.IsReadOnly;
 
@@ -229,10 +281,20 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         public INamedTypeSymbol ValueType { get; }
 
         /// <summary>
+        /// Gets whether the value of this property is inherited from the parent AvaloniaObject.
+        /// </summary>
+        public bool Inherits { get; set; }
+
+        /// <summary>
         /// Gets the type which registered the property, and all types which have added themselves as owners.
         /// </summary>
         public IReadOnlyCollection<TypeReference> OwnerTypes { get; private set; }
         private ConcurrentBag<TypeReference>? _ownerTypes = new();
+
+        /// <summary>
+        /// Gets the type to which an AttachedProperty is attached, or null if the property is StyledProperty or DirectProperty.
+        /// </summary>
+        public TypeReference? HostType { get; set; }
 
         /// <summary>
         /// Gets a dictionary which maps fields and properties which were initialized with this AvaloniaProperty to the TOwner specified at each assignment.
@@ -313,6 +375,28 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         {
             Type = type;
             Location = location;
+        }
+
+        public static TypeReference FromInvocationTypeParameter(IInvocationOperation invocation, ITypeParameterSymbol typeParameter)
+        {
+            var argument = invocation.TargetMethod.TypeArguments[typeParameter.Ordinal];
+
+            var typeArgumentSyntax = invocation.Syntax;
+            if (invocation.Language == LanguageNames.CSharp) // type arguments do not appear in the invocation, so search the code for them
+            {
+                try
+                {
+                    typeArgumentSyntax = invocation.Syntax.DescendantNodes()
+                        .First(n => n.IsKind(SyntaxKind.TypeArgumentList))
+                        .DescendantNodes().ElementAt(typeParameter.Ordinal);
+                }
+                catch
+                {
+                    // ignore, this is just a nicety
+                }
+            }
+
+            return new TypeReference((INamedTypeSymbol)argument, typeArgumentSyntax.GetLocation());
         }
     }
 
