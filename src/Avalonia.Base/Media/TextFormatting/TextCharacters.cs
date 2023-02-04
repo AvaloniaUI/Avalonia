@@ -118,14 +118,18 @@ namespace Avalonia.Media.TextFormatting
                 fontManager.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
                     defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
                     out var fallbackTypeface);
-
-            var fallbackGlyphTypeface = fontManager.GetOrAddGlyphTypeface(fallbackTypeface);
-
-            if (matchFound && TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, out count))
+                        
+            if (matchFound)
             {
+                var fallbackGlyphTypeface = fontManager.GetOrAddGlyphTypeface(fallbackTypeface);
+
                 //Fallback found
-                return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(fallbackTypeface),
-                    biDiLevel);
+                if (TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, out count))
+                {
+                    
+                    return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(fallbackTypeface),
+                        biDiLevel);
+                }                
             }
 
             // no fallback found
