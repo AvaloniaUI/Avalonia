@@ -325,14 +325,23 @@ namespace Avalonia.IntegrationTests.Appium
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
 
-            modeComboBox.Click();
-            _session.FindElementByName(mode.ToString()).SendClick();
+            if (modeComboBox.GetComboBoxValue() != mode.ToString())
+            {
+                modeComboBox.Click();
+                _session.FindElementByName(mode.ToString()).SendClick();
+            }
 
-            locationComboBox.Click();
-            _session.FindElementByName(location.ToString()).SendClick();
+            if (locationComboBox.GetComboBoxValue() != location.ToString())
+            {
+                locationComboBox.Click();
+                _session.FindElementByName(location.ToString()).SendClick();
+            }
 
-            stateComboBox.Click();
-            _session.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
+            if (stateComboBox.GetComboBoxValue() != state.ToString())
+            {
+                stateComboBox.Click();
+                _session.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
+            }
 
             if (canResizeCheckBox.GetIsChecked() != canResize)
                 canResizeCheckBox.Click();
