@@ -16,7 +16,7 @@ namespace Avalonia.Input.TextInput
         /// <summary>
         /// The visual that's showing the text
         /// </summary>
-        IVisual TextViewVisual { get; }
+        Visual TextViewVisual { get; }
         /// <summary>
         /// Should be fired when text-hosting visual is changed
         /// </summary>
@@ -46,7 +46,7 @@ namespace Avalonia.Input.TextInput
         void SelectInSurroundingText(int start, int end);
     }
 
-    public struct TextInputMethodSurroundingText
+    public record struct TextInputMethodSurroundingText
     {
         public string Text { get; set; }
         public int CursorOffset { get; set; }

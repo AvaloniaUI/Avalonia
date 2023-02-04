@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Avalonia.Utilities;
 
-public struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> where TKey : class where TValue : class
+public record struct InlineDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> where TKey : class where TValue : class
 {
     object? _data;
     TValue? _value;

@@ -15,9 +15,6 @@
     <AvaloniaResource Include="Assets\Fonts\*" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Pages\NativeEmbedPage.xaml" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Bold.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-BoldItalic.ttf" />
     <EmbeddedResource Include="Assets\Fonts\SourceSansPro-Italic.ttf" />
@@ -29,23 +26,22 @@
     <ProjectReference Include="..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls.ColorPicker\Avalonia.Controls.ColorPicker.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls.DataGrid\Avalonia.Controls.DataGrid.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Controls.ItemsRepeater\Avalonia.Controls.ItemsRepeater.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
   </ItemGroup>
 
+  <Import Project="..\..\build\BuildTargets.targets" />
+
   <ItemGroup>
-    <AvaloniaResource Update="Pages\NativeEmbedPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <None Remove="Pages\CustomDrawing.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Update="Pages\CustomDrawing.xaml">
+      <Generator></Generator>
     </AvaloniaResource>
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Pages\NativeEmbedPage.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <Import Project="..\..\build\BuildTargets.targets" />
 </Project>

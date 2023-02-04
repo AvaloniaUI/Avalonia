@@ -6,10 +6,9 @@
     <DefineConstants Condition="$(UseCecil) == true">$(DefineConstants);RUNTIME_XAML_CECIL</DefineConstants>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <NoWarn>CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
     <ItemGroup>
-        <Compile Include="..\..\Shared\StringCompatibilityExtensions.cs" Link="Compatibility\StringCompatibilityExtensions.cs" />
         <Compile Include="AvaloniaXamlLoader.cs" />
         <Compile Include="Converters\AvaloniaUriTypeConverter.cs" />
         <Compile Include="Converters\ColorToBrushConverter.cs" />
@@ -33,9 +32,7 @@
         <Compile Include="MarkupExtensions\OnFormFactorExtension.cs" />
         <Compile Include="MarkupExtensions\OnPlatformExtension.cs" />
         <Compile Include="MarkupExtensions\ResolveByNameExtension.cs" />
-        <Compile Include="MarkupExtensions\ResourceInclude.cs" />
         <Compile Include="MarkupExtensions\StaticResourceExtension.cs" />
-        <Compile Include="MarkupExtensions\StyleIncludeExtension.cs" />
         <Compile Include="Parsers\PropertyParser.cs" />
         <Compile Include="Converters\BitmapTypeConverter.cs" />
         <Compile Include="Converters\IconTypeConverter.cs" />
@@ -44,6 +41,10 @@
         <Compile Include="MarkupExtensions\ReflectionBindingExtension.cs" />
         <Compile Include="MarkupExtensions\RelativeSourceExtension.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="RuntimeXamlLoaderConfiguration.cs" />
+        <Compile Include="RuntimeXamlLoaderDocument.cs" />
+        <Compile Include="Styling\MergeResourceInclude.cs" />
+        <Compile Include="Styling\ResourceInclude.cs" />
         <Compile Include="Styling\StyleInclude.cs" />
         <Compile Include="Templates\ControlTemplate.cs" />
         <Compile Include="Templates\DataTemplate.cs" />
@@ -65,15 +66,11 @@
     <ProjectReference Include="..\..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\Avalonia.Markup\Avalonia.Markup.csproj" />
   </ItemGroup>
-  <Import Project="..\..\..\build\Rx.props" />
   <Import Project="..\..\..\build\ApiDiff.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\..\build\TrimmingEnable.props" />
 
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Markup.Xaml.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Compatibility\" />
   </ItemGroup>
 </Project>

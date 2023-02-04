@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
-using Avalonia.Controls.Templates;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Media;
-using Avalonia.Platform;
-using Avalonia.Rendering;
 using Avalonia.UnitTests;
-using Moq;
 using Xunit;
 
 namespace Avalonia.Base.UnitTests.Input
@@ -21,7 +13,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var device = new MouseDevice();
             var impl = CreateTopLevelImplMock(renderer.Object);
 
@@ -59,7 +51,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var device = new MouseDevice();
             var impl = CreateTopLevelImplMock(renderer.Object);
 

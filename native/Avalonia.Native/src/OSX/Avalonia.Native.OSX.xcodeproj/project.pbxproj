@@ -50,6 +50,7 @@
 		BC11A5BE2608D58F0017BAD0 /* automation.h in Headers */ = {isa = PBXBuildFile; fileRef = BC11A5BC2608D58F0017BAD0 /* automation.h */; };
 		BC11A5BF2608D58F0017BAD0 /* automation.mm in Sources */ = {isa = PBXBuildFile; fileRef = BC11A5BD2608D58F0017BAD0 /* automation.mm */; };
 		ED3791C42862E1F40080BD62 /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */; };
+		EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */ = {isa = PBXBuildFile; fileRef = EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -103,6 +104,7 @@
 		BC11A5BC2608D58F0017BAD0 /* automation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = automation.h; sourceTree = "<group>"; };
 		BC11A5BD2608D58F0017BAD0 /* automation.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = automation.mm; sourceTree = "<group>"; };
 		ED3791C32862E1F40080BD62 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
+		EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = PlatformSettings.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -163,6 +165,7 @@
 				1A3E5EA723E9E83B00EDE661 /* rendertarget.mm */,
 				37A517B22159597E00FBA241 /* Screens.mm */,
 				37C09D8721580FE4006A6758 /* SystemDialogs.mm */,
+				EDF8CDCC2964CB01001EE34F /* PlatformSettings.mm */,
 				AB7A61F02147C815003C5833 /* Products */,
 				AB661C1C2148230E00291242 /* Frameworks */,
 				18391676ECF0E983F4964357 /* WindowBaseImpl.mm */,
@@ -299,6 +302,7 @@
 				1839151F32D1BB1AB51A7BB6 /* AvnPanelWindow.mm in Sources */,
 				18391AC16726CBC45856233B /* AvnWindow.mm in Sources */,
 				18391D8CD1756DC858DC1A09 /* PopupImpl.mm in Sources */,
+				EDF8CDCD2964CB01001EE34F /* PlatformSettings.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

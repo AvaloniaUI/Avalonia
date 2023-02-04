@@ -84,22 +84,22 @@ namespace Avalonia.Styling
         public IList<string> Classes => _classes.Value;
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
-                _selectorString = BuildSelectorString();
+                _selectorString = BuildSelectorString(owner);
             }
 
             return _selectorString;
         }
 
         /// <inheritdoc/>
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             if (TargetType != null)
             {
-                var controlType = control.StyleKey ?? control.GetType();
+                var controlType = ((IStyleable)control).StyleKey ?? control.GetType();
 
                 if (IsConcreteType)
                 {
@@ -143,13 +143,13 @@ namespace Avalonia.Styling
         protected override Selector? MovePrevious() => _previous;
         protected override Selector? MovePreviousOrParent() => _previous;
 
-        private string BuildSelectorString()
+        private string BuildSelectorString(Style? owner)
         {
             var builder = StringBuilderCache.Acquire();
 
             if (_previous != null)
             {
-                builder.Append(_previous.ToString());
+                builder.Append(_previous.ToString(owner));
             }
 
             if (TargetType != null)

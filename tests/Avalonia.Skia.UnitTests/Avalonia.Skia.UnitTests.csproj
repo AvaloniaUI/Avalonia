@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <Import Project="..\..\build\UnitTests.NetCore.targets" />
   <Import Project="..\..\build\Moq.props" />
@@ -10,7 +9,7 @@
   <Import Project="..\..\build\Microsoft.Reactive.Testing.props" />
   <Import Project="..\..\build\SharedVersion.props" />
   <ItemGroup>
-    <EmbeddedResource Include="..\Avalonia.RenderTests\**\*.ttf" />
+    <EmbeddedResource Include="..\Avalonia.RenderTests\*\*.ttf" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />

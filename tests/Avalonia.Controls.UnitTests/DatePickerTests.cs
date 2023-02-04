@@ -205,9 +205,10 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new MockFontManagerImpl(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new MockTextShaperImpl());
+            textShaperImpl: new MockTextShaperImpl(),
+            renderInterface: new MockPlatformRenderInterface());
 
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate((control, scope) =>
             {
@@ -245,7 +246,7 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_SecondSpacer"
                 }.RegisterInNameScope(scope);
                
-                contentGrid.Children.AddRange(new IControl[] { dayText, monthText, yearText, firstSpacer, secondSpacer });
+                contentGrid.Children.AddRange(new Control[] { dayText, monthText, yearText, firstSpacer, secondSpacer });
                 flyoutButton.Content = contentGrid;
                 layoutRoot.Children.Add(flyoutButton);
                 return layoutRoot;

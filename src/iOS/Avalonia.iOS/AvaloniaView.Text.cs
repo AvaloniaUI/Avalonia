@@ -1,6 +1,5 @@
 #nullable enable
 using Avalonia.Input.TextInput;
-using JetBrains.Annotations;
 using UIKit;
 
 namespace Avalonia.iOS;

@@ -12,7 +12,7 @@
       </Button>
       <Carousel Name="carousel" Grid.Column="1">
         <Carousel.PageTransition>
-          <PageSlide Duration="0.25" Orientation="Vertical" />
+          <PageSlide Duration="0.25" Orientation="Horizontal" />
         </Carousel.PageTransition>
         <Image Source="/Assets/delicate-arch-896885_640.jpg"/>
         <Image Source="/Assets/hirsch-899118_640.jpg"/>
@@ -35,7 +35,7 @@
 
     <StackPanel Orientation="Horizontal" Spacing="4">
       <TextBlock VerticalAlignment="Center">Orientation</TextBlock>
-      <ComboBox Name="orientation" SelectedIndex="1" VerticalAlignment="Center">
+      <ComboBox Name="orientation" SelectedIndex="0" VerticalAlignment="Center">
         <ComboBoxItem>Horizontal</ComboBoxItem>
         <ComboBoxItem>Vertical</ComboBoxItem>
       </ComboBox>

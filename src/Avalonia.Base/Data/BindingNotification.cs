@@ -241,26 +241,6 @@ namespace Avalonia.Data
             _value = value;
         }
 
-        public BindingValue<object?> ToBindingValue()
-        {
-            if (ErrorType == BindingErrorType.None)
-            {
-                return HasValue ? new BindingValue<object?>(Value) : BindingValue<object?>.Unset;
-            }
-            else if (ErrorType == BindingErrorType.Error)
-            {
-                return BindingValue<object?>.BindingError(
-                    Error!,
-                    HasValue ? new Optional<object?>(Value) : Optional<object?>.Empty);
-            }
-            else
-            {
-                return BindingValue<object?>.DataValidationError(
-                    Error!,
-                    HasValue ? new Optional<object?>(Value) : Optional<object?>.Empty);
-            }
-        }
-
         /// <inheritdoc/>
         public override string ToString()
         {

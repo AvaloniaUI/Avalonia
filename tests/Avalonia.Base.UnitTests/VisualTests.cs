@@ -30,13 +30,13 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new TestVisual();
             var child = new TestVisual();
-            var parents = new List<IVisual>();
+            var parents = new List<Visual>();
 
             child.GetObservable(Visual.VisualParentProperty).Subscribe(x => parents.Add(x));
             target.AddChild(child);
             target.RemoveChild(child);
 
-            Assert.Equal(new IVisual[] { null, target, null }, parents);
+            Assert.Equal(new Visual[] { null, target, null }, parents);
         }
 
         [Fact]
@@ -126,15 +126,15 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Root_Should_Retun_Self_As_VisualRoot()
+        public void Root_Should_Return_Self_As_VisualRoot()
         {
             var root = new TestRoot();
 
-            Assert.Same(root, ((IVisual)root).VisualRoot);
+            Assert.Same(root, root.VisualRoot);
         }
 
         [Fact]
-        public void Descendants_Should_RetunVisualRoot()
+        public void Descendants_Should_ReturnVisualRoot()
         {
             var root = new TestRoot();
             var child1 = new Decorator();
@@ -143,14 +143,14 @@ namespace Avalonia.Base.UnitTests
             root.Child = child1;
             child1.Child = child2;
 
-            Assert.Same(root, ((IVisual)child1).VisualRoot);
-            Assert.Same(root, ((IVisual)child2).VisualRoot);
+            Assert.Same(root, child1.VisualRoot);
+            Assert.Same(root, child2.VisualRoot);
         }
 
         [Fact]
         public void Attaching_To_Visual_Tree_Should_Invalidate_Visual()
         {
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var child = new Decorator();
             var root = new TestRoot
             {
@@ -165,7 +165,7 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Detaching_From_Visual_Tree_Should_Invalidate_Visual()
         {
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var child = new Decorator();
             var root = new TestRoot
             {
@@ -281,13 +281,17 @@ namespace Avalonia.Base.UnitTests
         {
             var target = new Decorator();
             var root = new TestRoot { Child = target, DataContext = "foo" };
-            var called = false;
+            var called = 0;
 
             LogCallback checkLogMessage = (level, area, src, mt, pv) =>
             {
                 if (level >= Avalonia.Logging.LogEventLevel.Warning)
                 {
-                    called = true;
+                    Assert.Equal("Error in binding to {Target}.{Property}: {Message}", mt);
+                    Assert.Same(target, pv[0]);
+                    Assert.Equal(Decorator.TagProperty, pv[1]);
+                    Assert.Equal("Could not find a matching property accessor for 'Foo' on 'foo'", pv[2]);
+                    ++called;
                 }
             };
 
@@ -296,14 +300,14 @@ namespace Avalonia.Base.UnitTests
                 target.Bind(Decorator.TagProperty, new Binding("Foo"));
             }
 
-            Assert.True(called);
+            Assert.Equal(1, called);
         }
 
         [Fact]
         public void Changing_ZIndex_Should_InvalidateVisual()
         {
             Canvas canvas1;
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var root = new TestRoot
             {
                 Child = new StackPanel
@@ -327,7 +331,7 @@ namespace Avalonia.Base.UnitTests
         {
             Canvas canvas1;
             StackPanel stackPanel;
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var root = new TestRoot
             {
                 Child = stackPanel = new StackPanel

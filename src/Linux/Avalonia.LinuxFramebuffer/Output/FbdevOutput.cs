@@ -93,9 +93,8 @@ namespace Avalonia.LinuxFramebuffer
 
         void SetBpp(PixelFormat format)
         {
-            switch (format)
+            if (format == PixelFormat.Rgba8888)
             {
-            case PixelFormat.Rgba8888:
                 _varInfo.bits_per_pixel = 32;
                 _varInfo.grayscale = 0;
                 _varInfo.red = _varInfo.blue = _varInfo.green = _varInfo.transp = new fb_bitfield
@@ -105,8 +104,9 @@ namespace Avalonia.LinuxFramebuffer
                 _varInfo.green.offset = 8;
                 _varInfo.blue.offset = 16;
                 _varInfo.transp.offset = 24;
-                 break;
-            case PixelFormat.Bgra8888:
+            }
+            else if (format == PixelFormat.Bgra8888)
+            {
                 _varInfo.bits_per_pixel = 32;
                 _varInfo.grayscale = 0;
                 _varInfo.red = _varInfo.blue = _varInfo.green = _varInfo.transp = new fb_bitfield
@@ -116,8 +116,9 @@ namespace Avalonia.LinuxFramebuffer
                 _varInfo.green.offset = 8;
                 _varInfo.red.offset = 16;
                 _varInfo.transp.offset = 24;
-                 break;
-            case PixelFormat.Rgb565:
+            }
+            else if (format == PixelFormat.Rgb565)
+            {
                 _varInfo.bits_per_pixel = 16;
                 _varInfo.grayscale = 0;
                 _varInfo.red = _varInfo.blue = _varInfo.green = _varInfo.transp = new fb_bitfield();
@@ -126,8 +127,8 @@ namespace Avalonia.LinuxFramebuffer
                 _varInfo.green.length = 6;
                 _varInfo.blue.offset = 11;
                 _varInfo.blue.length = 5;
-                 break;
             }
+            else throw new NotSupportedException($"Pixel format {format} is not supported");
         }
 
         public string Id { get; private set; }

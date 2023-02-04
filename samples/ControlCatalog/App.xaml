@@ -2,14 +2,38 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:ControlCatalog.ViewModels"
              x:DataType="vm:ApplicationViewModel"
-             x:CompileBindings="True"
              Name="Avalonia ControlCatalog"
              x:Class="ControlCatalog.App">
   <Application.Resources>
     <ResourceDictionary>
+      <!-- Custom controls defined in other assemblies -->
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://ControlSamples/HamburgerMenu/HamburgerMenu.xaml" />
       </ResourceDictionary.MergedDictionaries>
+
+      <!-- Resources used only in the control catalog -->
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+          <Color x:Key="CatalogBaseLowColor">#33000000</Color>
+          <Color x:Key="CatalogBaseMediumColor">#99000000</Color>
+          <Color x:Key="CatalogChromeMediumColor">#FFE6E6E6</Color>
+          <Color x:Key="CatalogBaseHighColor">#FF000000</Color>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <Color x:Key="CatalogBaseLowColor">#33FFFFFF</Color>
+          <Color x:Key="CatalogBaseMediumColor">#99FFFFFF</Color>
+          <Color x:Key="CatalogChromeMediumColor">#FF1F1F1F</Color>
+          <Color x:Key="CatalogBaseHighColor">#FFFFFFFF</Color>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <Color x:Key="SystemAccentColor">#FF0078D7</Color>
+      <Color x:Key="SystemAccentColorDark1">#FF005A9E</Color>
+
+      <!-- Styles attached dynamically depending on current theme (simple or fluent) -->
+      <StyleInclude x:Key="DataGridFluent" Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+      <StyleInclude x:Key="DataGridSimple" Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml" />
+      <StyleInclude x:Key="ColorPickerFluent" Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+      <StyleInclude x:Key="ColorPickerSimple" Source="avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml" />
     </ResourceDictionary>
   </Application.Resources>
   <Application.Styles>

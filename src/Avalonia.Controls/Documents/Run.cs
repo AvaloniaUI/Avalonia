@@ -52,7 +52,12 @@ namespace Avalonia.Controls.Documents
 
         internal override void BuildTextRun(IList<TextRun> textRuns)
         {
-            var text = (Text ?? "").AsMemory();
+            var text = Text ?? "";
+
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
 
             var textRunProperties = CreateTextRunProperties();           
 

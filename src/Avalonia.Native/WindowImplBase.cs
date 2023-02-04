@@ -53,13 +53,12 @@ namespace Avalonia.Native
     }
 
     internal abstract class WindowBaseImpl : IWindowBaseImpl,
-        IFramebufferPlatformSurface, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+        IFramebufferPlatformSurface
     {
         protected readonly IAvaloniaNativeFactory _factory;
         protected IInputRoot _inputRoot;
         IAvnWindowBase _native;
         private object _syncRoot = new object();
-        private bool _deferredRendering = false;
         private bool _gpu = false;
         private readonly MouseDevice _mouse;
         private readonly IKeyboardDevice _keyboard;
@@ -69,34 +68,32 @@ namespace Avalonia.Native
         private double _savedScaling;
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
-        private IGlContext _glContext;
+        private IStorageProvider _storageProvider;
 
         internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            AvaloniaNativePlatformOpenGlInterface glFeature)
+            AvaloniaNativeGlPlatformGraphics glFeature)
         {
             _factory = factory;
             _gpu = opts.UseGpu && glFeature != null;
-            _deferredRendering = opts.UseDeferredRendering;
 
             _keyboard = AvaloniaLocator.Current.GetService<IKeyboardDevice>();
             _mouse = new MouseDevice();
             _cursorFactory = AvaloniaLocator.Current.GetService<ICursorFactory>();
-            StorageProvider = new SystemDialogs(this, _factory.CreateSystemDialogs());
         }
 
-        protected void Init(IAvnWindowBase window, IAvnScreens screens, IGlContext glContext)
+        protected void Init(IAvnWindowBase window, IAvnScreens screens)
         {
             _native = window;
-            _glContext = glContext;
 
             Handle = new MacOSTopLevelWindowHandle(window);
             if (_gpu)
-                _glSurface = new GlPlatformSurface(window, _glContext);
+                _glSurface = new GlPlatformSurface(window);
             Screen = new ScreenImpl(screens);
 
             _savedLogicalSize = ClientSize;
             _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
+            _storageProvider = new SystemDialogs(this, _factory.CreateSystemDialogs());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
@@ -373,22 +370,10 @@ namespace Avalonia.Native
 
         public IRenderer CreateRenderer(IRenderRoot root)
         {
-            var customRendererFactory = AvaloniaLocator.Current.GetService<IRendererFactory>();
-            var loop = AvaloniaLocator.Current.GetService<IRenderLoop>();
-            if (customRendererFactory != null)
-                return customRendererFactory.Create(root, loop);
-            
-            if (_deferredRendering)
+            return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor, () => Surfaces)
             {
-                if (AvaloniaNativePlatform.Compositor != null)
-                    return new CompositingRenderer(root, AvaloniaNativePlatform.Compositor)
-                    {
-                        RenderOnlyOnRenderThread = false
-                    };
-                return new DeferredRenderer(root, loop);
-            }
-
-            return new ImmediateRenderer(root);
+                RenderOnlyOnRenderThread = false
+            };
         }
 
         public virtual void Dispose()
@@ -507,29 +492,44 @@ namespace Avalonia.Native
         {
             if (TransparencyLevel != transparencyLevel)
             {
-                if (transparencyLevel >= WindowTransparencyLevel.Blur)
-                {
+                if (transparencyLevel > WindowTransparencyLevel.Transparent)
                     transparencyLevel = WindowTransparencyLevel.AcrylicBlur;
-                }
-
-                if(transparencyLevel == WindowTransparencyLevel.None)
-                {
-                    transparencyLevel = WindowTransparencyLevel.Transparent;
-                }
 
                 TransparencyLevel = transparencyLevel;
 
-                _native?.SetBlurEnabled((TransparencyLevel >= WindowTransparencyLevel.Blur).AsComBool());
+                _native.SetTransparencyMode(transparencyLevel == WindowTransparencyLevel.None
+                    ? AvnWindowTransparencyMode.Opaque 
+                    : transparencyLevel == WindowTransparencyLevel.Transparent 
+                        ? AvnWindowTransparencyMode.Transparent
+                        : AvnWindowTransparencyMode.Blur);
+
                 TransparencyLevelChanged?.Invoke(TransparencyLevel);
             }
         }
 
         public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
 
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            _native.SetFrameThemeVariant((AvnPlatformThemeVariant)themeVariant);
+        }
+
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } = new AcrylicPlatformCompensationLevels(1, 0, 0);
+        public virtual object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(INativeControlHostImpl))
+            {
+                return _nativeControlHost;
+            }
+            
+            if (featureType == typeof(IStorageProvider))
+            {
+                return _storageProvider;
+            }
+
+            return null;
+        }
 
         public IPlatformHandle Handle { get; private set; }
-
-        public IStorageProvider StorageProvider { get; }
     }
 }

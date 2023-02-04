@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Utilities;
 
@@ -9,7 +10,7 @@ namespace Avalonia.Data.Core.Plugins
     /// <summary>
     /// Validates properties on objects that implement <see cref="INotifyDataErrorInfo"/>.
     /// </summary>
-    public class IndeiValidationPlugin : IDataValidationPlugin
+    internal class IndeiValidationPlugin : IDataValidationPlugin
     {
         private static readonly WeakEvent<INotifyDataErrorInfo, DataErrorsChangedEventArgs>
             ErrorsChangedWeakEvent = WeakEvent.Register<INotifyDataErrorInfo, DataErrorsChangedEventArgs>(
@@ -18,6 +19,7 @@ namespace Avalonia.Data.Core.Plugins
             );
 
         /// <inheritdoc/>
+        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         public bool Match(WeakReference<object?> reference, string memberName)
         {
             reference.TryGetTarget(out var target);
@@ -26,6 +28,7 @@ namespace Avalonia.Data.Core.Plugins
         }
 
         /// <inheritdoc/>
+        [RequiresUnreferencedCode(TrimmingMessages.DataValidationPluginRequiresUnreferencedCodeMessage)]
         public IPropertyAccessor Start(WeakReference<object?> reference, string name, IPropertyAccessor accessor)
         {
             return new Validator(reference, name, accessor);
@@ -108,7 +111,7 @@ namespace Avalonia.Data.Core.Plugins
                 return target;
             }
 
-            private Exception GenerateException(IList<object> errors)
+            private static Exception GenerateException(IList<object> errors)
             {
                 if (errors.Count == 1)
                 {

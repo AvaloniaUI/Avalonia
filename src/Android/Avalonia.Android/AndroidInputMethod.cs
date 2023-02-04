@@ -95,6 +95,10 @@ namespace Avalonia.Android
 
                 _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
             }
+            else
+            {
+                _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.ImplicitOnly);
+            }
         }
 
         private void SurroundingTextChanged(object sender, EventArgs e)
@@ -163,7 +167,7 @@ namespace Avalonia.Android
         }
     }
 
-    public readonly struct ComposingRegion
+    public readonly record struct ComposingRegion
     {
         private readonly int _start = -1;
         private readonly int _end = -1;

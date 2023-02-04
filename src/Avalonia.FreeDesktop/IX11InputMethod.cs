@@ -11,7 +11,9 @@ namespace Avalonia.FreeDesktop
         (ITextInputMethodImpl method, IX11InputMethodControl control) CreateClient(IntPtr xid);
     }
 
+#pragma warning disable CA1815 // Override equals and operator equals on value types
     public struct X11InputMethodForwardedKey
+#pragma warning restore CA1815 // Override equals and operator equals on value types
     {
         public int KeyVal { get; set; }
         public KeyModifiers Modifiers { get; set; }

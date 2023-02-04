@@ -1,20 +1,23 @@
 using System;
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
+using Android.Views;
 using AndroidX.AppCompat.App;
-using AndroidX.Lifecycle;
 
 namespace Avalonia.Android
 {
-    public abstract class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler
+    public abstract class AvaloniaMainActivity : AppCompatActivity, IActivityResultHandler, IActivityNavigationService
     {
         internal static object ViewContent;
 
         public Action<int, Result, Intent> ActivityResult { get; set; }
+        public Action<int, string[], Permission[]> RequestPermissionsResult { get; set; }
         internal AvaloniaView View;
+        private GlobalLayoutListener _listener;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -32,6 +35,10 @@ namespace Avalonia.Android
             base.OnCreate(savedInstanceState);
 
             SetContentView(View);
+
+            _listener = new GlobalLayoutListener(View);
+
+            View.ViewTreeObserver?.AddOnGlobalLayoutListener(_listener);
         }
 
         public object Content
@@ -48,14 +55,25 @@ namespace Avalonia.Android
             }
         }
 
-        public override void OnConfigurationChanged(Configuration newConfig)
+        public event EventHandler<AndroidBackRequestedEventArgs> BackRequested;
+
+        public override void OnBackPressed()
         {
-            base.OnConfigurationChanged(newConfig);
+            var eventArgs = new AndroidBackRequestedEventArgs();
+
+            BackRequested?.Invoke(this, eventArgs);
+
+            if (!eventArgs.Handled)
+            {
+                base.OnBackPressed();
+            }
         }
 
         protected override void OnDestroy()
         {
             View.Content = null;
+
+            View.ViewTreeObserver?.RemoveOnGlobalLayoutListener(_listener);
 
             base.OnDestroy();
         }
@@ -65,6 +83,28 @@ namespace Avalonia.Android
             base.OnActivityResult(requestCode, resultCode, data);
 
             ActivityResult?.Invoke(requestCode, resultCode, data);
+        }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+        {
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            
+            RequestPermissionsResult?.Invoke(requestCode, permissions, grantResults);
+        }
+
+        class GlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
+        {
+            private AvaloniaView _view;
+
+            public GlobalLayoutListener(AvaloniaView view)
+            {
+                _view = view;
+            }
+
+            public void OnGlobalLayout()
+            {
+                _view.TopLevelImpl?.Resize(_view.TopLevelImpl.ClientSize);
+            }
         }
     }
 }

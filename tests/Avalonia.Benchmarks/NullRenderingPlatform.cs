@@ -5,11 +5,12 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.UnitTests;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Microsoft.Diagnostics.Runtime;
 
 namespace Avalonia.Benchmarks
 {
-    internal class NullRenderingPlatform : IPlatformRenderInterface
+    internal class NullRenderingPlatform : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
@@ -45,6 +46,10 @@ namespace Avalonia.Benchmarks
         {
             throw new NotImplementedException();
         }
+
+        public bool IsLost => false;
+
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -118,9 +123,15 @@ namespace Avalonia.Benchmarks
             return new MockStreamGeometryImpl();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
-            return new MockGlyphRun();
+            return new MockGlyphRun(glyphInfos);
+        }
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext)
+        {
+            return this;
         }
 
         public bool SupportsIndividualRoundRects => true;
@@ -128,5 +139,11 @@ namespace Avalonia.Benchmarks
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
+
+        public void Dispose()
+        {
+            
+        }
     }
 }

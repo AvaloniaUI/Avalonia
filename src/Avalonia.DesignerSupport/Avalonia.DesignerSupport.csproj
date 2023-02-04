@@ -7,7 +7,7 @@
          need change when there are breaking changes to designer support api.
     -->
     <Version>0.7.0</Version>
-    <NoWarn>CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NugetPackageName>Avalonia</NugetPackageName>
   </PropertyGroup>
@@ -19,6 +19,5 @@
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
   </ItemGroup>
-  <Import Project="..\..\build\Rx.props" />
   <Import Project="..\..\build\ApiDiff.props" />
 </Project>

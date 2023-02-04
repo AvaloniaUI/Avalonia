@@ -1,11 +1,10 @@
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Interactivity
 {
     /// <summary>
-    /// Provides extension methods for the <see cref="IInteractive"/> interface.
+    /// Provides extension methods for the <see cref="Interactive"/> interface.
     /// </summary>
     public static class InteractiveExtensions
     {
@@ -19,7 +18,7 @@ namespace Avalonia.Interactivity
         /// <param name="routes">The routing strategies to listen to.</param>
         /// <param name="handledEventsToo">Whether handled events should also be listened for.</param>
         /// <returns>A disposable that terminates the event subscription.</returns>
-        public static IDisposable AddDisposableHandler<TEventArgs>(this IInteractive o, RoutedEvent<TEventArgs> routedEvent,
+        public static IDisposable AddDisposableHandler<TEventArgs>(this Interactive o, RoutedEvent<TEventArgs> routedEvent,
             EventHandler<TEventArgs> handler,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false) where TEventArgs : RoutedEventArgs
@@ -30,6 +29,8 @@ namespace Avalonia.Interactivity
                 (instance: o, handler, routedEvent),
                 state => state.instance.RemoveHandler(state.routedEvent, state.handler));
         }
+
+        public static Interactive? GetInteractiveParent(this Interactive o) => o.InteractiveParent;
 
         /// <summary>
         /// Gets an observable for a <see cref="RoutedEvent{TEventArgs}"/>.
@@ -42,7 +43,7 @@ namespace Avalonia.Interactivity
         /// An observable which fires each time the event is raised.
         /// </returns>
         public static IObservable<TEventArgs> GetObservable<TEventArgs>(
-            this IInteractive o,
+            this Interactive o,
             RoutedEvent<TEventArgs> routedEvent,
             RoutingStrategies routes = RoutingStrategies.Direct | RoutingStrategies.Bubble,
             bool handledEventsToo = false)

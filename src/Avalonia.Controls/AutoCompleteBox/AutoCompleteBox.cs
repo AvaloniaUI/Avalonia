@@ -10,7 +10,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Collections;
@@ -474,6 +474,7 @@ namespace Avalonia.Controls
             FilterModeProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnFilterModePropertyChanged(e));
             ItemFilterProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemFilterPropertyChanged(e));
             ItemsProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemsPropertyChanged(e));
+            ItemTemplateProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnItemTemplatePropertyChanged(e));
             IsEnabledProperty.Changed.AddClassHandler<AutoCompleteBox>((x,e) => x.OnControlIsEnabledChanged(e));
         }
 
@@ -773,7 +774,7 @@ namespace Avalonia.Controls
         /// otherwise, false.</returns>
         protected bool HasFocus()
         {
-            IVisual? focused = FocusManager.Instance?.Current;
+            Visual? focused = FocusManager.Instance?.Current as Visual;
 
             while (focused != null)
             {
@@ -784,11 +785,11 @@ namespace Avalonia.Controls
 
                 // This helps deal with popups that may not be in the same
                 // visual tree
-                IVisual? parent = focused.GetVisualParent();
+                Visual? parent = focused.GetVisualParent();
                 if (parent == null)
                 {
                     // Try the logical parent.
-                    IControl? element = focused as IControl;
+                    Control? element = focused as Control;
                     if (element != null)
                     {
                         parent = element.Parent;

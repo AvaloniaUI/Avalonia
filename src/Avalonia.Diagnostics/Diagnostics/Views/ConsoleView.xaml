@@ -1,6 +1,8 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Avalonia.Diagnostics.Views.ConsoleView">
+             xmlns:viewModels="using:Avalonia.Diagnostics.ViewModels"
+             x:Class="Avalonia.Diagnostics.Views.ConsoleView"
+             x:DataType="viewModels:ConsoleViewModel">
   <UserControl.Styles>
     <Style Selector="TextBox.console">
       <Setter Property="FontFamily" Value="/Assets/Fonts/SourceSansPro-Regular.ttf"/>
@@ -38,8 +40,7 @@
              BorderBrush="{DynamicResource ThemeControlMidBrush}"
              BorderThickness="0,0,0,1"
              FontFamily="/Assets/Fonts/SourceSansPro-Regular.ttf"
-             Items="{Binding History}"
-             VirtualizationMode="None">
+             Items="{Binding History}">
       <ListBox.ItemTemplate>
         <DataTemplate>
           <StackPanel Orientation="Vertical">

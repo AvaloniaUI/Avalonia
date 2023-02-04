@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using Avalonia.Controls.Platform;
-using Avalonia.Data;
+using Avalonia.Reactive;
+using Avalonia.Platform;
 
 namespace Avalonia.Controls
 {
@@ -22,7 +22,7 @@ namespace Avalonia.Controls
 
             public NativeMenuInfo(TopLevel target)
             {
-                Exporter = (target.PlatformImpl as ITopLevelImplWithNativeMenuExporter)?.NativeMenuExporter;
+                Exporter = target.PlatformImpl?.TryGetFeature<ITopLevelNativeMenuExporter>();
                 if (Exporter != null)
                 {
                     Exporter.OnIsNativeMenuExportedChanged += delegate

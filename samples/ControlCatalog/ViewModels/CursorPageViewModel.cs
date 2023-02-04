@@ -18,7 +18,7 @@ namespace ControlCatalog.ViewModels
                 .Select(x => new StandardCursorModel(x))
                 .ToList();
 
-            var loader = AvaloniaLocator.Current!.GetService<IAssetLoader>()!;
+            var loader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
             var s = loader.Open(new Uri("avares://ControlCatalog/Assets/avalonia-32.png"));
             var bitmap = new Bitmap(s);
             CustomCursor = new Cursor(bitmap, new PixelPoint(16, 16));
@@ -27,18 +27,18 @@ namespace ControlCatalog.ViewModels
         public IEnumerable<StandardCursorModel> StandardCursors { get; }
         
         public Cursor CustomCursor { get; }
-
-        public class StandardCursorModel
+    }
+    
+    public class StandardCursorModel
+    {
+        public StandardCursorModel(StandardCursorType type)
         {
-            public StandardCursorModel(StandardCursorType type)
-            {
-                Type = type;
-                Cursor = new Cursor(type);
-            }
-
-            public StandardCursorType Type { get; }
-            
-            public Cursor Cursor { get; }
+            Type = type;
+            Cursor = new Cursor(type);
         }
+
+        public StandardCursorType Type { get; }
+            
+        public Cursor Cursor { get; }
     }
 }

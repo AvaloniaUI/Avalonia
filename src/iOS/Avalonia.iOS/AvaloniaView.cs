@@ -52,17 +52,34 @@ namespace Avalonia.iOS
 
         public override bool CanResignFirstResponder => true;
 
-        internal class TopLevelImpl : ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost,
-            ITopLevelImplWithStorageProvider
+        public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+        {
+            base.TraitCollectionDidChange(previousTraitCollection);
+            
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
+            settings?.TraitCollectionDidChange();
+        }
+
+        public override void TintColorDidChange()
+        {
+            base.TintColorDidChange();
+            
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>() as PlatformSettings;
+            settings?.TraitCollectionDidChange();
+        }
+
+        internal class TopLevelImpl : ITopLevelImpl
         {
             private readonly AvaloniaView _view;
+            private readonly INativeControlHostImpl _nativeControlHost;
+            private readonly IStorageProvider _storageProvider;
             public AvaloniaView View => _view;
 
             public TopLevelImpl(AvaloniaView view)
             {
                 _view = view;
-                NativeControlHost = new NativeControlHostImpl(_view);
-                StorageProvider = new IOSStorageProvider(view);
+                _nativeControlHost = new NativeControlHostImpl(_view);
+                _storageProvider = new IOSStorageProvider(view);
             }
 
             public void Dispose()
@@ -70,7 +87,8 @@ namespace Avalonia.iOS
                 // No-op
             }
 
-            public IRenderer CreateRenderer(IRenderRoot root) => new CompositingRenderer(root, Platform.Compositor);
+            public IRenderer CreateRenderer(IRenderRoot root) =>
+                new CompositingRenderer(root, Platform.Compositor, () => Surfaces);
 
 
             public void Invalidate(Rect rect)
@@ -119,13 +137,46 @@ namespace Avalonia.iOS
             // legacy no-op
             public IMouseDevice MouseDevice { get; } = new MouseDevice();
             public WindowTransparencyLevel TransparencyLevel { get; }
-
+            
+            public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+            {
+                // TODO adjust status bar depending on full screen mode.
+                if (OperatingSystem.IsIOSVersionAtLeast(13))
+                {
+                    var uiStatusBarStyle = themeVariant switch
+                    {
+                        PlatformThemeVariant.Light => UIStatusBarStyle.DarkContent,
+                        PlatformThemeVariant.Dark => UIStatusBarStyle.LightContent,
+                        _ => throw new ArgumentOutOfRangeException(nameof(themeVariant), themeVariant, null)
+                    };
+                    
+                    // Consider using UIViewController.PreferredStatusBarStyle in the future.
+                    UIApplication.SharedApplication.SetStatusBarStyle(uiStatusBarStyle, true);
+                }
+            }
+            
             public AcrylicPlatformCompensationLevels AcrylicCompensationLevels { get; } =
                 new AcrylicPlatformCompensationLevels();
 
-            public ITextInputMethodImpl? TextInputMethod => _view;
-            public INativeControlHostImpl NativeControlHost { get; }
-            public IStorageProvider StorageProvider { get; }
+            public object? TryGetFeature(Type featureType)
+            {
+                if (featureType == typeof(IStorageProvider))
+                {
+                    return _storageProvider;
+                }
+
+                if (featureType == typeof(ITextInputMethodImpl))
+                {
+                    return _view;
+                }
+
+                if (featureType == typeof(INativeControlHostImpl))
+                {
+                    return _nativeControlHost;
+                }
+
+                return null;
+            }
         }
 
         [Export("layerClass")]

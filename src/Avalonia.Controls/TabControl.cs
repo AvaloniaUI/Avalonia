@@ -12,6 +12,7 @@ using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Controls.Metadata;
+using Avalonia.Data;
 
 namespace Avalonia.Controls
 {
@@ -56,12 +57,12 @@ namespace Avalonia.Controls
         /// </summary>
         public static readonly StyledProperty<IDataTemplate?> SelectedContentTemplateProperty =
             AvaloniaProperty.Register<TabControl, IDataTemplate?>(nameof(SelectedContentTemplate));
-
+        
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly FuncTemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new WrapPanel());
+        private static readonly FuncTemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new WrapPanel());
 
         /// <summary>
         /// Initializes static members of the <see cref="TabControl"/> class.
@@ -148,15 +149,40 @@ namespace Avalonia.Controls
             return RegisterContentPresenter(presenter);
         }
 
-        protected override void OnContainersMaterialized(ItemContainerEventArgs e)
+        protected internal override Control CreateContainerForItemOverride() => new TabItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TabItem;
+
+        protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
         {
-            base.OnContainersMaterialized(e);
-            UpdateSelectedContent();
+            base.PrepareContainerForItemOverride(element, item, index);
+            
+            if (element is TabItem tabItem)
+            {
+                if (ContentTemplate is { } ct)
+                    tabItem.ContentTemplate = ct;
+                tabItem.SetValue(TabStripPlacementProperty, TabStripPlacement);
+            }
+
+            if (index == SelectedIndex && element is ContentControl container)
+            {
+                SelectedContentTemplate = container.ContentTemplate;
+                SelectedContent = container.Content;
+            }
         }
 
-        protected override void OnContainersRecycled(ItemContainerEventArgs e)
+        protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
         {
-            base.OnContainersRecycled(e);
+            base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
+
+            var selectedIndex = SelectedIndex;
+            
+            if (selectedIndex == oldIndex || selectedIndex == newIndex)
+                UpdateSelectedContent();
+        }
+
+        protected internal override void ClearContainerForItemOverride(Control element)
+        {
+            base.ClearContainerForItemOverride(element);
             UpdateSelectedContent();
         }
 
@@ -169,7 +195,7 @@ namespace Avalonia.Controls
             else
             {
                 var container = SelectedItem as IContentControl ??
-                    ItemContainerGenerator.ContainerFromIndex(SelectedIndex) as IContentControl;
+                    ContainerFromIndex(SelectedIndex) as IContentControl;
                 SelectedContentTemplate = container?.ContentTemplate;
                 SelectedContent = container?.Content;
             }
@@ -188,11 +214,6 @@ namespace Avalonia.Controls
             }
 
             return false;
-        }
-
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new TabItemContainerGenerator(this);
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -234,6 +255,14 @@ namespace Avalonia.Controls
                     e.Handled = UpdateSelectionFromEventSource(e.Source);
                 }
             }
+        }
+
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == TabStripPlacementProperty)
+                RefreshContainers();
         }
     }
 }

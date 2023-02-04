@@ -31,7 +31,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsThreeState"/> property.
         /// </summary>
-        public static StyledProperty<bool> IsThreeStateProperty =
+        public static readonly StyledProperty<bool> IsThreeStateProperty =
             CheckBox.IsThreeStateProperty.AddOwner<DataGridCheckBoxColumn>();
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Avalonia.Controls
         /// <param name="uneditedValue">
         /// The previous, unedited value in the cell being edited.
         /// </param>
-        protected override void CancelCellEdit(IControl editingElement, object uneditedValue)
+        protected override void CancelCellEdit(Control editingElement, object uneditedValue)
         {
             if (editingElement is CheckBox editingCheckBox)
             {
@@ -85,7 +85,7 @@ namespace Avalonia.Controls
         ///  <returns>
         ///  A new <see cref="T:System.Windows.Controls.CheckBox" /> control that is bound to the column's <see cref="P:System.Windows.Controls.DataGridBoundColumn.Binding" /> property value.
         ///  </returns>
-        protected override IControl GenerateEditingElementDirect(DataGridCell cell, object dataItem)
+        protected override Control GenerateEditingElementDirect(DataGridCell cell, object dataItem)
         {
             var checkBox = new CheckBox
             {
@@ -107,7 +107,7 @@ namespace Avalonia.Controls
         /// <returns>
         /// A new, read-only <see cref="T:System.Windows.Controls.CheckBox" /> control that is bound to the column's <see cref="P:System.Windows.Controls.DataGridBoundColumn.Binding" /> property value.
         /// </returns>
-        protected override IControl GenerateElement(DataGridCell cell, object dataItem)
+        protected override Control GenerateElement(DataGridCell cell, object dataItem)
         {
             bool isEnabled = false;
             CheckBox checkBoxElement = new CheckBox();
@@ -148,7 +148,7 @@ namespace Avalonia.Controls
         /// <returns>
         /// The unedited value. 
         /// </returns>
-        protected override object PrepareCellForEdit(IControl editingElement, RoutedEventArgs editingEventArgs)
+        protected override object PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
         {
             if (editingElement is CheckBox editingCheckBox)
             {
@@ -192,14 +192,14 @@ namespace Avalonia.Controls
                     
                     void OnLayoutUpdated(object sender, EventArgs e)
                     {
-                        if(!editingCheckBox.Bounds.IsEmpty)
+                        if(!editingCheckBox.Bounds.IsDefault)
                         {
                             editingCheckBox.LayoutUpdated -= OnLayoutUpdated;
                             ProcessPointerArgs();
                         }
                     }
 
-                    if(editingCheckBox.Bounds.IsEmpty)
+                    if(editingCheckBox.Bounds.IsDefault)
                     {
                         editingCheckBox.LayoutUpdated += OnLayoutUpdated;
                     }
@@ -218,7 +218,7 @@ namespace Avalonia.Controls
         /// Called by the DataGrid control when this column asks for its elements to be
         /// updated, because its CheckBoxContent or IsThreeState property changed.
         /// </summary>
-        protected internal override void RefreshCellContent(IControl element, string propertyName)
+        protected internal override void RefreshCellContent(Control element, string propertyName)
         {
             if (element == null)
             {

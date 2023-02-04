@@ -2,7 +2,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Controls.Platform;
@@ -127,7 +127,7 @@ namespace Avalonia.FreeDesktop
             var pid = Process.GetCurrentProcess().Id;
             var tid = s_trayIconInstanceId++;
 
-            _sysTrayServiceName = $"org.kde.StatusNotifierItem-{pid}-{tid}";
+            _sysTrayServiceName = FormattableString.Invariant($"org.kde.StatusNotifierItem-{pid}-{tid}");
             _statusNotifierItemDbusObj = new StatusNotifierItemDbusObj(_dbusMenuPath);
 
             try

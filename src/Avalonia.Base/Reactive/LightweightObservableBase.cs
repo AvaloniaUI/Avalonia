@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive;
-using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.Threading;
 
@@ -12,20 +10,22 @@ namespace Avalonia.Reactive
     /// </summary>
     /// <typeparam name="T">The observable type.</typeparam>
     /// <remarks>
-    /// <see cref="ObservableBase{T}"/> is rather heavyweight in terms of allocations and memory
+    /// ObservableBase{T} is rather heavyweight in terms of allocations and memory
     /// usage. This class provides a more lightweight base for some internal observable types
     /// in the Avalonia framework.
     /// </remarks>
-    public abstract class LightweightObservableBase<T> : IObservable<T>
+    internal abstract class LightweightObservableBase<T> : IObservable<T>
     {
         private Exception? _error;
         private List<IObserver<T>>? _observers = new List<IObserver<T>>();
 
+        public bool HasObservers => _observers?.Count > 0;
+        
         public IDisposable Subscribe(IObserver<T> observer)
         {
             _ = observer ?? throw new ArgumentNullException(nameof(observer));
 
-            Dispatcher.UIThread.VerifyAccess();
+            //Dispatcher.UIThread.VerifyAccess();
 
             var first = false;
 

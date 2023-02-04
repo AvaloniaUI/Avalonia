@@ -15,9 +15,7 @@ namespace Avalonia.Media.TextFormatting
 
         public override void Justify(TextLine textLine)
         {
-            var lineImpl = textLine as TextLineImpl;
-
-            if(lineImpl is null)
+            if (textLine is not TextLineImpl lineImpl)
             {
                 return;
             }
@@ -34,20 +32,18 @@ namespace Avalonia.Media.TextFormatting
                 return;
             }
 
-            var textLineBreak = lineImpl.TextLineBreak;
-
-            if (textLineBreak is not null && textLineBreak.TextEndOfLine is not null)
+            if (lineImpl.TextLineBreak is { TextEndOfLine: not null, IsSplit: false })
             {
-                if (textLineBreak.RemainingRuns is null || textLineBreak.RemainingRuns.Count == 0)
-                {
-                    return;
-                }
+                return;
             }
 
             var breakOportunities = new Queue<int>();
 
-            foreach (var textRun in lineImpl.TextRuns)
+            var currentPosition = textLine.FirstTextSourceIndex;
+
+            for (var i = 0; i < lineImpl.TextRuns.Count; ++i)
             {
+                var textRun = lineImpl.TextRuns[i];
                 var text = textRun.Text;
 
                 if (text.IsEmpty)
@@ -55,19 +51,17 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                var start = text.Start;
+                var lineBreakEnumerator = new LineBreakEnumerator(text.Span);
 
-                var lineBreakEnumerator = new LineBreakEnumerator(text);
-
-                while (lineBreakEnumerator.MoveNext())
+                while (lineBreakEnumerator.MoveNext(out var currentBreak))
                 {
-                    var currentBreak = lineBreakEnumerator.Current;
-
-                    if (!currentBreak.Required && currentBreak.PositionWrap != text.Length)
+                    if (!currentBreak.Required && currentBreak.PositionWrap != textRun.Length)
                     {
-                        breakOportunities.Enqueue(start + currentBreak.PositionMeasure);
+                        breakOportunities.Enqueue(currentPosition + currentBreak.PositionMeasure);
                     }
                 }
+
+                currentPosition += textRun.Length;
             }
 
             if (breakOportunities.Count == 0)
@@ -78,6 +72,8 @@ namespace Avalonia.Media.TextFormatting
             var remainingSpace = Math.Max(0, paragraphWidth - lineImpl.WidthIncludingTrailingWhitespace);
             var spacing = remainingSpace / breakOportunities.Count;
 
+            currentPosition = textLine.FirstTextSourceIndex;
+
             foreach (var textRun in lineImpl.TextRuns)
             {
                 var text = textRun.Text;
@@ -87,11 +83,10 @@ namespace Avalonia.Media.TextFormatting
                     continue;
                 }
 
-                if (textRun is ShapedTextCharacters shapedText)
+                if (textRun is ShapedTextRun shapedText)
                 {
                     var glyphRun = shapedText.GlyphRun;
                     var shapedBuffer = shapedText.ShapedBuffer;
-                    var currentPosition = text.Start;
 
                     while (breakOportunities.Count > 0)
                     {
@@ -105,11 +100,14 @@ namespace Avalonia.Media.TextFormatting
                         var glyphIndex = glyphRun.FindGlyphIndex(characterIndex);
                         var glyphInfo = shapedBuffer.GlyphInfos[glyphIndex];
 
-                        shapedBuffer.GlyphInfos[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex, glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
+                        shapedBuffer.GlyphInfos[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex,
+                            glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
                     }
 
-                    glyphRun.GlyphAdvances = shapedBuffer.GlyphAdvances;
+                    glyphRun.GlyphInfos = shapedBuffer.GlyphInfos;
                 }
+
+                currentPosition += textRun.Length;
             }
         }
     }

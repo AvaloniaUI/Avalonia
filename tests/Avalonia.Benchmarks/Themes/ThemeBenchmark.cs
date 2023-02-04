@@ -16,6 +16,8 @@ namespace Avalonia.Benchmarks.Themes
     public class ThemeBenchmark : IDisposable
     {
         private IDisposable _app;
+        private readonly FluentTheme _reusableFluentTheme = new FluentTheme();
+        private readonly SimpleTheme _reusableSimpleTheme = new SimpleTheme();
 
         public ThemeBenchmark()
         {
@@ -27,27 +29,37 @@ namespace Avalonia.Benchmarks.Themes
         }
 
         [Benchmark]
-        [Arguments(FluentThemeMode.Dark)]
-        [Arguments(FluentThemeMode.Light)]
-        public bool InitFluentTheme(FluentThemeMode mode)
+        public bool InitFluentTheme()
         {
-            UnitTestApplication.Current.Styles[0] = new FluentTheme(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
-            {
-                Mode = mode
-            };
+            UnitTestApplication.Current.Styles[0] = new FluentTheme();
             return ((IResourceHost)UnitTestApplication.Current).TryGetResource("SystemAccentColor", out _);
         }
 
         [Benchmark]
-        [Arguments(SimpleThemeMode.Dark)]
-        [Arguments(SimpleThemeMode.Light)]
-        public bool InitSimpleTheme(SimpleThemeMode mode)
+        public bool InitSimpleTheme()
         {
-            UnitTestApplication.Current.Styles[0] = new SimpleTheme(new Uri("resm:Styles?assembly=Avalonia.Benchmarks"))
-            {
-                Mode = mode
-            };
+            UnitTestApplication.Current.Styles[0] = new SimpleTheme();
             return ((IResourceHost)UnitTestApplication.Current).TryGetResource("ThemeAccentColor", out _);
+        }
+        
+        [Benchmark]
+        [Arguments(typeof(Button))]
+        [Arguments(typeof(TextBox))]
+        [Arguments(typeof(DatePicker))]
+        public object FindFluentControlTheme(Type type)
+        {
+            _reusableFluentTheme.TryGetResource(type, ThemeVariant.Default, out var theme);
+            return theme;
+        }
+
+        [Benchmark]
+        [Arguments(typeof(Button))]
+        [Arguments(typeof(TextBox))]
+        [Arguments(typeof(DatePicker))]
+        public object FindSimpleControlTheme(Type type)
+        {
+            _reusableSimpleTheme.TryGetResource(type, ThemeVariant.Default, out var theme);
+            return theme;
         }
 
         public void Dispose()

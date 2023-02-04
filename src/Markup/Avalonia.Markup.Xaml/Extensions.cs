@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.XamlIl.Runtime;
@@ -28,6 +29,7 @@ namespace Avalonia.Markup.Xaml
 
         public static bool IsInControlTemplate(this IServiceProvider sp) => sp.GetService<IAvaloniaXamlIlControlTemplateProvider>() != null;
 
+        [RequiresUnreferencedCode(TrimmingMessages.XamlTypeResolvedRequiresUnreferenceCodeMessage)]
         public static Type ResolveType(this IServiceProvider ctx, string namespacePrefix, string type)
         {
             var tr = ctx.GetService<IXamlTypeResolver>();
@@ -38,9 +40,9 @@ namespace Avalonia.Markup.Xaml
         public static object GetDefaultAnchor(this IServiceProvider provider)
         {
             // If the target is not a control, so we need to find an anchor that will let us look
-            // up named controls and style resources. First look for the closest IControl in
+            // up named controls and style resources. First look for the closest Control in
             // the context.
-            object anchor = provider.GetFirstParent<IControl>();
+            object anchor = provider.GetFirstParent<Control>();
 
             if (anchor is null)
             {

@@ -1,13 +1,9 @@
-﻿
 using System;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Data.Converters;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
-using Avalonia.Markup.Parsers;
 using Avalonia.Reactive;
 using Avalonia.VisualTree;
 
@@ -74,15 +70,16 @@ namespace Avalonia.Data
 
         public WeakReference<INameScope>? NameScope { get; set; }
 
-        protected abstract ExpressionObserver CreateExpressionObserver(
-            IAvaloniaObject target,
+        private protected abstract ExpressionObserver CreateExpressionObserver(
+            AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor,
             bool enableDataValidation);
 
         /// <inheritdoc/>
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.TypeConvertionSupressWarningMessage)]
         public InstancedBinding? Initiate(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)
@@ -130,17 +127,20 @@ namespace Avalonia.Data
             return new InstancedBinding(subject, Mode, Priority);
         }
 
-        protected ExpressionObserver CreateDataContextObserver(
-            IAvaloniaObject target,
+        private protected ExpressionObserver CreateDataContextObserver(
+            AvaloniaObject target,
             ExpressionNode node,
             bool targetIsDataContext,
             object? anchor)
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
-            if (!(target is IDataContextProvider))
+            if (target is not IDataContextProvider)
             {
-                target = anchor as IDataContextProvider ?? throw new InvalidOperationException("Cannot find a DataContext to bind to.");
+                if (anchor is IDataContextProvider && anchor is AvaloniaObject ao)
+                    target = ao;
+                else
+                    throw new InvalidOperationException("Cannot find a DataContext to bind to.");
             }
 
             if (!targetIsDataContext)
@@ -162,8 +162,8 @@ namespace Avalonia.Data
             }
         }
 
-        protected ExpressionObserver CreateElementObserver(
-            IStyledElement target,
+        private protected ExpressionObserver CreateElementObserver(
+            StyledElement target,
             string elementName,
             ExpressionNode node)
         {
@@ -178,8 +178,8 @@ namespace Avalonia.Data
             return result;
         }
 
-        protected ExpressionObserver CreateFindAncestorObserver(
-            IStyledElement target,
+        private protected ExpressionObserver CreateFindAncestorObserver(
+            StyledElement target,
             RelativeSource relativeSource,
             ExpressionNode node)
         {
@@ -197,7 +197,7 @@ namespace Avalonia.Data
                     break;
                 case TreeType.Visual:
                     controlLocator = VisualLocator.Track(
-                        (IVisual)target,
+                        (Visual)target,
                         relativeSource.AncestorLevel - 1,
                         relativeSource.AncestorType);
                     break;
@@ -211,7 +211,7 @@ namespace Avalonia.Data
                 null);
         }
 
-        protected ExpressionObserver CreateSourceObserver(
+        private protected ExpressionObserver CreateSourceObserver(
             object source,
             ExpressionNode node)
         {
@@ -220,8 +220,8 @@ namespace Avalonia.Data
             return new ExpressionObserver(source, node);
         }
 
-        protected ExpressionObserver CreateTemplatedParentObserver(
-            IAvaloniaObject target,
+        private protected ExpressionObserver CreateTemplatedParentObserver(
+            AvaloniaObject target,
             ExpressionNode node)
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
@@ -235,7 +235,7 @@ namespace Avalonia.Data
             return result;
         }
 
-        protected IObservable<object?> GetParentDataContext(IAvaloniaObject target)
+        protected IObservable<object?> GetParentDataContext(AvaloniaObject target)
         {
             // The DataContext is based on the visual parent and not the logical parent: this may
             // seem counter intuitive considering the fact that property inheritance works on the logical
@@ -243,20 +243,21 @@ namespace Avalonia.Data
             // Content property is bound to a value which becomes the ContentPresenter's 
             // DataContext - it is from this that the child hosted by the ContentPresenter needs to
             // inherit its DataContext.
+
             return target.GetObservable(Visual.VisualParentProperty)
                 .Select(x =>
                 {
-                    return (x as IAvaloniaObject)?.GetObservable(StyledElement.DataContextProperty) ??
+                    return (x as AvaloniaObject)?.GetObservable(StyledElement.DataContextProperty) ??
                            Observable.Return((object?)null);
                 }).Switch();
         }
 
-        private class UpdateSignal : SingleSubscriberObservableBase<Unit>
+        private class UpdateSignal : SingleSubscriberObservableBase<ValueTuple>
         {
-            private readonly IAvaloniaObject _target;
+            private readonly AvaloniaObject _target;
             private readonly AvaloniaProperty _property;
 
-            public UpdateSignal(IAvaloniaObject target, AvaloniaProperty property)
+            public UpdateSignal(AvaloniaObject target, AvaloniaProperty property)
             {
                 _target = target;
                 _property = property;
@@ -276,7 +277,7 @@ namespace Avalonia.Data
             {
                 if (e.Property == _property)
                 {
-                    PublishNext(Unit.Default);
+                    PublishNext(default);
                 }
             }
         }

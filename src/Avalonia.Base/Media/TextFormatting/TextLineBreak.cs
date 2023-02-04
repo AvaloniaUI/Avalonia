@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
-
-namespace Avalonia.Media.TextFormatting
+﻿namespace Avalonia.Media.TextFormatting
 {
     public class TextLineBreak
     {
-        public TextLineBreak(TextEndOfLine? textEndOfLine = null, FlowDirection flowDirection = FlowDirection.LeftToRight, 
-            IReadOnlyList<DrawableTextRun>? remainingRuns = null)
+        public TextLineBreak(TextEndOfLine? textEndOfLine = null,
+            FlowDirection flowDirection = FlowDirection.LeftToRight, bool isSplit = false)
         {
             TextEndOfLine = textEndOfLine;
             FlowDirection = flowDirection;
-            RemainingRuns = remainingRuns;
+            IsSplit = isSplit;
         }
 
         /// <summary>
@@ -23,8 +21,9 @@ namespace Avalonia.Media.TextFormatting
         public FlowDirection FlowDirection { get; }
         
         /// <summary>
-        /// Get the remaining runs that were split up by the <see cref="TextFormatter"/> during the formatting process.
+        /// Gets whether there were remaining runs after this line break,
+        /// that were split up by the <see cref="TextFormatter"/> during the formatting process.
         /// </summary>
-        public IReadOnlyList<DrawableTextRun>? RemainingRuns { get; }
+        public bool IsSplit { get; }
     }
 }

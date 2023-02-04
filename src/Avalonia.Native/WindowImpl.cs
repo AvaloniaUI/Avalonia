@@ -11,17 +11,17 @@ using Avalonia.Platform.Interop;
 
 namespace Avalonia.Native
 {
-    internal class WindowImpl : WindowBaseImpl, IWindowImpl, ITopLevelImplWithNativeMenuExporter
+    internal class WindowImpl : WindowBaseImpl, IWindowImpl
     {
         private readonly AvaloniaNativePlatformOptions _opts;
-        private readonly AvaloniaNativePlatformOpenGlInterface _glFeature;
+        private readonly AvaloniaNativeGlPlatformGraphics _glFeature;
         IAvnWindow _native;
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
-        
+        private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
-            AvaloniaNativePlatformOpenGlInterface glFeature) : base(factory, opts, glFeature)
+            AvaloniaNativeGlPlatformGraphics glFeature) : base(factory, opts, glFeature)
         {
             _opts = opts;
             _glFeature = glFeature;
@@ -29,11 +29,10 @@ namespace Avalonia.Native
             
             using (var e = new WindowEvents(this))
             {
-                var context = _opts.UseGpu ? glFeature?.MainContext : null;
-                Init(_native = factory.CreateWindow(e, context?.Context), factory.CreateScreens(), context);
+                Init(_native = factory.CreateWindow(e, glFeature.SharedContext.Context), factory.CreateScreens());
             }
 
-            NativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
+            _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -49,7 +48,7 @@ namespace Avalonia.Native
             {
                 if (_parent.Closing != null)
                 {
-                    return _parent.Closing().AsComBool();
+                    return _parent.Closing(WindowCloseReason.WindowClosing).AsComBool();
                 }
 
                 return true.AsComBool();
@@ -122,7 +121,7 @@ namespace Avalonia.Native
                 {
                     var visual = (_inputRoot as Window).Renderer.HitTestFirst(e.Position, _inputRoot as Window, x =>
                             {
-                                if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsVisible))
+                                if (x is IInputElement ie && (!ie.IsHitTestVisible || !ie.IsEffectivelyVisible))
                                 {
                                     return false;
                                 }
@@ -208,9 +207,7 @@ namespace Avalonia.Native
             // NO OP on OSX
         }
 
-        public Func<bool> Closing { get; set; }
-
-        public ITopLevelNativeMenuExporter NativeMenuExporter { get; }
+        public Func<WindowCloseReason, bool> Closing { get; set; }
 
         public void Move(PixelPoint point) => Position = point;
 
@@ -227,6 +224,16 @@ namespace Avalonia.Native
         public void SetEnabled(bool enable)
         {
             _native.SetEnabled(enable.AsComBool());
+        }
+
+        public override object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(ITopLevelNativeMenuExporter))
+            {
+                return _nativeMenuExporter;
+            }
+            
+            return base.TryGetFeature(featureType);
         }
     }
 }

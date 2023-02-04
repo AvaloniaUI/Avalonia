@@ -14,6 +14,12 @@
     <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- For managed dialogs dev testing -->
+    <InternalsVisibleTo Include="ControlCatalog, PublicKey=$(AvaloniaPublicKey)" />    
+  </ItemGroup>
+  
   <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
 </Project>

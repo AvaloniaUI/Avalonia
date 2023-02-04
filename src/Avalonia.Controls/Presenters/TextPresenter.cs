@@ -106,11 +106,10 @@ namespace Avalonia.Controls.Presenters
         private Rect _caretBounds;
         private Point _navigationPosition;
         private string? _preeditText;
-        private CharacterHit _compositionStartHit = new CharacterHit(-1);
 
         static TextPresenter()
         {
-            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty);
+            AffectsRender<TextPresenter>(CaretBrushProperty, SelectionBrushProperty, TextElement.ForegroundProperty);
         }
 
         public TextPresenter()
@@ -589,6 +588,7 @@ namespace Avalonia.Controls.Presenters
 
         protected virtual void InvalidateTextLayout()
         {
+            _textLayout?.Dispose();
             _textLayout = null;
 
             InvalidateMeasure();
@@ -598,6 +598,7 @@ namespace Avalonia.Controls.Presenters
         {
             _constraint = availableSize;
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             InvalidateArrange();
@@ -623,6 +624,7 @@ namespace Avalonia.Controls.Presenters
 
             _constraint = new Size(Math.Ceiling(finalSize.Width), double.PositiveInfinity);
 
+            _textLayout?.Dispose();
             _textLayout = null;
 
             return finalSize;

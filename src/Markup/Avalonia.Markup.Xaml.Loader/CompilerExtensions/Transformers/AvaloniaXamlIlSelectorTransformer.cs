@@ -19,7 +19,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (!(node is XamlAstObjectNode on && on.Type.GetClrType().FullName == "Avalonia.Styling.Style"))
+            if (node is not XamlAstObjectNode on ||
+                !context.GetAvaloniaTypes().Style.IsAssignableFrom(on.Type.GetClrType()))
                 return node;
 
             var pn = on.Children.OfType<XamlAstXamlPropertyValueNode>()
@@ -124,17 +125,17 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                                             $"Cannot convert '{attachedProperty.Value}' to '{targetPropertyType.GetFqn()}",
                                             node);
 
-                                result = new XamlIlAttacchedPropertyEqualsSelector(result, targetPropertyField, typedValue);
+                                result = new XamlIlAttachedPropertyEqualsSelector(result, targetPropertyField, typedValue);
                                 break;
                             }
                         case SelectorGrammar.ChildSyntax child:
-                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Child);
+                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.CombinatorSelectorType.Child);
                             break;
                         case SelectorGrammar.DescendantSyntax descendant:
-                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Descendant);
+                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.CombinatorSelectorType.Descendant);
                             break;
                         case SelectorGrammar.TemplateSyntax template:
-                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.SelectorType.Template);
+                            result = new XamlIlCombinatorSelector(result, XamlIlCombinatorSelector.CombinatorSelectorType.Template);
                             break;
                         case SelectorGrammar.NotSyntax not:
                             result = new XamlIlNotSelector(result, Create(not.Argument, typeResolver));
@@ -186,18 +187,42 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
                 => TypeReferenceResolver.ResolveType(context, $"{p}:{n}", true, node, true));
             pn.Values[0] = selector;
 
-            return new AvaloniaXamlIlTargetTypeMetadataNode(on,
+            var templateType = GetLastTemplateTypeFromSelector(selector);
+            
+            var styleNode = new AvaloniaXamlIlTargetTypeMetadataNode(on,
                 new XamlAstClrTypeReference(selector, selector.TargetType, false),
                 AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.Style);
+
+            return templateType switch
+            {
+                null => styleNode,
+                _ => new AvaloniaXamlIlTargetTypeMetadataNode(styleNode,
+                    new XamlAstClrTypeReference(styleNode, templateType, false),
+                    AvaloniaXamlIlTargetTypeMetadataNode.ScopeTypes.ControlTemplate)
+            };
         }
 
+        private static IXamlType GetLastTemplateTypeFromSelector(XamlIlSelectorNode node)
+        {
+            while (node is not null)
+            {
+                if (node is XamlIlCombinatorSelector
+                    {
+                        SelectorType: XamlIlCombinatorSelector.CombinatorSelectorType.Template
+                    })
+                {
+                    return node.Previous.TargetType;
+                }
+                node = node.Previous;
+            }
+
+            return null;
+        }
     }
 
-
-    
     abstract class XamlIlSelectorNode : XamlAstNode, IXamlAstValueNode, IXamlAstEmitableNode<IXamlILEmitter, XamlILNodeEmitResult>
     {
-        protected XamlIlSelectorNode Previous { get; }
+        internal XamlIlSelectorNode Previous { get; }
         public abstract IXamlType TargetType { get; }
 
         public XamlIlSelectorNode(XamlIlSelectorNode previous,
@@ -289,19 +314,20 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
 
     class XamlIlCombinatorSelector : XamlIlSelectorNode
     {
-        private readonly SelectorType _type;
+        private readonly CombinatorSelectorType _type;
 
-        public enum SelectorType
+        public enum CombinatorSelectorType
         {
             Child,
             Descendant,
             Template
         }
-        public XamlIlCombinatorSelector(XamlIlSelectorNode previous, SelectorType type) : base(previous)
+        public XamlIlCombinatorSelector(XamlIlSelectorNode previous, CombinatorSelectorType type) : base(previous)
         {
             _type = type;
         }
 
+        public CombinatorSelectorType SelectorType => _type;
         public override IXamlType TargetType => null;
         protected override void DoEmit(XamlEmitContext<IXamlILEmitter, XamlILNodeEmitResult> context, IXamlILEmitter codeGen)
         {
@@ -389,9 +415,9 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     }
 
 
-    class XamlIlAttacchedPropertyEqualsSelector : XamlIlSelectorNode
+    class XamlIlAttachedPropertyEqualsSelector : XamlIlSelectorNode
     {
-        public XamlIlAttacchedPropertyEqualsSelector(XamlIlSelectorNode previous,
+        public XamlIlAttachedPropertyEqualsSelector(XamlIlSelectorNode previous,
             IXamlField propertyFiled,
             IXamlAstValueNode value)
             : base(previous)

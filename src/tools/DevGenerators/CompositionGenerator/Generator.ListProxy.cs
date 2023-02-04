@@ -92,7 +92,7 @@ class Template
         }}
 ";
 
-        private ClassDeclarationSyntax AppendListProxy(GList list, ClassDeclarationSyntax cl)
+        private static ClassDeclarationSyntax AppendListProxy(GList list, ClassDeclarationSyntax cl)
         {
 
             var itemType = list.ItemType;
@@ -112,7 +112,7 @@ class Template
 
             var defs = cl.Members.OfType<MethodDeclarationSyntax>().First(m => m.Identifier.Text == "InitializeDefaults");
 
-            cl = cl.ReplaceNode(defs.Body, defs.Body.AddStatements(
+            cl = cl.ReplaceNode(defs.Body!, defs.Body!.AddStatements(
 
                 ParseStatement($"_list = new ServerListProxyHelper<{itemType}, {serverItemType}>(this);")));
           

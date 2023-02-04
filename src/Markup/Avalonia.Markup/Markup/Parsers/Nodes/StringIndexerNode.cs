@@ -2,9 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Reflection;
 using Avalonia.Data;
 using Avalonia.Data.Core;
@@ -12,6 +13,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
+    [RequiresUnreferencedCode(TrimmingMessages.ReflectionBindingRequiresUnreferencedCodeMessage)]
     internal class StringIndexerNode : IndexerNodeBase
     {
         public StringIndexerNode(IList<string> arguments)
@@ -113,7 +115,7 @@ namespace Avalonia.Markup.Parsers.Nodes
         }
 
 
-        private bool SetValueInArray(Array array, int[] indices, object? value)
+        private static bool SetValueInArray(Array array, int[] indices, object? value)
         {
             if (ValidBounds(indices, array))
             {
@@ -223,7 +225,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return GetValueFromArray(array, intArgs);
         }
 
-        private object? GetValueFromArray(Array array, int[] indices)
+        private static object? GetValueFromArray(Array array, int[] indices)
         {
             if (ValidBounds(indices, array))
             {
@@ -275,7 +277,7 @@ namespace Avalonia.Markup.Parsers.Nodes
             return null;
         }
 
-        private bool ValidBounds(int[] indices, Array array)
+        private static bool ValidBounds(int[] indices, Array array)
         {
             if (indices.Length == array.Rank)
             {

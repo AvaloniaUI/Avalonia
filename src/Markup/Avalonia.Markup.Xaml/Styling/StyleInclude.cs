@@ -2,6 +2,7 @@ using Avalonia.Styling;
 using System;
 using Avalonia.Controls;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 
@@ -10,9 +11,15 @@ namespace Avalonia.Markup.Xaml.Styling
     /// <summary>
     /// Includes a style from a URL.
     /// </summary>
+    /// <remarks>
+    /// If used from the XAML code, it is replaced with direct style reference.
+    /// When used in runtime, this type might be unsafe with trimming and AOT.
+    /// </remarks>
+    [RequiresUnreferencedCode(TrimmingMessages.StyleResourceIncludeRequiresUnreferenceCodeMessage)]
     public class StyleInclude : IStyle, IResourceProvider
     {
-        private readonly Uri _baseUri;
+        private readonly IServiceProvider? _serviceProvider;
+        private readonly Uri? _baseUri;
         private IStyle[]? _loaded;
         private bool _isLoading;
 
@@ -20,7 +27,7 @@ namespace Avalonia.Markup.Xaml.Styling
         /// Initializes a new instance of the <see cref="StyleInclude"/> class.
         /// </summary>
         /// <param name="baseUri">The base URL for the XAML context.</param>
-        public StyleInclude(Uri baseUri)
+        public StyleInclude(Uri? baseUri)
         {
             _baseUri = baseUri;
         }
@@ -31,6 +38,7 @@ namespace Avalonia.Markup.Xaml.Styling
         /// <param name="serviceProvider">The XAML service provider.</param>
         public StyleInclude(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
             _baseUri = serviceProvider.GetContextBaseUri();
         }
 
@@ -51,7 +59,8 @@ namespace Avalonia.Markup.Xaml.Styling
                 if (_loaded == null)
                 {
                     _isLoading = true;
-                    var loaded = (IStyle)AvaloniaXamlLoader.Load(Source, _baseUri);
+                    var source = Source ?? throw new InvalidOperationException("StyleInclude.Source must be set.");
+                    var loaded = (IStyle)AvaloniaXamlLoader.Load(_serviceProvider, source, _baseUri);
                     _loaded = new[] { loaded };
                     _isLoading = false;
                 }
@@ -82,13 +91,11 @@ namespace Avalonia.Markup.Xaml.Styling
             }
         }
 
-        public SelectorMatchResult TryAttach(IStyleable target, object? host) => Loaded.TryAttach(target, host);
-
-        public bool TryGetResource(object key, out object? value)
+        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             if (!_isLoading)
             {
-                return Loaded.TryGetResource(key, out value);
+                return Loaded.TryGetResource(key, theme, out value);
             }
 
             value = null;

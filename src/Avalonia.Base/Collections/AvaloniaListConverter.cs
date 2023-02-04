@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Utilities;
 
@@ -8,7 +9,8 @@ namespace Avalonia.Collections
     /// <summary>
     /// Creates an <see cref="AvaloniaList{T}"/> from a string representation.
     /// </summary>
-    public class AvaloniaListConverter<T> : TypeConverter
+    [RequiresUnreferencedCode(TrimmingMessages.TypeConvertionRequiresUnreferencedCodeMessage)]
+    public class AvaloniaListConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T> : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
