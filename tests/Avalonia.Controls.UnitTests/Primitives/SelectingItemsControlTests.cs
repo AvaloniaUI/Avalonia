@@ -674,12 +674,12 @@ namespace Avalonia.Controls.UnitTests.Primitives
         }
 
         [Fact]
-        public void Moving_Selected_Item_Should_Clear_Selection()
+        public void Moving_Selected_Item_Should_Retain_Selection()
         {
-            var items = new AvaloniaList<Item>
+            var items = new ObservableCollection<Item>()
             {
-                new Item(),
-                new Item(),
+                new  () { Value = "Item 1"},
+                new  () { Value = "Item 2"},
             };
 
             var target = new SelectingItemsControl
@@ -690,23 +690,24 @@ namespace Avalonia.Controls.UnitTests.Primitives
 
             Prepare(target);
             target.SelectedIndex = 1;
+            var selectedTarget = items[1];
 
-            Assert.Equal(items[1], target.SelectedItem);
+            Assert.Equal(selectedTarget, target.SelectedItem);
             Assert.Equal(1, target.SelectedIndex);
 
             SelectionChangedEventArgs receivedArgs = null;
 
             target.SelectionChanged += (_, args) => receivedArgs = args;
 
-            var removed = items[1];
+            // var removed = items[1];
             items.Move(1, 0);
 
-            Assert.Null(target.SelectedItem);
-            Assert.Equal(-1, target.SelectedIndex);
-            Assert.NotNull(receivedArgs);
-            Assert.Empty(receivedArgs.AddedItems);
-            Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
-            Assert.All(items, x => Assert.False(x.IsSelected));
+            Assert.NotNull(target.SelectedItem);
+            Assert.Equal(0, target.SelectedIndex);
+            Assert.Equal(selectedTarget, target.SelectedItem);
+            Assert.Null(receivedArgs);
+            // Assert.Empty(receivedArgs.AddedItems);
+            // Assert.Equal(new[] { removed }, receivedArgs.RemovedItems);
         }
 
         [Fact]

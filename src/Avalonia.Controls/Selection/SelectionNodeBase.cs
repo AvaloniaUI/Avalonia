@@ -176,11 +176,7 @@ namespace Avalonia.Controls.Selection
                 }
             }
 
-            return new CollectionChangeState
-            {
-                ShiftIndex = index,
-                ShiftDelta = shifted ? count : 0,
-            };
+            return new CollectionChangeState { ShiftIndex = index, ShiftDelta = shifted ? count : 0, };
         }
 
         private protected virtual CollectionChangeState OnItemsRemoved(int index, IList items)
@@ -221,10 +217,18 @@ namespace Avalonia.Controls.Selection
 
             return new CollectionChangeState
             {
-                ShiftIndex = index,
-                ShiftDelta = shifted ? -count : 0,
-                RemovedItems = removed,
+                ShiftIndex = index, ShiftDelta = shifted ? -count : 0, RemovedItems = removed,
             };
+        }
+
+        private protected virtual CollectionChangeState OnItemsMoved(int index, IList items)
+        {
+            var count = items.Count;
+            var shifted = false;
+
+            // TODO: ranges for moved
+
+            return new CollectionChangeState { ShiftIndex = index, ShiftDelta = shifted ? count : 0, };
         }
 
         private protected virtual void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
@@ -241,36 +245,43 @@ namespace Avalonia.Controls.Selection
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    {
-                        var change = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
-                        shiftIndex = change.ShiftIndex;
-                        shiftDelta = change.ShiftDelta;
-                        break;
-                    }
-                case NotifyCollectionChangedAction.Remove:
-                    {
-                        var change = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
-                        shiftIndex = change.ShiftIndex;
-                        shiftDelta = change.ShiftDelta;
-                        removed = change.RemovedItems;
-                        break;
-                    }
-                case NotifyCollectionChangedAction.Replace:
-                case NotifyCollectionChangedAction.Move:
-                    {
-                        var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
-                        var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
-                        shiftIndex = removeChange.ShiftIndex;
-                        shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
-                        removed = removeChange.RemovedItems;
-                    }
+                {
+                    var change = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
+                    shiftIndex = change.ShiftIndex;
+                    shiftDelta = change.ShiftDelta;
                     break;
+                }
+                case NotifyCollectionChangedAction.Remove:
+                {
+                    var change = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
+                    shiftIndex = change.ShiftIndex;
+                    shiftDelta = change.ShiftDelta;
+                    removed = change.RemovedItems;
+                    break;
+                }
+                case NotifyCollectionChangedAction.Replace:
+                {
+                    var removeChange = OnItemsRemoved(e.OldStartingIndex, e.OldItems!);
+                    var addChange = OnItemsAdded(e.NewStartingIndex, e.NewItems!);
+                    shiftIndex = removeChange.ShiftIndex;
+                    shiftDelta = removeChange.ShiftDelta + addChange.ShiftDelta;
+                    removed = removeChange.RemovedItems;
+                    break;
+                }
+                case NotifyCollectionChangedAction.Move:
+                {
+                    var movedChanged = OnItemsMoved(e.NewStartingIndex, e.NewItems!);
+                    shiftIndex = movedChanged.ShiftIndex;
+                    shiftDelta = movedChanged.ShiftDelta;
+                    removed = movedChanged.RemovedItems;
+                    break;
+                }
                 case NotifyCollectionChangedAction.Reset:
                     OnSourceReset();
                     break;
             }
 
-            if (shiftDelta != 0)
+            if (shiftDelta != 0 || e.Action == NotifyCollectionChangedAction.Move)
             {
                 OnIndexesChanged(shiftIndex, shiftDelta);
             }

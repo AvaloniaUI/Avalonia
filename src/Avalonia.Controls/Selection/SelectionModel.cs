@@ -419,7 +419,21 @@ namespace Avalonia.Controls.Selection
                 RemovedItems = removed,
             };
         }
-
+        
+        private protected override CollectionChangeState OnItemsMoved(int index, IList items)
+        {
+            var baseResult = base.OnItemsMoved(index, items);
+            
+            _selectedIndex = baseResult.ShiftIndex;
+            _anchorIndex = baseResult.ShiftIndex;
+            
+            return new CollectionChangeState
+            {
+                ShiftIndex = baseResult.ShiftIndex,
+                ShiftDelta = baseResult.ShiftDelta,
+            };
+        }
+        
         private protected override void OnSourceCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             if (_operation?.UpdateCount > 0)
@@ -439,7 +453,7 @@ namespace Avalonia.Controls.Selection
 
             if ((e.Action == NotifyCollectionChangedAction.Remove && e.OldStartingIndex <= oldSelectedIndex) ||
                 (e.Action == NotifyCollectionChangedAction.Replace && e.OldStartingIndex == oldSelectedIndex) ||
-                (e.Action == NotifyCollectionChangedAction.Move && e.OldStartingIndex == oldSelectedIndex) ||
+                (e.Action == NotifyCollectionChangedAction.Move) ||
                 e.Action == NotifyCollectionChangedAction.Reset)
             {
                 RaisePropertyChanged(nameof(SelectedItem));
