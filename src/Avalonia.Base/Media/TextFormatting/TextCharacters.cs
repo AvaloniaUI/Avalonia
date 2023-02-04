@@ -121,12 +121,11 @@ namespace Avalonia.Media.TextFormatting
                         
             if (matchFound)
             {
+                // Fallback found
                 var fallbackGlyphTypeface = fontManager.GetOrAddGlyphTypeface(fallbackTypeface);
-
-                //Fallback found
+                                
                 if (TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, out count))
-                {
-                    
+                {                    
                     return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(fallbackTypeface),
                         biDiLevel);
                 }                
