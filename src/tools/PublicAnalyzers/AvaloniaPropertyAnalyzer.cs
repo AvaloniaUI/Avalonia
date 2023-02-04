@@ -70,6 +70,17 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "It is possible to use any AvaloniaProperty with any AvaloniaObject. However, each AvaloniaProperty an object uses on itself should be either owned by that object, or attached to that object.",
         InappropriateReadWriteTag);
 
+    private static readonly DiagnosticDescriptor SettingOwnStyledPropertyValue = new(
+        "AVP1012",
+        "An AvaloniaObject not set a value for its own StyledProperty or AttachedProperty",
+        "Inappropriate assignment: An AvaloniaObject should never set its own StyledProperty or AttachedProperty values",
+        Category,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        "Setting a StyledProperty or AttachedProperty directly will overwrite values from lower-priority sources, such as styles and templates. This should only be done by control consumers," +
+        "not the control itself. Constructor parameters and assignments within UserControl or TopLevel types are exempt from this diagnostic.",
+        InappropriateReadWriteTag);
+
     private static readonly DiagnosticDescriptor DuplicatePropertyName = new(
         "AVP1020",
         "AvaloniaProperty names should be unique within each class",
@@ -150,6 +161,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         InappropriatePropertyRegistration,
         OwnerDoesNotMatchOuterType,
         UnexpectedPropertyAccess,
+        SettingOwnStyledPropertyValue,
         DuplicatePropertyName,
         AmbiguousPropertyName,
         PropertyNameMismatch,
@@ -181,18 +193,20 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         return propertyTypes.Any(t => SymbolEquals(type, t));
     }
 
-    private static bool DerivesFrom(ITypeSymbol? type, ITypeSymbol baseType)
+    private static bool DerivesFrom(ITypeSymbol? type, ITypeSymbol? baseType)
     {
-        while (type != null)
+        if (baseType != null)
         {
-            if (SymbolEquals(type, baseType))
+            while (type != null)
             {
-                return true;
+                if (SymbolEquals(type, baseType))
+                {
+                    return true;
+                }
+
+                type = type.BaseType;
             }
-
-            type = type.BaseType;
         }
-
         return false;
     }
 

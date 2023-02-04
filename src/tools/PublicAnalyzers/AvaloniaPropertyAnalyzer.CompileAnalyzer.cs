@@ -36,6 +36,8 @@ public partial class AvaloniaPropertyAnalyzer
         private readonly INamedTypeSymbol _styledPropertyType;
         private readonly INamedTypeSymbol _attachedPropertyType;
         private readonly INamedTypeSymbol _directPropertyType;
+        private readonly INamedTypeSymbol? _userControlType;
+        private readonly INamedTypeSymbol? _topLevelType;
         private readonly ImmutableArray<INamedTypeSymbol> _allAvaloniaPropertyTypes;
         private readonly ImmutableDictionary<INamedTypeSymbol, ITypeParameterSymbol> _propertyValueTypeParams;
         private readonly ImmutableHashSet<IMethodSymbol> _avaloniaPropertyRegisterMethods;
@@ -62,6 +64,9 @@ public partial class AvaloniaPropertyAnalyzer
             _attachedPropertyType = GetTypeOrThrow("Avalonia.AttachedProperty`1");
             _directPropertyType = GetTypeOrThrow("Avalonia.DirectProperty`2");
 
+            _userControlType = context.Compilation.GetTypeByMetadataName("Avalonia.Controls.UserControl");
+            _topLevelType = context.Compilation.GetTypeByMetadataName("Avalonia.Controls.TopLevel");
+
             _avaloniaPropertyRegisterMethods = _avaloniaPropertyType.GetMembers()
                 .OfType<IMethodSymbol>().Where(m => m.Name.StartsWith("Register")).ToImmutableHashSet(methodComparer);
 
@@ -86,7 +91,8 @@ public partial class AvaloniaPropertyAnalyzer
 
             context.RegisterOperationAction(AnalyzeFieldInitializer, OperationKind.FieldInitializer);
             context.RegisterOperationAction(AnalyzePropertyInitializer, OperationKind.PropertyInitializer);
-            context.RegisterOperationAction(AnalyzeAssignment, OperationKind.SimpleAssignment);
+            context.RegisterOperationAction(AnalyzePropertyStorageAssignment, OperationKind.SimpleAssignment);
+            context.RegisterOperationAction(AnalyzePropertyWrapperAssignment, OperationKind.SimpleAssignment);
             context.RegisterOperationAction(AnalyzeMethodInvocation, OperationKind.Invocation);
 
             context.RegisterSymbolStartAction(StartPropertySymbolAnalysis, SymbolKind.Property);
@@ -381,7 +387,7 @@ public partial class AvaloniaPropertyAnalyzer
                         {
                             throw new InvalidOperationException($"{propertyType} is not a recognised AvaloniaProperty ({_styledPropertyType}, {_attachedPropertyType}, {_directPropertyType}).");
                         }
-                        
+
                         var valueType = propertyType.TypeArguments[propertyValueType.Ordinal];
 
                         TypeReference? hostTypeRef = null;
@@ -462,7 +468,7 @@ public partial class AvaloniaPropertyAnalyzer
         }
 
         /// <seealso cref="InappropriatePropertyAssignment"/>
-        private void AnalyzeAssignment(OperationAnalysisContext context)
+        private void AnalyzePropertyStorageAssignment(OperationAnalysisContext context)
         {
             var operation = (IAssignmentOperation)context.Operation;
 
@@ -518,6 +524,34 @@ public partial class AvaloniaPropertyAnalyzer
             }
         }
 
+        /// <seealso cref="SettingOwnStyledPropertyValue"/>
+        private void AnalyzePropertyWrapperAssignment(OperationAnalysisContext context)
+        {
+            var operation = (IAssignmentOperation)context.Operation;
+
+            if (ResolveOperationSource(operation) is IParameterReferenceOperation && context.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.Constructor })
+            {
+                // We can consider `new MyType(myValue)` functionally equivalent to `new MyType() { Value = myValue }`. Both set a local value with an external parameter.
+                return;
+            }
+
+            if (ResolveOperationTarget(operation) is IPropertyReferenceOperation propertyRef &&
+                propertyRef.Instance is IInstanceReferenceOperation { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance } &&
+                _clrPropertyToAvaloniaProperties.TryGetValue(propertyRef.Property, out var propertyDescriptions) &&
+                propertyDescriptions.Any(p => !SymbolEquals(p.PropertyType.OriginalDefinition, _directPropertyType)))
+            {
+                if (DerivesFrom(propertyRef.Instance.Type, _userControlType) || DerivesFrom(propertyRef.Instance.Type, _topLevelType))
+                {
+                    // Special case: don't warn about local value assignment on a UserControl or TopLevel type.
+                    //   1. We don't want to annoy new users, who start with these two types and don't understand binding priorities yet
+                    //   2. Such controls either have no consumers, or are treated largely as a black box (i.e. no styles setting dynamic values)
+                    return;
+                }
+
+                context.ReportDiagnostic(Diagnostic.Create(SettingOwnStyledPropertyValue, operation.Syntax.GetLocation()));
+            }
+        }
+
         /// <seealso cref="UnexpectedPropertyAccess"/>
         /// <seealso cref="InappropriatePropertyRegistration"/>
         private void AnalyzeMethodInvocation(OperationAnalysisContext context)
@@ -530,7 +564,7 @@ public partial class AvaloniaPropertyAnalyzer
             {
                 var avaloniaPropertyOperation = invocation.Arguments[0].Value;
 
-                var propertyStorageSymbol = GetReferencedFieldOrProperty(ResolveOperationSource(avaloniaPropertyOperation));
+                var propertyStorageSymbol = GetReferencedFieldOrProperty(avaloniaPropertyOperation);
 
                 if (propertyStorageSymbol == null || !_avaloniaPropertyDescriptions.TryGetValue(propertyStorageSymbol, out var propertyDescription))
                 {
@@ -551,7 +585,7 @@ public partial class AvaloniaPropertyAnalyzer
                     !DerivesFrom(context.ContainingSymbol.ContainingType, ownerOrHostType.Type))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(UnexpectedPropertyAccess, invocation.Arguments[0].Syntax.GetLocation(),
-                        GetReferencedFieldOrProperty(avaloniaPropertyOperation), context.ContainingSymbol.ContainingType));
+                        propertyStorageSymbol, context.ContainingSymbol.ContainingType));
                 }
             }
             else if (!IsStaticConstructorOrInitializer() && _allAvaloniaPropertyMethods.Contains(originalMethod))
