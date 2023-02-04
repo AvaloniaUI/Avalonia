@@ -1105,23 +1105,13 @@ namespace Avalonia.Controls.UnitTests.Selection
                     }
                 };
 
-                target.SelectionChanged += (s, e) =>
-                {
-                    Assert.Empty(e.DeselectedIndexes);
-                    Assert.Equal(new[] { "bar" }, e.DeselectedItems);
-                    Assert.Empty(e.SelectedIndexes);
-                    Assert.Empty(e.SelectedItems);
-                    ++selectionChangedRaised;
-                };
-
                 data.Move(1, 0);
 
-                Assert.Equal(-1, target.SelectedIndex);
-                Assert.Empty(target.SelectedIndexes);
-                Assert.Null(target.SelectedItem);
-                Assert.Empty(target.SelectedItems);
-                Assert.Equal(-1, target.AnchorIndex);
-                Assert.Equal(1, selectionChangedRaised);
+                Assert.Equal(0, target.SelectedIndex);
+                Assert.NotEmpty(target.SelectedIndexes);
+                Assert.NotNull(target.SelectedItem);
+                Assert.NotEmpty(target.SelectedItems);
+                Assert.Equal(0, target.AnchorIndex);
                 Assert.Equal(1, selectedIndexRaised);
                 Assert.Equal(1, selectedItemRaised);
             }
