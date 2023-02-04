@@ -1,11 +1,14 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Interactions;
+using SixLabors.ImageSharp.PixelFormats;
 using Xunit;
 using Xunit.Sdk;
 
@@ -141,7 +144,6 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-
         [Theory]
         [InlineData(ShowWindowMode.NonOwned)]
         [InlineData(ShowWindowMode.Owned)]
@@ -185,6 +187,47 @@ namespace Avalonia.IntegrationTests.Appium
                 Assert.Equal(original.Position, current.Position);
                 Assert.Equal(original.FrameSize, current.FrameSize);
             }
+        }
+
+        [Fact]
+        public void TransparentWindow()
+        {
+            var showTransparentWindow = _session.FindElementByAccessibilityId("ShowTransparentWindow");
+            showTransparentWindow.Click();
+            Thread.Sleep(1000);
+
+            var window = _session.FindElementByAccessibilityId("TransparentWindow");
+            var screenshot = window.GetScreenshot();
+
+            window.Click();
+
+            var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot.AsByteArray);
+            var topLeftColor = img[10, 10];
+            var centerColor = img[img.Width / 2, img.Height / 2];
+
+            Assert.Equal(new Rgba32(0, 128, 0), topLeftColor);
+            Assert.Equal(new Rgba32(255, 0, 0), centerColor);
+        }
+
+        [Fact]
+        public void TransparentPopup()
+        {
+            var showTransparentWindow = _session.FindElementByAccessibilityId("ShowTransparentPopup");
+            showTransparentWindow.Click();
+            Thread.Sleep(1000);
+
+            var window = _session.FindElementByAccessibilityId("TransparentPopupBackground");
+            var container = window.FindElementByAccessibilityId("PopupContainer");
+            var screenshot = container.GetScreenshot();
+
+            window.Click();
+
+            var img = SixLabors.ImageSharp.Image.Load<Rgba32>(screenshot.AsByteArray);
+            var topLeftColor = img[10, 10];
+            var centerColor = img[img.Width / 2, img.Height / 2];
+
+            Assert.Equal(new Rgba32(0, 128, 0), topLeftColor);
+            Assert.Equal(new Rgba32(255, 0, 0), centerColor);
         }
 
         public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
