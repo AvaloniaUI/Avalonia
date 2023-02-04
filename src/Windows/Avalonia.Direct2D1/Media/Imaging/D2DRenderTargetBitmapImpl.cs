@@ -37,6 +37,8 @@ namespace Avalonia.Direct2D1.Media.Imaging
             return new DrawingContextImpl(visualBrushRenderer, this, _renderTarget, null, () => Version++);
         }
 
+        public bool IsCorrupted => false;
+
         public void Blit(IDrawingContextImpl context) => throw new NotSupportedException();
 
         public bool CanBlit => false;

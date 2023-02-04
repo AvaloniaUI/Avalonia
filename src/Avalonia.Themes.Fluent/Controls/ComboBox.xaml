@@ -1,6 +1,6 @@
 ﻿<ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:sys="clr-namespace:System;assembly=netstandard">
+                    xmlns:sys="using:System">
   <Design.PreviewWith>
     <Border Padding="20">
       <StackPanel Spacing="10">
@@ -128,11 +128,8 @@
                 <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                               VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
                   <ItemsPresenter Name="PART_ItemsPresenter"
-                                  Items="{TemplateBinding Items}"
                                   Margin="{DynamicResource ComboBoxDropdownContentMargin}"
-                                  ItemsPanel="{TemplateBinding ItemsPanel}"
-                                  ItemTemplate="{TemplateBinding ItemTemplate}"
-                                  VirtualizationMode="{TemplateBinding VirtualizationMode}" />
+                                  ItemsPanel="{TemplateBinding ItemsPanel}" />
                 </ScrollViewer>
               </Border>
             </Popup>

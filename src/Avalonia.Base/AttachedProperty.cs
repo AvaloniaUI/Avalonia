@@ -24,17 +24,15 @@ namespace Avalonia
             Func<TValue, bool>? validate = null)
             : base(name, ownerType, metadata, inherits, validate)
         {
+            IsAttached = true;
         }
-
-        /// <inheritdoc/>
-        public override bool IsAttached => true;
 
         /// <summary>
         /// Attaches the property as a non-attached property on the specified type.
         /// </summary>
         /// <typeparam name="TOwner">The owner type.</typeparam>
         /// <returns>The property.</returns>
-        public new AttachedProperty<TValue> AddOwner<TOwner>() where TOwner : IAvaloniaObject
+        public new AttachedProperty<TValue> AddOwner<TOwner>() where TOwner : AvaloniaObject
         {
             AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), this);
             return this;

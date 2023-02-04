@@ -338,6 +338,27 @@ namespace Avalonia.Base.UnitTests.Interactivity
         }
 
         [Fact]
+        public void Typed_Class_Handlers_Should_Be_Called_For_Handled_Events()
+        {
+            var ev = new RoutedEvent<RoutedEventArgs>(
+                "test",
+                RoutingStrategies.Bubble | RoutingStrategies.Tunnel,
+                typeof(TestInteractive));
+
+            var target = CreateTree(ev, null, 0);
+
+            ev.AddClassHandler<TestInteractive>((x, e) => x.MarkEventAsHandled(e), RoutingStrategies.Bubble);
+            ev.AddClassHandler<TestInteractive>((x, e) => x.ClassHandler(e), RoutingStrategies.Bubble, handledEventsToo: true);
+
+            var args = new RoutedEventArgs(ev, target);
+            target.RaiseEvent(args);
+
+            Assert.True(args.Handled);
+            Assert.True(target.ClassHandlerInvoked);
+            Assert.True(target.GetVisualParent<TestInteractive>().ClassHandlerInvoked);
+        }
+
+        [Fact]
         public void GetObservable_Should_Listen_To_Event()
         {
             var ev = new RoutedEvent<RoutedEventArgs>("test", RoutingStrategies.Direct, typeof(TestInteractive));
@@ -363,11 +384,11 @@ namespace Avalonia.Base.UnitTests.Interactivity
             var invoked = new List<string>();
             EventHandler<RoutedEventArgs> handler = (s, e) => invoked.Add(((TestInteractive)s).Name);
             var parent = CreateTree(ev, handler, RoutingStrategies.Bubble | RoutingStrategies.Tunnel);
-            var target = (IInteractive)parent.GetVisualChildren().Single();
+            var target = (Interactive)parent.GetVisualChildren().Single();
 
             EventHandler<RoutedEventArgs> removeHandler = (s, e) =>
             {
-                parent.Children = Array.Empty<IVisual>();
+                parent.Children = Array.Empty<Visual>();
             };
             
             target.AddHandler(ev, removeHandler);
@@ -378,7 +399,7 @@ namespace Avalonia.Base.UnitTests.Interactivity
             Assert.Equal(new[] { "3", "2b", "1" }, invoked);
         }
 
-        private TestInteractive CreateTree(
+        private static TestInteractive CreateTree(
             RoutedEvent ev,
             EventHandler<RoutedEventArgs> handler,
             RoutingStrategies handlerRoutes,
@@ -425,11 +446,11 @@ namespace Avalonia.Base.UnitTests.Interactivity
             public bool ClassHandlerInvoked { get; private set; }
             public new string Name { get; set; }
 
-            public IEnumerable<IVisual> Children
+            public IEnumerable<Visual> Children
             {
                 get
                 {
-                    return ((IVisual)this).VisualChildren.AsEnumerable();
+                    return ((Visual)this).VisualChildren.AsEnumerable();
                 }
 
                 set
@@ -442,6 +463,11 @@ namespace Avalonia.Base.UnitTests.Interactivity
             public void ClassHandler(RoutedEventArgs e)
             {
                 ClassHandlerInvoked = true;
+            }
+
+            public void MarkEventAsHandled(RoutedEventArgs e)
+            {
+                e.Handled = true;
             }
         }
     }

@@ -1,14 +1,11 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Avalonia.Controls.Platform;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using System.Text;
+using Avalonia.Threading;
 
 namespace Avalonia.FreeDesktop
 {
@@ -17,33 +14,29 @@ namespace Avalonia.FreeDesktop
         private const string DevByLabelDir = "/dev/disk/by-label/";
         private const string ProcPartitionsDir = "/proc/partitions";
         private const string ProcMountsDir = "/proc/mounts";
-        private CompositeDisposable _disposables;
+        private IDisposable _disposable;
         private ObservableCollection<MountedVolumeInfo> _targetObs;
         private bool _beenDisposed = false;
 
         public LinuxMountedVolumeInfoListener(ref ObservableCollection<MountedVolumeInfo> target)
         {
-            _disposables = new CompositeDisposable();
             this._targetObs = target;
 
-            var pollTimer = Observable.Interval(TimeSpan.FromSeconds(1))
-                                      .Subscribe(Poll);
+            _disposable = DispatcherTimer.Run(Poll, TimeSpan.FromSeconds(1));
 
-            _disposables.Add(pollTimer);
-
-            Poll(0);
+            Poll();
         }
 
-        private string GetSymlinkTarget(string x) => Path.GetFullPath(Path.Combine(DevByLabelDir, NativeMethods.ReadLink(x)));
+        private static string GetSymlinkTarget(string x) => Path.GetFullPath(Path.Combine(DevByLabelDir, NativeMethods.ReadLink(x)));
 
-        private string UnescapeString(string input, string regexText, int escapeBase) =>
+        private static string UnescapeString(string input, string regexText, int escapeBase) =>
             new Regex(regexText).Replace(input, m => Convert.ToChar(Convert.ToByte(m.Groups[1].Value, escapeBase)).ToString());
 
-        private string UnescapePathFromProcMounts(string input) => UnescapeString(input, @"\\(\d{3})", 8);
+        private static string UnescapePathFromProcMounts(string input) => UnescapeString(input, @"\\(\d{3})", 8);
 
-        private string UnescapeDeviceLabel(string input) => UnescapeString(input, @"\\x([0-9a-f]{2})", 16);
+        private static string UnescapeDeviceLabel(string input) => UnescapeString(input, @"\\x([0-9a-f]{2})", 16);
 
-        private void Poll(long _)
+        private bool Poll()
         {
             var fProcPartitions = File.ReadAllLines(ProcPartitionsDir)
                                       .Skip(1)
@@ -77,13 +70,14 @@ namespace Avalonia.FreeDesktop
             var mountVolInfos = q1.ToArray();
 
             if (_targetObs.SequenceEqual(mountVolInfos))
-                return;
+                return true;
             else
             {
                 _targetObs.Clear();
 
                 foreach (var i in mountVolInfos)
                     _targetObs.Add(i);
+                return true;
             }
         }
 
@@ -93,7 +87,7 @@ namespace Avalonia.FreeDesktop
             {
                 if (disposing)
                 {
-                    _disposables.Dispose();
+                    _disposable.Dispose();
                     _targetObs.Clear();
                 }
 

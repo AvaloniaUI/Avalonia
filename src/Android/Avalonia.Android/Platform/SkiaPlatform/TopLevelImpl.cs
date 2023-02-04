@@ -8,7 +8,6 @@ using Android.Runtime;
 using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
-using Avalonia.Android.OpenGL;
 using Avalonia.Android.Platform.Specific;
 using Avalonia.Android.Platform.Specific.Helpers;
 using Avalonia.Android.Platform.Storage;
@@ -26,11 +25,13 @@ using Avalonia.Rendering;
 using Avalonia.Rendering.Composition;
 using Java.Lang;
 using Math = System.Math;
+using AndroidRect = Android.Graphics.Rect;
+using Window = Android.Views.Window;
+using Android.Graphics.Drawables;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
-    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo,
-        ITopLevelImplWithTextInputMethod, ITopLevelImplWithNativeControlHost, ITopLevelImplWithStorageProvider
+    class TopLevelImpl : IAndroidView, ITopLevelImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
     {
         private readonly IGlPlatformSurface _gl;
         private readonly IFramebufferPlatformSurface _framebuffer;
@@ -38,6 +39,9 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly AndroidKeyboardEventsHelper<TopLevelImpl> _keyboardHelper;
         private readonly AndroidMotionEventsHelper _pointerHelper;
         private readonly AndroidInputMethod<ViewImpl> _textInputMethod;
+        private readonly INativeControlHostImpl _nativeControlHost;
+        private readonly IStorageProvider _storageProvider;
+        private readonly ISystemNavigationManagerImpl _systemNavigationManager;
         private ViewImpl _view;
 
         public TopLevelImpl(AvaloniaView avaloniaView, bool placeOnTop = false)
@@ -46,7 +50,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             _textInputMethod = new AndroidInputMethod<ViewImpl>(_view);
             _keyboardHelper = new AndroidKeyboardEventsHelper<TopLevelImpl>(this);
             _pointerHelper = new AndroidMotionEventsHelper(this);
-            _gl = GlPlatformSurface.TryCreate(this);
+            _gl = new EglGlPlatformSurface(this);
             _framebuffer = new FramebufferManager(this);
 
             RenderScaling = _view.Scaling;
@@ -54,8 +58,10 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             MaxClientSize = new PixelSize(_view.Resources.DisplayMetrics.WidthPixels,
                 _view.Resources.DisplayMetrics.HeightPixels).ToSize(RenderScaling);
 
-            NativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
-            StorageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
+            _nativeControlHost = new AndroidNativeControlHostImpl(avaloniaView);
+            _storageProvider = new AndroidStorageProvider((Activity)avaloniaView.Context);
+
+            _systemNavigationManager = new AndroidSystemNavigationManagerImpl(avaloniaView.Context as IActivityNavigationService);
         }
 
         public virtual Point GetAvaloniaPointFromEvent(MotionEvent e, int pointerIndex) =>
@@ -63,7 +69,21 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public IInputRoot InputRoot { get; private set; }
 
-        public virtual Size ClientSize => Size.ToSize(RenderScaling);
+        public virtual Size ClientSize
+        {
+            get
+            {
+                AndroidRect rect = new AndroidRect();
+                AndroidRect intersection = new AndroidRect();
+
+                _view.GetWindowVisibleDisplayFrame(intersection);
+                _view.GetGlobalVisibleRect(rect);
+
+                intersection.Intersect(rect);
+
+                return new PixelSize(intersection.Right - intersection.Left, intersection.Bottom - intersection.Top).ToSize(RenderScaling);
+            }
+        }
 
         public Size? FrameSize => null;
 
@@ -90,11 +110,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public IEnumerable<object> Surfaces => new object[] { _gl, _framebuffer, Handle };
 
         public IRenderer CreateRenderer(IRenderRoot root) =>
-            AndroidPlatform.Options.UseCompositor
-                ? new CompositingRenderer(root, AndroidPlatform.Compositor)
-                : AndroidPlatform.Options.UseDeferredRendering
-                    ? new DeferredRenderer(root, AvaloniaLocator.Current.GetRequiredService<IRenderLoop>()) { RenderOnlyOnRenderThread = true }
-                    : new ImmediateRenderer(root);
+            new CompositingRenderer(root, AndroidPlatform.Compositor, () => Surfaces);
 
         public virtual void Hide()
         {
@@ -147,6 +163,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         protected virtual void OnResized(Size size)
         {
             Resized?.Invoke(size, PlatformResizeReason.Unspecified);
+        }
+
+        internal void Resize(Size size)
+        {
+            Resized?.Invoke(size, PlatformResizeReason.Layout);
         }
 
         class ViewImpl : InvalidationAwareSurfaceView, ISurfaceHolderCallback, IInitEditorInfo
@@ -259,25 +280,129 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public Action LostFocus { get; set; }
         public Action<WindowTransparencyLevel> TransparencyLevelChanged { get; set; }
 
-        public WindowTransparencyLevel TransparencyLevel => WindowTransparencyLevel.None;
+        public WindowTransparencyLevel TransparencyLevel { get; private set; }
+
+        public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
+        {
+            // TODO adjust status bar depending on full screen mode.
+        }
 
         public AcrylicPlatformCompensationLevels AcrylicCompensationLevels => new AcrylicPlatformCompensationLevels(1, 1, 1);
 
-        IntPtr EglGlPlatformSurfaceBase.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
+        IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => ((IPlatformHandle)_view).Handle;
 
         public PixelSize Size => _view.Size;
 
         public double Scaling => RenderScaling;
 
-        public ITextInputMethodImpl TextInputMethod => _textInputMethod;
-
-        public INativeControlHostImpl NativeControlHost { get; }
-        
-        public IStorageProvider StorageProvider { get; }
-
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
-            throw new NotImplementedException();
+            if (TransparencyLevel != transparencyLevel)
+            {
+                bool isBelowR = Build.VERSION.SdkInt < BuildVersionCodes.R;
+                bool isAboveR = Build.VERSION.SdkInt > BuildVersionCodes.R;
+                if (_view.Context is AvaloniaMainActivity activity)
+                {
+                    switch (transparencyLevel)
+                    {
+                        case WindowTransparencyLevel.AcrylicBlur:
+                        case WindowTransparencyLevel.ForceAcrylicBlur:
+                        case WindowTransparencyLevel.Mica:
+                        case WindowTransparencyLevel.None:
+                            if (!isBelowR)
+                            {
+                                activity.SetTranslucent(false);
+                            }
+                            if (isAboveR)
+                            {
+                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+
+                                var attr = activity.Window?.Attributes;
+                                if (attr != null)
+                                {
+                                    attr.BlurBehindRadius = 0;
+
+                                    activity.Window.Attributes = attr;
+                                }
+                            }
+                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
+
+                            if(transparencyLevel != WindowTransparencyLevel.None)
+                            {
+                                return;
+                            }
+                            break;
+                        case WindowTransparencyLevel.Transparent:
+                            if (!isBelowR)
+                            {
+                                activity.SetTranslucent(true);
+                            }
+                            if (isAboveR)
+                            {
+                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+
+                                var attr = activity.Window?.Attributes;
+                                if (attr != null)
+                                {
+                                    attr.BlurBehindRadius = 0;
+
+                                    activity.Window.Attributes = attr;
+                                }
+                            }
+                            activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                            break;
+                        case WindowTransparencyLevel.Blur:
+                            if (isAboveR)
+                            {
+                                activity.SetTranslucent(true);
+                                activity.Window?.AddFlags(WindowManagerFlags.BlurBehind);
+
+                                var attr = activity.Window?.Attributes;
+                                if (attr != null)
+                                {
+                                    attr.BlurBehindRadius = 120;
+
+                                    activity.Window.Attributes = attr;
+                                }
+                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.Transparent));
+                            }
+                            else
+                            {
+                                activity.Window?.ClearFlags(WindowManagerFlags.BlurBehind);
+                                activity.Window.SetBackgroundDrawable(new ColorDrawable(Color.White));
+
+                                return;
+                            }
+                            break;
+                    }
+                    TransparencyLevel = transparencyLevel;
+                }
+            }
+        }
+        
+        public virtual object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IStorageProvider))
+            {
+                return _storageProvider;
+            }
+
+            if (featureType == typeof(ITextInputMethodImpl))
+            {
+                return _textInputMethod;
+            }
+
+            if (featureType == typeof(ISystemNavigationManagerImpl))
+            {
+                return _systemNavigationManager;
+            }
+
+            if (featureType == typeof(INativeControlHostImpl))
+            {
+                return _nativeControlHost;
+            }
+
+            return null;
         }
     }
 

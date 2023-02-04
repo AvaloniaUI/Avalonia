@@ -4,7 +4,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Media
 {
     /// <summary>
-    /// Paints an area with an <see cref="IVisual"/>.
+    /// Paints an area with an <see cref="Visual"/>.
     /// </summary>
     [NotClientImplementable]
     public interface IVisualBrush : ITileBrush
@@ -12,6 +12,6 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the visual to draw.
         /// </summary>
-        IVisual Visual { get; }
+        Visual Visual { get; }
     }
 }

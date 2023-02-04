@@ -21,7 +21,7 @@ namespace Avalonia.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _currentRoot = e.Root as TopLevel;
-            var visual = (IVisual)this;
+            var visual = (Visual)this;
             while (visual != null)
             {
                 if (visual is Visual v)
@@ -58,7 +58,7 @@ namespace Avalonia.Controls
         private void UpdateHost()
         {
             _queuedForMoveResize = false;
-            _currentHost = (_currentRoot?.PlatformImpl as ITopLevelImplWithNativeControlHost)?.NativeControlHost;
+            _currentHost = _currentRoot?.PlatformImpl?.TryGetFeature<INativeControlHostImpl>();
             
             if (_currentHost != null)
             {
@@ -145,7 +145,7 @@ namespace Avalonia.Controls
 
             if (IsEffectivelyVisible && bounds.HasValue)
             {
-                if (bounds.Value.IsEmpty)
+                if (bounds.Value.IsDefault)
                     return false;
                 _attachment?.ShowInBounds(bounds.Value);
             }

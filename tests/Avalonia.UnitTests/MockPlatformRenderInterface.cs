@@ -4,12 +4,13 @@ using System.IO;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Media.Imaging;
+using Avalonia.Media.TextFormatting;
 using Avalonia.Rendering;
 using Moq;
 
 namespace Avalonia.UnitTests
 {
-    public class MockPlatformRenderInterface : IPlatformRenderInterface
+    public class MockPlatformRenderInterface : IPlatformRenderInterface, IPlatformRenderInterfaceContext
     {
         public IGeometryImpl CreateEllipseGeometry(Rect rect)
         {
@@ -48,12 +49,18 @@ namespace Avalonia.UnitTests
                 return m.Object;
 
             }
+
+            public bool IsCorrupted => false;
         }
         
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {
             return new MockRenderTarget();
         }
+
+        public bool IsLost => false;
+
+        public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
         {
@@ -142,10 +149,13 @@ namespace Avalonia.UnitTests
             throw new NotImplementedException();
         }
 
-        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, IReadOnlyList<ushort> glyphIndices, IReadOnlyList<double> glyphAdvances, IReadOnlyList<Vector> glyphOffsets)
+        public IGlyphRunImpl CreateGlyphRun(IGlyphTypeface glyphTypeface, double fontRenderingEmSize, 
+            IReadOnlyList<GlyphInfo> glyphInfos, Point baselineOrigin)
         {
-            return Mock.Of<IGlyphRunImpl>();
+            return new MockGlyphRun(glyphInfos);
         }
+
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) => this;
 
         public IGeometryImpl BuildGlyphRunGeometry(GlyphRun glyphRun)
         {
@@ -172,5 +182,10 @@ namespace Avalonia.UnitTests
         public AlphaFormat DefaultAlphaFormat => AlphaFormat.Premul;
 
         public PixelFormat DefaultPixelFormat => PixelFormat.Rgba8888;
+        public bool IsSupportedBitmapPixelFormat(PixelFormat format) => true;
+
+        public void Dispose()
+        {
+        }
     }
 }

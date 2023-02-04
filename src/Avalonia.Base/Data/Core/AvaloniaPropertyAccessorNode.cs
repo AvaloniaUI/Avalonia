@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Reactive.Linq;
 using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core
 {
-    public class AvaloniaPropertyAccessorNode : SettableNode
+    internal class AvaloniaPropertyAccessorNode : SettableNode
     {
         private IDisposable? _subscription;
         private readonly bool _enableValidation;
@@ -24,7 +23,7 @@ namespace Avalonia.Data.Core
         {
             try
             {
-                if (Target.TryGetTarget(out var target) && target is IAvaloniaObject obj)
+                if (Target.TryGetTarget(out var target) && target is AvaloniaObject obj)
                 {
                     obj.SetValue(_property, value, priority);
                     return true;
@@ -39,7 +38,7 @@ namespace Avalonia.Data.Core
 
         protected override void StartListeningCore(WeakReference<object?> reference)
         {
-            if (reference.TryGetTarget(out var target) && target is IAvaloniaObject obj)
+            if (reference.TryGetTarget(out var target) && target is AvaloniaObject obj)
             {
                 _subscription = new AvaloniaPropertyObservable<object?>(obj, _property).Subscribe(ValueChanged);
             }

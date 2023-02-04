@@ -7,6 +7,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
 using Avalonia.Layout;
 using Avalonia.Logging;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -325,14 +326,14 @@ namespace Avalonia.Controls.Primitives
                     return;
                 }
 
-                if (Popup?.Host is PopupRoot)
+                if (Popup?.Host is PopupRoot && pArgs.Root is Visual eventRoot)
                 {
                     // As long as the pointer stays within the enlargedPopupRect
                     // the flyout stays open. If it leaves, close it
                     // Despite working in screen coordinates, leaving the TopLevel
                     // window will not close this (as pointer events stop), which 
                     // does match UWP
-                    var pt = pArgs.Root.PointToScreen(pArgs.Position);
+                    var pt = eventRoot.PointToScreen(pArgs.Position);
                     if (!_enlargePopupRectScreenPixelRect?.Contains(pt) ?? false)
                     {
                         HideCore(false);
@@ -435,7 +436,7 @@ namespace Avalonia.Controls.Primitives
         {
             Size sz;
             // Popup.Child can't be null here, it was set in ShowAtCore.
-            if (Popup.Child!.DesiredSize == Size.Empty)
+            if (Popup.Child!.DesiredSize.IsDefault)
             {
                 // Popup may not have been shown yet. Measure content
                 sz = LayoutHelper.MeasureChild(Popup.Child, Size.Infinity, new Thickness());
@@ -457,7 +458,7 @@ namespace Avalonia.Controls.Primitives
                     PopupPositioning.PopupPositionerConstraintAdjustment.SlideY;
             }
 
-            var trgtBnds = Target?.Bounds ?? Rect.Empty;
+            var trgtBnds = Target?.Bounds ?? default;
 
             switch (Placement)
             {
@@ -587,7 +588,7 @@ namespace Avalonia.Controls.Primitives
             return eventArgs.Cancel;
         }
 
-        internal static void SetPresenterClasses(IControl? presenter, Classes classes)
+        internal static void SetPresenterClasses(Control? presenter, Classes classes)
         {
             if(presenter is null)
             {

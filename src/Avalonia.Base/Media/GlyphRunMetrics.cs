@@ -1,25 +1,24 @@
 ﻿namespace Avalonia.Media
 {
-    public readonly struct GlyphRunMetrics
+    public readonly record struct GlyphRunMetrics
     {
-        public GlyphRunMetrics(double width, double widthIncludingTrailingWhitespace, int trailingWhitespaceLength,
-            int newlineLength, double height)
+        public GlyphRunMetrics(double width, int trailingWhitespaceLength, int newLineLength, int firstCluster, int lastCluster)
         {
             Width = width;
-            WidthIncludingTrailingWhitespace = widthIncludingTrailingWhitespace;
             TrailingWhitespaceLength = trailingWhitespaceLength;
-            NewlineLength = newlineLength;
-            Height = height;
+            NewLineLength = newLineLength;
+            FirstCluster = firstCluster;
+            LastCluster = lastCluster;
         }
 
         public double Width { get; }
 
-        public double WidthIncludingTrailingWhitespace { get; }
-
         public int TrailingWhitespaceLength { get; }
-        
-        public int NewlineLength { get; }
 
-        public double Height { get; }
+        public int NewLineLength { get; }
+
+        public int FirstCluster { get; }
+
+        public int LastCluster { get; }
     }
 }

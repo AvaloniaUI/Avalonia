@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Avalonia.Utilities;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -29,6 +28,11 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// </remarks>
     internal sealed class BidiAlgorithm
     {
+        /// <summary>
+        /// Whether the state is clean and can be reused without a reset.
+        /// </summary>
+        private bool _hasCleanState = true;
+
         /// <summary>
         /// The original BiDiClass classes as provided by the caller
         /// </summary>
@@ -66,7 +70,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The forward mapping maps the start index to the end index.
         /// The reverse mapping maps the end index to the start index.
         /// </remarks>
-        private readonly BidiDictionary<int, int> _isolatePairs = new BidiDictionary<int, int>();
+        private readonly BidiDictionary<int, int> _isolatePairs = new();
 
         /// <summary>
         /// The working BiDi classes
@@ -97,7 +101,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// The status stack used during resolution of explicit
         /// embedding and isolating runs
         /// </summary>
-        private readonly Stack<Status> _statusStack = new Stack<Status>();
+        private readonly Stack<Status> _statusStack = new();
 
         /// <summary>
         /// Mapping used to virtually remove characters for rule X9
@@ -107,7 +111,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// Re-usable list of level runs
         /// </summary>
-        private readonly List<LevelRun> _levelRuns = new List<LevelRun>();
+        private readonly List<LevelRun> _levelRuns = new();
 
         /// <summary>
         /// Mapping for the current isolating sequence, built
@@ -118,7 +122,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// A stack of pending isolate openings used by FindIsolatePairs()
         /// </summary>
-        private readonly Stack<int> _pendingIsolateOpenings = new Stack<int>();
+        private readonly Stack<int> _pendingIsolateOpenings = new();
 
         /// <summary>
         /// The level of the isolating run currently being processed
@@ -174,17 +178,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// Reusable list of pending opening brackets used by the
         /// LocatePairedBrackets method
         /// </summary>
-        private readonly List<int> _pendingOpeningBrackets = new List<int>();
+        private readonly List<int> _pendingOpeningBrackets = new();
 
         /// <summary>
         /// Resolved list of paired brackets
         /// </summary>
-        private readonly List<BracketPair> _pairedBrackets = new List<BracketPair>();
+        private readonly List<BracketPair> _pairedBrackets = new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BidiAlgorithm"/> class.
         /// </summary>
-        internal BidiAlgorithm()
+        public BidiAlgorithm()
         {
         }
 
@@ -227,15 +231,14 @@ namespace Avalonia.Media.TextFormatting.Unicode
             ArraySlice<sbyte>? outLevels)
         {
             // Reset state
-            _isolatePairs.Clear();
-            _workingClassesBuffer.Clear();
-            _levelRuns.Clear();
-            _resolvedLevelsBuffer.Clear();
+            Reset();
 
             if (types.IsEmpty)
             {
                 return;
             }
+
+            _hasCleanState = false;
 
             // Setup original types and working types
             _originalClasses = types;
@@ -338,6 +341,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
             // P3
             return 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsIsolateStart(BidiClass type)
+        {
+            const uint mask =
+                (1U << (int)BidiClass.LeftToRightIsolate) |
+                (1U << (int)BidiClass.RightToLeftIsolate) |
+                (1U << (int)BidiClass.FirstStrongIsolate);
+
+            return ((1U << (int)type) & mask) != 0U;
         }
 
         /// <summary>
@@ -698,28 +712,19 @@ namespace Avalonia.Media.TextFormatting.Unicode
             var lastType = _workingClasses[lastCharIndex];
             int nextLevel;
 
-            switch (lastType)
+            if (IsIsolateStart(lastType))
             {
-                case BidiClass.LeftToRightIsolate:
-                case BidiClass.RightToLeftIsolate:
-                case BidiClass.FirstStrongIsolate:
+                nextLevel = _paragraphEmbeddingLevel;
+            }
+            else
+            {
+                i = lastCharIndex + 1;
+                while (i < _originalClasses.Length && IsRemovedByX9(_originalClasses[i]))
                 {
-                    nextLevel = _paragraphEmbeddingLevel;
-                    
-                    break;
+                    i++;
                 }
-                default:
-                {
-                    i = lastCharIndex + 1;
-                    while (i < _originalClasses.Length && IsRemovedByX9(_originalClasses[i]))
-                    {
-                        i++;
-                    }
 
-                    nextLevel = i >= _originalClasses.Length ? _paragraphEmbeddingLevel : _resolvedLevels[i];
-                    
-                    break;
-                }
+                nextLevel = i >= _originalClasses.Length ? _paragraphEmbeddingLevel : _resolvedLevels[i];
             }
 
             var eos = DirectionFromLevel(Math.Max(nextLevel, level));
@@ -828,8 +833,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     // PDI and concatenate that run to this one
                     var lastCharacterIndex = _isolatedRunMapping[_isolatedRunMapping.Length - 1];
                     var lastType = _originalClasses[lastCharacterIndex];
-                    if ((lastType == BidiClass.LeftToRightIsolate || lastType == BidiClass.RightToLeftIsolate || lastType == BidiClass.FirstStrongIsolate) &&
-                            _isolatePairs.TryGetValue(lastCharacterIndex, out var nextRunIndex))
+                    if (IsIsolateStart(lastType) && _isolatePairs.TryGetValue(lastCharacterIndex, out var nextRunIndex))
                     {
                         // Find the continuing run index
                         runIndex = FindRunForIndex(nextRunIndex);
@@ -852,86 +856,72 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private void ProcessIsolatedRunSequence(BidiClass sos, BidiClass eos, int runLevel)
         {
             // Create mappings onto the underlying data
-            _runResolvedClasses = new MappedArraySlice<BidiClass>(_workingClasses, _isolatedRunMapping.AsSlice());
-            _runOriginalClasses = new MappedArraySlice<BidiClass>(_originalClasses, _isolatedRunMapping.AsSlice());
-            _runLevels = new MappedArraySlice<sbyte>(_resolvedLevels, _isolatedRunMapping.AsSlice());
+            var isolatedRunMapping = _isolatedRunMapping.AsSlice();
+            _runResolvedClasses = new MappedArraySlice<BidiClass>(_workingClasses, isolatedRunMapping);
+            _runOriginalClasses = new MappedArraySlice<BidiClass>(_originalClasses, isolatedRunMapping);
+            _runLevels = new MappedArraySlice<sbyte>(_resolvedLevels, isolatedRunMapping);
             if (_hasBrackets)
             {
-                _runBiDiPairedBracketTypes = new MappedArraySlice<BidiPairedBracketType>(_pairedBracketTypes, _isolatedRunMapping.AsSlice());
-                _runPairedBracketValues = new MappedArraySlice<int>(_pairedBracketValues, _isolatedRunMapping.AsSlice());
+                _runBiDiPairedBracketTypes = new MappedArraySlice<BidiPairedBracketType>(_pairedBracketTypes, isolatedRunMapping);
+                _runPairedBracketValues = new MappedArraySlice<int>(_pairedBracketValues, isolatedRunMapping);
             }
 
             _runLevel = runLevel;
             _runDirection = DirectionFromLevel(runLevel);
             _runLength = _runResolvedClasses.Length;
 
-            // By tracking the types of characters known to be in the current run, we can
-            // skip some of the rules that we know won't apply.  The flags will be
-            // initialized while we're processing rule W1 below.
-            var hasEN = false;
-            var hasAL = false;
-            var hasES = false;
-            var hasCS = false;
-            var hasAN = false;
-            var hasET = false;
-
             // Rule W1
             // Also, set hasXX flags
             int i;
             var previousClass = sos;
             
+            const uint isolateMask =
+                (1U << (int)BidiClass.LeftToRightIsolate) |
+                (1U << (int)BidiClass.RightToLeftIsolate) |
+                (1U << (int)BidiClass.FirstStrongIsolate) |
+                (1U << (int)BidiClass.PopDirectionalIsolate);
+
+            const uint wRulesMask =
+                (1U << (int)BidiClass.EuropeanNumber) |
+                (1U << (int)BidiClass.ArabicLetter) |
+                (1U << (int)BidiClass.EuropeanSeparator) |
+                (1U << (int)BidiClass.CommonSeparator) |
+                (1U << (int)BidiClass.ArabicNumber) |
+                (1U << (int)BidiClass.EuropeanTerminator);
+
+            uint wRules = 0;
+
             for (i = 0; i < _runLength; i++)
             {
                 var resolvedClass = _runResolvedClasses[i];
-                
-                switch (resolvedClass)
+
+                if (resolvedClass == BidiClass.NonspacingMark)
                 {
-                    case BidiClass.NonspacingMark:
-                        _runResolvedClasses[i] = previousClass;
-                        break;
-
-                    case BidiClass.LeftToRightIsolate:
-                    case BidiClass.RightToLeftIsolate:
-                    case BidiClass.FirstStrongIsolate:
-                    case BidiClass.PopDirectionalIsolate:
+                    _runResolvedClasses[i] = previousClass;
+                }
+                else
+                {
+                    var classBit = 1U << (int)resolvedClass;
+                    if ((classBit & isolateMask) != 0U)
+                    {
                         previousClass = BidiClass.OtherNeutral;
-                        break;
-
-                    case BidiClass.EuropeanNumber:
-                        hasEN = true;
+                    }
+                    else
+                    {
+                        wRules |= classBit & wRulesMask;
                         previousClass = resolvedClass;
-                        break;
-
-                    case BidiClass.ArabicLetter:
-                        hasAL = true;
-                        previousClass = resolvedClass;
-                        break;
-
-                    case BidiClass.EuropeanSeparator:
-                        hasES = true;
-                        previousClass = resolvedClass;
-                        break;
-
-                    case BidiClass.CommonSeparator:
-                        hasCS = true;
-                        previousClass = resolvedClass;
-                        break;
-
-                    case BidiClass.ArabicNumber:
-                        hasAN = true;
-                        previousClass = resolvedClass;
-                        break;
-
-                    case BidiClass.EuropeanTerminator:
-                        hasET = true;
-                        previousClass = resolvedClass;
-                        break;
-
-                    default:
-                        previousClass = resolvedClass;
-                        break;
+                    }
                 }
             }
+
+            // By tracking the types of characters known to be in the current run, we can
+            // skip some of the rules that we know won't apply.
+            var hasEN = (wRules & (1U << (int)BidiClass.EuropeanNumber)) != 0U;
+            var hasAL = (wRules & (1U << (int)BidiClass.ArabicLetter)) != 0U;
+            var hasES = (wRules & (1U << (int)BidiClass.EuropeanSeparator)) != 0U;
+            var hasCS = (wRules & (1U << (int)BidiClass.CommonSeparator)) != 0U;
+            var hasAN = (wRules & (1U << (int)BidiClass.ArabicNumber)) != 0U;
+            var hasET = (wRules & (1U << (int)BidiClass.EuropeanTerminator)) != 0U;
 
             // Rule W2
             if (hasEN)
@@ -1544,23 +1534,20 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsWhitespace(BidiClass biDiClass)
         {
-            switch (biDiClass)
-            {
-                    case BidiClass.LeftToRightEmbedding:
-                    case BidiClass.RightToLeftEmbedding:
-                    case BidiClass.LeftToRightOverride:
-                    case BidiClass.RightToLeftOverride:
-                    case BidiClass.PopDirectionalFormat:
-                    case BidiClass.LeftToRightIsolate:
-                    case BidiClass.RightToLeftIsolate:
-                    case BidiClass.FirstStrongIsolate:
-                    case BidiClass.PopDirectionalIsolate:
-                    case BidiClass.BoundaryNeutral:
-                    case BidiClass.WhiteSpace:
-                        return true;
-                default:
-                    return false;
-            }
+            const uint mask =
+                (1U << (int)BidiClass.LeftToRightEmbedding) |
+                (1U << (int)BidiClass.RightToLeftEmbedding) |
+                (1U << (int)BidiClass.LeftToRightOverride) |
+                (1U << (int)BidiClass.RightToLeftOverride) |
+                (1U << (int)BidiClass.PopDirectionalFormat) |
+                (1U << (int)BidiClass.LeftToRightIsolate) |
+                (1U << (int)BidiClass.RightToLeftIsolate) |
+                (1U << (int)BidiClass.FirstStrongIsolate) |
+                (1U << (int)BidiClass.PopDirectionalIsolate) |
+                (1U << (int)BidiClass.BoundaryNeutral) |
+                (1U << (int)BidiClass.WhiteSpace);
+
+            return ((1U << (int)biDiClass) & mask) != 0U;
         }
 
         /// <summary>
@@ -1581,18 +1568,15 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsRemovedByX9(BidiClass biDiClass)
         {
-            switch (biDiClass)
-            {
-                    case BidiClass.LeftToRightEmbedding:
-                    case  BidiClass.RightToLeftEmbedding:
-                    case  BidiClass.LeftToRightOverride:
-                    case  BidiClass.RightToLeftOverride:
-                    case  BidiClass.PopDirectionalFormat:
-                    case  BidiClass.BoundaryNeutral:
-                        return true;
-                default:
-                    return false;
-            }
+            const uint mask =
+                (1U << (int)BidiClass.LeftToRightEmbedding) |
+                (1U << (int)BidiClass.RightToLeftEmbedding) |
+                (1U << (int)BidiClass.LeftToRightOverride) |
+                (1U << (int)BidiClass.RightToLeftOverride) |
+                (1U << (int)BidiClass.PopDirectionalFormat) |
+                (1U << (int)BidiClass.BoundaryNeutral);
+
+            return ((1U << (int)biDiClass) & mask) != 0U;
         }
 
         /// <summary>
@@ -1601,20 +1585,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsNeutralClass(BidiClass direction)
         {
-            switch (direction)
-            {
-                    case BidiClass.ParagraphSeparator:
-                    case BidiClass.SegmentSeparator:
-                    case BidiClass.WhiteSpace:
-                    case BidiClass.OtherNeutral:
-                    case BidiClass.RightToLeftIsolate:
-                    case BidiClass.LeftToRightIsolate:
-                    case BidiClass.FirstStrongIsolate:
-                    case BidiClass.PopDirectionalIsolate:
-                        return true;
-                        default:
-                            return false;
-            }
+            const uint mask =
+                (1U << (int)BidiClass.ParagraphSeparator) |
+                (1U << (int)BidiClass.SegmentSeparator) |
+                (1U << (int)BidiClass.WhiteSpace) |
+                (1U << (int)BidiClass.OtherNeutral) |
+                (1U << (int)BidiClass.RightToLeftIsolate) |
+                (1U << (int)BidiClass.LeftToRightIsolate) |
+                (1U << (int)BidiClass.FirstStrongIsolate) |
+                (1U << (int)BidiClass.PopDirectionalIsolate);
+
+            return ((1U << (int)direction) & mask) != 0U;
         }
 
         /// <summary>
@@ -1637,6 +1618,47 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     default:
                         return BidiClass.OtherNeutral;
             }
+        }
+
+        /// <summary>
+        /// Resets the bidi algorithm to a clean state.
+        /// </summary>
+        public void Reset()
+        {
+            if (_hasCleanState)
+            {
+                return;
+            }
+
+            _originalClasses = default;
+            _pairedBracketTypes = default;
+            _pairedBracketValues = default;
+            _hasBrackets = default;
+            _hasEmbeddings = default;
+            _hasIsolates = default;
+            _isolatePairs.ClearThenResetIfTooLarge();
+            _workingClasses = default;
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _workingClassesBuffer);
+            _resolvedLevels = default;
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _resolvedLevelsBuffer);
+            _paragraphEmbeddingLevel = default;
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_statusStack);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _x9Map);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_levelRuns);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(ref _isolatedRunMapping);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_pendingIsolateOpenings);
+            _runLevel = default;
+            _runDirection = default;
+            _runLength = default;
+            _runResolvedClasses = default;
+            _runOriginalClasses = default;
+            _runLevels = default;
+            _runBiDiPairedBracketTypes = default;
+            _runPairedBracketValues = default;
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_pendingOpeningBrackets);
+            FormattingBufferHelper.ClearThenResetIfTooLarge(_pairedBrackets);
+
+            _hasCleanState = true;
         }
 
         /// <summary>

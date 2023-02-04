@@ -19,6 +19,7 @@ namespace Avalonia.Rendering
         private readonly IDispatcher _dispatcher;
         private List<IRenderLoopTask> _items = new List<IRenderLoopTask>();
         private List<IRenderLoopTask> _itemsCopy = new List<IRenderLoopTask>();
+        private List<IRenderLoopTask> _updateItemsCopy = new List<IRenderLoopTask>();
         private IRenderTimer? _timer;
         private int _inTick;
         private int _inUpdate;
@@ -49,8 +50,7 @@ namespace Avalonia.Rendering
         {
             get
             {
-                return _timer ??= AvaloniaLocator.Current.GetService<IRenderTimer>() ??
-                    throw new InvalidOperationException("Cannot locate IRenderTimer.");
+                return _timer ??= AvaloniaLocator.Current.GetRequiredService<IRenderTimer>();
             }
         }
 
@@ -97,7 +97,13 @@ namespace Avalonia.Rendering
                 {
                     bool needsUpdate = false;
 
-                    foreach (IRenderLoopTask item in _items)
+                    lock (_items)
+                    {
+                        _itemsCopy.Clear();
+                        _itemsCopy.AddRange(_items);
+                    }
+                    
+                    foreach (IRenderLoopTask item in _itemsCopy)
                     {
                         if (item.NeedsUpdate)
                         {
@@ -112,10 +118,13 @@ namespace Avalonia.Rendering
                     {
                         _dispatcher.Post(() =>
                         {
-                            for (var i = 0; i < _items.Count; ++i)
+                            lock (_items)
                             {
-                                var item = _items[i];
-
+                                _updateItemsCopy.Clear();
+                                _updateItemsCopy.AddRange(_items);
+                            }
+                            foreach (var item in _updateItemsCopy)
+                            {
                                 if (item.NeedsUpdate)
                                 {
                                     try
@@ -128,16 +137,10 @@ namespace Avalonia.Rendering
                                     }
                                 }
                             }
+                            _updateItemsCopy.Clear();
 
                             Interlocked.Exchange(ref _inUpdate, 0);
                         }, DispatcherPriority.Render);
-                    }
-
-                    lock (_items)
-                    {
-                        _itemsCopy.Clear();
-                        foreach (var i in _items)
-                            _itemsCopy.Add(i);
                     }
 
                     for (int i = 0; i < _itemsCopy.Count; i++)

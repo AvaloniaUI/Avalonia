@@ -270,6 +270,40 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 }
             }
 
+            if (type.Equals(types.Uri))
+            {
+                var uriText = text.Trim();
+
+                var kind = ((!uriText?.StartsWith("/") == true) ? UriKind.RelativeOrAbsolute : UriKind.Relative);
+
+                if (string.IsNullOrWhiteSpace(uriText) || !Uri.TryCreate(uriText, kind, out var _))
+                {
+                        throw new XamlX.XamlLoadException($"Unable to parse text {uriText} as a {kind} uri.", node);
+                }
+                result = new XamlAstNewClrObjectNode(node
+                    , new(node, types.Uri, false)
+                    , types.UriConstructor
+                    , new List<IXamlAstValueNode>()
+                    {
+                        new XamlConstantNode(node, context.Configuration.WellKnownTypes.String, uriText),
+                        new XamlConstantNode(node, types.UriKind, (int)kind),
+                    });
+                return true;
+            }
+
+            if (type.Equals(types.ThemeVariant))
+            {
+                var variantText = text.Trim();
+                var foundConstProperty = types.ThemeVariant.Properties.FirstOrDefault(p =>
+                    p.Name == variantText && p.PropertyType == types.ThemeVariant);
+                var themeVariantTypeRef = new XamlAstClrTypeReference(node, types.ThemeVariant, false);
+                if (foundConstProperty is not null)
+                {
+                    result = new XamlStaticExtensionNode(new XamlAstObjectNode(node, node.Type), themeVariantTypeRef, foundConstProperty.Name);
+                    return true;
+                }
+            }
+
             result = null;
             return false;
         }

@@ -4,10 +4,10 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayLayer : Canvas, ICustomSimpleHitTest
+    public class OverlayLayer : Canvas
     {
         public Size AvailableSize { get; private set; }
-        public static OverlayLayer? GetOverlayLayer(IVisual visual)
+        public static OverlayLayer? GetOverlayLayer(Visual visual)
         {
             foreach(var v in visual.GetVisualAncestors())
                 if(v is VisualLayerManager vlm)
@@ -21,8 +21,6 @@ namespace Avalonia.Controls.Primitives
 
             return null;
         }
-
-        public bool HitTest(Point point) => Children.HitTestCustom(point);
 
         protected override Size MeasureOverride(Size availableSize)
         {

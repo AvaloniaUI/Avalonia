@@ -14,7 +14,7 @@ namespace Avalonia.Controls.Presenters
     /// of the presenter is not a part of the template.
     /// </remarks>
     [NotClientImplementable]
-    public interface IPresenter : IControl, INamed
+    public interface IPresenter : INamed
     {
     }
 }

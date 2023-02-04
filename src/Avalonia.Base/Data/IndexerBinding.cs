@@ -1,9 +1,11 @@
-﻿namespace Avalonia.Data
+﻿using Avalonia.Reactive;
+
+namespace Avalonia.Data
 {
     public class IndexerBinding : IBinding
     {
         public IndexerBinding(
-            IAvaloniaObject source,
+            AvaloniaObject source,
             AvaloniaProperty property,
             BindingMode mode)
         {
@@ -12,17 +14,20 @@
             Mode = mode;
         }
 
-        private IAvaloniaObject Source { get; }
+        private AvaloniaObject Source { get; }
         public AvaloniaProperty Property { get; }
         private BindingMode Mode { get; }
 
         public InstancedBinding? Initiate(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)
         {
-            return new InstancedBinding(Source.GetSubject(Property), Mode, BindingPriority.LocalValue);
+            var subject = new CombinedSubject<object?>(
+                new AnonymousObserver<object?>(x => Source.SetValue(Property, x, BindingPriority.LocalValue)),
+                Source.GetObservable(Property));
+            return new InstancedBinding(subject, Mode, BindingPriority.LocalValue);
         }
     }
 }

@@ -366,6 +366,7 @@ internal class AvaloniaXamlIlOptionMarkupExtensionTransformer : IXamlAstTransfor
             foreach (var branch in ExtensionNodeContainer.Branches)
             {
                 var next = codeGen.DefineLabel();
+                codeGen.Emit(OpCodes.Nop);
                 if (branch.HasContext)
                 {
                     codeGen.Ldloc(context.ContextLocal);

@@ -4,8 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using Avalonia.Collections;
 using Avalonia.Controls;
-
-#nullable enable
+using Avalonia.PropertyStore;
 
 namespace Avalonia.Styling
 {
@@ -20,7 +19,6 @@ namespace Avalonia.Styling
         private readonly AvaloniaList<IStyle> _styles = new();
         private IResourceHost? _owner;
         private IResourceDictionary? _resources;
-        private StyleCache? _cache;
 
         public Styles()
         {
@@ -116,23 +114,17 @@ namespace Avalonia.Styling
             set => _styles[index] = value;
         }
 
-        public SelectorMatchResult TryAttach(IStyleable target, object? host)
-        {
-            _cache ??= new StyleCache();
-            return _cache.TryAttach(this, target, host);
-        }
-
         /// <inheritdoc/>
-        public bool TryGetResource(object key, out object? value)
+        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
-            if (_resources != null && _resources.TryGetResource(key, out value))
+            if (_resources != null && _resources.TryGetResource(key, theme, out value))
             {
                 return true;
             }
 
             for (var i = Count - 1; i >= 0; --i)
             {
-                if (this[i].TryGetResource(key, out value))
+                if (this[i].TryGetResource(key, theme, out value))
                 {
                     return true;
                 }
@@ -234,6 +226,22 @@ namespace Avalonia.Styling
             }
         }
 
+        internal SelectorMatchResult TryAttach(StyledElement target, object? host)
+        {
+            var result = SelectorMatchResult.NeverThisType;
+
+            foreach (var s in this)
+            {
+                if (s is not Style style)
+                    continue;
+                var r = style.TryAttach(target, host, FrameType.Style);
+                if (r > result)
+                    result = r;
+            }
+
+            return result;
+        }
+
         private static IReadOnlyList<T> ToReadOnlyList<T>(ICollection list)
         {
             if (list is IReadOnlyList<T> readOnlyList)
@@ -246,7 +254,7 @@ namespace Avalonia.Styling
             return result;
         }
 
-        private static void InternalAdd(IList items, IResourceHost? owner, ref StyleCache? cache)
+        private static void InternalAdd(IList items, IResourceHost? owner)
         {
             if (owner is not null)
             {
@@ -260,14 +268,9 @@ namespace Avalonia.Styling
 
                 (owner as IStyleHost)?.StylesAdded(ToReadOnlyList<IStyle>(items));
             }
-
-            if (items.Count > 0)
-            {
-                cache = null;
-            }
         }
 
-        private static void InternalRemove(IList items, IResourceHost? owner, ref StyleCache? cache)
+        private static void InternalRemove(IList items, IResourceHost? owner)
         {
             if (owner is not null)
             {
@@ -280,11 +283,6 @@ namespace Avalonia.Styling
                 }
 
                 (owner as IStyleHost)?.StylesRemoved(ToReadOnlyList<IStyle>(items));
-            }
-
-            if (items.Count > 0)
-            {
-                cache = null;
             }
         }
 
@@ -300,14 +298,14 @@ namespace Avalonia.Styling
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    InternalAdd(e.NewItems!, currentOwner, ref _cache);
+                    InternalAdd(e.NewItems!, currentOwner);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    InternalRemove(e.OldItems!, currentOwner, ref _cache);
+                    InternalRemove(e.OldItems!, currentOwner);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    InternalRemove(e.OldItems!, currentOwner, ref _cache);
-                    InternalAdd(e.NewItems!, currentOwner, ref _cache);
+                    InternalRemove(e.OldItems!, currentOwner);
+                    InternalAdd(e.NewItems!, currentOwner);
                     break;
             }
 

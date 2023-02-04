@@ -15,6 +15,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.Utilities;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -1146,7 +1147,7 @@ namespace Avalonia.Controls.Primitives
             });
         }
 
-        private void FillPixelForBox(
+        private static void FillPixelForBox(
             double x,
             double y,
             Hsv baseHsv,

@@ -6,13 +6,13 @@
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\Avalonia.Remote.Protocol\Avalonia.Remote.Protocol.csproj" />
   </ItemGroup>
-  <Import Project="..\..\build\Rx.props" />
-  <Import Project="..\..\build\JetBrains.Annotations.props" />
   <Import Project="..\..\build\ApiDiff.props" />
   <Import Project="..\..\build\NullableEnable.props" />
+  <Import Project="..\..\build\TrimmingEnable.props" />
   <Import Project="..\..\build\DevAnalyzers.props" />
 
   <ItemGroup Label="InternalsVisibleTo">
+    <InternalsVisibleTo Include="Avalonia.Controls.ItemsRepeater, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Controls.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.DesignerSupport, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.LeakTests, PublicKey=$(AvaloniaPublicKey)" />

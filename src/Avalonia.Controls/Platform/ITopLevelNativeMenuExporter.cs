@@ -23,10 +23,4 @@ namespace Avalonia.Controls.Platform
     {
         INativeMenuExporter? NativeMenuExporter { get; }
     }
-
-    [Unstable]
-    public interface ITopLevelImplWithNativeMenuExporter : ITopLevelImpl
-    {
-        ITopLevelNativeMenuExporter? NativeMenuExporter { get; }
-    }
 }

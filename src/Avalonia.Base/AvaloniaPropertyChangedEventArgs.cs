@@ -9,7 +9,7 @@ namespace Avalonia
     public abstract class AvaloniaPropertyChangedEventArgs : EventArgs
     {
         public AvaloniaPropertyChangedEventArgs(
-            IAvaloniaObject sender,
+            AvaloniaObject sender,
             BindingPriority priority)
         {
             Sender = sender;
@@ -17,11 +17,21 @@ namespace Avalonia
             IsEffectiveValueChange = true;
         }
 
+        internal AvaloniaPropertyChangedEventArgs(
+            AvaloniaObject sender,
+            BindingPriority priority,
+            bool isEffectiveValueChange)
+        {
+            Sender = sender;
+            Priority = priority;
+            IsEffectiveValueChange = isEffectiveValueChange;
+        }
+
         /// <summary>
         /// Gets the <see cref="AvaloniaObject"/> that the property changed on.
         /// </summary>
         /// <value>The sender object.</value>
-        public IAvaloniaObject Sender { get; }
+        public AvaloniaObject Sender { get; }
 
         /// <summary>
         /// Gets the property that changed.
@@ -49,20 +59,8 @@ namespace Avalonia
         /// </value>
         public BindingPriority Priority { get; private set; }
 
-        /// <summary>
-        /// Gets a value indicating whether the change represents a change to the effective value of
-        /// the property.
-        /// </summary>
-        /// <remarks>
-        /// This will usually be true, except in
-        /// <see cref="AvaloniaObject.OnPropertyChangedCore(AvaloniaPropertyChangedEventArgs)"/>
-        /// which receives notifications for all changes to property values, whether a value with a higher
-        /// priority is present or not. When this property is false, the change that is being signaled
-        /// has not resulted in a change to the property value on the object.
-        /// </remarks>
-        public bool IsEffectiveValueChange { get; private set; }
+        internal bool IsEffectiveValueChange { get; private set; }
 
-        internal void MarkNonEffectiveValue() => IsEffectiveValueChange = false;
         protected abstract AvaloniaProperty GetProperty();
         protected abstract object? GetOldValue();
         protected abstract object? GetNewValue();

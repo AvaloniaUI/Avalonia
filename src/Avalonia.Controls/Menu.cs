@@ -14,8 +14,8 @@ namespace Avalonia.Controls
     /// </summary>
     public class Menu : MenuBase, IMainMenu
     {
-        private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel { Orientation = Orientation.Horizontal });
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel { Orientation = Orientation.Horizontal });
 
 
         /// <summary>
@@ -92,6 +92,16 @@ namespace Avalonia.Controls
             {
                 inputRoot.AccessKeyHandler.MainMenu = this;
             }
+        }
+
+        protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
+        {
+            base.PrepareContainerForItemOverride(element, item, index);
+
+            // Child menu items should not inherit the menu's ItemContainerTheme as that is specific
+            // for top-level menu items.
+            if ((element as MenuItem)?.ItemContainerTheme == ItemContainerTheme)
+                element.ClearValue(ItemContainerThemeProperty);
         }
     }
 }

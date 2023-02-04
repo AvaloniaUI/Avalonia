@@ -4,13 +4,21 @@ using Avalonia.Metadata;
 namespace Avalonia.Platform;
 
 [Unstable]
-public interface IPlatformGpu
+public interface IPlatformGraphics
 {
-    IPlatformGpuContext PrimaryContext { get; }
+    bool UsesSharedContext { get; }
+    IPlatformGraphicsContext CreateContext();
+    IPlatformGraphicsContext GetSharedContext();
 }
 
 [Unstable]
-public interface IPlatformGpuContext : IDisposable
+public interface IPlatformGraphicsContext : IDisposable, IOptionalFeatureProvider
 {
+    bool IsLost { get; }
     IDisposable EnsureCurrent();
+}
+
+public class PlatformGraphicsContextLostException : Exception
+{
+    
 }

@@ -32,7 +32,6 @@
                         IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                         AllowAutoHide="{TemplateBinding (ScrollViewer.AllowAutoHide)}">
             <ItemsPresenter Name="PART_ItemsPresenter"
-                            Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}"
                             Margin="{TemplateBinding Padding}" />
           </ScrollViewer>

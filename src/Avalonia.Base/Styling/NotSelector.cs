@@ -35,17 +35,17 @@ namespace Avalonia.Styling
         public override Type? TargetType => _previous?.TargetType;
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string ToString(Style? owner)
         {
             if (_selectorString == null)
             {
-                _selectorString = $"{_previous?.ToString()}:not({_argument})";
+                _selectorString = $"{_previous?.ToString(owner)}:not({_argument})";
             }
 
             return _selectorString;
         }
 
-        protected override SelectorMatch Evaluate(IStyleable control, IStyle? parent, bool subscribe)
+        protected override SelectorMatch Evaluate(StyledElement control, IStyle? parent, bool subscribe)
         {
             var innerResult = _argument.Match(control, parent, subscribe);
 

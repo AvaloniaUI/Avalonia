@@ -7,6 +7,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.Rendering;
 
 namespace Avalonia.Controls
 {
@@ -74,6 +75,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         IMenuInteractionHandler IMenu.InteractionHandler => InteractionHandler;
 
+        IRenderRoot? IMenu.VisualRoot => VisualRoot;
+        
         /// <inheritdoc/>
         IMenuItem? IMenuElement.SelectedItem
         {
@@ -81,26 +84,18 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem?)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = value is not null ?
-                    ItemContainerGenerator.IndexFromContainer(value) : -1;
+                SelectedIndex = value is Control c ?
+                    IndexFromContainer(c) : -1;
             }
         }
 
         /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems
-        {
-            get
-            {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
-            }
-        }
+        IEnumerable<IMenuItem> IMenuElement.SubItems => GetRealizedContainers().OfType<IMenuItem>();
 
         /// <summary>
         /// Gets the interaction handler for the menu.
@@ -138,11 +133,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         bool IMenuElement.MoveSelection(NavigationDirection direction, bool wrap) => MoveSelection(direction, wrap);
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new ItemContainerGenerator<MenuItem>(this, MenuItem.HeaderProperty, null);
-        }
+        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyEventArgs e)

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Primitives.PopupPositioning;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -9,7 +9,7 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class OverlayPopupHost : ContentControl, IPopupHost, IInteractive, IManagedPopupPositionerPopup
+    public class OverlayPopupHost : ContentControl, IPopupHost, IManagedPopupPositionerPopup
     {
         /// <summary>
         /// Defines the <see cref="Transform"/> property.
@@ -29,12 +29,12 @@ namespace Avalonia.Controls.Primitives
             _positioner = new ManagedPopupPositioner(this);
         }
 
-        public void SetChild(IControl? control)
+        public void SetChild(Control? control)
         {
             Content = control;
         }
 
-        public IVisual? HostedVisualTreeRoot => null;
+        public Visual? HostedVisualTreeRoot => null;
 
         public Transform? Transform
         {
@@ -42,14 +42,13 @@ namespace Avalonia.Controls.Primitives
             set => SetValue(TransformProperty, value);
         }
 
-        /// <inheritdoc/>
-        IInteractive? IInteractive.InteractiveParent => Parent;
-
         bool IPopupHost.Topmost
         {
             get => false;
             set { /* Not currently supported in overlay popups */ }
         }
+
+        protected internal override Interactive? InteractiveParent => Parent;
 
         public void Dispose() => Hide();
 
@@ -66,7 +65,7 @@ namespace Avalonia.Controls.Primitives
             _shown = false;
         }
 
-        public void ConfigurePosition(IVisual target, PlacementMode placement, Point offset,
+        public void ConfigurePosition(Visual target, PlacementMode placement, Point offset,
             PopupAnchor anchor = PopupAnchor.None, PopupGravity gravity = PopupGravity.None,
             PopupPositionerConstraintAdjustment constraintAdjustment = PopupPositionerConstraintAdjustment.All,
             Rect? rect = null)
@@ -122,9 +121,9 @@ namespace Avalonia.Controls.Primitives
 
         double IManagedPopupPositionerPopup.Scaling => 1;
        
-        public static IPopupHost CreatePopupHost(IVisual target, IAvaloniaDependencyResolver? dependencyResolver)
+        public static IPopupHost CreatePopupHost(Visual target, IAvaloniaDependencyResolver? dependencyResolver)
         {
-            var platform = (target.GetVisualRoot() as TopLevel)?.PlatformImpl?.CreatePopup();
+            var platform = TopLevel.GetTopLevel(target)?.PlatformImpl?.CreatePopup();
             if (platform != null)
                 return new PopupRoot((TopLevel)target.GetVisualRoot()!, platform, dependencyResolver);
             

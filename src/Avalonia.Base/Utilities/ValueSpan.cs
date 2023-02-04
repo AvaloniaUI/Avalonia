@@ -3,7 +3,7 @@
     /// <summary>
     /// Pairing of value and positions sharing that value.
     /// </summary>
-    public readonly struct ValueSpan<T>
+    public readonly record struct ValueSpan<T>
     {
         public ValueSpan(int start, int length, T value)
         {

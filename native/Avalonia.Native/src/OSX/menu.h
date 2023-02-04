@@ -59,11 +59,20 @@ public:
     void RaiseOnClicked();
 };
 
+class AvnAppMenu;
+
+@interface AvnMenuDelegate : NSObject<NSMenuDelegate>
+- (id) initWithParent: (AvnAppMenu*) parent;
+- (void) parentDestroyed;
+@end
+
+
 class AvnAppMenu : public ComSingleObject<IAvnMenu, &IID_IAvnMenu>
 {
 private:
     AvnMenu* _native;
     ComPtr<IAvnMenuEvents> _baseEvents;
+    AvnMenuDelegate* _delegate;
     
 public:
     FORWARD_IUNKNOWN()
@@ -83,12 +92,10 @@ public:
     virtual HRESULT SetTitle (char* utf8String) override;
     
     virtual HRESULT Clear () override;
+    virtual ~AvnAppMenu() override;
 };
 
 
-@interface AvnMenuDelegate : NSObject<NSMenuDelegate>
-- (id) initWithParent: (AvnAppMenu*) parent;
-@end
 
 #endif
 

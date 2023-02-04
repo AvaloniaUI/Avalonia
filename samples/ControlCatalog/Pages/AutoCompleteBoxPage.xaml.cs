@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Data.Converters;
 using Avalonia.Data;
+using ControlCatalog.Models;
 
 namespace ControlCatalog.Pages
 {
@@ -32,7 +33,7 @@ namespace ControlCatalog.Pages
             }
         }
 
-        private StateData[] BuildAllStates()
+        private static StateData[] BuildAllStates()
         {
             return new StateData[]
             {
@@ -90,7 +91,7 @@ namespace ControlCatalog.Pages
         }
         public StateData[] States { get; private set; }
         
-        private LinkedList<string>[] BuildAllSentences()
+        private static LinkedList<string>[] BuildAllSentences()
         {
             return new string[]
             {
@@ -142,7 +143,7 @@ namespace ControlCatalog.Pages
                     .OfType<AutoCompleteBox>();
         }
 
-        private bool StringContains(string str, string? query)
+        private static bool StringContains(string str, string? query)
         {
             if (query == null) return false;
             return str.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;

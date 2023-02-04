@@ -14,6 +14,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using Avalonia.Data;
+using Avalonia.Styling;
 
 namespace Avalonia.Controls
 {
@@ -117,7 +119,7 @@ namespace Avalonia.Controls
                     detailsCount += GetDetailsCountInclusive(DisplayData.LastScrollingSlot + 1, SlotCount - 1);
                 }
 
-                // 
+                //
                 double totalDetailsHeight = detailsCount * RowDetailsHeightEstimate;
 
                 return totalRowsHeight + totalDetailsHeight;
@@ -163,7 +165,7 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Clears the entire selection except the indicated row. Displayed rows are deselected explicitly to 
+        /// Clears the entire selection except the indicated row. Displayed rows are deselected explicitly to
         /// visualize potential transition effects. The row indicated is selected if it is not already.
         /// </summary>
         internal void ClearRowSelection(int slotException, bool setAnchorSlot)
@@ -270,10 +272,10 @@ namespace Avalonia.Controls
             bool isRow = rowIndex != -1;
             if (isCollapsed)
             {
-                InsertElement(slot, 
-                    element: null, 
+                InsertElement(slot,
+                    element: null,
                     updateVerticalScrollBarOnly: true,
-                    isCollapsed: true, 
+                    isCollapsed: true,
                     isRow: isRow);
             }
             else if (SlotIsDisplayed(slot))
@@ -285,18 +287,18 @@ namespace Avalonia.Controls
                 }
                 else
                 {
-                    InsertElement(slot, GenerateRowGroupHeader(slot, groupInfo), 
+                    InsertElement(slot, GenerateRowGroupHeader(slot, groupInfo),
                         updateVerticalScrollBarOnly: false,
-                        isCollapsed: false, 
+                        isCollapsed: false,
                         isRow: isRow);
                 }
             }
             else
             {
-                InsertElement(slot, 
+                InsertElement(slot,
                     element: null,
                     updateVerticalScrollBarOnly: _vScrollBar == null || _vScrollBar.IsVisible,
-                    isCollapsed: false, 
+                    isCollapsed: false,
                     isRow: isRow);
             }
         }
@@ -417,7 +419,7 @@ namespace Avalonia.Controls
             if (scrolledHorizontally && DisplayData.FirstScrollingSlot <= slot && DisplayData.LastScrollingSlot >= slot)
             {
                 // If the slot is displayed and we scrolled horizontally, column virtualization could cause the rows to grow.
-                // As a result we need to force measure on the rows we're displaying and recalculate our First and Last slots 
+                // As a result we need to force measure on the rows we're displaying and recalculate our First and Last slots
                 // so they're accurate
                 foreach (DataGridRow row in DisplayData.GetScrollingRows())
                 {
@@ -455,7 +457,7 @@ namespace Avalonia.Controls
                 deltaY -= GetSlotElementsHeight(slot, firstFullSlot);
                 if (DisplayData.FirstScrollingSlot - slot > 1)
                 {
-                    // 
+                    //
 
                     ResetDisplayedRows();
                 }
@@ -519,7 +521,7 @@ namespace Avalonia.Controls
                 _verticalOffset = NegVerticalOffset;
             }
 
-            // 
+            //
             Debug.Assert(MathUtilities.LessThanOrClose(NegVerticalOffset, _verticalOffset));
 
             SetVerticalOffset(_verticalOffset);
@@ -1025,6 +1027,10 @@ namespace Avalonia.Controls
                 dataGridRow.Slot = slot;
                 dataGridRow.OwningGrid = this;
                 dataGridRow.DataContext = dataContext;
+                if (RowTheme is {} rowTheme)
+                {
+                    dataGridRow.SetValue(ThemeProperty, rowTheme, BindingPriority.Template);
+                }
                 CompleteCellsCollection(dataGridRow);
 
                 OnLoadingRow(new DataGridRowEventArgs(dataGridRow));
@@ -1104,7 +1110,7 @@ namespace Avalonia.Controls
 
         /// <summary>
         /// Checks if the row for the provided dataContext has been generated and is present
-        /// in either the loaded rows, pre-fetched rows, or editing row. 
+        /// in either the loaded rows, pre-fetched rows, or editing row.
         /// The displayed rows are *not* searched. Returns null if the row does not belong to those 3 categories.
         /// </summary>
         private DataGridRow GetGeneratedRow(object dataContext)
@@ -1152,8 +1158,8 @@ namespace Avalonia.Controls
             }
             else
             {
-                // If we're grouping, the GroupLevel needs to be fixed later by methods calling this 
-                // which end up inserting rows. We don't do it here because elements could be inserted 
+                // If we're grouping, the GroupLevel needs to be fixed later by methods calling this
+                // which end up inserting rows. We don't do it here because elements could be inserted
                 // from top to bottom or bottom to up so it's better to do in one pass
                 slotElement = GenerateRow(RowIndexFromSlot(slot), slot);
             }
@@ -1161,7 +1167,6 @@ namespace Avalonia.Controls
             return slotElement;
         }
 
-        //TODO Styles
         private void InsertDisplayedElement(int slot, Control element, bool wasNewlyAdded, bool updateSlotInformation)
         {
             // We can only support creating new rows that are adjacent to the currently visible rows
@@ -1479,7 +1484,6 @@ namespace Avalonia.Controls
             }
         }
 
-        //TODO Styles
         // Makes sure the row shows the proper visuals for selection, currency, details, etc.
         private void LoadRowVisualsForDisplay(DataGridRow row)
         {
@@ -1694,7 +1698,7 @@ namespace Avalonia.Controls
                         {
                             // Figure out what row we've scrolled down to and update the value for NegVerticalOffset
                             NegVerticalOffset = 0;
-                            // 
+                            //
                             if (height > 2 * CellsHeight &&
                                 (RowDetailsVisibilityMode != DataGridRowDetailsVisibilityMode.VisibleWhenSelected || RowDetailsTemplate == null))
                             {
@@ -1755,7 +1759,7 @@ namespace Avalonia.Controls
                         // Figure out what row we've scrolled up to and update the value for NegVerticalOffset
                         deltaY = -NegVerticalOffset;
                         NegVerticalOffset = 0;
-                        // 
+                        //
 
                         if (height < -2 * CellsHeight &&
                             (RowDetailsVisibilityMode != DataGridRowDetailsVisibilityMode.VisibleWhenSelected || RowDetailsTemplate == null))
@@ -1813,7 +1817,7 @@ namespace Avalonia.Controls
                     if (MathUtilities.GreaterThanOrClose(0, newVerticalOffset) && newFirstScrollingSlot != 0)
                     {
                         // We've scrolled to the top of the ScrollBar, automatically place the user at the very top
-                        // of the DataGrid.  If this produces very odd behavior, evaluate the RowHeight estimate.  
+                        // of the DataGrid.  If this produces very odd behavior, evaluate the RowHeight estimate.
                         // strategy. For most data, this should be unnoticeable.
                         ResetDisplayedRows();
                         NegVerticalOffset = 0;
@@ -1994,7 +1998,6 @@ namespace Avalonia.Controls
             VisibleSlotCount = 0;
         }
 
-        //TODO Styles
         private void UnloadRow(DataGridRow dataGridRow)
         {
             Debug.Assert(dataGridRow != null);
@@ -2010,16 +2013,13 @@ namespace Avalonia.Controls
             OnUnloadingRow(new DataGridRowEventArgs(dataGridRow));
             bool recycleRow = CurrentSlot != dataGridRow.Index;
 
-            // Don't recycle if the row has a custom Style set
-            //recycleRow &= (dataGridRow.Style == null || dataGridRow.Style == RowStyle);
-
             if (recycleRow)
             {
                 DisplayData.AddRecyclableRow(dataGridRow);
             }
             else
             {
-                // 
+                //
                 _rowsPresenter.Children.Remove(dataGridRow);
                 dataGridRow.DetachFromDataGrid(false);
             }
@@ -2240,10 +2240,10 @@ namespace Avalonia.Controls
                             group.Items.CollectionChanged += CollectionViewGroup_CollectionChanged;
                         }
                         var newGroupInfo = new DataGridRowGroupInfo(group, true, parentGroupInfo.Level + 1, insertSlot, insertSlot);
-                        InsertElementAt(insertSlot, 
-                            rowIndex: -1, 
-                            item: null, 
-                            groupInfo: newGroupInfo, 
+                        InsertElementAt(insertSlot,
+                            rowIndex: -1,
+                            item: null,
+                            groupInfo: newGroupInfo,
                             isCollapsed: isCollapsed);
                         RowGroupHeadersTable.AddValue(insertSlot, newGroupInfo);
                     }
@@ -2256,9 +2256,9 @@ namespace Avalonia.Controls
                         {
                             AutoGenerateColumnsPrivate();
                         }
-                        InsertElementAt(insertSlot, rowIndex, 
+                        InsertElementAt(insertSlot, rowIndex,
                             item: e.NewItems[0],
-                            groupInfo: null, 
+                            groupInfo: null,
                             isCollapsed: isCollapsed);
                     }
 
@@ -2448,13 +2448,12 @@ namespace Avalonia.Controls
             VisibleSlotCount = SlotCount;
         }
 
-        //TODO Styles
         private void RefreshRowGroupHeaders()
         {
             if (DataConnection.CollectionView != null
                 && DataConnection.CollectionView.CanGroup
                 && DataConnection.CollectionView.Groups != null
-                && DataConnection.CollectionView.IsGrouping 
+                && DataConnection.CollectionView.IsGrouping
                 && DataConnection.CollectionView.GroupingDepth > 0)
             {
                 // Initialize our array for the height of the RowGroupHeaders by Level.
@@ -2476,7 +2475,7 @@ namespace Avalonia.Controls
                     double indent;
                     for (int i = 0; i < groupLevelCount; i++)
                     {
-                        indent = DATAGRID_defaultRowGroupSublevelIndent; 
+                        indent = DATAGRID_defaultRowGroupSublevelIndent;
                         RowGroupSublevelIndents[i] = indent;
                         if (i > 0)
                         {
@@ -2742,6 +2741,10 @@ namespace Avalonia.Controls
             groupHeader.RowGroupInfo = rowGroupInfo;
             groupHeader.DataContext = rowGroupInfo.CollectionViewGroup;
             groupHeader.Level = rowGroupInfo.Level;
+            if (RowGroupTheme is {} rowGroupTheme)
+            {
+                groupHeader.SetValue(ThemeProperty, rowGroupTheme, BindingPriority.Template);
+            }
 
             // Set the RowGroupHeader's PropertyName. Unfortunately, CollectionViewGroup doesn't have this
             // so we have to set it manually
@@ -2962,13 +2965,13 @@ namespace Avalonia.Controls
         }
 
         // detailsElement is the FrameworkElement created by the DetailsTemplate
-        internal void OnUnloadingRowDetails(DataGridRow row, IControl detailsElement)
+        internal void OnUnloadingRowDetails(DataGridRow row, Control detailsElement)
         {
             OnUnloadingRowDetails(new DataGridRowDetailsEventArgs(row, detailsElement));
         }
 
         // detailsElement is the FrameworkElement created by the DetailsTemplate
-        internal void OnLoadingRowDetails(DataGridRow row, IControl detailsElement)
+        internal void OnLoadingRowDetails(DataGridRow row, Control detailsElement)
         {
             OnLoadingRowDetails(new DataGridRowDetailsEventArgs(row, detailsElement));
         }

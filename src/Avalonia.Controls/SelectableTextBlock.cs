@@ -229,7 +229,11 @@ namespace Avalonia.Controls
             if (Match(keymap.Copy))
             {
                 Copy();
-
+                handled = true;
+            }
+            else if (Match(keymap.SelectAll))
+            {
+                SelectAll();
                 handled = true;
             }
 
@@ -300,7 +304,11 @@ namespace Avalonia.Controls
 
                         _wordSelectionStart = SelectionStart;
 
-                        SelectionEnd = StringUtils.NextWord(text, index);
+                        if (!StringUtils.IsEndOfWord(text, index))
+                        {
+                            SelectionEnd = StringUtils.NextWord(text, index);
+                        }
+                        
                         break;
                     case 3:
                         _wordSelectionStart = -1;

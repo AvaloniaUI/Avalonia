@@ -14,8 +14,6 @@
                 CornerRadius="{TemplateBinding CornerRadius}">
           <DockPanel>
             <ItemsPresenter Name="PART_ItemsPresenter"
-                            ItemTemplate="{TemplateBinding ItemTemplate}"
-                            Items="{TemplateBinding Items}"
                             ItemsPanel="{TemplateBinding ItemsPanel}" />
             <ContentPresenter Name="PART_SelectedContentHost"
                               Margin="{TemplateBinding Padding}"

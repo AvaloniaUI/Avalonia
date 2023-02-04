@@ -3,85 +3,41 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 using Avalonia.Themes.Simple;
 using Avalonia.Themes.Fluent;
+using ControlCatalog.Models;
 using ControlCatalog.ViewModels;
 
 namespace ControlCatalog
 {
     public class App : Application
     {
+        private readonly Styles _themeStylesContainer = new();
+        private FluentTheme? _fluentTheme;
+        private SimpleTheme? _simpleTheme;
+        private IStyle? _colorPickerFluent, _colorPickerSimple;
+        private IStyle? _dataGridFluent, _dataGridSimple;
+        
         public App()
         {
             DataContext = new ApplicationViewModel();
         }
 
-        public static readonly StyleInclude ColorPickerFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
-        {
-            Source = new Uri("avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml")
-        };
-
-        public static readonly StyleInclude ColorPickerSimple = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
-        {
-            Source = new Uri("avares://Avalonia.Controls.ColorPicker/Themes/Simple/Simple.xaml")
-        };
-
-        public static readonly StyleInclude DataGridFluent = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
-        {
-            Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml")
-        };
-
-        public static readonly StyleInclude DataGridSimple = new StyleInclude(new Uri("avares://ControlCatalog/Styles"))
-        {
-            Source = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml")
-        };
-
-        public static FluentTheme Fluent = new FluentTheme(new Uri("avares://ControlCatalog/Styles"));
-
-        public static SimpleTheme Simple = new SimpleTheme(new Uri("avares://ControlCatalog/Styles"));
-
-        public static Styles SimpleLight = new Styles
-        {
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseLight.xaml")
-            },
-            Simple
-        };
-
-        public static Styles SimpleDark = new Styles
-        {
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/AccentColors.xaml")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/Base.xaml")
-            },
-            new StyleInclude(new Uri("resm:Styles?assembly=ControlCatalog"))
-            {
-                Source = new Uri("avares://Avalonia.Themes.Fluent/Accents/BaseDark.xaml")
-            },
-            Simple
-        };
-
         public override void Initialize()
         {
-            Styles.Insert(0, Fluent);
-            Styles.Insert(1, ColorPickerFluent);
-            Styles.Insert(2, DataGridFluent);
+            Styles.Add(_themeStylesContainer);
+
             AvaloniaXamlLoader.Load(this);
+
+            _fluentTheme = new FluentTheme();
+            _simpleTheme = new SimpleTheme();
+            _colorPickerFluent = (IStyle)Resources["ColorPickerFluent"]!;
+            _colorPickerSimple = (IStyle)Resources["ColorPickerSimple"]!;
+            _dataGridFluent = (IStyle)Resources["DataGridFluent"]!;
+            _dataGridSimple = (IStyle)Resources["DataGridSimple"]!;
+            
+            SetCatalogThemes(CatalogTheme.Fluent);
         }
 
         public override void OnFrameworkInitializationCompleted()
@@ -96,6 +52,52 @@ namespace ControlCatalog
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private CatalogTheme _prevTheme;
+        public static CatalogTheme CurrentTheme => ((App)Current!)._prevTheme; 
+        public static void SetCatalogThemes(CatalogTheme theme)
+        {
+            var app = (App)Current!;
+            var prevTheme = app._prevTheme;
+            app._prevTheme = theme;
+            var shouldReopenWindow = prevTheme != theme;
+            
+            if (app._themeStylesContainer.Count == 0)
+            {
+                app._themeStylesContainer.Add(new Style());
+                app._themeStylesContainer.Add(new Style());
+                app._themeStylesContainer.Add(new Style());
+            }
+
+            if (theme == CatalogTheme.Fluent)
+            {
+                app._themeStylesContainer[0] = app._fluentTheme!;
+                app._themeStylesContainer[1] = app._colorPickerFluent!;
+                app._themeStylesContainer[2] = app._dataGridFluent!;
+            }
+            else if (theme == CatalogTheme.Simple)
+            {
+                app._themeStylesContainer[0] = app._simpleTheme!;
+                app._themeStylesContainer[1] = app._colorPickerSimple!;
+                app._themeStylesContainer[2] = app._dataGridSimple!;
+            }
+
+            if (shouldReopenWindow)
+            {
+                if (app.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
+                {
+                    var oldWindow = desktopLifetime.MainWindow;
+                    var newWindow = new MainWindow();
+                    desktopLifetime.MainWindow = newWindow;
+                    newWindow.Show();
+                    oldWindow?.Close();
+                }
+                else if (app.ApplicationLifetime is ISingleViewApplicationLifetime singleViewLifetime)
+                {
+                    singleViewLifetime.MainView = new MainView();
+                }
+            }
         }
     }
 }

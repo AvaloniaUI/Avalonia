@@ -1,19 +1,21 @@
 using System;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Avalonia.Data;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
 {
     class TaskStreamPlugin<T> : IStreamPlugin
     {
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         public bool Match(WeakReference<object> reference)
         {
             return reference.TryGetTarget(out var target) && target is Task<T>;
         }
 
+        [RequiresUnreferencedCode(TrimmingMessages.StreamPluginRequiresUnreferencedCodeMessage)]
         public IObservable<object> Start(WeakReference<object> reference)
         {
             if(!(reference.TryGetTarget(out var target) && target is Task<T> task))
@@ -27,7 +29,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
                 case TaskStatus.Faulted:
                     return HandleCompleted(task);
                 default:
-                    var subject = new Subject<object>();
+                    var subject = new LightweightSubject<object>();
                     task.ContinueWith(
                             x => HandleCompleted(task).Subscribe(subject),
                             TaskScheduler.FromCurrentSynchronizationContext())

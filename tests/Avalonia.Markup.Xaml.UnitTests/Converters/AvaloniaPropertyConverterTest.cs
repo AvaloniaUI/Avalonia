@@ -132,7 +132,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
                 get { throw new NotImplementedException(); }
             }
 
-            public ITemplatedControl TemplatedParent
+            public AvaloniaObject TemplatedParent
             {
                 get { throw new NotImplementedException(); }
             }
@@ -141,6 +141,12 @@ namespace Avalonia.Markup.Xaml.UnitTests.Converters
             {
                 throw new NotImplementedException();
             }
+
+            public ThemeVariant ThemeVariant 
+            {
+                get { throw new NotImplementedException(); }
+            }
+            public event EventHandler ThemeVariantChanged;
 
             public void DetachStyles()
             {

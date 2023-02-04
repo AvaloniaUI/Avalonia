@@ -35,13 +35,13 @@
           <!-- To mimic WinUI SystemFocusVisual, Focus visual is drawn outside the bounds of the item -->
           <Border Name="Root" Background="{TemplateBinding Background}"
                   BorderThickness="0" ClipToBounds="True">
-            <ContentControl Name="Content"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Content="{TemplateBinding Content}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            FontSize="{TemplateBinding FontSize}"
-                            Margin="{TemplateBinding Padding}" />
+            <ContentPresenter Name="Content"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Content="{TemplateBinding Content}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                              FontSize="{TemplateBinding FontSize}"
+                              Margin="{TemplateBinding Padding}" />
           </Border>
 
           <!-- Drawn Border should render on top of background to preserve the 1px margin between items -->
@@ -70,7 +70,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource CalendarViewSelectedBorderBrush}" />
       </Style>
 
-      <Style Selector="^ /template/ ContentControl#Content">
+      <Style Selector="^ /template/ ContentPresenter#Content">
         <Setter Property="Foreground" Value="{DynamicResource CalendarViewTodayForeground}" />
         <Setter Property="FontWeight" Value="SemiBold" />
       </Style>

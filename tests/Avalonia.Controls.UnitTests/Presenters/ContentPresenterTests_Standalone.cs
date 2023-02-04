@@ -81,7 +81,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             Assert.NotNull(bar);
             Assert.True(bar != foo);
-            Assert.False((foo as IControl).IsAttachedToLogicalTree);
+            Assert.False((foo as ILogical).IsAttachedToLogicalTree);
             Assert.True(foodetached);
         }
 
@@ -131,7 +131,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             Assert.NotNull(tbbar);
 
             Assert.True(tbbar != tbfoo);
-            Assert.False((tbfoo as IControl).IsAttachedToLogicalTree);
+            Assert.False((tbfoo as ILogical).IsAttachedToLogicalTree);
             Assert.True(foodetached);
         }
 
@@ -166,7 +166,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
 
             (target as ISetLogicalParent).SetParent(null);
 
-            Assert.False((foo as IControl).IsAttachedToLogicalTree);
+            Assert.False((foo as ILogical).IsAttachedToLogicalTree);
             Assert.True(foodetached);
         }
 
@@ -262,7 +262,7 @@ namespace Avalonia.Controls.UnitTests.Presenters
             target.Content = null;
 
             // InheritanceParent is exposed via StylingParent.
-            Assert.Same(logicalParent, ((IStyledElement)child).StylingParent);
+            Assert.Same(logicalParent, ((IStyleHost)child).StylingParent);
         }
 
         [Fact]

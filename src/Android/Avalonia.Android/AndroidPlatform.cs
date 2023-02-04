@@ -15,7 +15,7 @@ namespace Avalonia
 {
     public static class AndroidApplicationExtensions
     {
-        public static T UseAndroid<T>(this T builder) where T : AppBuilderBase<T>, new()
+        public static AppBuilder UseAndroid(this AppBuilder builder)
         {
             return builder
                 .UseWindowingSubsystem(() => AndroidPlatform.Initialize(), "Android")
@@ -42,7 +42,7 @@ namespace Avalonia.Android
                 .Bind<ICursorFactory>().ToTransient<CursorFactory>()
                 .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformStub())
                 .Bind<IKeyboardDevice>().ToSingleton<AndroidKeyboardDevice>()
-                .Bind<IPlatformSettings>().ToSingleton<DefaultPlatformSettings>()
+                .Bind<IPlatformSettings>().ToSingleton<AndroidPlatformSettings>()
                 .Bind<IPlatformThreadingInterface>().ToConstant(new AndroidThreadingInterface())
                 .Bind<IPlatformIconLoader>().ToSingleton<PlatformIconLoaderStub>()
                 .Bind<IRenderTimer>().ToConstant(new ChoreographerTimer())
@@ -51,15 +51,14 @@ namespace Avalonia.Android
 
             if (Options.UseGpu)
             {
-                EglPlatformOpenGlInterface.TryInitialize();
+                EglPlatformGraphics.TryInitialize();
             }
             
-            if (Options.UseCompositor)
-            {
-                Compositor = new Compositor(
-                    AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
-                    AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>());
-            }
+            Compositor = new Compositor(
+                AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(),
+                AvaloniaLocator.Current.GetService<IPlatformGraphics>());
+            
+
         }
     }
 
@@ -67,6 +66,5 @@ namespace Avalonia.Android
     {
         public bool UseDeferredRendering { get; set; } = false;
         public bool UseGpu { get; set; } = true;
-        public bool UseCompositor { get; set; } = true;
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Specialized;
 using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.VisualTree;
 
@@ -13,7 +14,7 @@ namespace Avalonia.Controls.Primitives
     /// <remarks>
     /// TODO: Need to track position of adorned elements and move the adorner if they move.
     /// </remarks>
-    public class AdornerLayer : Canvas, ICustomSimpleHitTest
+    public class AdornerLayer : Canvas
     {
         /// <summary>
         /// Allows for getting and setting of the adorned element.
@@ -60,7 +61,7 @@ namespace Avalonia.Controls.Primitives
             adorner.SetValue(AdornedElementProperty, adorned);
         }
 
-        public static AdornerLayer? GetAdornerLayer(IVisual visual)
+        public static AdornerLayer? GetAdornerLayer(Visual visual)
         {
             return visual.FindAncestorOfType<VisualLayerManager>()?.AdornerLayer;
         }
@@ -232,7 +233,7 @@ namespace Avalonia.Controls.Primitives
             layer?.UpdateAdornedElement(adorner, adorned);
         }
 
-        private void UpdateClip(IControl control, TransformedBounds bounds, bool isEnabled)
+        private void UpdateClip(Control control, TransformedBounds bounds, bool isEnabled)
         {
             if (!isEnabled)
             {
@@ -304,16 +305,8 @@ namespace Avalonia.Controls.Primitives
                         info.Bounds = new TransformedBounds(new Rect(adorned.Bounds.Size), new Rect(adorned.Bounds.Size), Matrix.Identity);
                         InvalidateMeasure();
                     });
-                else
-                    info.Subscription = adorned.GetObservable(TransformedBoundsProperty).Subscribe(x =>
-                    {
-                        info.Bounds = x;
-                        InvalidateMeasure();
-                    });
             }
         }
-
-        public bool HitTest(Point point) => Children.HitTestCustom(point);
 
         private class AdornedElementInfo
         {

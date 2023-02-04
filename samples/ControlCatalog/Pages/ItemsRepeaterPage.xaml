@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ControlCatalog.Pages.ItemsRepeaterPage">
+             xmlns:viewModels="using:ControlCatalog.ViewModels"
+             x:Class="ControlCatalog.Pages.ItemsRepeaterPage"
+             x:DataType="viewModels:ItemsRepeaterPageViewModel">
   <UserControl.Styles>
     <Style Selector="ItemsRepeater TextBlock.oddTemplate">
       <Setter Property="Background" Value="Yellow" />
@@ -21,12 +23,12 @@
   </UserControl.Styles>
   <UserControl.Resources>
     <RecyclePool x:Key="RecyclePool" />
-    <DataTemplate x:Key="odd">
+    <DataTemplate x:Key="odd" x:DataType="viewModels:ItemsRepeaterPageViewModelItem">
       <TextBlock Classes="oddTemplate"
                  Height="{Binding Height}"
                  Text="{Binding Text}"/>
     </DataTemplate>
-    <DataTemplate x:Key="even">
+    <DataTemplate x:Key="even" x:DataType="viewModels:ItemsRepeaterPageViewModelItem">
       <TextBlock Classes="evenTemplate"
                  Height="{Binding Height}"
                  Text="{Binding Text}"/>
@@ -60,7 +62,7 @@
       <Button x:Name="scrollToRandom">Scroll to Random</Button>
       <Button x:Name="scrollToSelected">Scroll to Selected</Button>
     </StackPanel>
-    <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlHighlightBaseMediumLowBrush}" Margin="0 0 0 16">
+    <Border BorderThickness="1" BorderBrush="{DynamicResource CatalogBaseMediumColor}" Margin="0 0 0 16">
       <ScrollViewer Name="scroller"
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Auto">

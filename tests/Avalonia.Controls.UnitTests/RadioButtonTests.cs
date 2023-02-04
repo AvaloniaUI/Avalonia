@@ -70,5 +70,44 @@ namespace Avalonia.Controls.UnitTests
             Assert.False(radioButton2.IsChecked);
             Assert.True(radioButton3.IsChecked);
         }
+
+        [Fact]
+        public void RadioButton_Empty_GroupName_Not_Influence_Other_Groups()
+        {
+            var parent = new Panel();
+            
+            var radioButton1 = new RadioButton();
+            radioButton1.GroupName = "A";
+            radioButton1.IsChecked = true;
+            var radioButton2 = new RadioButton();
+            radioButton2.GroupName = "A";
+            radioButton2.IsChecked = false;
+
+            var radioButton3 = new RadioButton();
+            radioButton3.GroupName = null;
+            radioButton3.IsChecked = false;
+            var radioButton4 = new RadioButton();
+            radioButton4.GroupName = null;
+            radioButton4.IsChecked = true;
+
+            parent.Children.Add(radioButton1); 
+            parent.Children.Add(radioButton2); 
+            parent.Children.Add(radioButton3);
+            parent.Children.Add(radioButton4);
+
+            Assert.True(radioButton1.IsChecked);
+            Assert.False(radioButton2.IsChecked);
+            Assert.False(radioButton3.IsChecked);
+            Assert.True(radioButton4.IsChecked);
+
+            radioButton3.IsChecked = true;
+
+            Assert.True(radioButton1.IsChecked);
+            Assert.False(radioButton2.IsChecked);
+            Assert.True(radioButton3.IsChecked);
+            Assert.False(radioButton4.IsChecked);
+
+
+        }
     }
 }

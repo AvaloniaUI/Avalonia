@@ -159,7 +159,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     public object? GetFeature(Type t) => null;
 
     /// <inheritdoc/>
-    public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+    public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
     {
         var next = NextDrawAs<GlyphRunNode>();
 
@@ -368,7 +368,7 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
             : null;
     }
     
-    private IDisposable? CreateChildScene(IBrush? brush)
+    private static IDisposable? CreateChildScene(IBrush? brush)
     {
         if (brush is VisualBrush visualBrush)
         {

@@ -4,9 +4,9 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
-    public class ChromeOverlayLayer : Panel, ICustomSimpleHitTest
+    public class ChromeOverlayLayer : Panel
     {
-        public static Panel? GetOverlayLayer(IVisual visual)
+        public static Panel? GetOverlayLayer(Visual visual)
         {
             foreach (var v in visual.GetVisualAncestors())
                 if (v is VisualLayerManager vlm)
@@ -26,7 +26,5 @@ namespace Avalonia.Controls.Primitives
         {
             base.Children.Add(c);
         }
-
-        public bool HitTest(Point point) => Children.HitTestCustom(point);
     }
 }

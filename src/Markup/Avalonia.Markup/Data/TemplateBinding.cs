@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Reactive.Subjects;
 using Avalonia.Data.Converters;
 using Avalonia.Reactive;
 using Avalonia.Styling;
@@ -13,11 +12,11 @@ namespace Avalonia.Data
     public class TemplateBinding : SingleSubscriberObservableBase<object?>,
         IBinding,
         IDescription,
-        ISubject<object?>,
+        IAvaloniaSubject<object?>,
         ISetterValue
     {
         private bool _isSetterValue;
-        private IStyledElement _target = default!;
+        private StyledElement _target = default!;
         private Type? _targetType;
         private bool _hasProducedValue;
 
@@ -32,7 +31,7 @@ namespace Avalonia.Data
 
         /// <inheritdoc/>
         public InstancedBinding? Initiate(
-            IAvaloniaObject target,
+            AvaloniaObject target,
             AvaloniaProperty? targetProperty,
             object? anchor = null,
             bool enableDataValidation = false)
@@ -45,13 +44,13 @@ namespace Avalonia.Data
             // because the setter can outlive the control and cause a leak.
             if (_target == null && !_isSetterValue)
             {
-                _target = (IStyledElement)target;
+                _target = (StyledElement)target;
                 _targetType = targetProperty?.PropertyType;
 
                 return new InstancedBinding(
                     this,
                     Mode == BindingMode.Default ? BindingMode.OneWay : Mode,
-                    BindingPriority.TemplatedParent);
+                    BindingPriority.Template);
             }
             else
             {
@@ -94,7 +93,7 @@ namespace Avalonia.Data
 
         void IObserver<object?>.OnNext(object? value)
         {
-            if (_target.TemplatedParent != null && Property != null)
+            if (_target.TemplatedParent is AvaloniaObject templatedParent && Property != null)
             {
                 if (Converter != null)
                 {
@@ -107,7 +106,7 @@ namespace Avalonia.Data
 
                 // Use LocalValue priority here, as TemplatedParent doesn't make sense on controls
                 // that aren't template children.
-                _target.TemplatedParent.SetValue(Property, value, BindingPriority.LocalValue);
+                templatedParent.SetValue(Property, value, BindingPriority.LocalValue);
             }
         }
 
@@ -122,9 +121,9 @@ namespace Avalonia.Data
 
         protected override void Unsubscribed()
         {
-            if (_target.TemplatedParent != null)
+            if (_target.TemplatedParent is AvaloniaObject templatedParent)
             {
-                _target.TemplatedParent.PropertyChanged -= TemplatedParentPropertyChanged;
+                templatedParent.PropertyChanged -= TemplatedParentPropertyChanged;
             }
 
             _target.PropertyChanged -= TargetPropertyChanged;
@@ -132,15 +131,15 @@ namespace Avalonia.Data
 
         private void PublishValue()
         {
-            if (_target.TemplatedParent != null)
+            if (_target.TemplatedParent is AvaloniaObject templatedParent)
             {
                 var value = Property != null ?
-                    _target.TemplatedParent.GetValue(Property) :
+                    templatedParent.GetValue(Property) :
                     _target.TemplatedParent;
 
-                if (Converter is not null && _targetType is not null)
+                if (Converter is not null)
                 {
-                    value = Converter.Convert(value, _targetType, ConverterParameter, CultureInfo.CurrentCulture);
+                    value = Converter.Convert(value, _targetType ?? typeof(object), ConverterParameter, CultureInfo.CurrentCulture);
                 }
 
                 PublishNext(value);
@@ -155,9 +154,9 @@ namespace Avalonia.Data
 
         private void TemplatedParentChanged()
         {
-            if (_target.TemplatedParent != null)
+            if (_target.TemplatedParent is AvaloniaObject templatedParent)
             {
-                _target.TemplatedParent.PropertyChanged += TemplatedParentPropertyChanged;
+                templatedParent.PropertyChanged += TemplatedParentPropertyChanged;
             }
 
             PublishValue();
@@ -167,7 +166,7 @@ namespace Avalonia.Data
         {
             if (e.Property == StyledElement.TemplatedParentProperty)
             {
-                if (e.OldValue is IAvaloniaObject oldValue)
+                if (e.OldValue is AvaloniaObject oldValue)
                 {
                     oldValue.PropertyChanged -= TemplatedParentPropertyChanged;
                 }

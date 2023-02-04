@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Windows.Input;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Generators;
@@ -13,7 +13,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -110,8 +109,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// The default value for the <see cref="ItemsControl.ItemsPanel"/> property.
         /// </summary>
-        private static readonly ITemplate<IPanel> DefaultPanel =
-            new FuncTemplate<IPanel>(() => new StackPanel());
+        private static readonly ITemplate<Panel> DefaultPanel =
+            new FuncTemplate<Panel>(() => new StackPanel());
 
         private ICommand? _command;
         private bool _commandCanExecute = true;
@@ -159,12 +158,13 @@ namespace Avalonia.Controls
             // menu layout.
 
             var parentSharedSizeScope = this.GetObservable(VisualParentProperty)
-                .SelectMany(x =>
+                .Select(x =>
                 {
                     var parent = x as Control;
                     return parent?.GetObservable(DefinitionBase.PrivateSharedSizeScopeProperty) ??
                            Observable.Return<DefinitionBase.SharedSizeScope?>(null);
-                });
+                })
+                .Switch();
 
             this.Bind(DefinitionBase.PrivateSharedSizeScopeProperty, parentSharedSizeScope);
         }
@@ -318,25 +318,17 @@ namespace Avalonia.Controls
             {
                 var index = SelectedIndex;
                 return (index != -1) ?
-                    (IMenuItem?)ItemContainerGenerator.ContainerFromIndex(index) :
+                    (IMenuItem?)ContainerFromIndex(index) :
                     null;
             }
             set
             {
-                SelectedIndex = value is not null ? ItemContainerGenerator.IndexFromContainer(value) : -1;
+                SelectedIndex = value is Control c ? IndexFromContainer(c) : -1;
             }
         }
 
         /// <inheritdoc/>
-        IEnumerable<IMenuItem> IMenuElement.SubItems
-        {
-            get
-            {
-                return ItemContainerGenerator.Containers
-                    .Select(x => x.ContainerControl)
-                    .OfType<IMenuItem>();
-            }
-        }
+        IEnumerable<IMenuItem> IMenuElement.SubItems => GetRealizedContainers().OfType<IMenuItem>();
 
         /// <summary>
         /// Opens the submenu.
@@ -357,11 +349,8 @@ namespace Avalonia.Controls
         /// <inheritdoc/>
         void IMenuItem.RaiseClick() => RaiseEvent(new RoutedEventArgs(ClickEvent));
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator()
-        {
-            return new MenuItemContainerGenerator(this);
-        }
+        protected internal override Control CreateContainerForItemOverride() => new MenuItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is MenuItem or Separator;
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)
         {
@@ -450,7 +439,7 @@ namespace Avalonia.Controls
             base.OnPointerEntered(e);
 
             var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerEnteredItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+            RaiseEvent(new PointerEventArgs(PointerEnteredItemEvent, this, e.Pointer, (Visual?)VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
@@ -460,7 +449,7 @@ namespace Avalonia.Controls
             base.OnPointerExited(e);
 
             var point = e.GetCurrentPoint(null);
-            RaiseEvent(new PointerEventArgs(PointerExitedItemEvent, this, e.Pointer, this.VisualRoot, point.Position,
+            RaiseEvent(new PointerEventArgs(PointerExitedItemEvent, this, e.Pointer, (Visual?)VisualRoot, point.Position,
                 e.Timestamp, point.Properties, e.KeyModifiers));
         }
 
@@ -673,7 +662,7 @@ namespace Avalonia.Controls
 
             if (value)
             {
-                foreach (var item in Items!.OfType<MenuItem>())
+                foreach (var item in ItemsView.OfType<MenuItem>())
                 {
                     item.TryUpdateCanExecute();
                 }
@@ -701,7 +690,7 @@ namespace Avalonia.Controls
 
             if (selected != -1)
             {
-                var container = ItemContainerGenerator?.ContainerFromIndex(selected);
+                var container = ContainerFromIndex(selected);
                 container?.Focus();
             }
         }

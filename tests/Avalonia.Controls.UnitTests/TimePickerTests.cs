@@ -101,9 +101,10 @@ namespace Avalonia.Controls.UnitTests
         private static TestServices Services => TestServices.MockThreadingInterface.With(
             fontManagerImpl: new MockFontManagerImpl(),
             standardCursorFactory: Mock.Of<ICursorFactory>(),
-            textShaperImpl: new MockTextShaperImpl());
+            textShaperImpl: new MockTextShaperImpl(),
+            renderInterface: new MockPlatformRenderInterface());
 
-        private IControlTemplate CreateTemplate()
+        private static IControlTemplate CreateTemplate()
         {
             return new FuncControlTemplate((control, scope) =>
             {
@@ -163,7 +164,7 @@ namespace Avalonia.Controls.UnitTests
                 }.RegisterInNameScope(scope);
                 Grid.SetColumn(secondSpacer, 3);
 
-                contentGrid.Children.AddRange(new IControl[] { firstPickerHost, firstSpacer, secondPickerHost, secondSpacer, thirdPickerHost });
+                contentGrid.Children.AddRange(new Control[] { firstPickerHost, firstSpacer, secondPickerHost, secondSpacer, thirdPickerHost });
                 flyoutButton.Content = contentGrid;
                 layoutRoot.Children.Add(flyoutButton);
                 return layoutRoot;

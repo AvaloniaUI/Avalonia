@@ -42,7 +42,7 @@ namespace Avalonia.Base.UnitTests.Data.Core
         }
 
         [Fact]
-        public void Property_Acccess_Expression_Can_Set_Property()
+        public void Property_Access_Expression_Can_Set_Property()
         {
             var data = new Class1();
             var target = ExpressionObserver.Create(data, o => o.Foo);

@@ -11,7 +11,7 @@ namespace Avalonia.Win32
     internal class FramebufferManager : IFramebufferPlatformSurface, IDisposable
     {
         private const int _bytesPerPixel = 4;
-        private const PixelFormat _format = PixelFormat.Bgra8888;
+        private static readonly PixelFormat s_format = PixelFormat.Bgra8888;
 
         private readonly IntPtr _hwnd;
         private readonly object _lock;
@@ -50,7 +50,7 @@ namespace Avalonia.Win32
 
                 return fb = new LockedFramebuffer(
                     framebufferData.Data.Address, framebufferData.Size, framebufferData.RowBytes,
-                    GetCurrentDpi(), _format, _onDisposeAction);
+                    GetCurrentDpi(), s_format, _onDisposeAction);
             }
             finally
             {

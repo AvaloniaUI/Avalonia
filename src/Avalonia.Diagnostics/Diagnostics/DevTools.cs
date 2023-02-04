@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using Avalonia.Controls;
 using Avalonia.Diagnostics.Views;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
+using Avalonia.Reactive;
 
 namespace Avalonia.Diagnostics
 {
@@ -72,7 +71,11 @@ namespace Avalonia.Diagnostics
             {
                 throw new ArgumentNullException(nameof(application));
             }
-            var result = Disposable.Empty;
+
+            var openedDisposable = new SerialDisposableValue();
+            var result = new CompositeDisposable(2);
+            result.Add(openedDisposable);
+            
             // Skip if call on Design Mode
             if (!Avalonia.Controls.Design.IsDesignMode
                 && !s_attachedToApplication)
@@ -90,13 +93,15 @@ namespace Avalonia.Diagnostics
                 {
                     s_attachedToApplication = true;
 
-                    application.InputManager.PreProcess.OfType<RawKeyEventArgs>().Subscribe(e =>
+                    result.Add(application.InputManager.PreProcess.Subscribe(e =>
                     {
-                        if (options.Gesture.Matches(e))
+                        if (e is RawKeyEventArgs keyEventArgs
+                            && keyEventArgs.Type == RawKeyEventType.KeyUp
+                            && options.Gesture.Matches(keyEventArgs))
                         {
-                          result =  Open(application, options, owner);
+                            openedDisposable.Disposable = Open(application, options, owner);
                         }
-                    });
+                    }));
 
                 }
             }
@@ -105,7 +110,7 @@ namespace Avalonia.Diagnostics
 
         private static IDisposable Open(Application? application, DevToolsOptions options, Window? owner = default)
         {
-            var focussedControl = KeyboardDevice.Instance?.FocusedElement as IControl;
+            var focussedControl = KeyboardDevice.Instance?.FocusedElement as Control;
             if (application is null)
             {
                 throw new ArgumentNullException(nameof(application));

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
@@ -9,6 +10,7 @@ using Avalonia.Win32.Interop.Automation;
 
 namespace Avalonia.Win32.Automation
 {
+    [RequiresUnreferencedCode("Requires .NET COM interop")]
     internal class RootAutomationNode : AutomationNode,
         IRawElementProviderFragmentRoot
     {

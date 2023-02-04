@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0.
 // Ported from: https://github.com/SixLabors/Fonts/
 
-using Avalonia.Utilities;
+using System;
+using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
 {
@@ -12,7 +13,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
     /// </summary>
     public ref struct LineBreakEnumerator
     {
-        private readonly ReadOnlySlice<char> _text;
+        private readonly ReadOnlySpan<char> _text;
         private int _position;
         private int _lastPosition;
         private LineBreakClass _currentClass;
@@ -28,7 +29,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
         private int _lb30a;
         private bool _lb31;
 
-        public LineBreakEnumerator(ReadOnlySlice<char> text)
+        public LineBreakEnumerator(ReadOnlySpan<char> text)
             : this()
         {
             _text = text;
@@ -46,10 +47,8 @@ namespace Avalonia.Media.TextFormatting.Unicode
             _lb30 = false;
             _lb30a = 0;
         }
-        
-        public LineBreak Current { get; private set; }
-        
-        public bool MoveNext()
+
+        public bool MoveNext(out LineBreak lineBreak)
         {
             // Get the first char if we're at the beginning of the string.
             if (_first)
@@ -75,7 +74,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
                     case LineBreakClass.CarriageReturn when _nextClass != LineBreakClass.LineFeed:
                     {
                         _currentClass = MapFirst(_nextClass);
-                        Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, true);
+                        lineBreak = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, true);
                         return true;
                     }
                 }
@@ -87,7 +86,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 if (shouldBreak)
                 {
-                    Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition);
+                    lineBreak = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition);
                     return true;
                 }
             }
@@ -108,23 +107,23 @@ namespace Avalonia.Media.TextFormatting.Unicode
                             break;
                     }
 
-                    Current = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, required);
+                    lineBreak = new LineBreak(FindPriorNonWhitespace(_lastPosition), _lastPosition, required);
                     return true;
                 }
             }
 
-            Current = default;
-            
+            lineBreak = default;
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static LineBreakClass MapClass(Codepoint cp)
         {
             if (cp.Value == 327685)
             {
                 return LineBreakClass.Alphabetic;
             }
-            
+
             // LB 1
             // ==========================================
             // Resolved Original    General_Category
@@ -133,26 +132,38 @@ namespace Avalonia.Media.TextFormatting.Unicode
             // CM       SA          Only Mn or Mc
             // AL       SA          Any except Mn and Mc
             // NS       CJ          Any
-            switch (cp.LineBreakClass)
+            var cls = cp.LineBreakClass;
+
+            const ulong specialMask =
+                (1UL << (int)LineBreakClass.Ambiguous) |
+                (1UL << (int)LineBreakClass.Surrogate) |
+                (1UL << (int)LineBreakClass.Unknown) |
+                (1UL << (int)LineBreakClass.ComplexContext) |
+                (1UL << (int)LineBreakClass.ConditionalJapaneseStarter);
+
+            if (((1UL << (int)cls) & specialMask) != 0UL)
             {
-                case LineBreakClass.Ambiguous:
-                case LineBreakClass.Surrogate:
-                case LineBreakClass.Unknown:
-                    return LineBreakClass.Alphabetic;
+                switch (cls)
+                {
+                    case LineBreakClass.Ambiguous:
+                    case LineBreakClass.Surrogate:
+                    case LineBreakClass.Unknown:
+                        return LineBreakClass.Alphabetic;
 
-                case LineBreakClass.ComplexContext:
-                    return cp.GeneralCategory == GeneralCategory.NonspacingMark || cp.GeneralCategory == GeneralCategory.SpacingMark
-                        ? LineBreakClass.CombiningMark
-                        : LineBreakClass.Alphabetic;
+                    case LineBreakClass.ComplexContext:
+                        return cp.GeneralCategory is GeneralCategory.NonspacingMark or GeneralCategory.SpacingMark
+                            ? LineBreakClass.CombiningMark
+                            : LineBreakClass.Alphabetic;
 
-                case LineBreakClass.ConditionalJapaneseStarter:
-                    return LineBreakClass.Nonstarter;
-
-                default:
-                    return cp.LineBreakClass;
+                    case LineBreakClass.ConditionalJapaneseStarter:
+                        return LineBreakClass.Nonstarter;
+                }
             }
+
+            return cls;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static LineBreakClass MapFirst(LineBreakClass c)
         {
             switch (c)
@@ -169,10 +180,80 @@ namespace Avalonia.Media.TextFormatting.Unicode
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsAlphaNumeric(LineBreakClass cls)
-            => cls == LineBreakClass.Alphabetic
-            || cls == LineBreakClass.HebrewLetter
-            || cls == LineBreakClass.Numeric;
+        {
+            const ulong mask =
+                (1UL << (int)LineBreakClass.Alphabetic) |
+                (1UL << (int)LineBreakClass.HebrewLetter) |
+                (1UL << (int)LineBreakClass.Numeric);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsPrefixPostfixNumericOrSpace(LineBreakClass cls)
+        {
+            const ulong mask =
+                (1UL << (int)LineBreakClass.PostfixNumeric) |
+                (1UL << (int)LineBreakClass.PrefixNumeric) |
+                (1UL << (int)LineBreakClass.Space);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsPrefixPostfixNumeric(LineBreakClass cls)
+        {
+            const ulong mask =
+                (1UL << (int)LineBreakClass.PostfixNumeric) |
+                (1UL << (int)LineBreakClass.PrefixNumeric);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsClosePunctuationOrParenthesis(LineBreakClass cls)
+        {
+            const ulong mask =
+                (1UL << (int)LineBreakClass.ClosePunctuation) |
+                (1UL << (int)LineBreakClass.CloseParenthesis);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsClosePunctuationOrInfixNumericOrBreakSymbols(LineBreakClass cls)
+        {
+            const ulong mask =
+                (1UL << (int)LineBreakClass.ClosePunctuation) |
+                (1UL << (int)LineBreakClass.InfixNumeric) |
+                (1UL << (int)LineBreakClass.BreakSymbols);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsSpaceOrWordJoinerOrAlphabetic(LineBreakClass cls)
+        {
+            const ulong mask =
+                (1UL << (int)LineBreakClass.Space) |
+                (1UL << (int)LineBreakClass.WordJoiner) |
+                (1UL << (int)LineBreakClass.Alphabetic);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsMandatoryBreakOrLineFeedOrCarriageReturn(LineBreakClass cls)
+        {
+            const ulong mask =
+                (1UL << (int)LineBreakClass.MandatoryBreak) |
+                (1UL << (int)LineBreakClass.LineFeed) |
+                (1UL << (int)LineBreakClass.CarriageReturn);
+
+            return ((1UL << (int)cls) & mask) != 0UL;
+        }
 
         private LineBreakClass PeekNextCharClass()
         {
@@ -198,83 +279,77 @@ namespace Avalonia.Media.TextFormatting.Unicode
             // Track combining mark exceptions. LB22
             if (cls == LineBreakClass.CombiningMark)
             {
-                switch (_currentClass)
+                const ulong lb22ExMask =
+                    (1UL << (int)LineBreakClass.MandatoryBreak) |
+                    (1UL << (int)LineBreakClass.ContingentBreak) |
+                    (1UL << (int)LineBreakClass.Exclamation) |
+                    (1UL << (int)LineBreakClass.LineFeed) |
+                    (1UL << (int)LineBreakClass.NextLine) |
+                    (1UL << (int)LineBreakClass.Space) |
+                    (1UL << (int)LineBreakClass.ZWSpace) |
+                    (1UL << (int)LineBreakClass.CarriageReturn);
+
+                if (((1UL << (int)_currentClass) & lb22ExMask) != 0UL)
                 {
-                    case LineBreakClass.MandatoryBreak:
-                    case LineBreakClass.ContingentBreak:
-                    case LineBreakClass.Exclamation:
-                    case LineBreakClass.LineFeed:
-                    case LineBreakClass.NextLine:
-                    case LineBreakClass.Space:
-                    case LineBreakClass.ZWSpace:
-                    case LineBreakClass.CarriageReturn:
-                        _lb22ex = true;
-                        break;
+                    _lb22ex = true;
+                }
+
+                const ulong lb31Mask =
+                    (1UL << (int)LineBreakClass.MandatoryBreak) |
+                    (1UL << (int)LineBreakClass.ContingentBreak) |
+                    (1UL << (int)LineBreakClass.Exclamation) |
+                    (1UL << (int)LineBreakClass.LineFeed) |
+                    (1UL << (int)LineBreakClass.NextLine) |
+                    (1UL << (int)LineBreakClass.Space) |
+                    (1UL << (int)LineBreakClass.ZWSpace) |
+                    (1UL << (int)LineBreakClass.CarriageReturn) |
+                    (1UL << (int)LineBreakClass.ZWJ);
+
+                // Track combining mark exceptions. LB31
+                if (_first || ((1UL << (int)_currentClass) & lb31Mask) != 0UL)
+                {
+                    _lb31 = true;
                 }
             }
 
-            // Track combining mark exceptions. LB31
-            if (_first && cls == LineBreakClass.CombiningMark)
+            if (_first)
             {
-                _lb31 = true;
-            }
-
-            if (cls == LineBreakClass.CombiningMark)
-            {
-                switch (_currentClass)
+                // Rule LB24
+                if (IsClosePunctuationOrParenthesis(cls))
                 {
-                    case LineBreakClass.MandatoryBreak:
-                    case LineBreakClass.ContingentBreak:
-                    case LineBreakClass.Exclamation:
-                    case LineBreakClass.LineFeed:
-                    case LineBreakClass.NextLine:
-                    case LineBreakClass.Space:
-                    case LineBreakClass.ZWSpace:
-                    case LineBreakClass.CarriageReturn:
-                    case LineBreakClass.ZWJ:
-                        _lb31 = true;
-                        break;
+                    _lb24ex = true;
+                }
+
+                // Rule LB25
+                if (IsClosePunctuationOrInfixNumericOrBreakSymbols(cls))
+                {
+                    _lb25ex = true;
+                }
+
+                if (IsPrefixPostfixNumericOrSpace(cls))
+                {
+                    _lb31 = true;
                 }
             }
 
-            if (_first
-                && (cls == LineBreakClass.PostfixNumeric || cls == LineBreakClass.PrefixNumeric || cls == LineBreakClass.Space))
-            {
-                _lb31 = true;
-            }
-
-            if (_currentClass == LineBreakClass.Alphabetic && 
-                (cls == LineBreakClass.PostfixNumeric || cls == LineBreakClass.PrefixNumeric || cls == LineBreakClass.Space))
+            if (_currentClass == LineBreakClass.Alphabetic && IsPrefixPostfixNumericOrSpace(cls))
             {
                 _lb31 = true;
             }
 
             // Reset LB31 if next is U+0028 (Left Opening Parenthesis)
             if (_lb31
-                && _currentClass != LineBreakClass.PostfixNumeric
-                && _currentClass != LineBreakClass.PrefixNumeric
-                && cls == LineBreakClass.OpenPunctuation && cp.Value == 0x0028)
+                && !IsPrefixPostfixNumeric(_currentClass)
+                && cls == LineBreakClass.OpenPunctuation
+                && cp.Value == 0x0028)
             {
                 _lb31 = false;
             }
 
-            // Rule LB24
-            if (_first && (cls == LineBreakClass.ClosePunctuation || cls == LineBreakClass.CloseParenthesis))
-            {
-                _lb24ex = true;
-            }
-
-            // Rule LB25
-            if (_first
-                && (cls == LineBreakClass.ClosePunctuation || cls == LineBreakClass.InfixNumeric || cls == LineBreakClass.BreakSymbols))
-            {
-                _lb25ex = true;
-            }
-
-            if (cls == LineBreakClass.Space || cls == LineBreakClass.WordJoiner || cls == LineBreakClass.Alphabetic)
+            if (IsSpaceOrWordJoinerOrAlphabetic(cls))
             {
                 var next = PeekNextCharClass();
-                if (next == LineBreakClass.ClosePunctuation || next == LineBreakClass.InfixNumeric || next == LineBreakClass.BreakSymbols)
+                if (IsClosePunctuationOrInfixNumericOrBreakSymbols(next))
                 {
                     _lb25ex = true;
                 }
@@ -295,6 +370,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return cls;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool? GetSimpleBreak()
         {
             // handle classes not handled by the pair table
@@ -317,6 +393,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // quite long but only one usage
         private bool GetPairTableBreak(LineBreakClass lastClass)
         {
             // If not handled already, use the pair table
@@ -477,8 +554,7 @@ namespace Avalonia.Media.TextFormatting.Unicode
 
                 var cls = cp.LineBreakClass;
 
-                if (cls == LineBreakClass.MandatoryBreak || cls == LineBreakClass.LineFeed ||
-                    cls == LineBreakClass.CarriageReturn)
+                if (IsMandatoryBreakOrLineFeedOrCarriageReturn(cls))
                 {
                     from -= count;
                 }

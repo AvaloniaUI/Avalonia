@@ -69,6 +69,15 @@ public class TransitioningContentControl : ContentControl
         {
             Dispatcher.UIThread.Post(() => UpdateContentWithTransition(Content));
         }
+        else if (change.Property == CurrentContentProperty)
+        {
+            UpdateLogicalTree(change.OldValue, change.NewValue);
+        }
+    }
+
+    protected override void ContentChanged(AvaloniaPropertyChangedEventArgs e)
+    {
+        // We do nothing becuse we should not remove old Content until the animation is over
     }
 
     /// <summary>

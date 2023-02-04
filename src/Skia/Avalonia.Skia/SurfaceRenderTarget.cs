@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -77,8 +77,8 @@ namespace Avalonia.Skia
         {
             var imageInfo = MakeImageInfo(width, height, format);
             if (gpu != null)
-                return SKSurface.Create(gpu, false, imageInfo);
-            return SKSurface.Create(imageInfo);
+                return SKSurface.Create(gpu, false, imageInfo, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
+            return SKSurface.Create(imageInfo, new SKSurfaceProperties(SKPixelGeometry.RgbHorizontal));
         }
 
         /// <inheritdoc />
@@ -106,6 +106,8 @@ namespace Avalonia.Skia
 
             return new DrawingContextImpl(createInfo, Disposable.Create(() => Version++));
         }
+
+        public bool IsCorrupted => _gpu?.IsLost == true;
 
         /// <inheritdoc />
         public Vector Dpi { get; }

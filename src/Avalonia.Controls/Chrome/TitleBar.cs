@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 
@@ -61,7 +61,7 @@ namespace Avalonia.Controls.Chrome
 
             if (VisualRoot is Window window)
             {
-                _disposables = new CompositeDisposable
+                _disposables = new CompositeDisposable(6)
                 {
                     window.GetObservable(Window.WindowDecorationMarginProperty)
                         .Subscribe(x => UpdateSize(window)),

@@ -1,137 +1,113 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reactive.Subjects;
 using Avalonia.Animation;
+using Avalonia.Data;
+using Avalonia.PropertyStore;
+using Avalonia.Reactive;
 using Avalonia.Styling.Activators;
-
-#nullable enable
 
 namespace Avalonia.Styling
 {
     /// <summary>
-    /// A <see cref="Style"/> which has been instanced on a control.
+    /// Stores state for a <see cref="Style"/> that has been instanced on a control.
     /// </summary>
-    internal sealed class StyleInstance : IStyleInstance, IStyleActivatorSink
+    /// <remarks>
+    /// <see cref="StyleInstance"/> is based on <see cref="ValueFrame"/> meaning that it is 
+    /// injected directly into the value store of an <see cref="AvaloniaObject"/>. Depending on
+    /// the setters present on the style, it may be possible to share a single style instance
+    /// among all controls that the style is applied to, meaning that a single style instance can
+    /// apply to multiple controls.
+    /// </remarks>
+    internal class StyleInstance : ValueFrame, IStyleInstance, IStyleActivatorSink, IDisposable
     {
-        private readonly ISetterInstance[]? _setters;
-        private readonly IDisposable[]? _animations;
         private readonly IStyleActivator? _activator;
-        private readonly Subject<bool>? _animationTrigger;
+        private bool _isActive;
+        private List<ISetterInstance>? _setters;
+        private List<IAnimation>? _animations;
+        private LightweightSubject<bool>? _animationTrigger;
 
         public StyleInstance(
-            IStyle source,
-            IStyleable target,
-            IReadOnlyList<ISetter>? setters,
-            IReadOnlyList<IAnimation>? animations,
-            IStyleActivator? activator = null)
+            IStyle style,
+            IStyleActivator? activator,
+            FrameType type)
+            : base(GetPriority(activator), type)
         {
-            Source = source ?? throw new ArgumentNullException(nameof(source));
-            Target = target ?? throw new ArgumentNullException(nameof(target));
             _activator = activator;
-            IsActive = _activator is null;
-
-            if (setters is not null)
-            {
-                var setterCount = setters.Count;
-
-                _setters = new ISetterInstance[setterCount];
-
-                for (var i = 0; i < setterCount; ++i)
-                {
-                    _setters[i] = setters[i].Instance(Target);
-                }
-            }
-
-            if (animations is not null && target is Animatable animatable)
-            {
-                var animationsCount = animations.Count;
-
-                _animations = new IDisposable[animationsCount];
-                _animationTrigger = new Subject<bool>();
-
-                for (var i = 0; i < animationsCount; ++i)
-                {
-                    _animations[i] = animations[i].Apply(animatable, null, _animationTrigger);
-                }
-            }
+            Source = style;
         }
 
-        public bool HasActivator => _activator is not null;
-        public bool IsActive { get; private set; }
+        public bool HasActivator => _activator is object;
+
         public IStyle Source { get; }
-        public IStyleable Target { get; }
 
-        public void Start()
+        bool IStyleInstance.IsActive => _isActive;
+        
+        public void Add(ISetterInstance instance)
         {
-            var hasActivator = HasActivator;
-
-            if (_setters is not null)
+            if (instance is IValueEntry valueEntry)
             {
-                foreach (var setter in _setters)
-                {
-                    setter.Start(hasActivator);
-                }
+                if (Contains(valueEntry.Property))
+                    throw new InvalidOperationException(
+                        $"Duplicate setter encountered for property '{valueEntry.Property}' in '{Source}'.");
+                Add(valueEntry);
             }
+            else
+                (_setters ??= new()).Add(instance);
+        }
 
-            if (hasActivator)
+        public void Add(IList<IAnimation> animations)
+        {
+            if (_animations is null)
+                _animations = new List<IAnimation>(animations);
+            else
+                _animations.AddRange(animations);
+        }
+
+        public void ApplyAnimations(AvaloniaObject control)
+        {
+            if (_animations is not null && control is Animatable animatable)
             {
-                _activator!.Subscribe(this, 0);
-            }
-            else if (_animationTrigger is not null)
-            {
-                _animationTrigger.OnNext(true);
+                _animationTrigger ??= new LightweightSubject<bool>();
+                foreach (var animation in _animations)
+                    animation.Apply(animatable, null, _animationTrigger);
+
+                if (_activator is null)
+                    _animationTrigger.OnNext(true);
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
-            if (_setters is not null)
-            {
-                foreach (var setter in _setters)
-                {
-                    setter.Dispose();
-                }
-            }
-
-            if (_animations is not null)
-            {
-                foreach (var subscription in _animations)
-                {
-                    subscription.Dispose();
-                }
-            }
-
+            base.Dispose();
             _activator?.Dispose();
         }
 
-        private void ActivatorChanged(bool value)
+        public new void MakeShared() => base.MakeShared();
+
+        void IStyleActivatorSink.OnNext(bool value)
         {
-            if (IsActive != value)
-            {
-                IsActive = value;
-
-                _animationTrigger?.OnNext(value);
-
-                if (_setters is not null)
-                {
-                    if (IsActive)
-                    {
-                        foreach (var setter in _setters)
-                        {
-                            setter.Activate();
-                        }
-                    }
-                    else
-                    {
-                        foreach (var setter in _setters)
-                        {
-                            setter.Deactivate();
-                        }
-                    }
-                }
-            }
+            Owner?.OnFrameActivationChanged(this);
+            _animationTrigger?.OnNext(value);
         }
 
-        void IStyleActivatorSink.OnNext(bool value, int tag) => ActivatorChanged(value);
+        protected override bool GetIsActive(out bool hasChanged)
+        {
+            var previous = _isActive;
+
+            if (_activator?.IsSubscribed == false)
+            {
+                _activator.Subscribe(this);
+                _animationTrigger?.OnNext(_activator.GetIsActive());
+            }
+
+            _isActive = _activator?.GetIsActive() ?? true;
+            hasChanged = _isActive != previous;
+            return _isActive;
+        }
+
+        private static BindingPriority GetPriority(IStyleActivator? activator)
+        {
+            return activator is not null ? BindingPriority.StyleTrigger : BindingPriority.Style;
+        }
     }
 }
