@@ -24,7 +24,7 @@
     <Compile Include="..\..\..\src\Markup\Avalonia.Markup.Xaml.Loader\AvaloniaXamlIlRuntimeCompiler.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2023020321" />
   </ItemGroup>
   <Import Project="..\..\..\build\NetFX.props" />
 </Project>

@@ -10,6 +10,8 @@
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
     <PackageReference Include="MicroCom.CodeGenerator.MSBuild" Version="0.10.4" PrivateAssets="all" />
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2023020321" />
+    <PackageReference Include="MicroCom.CodeGenerator.MSBuild" Version="0.11.0" PrivateAssets="all" />
     <MicroComIdl Include="WinRT\winrt.idl" CSharpInteropPath="WinRT\WinRT.Generated.cs" />
     <MicroComIdl Include="Win32Com\win32.idl" CSharpInteropPath="Win32Com\Win32.Generated.cs" />
   </ItemGroup>

@@ -13,6 +13,15 @@
     <ProjectReference Include="..\ControlCatalog\ControlCatalog.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.X11\Avalonia.X11.csproj" />
     <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
+    <!-- For native controls test -->
+    <PackageReference Include="MonoMac.NetStandard" Version="0.0.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RunNativeAotCompilation)' == 'true'">
+    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="$(NativeAotCompilerVersion)" />
+    <!-- Cross-compilation for Windows x64-arm64 and Linux x64-arm64 -->
+    <PackageReference Condition="'$(RuntimeIdentifier)'=='win-arm64'" Include="runtime.win-x64.Microsoft.DotNet.ILCompiler" Version="$(NativeAotCompilerVersion)" />
+    <PackageReference Condition="'$(RuntimeIdentifier)'=='linux-arm64'" Include="runtime.linux-x64.Microsoft.DotNet.ILCompiler" Version="$(NativeAotCompilerVersion)" />
   </ItemGroup>
 
   <PropertyGroup>
