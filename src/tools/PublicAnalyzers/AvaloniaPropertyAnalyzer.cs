@@ -172,14 +172,11 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private static bool IsAvaloniaPropertyType(INamedTypeSymbol type, params INamedTypeSymbol[] propertyTypes) => IsAvaloniaPropertyType(type, propertyTypes.AsEnumerable());
+    private static bool IsAvaloniaPropertyType(ITypeSymbol type, params INamedTypeSymbol[] propertyTypes) => IsAvaloniaPropertyType(type, propertyTypes.AsEnumerable());
     
-    private static bool IsAvaloniaPropertyType(INamedTypeSymbol type, IEnumerable<INamedTypeSymbol> propertyTypes)
+    private static bool IsAvaloniaPropertyType(ITypeSymbol type, IEnumerable<INamedTypeSymbol> propertyTypes)
     {
-        if (type.IsGenericType)
-        {
-            type = type.ConstructUnboundGenericType().OriginalDefinition;
-        }
+        type = type.OriginalDefinition;
 
         return propertyTypes.Any(t => SymbolEquals(type, t));
     }
@@ -278,7 +275,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         /// <summary>
         /// Gets the TValue type that the property stores.
         /// </summary>
-        public INamedTypeSymbol ValueType { get; }
+        public ITypeSymbol ValueType { get; }
 
         /// <summary>
         /// Gets whether the value of this property is inherited from the parent AvaloniaObject.
@@ -308,7 +305,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         public IReadOnlyCollection<IPropertySymbol> PropertyWrappers { get; private set; }
         private ConcurrentBag<IPropertySymbol>? _propertyWrappers = new();
 
-        public AvaloniaPropertyDescription(string name, INamedTypeSymbol propertyType, INamedTypeSymbol valueType)
+        public AvaloniaPropertyDescription(string name, INamedTypeSymbol propertyType, ITypeSymbol valueType)
         {
             Name = name;
             PropertyType = propertyType;
@@ -368,10 +365,10 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private readonly struct TypeReference
     {
-        public INamedTypeSymbol Type { get; }
+        public ITypeSymbol Type { get; }
         public Location Location { get; }
 
-        public TypeReference(INamedTypeSymbol type, Location location)
+        public TypeReference(ITypeSymbol type, Location location)
         {
             Type = type;
             Location = location;
@@ -396,7 +393,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
                 }
             }
 
-            return new TypeReference((INamedTypeSymbol)argument, typeArgumentSyntax.GetLocation());
+            return new TypeReference(argument, typeArgumentSyntax.GetLocation());
         }
     }
 
