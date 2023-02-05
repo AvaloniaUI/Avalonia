@@ -298,17 +298,13 @@ public class CompositingRenderer : IRendererWithCompositor
     {
         QueueUpdate();
         CompositionTarget.RequestRedraw();
-        if(RenderOnlyOnRenderThread && Compositor.Loop.RunsInBackground)
+        if(RenderOnlyOnRenderThread && Compositor.Loop.RunsInBackground && CompositionTarget.Server.IsEnabled)
             Compositor.Commit().Wait();
         else
             CompositionTarget.ImmediateUIThreadRender();
     }
 
-    public void Start()
-    {
-        CompositionTarget.IsEnabled = true;
-        CompositionTarget.ImmediateUIThreadRender();
-    }
+    public void Start() => CompositionTarget.IsEnabled = true;
 
     public void Stop()
     {
