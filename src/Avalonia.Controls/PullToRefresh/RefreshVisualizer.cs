@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Numerics;
-using System.Reactive.Linq;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.PullToRefresh;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.Rendering.Composition;
 using Avalonia.Rendering.Composition.Animations;
 
@@ -151,7 +151,11 @@ namespace Avalonia.Controls
                     _content.Loaded += (s, e) =>
                     {
                         var composition = ElementComposition.GetElementVisual(_content);
-                        var compositor = composition!.Compositor;
+
+                        if(composition == null)
+                            return;
+
+                        var compositor = composition.Compositor;
                         composition.Opacity = 0;
 
                         var smoothRotationAnimation

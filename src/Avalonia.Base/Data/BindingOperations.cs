@@ -1,6 +1,5 @@
 using System;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data
 {
@@ -42,54 +41,41 @@ namespace Avalonia.Data
             {
                 case BindingMode.Default:
                 case BindingMode.OneWay:
-                    if (binding.Observable is null)
-                        throw new InvalidOperationException("InstancedBinding does not contain an observable.");
-                    return target.Bind(property, binding.Observable, binding.Priority);
+                    return target.Bind(property, binding.Source, binding.Priority);
                 case BindingMode.TwoWay:
-                    if (binding.Subject is null)
+                {
+                    if (binding.Source is not IObserver<object?> observer)
                         throw new InvalidOperationException("InstancedBinding does not contain a subject.");
                     return new TwoWayBindingDisposable(
-                        target.Bind(property, binding.Subject, binding.Priority),
-                        target.GetObservable(property).Subscribe(binding.Subject));
+                        target.Bind(property, binding.Source, binding.Priority),
+                        target.GetObservable(property).Subscribe(observer));
+                }
                 case BindingMode.OneTime:
-                    var source = binding.Subject ?? binding.Observable;
+                {
+                    // Perf: Avoid allocating closure in the outer scope.
+                    var targetCopy = target;
+                    var propertyCopy = property;
+                    var bindingCopy = binding;
 
-                    if (source != null)
-                    {
-                        // Perf: Avoid allocating closure in the outer scope.
-                        var targetCopy = target;
-                        var propertyCopy = property;
-                        var bindingCopy = binding;
-
-                        return source
-                            .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
-                            .Take(1)
-                            .Subscribe(x => targetCopy.SetValue(
-                                propertyCopy,
-                                BindingNotification.ExtractValue(x),
-                                bindingCopy.Priority));
-                    }
-                    else
-                    {
-                        target.SetValue(property, binding.Value, binding.Priority);
-                        return Disposable.Empty;
-                    }
+                    return binding.Source
+                        .Where(x => BindingNotification.ExtractValue(x) != AvaloniaProperty.UnsetValue)
+                        .Take(1)
+                        .Subscribe(x => targetCopy.SetValue(
+                            propertyCopy,
+                            BindingNotification.ExtractValue(x),
+                            bindingCopy.Priority));
+                }
 
                 case BindingMode.OneWayToSource:
                 {
-                    if (binding.Observable is null)
-                        throw new InvalidOperationException("InstancedBinding does not contain an observable.");
-                    if (binding.Subject is null)
+                    if (binding.Source is not IObserver<object?> observer)
                         throw new InvalidOperationException("InstancedBinding does not contain a subject.");
 
-                    // Perf: Avoid allocating closure in the outer scope.
-                    var bindingCopy = binding;
-
                     return Observable.CombineLatest(
-                        binding.Observable,
+                        binding.Source,
                         target.GetObservable(property),
                         (_, v) => v)
-                    .Subscribe(x => bindingCopy.Subject.OnNext(x));
+                    .Subscribe(x => observer.OnNext(x));
                 }
 
                 default:

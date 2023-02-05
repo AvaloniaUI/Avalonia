@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reactive.Linq;
+using Avalonia.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Platform;
@@ -450,7 +450,7 @@ namespace Avalonia.Controls
         /// resulting task will produce the <see cref="_dialogResult"/> value when the window
         /// is closed.
         /// </remarks>
-        public void Close(object dialogResult)
+        public void Close(object? dialogResult)
         {
             _dialogResult = dialogResult;
             CloseCore(WindowCloseReason.WindowClosing, true);
@@ -800,7 +800,7 @@ namespace Avalonia.Controls
 
                 Renderer?.Start();
 
-                Observable.FromEventPattern<EventHandler, EventArgs>(
+                Observable.FromEventPattern(
                         x => Closed += x,
                         x => Closed -= x)
                     .Take(1)

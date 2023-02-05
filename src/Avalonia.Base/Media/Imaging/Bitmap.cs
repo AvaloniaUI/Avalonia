@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Utilities;
 
@@ -10,6 +12,7 @@ namespace Avalonia.Media.Imaging
     /// </summary>
     public class Bitmap : IBitmap
     {
+        private bool _isTranscoded;
         /// <summary>
         /// Loads a Bitmap from a stream and decodes at the desired width. Aspect ratio is maintained.
         /// This is more efficient than loading and then resizing.
@@ -100,7 +103,28 @@ namespace Avalonia.Media.Imaging
         /// <param name="stride">The number of bytes per row.</param>
         public Bitmap(PixelFormat format, AlphaFormat alphaFormat, IntPtr data, PixelSize size, Vector dpi, int stride)
         {
-            PlatformImpl = RefCountable.Create(GetFactory().LoadBitmap(format, alphaFormat, data, size, dpi, stride));
+            var factory = GetFactory();
+            if (factory.IsSupportedBitmapPixelFormat(format))
+                PlatformImpl = RefCountable.Create(factory.LoadBitmap(format, alphaFormat, data, size, dpi, stride));
+            else
+            {
+                var transcoded = Marshal.AllocHGlobal(size.Width * size.Height * 4);
+                var transcodedStride = size.Width * 4;
+                try
+                {
+                    PixelFormatReader.Transcode(transcoded, data, size, stride, transcodedStride, format);
+                    var transcodedAlphaFormat = format.HasAlpha ? alphaFormat : AlphaFormat.Opaque;
+                    
+                    PlatformImpl = RefCountable.Create(factory.LoadBitmap(PixelFormat.Rgba8888, transcodedAlphaFormat,
+                        transcoded, size, dpi, transcodedStride));
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(transcoded);
+                }
+
+                _isTranscoded = true;
+            }
         }
 
         /// <inheritdoc/>
@@ -143,6 +167,57 @@ namespace Avalonia.Media.Imaging
         public void Save(Stream stream, int? quality = null)
         {
             PlatformImpl.Item.Save(stream, quality);
+        }
+
+        public virtual PixelFormat? Format => (PlatformImpl.Item as IReadableBitmapImpl)?.Format;
+
+        protected internal unsafe void CopyPixelsCore(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride,
+            ILockedFramebuffer fb)
+        {
+            if ((sourceRect.Width <= 0 || sourceRect.Height <= 0) && (sourceRect.X != 0 || sourceRect.Y != 0))
+                throw new ArgumentOutOfRangeException(nameof(sourceRect));
+
+            if (sourceRect.X < 0 || sourceRect.Y < 0)
+                throw new ArgumentOutOfRangeException(nameof(sourceRect));
+            
+            if (sourceRect.Width <= 0)
+                sourceRect = sourceRect.WithWidth(PixelSize.Width);
+            if (sourceRect.Height <= 0)
+                sourceRect = sourceRect.WithHeight(PixelSize.Height);
+
+            if (sourceRect.Right > PixelSize.Width || sourceRect.Bottom > PixelSize.Height)
+                throw new ArgumentOutOfRangeException(nameof(sourceRect));
+            
+            int minStride = checked(((sourceRect.Width * fb.Format.BitsPerPixel) + 7) / 8);
+            if (stride < minStride)
+                throw new ArgumentOutOfRangeException(nameof(stride));
+
+            var minBufferSize = stride * sourceRect.Height;
+            if (minBufferSize > bufferSize)
+                throw new ArgumentOutOfRangeException(nameof(bufferSize));
+
+            for (var y = 0; y < sourceRect.Height; y++)
+            {
+                var srcAddress = fb.Address + fb.RowBytes * y;
+                var dstAddress = buffer + stride * y;
+                Unsafe.CopyBlock(dstAddress.ToPointer(), srcAddress.ToPointer(), (uint)minStride);
+            }
+        }
+        
+        public virtual void CopyPixels(PixelRect sourceRect, IntPtr buffer, int bufferSize, int stride)
+        {
+            if (
+                Format == null
+                || PlatformImpl.Item is not IReadableBitmapImpl readable
+                || Format != readable.Format
+            )
+                throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
+            
+            if (_isTranscoded)
+                throw new NotSupportedException("CopyPixels is not supported for transcoded bitmaps");
+            
+            using (var fb = readable.Lock())
+                CopyPixelsCore(sourceRect, buffer, bufferSize, stride, fb);
         }
 
         /// <inheritdoc/>

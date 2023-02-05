@@ -38,7 +38,7 @@ namespace Avalonia.Data.Converters
                     }
                     else if (Equals(obj, default(TIn)))
                     {
-                        yield return default(TIn);
+                        yield return default;
                     }
                 }
             }

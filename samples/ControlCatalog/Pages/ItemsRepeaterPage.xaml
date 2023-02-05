@@ -62,7 +62,7 @@
       <Button x:Name="scrollToRandom">Scroll to Random</Button>
       <Button x:Name="scrollToSelected">Scroll to Selected</Button>
     </StackPanel>
-    <Border BorderThickness="1" BorderBrush="{DynamicResource SystemControlHighlightBaseMediumLowBrush}" Margin="0 0 0 16">
+    <Border BorderThickness="1" BorderBrush="{DynamicResource CatalogBaseMediumColor}" Margin="0 0 0 16">
       <ScrollViewer Name="scroller"
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Auto">

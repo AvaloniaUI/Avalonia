@@ -3,6 +3,7 @@ using System.ComponentModel;
 using Avalonia.Animation;
 using Avalonia.Animation.Animators;
 using Avalonia.Media.Immutable;
+using Avalonia.Reactive;
 
 namespace Avalonia.Media
 {
@@ -10,7 +11,7 @@ namespace Avalonia.Media
     /// Describes how an area is painted.
     /// </summary>
     [TypeConverter(typeof(BrushConverter))]
-    public abstract class Brush : Animatable
+    public abstract class Brush : Animatable, IBrush
     {
         /// <summary>
         /// Defines the <see cref="Opacity"/> property.
@@ -103,14 +104,12 @@ namespace Avalonia.Media
         protected static void AffectsRender<T>(params AvaloniaProperty[] properties)
             where T : Brush
         {
-            static void Invalidate(AvaloniaPropertyChangedEventArgs e)
-            {
-                (e.Sender as T)?.RaiseInvalidated(EventArgs.Empty);
-            }
+            var invalidateObserver = new AnonymousObserver<AvaloniaPropertyChangedEventArgs>(
+                static e => (e.Sender as T)?.RaiseInvalidated(EventArgs.Empty));
 
             foreach (var property in properties)
             {
-                property.Changed.Subscribe(e => Invalidate(e));
+                property.Changed.Subscribe(invalidateObserver);
             }
         }
 

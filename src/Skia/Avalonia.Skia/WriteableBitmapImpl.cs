@@ -96,9 +96,9 @@ namespace Avalonia.Skia
 
             SKColorType colorType = format.ToSkColorType();
             SKAlphaType alphaType = alphaFormat.ToSkAlphaType();
-            
-            var runtimePlatform = AvaloniaLocator.Current?.GetService<IRuntimePlatform>();
-            
+
+            var runtimePlatform = AvaloniaLocator.Current.GetService<IRuntimePlatform>();
+
             if (runtimePlatform != null)
             {
                 _bitmap = new SKBitmap();
@@ -153,6 +153,8 @@ namespace Avalonia.Skia
                 ImageSavingHelper.SaveImage(image, fileName, quality);
             }
         }
+
+        public PixelFormat? Format => _bitmap.ColorType.ToAvalonia();
 
         /// <inheritdoc />
         public ILockedFramebuffer Lock() => new BitmapFramebuffer(this, _bitmap);

@@ -98,6 +98,8 @@ namespace Avalonia.Controls.UnitTests
         public void IsVisible_Should_Be_False_After_Impl_Signals_Close()
         {
             var windowImpl = new Mock<IWindowImpl>();
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(() => RendererMocks.CreateRenderer().Object);
             windowImpl.SetupProperty(x => x.Closed);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
             windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -140,7 +142,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Child_windows_should_be_closed_before_parent(bool programaticClose)
+        public void Child_windows_should_be_closed_before_parent(bool programmaticClose)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -156,7 +158,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Closing += (sender, e) =>
                 {
                     Assert.Equal(WindowCloseReason.WindowClosing, e.CloseReason);
-                    Assert.Equal(programaticClose, e.IsProgrammatic);
+                    Assert.Equal(programmaticClose, e.IsProgrammatic);
                     count++;
                     windowClosing = count;
                 };
@@ -164,7 +166,7 @@ namespace Avalonia.Controls.UnitTests
                 child.Closing += (sender, e) =>
                 {
                     Assert.Equal(WindowCloseReason.OwnerWindowClosing, e.CloseReason);
-                    Assert.Equal(programaticClose, e.IsProgrammatic);
+                    Assert.Equal(programmaticClose, e.IsProgrammatic);
                     count++;
                     childClosing = count;
                 };
@@ -184,7 +186,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 child.Show(window);
 
-                if (programaticClose)
+                if (programmaticClose)
                 {
                     window.Close();
                 }
@@ -205,7 +207,7 @@ namespace Avalonia.Controls.UnitTests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void Child_windows_must_not_close_before_parent_has_chance_to_Cancel_OSCloseButton(bool programaticClose)
+        public void Child_windows_must_not_close_before_parent_has_chance_to_Cancel_OSCloseButton(bool programmaticClose)
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
@@ -246,7 +248,7 @@ namespace Avalonia.Controls.UnitTests
                 window.Show();
                 child.Show(window);
                 
-                if (programaticClose)
+                if (programmaticClose)
                 {
                     window.Close();
                 }
@@ -269,7 +271,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
+                var renderer = RendererMocks.CreateRenderer();
                 var target = new Window(CreateImpl(renderer));
 
                 target.Show();
@@ -284,7 +286,7 @@ namespace Avalonia.Controls.UnitTests
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
                 var parent = new Window();
-                var renderer = new Mock<IRenderer>();
+                var renderer = RendererMocks.CreateRenderer();
                 var target = new Window(CreateImpl(renderer));
 
                 parent.Show();
@@ -317,7 +319,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var renderer = new Mock<IRenderer>();
+                var renderer = RendererMocks.CreateRenderer();
                 var target = new Window(CreateImpl(renderer));
 
                 target.Show();
@@ -334,6 +336,8 @@ namespace Avalonia.Controls.UnitTests
             {
                 var parent = new Window();
                 var windowImpl = new Mock<IWindowImpl>();
+                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                    .Returns(() => RendererMocks.CreateRenderer().Object);
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);
@@ -375,6 +379,8 @@ namespace Avalonia.Controls.UnitTests
             {
                 var parent = new Window();
                 var windowImpl = new Mock<IWindowImpl>();
+                windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                    .Returns(() => RendererMocks.CreateRenderer().Object);
                 windowImpl.SetupProperty(x => x.Closed);
                 windowImpl.Setup(x => x.DesktopScaling).Returns(1);
                 windowImpl.Setup(x => x.RenderScaling).Returns(1);

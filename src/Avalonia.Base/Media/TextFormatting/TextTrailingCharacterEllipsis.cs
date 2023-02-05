@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Avalonia.Media.TextFormatting
+﻿namespace Avalonia.Media.TextFormatting
 {
     /// <summary>
     /// A collapsing properties to collapse whole line toward the end
@@ -26,7 +24,8 @@ namespace Avalonia.Media.TextFormatting
         /// <inheritdoc/>
         public override TextRun Symbol { get; }
 
-        public override List<DrawableTextRun>? Collapse(TextLine textLine)
+        /// <inheritdoc />
+        public override TextRun[]? Collapse(TextLine textLine)
         {
             return TextEllipsisHelper.Collapse(textLine, this, false);
         }

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Mixins;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
@@ -22,11 +22,10 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="IsExpanded"/> property.
         /// </summary>
-        public static readonly DirectProperty<TreeViewItem, bool> IsExpandedProperty =
-            AvaloniaProperty.RegisterDirect<TreeViewItem, bool>(
+        public static readonly StyledProperty<bool> IsExpandedProperty =
+            AvaloniaProperty.Register<TreeViewItem, bool>(
                 nameof(IsExpanded),
-                o => o.IsExpanded,
-                (o, v) => o.IsExpanded = v);
+                defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>
         /// Defines the <see cref="IsSelected"/> property.
@@ -46,7 +45,6 @@ namespace Avalonia.Controls
 
         private TreeView? _treeView;
         private Control? _header;
-        private bool _isExpanded;
         private int _level;
         private bool _templateApplied;
         private bool _deferredBringIntoViewFlag;
@@ -60,7 +58,6 @@ namespace Avalonia.Controls
             PressedMixin.Attach<TreeViewItem>();
             FocusableProperty.OverrideDefaultValue<TreeViewItem>(true);
             ItemsPanelProperty.OverrideDefaultValue<TreeViewItem>(DefaultPanel);
-            ParentProperty.Changed.AddClassHandler<TreeViewItem>((o, e) => o.OnParentChanged(e));
             RequestBringIntoViewEvent.AddClassHandler<TreeViewItem>((x, e) => x.OnRequestBringIntoView(e));
         }
 
@@ -69,8 +66,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsExpanded
         {
-            get { return _isExpanded; }
-            set { SetAndRaise(IsExpandedProperty, ref _isExpanded, value); }
+            get => GetValue(IsExpandedProperty);
+            set => SetValue(IsExpandedProperty, value);
         }
 
         /// <summary>
@@ -78,8 +75,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool IsSelected
         {
-            get { return GetValue(IsSelectedProperty); }
-            set { SetValue(IsSelectedProperty, value); }
+            get => GetValue(IsSelectedProperty);
+            set => SetValue(IsSelectedProperty, value);
         }
 
         /// <summary>
@@ -87,30 +84,14 @@ namespace Avalonia.Controls
         /// </summary>
         public int Level
         {
-            get { return _level; }
-            private set { SetAndRaise(LevelProperty, ref _level, value); }
+            get => _level;
+            private set => SetAndRaise(LevelProperty, ref _level, value);
         }
 
-        /// <summary>
-        /// Gets the <see cref="ITreeItemContainerGenerator"/> for the tree view.
-        /// </summary>
-        public new ITreeItemContainerGenerator ItemContainerGenerator =>
-            (ITreeItemContainerGenerator)base.ItemContainerGenerator;
+        internal TreeView? TreeViewOwner => _treeView;
 
-        /// <inheritdoc/>
-        protected override IItemContainerGenerator CreateItemContainerGenerator() => CreateTreeItemContainerGenerator<TreeViewItem>();
-
-        /// <inheritdoc/>
-        protected ITreeItemContainerGenerator CreateTreeItemContainerGenerator<TVItem>()
-            where TVItem: TreeViewItem, new()
-        {
-            return new TreeItemContainerGenerator<TVItem>(
-                this,
-                TreeViewItem.HeaderProperty,
-                TreeViewItem.ItemTemplateProperty,
-                TreeViewItem.ItemsProperty,
-                TreeViewItem.IsExpandedProperty);
-        }
+        protected internal override Control CreateContainerForItemOverride() => new TreeViewItem();
+        protected internal override bool IsItemItsOwnContainerOverride(Control item) => item is TreeViewItem;
 
         /// <inheritdoc/>
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
@@ -120,7 +101,6 @@ namespace Avalonia.Controls
             _treeView = this.GetLogicalAncestors().OfType<TreeView>().FirstOrDefault();
             
             Level = CalculateDistanceFromLogicalParent<TreeView>(this) - 1;
-            ItemContainerGenerator.UpdateIndex();
 
             if (ItemTemplate == null && _treeView?.ItemTemplate != null)
             {
@@ -131,12 +111,6 @@ namespace Avalonia.Controls
             {
                 ItemContainerTheme = _treeView.ItemContainerTheme;
             }
-        }
-
-        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromLogicalTree(e);
-            ItemContainerGenerator.UpdateIndex();
         }
 
         protected virtual void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
@@ -284,6 +258,18 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <summary>
+        /// Invoked when the <see cref="InputElement.DoubleTapped"/> event occurs in the header.
+        /// </summary>
+        protected virtual void OnHeaderDoubleTapped(TappedEventArgs e)
+        {
+            if (ItemCount > 0)
+            {
+                IsExpanded = !IsExpanded;
+                e.Handled = true;
+            }
+        }
+
         private static int CalculateDistanceFromLogicalParent<T>(ILogical? logical, int @default = -1) where T : class
         {
             var result = 0;
@@ -299,22 +285,7 @@ namespace Avalonia.Controls
 
         private void HeaderDoubleTapped(object? sender, TappedEventArgs e)
         {
-            if (ItemCount > 0)
-            {
-                IsExpanded = !IsExpanded;
-                e.Handled = true;
-            }
-        }
-
-        private void OnParentChanged(AvaloniaPropertyChangedEventArgs e)
-        {
-            if (!((ILogical)this).IsAttachedToLogicalTree && e.NewValue is null)
-            {
-                // If we're not attached to the logical tree, then OnDetachedFromLogicalTree isn't going to be
-                // called when the item is removed. This results in the item not being removed from the index,
-                // causing #3551. In this case, update the index when Parent is changed to null.
-                ItemContainerGenerator.UpdateIndex();
-            }
+            OnHeaderDoubleTapped(e);
         }
     }
 }

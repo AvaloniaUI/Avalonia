@@ -169,9 +169,9 @@ namespace Avalonia.Controls.PullToRefresh
                 visualizerComposition.ImplicitAnimations = animation;
             }
 
-            if(_scrollViewer != null && _scrollViewer.Content is Visual visual)
+            if(_scrollViewer != null)
             {
-                var scollContentComposition = ElementComposition.GetElementVisual(visual);
+                var scollContentComposition = ElementComposition.GetElementVisual(_scrollViewer);
 
                 if(scollContentComposition != null)
                 {
@@ -197,12 +197,12 @@ namespace Avalonia.Controls.PullToRefresh
                 throw new ArgumentException(nameof(_scrollViewer), "Adaptee's content property must be a Visual");
             }
 
-            if (content.Parent is not InputElement)
+            if (content.Parent is not InputElement parent)
             {
                 throw new ArgumentException(nameof(_scrollViewer), "Adaptee's content parent must be an InputElement");
             }
 
-            MakeInteractionSource(content.Parent as InputElement);
+            MakeInteractionSource(parent);
 
             if (_scrollViewer != null)
             {

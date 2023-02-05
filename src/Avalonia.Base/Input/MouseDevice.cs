@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Reactive;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
 using Avalonia.Utilities;

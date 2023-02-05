@@ -6,9 +6,9 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Platform;
+using Avalonia.Reactive;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Platform
 {
@@ -350,13 +350,19 @@ namespace Avalonia.Controls.Platform
         {
             // HACK: #8179 needs to be addressed to correctly implement it in the PointerPressed method.
             var item = GetMenuItem(e.Source as Control) as MenuItem;
-            if (item?.TransformedBounds == null)
-            {
-                return;
-            }
-            var point = e.GetCurrentPoint(null);
 
-            if (point.Properties.IsLeftButtonPressed && item.TransformedBounds.Value.Contains(point.Position) == false)
+            if (item == null)
+                return;
+            
+            var serverTransform = item?.CompositionVisual?.TryGetServerGlobalTransform();
+            if (serverTransform == null)
+                return;
+            
+            var point = e.GetCurrentPoint(null);
+            var transformedPoint = point.Position.Transform(serverTransform.Value);
+
+            if (point.Properties.IsLeftButtonPressed && 
+                new Rect(item!.Bounds.Size).Contains(transformedPoint) == false)
             {
                 e.Pointer.Capture(null);
             }

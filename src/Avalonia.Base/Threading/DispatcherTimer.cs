@@ -1,5 +1,5 @@
 using System;
-using System.Reactive.Disposables;
+using Avalonia.Reactive;
 using Avalonia.Platform;
 
 namespace Avalonia.Threading
@@ -176,13 +176,7 @@ namespace Avalonia.Threading
         {
             if (!IsEnabled)
             {
-                var threading = AvaloniaLocator.Current.GetService<IPlatformThreadingInterface>();
-
-                if (threading == null)
-                {
-                    throw new Exception("Could not start timer: IPlatformThreadingInterface is not registered.");
-                }
-
+                var threading = AvaloniaLocator.Current.GetRequiredService<IPlatformThreadingInterface>();
                 _timer = threading.StartTimer(_priority, Interval, InternalTick);
             }
         }

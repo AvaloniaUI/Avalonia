@@ -26,31 +26,31 @@
         <StackPanel Spacing="10">
             <TextBlock FontSize="18" Text="Button with a Flyout" />
             <StackPanel>
-                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
                         BorderThickness="1" Padding="15">
                     <Button Content="Click Me!" Flyout="{StaticResource BasicFlyout}" />
                 </Border>
-                <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                <Panel Background="{DynamicResource CatalogBaseLowColor}">
                     <TextBlock Name="ButtonFlyoutXamlText" Padding="15" />
                 </Panel>
             </StackPanel>
 
             <TextBlock FontSize="18" Text="MenuFlyout" />
             <StackPanel>
-                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
                         BorderThickness="1" Padding="15">
                     <Button Content="Click Me!" Flyout="{StaticResource SharedMenuFlyout}" />
                 </Border>
-                <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                <Panel Background="{DynamicResource CatalogBaseLowColor}">
                     <TextBlock Name="MenuFlyoutXamlText" Padding="15" />
                 </Panel>
             </StackPanel>
 
             <TextBlock FontSize="18" Text="Attached Flyouts" />
             <StackPanel>
-                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
                         BorderThickness="1" Padding="15">
-                    <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                    <Panel Background="{DynamicResource CatalogBaseLowColor}"
                            HorizontalAlignment="Left"
                            Height="100"
                            Name="AttachedFlyoutPanel">
@@ -70,7 +70,7 @@
 
                     </Panel>
                 </Border>
-                <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                <Panel Background="{DynamicResource CatalogBaseLowColor}">
                     <TextBlock Name="AttachedFlyoutXamlText" Padding="15" />
                 </Panel>
             </StackPanel>
@@ -78,21 +78,21 @@
 
             <TextBlock FontSize="18" Text="Sharing Flyouts" />
             <StackPanel>
-                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
                         BorderThickness="1" Padding="15">
                     <StackPanel Orientation="Horizontal" Spacing="30">
                         <Button Content="Launch Flyout on this button" Flyout="{StaticResource SharedMenuFlyout}"/>
                         <Button Content="Launch Flyout on this button" Flyout="{StaticResource SharedMenuFlyout}"/>
                     </StackPanel>
                 </Border>
-                <Panel Background="{DynamicResource SystemControlBackgroundBaseLowBrush}">
+                <Panel Background="{DynamicResource CatalogBaseLowColor}">
                     <TextBlock Name="SharedFlyoutXamlText" Padding="15" />
                 </Panel>
             </StackPanel>
 
             <TextBlock FontSize="18" Text="Flyout Placements" />
             <StackPanel>
-                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
                         BorderThickness="1" Padding="15">
                     <UniformGrid Columns="3">
                         <UniformGrid.Styles>
@@ -215,7 +215,7 @@
 
             <TextBlock FontSize="18" Text="Flyout ShowMode" />
             <StackPanel>
-                <Border BorderBrush="{DynamicResource SystemControlHighlightBaseLowBrush}"
+                <Border BorderBrush="{DynamicResource CatalogBaseLowColor}"
                         BorderThickness="1" Padding="15">
                     <WrapPanel Orientation="Horizontal">
                         <WrapPanel.Styles>

@@ -51,7 +51,7 @@ namespace Avalonia.Platform
     /// <see cref="IPopupImpl"/>.
     /// </remarks>
     [Unstable]
-    public interface ITopLevelImpl : IDisposable
+    public interface ITopLevelImpl : IOptionalFeatureProvider, IDisposable
     {
         /// <summary>
         /// Gets the client size of the toplevel.
@@ -112,11 +112,6 @@ namespace Avalonia.Platform
         IRenderer CreateRenderer(IRenderRoot root);
 
         /// <summary>
-        /// Invalidates a rect on the toplevel.
-        /// </summary>
-        void Invalidate(Rect rect);
-
-        /// <summary>
         /// Sets the <see cref="IInputRoot"/> for the toplevel.
         /// </summary>
         void SetInputRoot(IInputRoot inputRoot);
@@ -163,6 +158,12 @@ namespace Avalonia.Platform
         /// </summary>
         WindowTransparencyLevel TransparencyLevel { get; }
 
+        /// <summary>
+        /// Sets the <see cref="PlatformThemeVariant"/> on the frame if it should be dark or light.
+        /// Also applies for the mobile status bar.
+        /// </summary>
+        void SetFrameThemeVariant(PlatformThemeVariant themeVariant);
+        
         /// <summary>
         /// Gets the <see cref="AcrylicPlatformCompensationLevels"/> for the platform.        
         /// </summary>

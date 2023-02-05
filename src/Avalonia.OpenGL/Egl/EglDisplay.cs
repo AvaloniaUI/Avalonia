@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Threading;
+using Avalonia.Reactive;
 using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl
@@ -93,7 +93,7 @@ namespace Avalonia.OpenGL.Egl
 
                 var rv = new EglContext(this, _egl, share, ctx, offscreenSurface,
                     _config.Version, _config.SampleCount, _config.StencilSize,
-                    options.DisposeCallback, options.ExtraFeatures);
+                    options.DisposeCallback, options.ExtraFeatures ?? new());
                 _contexts.Add(rv);
                 return rv;
             }

@@ -8,7 +8,7 @@ using Avalonia.Collections;
 
 namespace Avalonia.Diagnostics.ViewModels
 {
-    internal abstract class TreeNodeCollection : IAvaloniaReadOnlyList<TreeNode>, IDisposable
+    internal abstract class TreeNodeCollection : IAvaloniaReadOnlyList<TreeNode>, IList, IDisposable
     {
         private class EmptyTreeNodeCollection : TreeNodeCollection
         {
@@ -33,6 +33,16 @@ namespace Avalonia.Diagnostics.ViewModels
         public int Count => EnsureInitialized().Count;
 
         protected TreeNode Owner { get; }
+        bool IList.IsFixedSize => false;
+        bool IList.IsReadOnly => true;
+        bool ICollection.IsSynchronized => false;
+        object ICollection.SyncRoot => this;
+
+        object? IList.this[int index] 
+        {
+            get => this[index];
+            set => throw new NotImplementedException();
+        }
 
         public event NotifyCollectionChangedEventHandler? CollectionChanged
         {
@@ -75,5 +85,14 @@ namespace Avalonia.Diagnostics.ViewModels
             }
             return _inner;
         }
+
+        int IList.Add(object? value) => throw new NotImplementedException();
+        void IList.Clear() => throw new NotImplementedException();
+        bool IList.Contains(object? value) => EnsureInitialized().Contains((TreeNode)value!);
+        int IList.IndexOf(object? value) => EnsureInitialized().IndexOf((TreeNode)value!);
+        void IList.Insert(int index, object? value) => throw new NotImplementedException();
+        void IList.Remove(object? value) => throw new NotImplementedException();
+        void IList.RemoveAt(int index) => throw new NotImplementedException();
+        void ICollection.CopyTo(Array array, int index) => throw new NotImplementedException();
     }
 }

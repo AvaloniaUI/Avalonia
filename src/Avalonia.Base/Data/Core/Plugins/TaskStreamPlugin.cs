@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
+using Avalonia.Reactive;
 
 namespace Avalonia.Data.Core.Plugins
 {
@@ -11,7 +10,7 @@ namespace Avalonia.Data.Core.Plugins
     /// Handles binding to <see cref="Task"/>s for the '^' stream binding operator.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL3050", Justification = TrimmingMessages.IgnoreNativeAotSupressWarningMessage)]
-    public class TaskStreamPlugin : IStreamPlugin
+    internal class TaskStreamPlugin : IStreamPlugin
     {
         /// <summary>
         /// Checks whether this plugin handles the specified value.
@@ -50,7 +49,7 @@ namespace Avalonia.Data.Core.Plugins
                         case TaskStatus.Faulted:
                             return HandleCompleted(task);
                         default:
-                            var subject = new Subject<object?>();
+                            var subject = new LightweightSubject<object?>();
                             task.ContinueWith(
                                     x => HandleCompleted(task).Subscribe(subject),
                                     TaskScheduler.FromCurrentSynchronizationContext())

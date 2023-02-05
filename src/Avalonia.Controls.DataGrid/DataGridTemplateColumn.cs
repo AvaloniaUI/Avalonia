@@ -24,6 +24,7 @@ namespace Avalonia.Controls
                 (o, v) => o.CellTemplate = v);
 
         [Content]
+        [InheritDataTypeFromItems(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
         public IDataTemplate CellTemplate
         {
             get { return _cellTemplate; }
@@ -50,22 +51,31 @@ namespace Avalonia.Controls
         /// <remarks>
         /// If this property is <see langword="null"/> the column is read-only.
         /// </remarks>
+        [InheritDataTypeFromItems(nameof(DataGrid.Items), AncestorType = typeof(DataGrid))]
         public IDataTemplate CellEditingTemplate
         {
             get => _cellEditingCellTemplate;
             set => SetAndRaise(CellEditingTemplateProperty, ref _cellEditingCellTemplate, value);
         }
-        
-        private static void OnCellTemplateChanged(AvaloniaPropertyChangedEventArgs e)
+
+        private bool _forceGenerateCellFromTemplate;
+
+        protected override void EndCellEdit()
         {
-            var oldValue = (IDataTemplate)e.OldValue;
-            var value = (IDataTemplate)e.NewValue;
+            //the next call to generate element should not resuse the current content as we need to exit edit mode
+            _forceGenerateCellFromTemplate = true;
+            base.EndCellEdit();
         }
 
         protected override Control GenerateElement(DataGridCell cell, object dataItem)
         {
             if (CellTemplate != null)
             {
+                if (_forceGenerateCellFromTemplate)
+                {
+                    _forceGenerateCellFromTemplate = false;
+                    return CellTemplate.Build(dataItem);
+                }
                 return (CellTemplate is IRecyclingDataTemplate recyclingDataTemplate)
                     ? recyclingDataTemplate.Build(dataItem, cell.Content as Control)
                     : CellTemplate.Build(dataItem);

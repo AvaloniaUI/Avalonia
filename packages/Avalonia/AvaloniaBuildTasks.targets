@@ -48,8 +48,12 @@
   </PropertyGroup>
 
   <Target Name="_GenerateAvaloniaResourcesDependencyCache" BeforeTargets="GenerateAvaloniaResources">
+    <PropertyGroup>
+      <_AvaloniaResourcesInputsCacheFilePath>$(IntermediateOutputPath)/Avalonia/Resources.Inputs.cache</_AvaloniaResourcesInputsCacheFilePath>
+    </PropertyGroup>
+
     <ItemGroup>
-      <CustomAdditionalGenerateAvaloniaResourcesInputs Include="$(IntermediateOutputPath)/Avalonia/Resources.Inputs.cache" />
+      <CustomAdditionalGenerateAvaloniaResourcesInputs Include="$(_AvaloniaResourcesInputsCacheFilePath)" />
     </ItemGroup>
     
     <Hash ItemsToHash="@(AvaloniaResource);@(AvaloniaXaml);$(MSBuildAllProjects)">
@@ -57,7 +61,11 @@
     </Hash>
 
     <MakeDir Directories="$(IntermediateOutputPath)/Avalonia" />
-    <WriteLinesToFile Overwrite="true" File="$(IntermediateOutputPath)/Avalonia/Resources.Inputs.cache" Lines="$(AvaloniaResourcesDependencyHash)" WriteOnlyWhenDifferent="True" />
+    <WriteLinesToFile Overwrite="true" File="$(_AvaloniaResourcesInputsCacheFilePath)" Lines="$(AvaloniaResourcesDependencyHash)" WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_AvaloniaResourcesInputsCacheFilePath)" />
+    </ItemGroup>
   </Target>
   
   <Target Name="GenerateAvaloniaResources" 
@@ -68,7 +76,7 @@
           Condition="('@(AvaloniaResource->Count())' &gt; 0) or ('@(AvaloniaXaml->Count())' &gt; 0)"
           >
     <ItemGroup>
-        <AvaloniaResource Include="@(AvaloniaXaml)"/>
+      <AvaloniaResource Include="@(AvaloniaXaml)" />
     </ItemGroup>
     <GenerateAvaloniaResourcesTask
       Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
@@ -76,6 +84,9 @@
       Root="$(MSBuildProjectDirectory)"
       Resources="@(AvaloniaResource)"
       ReportImportance="$(AvaloniaXamlReportImportance)"/>
+    <ItemGroup Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'">
+      <FileWrites Include="$(AvaloniaResourcesTemporaryFilePath)" />
+    </ItemGroup>
     <Exec 
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
       Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:GenerateAvaloniaResources /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>
@@ -103,6 +114,9 @@
       File="$(AvaloniaXamlReferencesTemporaryFilePath)"
       Lines="@(ReferencePathWithRefAssemblies)"
       Overwrite="true" />
+    <ItemGroup Condition="'$(_AvaloniaForceInternalMSBuild)' != 'true'">
+      <FileWrites Include="$(AvaloniaXamlReferencesTemporaryFilePath)" />
+    </ItemGroup>
     <CompileAvaloniaXamlTask
       Condition="'$(_AvaloniaUseExternalMSBuild)' != 'true'"
       AssemblyFile="@(IntermediateAssembly)"
@@ -117,8 +131,9 @@
       DelaySign="$(DelaySign)"
       SkipXamlCompilation="$(_AvaloniaSkipXamlCompilation)"
       DebuggerLaunch="$(AvaloniaXamlIlDebuggerLaunch)"
-      DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)"
-    />
+      DefaultCompileBindings="$(AvaloniaUseCompiledBindingsByDefault)">
+      <Output TaskParameter="WrittenFilePaths" ItemName="FileWrites" />
+    </CompileAvaloniaXamlTask>
     <Exec
       Condition="'$(_AvaloniaUseExternalMSBuild)' == 'true'"
       Command="dotnet msbuild /nodereuse:false $(MSBuildProjectFile) /t:CompileAvaloniaXaml /p:_AvaloniaForceInternalMSBuild=true /p:Configuration=$(Configuration) /p:TargetFramework=$(TargetFramework) /p:RuntimeIdentifier=$(RuntimeIdentifier) /p:BuildProjectReferences=false"/>

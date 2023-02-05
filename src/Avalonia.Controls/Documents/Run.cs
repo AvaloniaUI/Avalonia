@@ -54,6 +54,11 @@ namespace Avalonia.Controls.Documents
         {
             var text = Text ?? "";
 
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
             var textRunProperties = CreateTextRunProperties();           
 
             var textCharacters = new TextCharacters(text, textRunProperties);

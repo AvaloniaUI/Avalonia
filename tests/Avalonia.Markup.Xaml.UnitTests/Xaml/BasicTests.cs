@@ -59,7 +59,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void Attached_Property_Is_Set_On_Control_Outside_Avalonia_Namspace()
+        public void Attached_Property_Is_Set_On_Control_Outside_Avalonia_Namespace()
         {
             // Test for issue #1548
             var xaml =
@@ -448,13 +448,13 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
 
             Assert.True(style.Resources.Count > 0);
 
-            style.TryGetResource("Brush", out var brush);
+            style.TryGetResource("Brush", null, out var brush);
 
             Assert.NotNull(brush);
             Assert.IsAssignableFrom<ISolidColorBrush>(brush);
             Assert.Equal(Colors.White, ((ISolidColorBrush)brush).Color);
 
-            style.TryGetResource("Double", out var d);
+            style.TryGetResource("Double", null, out var d);
 
             Assert.Equal(10.0, d);
         }
@@ -729,7 +729,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.Xaml
         }
 
         [Fact]
-        public void DeferedXamlLoader_Should_Preserve_NamespacesContext()
+        public void DeferredXamlLoader_Should_Preserve_NamespacesContext()
         {
             var xaml =
 @"<ContentControl xmlns='https://github.com/avaloniaui'

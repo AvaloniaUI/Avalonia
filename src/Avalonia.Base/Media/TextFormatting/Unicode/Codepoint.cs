@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Runtime.CompilerServices;
 
 namespace Avalonia.Media.TextFormatting.Unicode
@@ -10,12 +10,18 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <summary>
         /// The replacement codepoint that is used for non supported values.
         /// </summary>
-        public static readonly Codepoint ReplacementCodepoint = new Codepoint('\uFFFD');
-
-        public Codepoint(uint value)
+        public static Codepoint ReplacementCodepoint
         {
-            _value = value;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => new('\uFFFD');
         }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="Codepoint"/> with the specified value.
+        /// </summary>
+        /// <param name="value">The codepoint value.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Codepoint(uint value) => _value = value;
 
         /// <summary>
         /// Get the codepoint's value.
@@ -86,19 +92,17 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// </returns>
         public bool IsWhiteSpace
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                switch (GeneralCategory)
-                {
-                    case GeneralCategory.Control:
-                    case GeneralCategory.NonspacingMark:
-                    case GeneralCategory.Format:
-                    case GeneralCategory.SpaceSeparator:
-                    case GeneralCategory.SpacingMark:
-                        return true;
-                }
+                const ulong whiteSpaceMask =
+                    (1UL << (int)GeneralCategory.Control) |
+                    (1UL << (int)GeneralCategory.NonspacingMark) |
+                    (1UL << (int)GeneralCategory.Format) |
+                    (1UL << (int)GeneralCategory.SpaceSeparator) |
+                    (1UL << (int)GeneralCategory.SpacingMark);
 
-                return false;
+                return ((1UL << (int)GeneralCategory) & whiteSpaceMask) != 0UL;
             }
         }
         
@@ -165,56 +169,62 @@ namespace Avalonia.Media.TextFormatting.Unicode
         /// <param name="index">The index to read at.</param>
         /// <param name="count">The count of character that were read.</param>
         /// <returns></returns>
-        public static Codepoint ReadAt(IReadOnlyList<char> text, int index, out int count)
+#if NET6_0_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public static Codepoint ReadAt(ReadOnlySpan<char> text, int index, out int count)
         {
+            // Perf note: this method is performance critical for text layout, modify with care!
+
             count = 1;
 
-            if (index >= text.Count)
+            // Perf note: uint check allows the JIT to ellide the next bound check
+            if ((uint)index >= (uint)text.Length)
             {
                 return ReplacementCodepoint;
             }
 
-            var code = text[index];
+            uint code = text[index];
 
-            ushort hi, low;
-
-            //# High surrogate
-            if (0xD800 <= code && code <= 0xDBFF)
+            //# Surrogate
+            if (IsInRangeInclusive(code, 0xD800U, 0xDFFFU))
             {
-                hi = code;
+                uint hi, low;
 
-                if (index + 1 == text.Count)
+                //# High surrogate
+                if (code <= 0xDBFF)
                 {
-                    return ReplacementCodepoint;
+                    if ((uint)(index + 1) < (uint)text.Length)
+                    {
+                        hi = code;
+                        low = text[index + 1];
+
+                        if (IsInRangeInclusive(low, 0xDC00U, 0xDFFFU))
+                        {
+                            count = 2;
+                            // Perf note: the code is written as below to become just two instructions: shl, lea.
+                            // See https://github.com/dotnet/runtime/blob/7ec3634ee579d89b6024f72b595bfd7118093fc5/src/libraries/System.Private.CoreLib/src/System/Text/UnicodeUtility.cs#L38
+                            return new Codepoint((hi << 10) + low - ((0xD800U << 10) + 0xDC00U - (1 << 16)));
+                        }
+                    }
                 }
 
-                low = text[index + 1];
-
-                if (0xDC00 <= low && low <= 0xDFFF)
+                //# Low surrogate
+                else
                 {
-                    count = 2;
-                    return new Codepoint((uint)((hi - 0xD800) * 0x400 + (low - 0xDC00) + 0x10000));
-                }
+                    if (index > 0)
+                    {
+                        low = code;
+                        hi = text[index - 1];
 
-                return ReplacementCodepoint;
-            }
-
-            //# Low surrogate
-            if (0xDC00 <= code && code <= 0xDFFF)
-            {
-                if (index == 0)
-                {
-                    return ReplacementCodepoint;
-                }
-
-                hi = text[index - 1];
-
-                low = code;
-
-                if (0xD800 <= hi && hi <= 0xDBFF)
-                {
-                    count = 2;
-                    return new Codepoint((uint)((hi - 0xD800) * 0x400 + (low - 0xDC00) + 0x10000));
+                        if (IsInRangeInclusive(hi, 0xD800U, 0xDBFFU))
+                        {
+                            count = 2;
+                            return new Codepoint((hi << 10) + low - ((0xD800U << 10) + 0xDC00U - (1 << 16)));
+                        }
+                    }
                 }
 
                 return ReplacementCodepoint;
@@ -223,12 +233,16 @@ namespace Avalonia.Media.TextFormatting.Unicode
             return new Codepoint(code);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsInRangeInclusive(uint value, uint lowerBound, uint upperBound)
+            => value - lowerBound <= upperBound - lowerBound;
+
         /// <summary>
         /// Returns <see langword="true"/> if <paramref name="cp"/> is between
         /// <paramref name="lowerBound"/> and <paramref name="upperBound"/>, inclusive.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInRangeInclusive(Codepoint cp, uint lowerBound, uint upperBound)
-            => (cp._value - lowerBound) <= (upperBound - lowerBound);
+            => IsInRangeInclusive(cp._value, lowerBound, upperBound);
     }
 }

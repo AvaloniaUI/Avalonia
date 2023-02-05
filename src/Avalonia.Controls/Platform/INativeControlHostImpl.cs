@@ -29,10 +29,4 @@ namespace Avalonia.Controls.Platform
         void HideWithSize(Size size);
         void ShowInBounds(Rect rect);
     }
-
-    [Unstable]
-    public interface ITopLevelImplWithNativeControlHost
-    {
-        INativeControlHostImpl? NativeControlHost { get; }
-    }
 }

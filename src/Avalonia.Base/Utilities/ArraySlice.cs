@@ -17,7 +17,6 @@ namespace Avalonia.Utilities
     /// </summary>
     /// <typeparam name="T">The type of item contained in the slice.</typeparam>
     internal readonly struct ArraySlice<T> : IReadOnlyList<T>
-        where T : struct
     {
         /// <summary>
         /// Gets an empty <see cref="ArraySlice{T}"/>
@@ -187,3 +186,4 @@ namespace Avalonia.Utilities
         int IReadOnlyCollection<T>.Count => Length;
     }
 }
+

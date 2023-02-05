@@ -9,7 +9,7 @@ namespace Avalonia.Dialogs.Internal
     {
         public object Convert(object key, Type targetType, object parameter, CultureInfo culture)
         {
-            TryGetResource((string)key, out var value);
+            TryGetResource((string)key, null, out var value);
             return value;
         }
 

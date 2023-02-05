@@ -89,9 +89,8 @@ namespace Avalonia.Direct2D1.RenderTests
             }
 
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
-            var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
             var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
-            var factory = AvaloniaLocator.Current.GetService<IPlatformRenderInterface>();
+            var factory = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
             var pixelSize = new PixelSize((int)target.Width, (int)target.Height);
             var size = new Size(target.Width, target.Height);
             var dpiVector = new Vector(dpi, dpi);
@@ -104,22 +103,6 @@ namespace Avalonia.Direct2D1.RenderTests
                 bitmap.Save(immediatePath);
             }
             
-            
-            using (var rtb = factory.CreateRenderTargetBitmap(pixelSize, dpiVector))
-            using (var renderer = new DeferredRenderer(target, rtb))
-            {
-                target.Measure(size);
-                target.Arrange(new Rect(size));
-                renderer.UnitTestUpdateScene();
-
-                // Do the deferred render on a background thread to expose any threading errors in
-                // the deferred rendering path.
-                await Task.Run((Action)renderer.UnitTestRender);
-                threadingInterface.MainThread = Thread.CurrentThread;
-
-                rtb.Save(deferredPath);
-            }
-
             var timer = new ManualRenderTimer();
 
             var compositor = new Compositor(new RenderLoop(timer, Dispatcher.UIThread), null);
@@ -156,42 +139,35 @@ namespace Avalonia.Direct2D1.RenderTests
             public ILockedFramebuffer Lock() => _bitmap.Lock();
         }
 
-        protected void CompareImages([CallerMemberName] string testName = "")
+        protected void CompareImages([CallerMemberName] string testName = "",
+            bool skipImmediate = false,  bool skipCompositor = false)
         {
             var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
             var immediatePath = Path.Combine(OutputPath, testName + ".immediate.out.png");
-            var deferredPath = Path.Combine(OutputPath, testName + ".deferred.out.png");
             var compositedPath = Path.Combine(OutputPath, testName + ".composited.out.png");
 
             using (var expected = Image.Load<Rgba32>(expectedPath))
             using (var immediate = Image.Load<Rgba32>(immediatePath))
-            using (var deferred = Image.Load<Rgba32>(deferredPath))
             using (var composited = Image.Load<Rgba32>(compositedPath))
             {
                 var immediateError = CompareImages(immediate, expected);
-                var deferredError = CompareImages(deferred, expected);
                 var compositedError = CompareImages(composited, expected);
 
-                if (immediateError > 0.022)
+                if (immediateError > 0.022 && !skipImmediate)
                 {
                     Assert.True(false, immediatePath + ": Error = " + immediateError);
                 }
 
-                if (deferredError > 0.022)
-                {
-                    Assert.True(false, deferredPath + ": Error = " + deferredError);
-                }
-                
-                if (compositedError > 0.022)
+                if (compositedError > 0.022 && !skipCompositor)
                 {
                     Assert.True(false, compositedPath + ": Error = " + compositedError);
                 }
             }
         }
 
-        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "")
+        protected void CompareImagesNoRenderer([CallerMemberName] string testName = "", string expectedName = null)
         {
-            var expectedPath = Path.Combine(OutputPath, testName + ".expected.png");
+            var expectedPath = Path.Combine(OutputPath, (expectedName ?? testName) + ".expected.png");
             var actualPath = Path.Combine(OutputPath, testName + ".out.png");
 
             using (var expected = Image.Load<Rgba32>(expectedPath))

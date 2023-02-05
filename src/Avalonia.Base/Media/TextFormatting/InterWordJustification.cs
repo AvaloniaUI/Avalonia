@@ -15,9 +15,7 @@ namespace Avalonia.Media.TextFormatting
 
         public override void Justify(TextLine textLine)
         {
-            var lineImpl = textLine as TextLineImpl;
-
-            if(lineImpl is null)
+            if (textLine is not TextLineImpl lineImpl)
             {
                 return;
             }
@@ -34,35 +32,29 @@ namespace Avalonia.Media.TextFormatting
                 return;
             }
 
-            var textLineBreak = lineImpl.TextLineBreak;
-
-            if (textLineBreak is not null && textLineBreak.TextEndOfLine is not null)
+            if (lineImpl.TextLineBreak is { TextEndOfLine: not null, IsSplit: false })
             {
-                if (textLineBreak.RemainingRuns is null || textLineBreak.RemainingRuns.Count == 0)
-                {
-                    return;
-                }
+                return;
             }
 
             var breakOportunities = new Queue<int>();
 
             var currentPosition = textLine.FirstTextSourceIndex;
 
-            foreach (var textRun in lineImpl.TextRuns)
+            for (var i = 0; i < lineImpl.TextRuns.Count; ++i)
             {
-                var text = new CharacterBufferRange(textRun);
+                var textRun = lineImpl.TextRuns[i];
+                var text = textRun.Text;
 
                 if (text.IsEmpty)
                 {
                     continue;
                 }
 
-                var lineBreakEnumerator = new LineBreakEnumerator(text);
+                var lineBreakEnumerator = new LineBreakEnumerator(text.Span);
 
-                while (lineBreakEnumerator.MoveNext())
+                while (lineBreakEnumerator.MoveNext(out var currentBreak))
                 {
-                    var currentBreak = lineBreakEnumerator.Current;
-
                     if (!currentBreak.Required && currentBreak.PositionWrap != textRun.Length)
                     {
                         breakOportunities.Enqueue(currentPosition + currentBreak.PositionMeasure);
@@ -84,14 +76,14 @@ namespace Avalonia.Media.TextFormatting
 
             foreach (var textRun in lineImpl.TextRuns)
             {
-                var text = textRun.CharacterBufferReference.CharacterBuffer;
+                var text = textRun.Text;
 
                 if (text.IsEmpty)
                 {
                     continue;
                 }
 
-                if (textRun is ShapedTextCharacters shapedText)
+                if (textRun is ShapedTextRun shapedText)
                 {
                     var glyphRun = shapedText.GlyphRun;
                     var shapedBuffer = shapedText.ShapedBuffer;
@@ -108,10 +100,11 @@ namespace Avalonia.Media.TextFormatting
                         var glyphIndex = glyphRun.FindGlyphIndex(characterIndex);
                         var glyphInfo = shapedBuffer.GlyphInfos[glyphIndex];
 
-                        shapedBuffer.GlyphInfos[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex, glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
+                        shapedBuffer.GlyphInfos[glyphIndex] = new GlyphInfo(glyphInfo.GlyphIndex,
+                            glyphInfo.GlyphCluster, glyphInfo.GlyphAdvance + spacing);
                     }
 
-                    glyphRun.GlyphAdvances = shapedBuffer.GlyphAdvances;
+                    glyphRun.GlyphInfos = shapedBuffer.GlyphInfos;
                 }
 
                 currentPosition += textRun.Length;

@@ -1,10 +1,11 @@
 ﻿using System;
 using Avalonia.Data.Core;
 using Avalonia.LogicalTree;
+using Avalonia.Reactive;
 
 namespace Avalonia.Markup.Parsers.Nodes
 {
-    public class FindAncestorNode : ExpressionNode
+    internal class FindAncestorNode : ExpressionNode
     {
         private readonly int _level;
         private readonly Type? _ancestorType;

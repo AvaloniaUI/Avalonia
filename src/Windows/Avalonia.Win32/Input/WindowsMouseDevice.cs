@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.VisualTree;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32.Input
@@ -34,7 +33,7 @@ namespace Avalonia.Win32.Input
 
             protected override void PlatformCapture(IInputElement element)
             {
-                var hwnd = (((element as Visual)?.GetVisualRoot() as TopLevel)?.PlatformImpl as WindowImpl)
+                var hwnd = (TopLevel.GetTopLevel(element as Visual)?.PlatformImpl as WindowImpl)
                     ?.Handle.Handle;
 
                 if (hwnd.HasValue && hwnd != IntPtr.Zero)

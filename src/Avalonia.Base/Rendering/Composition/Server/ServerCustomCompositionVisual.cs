@@ -16,9 +16,9 @@ internal class ServerCompositionCustomVisual : ServerCompositionContainerVisual,
         _handler.Attach(this);
     }
 
-    protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan commitedAt)
+    protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
-        base.DeserializeChangesCore(reader, commitedAt);
+        base.DeserializeChangesCore(reader, committedAt);
         var count = reader.Read<int>();
         for (var c = 0; c < count; c++)
         {

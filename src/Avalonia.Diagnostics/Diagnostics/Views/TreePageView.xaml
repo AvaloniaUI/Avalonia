@@ -11,7 +11,9 @@
       <TreeView.DataTemplates>
         <TreeDataTemplate DataType="vm:TreeNode"
                           ItemsSource="{Binding Children}">
-          <StackPanel Orientation="Horizontal" Spacing="8">
+          <StackPanel Orientation="Horizontal" Spacing="8"
+                      PointerEntered="AddAdorner"
+                      PointerExited="RemoveAdorner">
             <TextBlock Text="{Binding Type}" FontWeight="{Binding FontWeight}"/>
             <TextBlock Text="{Binding Classes}"/>
             <TextBlock Foreground="Gray" Text="{Binding ElementName}"/>

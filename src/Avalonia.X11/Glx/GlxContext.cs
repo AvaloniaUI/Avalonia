@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Disposables;
 using System.Threading;
 using Avalonia.OpenGL;
+using Avalonia.OpenGL.Features;
+using Avalonia.Reactive;
+
 namespace Avalonia.X11.Glx
 {
     class GlxContext : IGlContext
@@ -14,6 +16,7 @@ namespace Avalonia.X11.Glx
         private readonly IntPtr _defaultXid;
         private readonly bool _ownsPBuffer;
         private readonly object _lock = new object();
+        private ExternalObjectsOpenGlExtensionFeature? _externalObjects;
 
         public GlxContext(GlxInterface glx, IntPtr handle, GlxDisplay display,
             GlxContext sharedWith,
@@ -32,7 +35,10 @@ namespace Avalonia.X11.Glx
             SampleCount = sampleCount;
             StencilSize = stencilSize;
             using (MakeCurrent())
+            {
                 GlInterface = new GlInterface(version, GlxInterface.SafeGetProcAddress);
+                _externalObjects = ExternalObjectsOpenGlExtensionFeature.TryCreate(this);
+            }
         }
         
         public GlxDisplay Display { get; }
@@ -123,6 +129,11 @@ namespace Avalonia.X11.Glx
                 Glx.DestroyPbuffer(_x11.Display, _defaultXid);
         }
 
-        public object TryGetFeature(Type featureType) => null;
+        public object TryGetFeature(Type featureType)
+        {
+            if (featureType == typeof(IGlContextExternalObjectsFeature))
+                return _externalObjects;
+            return null;
+        }
     }
 }

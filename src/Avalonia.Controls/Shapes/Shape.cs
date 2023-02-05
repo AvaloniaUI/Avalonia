@@ -2,6 +2,7 @@ using System;
 using Avalonia.Collections;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Reactive;
 
 namespace Avalonia.Controls.Shapes
 {

@@ -27,6 +27,9 @@ namespace Avalonia.OpenGL
             return GetFormattedException(funcName, (GlErrors)err, err);
         }
 
+        public static OpenGlException GetFormattedException(string funcName, int errorCode) =>
+            GetFormattedException(funcName, (GlErrors)errorCode, errorCode);
+
         public static OpenGlException GetFormattedEglException(string funcName, int errorCode) =>
             GetFormattedException(funcName, (EglErrors)errorCode,errorCode);
 

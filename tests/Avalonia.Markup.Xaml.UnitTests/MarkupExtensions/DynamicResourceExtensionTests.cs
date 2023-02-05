@@ -938,7 +938,7 @@ namespace Avalonia.Markup.Xaml.UnitTests.MarkupExtensions
         public void AddOwner(IResourceHost owner) => Owner = owner;
         public void RemoveOwner(IResourceHost owner) => Owner = null;
 
-        public bool TryGetResource(object key, out object value)
+        public bool TryGetResource(object key, ThemeVariant themeVariant, out object value)
         {
             RequestedResources.Add(key);
             value = key;

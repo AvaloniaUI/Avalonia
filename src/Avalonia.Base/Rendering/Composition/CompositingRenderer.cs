@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Collections.Pooled;
 using Avalonia.Media;
-using Avalonia.Rendering.Composition.Drawing;
-using Avalonia.Rendering.Composition.Server;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 // Special license applies <see href="https://raw.githubusercontent.com/AvaloniaUI/Avalonia/master/src/Avalonia.Base/Rendering/Composition/License.md">License.md</see>
@@ -28,7 +25,7 @@ public class CompositingRenderer : IRendererWithCompositor
     private HashSet<Visual> _dirty = new();
     private HashSet<Visual> _recalculateChildren = new();
     private bool _queuedUpdate;
-    private Action<Task> _update;
+    private Action _update;
     private bool _updating;
 
     internal CompositionTarget CompositionTarget;
@@ -38,6 +35,9 @@ public class CompositingRenderer : IRendererWithCompositor
     /// </summary>
     public bool RenderOnlyOnRenderThread { get; set; } = true;
 
+    /// <inheritdoc/>
+    public RendererDiagnostics Diagnostics { get; }
+
     public CompositingRenderer(IRenderRoot root, Compositor compositor, Func<IEnumerable<object>> surfaces)
     {
         _root = root;
@@ -46,20 +46,21 @@ public class CompositingRenderer : IRendererWithCompositor
         CompositionTarget = compositor.CreateCompositionTarget(surfaces);
         CompositionTarget.Root = ((Visual)root).AttachToCompositor(compositor);
         _update = Update;
+        Diagnostics = new RendererDiagnostics();
+        Diagnostics.PropertyChanged += OnDiagnosticsPropertyChanged;
     }
 
-    /// <inheritdoc/>
-    public bool DrawFps
+    private void OnDiagnosticsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        get => CompositionTarget.DrawFps;
-        set => CompositionTarget.DrawFps = value;
-    }
-    
-    /// <inheritdoc/>
-    public bool DrawDirtyRects
-    {
-        get => CompositionTarget.DrawDirtyRects;
-        set => CompositionTarget.DrawDirtyRects = value;
+        switch (e.PropertyName)
+        {
+            case nameof(RendererDiagnostics.DebugOverlays):
+                CompositionTarget.DebugOverlays = Diagnostics.DebugOverlays;
+                break;
+            case nameof(RendererDiagnostics.LastLayoutPassTiming):
+                CompositionTarget.LastLayoutPassTiming = Diagnostics.LastLayoutPassTiming;
+                break;
+        }
     }
 
     /// <inheritdoc/>
@@ -70,7 +71,7 @@ public class CompositingRenderer : IRendererWithCompositor
         if(_queuedUpdate)
             return;
         _queuedUpdate = true;
-        _compositor.InvokeBeforeNextCommit(_update);
+        _compositor.RequestCompositionUpdate(_update);
     }
     
     /// <inheritdoc/>
@@ -83,8 +84,16 @@ public class CompositingRenderer : IRendererWithCompositor
     }
 
     /// <inheritdoc/>
-    public IEnumerable<Visual> HitTest(Point p, Visual root, Func<Visual, bool>? filter)
+    public IEnumerable<Visual> HitTest(Point p, Visual? root, Func<Visual, bool>? filter)
     {
+        CompositionVisual? rootVisual = null;
+        if (root != null)
+        {
+            if (root.CompositionVisual == null)
+                yield break;
+            rootVisual = root.CompositionVisual;
+        }
+        
         Func<CompositionVisual, bool>? f = null;
         if (filter != null)
             f = v =>
@@ -93,8 +102,8 @@ public class CompositingRenderer : IRendererWithCompositor
                     return filter(dlv.Visual);
                 return true;
             };
-        
-        var res = CompositionTarget.TryHitTest(p, f);
+
+        var res = CompositionTarget.TryHitTest(p, rootVisual, f);
         if(res == null)
             yield break;
         foreach(var v in res)
@@ -257,6 +266,7 @@ public class CompositingRenderer : IRendererWithCompositor
         _recalculateChildren.Clear();
         CompositionTarget.Size = _root.ClientSize;
         CompositionTarget.Scaling = _root.RenderScaling;
+        TriggerSceneInvalidatedOnBatchCompletion(_compositor.RequestCommitAsync());
     }
 
     private async void TriggerSceneInvalidatedOnBatchCompletion(Task batchCompletion)
@@ -265,7 +275,7 @@ public class CompositingRenderer : IRendererWithCompositor
         SceneInvalidated?.Invoke(this, new SceneInvalidatedEventArgs(_root, new Rect(_root.ClientSize)));
     }
     
-    private void Update(Task batchCompletion)
+    private void Update()
     {
         if(_updating)
             return;

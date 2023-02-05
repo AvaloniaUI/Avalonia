@@ -30,7 +30,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null).Observable;
+            var observable = binding.Initiate(target, null).Source;
             var result = await observable.Take(1);
 
             Assert.Equal("1,2,3", result);
@@ -59,7 +59,7 @@ namespace Avalonia.Markup.UnitTests.Data
             };
 
             var target = new Control { DataContext = source };
-            var observable = binding.Initiate(target, null).Observable;
+            var observable = binding.Initiate(target, null).Source;
             var result = await observable.Take(1);
 
             Assert.Equal("1,2,3", result);
@@ -84,6 +84,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Bind(TextBlock.TextProperty, binding);
 
+            Assert.NotNull(target.Text);
             Assert.Equal("fallback", target.Text);
         }
 
@@ -106,6 +107,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Bind(TextBlock.TextProperty, binding);
 
+            Assert.NotNull(target.Text);
             Assert.Equal("(null)", target.Text);
         }
 
@@ -128,6 +130,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Bind(TextBlock.TextProperty, binding);
 
+            Assert.NotNull(target.Text);
             Assert.Equal("1,2,(unset)", target.Text);
         }
 
@@ -150,6 +153,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
             target.Bind(TextBlock.TextProperty, binding);
 
+            Assert.NotNull(target.Text);
             Assert.Equal("1,2,Fallback", target.Text);
         }
 

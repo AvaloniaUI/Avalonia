@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Reactive.Concurrency;
-using System.Threading;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Input.Raw;
@@ -30,7 +29,7 @@ namespace Avalonia
     /// method.
     /// - Tracks the lifetime of the application.
     /// </remarks>
-    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IResourceHost, IApplicationPlatformEvents
+    public class Application : AvaloniaObject, IDataContextProvider, IGlobalDataTemplates, IGlobalStyles, IGlobalThemeVariantProvider, IApplicationPlatformEvents
     {
         /// <summary>
         /// The application-global data templates.
@@ -51,10 +50,22 @@ namespace Avalonia
         public static readonly StyledProperty<object?> DataContextProperty =
             StyledElement.DataContextProperty.AddOwner<Application>();
 
+        /// <inheritdoc cref="StyledElement.ActualThemeVariantProperty" />
+        public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
+            StyledElement.ActualThemeVariantProperty.AddOwner<Application>();
+        
+        /// <inheritdoc cref="StyledElement.RequestedThemeVariantProperty" />
+        public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
+            StyledElement.RequestedThemeVariantProperty.AddOwner<Application>();
+
         /// <inheritdoc/>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
-        public event EventHandler<UrlOpenedEventArgs>? UrlsOpened; 
+        /// <inheritdoc/>
+        public event EventHandler<UrlOpenedEventArgs>? UrlsOpened;
+
+        /// <inheritdoc/>
+        public event EventHandler? ActualThemeVariantChanged;
 
         /// <summary>
         /// Creates an instance of the <see cref="Application"/> class.
@@ -76,6 +87,19 @@ namespace Avalonia
             get { return GetValue(DataContextProperty); }
             set { SetValue(DataContextProperty, value); }
         }
+
+        /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariant"/>
+        public ThemeVariant? RequestedThemeVariant
+        {
+            get => GetValue(RequestedThemeVariantProperty);
+            set => SetValue(RequestedThemeVariantProperty, value);
+        }
+        
+        /// <inheritdoc cref="StyledElement.ActualThemeVariant"/>
+        public ThemeVariant ActualThemeVariant
+        {
+            get => GetValue(ActualThemeVariantProperty);
+        } 
 
         /// <summary>
         /// Gets the current instance of the <see cref="Application"/> class.
@@ -193,11 +217,11 @@ namespace Avalonia
         public virtual void Initialize() { }
 
         /// <inheritdoc/>
-        bool IResourceNode.TryGetResource(object key, out object? value)
+        public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
         {
             value = null;
-            return (_resources?.TryGetResource(key, out value) ?? false) ||
-                   Styles.TryGetResource(key, out value);
+            return (_resources?.TryGetResource(key, theme, out value) ?? false) ||
+                   Styles.TryGetResource(key, theme, out value);
         }
 
         void IResourceHost.NotifyHostedResourcesChanged(ResourcesChangedEventArgs e)
@@ -224,14 +248,18 @@ namespace Avalonia
             FocusManager = new FocusManager();
             InputManager = new InputManager();
 
+            var settings = AvaloniaLocator.Current.GetRequiredService<IPlatformSettings>();
+            settings.ColorValuesChanged += OnColorValuesChanged;
+            OnColorValuesChanged(settings, settings.GetColorValues());
+            
             AvaloniaLocator.CurrentMutable
                 .Bind<IAccessKeyHandler>().ToTransient<AccessKeyHandler>()
                 .Bind<IGlobalDataTemplates>().ToConstant(this)
                 .Bind<IGlobalStyles>().ToConstant(this)
+                .Bind<IGlobalThemeVariantProvider>().ToConstant(this)
                 .Bind<IFocusManager>().ToConstant(FocusManager)
                 .Bind<IInputManager>().ToConstant(InputManager)
                 .Bind<IKeyboardNavigationHandler>().ToTransient<KeyboardNavigationHandler>()
-                .Bind<IScheduler>().ToConstant(AvaloniaScheduler.Instance)
                 .Bind<IDragDropDevice>().ToConstant(DragDropDevice.Instance);
             
             // TODO: Fix this, for now we keep this behavior since someone might be relying on it in 0.9.x
@@ -292,5 +320,26 @@ namespace Avalonia
             set => SetAndRaise(NameProperty, ref _name, value);
         }
         
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            if (change.Property == RequestedThemeVariantProperty)
+            {
+                if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
+                    SetValue(ActualThemeVariantProperty, themeVariant);
+                else
+                    ClearValue(ActualThemeVariantProperty);
+            }
+            else if (change.Property == ActualThemeVariantProperty)
+            {
+                ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        
+        private void OnColorValuesChanged(object? sender, PlatformColorValues e)
+        {
+            SetValue(ActualThemeVariantProperty, (ThemeVariant)e.ThemeVariant, BindingPriority.Template);
+        }
     }
 }
