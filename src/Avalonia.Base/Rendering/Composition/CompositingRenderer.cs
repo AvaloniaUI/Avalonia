@@ -320,7 +320,7 @@ public class CompositingRenderer : IRendererWithCompositor
         
         // Wait for the composition batch to be applied and rendered to guarantee that
         // render target is not used anymore and can be safely disposed
-        if (Compositor.Loop.RunsInBackground)
+        if (Compositor.Loop.RunsInBackground && CompositionTarget.Server.IsEnabled)
             _compositor.Commit().Wait();
     }
 
