@@ -98,16 +98,21 @@ namespace Avalonia.FreeDesktop
                 Connection.AddMethodHandler(this);
                 if (!_appMenu)
                     return;
-                var services = await Connection.ListServicesAsync();
-                if (!services.Contains("com.canonical.AppMenu.Registrar"))
-                    return;
+
                 _registrar = new ComCanonicalAppMenuRegistrar(Connection, "com.canonical.AppMenu.Registrar", "/com/canonical/AppMenu/Registrar");
-                if (!_disposed)
-                    await _registrar.RegisterWindowAsync(_xid, Path);
-                // It's not really important if this code succeeds,
-                // and it's not important to know if it succeeds
-                // since even if we register the window it's not guaranteed that
-                // menu will be actually exported
+                try
+                {
+                    if (!_disposed)
+                        await _registrar.RegisterWindowAsync(_xid, Path);
+                }
+                catch
+                {
+                    // It's not really important if this code succeeds,
+                    // and it's not important to know if it succeeds
+                    // since even if we register the window it's not guaranteed that
+                    // menu will be actually exported
+                    _registrar = null;
+                }
             }
 
             public void Dispose()
@@ -286,7 +291,7 @@ namespace Avalonia.FreeDesktop
                 return null;
             }
 
-            private Dictionary<string, DBusVariantItem> GetProperties((NativeMenuItemBase? item, NativeMenu? menu) i, string[] names)
+            private static Dictionary<string, DBusVariantItem> GetProperties((NativeMenuItemBase? item, NativeMenu? menu) i, string[] names)
             {
                 if (names.Length == 0)
                     names = s_allProperties;

@@ -17,20 +17,28 @@ namespace Avalonia.FreeDesktop
         {
             if (DBusHelper.Connection is null)
                 return null;
-            var services = await DBusHelper.Connection.ListServicesAsync();
-            return services.Contains("org.freedesktop.portal.Desktop", StringComparer.Ordinal)
-                ? new DBusSystemDialog(DBusHelper.Connection, handle)
-                : null;
+
+            var dbusFileChooser = new OrgFreedesktopPortalFileChooser(DBusHelper.Connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            try
+            {
+                await dbusFileChooser.GetVersionAsync();
+            }
+            catch
+            {
+                return null;
+            }
+
+            return new DBusSystemDialog(DBusHelper.Connection, handle, dbusFileChooser);
         }
 
         private readonly Connection _connection;
         private readonly OrgFreedesktopPortalFileChooser _fileChooser;
         private readonly IPlatformHandle _handle;
 
-        private DBusSystemDialog(Connection connection, IPlatformHandle handle)
+        private DBusSystemDialog(Connection connection, IPlatformHandle handle, OrgFreedesktopPortalFileChooser fileChooser)
         {
             _connection = connection;
-            _fileChooser = new OrgFreedesktopPortalFileChooser(connection, "org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop");
+            _fileChooser = fileChooser;
             _handle = handle;
         }
 
@@ -137,7 +145,6 @@ namespace Avalonia.FreeDesktop
             if (fileTypes is null)
                 return null;
 
-            var any = false;
             var filters = new DBusArrayItem(DBusType.Struct, new List<DBusItem>());
 
             foreach (var fileType in fileTypes)
@@ -154,7 +161,6 @@ namespace Avalonia.FreeDesktop
                 else
                     continue;
 
-                any = true;
                 filters.Add(new DBusStructItem(
                     new DBusItem[]
                     {
@@ -163,7 +169,7 @@ namespace Avalonia.FreeDesktop
                     }));
             }
 
-            return any ? new DBusVariantItem("a(sa(us))", filters) : null;
+            return filters.Count > 0 ? new DBusVariantItem("a(sa(us))", filters) : null;
         }
     }
 }

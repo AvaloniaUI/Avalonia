@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
@@ -66,13 +65,18 @@ namespace Avalonia.FreeDesktop
 
         private async void WatchAsync()
         {
-            var services = await _connection!.ListServicesAsync();
-            if (!services.Contains("org.kde.StatusNotifierWatcher", StringComparer.Ordinal))
-                return;
-
-            _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.Item2) );
-            var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
-            OnNameChange(nameOwner);
+            try
+            {
+                _serviceWatchDisposable = await _dBus!.WatchNameOwnerChangedAsync((_, x) => OnNameChange(x.Item2));
+                var nameOwner = await _dBus.GetNameOwnerAsync("org.kde.StatusNotifierWatcher");
+                OnNameChange(nameOwner);
+            }
+            catch
+            {
+                _serviceWatchDisposable = null;
+                Logger.TryGet(LogEventLevel.Error, "DBUS")
+                    ?.Log(this, "Interface 'org.kde.StatusNotifierWatcher' is unavailable.");
+            }
         }
 
         private void OnNameChange(string? newOwner)
@@ -99,7 +103,7 @@ namespace Avalonia.FreeDesktop
 
         private async void CreateTrayIcon()
         {
-            if (_connection is null || !_serviceConnected || _isDisposed)
+            if (_connection is null || !_serviceConnected || _isDisposed || _statusNotifierWatcher is null)
                 return;
 
 #if NET5_0_OR_GREATER
@@ -114,7 +118,7 @@ namespace Avalonia.FreeDesktop
 
             _connection.AddMethodHandler(_statusNotifierItemDbusObj);
             await _dBus!.RequestNameAsync(_sysTrayServiceName, 0);
-            await _statusNotifierWatcher!.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
+            await _statusNotifierWatcher.RegisterStatusNotifierItemAsync(_sysTrayServiceName);
 
             _statusNotifierItemDbusObj.SetTitleAndTooltip(_tooltipText);
             _statusNotifierItemDbusObj.SetIcon(_icon);
