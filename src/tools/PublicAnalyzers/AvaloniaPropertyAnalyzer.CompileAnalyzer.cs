@@ -38,7 +38,7 @@ public partial class AvaloniaPropertyAnalyzer
         private readonly INamedTypeSymbol _directPropertyType;
         private readonly INamedTypeSymbol? _userControlType;
         private readonly INamedTypeSymbol? _topLevelType;
-        private readonly ImmutableArray<INamedTypeSymbol> _allAvaloniaPropertyTypes;
+        private readonly ImmutableHashSet<INamedTypeSymbol> _allAvaloniaPropertyTypes;
         private readonly ImmutableDictionary<INamedTypeSymbol, ITypeParameterSymbol> _propertyValueTypeParams;
         private readonly ImmutableHashSet<IMethodSymbol> _avaloniaPropertyRegisterMethods;
         private readonly ImmutableHashSet<IMethodSymbol> _avaloniaPropertyAddOwnerMethods;
@@ -70,7 +70,7 @@ public partial class AvaloniaPropertyAnalyzer
             _avaloniaPropertyRegisterMethods = _avaloniaPropertyType.GetMembers()
                 .OfType<IMethodSymbol>().Where(m => m.Name.StartsWith("Register")).ToImmutableHashSet(methodComparer);
 
-            _allAvaloniaPropertyTypes = new[] { _styledPropertyType, _attachedPropertyType, _directPropertyType }.ToImmutableArray();
+            _allAvaloniaPropertyTypes = new[] { _styledPropertyType, _attachedPropertyType, _directPropertyType }.ToImmutableHashSet(SymbolEqualityComparer<INamedTypeSymbol>.Default);
 
             _propertyValueTypeParams = _allAvaloniaPropertyTypes.Select(p => p.TypeParameters.First(t => t.Name == "TValue"))
                 .Where(p => p != null).Cast<ITypeParameterSymbol>()
@@ -79,7 +79,7 @@ public partial class AvaloniaPropertyAnalyzer
             _avaloniaPropertyAddOwnerMethods = _allAvaloniaPropertyTypes
                 .SelectMany(t => t.GetMembers("AddOwner").OfType<IMethodSymbol>()).ToImmutableHashSet(methodComparer);
 
-            _allAvaloniaPropertyMethods = _avaloniaPropertyRegisterMethods.Concat(_avaloniaPropertyAddOwnerMethods).ToImmutableHashSet(SymbolEqualityComparer<IMethodSymbol>.Default);
+            _allAvaloniaPropertyMethods = _avaloniaPropertyRegisterMethods.Concat(_avaloniaPropertyAddOwnerMethods).ToImmutableHashSet(methodComparer);
 
             _ownerTypeParams = GetParamDictionary("TOwner", m => m.TypeParameters);
             _valueTypeParams = GetParamDictionary("TValue", m => m.TypeParameters);
@@ -95,7 +95,7 @@ public partial class AvaloniaPropertyAnalyzer
             context.RegisterOperationAction(AnalyzePropertyWrapperAssignment, OperationKind.SimpleAssignment);
             context.RegisterOperationAction(AnalyzeMethodInvocation, OperationKind.Invocation);
 
-            context.RegisterSymbolStartAction(StartPropertySymbolAnalysis, SymbolKind.Property);
+            context.RegisterSymbolAction(AnalyzeWrapperCrlProperty, SymbolKind.Property);
 
             if (context.Compilation.Language == LanguageNames.CSharp)
             {
@@ -513,7 +513,9 @@ public partial class AvaloniaPropertyAnalyzer
             {
                 var ownerType = description.AssignedTo[assignmentSymbol];
 
-                if (!IsAvaloniaPropertyType(description.PropertyType, _attachedPropertyType) && !SymbolEquals(ownerType.Type, assignmentSymbol.ContainingType))
+                if (ownerType.Type.TypeKind != TypeKind.Error &&
+                    !IsAvaloniaPropertyType(description.PropertyType, _attachedPropertyType) && 
+                    !SymbolEquals(ownerType.Type, assignmentSymbol.ContainingType))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(OwnerDoesNotMatchOuterType, ownerType.Location, ownerType.Type));
                 }
@@ -554,6 +556,7 @@ public partial class AvaloniaPropertyAnalyzer
 
         /// <seealso cref="UnexpectedPropertyAccess"/>
         /// <seealso cref="InappropriatePropertyRegistration"/>
+        /// <seealso cref="PropertyOwnedByGenericType"/>
         private void AnalyzeMethodInvocation(OperationAnalysisContext context)
         {
             var invocation = (IInvocationOperation)context.Operation;
@@ -588,10 +591,19 @@ public partial class AvaloniaPropertyAnalyzer
                         propertyStorageSymbol, context.ContainingSymbol.ContainingType));
                 }
             }
-            else if (!IsStaticConstructorOrInitializer() && _allAvaloniaPropertyMethods.Contains(originalMethod))
+            else if (_allAvaloniaPropertyMethods.Contains(originalMethod))
             {
-                context.ReportDiagnostic(Diagnostic.Create(InappropriatePropertyRegistration, invocation.Syntax.GetLocation(),
-                    originalMethod.ToDisplayString(TypeQualifiedName)));
+                if (!IsStaticConstructorOrInitializer())
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(InappropriatePropertyRegistration, invocation.Syntax.GetLocation(),
+                        originalMethod.ToDisplayString(TypeQualifiedName)));
+                }
+
+                if (_ownerTypeParams.TryGetValue(invocation.TargetMethod.OriginalDefinition, out var typeParam) && 
+                    invocation.TargetMethod.TypeArguments[typeParam.Ordinal] is INamedTypeSymbol { IsGenericType: true })
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(PropertyOwnedByGenericType, TypeReference.FromInvocationTypeParameter(invocation, typeParam).Location));
+                }
             }
 
             bool IsStaticConstructorOrInitializer() =>
@@ -609,71 +621,69 @@ public partial class AvaloniaPropertyAnalyzer
         /// <seealso cref="AssociatedAvaloniaProperty"/>
         /// <seealso cref="InconsistentAccessibility"/>
         /// <seealso cref="MissingAccessor"/>
-        private void StartPropertySymbolAnalysis(SymbolStartAnalysisContext context)
+        private void AnalyzeWrapperCrlProperty(SymbolAnalysisContext context)
         {
             var property = (IPropertySymbol)context.Symbol;
+
+            if (!_clrPropertyToAvaloniaProperties.TryGetValue(property, out var candidateTargetProperties))
+            {
+                return; // does not refer to an AvaloniaProperty
+            }
+
             try
             {
-                if (!_clrPropertyToAvaloniaProperties.TryGetValue(property, out var candidateTargetProperties))
+                if (candidateTargetProperties.Length > 1)
                 {
-                    return; // does not refer to an AvaloniaProperty
+                    var candidateSymbols = candidateTargetProperties.Select(d => d.ClosestAssignmentFor(property.ContainingType)).Where(s => s != null).OrderBy(s => s!.Name);
+                    context.ReportDiagnostic(Diagnostic.Create(AmbiguousPropertyName, property.Locations[0], candidateSymbols.SelectMany(s => s!.Locations),
+                        property.ContainingType, property.Name, $"\n\t{string.Join("\n\t", candidateSymbols)}"));
+                    return;
                 }
 
-                context.RegisterSymbolEndAction(context =>
+                var avaloniaPropertyDescription = candidateTargetProperties[0];
+                var avaloniaPropertyStorage = avaloniaPropertyDescription.ClosestAssignmentFor(property.ContainingType);
+
+                if (avaloniaPropertyStorage == null)
                 {
-                    if (candidateTargetProperties.Length > 1)
+                    return;
+                }
+
+                context.ReportDiagnostic(Diagnostic.Create(AssociatedAvaloniaProperty, property.Locations[0], new[] { avaloniaPropertyStorage.Locations[0] },
+                    avaloniaPropertyDescription.PropertyType.Name, avaloniaPropertyStorage));
+
+                if (!SymbolEquals(property.Type, avaloniaPropertyDescription.ValueType, includeNullability: true))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(PropertyTypeMismatch, property.Locations[0],
+                        avaloniaPropertyStorage, $"\t\n{string.Join("\t\n", avaloniaPropertyDescription.ValueType, property.Type)}"));
+                }
+
+                if (property.DeclaredAccessibility != avaloniaPropertyStorage.DeclaredAccessibility)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(InconsistentAccessibility, property.Locations[0], "property", avaloniaPropertyStorage));
+                }
+
+                VerifyAccessor(property.GetMethod, "readable", "get");
+
+                if (!IsAvaloniaPropertyType(avaloniaPropertyDescription.PropertyType, _directPropertyType))
+                {
+                    VerifyAccessor(property.SetMethod, "writeable", "set");
+                }
+
+                void VerifyAccessor(IMethodSymbol? method, string verb, string methodName)
+                {
+                    if (method == null)
                     {
-                        var candidateSymbols = candidateTargetProperties.Select(d => d.ClosestAssignmentFor(property.ContainingType)).Where(s => s != null);
-                        context.ReportDiagnostic(Diagnostic.Create(AmbiguousPropertyName, property.Locations[0], candidateSymbols.SelectMany(s => s!.Locations),
-                            property.ContainingType, property.Name, $"\n\t{string.Join("\n\t", candidateSymbols)}"));
-                        return;
+                        context.ReportDiagnostic(Diagnostic.Create(MissingAccessor, property.Locations[0], avaloniaPropertyStorage, verb, methodName));
                     }
-
-                    var avaloniaPropertyDescription = candidateTargetProperties[0];
-                    var avaloniaPropertyStorage = avaloniaPropertyDescription.ClosestAssignmentFor(property.ContainingType);
-
-                    if (avaloniaPropertyStorage == null)
+                    else if (method.DeclaredAccessibility != avaloniaPropertyStorage.DeclaredAccessibility && method.DeclaredAccessibility != property.DeclaredAccessibility)
                     {
-                        return;
+                        context.ReportDiagnostic(Diagnostic.Create(InconsistentAccessibility, method.Locations[0], "property accessor", avaloniaPropertyStorage));
                     }
-
-                    context.ReportDiagnostic(Diagnostic.Create(AssociatedAvaloniaProperty, property.Locations[0], new[] { avaloniaPropertyStorage.Locations[0] },
-                        avaloniaPropertyDescription.PropertyType.Name, avaloniaPropertyStorage));
-
-                    if (!SymbolEquals(property.Type, avaloniaPropertyDescription.ValueType, includeNullability: true))
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(PropertyTypeMismatch, property.Locations[0],
-                            avaloniaPropertyStorage, $"\t\n{string.Join("\t\n", avaloniaPropertyDescription.ValueType, property.Type)}"));
-                    }
-
-                    if (property.DeclaredAccessibility != avaloniaPropertyStorage.DeclaredAccessibility)
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(InconsistentAccessibility, property.Locations[0], "property", avaloniaPropertyStorage));
-                    }
-
-                    VerifyAccessor(property.GetMethod, "readable", "get");
-
-                    if (!IsAvaloniaPropertyType(avaloniaPropertyDescription.PropertyType, _directPropertyType))
-                    {
-                        VerifyAccessor(property.SetMethod, "writeable", "set");
-                    }
-
-                    void VerifyAccessor(IMethodSymbol? method, string verb, string methodName)
-                    {
-                        if (method == null)
-                        {
-                            context.ReportDiagnostic(Diagnostic.Create(MissingAccessor, property.Locations[0], avaloniaPropertyStorage, verb, methodName));
-                        }
-                        else if (method.DeclaredAccessibility != avaloniaPropertyStorage.DeclaredAccessibility && method.DeclaredAccessibility != property.DeclaredAccessibility)
-                        {
-                            context.ReportDiagnostic(Diagnostic.Create(InconsistentAccessibility, method.Locations[0], "property accessor", avaloniaPropertyStorage));
-                        }
-                    }
-                });
+                }
             }
             catch (Exception ex)
             {
-                throw new AvaloniaAnalysisException($"Failed to analyse property '{property}'.", ex);
+                throw new AvaloniaAnalysisException($"Failed to analyse wrapper property '{property}'.", ex);
             }
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.CodeAnalysis;
@@ -13,6 +14,7 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Avalonia.Analyzers;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+[SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
 public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 {
     private const string Category = "AvaloniaProperty";
@@ -49,6 +51,16 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         "AvaloniaProperty objects have static lifetimes and should be created only once. To ensure this, only call Register or AddOwner in static constructors or static initializers.");
+
+    private static readonly DiagnosticDescriptor PropertyOwnedByGenericType = new(
+        "AVP1002",
+        "AvaloniaProperty objects should not have a generic type as their owner",
+        "Inadvisable registration: Generic types cannot be referenced from XAML. Create a non-generic type to be the owner of this AvaloniaProperty.",
+        Category,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        "It is sometimes necessary to refer to an AvaloniaProperty in XAML by providing its class name. This cannot be achieved if property's owner is a generic type." +
+        " Additionally, a new AvaloniaProperty object will be generated each time a new version of the the generic owner type is constructed, which may be unexpected.");
 
     private static readonly DiagnosticDescriptor OwnerDoesNotMatchOuterType = new(
         "AVP1010",
@@ -159,6 +171,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         AssociatedAvaloniaProperty,
         InappropriatePropertyAssignment,
         InappropriatePropertyRegistration,
+        PropertyOwnedByGenericType,
         OwnerDoesNotMatchOuterType,
         UnexpectedPropertyAccess,
         SettingOwnStyledPropertyValue,
