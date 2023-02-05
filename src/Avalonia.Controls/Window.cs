@@ -450,7 +450,7 @@ namespace Avalonia.Controls
         /// resulting task will produce the <see cref="_dialogResult"/> value when the window
         /// is closed.
         /// </remarks>
-        public void Close(object dialogResult)
+        public void Close(object? dialogResult)
         {
             _dialogResult = dialogResult;
             CloseCore(WindowCloseReason.WindowClosing, true);
