@@ -212,7 +212,7 @@ public partial class AvaloniaPropertyAnalyzer
                 {
                     var target = fieldInitializations[current];
 
-                    propertyDescription.AddAssignment(target, new(owner.Type, target.Locations[0])); // This loop handles simple assignment operations, so do NOT change the owner type
+                    propertyDescription.SetAssignment(target, new(owner.Type, target.Locations[0])); // This loop handles simple assignment operations, so do NOT change the owner type
                     propertyDescriptions[target] = propertyDescription;
 
                     fieldInitializations.TryGetValue(target, out current);
@@ -358,7 +358,7 @@ public partial class AvaloniaPropertyAnalyzer
                     description.Name = name;
                     description.HostType = hostTypeRef;
                     description.Inherits = inherits;
-                    description.AddAssignment(target, ownerTypeRef);
+                    description.SetAssignment(target, ownerTypeRef);
                     description.AddOwner(ownerTypeRef);
                 }
                 else if (_avaloniaPropertyAddOwnerMethods.Contains(invocation.TargetMethod.OriginalDefinition)) // This is a call to one of the AddOwner methods
@@ -373,7 +373,7 @@ public partial class AvaloniaPropertyAnalyzer
                         return;
                     }
 
-                    var description = propertyDescriptions.GetOrAdd(sourceSymbol, s =>
+                    var description = propertyDescriptions[target] = propertyDescriptions.GetOrAdd(sourceSymbol, s =>
                     {
                         string inferredName = s.Name;
 
@@ -396,11 +396,16 @@ public partial class AvaloniaPropertyAnalyzer
                             hostTypeRef = new(_avaloniaObjectType, Location.None); // assume that an attached property applies everywhere until we find its registration
                         }
 
-                        return new AvaloniaPropertyDescription(inferredName, propertyType, valueType) { HostType = hostTypeRef };
+                        var result =  new AvaloniaPropertyDescription(inferredName, propertyType, valueType) { HostType = hostTypeRef };
+
+                        // assume that the property is owned by its containing type at the point of assignment, until we find its registration
+                        result.SetAssignment(s, new(s.ContainingType, Location.None));
+
+                        return result;
                     });
 
                     var ownerTypeRef = TypeReference.FromInvocationTypeParameter(invocation, ownerTypeParam);
-                    description.AddAssignment(target, ownerTypeRef);
+                    description.SetAssignment(target, ownerTypeRef);
                     description.AddOwner(ownerTypeRef);
                 }
             }
@@ -514,7 +519,7 @@ public partial class AvaloniaPropertyAnalyzer
                 var ownerType = description.AssignedTo[assignmentSymbol];
 
                 if (ownerType.Type.TypeKind != TypeKind.Error &&
-                    !IsAvaloniaPropertyType(description.PropertyType, _attachedPropertyType) && 
+                    !IsAvaloniaPropertyType(description.PropertyType, _attachedPropertyType) &&
                     !SymbolEquals(ownerType.Type, assignmentSymbol.ContainingType))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(OwnerDoesNotMatchOuterType, ownerType.Location, ownerType.Type));
@@ -565,30 +570,14 @@ public partial class AvaloniaPropertyAnalyzer
 
             if (_allGetSetMethods.Contains(originalMethod))
             {
-                var avaloniaPropertyOperation = invocation.Arguments[0].Value;
-
-                var propertyStorageSymbol = GetReferencedFieldOrProperty(avaloniaPropertyOperation);
-
-                if (propertyStorageSymbol == null || !_avaloniaPropertyDescriptions.TryGetValue(propertyStorageSymbol, out var propertyDescription))
-                {
-                    return;
-                }
-
-                TypeReference ownerOrHostType;
-                if (SymbolEquals(propertyDescription.PropertyType.OriginalDefinition, _attachedPropertyType))
-                {
-                    ownerOrHostType = propertyDescription.HostType!.Value;
-                }
-                else if (!propertyDescription.AssignedTo.TryGetValue(propertyStorageSymbol, out ownerOrHostType))
-                {
-                    return;
-                }
-
-                if (invocation.Instance is IInstanceReferenceOperation { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance } &&
-                    !DerivesFrom(context.ContainingSymbol.ContainingType, ownerOrHostType.Type))
+                if (invocation.Instance is IInstanceReferenceOperation { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance } && 
+                    GetReferencedProperty(invocation.Arguments[0]) is { } refProp &&
+                    refProp.description.AssignedTo.TryGetValue(refProp.storageSymbol, out var ownerType) &&
+                    !DerivesFrom(context.ContainingSymbol.ContainingType, ownerType.Type) &&
+                    !DerivesFrom(context.ContainingSymbol.ContainingType, refProp.description.HostType?.Type))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(UnexpectedPropertyAccess, invocation.Arguments[0].Syntax.GetLocation(),
-                        propertyStorageSymbol, context.ContainingSymbol.ContainingType));
+                        refProp.storageSymbol, context.ContainingSymbol.ContainingType));
                 }
             }
             else if (_allAvaloniaPropertyMethods.Contains(originalMethod))
@@ -599,10 +588,32 @@ public partial class AvaloniaPropertyAnalyzer
                         originalMethod.ToDisplayString(TypeQualifiedName)));
                 }
 
-                if (_ownerTypeParams.TryGetValue(invocation.TargetMethod.OriginalDefinition, out var typeParam) && 
-                    invocation.TargetMethod.TypeArguments[typeParam.Ordinal] is INamedTypeSymbol { IsGenericType: true })
+                if (_ownerTypeParams.TryGetValue(invocation.TargetMethod.OriginalDefinition, out var typeParam) &&
+                    invocation.TargetMethod.TypeArguments[typeParam.Ordinal] is { } newOwnerType)
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(PropertyOwnedByGenericType, TypeReference.FromInvocationTypeParameter(invocation, typeParam).Location));
+                    if (newOwnerType is INamedTypeSymbol { IsGenericType: true })
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(PropertyOwnedByGenericType, TypeReference.FromInvocationTypeParameter(invocation, typeParam).Location));
+                    }
+
+                    if (_avaloniaPropertyAddOwnerMethods.Contains(originalMethod) && GetReferencedProperty(invocation.Instance!) is { } refProp)
+                    {
+                        var ownerMatches = refProp.description.AssignedTo.Where(kvp => !SymbolEquals(kvp.Key, context.ContainingSymbol) && DerivesFrom(newOwnerType, kvp.Value.Type)).ToArray();
+
+                        if (ownerMatches.Any())
+                        {
+                            var ownerMatchesExceptBaseTypes = ownerMatches.Where(m => !DerivesFrom(context.ContainingSymbol.ContainingType, m.Key.ContainingType, includeSelf: false)).ToArray();
+                            var routesMessage = ownerMatchesExceptBaseTypes.Length switch
+                            {
+                                0 => "its base type",
+                                1 => ownerMatchesExceptBaseTypes.Single().Key.ToString(),
+                                _ => $"{ownerMatches.Length} routes\n\t{string.Join("\n\t", ownerMatches.Select(kvp => kvp.Key))}"
+                            };
+
+                            context.ReportDiagnostic(Diagnostic.Create(SuperfluousAddOwnerCall, invocation.Syntax.GetLocation(), ownerMatches.Select(kvp => kvp.Value.Location),
+                                newOwnerType, refProp.storageSymbol, routesMessage));
+                        }
+                    }
                 }
             }
 
@@ -614,6 +625,18 @@ public partial class AvaloniaPropertyAnalyzer
                     IPropertyInitializerOperation propInit when propInit.InitializedProperties.All(p => p.IsStatic) => true,
                     _ => false,
                 };
+        }
+
+        private (AvaloniaPropertyDescription description, ISymbol storageSymbol)? GetReferencedProperty(IOperation operation)
+        {
+            if (GetReferencedFieldOrProperty(operation) is { } storageSymbol && _avaloniaPropertyDescriptions.TryGetValue(storageSymbol, out var result))
+            {
+                return (result, storageSymbol);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <seealso cref="AmbiguousPropertyName"/>

@@ -93,6 +93,16 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         "not the control itself. Constructor parameters and assignments within UserControl or TopLevel types are exempt from this diagnostic.",
         InappropriateReadWriteTag);
 
+    private static readonly DiagnosticDescriptor SuperfluousAddOwnerCall = new(
+        "AVP1013",
+        "Do not add superfluous AvaloniaProperty owners",
+        "Superfluous owner: {0} is already an owner of {1} via {2}",
+        Category,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        "Ownership of an AvaloniaProperty is inherited along the type hierarchy. There is no need for a derived type to assert ownership over a base type's properties. This diagnostic can be a symptom of an incorrect property owner elsewhere.",
+        InappropriateReadWriteTag);
+
     private static readonly DiagnosticDescriptor DuplicatePropertyName = new(
         "AVP1020",
         "AvaloniaProperty names should be unique within each class",
@@ -175,6 +185,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         OwnerDoesNotMatchOuterType,
         UnexpectedPropertyAccess,
         SettingOwnStyledPropertyValue,
+        SuperfluousAddOwnerCall,
         DuplicatePropertyName,
         AmbiguousPropertyName,
         PropertyNameMismatch,
@@ -206,10 +217,15 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         return propertyTypes.Any(t => SymbolEquals(type, t));
     }
 
-    private static bool DerivesFrom(ITypeSymbol? type, ITypeSymbol? baseType)
+    private static bool DerivesFrom(ITypeSymbol? type, ITypeSymbol? baseType, bool includeSelf = true)
     {
         if (baseType != null)
         {
+            if (!includeSelf)
+            {
+                type = type?.BaseType;
+            }
+
             while (type != null)
             {
                 if (SymbolEquals(type, baseType))
@@ -266,6 +282,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
     {
         IFieldReferenceOperation fieldRef => fieldRef.Field,
         IPropertyReferenceOperation propertyRef => propertyRef.Property,
+        IArgumentOperation argument => GetReferencedFieldOrProperty(argument.Value),
         _ => null,
     };
 
@@ -349,7 +366,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
         public void AddPropertyWrapper(IPropertySymbol property) => (_propertyWrappers ?? throw new InvalidOperationException(SealedError)).Add(property);
 
-        public void AddAssignment(ISymbol assignmentTarget, TypeReference ownerType) => (_assignedTo ?? throw new InvalidOperationException(SealedError)).TryAdd(assignmentTarget, ownerType);
+        public void SetAssignment(ISymbol assignmentTarget, TypeReference ownerType) => (_assignedTo ?? throw new InvalidOperationException(SealedError))[assignmentTarget] = ownerType;
 
         public AvaloniaPropertyDescription Seal()
         {
