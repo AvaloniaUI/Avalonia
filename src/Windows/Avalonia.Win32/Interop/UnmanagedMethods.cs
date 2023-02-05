@@ -1553,7 +1553,10 @@ namespace Avalonia.Win32.Interop
         public static extern void SetProcessDpiAwareness(PROCESS_DPI_AWARENESS value);
 
         [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool SetProcessDpiAwarenessContext(IntPtr dpiAWarenessContext);
+        public static extern bool SetProcessDpiAwarenessContext(IntPtr dpiAwarenessContext);
+        
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiAwarenessContext);
 
         [DllImport("shcore.dll")]
         public static extern long GetDpiForMonitor(IntPtr hmonitor, MONITOR_DPI_TYPE dpiType, out uint dpiX, out uint dpiY);
