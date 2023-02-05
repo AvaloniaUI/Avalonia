@@ -247,6 +247,15 @@ namespace Avalonia.Win32
 
         public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
 
+        public void EnsureThreadContext()
+        {
+            if (CurrentThreadIsLoopThread && SynchronizationContext.Current is null)
+            {
+                SynchronizationContext.SetSynchronizationContext(_synchronizationContext);
+                UnmanagedMethods.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            }
+        }
+
         public event Action<DispatcherPriority?> Signaled;
 
         public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
@@ -255,8 +264,7 @@ namespace Avalonia.Win32
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
-            SynchronizationContext.SetSynchronizationContext(_synchronizationContext);
-            UnmanagedMethods.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            EnsureThreadContext();
 
             if (msg == (int)WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
             {
