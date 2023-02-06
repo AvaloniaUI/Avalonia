@@ -580,21 +580,12 @@ void WindowBaseImpl::CleanNSWindow() {
     }
 }
 
-void WindowBaseImpl::CreateNSWindow(bool isDialog) {
-    if (isDialog) {
-        if (![Window isKindOfClass:[AvnPanel class]]) {
-            CleanNSWindow();
-
-            Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
-            
-            [Window setHidesOnDeactivate:false];
-        }
+void WindowBaseImpl::CreateNSWindow(bool usePanel) {
+    if (usePanel) {
+        Window = [[AvnPanel alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
+        [Window setHidesOnDeactivate:false];
     } else {
-        if (![Window isKindOfClass:[AvnWindow class]]) {
-            CleanNSWindow();
-
-            Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:GetStyle()];
-        }
+        Window = [[AvnWindow alloc] initWithParent:this contentRect:NSRect{0, 0, lastSize} styleMask:NSWindowStyleMaskBorderless];
     }
 }
 
