@@ -483,17 +483,13 @@ namespace Avalonia
                 parent.HasNonUniformZIndexChildren = true;
 
             var visualChildren = VisualChildren;
+            var visualChildrenCount = visualChildren.Count;
 
-            if (visualChildren != null)
+            for (var i = 0; i < visualChildrenCount; i++)
             {
-                var visualChildrenCount = visualChildren.Count;
-
-                for (var i = 0; i < visualChildrenCount; i++)
+                if (visualChildren[i] is { } child)
                 {
-                    if (visualChildren[i] is Visual child)
-                    {
-                        child.OnAttachedToVisualTreeCore(e);
-                    }
+                    child.OnAttachedToVisualTreeCore(e);
                 }
             }
         }
@@ -543,17 +539,13 @@ namespace Avalonia
             e.Root?.Renderer?.AddDirty(this);
 
             var visualChildren = VisualChildren;
+            var visualChildrenCount = visualChildren.Count;
 
-            if (visualChildren != null)
+            for (var i = 0; i < visualChildrenCount; i++)
             {
-                var visualChildrenCount = visualChildren.Count;
-
-                for (var i = 0; i < visualChildrenCount; i++)
+                if (visualChildren[i] is { } child)
                 {
-                    if (visualChildren[i] is Visual child)
-                    {
-                        child.OnDetachedFromVisualTreeCore(e);
-                    }
+                    child.OnDetachedFromVisualTreeCore(e);
                 }
             }
         }

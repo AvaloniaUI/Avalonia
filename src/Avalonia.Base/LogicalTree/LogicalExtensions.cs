@@ -48,7 +48,7 @@ namespace Avalonia.LogicalTree
         /// <param name="logical">The logical.</param>
         /// <param name="includeSelf">If given logical should be included in search.</param>
         /// <returns>First ancestor of given type.</returns>
-        public static T? FindLogicalAncestorOfType<T>(this ILogical logical, bool includeSelf = false) where T : class
+        public static T? FindLogicalAncestorOfType<T>(this ILogical? logical, bool includeSelf = false) where T : class
         {
             if (logical is null)
             {
@@ -120,7 +120,7 @@ namespace Avalonia.LogicalTree
         /// <param name="logical">The logical.</param>
         /// <param name="includeSelf">If given logical should be included in search.</param>
         /// <returns>First descendant of given type.</returns>
-        public static T? FindLogicalDescendantOfType<T>(this ILogical logical, bool includeSelf = false) where T : class
+        public static T? FindLogicalDescendantOfType<T>(this ILogical? logical, bool includeSelf = false) where T : class
         {
             if (logical is null)
             {
@@ -185,7 +185,7 @@ namespace Avalonia.LogicalTree
         /// True if <paramref name="logical"/> is an ancestor of <paramref name="target"/>;
         /// otherwise false.
         /// </returns>
-        public static bool IsLogicalAncestorOf(this ILogical logical, ILogical target)
+        public static bool IsLogicalAncestorOf(this ILogical? logical, ILogical? target)
         {
             var current = target?.LogicalParent;
 

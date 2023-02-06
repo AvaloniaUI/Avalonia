@@ -88,8 +88,13 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     }
 
     /// <inheritdoc/>
-    public void DrawLine(IPen pen, Point p1, Point p2)
+    public void DrawLine(IPen? pen, Point p1, Point p2)
     {
+        if (pen is null)
+        {
+            return;
+        }
+
         var next = NextDrawAs<LineNode>();
 
         if (next == null || !next.Item.Equals(Transform, pen, p1, p2))
@@ -159,8 +164,13 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     public object? GetFeature(Type t) => null;
 
     /// <inheritdoc/>
-    public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
+    public void DrawGlyphRun(IBrush? foreground, IRef<IGlyphRunImpl> glyphRun)
     {
+        if (foreground is null)
+        {
+            return;
+        }
+
         var next = NextDrawAs<GlyphRunNode>();
 
         if (next == null || !next.Item.Equals(Transform, foreground, glyphRun))
