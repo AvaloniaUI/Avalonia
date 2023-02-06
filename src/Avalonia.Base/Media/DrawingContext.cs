@@ -240,7 +240,7 @@ namespace Avalonia.Media
         /// </summary>
         /// <param name="foreground">The foreground brush.</param>
         /// <param name="glyphRun">The glyph run.</param>
-        public void DrawGlyphRun(IBrush foreground, GlyphRun glyphRun)
+        public void DrawGlyphRun(IBrush? foreground, GlyphRun glyphRun)
         {
             _ = glyphRun ?? throw new ArgumentNullException(nameof(glyphRun));
 
