@@ -112,6 +112,8 @@ namespace Avalonia.Win32
 
         public Win32Platform()
         {
+            _synchronizationContext = SynchronizationContext.Current;
+
             SetDpiAwareness();
             CreateMessageWindow();
         }
@@ -213,7 +215,11 @@ namespace Avalonia.Win32
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action callback)
         {
             UnmanagedMethods.TimerProc timerDelegate =
-                (hWnd, uMsg, nIDEvent, dwTime) => callback();
+                (hWnd, uMsg, nIDEvent, dwTime) =>
+                {
+                    EnsureThreadContext();
+                    callback();
+                };
 
             IntPtr handle = SetTimer(
                 IntPtr.Zero,
@@ -245,13 +251,25 @@ namespace Avalonia.Win32
 
         public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
 
+        public void EnsureThreadContext()
+        {
+            if (CurrentThreadIsLoopThread && SynchronizationContext.Current is null)
+            {
+                SynchronizationContext.SetSynchronizationContext(_synchronizationContext);
+                UnmanagedMethods.SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            }
+        }
+
         public event Action<DispatcherPriority?> Signaled;
 
         public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+        private readonly SynchronizationContext _synchronizationContext;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            EnsureThreadContext();
+
             if (msg == (int)WindowsMessage.WM_DISPATCH_WORK_ITEM && wParam.ToInt64() == SignalW && lParam.ToInt64() == SignalL)
             {
                 Signaled?.Invoke(null);

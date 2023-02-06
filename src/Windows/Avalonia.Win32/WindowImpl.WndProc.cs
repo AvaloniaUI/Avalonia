@@ -17,6 +17,8 @@ namespace Avalonia.Win32
     {
         protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            Win32Platform.Instance.EnsureThreadContext();
+
             IntPtr lRet = IntPtr.Zero;
             bool callDwp = true;
 
