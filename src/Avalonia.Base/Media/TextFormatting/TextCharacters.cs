@@ -82,24 +82,15 @@ namespace Avalonia.Media.TextFormatting
             var previousGlyphTypeface = previousProperties?.CachedGlyphTypeface;
             var textSpan = text.Span;
 
-            if (TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, out var count, out var script))
+            if (TryGetShapeableLength(textSpan, defaultGlyphTypeface, null, out var count))
             {
-                if (script == Script.Common && previousGlyphTypeface is not null)
-                {
-                    if (TryGetShapeableLength(textSpan, previousGlyphTypeface, null, out var fallbackCount, out _))
-                    {
-                        return new UnshapedTextRun(text.Slice(0, fallbackCount),
-                            defaultProperties.WithTypeface(previousTypeface!.Value), biDiLevel);
-                    }
-                }
-
                 return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(defaultTypeface),
                     biDiLevel);
             }
 
             if (previousGlyphTypeface is not null)
             {
-                if (TryGetShapeableLength(textSpan, previousGlyphTypeface, defaultGlyphTypeface, out count, out _))
+                if (TryGetShapeableLength(textSpan, previousGlyphTypeface, defaultGlyphTypeface, out count))
                 {
                     return new UnshapedTextRun(text.Slice(0, count),
                         defaultProperties.WithTypeface(previousTypeface!.Value), biDiLevel);
@@ -127,14 +118,17 @@ namespace Avalonia.Media.TextFormatting
                 fontManager.TryMatchCharacter(codepoint, defaultTypeface.Style, defaultTypeface.Weight,
                     defaultTypeface.Stretch, defaultTypeface.FontFamily, defaultProperties.CultureInfo,
                     out var fallbackTypeface);
-
-            var fallbackGlyphTypeface = fontManager.GetOrAddGlyphTypeface(fallbackTypeface);
-
-            if (matchFound && TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, out count, out _))
+                        
+            if (matchFound)
             {
-                //Fallback found
-                return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(fallbackTypeface),
-                    biDiLevel);
+                // Fallback found
+                var fallbackGlyphTypeface = fontManager.GetOrAddGlyphTypeface(fallbackTypeface);
+                                
+                if (TryGetShapeableLength(textSpan, fallbackGlyphTypeface, defaultGlyphTypeface, out count))
+                {                    
+                    return new UnshapedTextRun(text.Slice(0, count), defaultProperties.WithTypeface(fallbackTypeface),
+                        biDiLevel);
+                }                
             }
 
             // no fallback found
@@ -160,17 +154,15 @@ namespace Avalonia.Media.TextFormatting
         /// <param name="glyphTypeface">The typeface that is used to find matching characters.</param>
         /// <param name="defaultGlyphTypeface">The default typeface.</param>
         /// <param name="length">The shapeable length.</param>
-        /// <param name="script"></param>
         /// <returns></returns>
         internal static bool TryGetShapeableLength(
             ReadOnlySpan<char> text,
             IGlyphTypeface glyphTypeface,
             IGlyphTypeface? defaultGlyphTypeface,
-            out int length,
-            out Script script)
+            out int length)
         {
             length = 0;
-            script = Script.Unknown;
+            var script = Script.Unknown;
 
             if (text.IsEmpty)
             {

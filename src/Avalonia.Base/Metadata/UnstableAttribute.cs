@@ -6,7 +6,8 @@ namespace Avalonia.Metadata
     /// This API is unstable and is not covered by API compatibility guarantees between minor and
     /// patch releases.
     /// </summary>
-    public class UnstableAttribute : Attribute
+    [AttributeUsage(AttributeTargets.All)]
+    public sealed class UnstableAttribute : Attribute
     {
     }
 }

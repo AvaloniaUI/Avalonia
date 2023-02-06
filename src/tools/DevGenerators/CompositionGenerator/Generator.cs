@@ -297,8 +297,8 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                         server = server.WithBaseList(
                             server.BaseList?.AddTypes(SimpleBaseType(ParseTypeName(impl.ServerName))));
 
-                    client = client.AddMembers(
-                        ParseMemberDeclaration($"{impl.ServerName} {impl.Name}.Server => Server;"));
+                    if(ParseMemberDeclaration($"{impl.ServerName} {impl.Name}.Server => Server;") is { } member)
+                        client = client.AddMembers(member);
                 }
 
 
