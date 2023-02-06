@@ -19,25 +19,20 @@ internal class AssemblyDescriptor : IAssemblyDescriptor
     public AssemblyDescriptor(Assembly assembly)
     {
         Assembly = assembly;
+        Resources = assembly.GetManifestResourceNames()
+            .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
+        Name = assembly.GetName().Name;
 
-        if (assembly != null)
+        using var resources = assembly.GetManifestResourceStream(Constants.AvaloniaResourceName);
+        if (resources != null)
         {
-            Resources = assembly.GetManifestResourceNames()
-                .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
-            Name = assembly.GetName().Name;
-            using (var resources = assembly.GetManifestResourceStream(Constants.AvaloniaResourceName))
-            {
-                if (resources != null)
-                {
-                    Resources.Remove(Constants.AvaloniaResourceName);
+            Resources.Remove(Constants.AvaloniaResourceName);
 
-                    var indexLength = new BinaryReader(resources).ReadInt32();
-                    var index = AvaloniaResourcesIndexReaderWriter.ReadIndex(new SlicedStream(resources, 4, indexLength));
-                    var baseOffset = indexLength + 4;
-                    AvaloniaResources = index.ToDictionary(r => GetPathRooted(r), r => (IAssetDescriptor)
-                        new AvaloniaResourceDescriptor(assembly, baseOffset + r.Offset, r.Size));
-                }
-            }
+            var indexLength = new BinaryReader(resources).ReadInt32();
+            var index = AvaloniaResourcesIndexReaderWriter.ReadIndex(new SlicedStream(resources, 4, indexLength));
+            var baseOffset = indexLength + 4;
+            AvaloniaResources = index.ToDictionary(GetPathRooted, r => (IAssetDescriptor)
+                new AvaloniaResourceDescriptor(assembly, baseOffset + r.Offset, r.Size));
         }
     }
 
@@ -45,6 +40,7 @@ internal class AssemblyDescriptor : IAssemblyDescriptor
     public Dictionary<string, IAssetDescriptor>? Resources { get; }
     public Dictionary<string, IAssetDescriptor>? AvaloniaResources { get; }
     public string? Name { get; }
+
     private static string GetPathRooted(AvaloniaResourcesIndexEntry r) =>
         r.Path![0] == '/' ? r.Path : '/' + r.Path;
 }

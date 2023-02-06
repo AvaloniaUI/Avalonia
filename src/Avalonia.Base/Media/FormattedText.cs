@@ -1354,7 +1354,7 @@ namespace Avalonia.Media
                     {
                         var highlightBounds = currentLine.GetTextBounds(x0,x1 - x0);
 
-                        if (highlightBounds != null)
+                        if (highlightBounds.Count > 0)
                         {
                             foreach (var bound in highlightBounds)
                             {
@@ -1365,7 +1365,7 @@ namespace Avalonia.Media
                                     // Convert logical units (which extend leftward from the right edge
                                     // of the paragraph) to physical units.
                                     //
-                                    // Note that since rect is in logical units, rect.Right corresponds to 
+                                    // Note that since rect is in logical units, rect.Right corresponds to
                                     // the visual *left* edge of the rectangle in the RTL case. Specifically,
                                     // is the distance leftward from the right edge of the formatting rectangle
                                     // whose width is the paragraph width passed to FormatLine.
@@ -1384,7 +1384,7 @@ namespace Avalonia.Media
                                 else
                                 {
                                     accumulatedBounds = Geometry.Combine(accumulatedBounds, rectangleGeometry, GeometryCombineMode.Union);
-                                }                                  
+                                }
                             }
                         }
                     }
