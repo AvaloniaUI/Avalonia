@@ -225,16 +225,12 @@ bool WindowImpl::IsZoomed() {
 }
 
 void WindowImpl::DoZoom() {
-    switch (_decorations) {
-        case SystemDecorationsNone:
-        case SystemDecorationsBorderOnly:
-            [Window setFrame:[Window screen].visibleFrame display:true];
-            break;
-
-
-        case SystemDecorationsFull:
-            [Window performZoom:Window];
-            break;
+    if (_decorations == SystemDecorationsNone ||
+        _decorations == SystemDecorationsBorderOnly ||
+        _canResize == false) {
+        [Window setFrame:[Window screen].visibleFrame display:true];
+    } else {
+        [Window performZoom:Window];
     }
 }
 
