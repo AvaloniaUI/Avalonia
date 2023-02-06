@@ -41,8 +41,6 @@ BEGIN_INTERFACE_MAP()
 
     WindowImpl(IAvnWindowEvents* events, IAvnGlContext* gl);
 
-    void HideOrShowTrafficLights ();
-
     virtual HRESULT Show (bool activate, bool isDialog) override;
 
     virtual HRESULT SetEnabled (bool enable) override;
@@ -101,6 +99,7 @@ BEGIN_INTERFACE_MAP()
 
 protected:
     virtual NSWindowStyleMask GetStyle() override;
+    void UpdateStyle () override;
 
 private:
     void OnInitialiseNSWindow();

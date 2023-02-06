@@ -30,19 +30,6 @@ WindowImpl::WindowImpl(IAvnWindowEvents *events, IAvnGlContext *gl) : WindowBase
     OnInitialiseNSWindow();
 }
 
-void WindowImpl::HideOrShowTrafficLights() {
-    if (Window == nil) {
-        return;
-    }
-
-    bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
-    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
-    
-    [[Window standardWindowButton:NSWindowCloseButton] setHidden:!hasTrafficLights];
-    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:!hasTrafficLights];
-    [[Window standardWindowButton:NSWindowZoomButton] setHidden:!hasTrafficLights];
-}
-
 void WindowImpl::OnInitialiseNSWindow(){
     [GetWindowProtocol() setCanBecomeKeyWindow:true];
     
@@ -67,8 +54,6 @@ HRESULT WindowImpl::Show(bool activate, bool isDialog) {
 
         WindowBaseImpl::Show(activate, isDialog);
         GetWindowState(&_actualWindowState);
-        HideOrShowTrafficLights();
-
         return SetWindowState(_lastWindowState);
     }
 }
@@ -257,8 +242,6 @@ HRESULT WindowImpl::SetDecorations(SystemDecorations value) {
 
         UpdateStyle();
 
-        HideOrShowTrafficLights();
-
         switch (_decorations) {
             case SystemDecorationsNone:
                 [Window setHasShadow:NO];
@@ -415,9 +398,6 @@ HRESULT WindowImpl::SetExtendClientArea(bool enable) {
             }
 
             [GetWindowProtocol() setIsExtended:enable];
-
-            HideOrShowTrafficLights();
-
             UpdateStyle();
         }
 
@@ -608,3 +588,20 @@ NSWindowStyleMask WindowImpl::GetStyle() {
     }
     return s;
 }
+
+void WindowImpl::UpdateStyle() {
+    WindowBaseImpl::UpdateStyle();
+    
+    if (Window == nil) {
+        return;
+    }
+
+    bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
+    bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
+    
+    [[Window standardWindowButton:NSWindowCloseButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowZoomButton] setHidden:!hasTrafficLights];
+    [[Window standardWindowButton:NSWindowZoomButton] setEnabled:_canResize];
+}
+

@@ -106,8 +106,7 @@ BEGIN_INTERFACE_MAP()
 
 protected:
     virtual NSWindowStyleMask GetStyle();
-
-    void UpdateStyle();
+    virtual void UpdateStyle();
 
 private:
     void CreateNSWindow (bool isDialog);
