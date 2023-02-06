@@ -545,6 +545,7 @@ interface IAvnWindowBase : IUnknown
                                               IAvnClipboard* clipboard, IAvnDndResultCallback* cb, [intptr]void* sourceHandle);
      HRESULT SetTransparencyMode(AvnWindowTransparencyMode mode);
      HRESULT SetFrameThemeVariant(AvnPlatformThemeVariant mode);
+     HRESULT GetInputMethod(IAvnTextInputMethod **ppv);
 }
 
 [uuid(83e588f3-6981-4e48-9ea0-e1e569f79a91), cpp-virtual-inherits]
@@ -609,6 +610,22 @@ interface IAvnWindowEvents : IAvnWindowBaseEvents
      void WindowStateChanged(AvnWindowState state);
     
      void GotInputWhenDisabled();
+}
+
+[uuid(f2079145-a2d9-42b8-a85e-2732e3c2b055)]
+interface IAvnTextInputMethodClient : IUnknown
+{
+    void SetPreeditText(char* preeditText);
+    void SelectInSurroundingText(int start, int length);
+}
+
+[uuid(1382a29f-e260-4c7a-b83f-c99fc72e27c2)]
+interface IAvnTextInputMethod : IUnknown
+{
+    HRESULT SetClient(IAvnTextInputMethodClient* client);
+    void Reset();
+    void SetCursorRect(AvnRect rect);
+    void SetSurroundingText(char* text, int anchorOffset, int cursorOffset);
 }
 
 [uuid(e34ae0f8-18b4-48a3-b09d-2e6b19a3cf5e)]

@@ -43,6 +43,9 @@
 		523484CA26EA688F00EA0C2C /* trayicon.mm in Sources */ = {isa = PBXBuildFile; fileRef = 523484C926EA688F00EA0C2C /* trayicon.mm */; };
 		5B21A982216530F500CEE36E /* cursor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B21A981216530F500CEE36E /* cursor.mm */; };
 		5B8BD94F215BFEA6005ED2A7 /* clipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */; };
+		8D2F3512292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 8D2F3511292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h */; };
+		8D300D65292D0A6800320C49 /* AvnTextInputMethod.h in Headers */ = {isa = PBXBuildFile; fileRef = 8D300D64292D0A6800320C49 /* AvnTextInputMethod.h */; };
+		8D300D69292E1E5D00320C49 /* AvnTextInputMethod.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8D300D68292E1E5D00320C49 /* AvnTextInputMethod.mm */; };
 		AB00E4F72147CA920032A60A /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = AB00E4F62147CA920032A60A /* main.mm */; };
 		AB1E522C217613570091CD71 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB1E522B217613570091CD71 /* OpenGL.framework */; };
 		AB661C1E2148230F00291242 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AB661C1D2148230F00291242 /* AppKit.framework */; };
@@ -95,6 +98,9 @@
 		5B21A981216530F500CEE36E /* cursor.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = cursor.mm; sourceTree = "<group>"; };
 		5B8BD94E215BFEA6005ED2A7 /* clipboard.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = clipboard.mm; sourceTree = "<group>"; };
 		5BF943652167AD1D009CAE35 /* cursor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cursor.h; sourceTree = "<group>"; };
+		8D2F3511292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnTextInputMethodDelegate.h; sourceTree = "<group>"; };
+		8D300D64292D0A6800320C49 /* AvnTextInputMethod.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AvnTextInputMethod.h; sourceTree = "<group>"; };
+		8D300D68292E1E5D00320C49 /* AvnTextInputMethod.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AvnTextInputMethod.mm; sourceTree = "<group>"; };
 		AB00E4F62147CA920032A60A /* main.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 		AB1E522B217613570091CD71 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		AB661C1D2148230F00291242 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -140,6 +146,9 @@
 		AB7A61E62147C814003C5833 = {
 			isa = PBXGroup;
 			children = (
+				8D2F3511292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h */,
+				8D300D68292E1E5D00320C49 /* AvnTextInputMethod.mm */,
+				8D300D64292D0A6800320C49 /* AvnTextInputMethod.h */,
 				BC11A5BC2608D58F0017BAD0 /* automation.h */,
 				BC11A5BD2608D58F0017BAD0 /* automation.mm */,
 				1A1852DB23E05814008F0DED /* deadlock.mm */,
@@ -210,6 +219,8 @@
 				1839171DCC651B0638603AC4 /* INSWindowHolder.h in Headers */,
 				183919D91DB9AAB5D700C2EA /* WindowImpl.h in Headers */,
 				18391CF07316F819E76B617C /* IWindowStateChanged.h in Headers */,
+				8D300D65292D0A6800320C49 /* AvnTextInputMethod.h in Headers */,
+				8D2F3512292F6AAE007FCF54 /* AvnTextInputMethodDelegate.h in Headers */,
 				18391C28BF1823B5464FDD36 /* ResizeScope.h in Headers */,
 				18391ED5F611FF62C45F196D /* AvnView.h in Headers */,
 				18391E1381E2D5BFD60265A9 /* AutoFitContentView.h in Headers */,
@@ -289,6 +300,7 @@
 				BC11A5BF2608D58F0017BAD0 /* automation.mm in Sources */,
 				37E2330F21583241000CB7E2 /* KeyTransform.mm in Sources */,
 				520624B322973F4100C4DCEF /* menu.mm in Sources */,
+				8D300D69292E1E5D00320C49 /* AvnTextInputMethod.mm in Sources */,
 				37A517B32159597E00FBA241 /* Screens.mm in Sources */,
 				1AFD334123E03C4F0042899B /* controlhost.mm in Sources */,
 				1A465D10246AB61600C5858B /* dnd.mm in Sources */,

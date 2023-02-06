@@ -12,6 +12,7 @@
 {
     ComPtr<WindowBaseImpl> _parent;
     NSTrackingArea* _area;
+    NSMutableAttributedString* _markedText;
     bool _isLeftPressed, _isMiddlePressed, _isRightPressed, _isXButton1Pressed, _isXButton2Pressed;
     AvnInputModifiers _modifierState;
     NSEvent* _lastMouseDownEvent;
@@ -20,6 +21,9 @@
     NSObject<IRenderTarget>* _renderTarget;
     AvnPlatformResizeReason _resizeReason;
     AvnAccessibilityElement* _accessibilityChild;
+    AvnRect _cursorRect;
+    NSString* _text;
+    NSRange _selection;
 }
 
 - (void)onClosed
@@ -560,11 +564,13 @@
 
 - (BOOL)hasMarkedText
 {
-    return _lastKeyHandled;
+    return [_markedText length] > 0;
 }
 
 - (NSRange)markedRange
 {
+    if([_markedText length] > 0)
+        return NSMakeRange(0, [_markedText length] - 1);
     return NSMakeRange(NSNotFound, 0);
 }
 
@@ -575,12 +581,31 @@
 
 - (void)setMarkedText:(id)string selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange
 {
-
+    if([string isKindOfClass:[NSAttributedString class]])
+    {
+        _markedText = [[NSMutableAttributedString alloc] initWithAttributedString:string];
+    }
+    else
+    {
+        _markedText = [[NSMutableAttributedString alloc] initWithString:string];
+    }
+    
+    if(!_parent->InputMethod->IsActive()){
+        return;
+    }
+    
+    _parent->InputMethod->Client->SetPreeditText((char*)[_markedText.string UTF8String]);
 }
 
 - (void)unmarkText
 {
-
+    [[_markedText mutableString] setString:@""];
+    
+    if(!_parent->InputMethod->IsActive()){
+        return;
+    }
+    
+    _parent->InputMethod->Client->SetPreeditText(nullptr);
 }
 
 - (NSArray<NSString *> *)validAttributesForMarkedText
@@ -606,14 +631,16 @@
 
 - (NSUInteger)characterIndexForPoint:(NSPoint)point
 {
-    return 0;
+    return NSNotFound;
 }
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range actualRange:(NSRangePointer)actualRange
 {
-    CGRect result = { 0 };
-
-    return result;
+    if(!_parent->InputMethod->IsActive()){
+        return NSZeroRect;
+    }
+    
+    return ToNSRect(_cursorRect);
 }
 
 - (NSDragOperation)triggerAvnDragEvent: (AvnDragEventType) type info: (id <NSDraggingInfo>)info
@@ -716,6 +743,18 @@
 - (id)accessibilityFocusedUIElement
 {
     return [[self accessibilityChild] accessibilityFocusedUIElement];
+}
+
+- (void) setText:(NSString *)text{
+    _text = text;
+}
+
+- (void) setSelection:(int)start :(int)end{
+    _selection = NSMakeRange(start, end - start);
+}
+
+- (void) setCursorRect:(AvnRect)rect{
+    _cursorRect = rect;
 }
 
 @end

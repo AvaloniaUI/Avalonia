@@ -19,6 +19,7 @@ namespace Avalonia.Native
         private double _extendTitleBarHeight = -1;
         private DoubleClickHelper _doubleClickHelper;
         private readonly ITopLevelNativeMenuExporter _nativeMenuExporter;
+        private readonly AvaloniaNativeTextInputMethod _inputMethod;
 
         internal WindowImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature) : base(factory, opts, glFeature)
@@ -33,6 +34,8 @@ namespace Avalonia.Native
             }
 
             _nativeMenuExporter = new AvaloniaNativeMenuExporter(_native, factory);
+            
+            _inputMethod = new AvaloniaNativeTextInputMethod(_native);
         }
 
         class WindowEvents : WindowBaseEvents, IAvnWindowEvents
@@ -88,6 +91,8 @@ namespace Avalonia.Native
         {
             _native.SetTitle(title ?? "");
         }
+
+        public ITextInputMethodImpl TextInputMethod => _inputMethod;
 
         public WindowState WindowState
         {
