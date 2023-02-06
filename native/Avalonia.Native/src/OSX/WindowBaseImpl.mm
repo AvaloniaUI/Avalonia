@@ -35,18 +35,14 @@ WindowBaseImpl::WindowBaseImpl(IAvnWindowBaseEvents *events, IAvnGlContext *gl, 
     lastSize = NSSize { 100, 100 };
     lastMaxSize = NSSize { CGFLOAT_MAX, CGFLOAT_MAX};
     lastMinSize = NSSize { 0, 0 };
-
     lastMenu = nullptr;
     
     CreateNSWindow(usePanel);
     
     [Window setContentView:StandardContainer];
-    [Window setStyleMask:NSWindowStyleMaskBorderless];
     [Window setBackingType:NSBackingStoreBuffered];
-
     [Window setContentMinSize:lastMinSize];
     [Window setContentMaxSize:lastMaxSize];
-
     [Window setOpaque:false];
 }
 
@@ -564,12 +560,8 @@ bool WindowBaseImpl::IsModal() {
     return false;
 }
 
-NSWindowStyleMask WindowBaseImpl::GetStyle() {
-    return NSWindowStyleMaskBorderless;
-}
-
 void WindowBaseImpl::UpdateStyle() {
-    [Window setStyleMask:GetStyle()];
+    [Window setStyleMask:CalculateStyleMask()];
 }
 
 void WindowBaseImpl::CleanNSWindow() {

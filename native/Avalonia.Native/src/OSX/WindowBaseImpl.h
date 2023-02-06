@@ -105,7 +105,7 @@ BEGIN_INTERFACE_MAP()
     virtual void BringToFront ();
 
 protected:
-    virtual NSWindowStyleMask GetStyle();
+    virtual NSWindowStyleMask CalculateStyleMask() = 0;
     virtual void UpdateStyle();
 
 private:

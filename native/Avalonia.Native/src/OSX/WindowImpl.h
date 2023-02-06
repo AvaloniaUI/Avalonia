@@ -98,7 +98,7 @@ BEGIN_INTERFACE_MAP()
     bool CanBecomeKeyWindow ();
 
 protected:
-    virtual NSWindowStyleMask GetStyle() override;
+    virtual NSWindowStyleMask CalculateStyleMask() override;
     void UpdateStyle () override;
 
 private:

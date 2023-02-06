@@ -553,7 +553,7 @@ bool WindowImpl::IsOwned() {
     return _parent != nullptr;
 }
 
-NSWindowStyleMask WindowImpl::GetStyle() {
+NSWindowStyleMask WindowImpl::CalculateStyleMask() {
     unsigned long s = NSWindowStyleMaskBorderless;
     
     if(_actualWindowState == FullScreen)
