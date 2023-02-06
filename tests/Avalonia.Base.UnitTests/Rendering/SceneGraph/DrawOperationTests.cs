@@ -29,7 +29,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             double height,
             double scaleX,
             double scaleY,
-            double? penThickness,
+            double penThickness,
             double expectedX,
             double expectedY,
             double expectedWidth,
@@ -38,7 +38,7 @@ namespace Avalonia.Base.UnitTests.Rendering.SceneGraph
             var target = new TestRectangleDrawOperation(
                 new Rect(x, y, width, height),
                 Matrix.CreateScale(scaleX, scaleY),
-                penThickness.HasValue ? new Pen(Brushes.Black, penThickness.Value) : null);
+                new Pen(Brushes.Black, penThickness));
             Assert.Equal(new Rect(expectedX, expectedY, expectedWidth, expectedHeight), target.Bounds);
         }
 

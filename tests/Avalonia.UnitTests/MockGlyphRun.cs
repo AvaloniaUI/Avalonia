@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 
@@ -24,12 +25,9 @@ namespace Avalonia.UnitTests
 
         public void Dispose()
         {
-            
         }
 
         public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
-        {
-            return null;
-        }
+            => Array.Empty<float>();
     }
 }

@@ -208,6 +208,12 @@ namespace Avalonia.Skia
         public void DrawLine(IPen pen, Point p1, Point p2)
         {
             CheckLease();
+
+            if (pen is null)
+            {
+                return;
+            }
+
             using (var paint = CreatePaint(_strokePaint, pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
                 if (paint.Paint is object)
@@ -495,6 +501,12 @@ namespace Avalonia.Skia
         public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
             CheckLease();
+
+            if (foreground is null)
+            {
+                return;
+            }
+
             using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Item.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
