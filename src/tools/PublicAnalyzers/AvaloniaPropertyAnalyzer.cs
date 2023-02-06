@@ -26,7 +26,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor AssociatedAvaloniaProperty = new(
         "AVP0001",
-        "Identify the AvaloniaProperty associated with a CLR property",
+        "Identification of the AvaloniaProperty associated with a CLR property",
         "Associated AvaloniaProperty: {0} {1}",
         Category,
         DiagnosticSeverity.Info,
@@ -36,7 +36,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor InappropriatePropertyAssignment = new(
         "AVP1000",
-        "Store AvaloniaProperty objects appropriately",
+        "AvaloniaProperty objects should be stored appropriately",
         "Incorrect AvaloniaProperty storage: {0} should be static and readonly",
         Category,
         DiagnosticSeverity.Warning,
@@ -45,7 +45,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor InappropriatePropertyRegistration = new(
         "AVP1001",
-        "Ensure that the same AvaloniaProperty cannot be registered twice",
+        "The same AvaloniaProperty should not be registered twice",
         "Unsafe registration: {0} should be called only in static constructors or static initializers",
         Category,
         DiagnosticSeverity.Warning,
@@ -54,7 +54,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor PropertyOwnedByGenericType = new(
         "AVP1002",
-        "AvaloniaProperty objects should not have a generic type as their owner",
+        "AvaloniaProperty objects should not be owned by a generic type",
         "Inadvisable registration: Generic types cannot be referenced from XAML. Create a non-generic type to be the owner of this AvaloniaProperty.",
         Category,
         DiagnosticSeverity.Warning,
@@ -64,7 +64,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor OwnerDoesNotMatchOuterType = new(
         "AVP1010",
-        "AvaloniaProperty objects should be owned be the type in which they are stored",
+        "AvaloniaProperty objects should be owned by the type in which they are stored",
         "Type mismatch: AvaloniaProperty owner is {0}, which is not the containing type",
         Category,
         DiagnosticSeverity.Warning,
@@ -74,7 +74,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor UnexpectedPropertyAccess = new(
         "AVP1011",
-        "An AvaloniaObject should be the owner of each AvaloniaProperty it reads or writes on itself",
+        "An AvaloniaObject should own each AvaloniaProperty it reads or writes on itself",
         "Unexpected property use: {0} is neither owned by nor attached to {1}",
         Category,
         DiagnosticSeverity.Warning,
@@ -84,8 +84,8 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor SettingOwnStyledPropertyValue = new(
         "AVP1012",
-        "An AvaloniaObject not set a value for its own StyledProperty or AttachedProperty",
-        "Inappropriate assignment: An AvaloniaObject should never set its own StyledProperty or AttachedProperty values",
+        "An AvaloniaObject should not set its own StyledProperty or AttachedProperty values",
+        "Inappropriate assignment: An AvaloniaObject should not set its own StyledProperty or AttachedProperty values",
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
@@ -95,7 +95,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor SuperfluousAddOwnerCall = new(
         "AVP1013",
-        "Do not add superfluous AvaloniaProperty owners",
+        "AvaloniaProperty owners should not be added superfluously",
         "Superfluous owner: {0} is already an owner of {1} via {2}",
         Category,
         DiagnosticSeverity.Warning,
@@ -115,7 +115,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor AmbiguousPropertyName = new(
         "AVP1021",
-        "Ensure an umabiguous relationship between CLR properties and Avalonia properties within the same class",
+        "There should be an unambiguous relationship between the CLR properties and Avalonia properties of a class",
         "Name collision: {0} owns multiple Avalonia properties with the name '{1}' {2}",
         Category,
         DiagnosticSeverity.Warning,
@@ -125,7 +125,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor PropertyNameMismatch = new(
         "AVP1022",
-        "Store each AvaloniaProperty object in a field or CLR property which reflects its name",
+        "An AvaloniaProperty object should be stored in a field or CLR property which reflects its name",
         "Bad name: An AvaloniaProperty named '{0}' is being assigned to {1}. These names do not relate.",
         Category,
         DiagnosticSeverity.Warning,
@@ -135,7 +135,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor AccessorSideEffects = new(
         "AVP1030",
-        "Do not add side effects to StyledProperty accessors",
+        "StyledProperty accessors should not have side effects",
         "Side effects: '{0}' is an AvaloniaProperty which can be {1} without the use of this CLR property. This {2} accessor should do nothing except call {3}.",
         Category,
         DiagnosticSeverity.Warning,
@@ -156,16 +156,16 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
     private static readonly DiagnosticDescriptor InconsistentAccessibility = new(
         "AVP1032",
         "A CLR property and its accessors should be equally accessible as its associated AvaloniaProperty",
-        "Inconsistent accessibility: CLR {0} accessiblity does not match accessibility of {1}",
+        "Inconsistent accessibility: CLR {0} accessibility does not match accessibility of {1}",
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call CLR properties on the owning type. Defining a CLR property with different acessibility from its associated AvaloniaProperty is ineffective.",
+        "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call CLR properties on the owning type. Defining a CLR property with different accessibility from its associated AvaloniaProperty is ineffective.",
         AssociatedClrPropertyTag);
 
     private static readonly DiagnosticDescriptor PropertyTypeMismatch = new(
         "AVP1040",
-        "CLR property type should match associated AvaloniaProperty type",
+        "A CLR property type should match the associated AvaloniaProperty type",
         "Type mismatch: CLR property type differs from the value type of {0} {1}",
         Category,
         DiagnosticSeverity.Warning,
