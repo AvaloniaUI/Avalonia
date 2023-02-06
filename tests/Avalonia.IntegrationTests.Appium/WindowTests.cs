@@ -63,9 +63,9 @@ namespace Avalonia.IntegrationTests.Appium
 
         [Theory]
         [MemberData(nameof(WindowStateData))]
-        public void WindowState(Size? size, ShowWindowMode mode, WindowState state)
+        public void WindowState(Size? size, ShowWindowMode mode, WindowState state, bool canResize)
         {
-            using var window = OpenWindow(size, mode, state: state);
+            using var window = OpenWindow(size, mode, state: state, canResize: canResize);
 
             try
             {
@@ -253,10 +253,10 @@ namespace Avalonia.IntegrationTests.Appium
             return data;
         }
 
-        public static TheoryData<Size?, ShowWindowMode, WindowState> WindowStateData()
+        public static TheoryData<Size?, ShowWindowMode, WindowState, bool> WindowStateData()
         {
             var sizes = new Size?[] { null, new Size(400, 300) };
-            var data = new TheoryData<Size?, ShowWindowMode, WindowState>();
+            var data = new TheoryData<Size?, ShowWindowMode, WindowState, bool>();
 
             foreach (var size in sizes)
             {
@@ -274,7 +274,8 @@ namespace Avalonia.IntegrationTests.Appium
                             mode != ShowWindowMode.NonOwned)
                             continue;
 
-                        data.Add(size, mode, state);
+                        data.Add(size, mode, state, true);
+                        data.Add(size, mode, state, false);
                     }
                 }
             }
