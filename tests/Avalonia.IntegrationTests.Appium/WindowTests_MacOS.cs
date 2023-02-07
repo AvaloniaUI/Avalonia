@@ -56,7 +56,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [PlatformFact(TestPlatforms.MacOS, Skip = "Flaky test, skip for now")]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_Clicking_Resize_Grip()
         {
             var mainWindow = GetWindow("MainWindow");
@@ -151,7 +151,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal("Normal", windowState.Text);
         }
 
-        [PlatformFact(TestPlatforms.MacOS, Skip = "Flaky test, skip for now")]
+        [PlatformFact(TestPlatforms.MacOS)]
         public void Does_Not_Switch_Space_From_FullScreen_To_Main_Desktop_When_FullScreen_Window_Clicked()
         {
             // Issue #9565

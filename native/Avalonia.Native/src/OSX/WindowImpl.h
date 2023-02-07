@@ -102,6 +102,7 @@ protected:
     void UpdateStyle () override;
 
 private:
+    void ZOrderChildWindows();
     void OnInitialiseNSWindow();
     NSString *_lastTitle;
 };

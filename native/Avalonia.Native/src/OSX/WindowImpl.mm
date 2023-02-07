@@ -119,14 +119,19 @@ void WindowImpl::BringToFront()
         }
         
         [Window invalidateShadow];
+        ZOrderChildWindows();
+    }
+}
+
+void WindowImpl::ZOrderChildWindows()
+{
+    for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
+    {
+        auto window = (*iterator)->Window;
         
-        for(auto iterator = _children.begin(); iterator != _children.end(); iterator++)
-        {
-            auto window = (*iterator)->Window;
-            
-            // #9565: Only bring window to front if it's on the currently active space
-            if ([window isOnActiveSpace])
-                (*iterator)->BringToFront();
+        // #9565: Only bring window to front if it's on the currently active space
+        if ([window isOnActiveSpace]) {
+            (*iterator)->BringToFront();
         }
     }
 }
@@ -154,7 +159,7 @@ void WindowImpl::EndStateTransition() {
     UpdateStyle();
 
     // Ensure correct order of child windows after fullscreen transition.
-    BringToFront();
+    ZOrderChildWindows();
 }
 
 SystemDecorations WindowImpl::Decorations() {
