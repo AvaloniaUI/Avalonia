@@ -599,9 +599,14 @@ void WindowImpl::UpdateStyle() {
     bool wantsChrome = (_extendClientHints & AvnSystemChrome) || (_extendClientHints & AvnPreferSystemChrome);
     bool hasTrafficLights = _isClientAreaExtended ? wantsChrome : _decorations == SystemDecorationsFull;
     
-    [[Window standardWindowButton:NSWindowCloseButton] setHidden:!hasTrafficLights];
-    [[Window standardWindowButton:NSWindowMiniaturizeButton] setHidden:!hasTrafficLights];
-    [[Window standardWindowButton:NSWindowZoomButton] setHidden:!hasTrafficLights];
-    [[Window standardWindowButton:NSWindowZoomButton] setEnabled:_canResize];
-}
+    NSButton* closeButton = [Window standardWindowButton:NSWindowCloseButton];
+    NSButton* miniaturizeButton = [Window standardWindowButton:NSWindowMiniaturizeButton];
+    NSButton* zoomButton = [Window standardWindowButton:NSWindowZoomButton];
 
+    [closeButton setHidden:!hasTrafficLights];
+    [closeButton setEnabled:_isEnabled];
+    [miniaturizeButton setHidden:!hasTrafficLights];
+    [miniaturizeButton setEnabled:_isEnabled];
+    [zoomButton setHidden:!hasTrafficLights];
+    [zoomButton setEnabled:_isEnabled && _canResize];
+}

@@ -274,10 +274,6 @@
 -(void) setEnabled:(bool)enable
 {
     _isEnabled = enable;
-    
-    [[self standardWindowButton:NSWindowCloseButton] setEnabled:enable];
-    [[self standardWindowButton:NSWindowMiniaturizeButton] setEnabled:enable];
-    [[self standardWindowButton:NSWindowZoomButton] setEnabled:enable];
 }
 
 -(void)becomeKeyWindow
