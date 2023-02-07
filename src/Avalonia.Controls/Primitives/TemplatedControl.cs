@@ -399,6 +399,7 @@ namespace Avalonia.Controls.Primitives
         private protected override void OnControlThemeChanged()
         {
             base.OnControlThemeChanged();
+            ApplyTemplate();
 
             var count = VisualChildren.Count;
             for (var i = 0; i < count; ++i)
