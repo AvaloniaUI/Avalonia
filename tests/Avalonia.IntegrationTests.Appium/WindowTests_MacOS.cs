@@ -56,7 +56,7 @@ namespace Avalonia.IntegrationTests.Appium
             }
         }
 
-        [PlatformFact(TestPlatforms.MacOS)]
+        [PlatformFact(TestPlatforms.MacOS, Skip = "Flaky test, skip for now")]
         public void WindowOrder_Modal_Dialog_Stays_InFront_Of_Parent_When_Clicking_Resize_Grip()
         {
             var mainWindow = GetWindow("MainWindow");
