@@ -146,11 +146,13 @@ bool WindowImpl::CanBecomeKeyWindow()
 
 void WindowImpl::StartStateTransition() {
     _transitioningWindowState = true;
+    UpdateStyle();
 }
 
 void WindowImpl::EndStateTransition() {
     _transitioningWindowState = false;
-    
+    UpdateStyle();
+
     // Ensure correct order of child windows after fullscreen transition.
     BringToFront();
 }
@@ -573,7 +575,7 @@ NSWindowStyleMask WindowImpl::CalculateStyleMask() {
         case SystemDecorationsFull:
             s = s | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable;
 
-            if (_canResize && _isEnabled) {
+            if ((_canResize && _isEnabled) || _transitioningWindowState) {
                 s = s | NSWindowStyleMaskResizable;
             }
             break;
