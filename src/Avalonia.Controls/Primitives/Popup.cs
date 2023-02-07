@@ -120,7 +120,7 @@ namespace Avalonia.Controls.Primitives
         public static readonly StyledProperty<bool> TopmostProperty =
             AvaloniaProperty.Register<Popup, bool>(nameof(Topmost));
 
-        private bool _isOpenRequested = false;
+        private bool _isOpenRequested;
         private bool _isOpen;
         private bool _ignoreIsOpenChanged;
         private PopupOpenState? _openState;
@@ -377,9 +377,9 @@ namespace Avalonia.Controls.Primitives
             popupHost.SetChild(Child);
             ((ISetLogicalParent)popupHost).SetParent(this);
 
-            if (InheritsTransform && placementTarget is Control c)
+            if (InheritsTransform)
             {
-                TransformTrackingHelper.Track(c, PlacementTargetTransformChanged)
+                TransformTrackingHelper.Track(placementTarget, PlacementTargetTransformChanged)
                     .DisposeWith(handlerCleanup);
             }
             else
@@ -518,6 +518,7 @@ namespace Avalonia.Controls.Primitives
             Close();
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -579,7 +580,7 @@ namespace Avalonia.Controls.Primitives
             var scaleX = 1.0;
             var scaleY = 1.0;
 
-            if (InheritsTransform && placementTarget.TransformToVisual(topLevel) is Matrix m)
+            if (InheritsTransform && placementTarget.TransformToVisual(topLevel) is { } m)
             {
                 scaleX = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
                 scaleY = Math.Sqrt(m.M11 * m.M11 + m.M12 * m.M12);
@@ -623,6 +624,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new PopupAutomationPeer(this);
@@ -850,7 +852,7 @@ namespace Avalonia.Controls.Primitives
 
             var popupHost = _openState.PopupHost;
 
-            return popupHost != null && ((Visual)popupHost).IsVisualAncestorOf(visual);
+            return ((Visual)popupHost).IsVisualAncestorOf(visual);
         }
 
         public bool IsPointerOverPopup => ((IInputElement?)_openState?.PopupHost)?.IsPointerOver ?? false;

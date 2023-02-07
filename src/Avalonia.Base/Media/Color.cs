@@ -331,7 +331,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Parses the given string representing a CSS color value into a new <see cref="Color"/>.
         /// </summary>
-        private static bool TryParseCssFormat(string s, out Color color)
+        private static bool TryParseCssFormat(string? s, out Color color)
         {
             bool prefixMatched = false;
 

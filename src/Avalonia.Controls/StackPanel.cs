@@ -261,9 +261,6 @@ namespace Avalonia.Controls
                 // Get next child.
                 var child = children[i];
 
-                if (child == null)
-                { continue; }
-
                 bool isVisible = child.IsVisible;
 
                 if (isVisible && !hasVisibleChild)
@@ -319,8 +316,10 @@ namespace Avalonia.Controls
             {
                 var child = children[i];
 
-                if (child == null || !child.IsVisible)
-                { continue; }
+                if (!child.IsVisible)
+                {
+                    continue;
+                }
 
                 if (fHorizontal)
                 {

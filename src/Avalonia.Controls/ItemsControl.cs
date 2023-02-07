@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -17,7 +16,6 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -106,7 +104,6 @@ namespace Avalonia.Controls
         private Tuple<int, Control>? _containerBeingPrepared;
         private ScrollViewer? _scrollViewer;
         private ItemsPresenter? _itemsPresenter;
-        private IScrollSnapPointsInfo? _scrolSnapPointInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsControl"/> class.
@@ -221,6 +218,7 @@ namespace Avalonia.Controls
         }
 
 
+        /// <inheritdoc />
         public event EventHandler<RoutedEventArgs> HorizontalSnapPointsChanged
         {
             add
@@ -240,6 +238,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc />
         public event EventHandler<RoutedEventArgs> VerticalSnapPointsChanged
         {
             add
@@ -424,13 +423,12 @@ namespace Avalonia.Controls
         /// <returns>true if the item is (or is eligible to be) its own container; otherwise, false.</returns>
         protected internal virtual bool IsItemItsOwnContainerOverride(Control item) => true;
 
+        /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
-
-            _scrolSnapPointInfo = _itemsPresenter as IScrollSnapPointsInfo;
         }
 
         /// <summary>
@@ -477,11 +475,13 @@ namespace Avalonia.Controls
             base.OnKeyDown(e);
         }
 
+        /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new ItemsControlAutomationPeer(this);
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -748,11 +748,13 @@ namespace Avalonia.Controls
             return true;
         }
 
+        /// <inheritdoc />
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {
             return _itemsPresenter?.GetIrregularSnapPoints(orientation, snapPointsAlignment) ?? new List<double>();
         }
 
+        /// <inheritdoc />
         public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
         {
             offset = 0;

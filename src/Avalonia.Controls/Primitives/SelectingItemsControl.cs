@@ -3,16 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Xml.Linq;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Selection;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -255,6 +253,7 @@ namespace Avalonia.Controls.Primitives
         /// <summary>
         /// Gets or sets the model that holds the current selection.
         /// </summary>
+        [AllowNull]
         protected ISelectionModel Selection
         {
             get
@@ -399,6 +398,7 @@ namespace Avalonia.Controls.Primitives
             return null;
         }
 
+        /// <inheritdoc />
         protected override void ItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             base.ItemsCollectionChanged(sender!, e);
@@ -409,12 +409,14 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
             AutoScrollToSelectedItemIfNecessary();
         }
 
+        /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
@@ -431,6 +433,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <inheritdoc />
         protected internal override void PrepareContainerForItemOverride(Control element, object? item, int index)
         {
             base.PrepareContainerForItemOverride(element, item, index);
@@ -447,12 +450,14 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <inheritdoc />
         protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
         {
             base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
             MarkContainerSelected(container, Selection.IsSelected(newIndex));
         }
 
+        /// <inheritdoc />
         protected internal override void ClearContainerForItemOverride(Control element)
         {
             base.ClearContainerForItemOverride(element);
@@ -463,7 +468,7 @@ namespace Avalonia.Controls.Primitives
                 KeyboardNavigation.SetTabOnceActiveElement(panel, null);
             }
 
-            if (element is ISelectable selectable)
+            if (element is ISelectable)
                 MarkContainerSelected(element, false);
         }
 
@@ -498,7 +503,8 @@ namespace Avalonia.Controls.Primitives
                 DataValidationErrors.SetError(this, error);
             }
         }
-        
+
+        /// <inheritdoc />
         protected override void OnInitialized()
         {
             base.OnInitialized();
@@ -509,6 +515,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <inheritdoc />
         protected override void OnTextInput(TextInputEventArgs e)
         {
             if (!e.Handled)
@@ -551,6 +558,7 @@ namespace Avalonia.Controls.Primitives
             base.OnTextInput(e);
         }
 
+        /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -582,6 +590,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -592,7 +601,7 @@ namespace Avalonia.Controls.Primitives
             }
             if (change.Property == ItemsProperty && _updateState is null && _selection is object)
             {
-                var newValue = change.GetNewValue<IEnumerable>();
+                var newValue = change.GetNewValue<IEnumerable?>();
                 _selection.Source = newValue;
 
                 if (newValue is null)
@@ -695,7 +704,7 @@ namespace Avalonia.Controls.Primitives
             {
                 if (multi)
                 {
-                    if (Selection.IsSelected(index) == true)
+                    if (Selection.IsSelected(index))
                     {
                         Selection.Deselect(index);
                     }
@@ -716,12 +725,10 @@ namespace Avalonia.Controls.Primitives
                 Selection.Select(index);
             }
 
-            if (Presenter?.Panel != null)
+            if (Presenter?.Panel is { } panel)
             {
                 var container = ContainerFromIndex(index);
-                KeyboardNavigation.SetTabOnceActiveElement(
-                    (InputElement)Presenter.Panel,
-                    container);
+                KeyboardNavigation.SetTabOnceActiveElement(panel, container);
             }
         }
 
@@ -940,7 +947,7 @@ namespace Avalonia.Controls.Primitives
 
         private void UpdateContainerSelection()
         {
-            if (Presenter?.Panel is Panel panel)
+            if (Presenter?.Panel is { } panel)
             {
                 foreach (var container in panel.Children)
                 {
