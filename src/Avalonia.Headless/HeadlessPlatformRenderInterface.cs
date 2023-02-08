@@ -141,9 +141,7 @@ namespace Avalonia.Headless
             }
 
             public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
-            {
-                return null;
-            }
+                => Array.Empty<float>();
         }
 
         class HeadlessGeometryStub : IGeometryImpl

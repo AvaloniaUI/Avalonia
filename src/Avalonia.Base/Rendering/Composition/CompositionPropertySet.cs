@@ -23,7 +23,7 @@ namespace Avalonia.Rendering.Composition
         private readonly Dictionary<string, ExpressionVariant> _variants = new Dictionary<string, ExpressionVariant>();
         private readonly Dictionary<string, CompositionObject> _objects = new Dictionary<string, CompositionObject>();
         
-        internal CompositionPropertySet(Compositor compositor) : base(compositor, null!)
+        internal CompositionPropertySet(Compositor compositor) : base(compositor, null)
         {
         }
 

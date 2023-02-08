@@ -1,6 +1,5 @@
 using System;
 using Avalonia.Controls.Primitives.PopupPositioning;
-using Avalonia.Input;
 using Moq;
 using Avalonia.Platform;
 using Avalonia.Rendering;
@@ -28,6 +27,8 @@ namespace Avalonia.UnitTests
             var clientSize = new Size(initialWidth,  initialHeight);
 
             windowImpl.SetupAllProperties();
+            windowImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(() => RendererMocks.CreateRenderer().Object);
             windowImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             windowImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             windowImpl.Setup(x => x.DesktopScaling).Returns(1);
@@ -92,6 +93,8 @@ namespace Avalonia.UnitTests
             var positioner = new ManagedPopupPositioner(positionerHelper);
 
             popupImpl.SetupAllProperties();
+            popupImpl.Setup(x => x.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(() => RendererMocks.CreateRenderer().Object);
             popupImpl.Setup(x => x.ClientSize).Returns(() => clientSize);
             popupImpl.Setup(x => x.MaxAutoSizeHint).Returns(s_screenSize);
             popupImpl.Setup(x => x.RenderScaling).Returns(1);

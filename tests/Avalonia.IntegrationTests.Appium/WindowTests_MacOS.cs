@@ -264,7 +264,7 @@ namespace Avalonia.IntegrationTests.Appium
                 var secondaryWindow = GetWindow("SecondaryWindow");
                 var (_, miniaturizeButton, _) = secondaryWindow.GetChromeButtons();
 
-                Assert.Equal(false, miniaturizeButton.Enabled);
+                Assert.False(miniaturizeButton.Enabled);
             }
         }
         

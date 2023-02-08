@@ -334,6 +334,47 @@ namespace Avalonia.Markup.Xaml.UnitTests
             var parsed = (Button)AvaloniaRuntimeXamlLoader.Load(document);
             Assert.Equal(Colors.Blue, ((ISolidColorBrush)parsed.Background!).Color);
         }
+
+        [Fact]
+        public void Style_Parser_Throws_For_Duplicate_Setter()
+        {
+            var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:local='clr-namespace:Avalonia.Markup.Xaml.UnitTests.Xaml;assembly=Avalonia.Markup.Xaml.UnitTests'>
+    <Window.Styles>
+        <Style Selector='TextBlock'>
+            <Setter Property='Width' Value='100'/>
+            <Setter Property='Height' Value='20'/>
+            <Setter Property='Height' Value='30'/>
+        </Style>
+    </Window.Styles>
+    <TextBlock/>
+</Window>";
+            AssertThrows(() => AvaloniaRuntimeXamlLoader.Load(xaml, typeof(XamlIlTests).Assembly, designMode: true),
+                e => e.Message.StartsWith("Duplicate setter encountered for property 'Height'"));
+        }
+
+        [Fact]
+        public void Control_Theme_Parser_Throws_For_Duplicate_Setter()
+        {
+            var xaml = @"
+<Window xmlns='https://github.com/avaloniaui'
+        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+        xmlns:u='using:Avalonia.Markup.Xaml.UnitTests.Xaml'>
+    <Window.Resources>
+        <ControlTheme x:Key='MyTheme' TargetType='u:TestTemplatedControl'>
+            <Setter Property='Width' Value='100'/>
+            <Setter Property='Height' Value='20'/>
+            <Setter Property='Height' Value='30'/>
+        </ControlTheme>
+    </Window.Resources>
+
+    <u:TestTemplatedControl Theme='{StaticResource MyTheme}'/>
+</Window>";
+            AssertThrows(() => AvaloniaRuntimeXamlLoader.Load(xaml, typeof(XamlIlTests).Assembly, designMode: true),
+                e => e.Message.StartsWith("Duplicate setter encountered for property 'Height'"));
+        }
     }
 
     public class XamlIlBugTestsEventHandlerCodeBehind : Window

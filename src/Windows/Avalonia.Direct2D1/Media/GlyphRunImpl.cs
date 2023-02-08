@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Avalonia.Platform;
 using SharpDX.DirectWrite;
 
@@ -25,8 +26,6 @@ namespace Avalonia.Direct2D1.Media
         }
 
         public IReadOnlyList<float> GetIntersections(float lowerBound, float upperBound)
-        {
-            return null;
-        }
+            => Array.Empty<float>();
     }
 }

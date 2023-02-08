@@ -208,7 +208,7 @@ unsafe class VulkanContent : IDisposable
         api.CmdBindDescriptorSets(commandBufferHandle, PipelineBindPoint.Graphics,
             _pipelineLayout,0,1, &dset, null);
 
-        api.CmdPushConstants(commandBufferHandle, _pipelineLayout, ShaderStageFlags.ShaderStageVertexBit | ShaderStageFlags.FragmentBit, 0,
+        api.CmdPushConstants(commandBufferHandle, _pipelineLayout, ShaderStageFlags.VertexBit | ShaderStageFlags.FragmentBit, 0,
             (uint)Marshal.SizeOf<VertextPushConstant>(), &vertexConstant);
         api.CmdBindVertexBuffers(commandBufferHandle, 0, 1, _vertexBuffer, 0);
         api.CmdBindIndexBuffer(commandBufferHandle, _indexBuffer, 0, IndexType.Uint16);
@@ -237,14 +237,14 @@ unsafe class VulkanContent : IDisposable
             SrcSubresource =
                 new ImageSubresourceLayers
                 {
-                    AspectMask = ImageAspectFlags.ImageAspectColorBit,
+                    AspectMask = ImageAspectFlags.ColorBit,
                     BaseArrayLayer = 0,
                     LayerCount = 1,
                     MipLevel = 0
                 },
             DstSubresource = new ImageSubresourceLayers
             {
-                AspectMask = ImageAspectFlags.ImageAspectColorBit,
+                AspectMask = ImageAspectFlags.ColorBit,
                 BaseArrayLayer = 0,
                 LayerCount = 1,
                 MipLevel = 0
@@ -326,19 +326,19 @@ unsafe class VulkanContent : IDisposable
         var imageCreateInfo = new ImageCreateInfo
         {
             SType = StructureType.ImageCreateInfo,
-            ImageType = ImageType.ImageType2D,
+            ImageType = ImageType.Type2D,
             Format = Format.D32Sfloat,
             Extent =
                 new Extent3D((uint?)size.Width,
                     (uint?)size.Height, 1),
             MipLevels = 1,
             ArrayLayers = 1,
-            Samples = SampleCountFlags.SampleCount1Bit,
+            Samples = SampleCountFlags.Count1Bit,
             Tiling = ImageTiling.Optimal,
-            Usage = ImageUsageFlags.ImageUsageDepthStencilAttachmentBit,
+            Usage = ImageUsageFlags.DepthStencilAttachmentBit,
             SharingMode = SharingMode.Exclusive,
             InitialLayout = ImageLayout.Undefined,
-            Flags = ImageCreateFlags.ImageCreateMutableFormatBit
+            Flags = ImageCreateFlags.CreateMutableFormatBit
         };
 
         var api = _context.Api;
@@ -355,7 +355,7 @@ unsafe class VulkanContent : IDisposable
             AllocationSize = memoryRequirements.Size,
             MemoryTypeIndex = (uint)FindSuitableMemoryTypeIndex(api,
                 _context.PhysicalDevice,
-                memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit)
+                memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.DeviceLocalBit)
         };
 
         api.AllocateMemory(device, memoryAllocateInfo, null,
@@ -369,14 +369,14 @@ unsafe class VulkanContent : IDisposable
             ComponentSwizzle.B,
             ComponentSwizzle.A);
 
-        var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.ImageAspectDepthBit,
+        var subresourceRange = new ImageSubresourceRange(ImageAspectFlags.DepthBit,
             0, 1, 0, 1);
 
         var imageViewCreateInfo = new ImageViewCreateInfo
         {
             SType = StructureType.ImageViewCreateInfo,
             Image = _depthImage,
-            ViewType = ImageViewType.ImageViewType2D,
+            ViewType = ImageViewType.Type2D,
             Format = Format.D32Sfloat,
             Components = componentMapping,
             SubresourceRange = subresourceRange
@@ -406,7 +406,7 @@ unsafe class VulkanContent : IDisposable
         var colorAttachment = new AttachmentDescription()
         {
             Format = Format.R8G8B8A8Unorm,
-            Samples = SampleCountFlags.SampleCount1Bit,
+            Samples = SampleCountFlags.Count1Bit,
             LoadOp = AttachmentLoadOp.Clear,
             StoreOp = AttachmentStoreOp.Store,
             InitialLayout = ImageLayout.Undefined,
@@ -418,7 +418,7 @@ unsafe class VulkanContent : IDisposable
         var depthAttachment = new AttachmentDescription()
         {
             Format = Format.D32Sfloat,
-            Samples = SampleCountFlags.SampleCount1Bit,
+            Samples = SampleCountFlags.Count1Bit,
             LoadOp = AttachmentLoadOp.Clear,
             StoreOp = AttachmentStoreOp.DontCare,
             InitialLayout = ImageLayout.Undefined,
@@ -431,10 +431,10 @@ unsafe class VulkanContent : IDisposable
         {
             SrcSubpass = Vk.SubpassExternal,
             DstSubpass = 0,
-            SrcStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
+            SrcStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
             SrcAccessMask = 0,
-            DstStageMask = PipelineStageFlags.PipelineStageColorAttachmentOutputBit,
-            DstAccessMask = AccessFlags.AccessColorAttachmentWriteBit
+            DstStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
+            DstAccessMask = AccessFlags.ColorAttachmentWriteBit
         };
 
         var colorAttachmentReference = new AttachmentReference()
@@ -498,14 +498,14 @@ unsafe class VulkanContent : IDisposable
         var vertShaderStageInfo = new PipelineShaderStageCreateInfo()
         {
             SType = StructureType.PipelineShaderStageCreateInfo,
-            Stage = ShaderStageFlags.ShaderStageVertexBit,
+            Stage = ShaderStageFlags.VertexBit,
             Module = _vertShader,
             PName = (byte*)pname,
         };
         var fragShaderStageInfo = new PipelineShaderStageCreateInfo()
         {
             SType = StructureType.PipelineShaderStageCreateInfo,
-            Stage = ShaderStageFlags.ShaderStageFragmentBit,
+            Stage = ShaderStageFlags.FragmentBit,
             Module = _fragShader,
             PName = (byte*)pname,
         };
@@ -564,7 +564,7 @@ unsafe class VulkanContent : IDisposable
                 RasterizerDiscardEnable = false,
                 PolygonMode = PolygonMode.Fill,
                 LineWidth = 1,
-                CullMode = CullModeFlags.CullModeNone,
+                CullMode = CullModeFlags.None,
                 DepthBiasEnable = false
             };
 
@@ -572,7 +572,7 @@ unsafe class VulkanContent : IDisposable
             {
                 SType = StructureType.PipelineMultisampleStateCreateInfo,
                 SampleShadingEnable = false,
-                RasterizationSamples = SampleCountFlags.SampleCount1Bit
+                RasterizationSamples = SampleCountFlags.Count1Bit
             };
 
             var depthStencilCreateInfo = new PipelineDepthStencilStateCreateInfo()
@@ -587,10 +587,10 @@ unsafe class VulkanContent : IDisposable
 
             var colorBlendAttachmentState = new PipelineColorBlendAttachmentState()
             {
-                ColorWriteMask = ColorComponentFlags.ColorComponentABit |
-                                 ColorComponentFlags.ColorComponentRBit |
-                                 ColorComponentFlags.ColorComponentGBit |
-                                 ColorComponentFlags.ColorComponentBBit,
+                ColorWriteMask = ColorComponentFlags.ABit |
+                                 ColorComponentFlags.RBit |
+                                 ColorComponentFlags.GBit |
+                                 ColorComponentFlags.BBit,
                 BlendEnable = false
             };
 
@@ -617,14 +617,14 @@ unsafe class VulkanContent : IDisposable
                 {
                     Offset = 0,
                     Size = (uint)Marshal.SizeOf<VertextPushConstant>(),
-                    StageFlags = ShaderStageFlags.ShaderStageVertexBit
+                    StageFlags = ShaderStageFlags.VertexBit
                 };
 
                 var fragPushConstantRange = new PushConstantRange()
                 {
                     //Offset = vertexPushConstantRange.Size,
                     Size = (uint)Marshal.SizeOf<VertextPushConstant>(),
-                    StageFlags = ShaderStageFlags.ShaderStageFragmentBit
+                    StageFlags = ShaderStageFlags.FragmentBit
                 };
 
                 var layoutBindingInfo = new DescriptorSetLayoutBinding

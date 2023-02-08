@@ -25,7 +25,7 @@ namespace Avalonia.Win32.Interop.Wpf
             if (_bitmap == null || _bitmap.PixelWidth != (int) size.Width || _bitmap.PixelHeight != (int) size.Height)
             {
                 _bitmap = new WriteableBitmap((int) size.Width, (int) size.Height, dpi.X, dpi.Y,
-                    PixelFormats.Bgra32, null);
+                    System.Windows.Media.PixelFormats.Bgra32, null);
             }
             return new LockedFramebuffer(_impl, _bitmap, dpi);
         }
