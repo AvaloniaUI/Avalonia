@@ -48,7 +48,7 @@ namespace Avalonia.Controls.Primitives
             set { /* Not currently supported in overlay popups */ }
         }
 
-        protected internal override Interactive? InteractiveParent => Parent;
+        protected internal override Interactive? InteractiveParent => (Interactive?)VisualParent;
 
         public void Dispose() => Hide();
 
