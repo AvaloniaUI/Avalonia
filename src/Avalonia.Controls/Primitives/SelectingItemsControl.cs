@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Xml.Linq;
-using Avalonia.Controls.Generators;
 using Avalonia.Controls.Selection;
 using Avalonia.Controls.Utils;
 using Avalonia.Data;
@@ -14,7 +12,6 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -160,8 +157,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs>? SelectionChanged
         {
-            add { AddHandler(SelectionChangedEvent, value); }
-            remove { RemoveHandler(SelectionChangedEvent, value); }
+            add => AddHandler(SelectionChangedEvent, value); 
+            remove => RemoveHandler(SelectionChangedEvent, value);
         }
 
         /// <summary>
@@ -169,8 +166,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool AutoScrollToSelectedItem
         {
-            get { return GetValue(AutoScrollToSelectedItemProperty); }
-            set { SetValue(AutoScrollToSelectedItemProperty, value); }
+            get => GetValue(AutoScrollToSelectedItemProperty);
+            set => SetValue(AutoScrollToSelectedItemProperty, value);
         }
 
         /// <summary>
@@ -361,8 +358,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool IsTextSearchEnabled
         {
-            get { return GetValue(IsTextSearchEnabledProperty); }
-            set { SetValue(IsTextSearchEnabledProperty, value); }
+            get => GetValue(IsTextSearchEnabledProperty);
+            set => SetValue(IsTextSearchEnabledProperty, value);
         }
 
         /// <summary>
@@ -371,8 +368,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool WrapSelection
         {
-            get { return GetValue(WrapSelectionProperty); }
-            set { SetValue(WrapSelectionProperty, value); }
+            get => GetValue(WrapSelectionProperty); 
+            set => SetValue(WrapSelectionProperty, value);
         }
 
         /// <summary>
@@ -384,8 +381,8 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected SelectionMode SelectionMode
         {
-            get { return GetValue(SelectionModeProperty); }
-            set { SetValue(SelectionModeProperty, value); }
+            get => GetValue(SelectionModeProperty); 
+            set => SetValue(SelectionModeProperty, value);
         }
 
         /// <summary>
