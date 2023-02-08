@@ -12,6 +12,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 
@@ -230,6 +231,7 @@ namespace Avalonia.Controls.Primitives
         /// <see cref="SelectedValue"/> property
         /// </summary>
         [AssignBinding]
+        [InheritDataTypeFromItems(nameof(Items))]
         public IBinding? SelectedValueBinding
         {
             get => GetValue(SelectedValueBindingProperty);
