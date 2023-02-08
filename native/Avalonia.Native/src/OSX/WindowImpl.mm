@@ -561,13 +561,15 @@ bool WindowImpl::IsOwned() {
 }
 
 NSWindowStyleMask WindowImpl::CalculateStyleMask() {
-    unsigned long s = NSWindowStyleMaskBorderless;
+    // Use the current style mask and only clear the flags we're going to be modifying.
+    unsigned long s = [Window styleMask] &
+        ~(NSWindowStyleMaskFullSizeContentView |
+          NSWindowStyleMaskTitled |
+          NSWindowStyleMaskClosable |
+          NSWindowStyleMaskResizable |
+          NSWindowStyleMaskMiniaturizable |
+          NSWindowStyleMaskTexturedBackground);
     
-    if(_actualWindowState == FullScreen)
-    {
-        s |= NSWindowStyleMaskFullScreen;
-    }
-
     switch (_decorations) {
         case SystemDecorationsNone:
             s = s | NSWindowStyleMaskFullSizeContentView;
