@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.ConstrainedExecution;
 using System.Threading;
-using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
 
@@ -18,8 +17,8 @@ namespace Avalonia.Win32
             SetSynchronizationContext(this);
         }
 
-        public override void Post(SendOrPostCallback d, object state) => _inner.Post(d, state);
-        public override void Send(SendOrPostCallback d, object state) => _inner.Send(d, state);
+        public override void Post(SendOrPostCallback d, object? state) => _inner.Post(d, state);
+        public override void Send(SendOrPostCallback d, object? state) => _inner.Send(d, state);
 
 #if !NET6_0_OR_GREATER
         [PrePrepareMethod]
@@ -32,23 +31,15 @@ namespace Avalonia.Win32
 
         public void Dispose() => SetSynchronizationContext(_inner);
 
-        public static IDisposable Use()
+        public static IDisposable? Use()
         {
             var current = Current;
-            if (current == null)
-            {
-                if (Thread.CurrentThread.GetApartmentState() != ApartmentState.STA)
-                    return null;
-            }
-            if (current is NonPumpingSyncContext)
-                return null;
-            
-            return new NonPumpingSyncContext(current);
+            return current is null or NonPumpingSyncContext ? null : new NonPumpingSyncContext(current);
         }
 
         internal class HelperImpl : NonPumpingLockHelper.IHelperImpl
         {
-            IDisposable NonPumpingLockHelper.IHelperImpl.Use() => NonPumpingSyncContext.Use();
+            IDisposable? NonPumpingLockHelper.IHelperImpl.Use() => NonPumpingSyncContext.Use();
         }
     }
 }

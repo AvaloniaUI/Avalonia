@@ -1,13 +1,13 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Avalonia.Controls.Platform;
 using Avalonia.Platform;
-using Avalonia.VisualTree;
 using Avalonia.Win32.Interop;
 
 namespace Avalonia.Win32
 {
-    class Win32NativeControlHost : INativeControlHostImpl
+    internal class Win32NativeControlHost : INativeControlHostImpl
     {
         private readonly bool _useLayeredWindow;
         public WindowImpl Window { get; }
@@ -18,7 +18,7 @@ namespace Avalonia.Win32
             Window = window;
         }
 
-        void AssertCompatible(IPlatformHandle handle)
+        private void AssertCompatible(IPlatformHandle handle)
         {
             if (!IsCompatibleWith(handle))
                 throw new ArgumentException($"Don't know what to do with {handle.HandleDescriptor}");
@@ -33,7 +33,7 @@ namespace Avalonia.Win32
         public INativeControlHostControlTopLevelAttachment CreateNewAttachment(Func<IPlatformHandle, IPlatformHandle> create)
         {
             var holder = new DumbWindow(_useLayeredWindow, Window.Handle.Handle);
-            Win32NativeControlAttachment attachment = null;
+            Win32NativeControlAttachment? attachment = null;
             try
             {
                 var child = create(holder);
@@ -46,7 +46,7 @@ namespace Avalonia.Win32
             catch
             {
                 attachment?.Dispose();
-                holder?.Destroy();
+                holder.Destroy();
                 throw;
             }
         }
@@ -60,13 +60,13 @@ namespace Avalonia.Win32
 
         public bool IsCompatibleWith(IPlatformHandle handle) => handle.HandleDescriptor == "HWND";
 
-        class DumbWindow : IDisposable, INativeControlHostDestroyableControlHandle
+        private class DumbWindow : IDisposable, INativeControlHostDestroyableControlHandle
         {
             public IntPtr Handle { get;}
             public string HandleDescriptor => "HWND";
             public void Destroy() => Dispose();
 
-            UnmanagedMethods.WndProc _wndProcDelegate;
+            private readonly UnmanagedMethods.WndProc _wndProcDelegate;
             private readonly string _className;
 
             public DumbWindow(bool layered = false, IntPtr? parent = null)
@@ -103,9 +103,7 @@ namespace Avalonia.Win32
                         UnmanagedMethods.LayeredWindowFlags.LWA_ALPHA);
             }
 
-
-
-            protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
+            private static IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
             {
                 return UnmanagedMethods.DefWindowProc(hWnd, msg, wParam, lParam);
             }
@@ -128,11 +126,11 @@ namespace Avalonia.Win32
             }
         }
 
-        class Win32NativeControlAttachment : INativeControlHostControlTopLevelAttachment
+        private class Win32NativeControlAttachment : INativeControlHostControlTopLevelAttachment
         {
-            private DumbWindow _holder;
-            private IPlatformHandle _child;
-            private Win32NativeControlHost _attachedTo;
+            private DumbWindow? _holder;
+            private IPlatformHandle? _child;
+            private Win32NativeControlHost? _attachedTo;
 
             public Win32NativeControlAttachment(DumbWindow holder, IPlatformHandle child)
             {
@@ -142,7 +140,8 @@ namespace Avalonia.Win32
                 UnmanagedMethods.ShowWindow(child.Handle, UnmanagedMethods.ShowWindowCommand.Show);
             }
 
-            void CheckDisposed()
+            [MemberNotNull(nameof(_holder))]
+            private void CheckDisposed()
             {
                 if (_holder == null)
                     throw new ObjectDisposedException(nameof(Win32NativeControlAttachment));
@@ -158,13 +157,13 @@ namespace Avalonia.Win32
                 _attachedTo = null;
             }
 
-            public INativeControlHostImpl AttachedTo
+            public INativeControlHostImpl? AttachedTo
             {
                 get => _attachedTo;
                 set
                 {
                     CheckDisposed();
-                    _attachedTo = (Win32NativeControlHost) value;
+                    _attachedTo = value as Win32NativeControlHost;
                     if (_attachedTo == null)
                     {
                         UnmanagedMethods.ShowWindow(_holder.Handle, UnmanagedMethods.ShowWindowCommand.Hide);
@@ -179,6 +178,7 @@ namespace Avalonia.Win32
 
             public void HideWithSize(Size size)
             {
+                CheckDisposed();
                 UnmanagedMethods.SetWindowPos(_holder.Handle, IntPtr.Zero,
                     -100, -100, 1, 1,
                     UnmanagedMethods.SetWindowPosFlags.SWP_HIDEWINDOW |
@@ -198,8 +198,12 @@ namespace Avalonia.Win32
                 bounds *= _attachedTo.Window.RenderScaling;
                 var pixelRect = new PixelRect((int)bounds.X, (int)bounds.Y, Math.Max(1, (int)bounds.Width),
                     Math.Max(1, (int)bounds.Height));
-                
-                UnmanagedMethods.MoveWindow(_child.Handle, 0, 0, pixelRect.Width, pixelRect.Height, true);
+
+                if (_child is not null)
+                {
+                    UnmanagedMethods.MoveWindow(_child.Handle, 0, 0, pixelRect.Width, pixelRect.Height, true);
+                }
+
                 UnmanagedMethods.SetWindowPos(_holder.Handle, IntPtr.Zero, pixelRect.X, pixelRect.Y, pixelRect.Width,
                     pixelRect.Height,
                     UnmanagedMethods.SetWindowPosFlags.SWP_SHOWWINDOW

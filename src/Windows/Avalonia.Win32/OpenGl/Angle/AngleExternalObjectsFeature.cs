@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Avalonia.Controls.Documents;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Platform;
@@ -93,8 +91,8 @@ internal class AngleExternalObjectsFeature : IGlContextExternalObjectsFeature, I
         return default;
     }
 
-    public byte[] DeviceLuid { get; }
-    public byte[] DeviceUuid { get; }
+    public byte[]? DeviceLuid { get; }
+    public byte[]? DeviceUuid => null;
 
     public void Dispose()
     {

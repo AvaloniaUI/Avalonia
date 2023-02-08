@@ -94,7 +94,7 @@ namespace Avalonia.Controls
             private set { SetAndRaise(IsActiveProperty, ref _isActive, value); }
         }
         
-        public Screens Screens { get; private set; }
+        public Screens Screens { get; }
 
         /// <summary>
         /// Gets or sets the owner of the window.
