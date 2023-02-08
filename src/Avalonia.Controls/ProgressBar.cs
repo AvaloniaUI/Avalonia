@@ -238,7 +238,7 @@ namespace Avalonia.Controls
         private void UpdateIndicator()
         {
             // Gets the size of the parent indicator container
-            var barSize = _indicator?.Parent?.Bounds.Size ?? Bounds.Size;
+            var barSize = _indicator?.VisualParent?.Bounds.Size ?? Bounds.Size;
 
             if (_indicator != null)
             {

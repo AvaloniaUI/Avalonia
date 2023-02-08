@@ -20,7 +20,7 @@ namespace Avalonia.Controls.Primitives
                 nameof(IsChecked),
                 o => o.IsChecked,
                 (o, v) => o.IsChecked = v,
-                unsetValue: null,
+                unsetValue: false,
                 defaultBindingMode: BindingMode.TwoWay);
 
         /// <summary>

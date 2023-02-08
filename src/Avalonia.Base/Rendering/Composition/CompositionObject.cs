@@ -22,7 +22,7 @@ namespace Avalonia.Rendering.Composition
         public ImplicitAnimationCollection? ImplicitAnimations { get; set; }
 
         private protected InlineDictionary<CompositionProperty, IAnimationInstance> PendingAnimations;
-        internal CompositionObject(Compositor compositor, ServerObject server)
+        internal CompositionObject(Compositor compositor, ServerObject? server)
         {
             Compositor = compositor;
             Server = server;
@@ -32,7 +32,7 @@ namespace Avalonia.Rendering.Composition
         /// The associated Compositor
         /// </summary>
         public Compositor Compositor { get; }
-        internal ServerObject Server { get; }
+        internal ServerObject? Server { get; }
         public bool IsDisposed { get; private set; }
         private bool _registeredForSerialization;
 

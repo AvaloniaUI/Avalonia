@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -17,7 +16,6 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -91,10 +89,11 @@ namespace Avalonia.Controls
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
         /// </summary>
         [AssignBinding]
+        [InheritDataTypeFromItems(nameof(Items))]
         public IBinding? DisplayMemberBinding
         {
-            get { return GetValue(DisplayMemberBindingProperty); }
-            set { SetValue(DisplayMemberBindingProperty, value); }
+            get => GetValue(DisplayMemberBindingProperty);
+            set => SetValue(DisplayMemberBindingProperty, value);
         }
         
         private IEnumerable? _items = new AvaloniaList<object>();
@@ -134,8 +133,8 @@ namespace Avalonia.Controls
         [Content]
         public IEnumerable? Items
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => _items;
+            set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
         /// <summary>
@@ -143,8 +142,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ControlTheme? ItemContainerTheme
         {
-            get { return GetValue(ItemContainerThemeProperty); }
-            set { SetValue(ItemContainerThemeProperty, value); }
+            get => GetValue(ItemContainerThemeProperty); 
+            set => SetValue(ItemContainerThemeProperty, value);
         }
 
         /// <summary>
@@ -161,8 +160,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ITemplate<Panel> ItemsPanel
         {
-            get { return GetValue(ItemsPanelProperty); }
-            set { SetValue(ItemsPanelProperty, value); }
+            get => GetValue(ItemsPanelProperty);
+            set => SetValue(ItemsPanelProperty, value);
         }
 
         /// <summary>
@@ -171,8 +170,8 @@ namespace Avalonia.Controls
         [InheritDataTypeFromItems(nameof(Items))]
         public IDataTemplate? ItemTemplate
         {
-            get { return GetValue(ItemTemplateProperty); }
-            set { SetValue(ItemTemplateProperty, value); }
+            get => GetValue(ItemTemplateProperty); 
+            set => SetValue(ItemTemplateProperty, value);
         }
 
         /// <summary>
@@ -264,8 +263,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreHorizontalSnapPointsRegular
         {
-            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
-            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
+            get => GetValue(AreHorizontalSnapPointsRegularProperty); 
+            set => SetValue(AreHorizontalSnapPointsRegularProperty, value);
         }
 
         /// <summary>
@@ -273,8 +272,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreVerticalSnapPointsRegular
         {
-            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
-            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
+            get => GetValue(AreVerticalSnapPointsRegularProperty); 
+            set => SetValue(AreVerticalSnapPointsRegularProperty, value);
         }
 
         /// <summary>

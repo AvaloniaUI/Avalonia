@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Avalonia.Threading;
 
@@ -15,7 +11,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
 {
     private readonly Func<TSender, EventHandler<TEventArgs>, Action> _subscribe;
 
-    readonly ConditionalWeakTable<object, Subscription> _subscriptions = new();
+    private readonly ConditionalWeakTable<object, Subscription> _subscriptions = new();
 
     internal WeakEvent(
         Action<TSender, EventHandler<TEventArgs>> subscribe,
@@ -51,56 +47,6 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
         private readonly WeakEvent<TSender, TEventArgs> _ev;
         private readonly TSender _target;
         private readonly Action _compact;
-
-        struct Entry
-        {
-            WeakReference<IWeakEventSubscriber<TEventArgs>>? _reference;
-            int _hashCode;
-
-            public Entry(IWeakEventSubscriber<TEventArgs> r)
-            {
-                if (r == null)
-                {
-                    _reference = null;
-                    _hashCode = 0;
-                    return;
-                }
-
-                _hashCode = r.GetHashCode();
-                _reference = new WeakReference<IWeakEventSubscriber<TEventArgs>>(r);
-            }
-
-            public bool IsEmpty
-            {
-                get
-                {
-                    if (_reference == null)
-                        return true;
-                    if (_reference.TryGetTarget(out _))
-                        return false;
-                    _reference = null;
-                    return true;
-                }
-            }
-
-            public bool TryGetTarget([MaybeNullWhen(false)]out IWeakEventSubscriber<TEventArgs> target)
-            {
-                if (_reference == null)
-                {
-                    target = null!;
-                    return false;
-                }
-                return _reference.TryGetTarget(out target);
-            }
-
-            public bool Equals(IWeakEventSubscriber<TEventArgs> r)
-            {
-                if (_reference == null || r.GetHashCode() != _hashCode)
-                    return false;
-                return _reference.TryGetTarget(out var target) && target == r;
-            }
-        }
-
         private readonly Action _unsubscribe;
         private readonly WeakHashList<IWeakEventSubscriber<TEventArgs>> _list = new();
         private bool _compactScheduled;
@@ -114,7 +60,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
             _unsubscribe = ev._subscribe(target, OnEvent);
         }
 
-        void Destroy()
+        private void Destroy()
         {
             if(_destroyed)
                 return;
@@ -134,15 +80,15 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
                 ScheduleCompact();
         }
 
-        void ScheduleCompact()
+        private void ScheduleCompact()
         {
             if(_compactScheduled || _destroyed)
                 return;
             _compactScheduled = true;
             Dispatcher.UIThread.Post(_compact, DispatcherPriority.Background);
         }
-        
-        void Compact()
+
+        private void Compact()
         {
             if(!_compactScheduled)
                 return;
@@ -152,7 +98,7 @@ public class WeakEvent<TSender, TEventArgs> : WeakEvent where TEventArgs : Event
                 Destroy();
         }
 
-        void OnEvent(object? sender, TEventArgs eventArgs)
+        private void OnEvent(object? sender, TEventArgs eventArgs)
         {
             var alive = _list.GetAlive();
             if(alive == null)
