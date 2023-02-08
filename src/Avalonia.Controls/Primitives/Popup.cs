@@ -723,7 +723,7 @@ namespace Avalonia.Controls.Primitives
 
                     while (e is object && (!e.Focusable || !e.IsEffectivelyEnabled || !e.IsVisible))
                     {
-                        e = e.Parent;
+                        e = e.VisualParent as Control;
                     }
 
                     if (e is object)
