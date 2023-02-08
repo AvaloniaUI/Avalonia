@@ -4,9 +4,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Platform;
-using Avalonia.Styling;
 using Avalonia.UnitTests;
-using Moq;
 using Xunit;
 using Factory = System.Func<int, System.Action<object>, Avalonia.Controls.Window, Avalonia.AvaloniaObject>;
 
@@ -20,7 +18,7 @@ namespace Avalonia.Controls.UnitTests.Utils
             using (AvaloniaLocator.EnterScope())
             {
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture1 = new KeyGesture(Key.A, KeyModifiers.Control);
                 var gesture2 = new KeyGesture(Key.B, KeyModifiers.Control);
@@ -64,7 +62,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 var commandResult = 0;
                 var expectedParameter = 1;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -106,7 +104,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 var target = new KeyboardDevice();
                 var isExecuted = false;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -146,7 +144,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 var target = new KeyboardDevice();
                 var clickExecutedCount = 0;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 
@@ -199,7 +197,7 @@ namespace Avalonia.Controls.UnitTests.Utils
                 var clickExecutedCount = 0;
                 var commandExecutedCount = 0;
                 AvaloniaLocator.CurrentMutable
-                    .Bind<IWindowingPlatform>().ToConstant(new WindowingPlatformMock());
+                    .Bind<IWindowingPlatform>().ToConstant(new MockWindowingPlatform());
 
                 var gesture = new KeyGesture(Key.A, KeyModifiers.Control);
 

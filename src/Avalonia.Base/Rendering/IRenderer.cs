@@ -90,6 +90,9 @@ namespace Avalonia.Rendering
     
     public interface IRendererWithCompositor : IRenderer
     {
+        /// <summary>
+        /// The associated <see cref="Avalonia.Rendering.Composition.Compositor"/> object
+        /// </summary>
         Compositor Compositor { get; }
     }
 }

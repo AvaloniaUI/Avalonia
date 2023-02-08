@@ -80,11 +80,8 @@ namespace Avalonia.Rendering.SceneGraph
             {
                 p *= Transform.Invert();
 
-                if (Material != null)
-                {
-                    var rect = Rect.Rect;
-                    return rect.ContainsExclusive(p);
-                }
+                var rect = Rect.Rect;
+                return rect.ContainsExclusive(p);
             }
 
             return false;

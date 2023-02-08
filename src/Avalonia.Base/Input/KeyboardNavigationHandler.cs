@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Avalonia.Input.Navigation;
 using Avalonia.VisualTree;
 
@@ -51,7 +50,7 @@ namespace Avalonia.Input
 
             // If there's a custom keyboard navigation handler as an ancestor, use that.
             var custom = (element as Visual)?.FindAncestorOfType<ICustomKeyboardNavigation>(true);
-            if (custom is object && HandlePreCustomNavigation(custom, element, direction, out var ce))
+            if (custom is not null && HandlePreCustomNavigation(custom, element, direction, out var ce))
                 return ce;
 
             var result = direction switch
@@ -117,32 +116,27 @@ namespace Avalonia.Input
             NavigationDirection direction,
             [NotNullWhen(true)] out IInputElement? result)
         {
-            if (customHandler != null)
+            var (handled, next) = customHandler.GetNext(element, direction);
+
+            if (handled)
             {
-                var (handled, next) = customHandler.GetNext(element, direction);
-
-                if (handled)
+                if (next is not null)
                 {
-                    if (next != null)
-                    {
-                        result = next;
-                        return true;
-                    }
-                    else if (direction == NavigationDirection.Next || direction == NavigationDirection.Previous)
-                    {
-                        var r = direction switch
-                        {
-                            NavigationDirection.Next => TabNavigation.GetNextTabOutside(customHandler),
-                            NavigationDirection.Previous => TabNavigation.GetPrevTabOutside(customHandler),
-                            _ => throw new NotSupportedException(),
-                        };
+                    result = next;
+                    return true;
+                }
 
-                        if (r is object)
-                        {
-                            result = r;
-                            return true;
-                        }
-                    }
+                var r = direction switch
+                {
+                    NavigationDirection.Next => TabNavigation.GetNextTabOutside(customHandler),
+                    NavigationDirection.Previous => TabNavigation.GetPrevTabOutside(customHandler),
+                    _ => null
+                };
+
+                if (r is not null)
+                {
+                    result = r;
+                    return true;
                 }
             }
 

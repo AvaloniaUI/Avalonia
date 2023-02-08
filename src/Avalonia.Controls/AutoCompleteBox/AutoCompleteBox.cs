@@ -792,7 +792,7 @@ namespace Avalonia.Controls
                     Control? element = focused as Control;
                     if (element != null)
                     {
-                        parent = element.Parent;
+                        parent = element.VisualParent;
                     }
                 }
                 focused = parent;
