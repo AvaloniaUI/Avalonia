@@ -22,7 +22,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<IWindowBaseImpl>();
+                var impl = CreateMockWindowBaseImpl();
                 var target = new TestWindowBase(impl.Object);
 
                 target.Activate();
@@ -36,7 +36,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<IWindowBaseImpl>();
+                var impl = CreateMockWindowBaseImpl();
                 impl.SetupAllProperties();
 
                 bool raised = false;
@@ -55,7 +55,7 @@ namespace Avalonia.Controls.UnitTests
         {
             using (UnitTestApplication.Start(TestServices.StyledWindow))
             {
-                var impl = new Mock<IWindowBaseImpl>();
+                var impl = CreateMockWindowBaseImpl();
                 impl.SetupAllProperties();
 
                 bool raised = false;
@@ -239,6 +239,14 @@ namespace Avalonia.Controls.UnitTests
                     Name = "PART_ContentPresenter",
                     [!ContentPresenter.ContentProperty] = x[!ContentControl.ContentProperty],
                 }.RegisterInNameScope(scope));
+        }
+
+        private static Mock<IWindowBaseImpl> CreateMockWindowBaseImpl()
+        {
+            var renderer = new Mock<IWindowBaseImpl>();
+            renderer.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(RendererMocks.CreateRenderer().Object);
+            return renderer;
         }
 
         private class TestWindowBase : WindowBase

@@ -15,8 +15,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Geometry"/> property.
         /// </summary>
-        public static readonly StyledProperty<Geometry> GeometryProperty =
-            AvaloniaProperty.Register<GeometryDrawing, Geometry>(nameof(Geometry));
+        public static readonly StyledProperty<Geometry?> GeometryProperty =
+            AvaloniaProperty.Register<GeometryDrawing, Geometry?>(nameof(Geometry));
 
         /// <summary>
         /// Defines the <see cref="Brush"/> property.
@@ -34,7 +34,7 @@ namespace Avalonia.Media
         /// Gets or sets the <see cref="Avalonia.Media.Geometry"/> that describes the shape of this <see cref="GeometryDrawing"/>.
         /// </summary>
         [Content]
-        public Geometry Geometry
+        public Geometry? Geometry
         {
             get => GetValue(GeometryProperty);
             set => SetValue(GeometryProperty, value);

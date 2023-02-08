@@ -165,8 +165,6 @@ namespace Avalonia.Rendering.Composition.Expressions
         
         public override ExpressionVariant Evaluate(ref ExpressionEvaluationContext context)
         {
-            if (context.ForeignFunctionInterface == null)
-                return default;
             var args = new List<ExpressionVariant>();
             foreach (var expr in Parameters)
                 args.Add(expr.Evaluate(ref context));
