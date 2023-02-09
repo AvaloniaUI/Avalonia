@@ -45,6 +45,7 @@
       "tests\\Avalonia.Base.UnitTests\\Avalonia.Base.UnitTests.csproj",
       "tests\\Avalonia.Benchmarks\\Avalonia.Benchmarks.csproj",
       "tests\\Avalonia.Controls.DataGrid.UnitTests\\Avalonia.Controls.DataGrid.UnitTests.csproj",
+      "tests\\Avalonia.Controls.ItemsRepeater.UnitTests\\Avalonia.Controls.ItemsRepeater.UnitTests.csproj",
       "tests\\Avalonia.Controls.UnitTests\\Avalonia.Controls.UnitTests.csproj",
       "tests\\Avalonia.DesignerSupport.TestApp\\Avalonia.DesignerSupport.TestApp.csproj",
       "tests\\Avalonia.DesignerSupport.Tests\\Avalonia.DesignerSupport.Tests.csproj",
