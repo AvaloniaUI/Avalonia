@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -132,6 +133,13 @@ namespace Avalonia.Controls.UnitTests
             ((SolidColorBrush)target.Background).Color = Colors.Green;
 
             renderer.Verify(x => x.AddDirty(target), Times.Once);
+        }
+
+        [Fact]
+        public void Adding_Null_Child_Should_Throw()
+        {
+            var panel = new Panel();
+            Assert.Throws<ArgumentNullException>(() => panel.Children.Add(null!));
         }
     }
 }

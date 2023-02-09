@@ -15,6 +15,8 @@ namespace Avalonia.Controls.UnitTests
         public void Setting_Title_Should_Set_Impl_Title()
         {
             var windowImpl = new Mock<IWindowImpl>();
+            windowImpl.Setup(r => r.CreateRenderer(It.IsAny<IRenderRoot>()))
+                .Returns(RendererMocks.CreateRenderer().Object);
             var windowingPlatform = new MockWindowingPlatform(() => windowImpl.Object);
 
             using (UnitTestApplication.Start(new TestServices(windowingPlatform: windowingPlatform)))

@@ -53,7 +53,7 @@ namespace Avalonia.Controls
 
         public static int CompareDays(DateTime dt1, DateTime dt2)
         {
-            return DateTime.Compare(DiscardTime(dt1).Value, DiscardTime(dt2).Value);
+            return DateTime.Compare(DiscardTime(dt1), DiscardTime(dt2));
         }
 
         public static int CompareYearMonth(DateTime dt1, DateTime dt2)
@@ -71,14 +71,9 @@ namespace Avalonia.Controls
             return new DateTime(d.Year, d.Month, 1, 0, 0, 0);
         }
 
-        [return: NotNullIfNotNull("d")]
-        public static DateTime? DiscardTime(DateTime? d)
+        public static DateTime DiscardTime(DateTime d)
         {
-            if (d == null)
-            {
-                return null;
-            }
-            return d.Value.Date;
+            return d.Date;
         }
 
         public static int EndOfDecade(DateTime date)
@@ -127,28 +122,14 @@ namespace Avalonia.Controls
 
         public static string ToYearMonthPatternString(DateTime date)
         {
-            string result = string.Empty;
-            DateTimeFormatInfo format = GetCurrentDateFormat();
-
-            if (format != null)
-            {
-                result = date.ToString(format.YearMonthPattern, format);
-            }
-
-            return result;
+            var format = GetCurrentDateFormat();
+            return date.ToString(format.YearMonthPattern, format);
         }
 
         public static string ToYearString(DateTime date)
         {
-            string result = string.Empty;
-            DateTimeFormatInfo format = GetCurrentDateFormat();
-
-            if (format != null)
-            {
-                result = date.Year.ToString(format);
-            }
-
-            return result;
+            var format = GetCurrentDateFormat();
+            return date.Year.ToString(format);
         }
     }
 }

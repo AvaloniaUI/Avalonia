@@ -129,7 +129,7 @@ namespace Avalonia.Controls
         {
             using (FreezeVisibilityChangeHandling())
             {
-                Renderer?.Stop();
+                Renderer.Stop();
                 PlatformImpl?.Hide();
                 IsVisible = false;
             }
@@ -153,7 +153,7 @@ namespace Avalonia.Controls
                 }
 
                 PlatformImpl?.Show(true, false);
-                Renderer?.Start();
+                Renderer.Start();
                 OnOpened(EventArgs.Empty);
             }
         }
@@ -219,7 +219,7 @@ namespace Avalonia.Controls
             {
                 ClientSize = clientSize;
                 LayoutManager.ExecuteLayoutPass();
-                Renderer?.Resized(clientSize);
+                Renderer.Resized(clientSize);
             }
         }
 
