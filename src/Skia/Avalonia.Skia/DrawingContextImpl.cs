@@ -34,9 +34,9 @@ namespace Avalonia.Skia
         private GRContext _grContext;
         public GRContext GrContext => _grContext;
         private ISkiaGpu _gpu;
-        private readonly SKPaint _strokePaint = SKPaintCache.Get();
-        private readonly SKPaint _fillPaint = SKPaintCache.Get();
-        private readonly SKPaint _boxShadowPaint = SKPaintCache.Get();
+        private readonly SKPaint _strokePaint = SKPaintCache.Shared.Get();
+        private readonly SKPaint _fillPaint = SKPaintCache.Shared.Get();
+        private readonly SKPaint _boxShadowPaint = SKPaintCache.Shared.Get();
         private static SKShader s_acrylicNoiseShader;
         private readonly ISkiaGpuRenderSession _session;
         private bool _leased = false;
@@ -186,13 +186,13 @@ namespace Avalonia.Skia
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
 
-            var paint = SKPaintCache.Get();
+            var paint = SKPaintCache.Shared.Get();
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
             paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
 
             drawableImage.Draw(this, s, d, paint);
-            SKPaintCache.ReturnReset(paint);
+            SKPaintCache.Shared.ReturnReset(paint);
         }
 
         /// <inheritdoc />
@@ -535,7 +535,24 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.Save();
-            Canvas.ClipRoundRect(clip.ToSKRoundRect(), antialias:true);
+
+            // Get the rounded rectangle
+            var rc = clip.Rect.ToSKRect();
+
+            // Get a round rect from the cache.
+            var roundRect = SKRoundRectCache.Shared.Get();
+
+            roundRect.SetRectRadii(rc,
+                new[]
+                {
+                    clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
+                    clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
+                });
+
+            Canvas.ClipRoundRect(roundRect, antialias:true);
+
+            // Should not need to reset as SetRectRadii overrides the values.
+            SKRoundRectCache.Shared.Return(roundRect);
         }
 
         /// <inheritdoc />
@@ -569,9 +586,9 @@ namespace Avalonia.Skia
             try
             {
                 // Return leased paints.
-                SKPaintCache.ReturnReset(_strokePaint);
-                SKPaintCache.ReturnReset(_fillPaint);
-                SKPaintCache.ReturnReset(_boxShadowPaint);
+                SKPaintCache.Shared.ReturnReset(_strokePaint);
+                SKPaintCache.Shared.ReturnReset(_fillPaint);
+                SKPaintCache.Shared.ReturnReset(_boxShadowPaint);
 
                 if (_grContext != null)
                 {
@@ -633,7 +650,7 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Get();
+            var paint = SKPaintCache.Shared.Get();
 
             Canvas.SaveLayer(paint);
             _maskStack.Push(CreatePaint(paint, mask, bounds.Size));
@@ -644,11 +661,11 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Get();
+            var paint = SKPaintCache.Shared.Get();
             paint.BlendMode = SKBlendMode.DstIn;
             
             Canvas.SaveLayer(paint);
-            SKPaintCache.ReturnReset(paint);
+            SKPaintCache.Shared.ReturnReset(paint);
 
             PaintWrapper paintWrapper;
             using (paintWrapper = _maskStack.Pop())
@@ -656,7 +673,7 @@ namespace Avalonia.Skia
                 Canvas.DrawPaint(paintWrapper.Paint);
             }
             // Return the paint wrapper's paint less the reset since the paint is already reset in the Dispose method above.
-            SKPaintCache.Return(paintWrapper.Paint);
+            SKPaintCache.Shared.Return(paintWrapper.Paint);
 
             Canvas.Restore();
 
