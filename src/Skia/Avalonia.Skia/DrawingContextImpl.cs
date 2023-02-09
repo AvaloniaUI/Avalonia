@@ -315,15 +315,20 @@ namespace Avalonia.Skia
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
             var needRoundRect = rect.IsRounded;
-            using var skRoundRect = needRoundRect ? new SKRoundRect() : null;
+            SKRoundRect skRoundRect = null;
 
             if (needRoundRect)
+            {
+                skRoundRect = SKRoundRectCache.Shared.Get();
                 skRoundRect.SetRectRadii(rc,
                     new[]
                     {
-                        rect.RadiiTopLeft.ToSKPoint(), rect.RadiiTopRight.ToSKPoint(),
-                        rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
+                        rect.RadiiTopLeft.ToSKPoint(),
+                        rect.RadiiTopRight.ToSKPoint(),
+                        rect.RadiiBottomRight.ToSKPoint(),
+                        rect.RadiiBottomLeft.ToSKPoint(),
                     });
+            }
 
             if (material != null)
             {
@@ -332,6 +337,7 @@ namespace Avalonia.Skia
                     if (isRounded)
                     {
                         Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                        SKRoundRectCache.Shared.Return(skRoundRect);
                     }
                     else
                     {
@@ -356,14 +362,19 @@ namespace Avalonia.Skia
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
             var needRoundRect = rect.IsRounded || (boxShadows.HasInsetShadows);
-            using var skRoundRect = needRoundRect ? new SKRoundRect() : null;
+            SKRoundRect skRoundRect = null;
             if (needRoundRect)
+            {
+                skRoundRect = SKRoundRectCache.Shared.Get();
                 skRoundRect.SetRectRadii(rc,
                     new[]
                     {
-                        rect.RadiiTopLeft.ToSKPoint(), rect.RadiiTopRight.ToSKPoint(),
-                        rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
+                        rect.RadiiTopLeft.ToSKPoint(),
+                        rect.RadiiTopRight.ToSKPoint(),
+                        rect.RadiiBottomRight.ToSKPoint(),
+                        rect.RadiiBottomLeft.ToSKPoint(),
                     });
+            }
 
             foreach (var boxShadow in boxShadows)
             {
@@ -378,7 +389,8 @@ namespace Avalonia.Skia
                         Canvas.Save();
                         if (isRounded)
                         {
-                            using var shadowRect = new SKRoundRect(skRoundRect);
+                            var shadowRect = SKRoundRectCache.Shared.Get();
+                            shadowRect.SetRectRadii(skRoundRect!.Rect, skRoundRect.Radii);
                             if (spread != 0)
                                 shadowRect.Inflate(spread, spread);
                             Canvas.ClipRoundRect(skRoundRect,
@@ -388,6 +400,7 @@ namespace Avalonia.Skia
                             Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                             Canvas.DrawRoundRect(shadowRect, shadow.Paint);
                             Transform = oldTransform;
+                            SKRoundRectCache.Shared.Return(shadowRect);
                         }
                         else
                         {
@@ -433,7 +446,8 @@ namespace Avalonia.Skia
                         var outerRect = AreaCastingShadowInHole(rc, (float)boxShadow.Blur, spread, offsetX, offsetY);
 
                         Canvas.Save();
-                        using var shadowRect = new SKRoundRect(skRoundRect);
+                        var shadowRect = SKRoundRectCache.Shared.Get();
+                        shadowRect.SetRectRadii(skRoundRect!.Rect, skRoundRect.Radii);
                         if (spread != 0)
                             shadowRect.Deflate(spread, spread);
                         Canvas.ClipRoundRect(skRoundRect,
@@ -445,6 +459,7 @@ namespace Avalonia.Skia
                             Canvas.DrawRoundRectDifference(outerRRect, shadowRect, shadow.Paint);
                         Transform = oldTransform;
                         Canvas.Restore();
+                        SKRoundRectCache.Shared.Return(shadowRect);
                     }
                 }
             }
@@ -466,6 +481,9 @@ namespace Avalonia.Skia
                     }
                 }
             }
+
+            if(isRounded)
+                SKRoundRectCache.Shared.Return(skRoundRect);
         }
 
         /// <inheritdoc />
