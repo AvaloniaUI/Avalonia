@@ -12,7 +12,7 @@ namespace Avalonia.Skia
     /// <summary>
     /// Skia render target that writes to a surface.
     /// </summary>
-    internal class SurfaceRenderTarget : IDrawingContextLayerImpl, IDrawableBitmapImpl
+    internal class SurfaceRenderTarget : IDrawingContextLayerImpl, IDrawableBitmapImpl, IReadableBitmapImpl
     {
         private readonly ISkiaSurface _surface;
         private readonly SKCanvas _canvas;
@@ -183,6 +183,29 @@ namespace Avalonia.Skia
             var colorType = PixelFormatHelper.ResolveColorType(format);
 
             return new SKImageInfo(Math.Max(width, 1), Math.Max(height, 1), colorType, SKAlphaType.Premul);
+        }
+
+        /// <summary>
+        /// Returns the null because we do not own a format
+        /// </summary>
+        PixelFormat? IReadableBitmapImpl.Format => null;
+
+        /// <summary>
+        /// Creates a copy of the <see cref="SKSurface.Snapshot()"/> and provides it via
+        /// a <see cref="LockedFramebuffer"/>
+        /// </summary>
+        /// <returns>A copy of the image data</returns>
+        ILockedFramebuffer IReadableBitmapImpl.Lock()
+        {
+            if (_surface.Surface == null)
+                throw new NotSupportedException();
+
+            using (SKImage image = SnapshotImage())
+            {
+                SKBitmap bitmap = SKBitmap.FromImage(image);
+                return new LockedFramebuffer(bitmap.GetPixels(), PixelSize, bitmap.RowBytes, Dpi,
+                    image.ColorType.ToAvalonia().Value, () => bitmap.Dispose());
+            }
         }
 
         /// <summary>
