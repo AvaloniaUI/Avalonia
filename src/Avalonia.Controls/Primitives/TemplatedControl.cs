@@ -290,12 +290,6 @@ namespace Avalonia.Controls.Primitives
                     ApplyTemplatedParent(child, this);
                     ((ISetLogicalParent)child).SetParent(this);
                     VisualChildren.Add(child);
-                    
-                    // Existing code kinda expect to see a NameScope even if it's empty
-                    if (nameScope == null)
-                    {
-                        nameScope = new NameScope();
-                    }
 
                     var e = new TemplateAppliedEventArgs(nameScope);
                     OnApplyTemplate(e);
@@ -320,6 +314,7 @@ namespace Avalonia.Controls.Primitives
             return this;
         }
 
+        /// <inheritdoc />
         protected sealed override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             var count = VisualChildren.Count;

@@ -6,9 +6,9 @@ namespace Avalonia.Input.Platform
     [NotClientImplementable]
     public interface IClipboard
     {
-        Task<string> GetTextAsync();
+        Task<string?> GetTextAsync();
 
-        Task SetTextAsync(string text);
+        Task SetTextAsync(string? text);
 
         Task ClearAsync();
 
@@ -16,6 +16,6 @@ namespace Avalonia.Input.Platform
         
         Task<string[]> GetFormatsAsync();
         
-        Task<object> GetDataAsync(string format);
+        Task<object?> GetDataAsync(string format);
     }
 }

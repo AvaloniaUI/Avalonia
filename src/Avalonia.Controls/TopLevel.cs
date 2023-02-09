@@ -402,7 +402,7 @@ namespace Avalonia.Controls
         /// <returns>The TopLevel</returns>
         public static TopLevel? GetTopLevel(Visual? visual)
         {
-            return visual == null ? null : visual.VisualRoot as TopLevel;
+            return visual?.VisualRoot as TopLevel;
         }
         
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

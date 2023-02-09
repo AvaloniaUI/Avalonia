@@ -3,10 +3,9 @@ using Avalonia.Input.Raw;
 
 namespace Avalonia.Diagnostics
 {
-    static class KeyGestureExtesions
+    internal static class KeyGestureExtesions
     {
         public static bool Matches(this KeyGesture gesture, RawKeyEventArgs keyEvent) =>
-            keyEvent != null &&
             (KeyModifiers)(keyEvent.Modifiers & RawInputModifiers.KeyboardMask) == gesture.KeyModifiers &&
                 ResolveNumPadOperationKey(keyEvent.Key) == ResolveNumPadOperationKey(gesture.Key);
 

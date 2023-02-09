@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 
 namespace Avalonia.Controls.Primitives
 {
@@ -12,10 +11,10 @@ namespace Avalonia.Controls.Primitives
         private const int OverlayZIndex = int.MaxValue - 97;
 
         private ILogicalRoot? _logicalRoot;
-        private readonly List<Control> _layers = new List<Control>();
+        private readonly List<Control> _layers = new();
 
-        public static readonly StyledProperty<ChromeOverlayLayer> ChromeOverlayLayerProperty =
-            AvaloniaProperty.Register<VisualLayerManager, ChromeOverlayLayer>(nameof(ChromeOverlayLayer));
+        public static readonly StyledProperty<ChromeOverlayLayer?> ChromeOverlayLayerProperty =
+            AvaloniaProperty.Register<VisualLayerManager, ChromeOverlayLayer?>(nameof(ChromeOverlayLayer));
 
         public bool IsPopup { get; set; }
 
@@ -81,7 +80,7 @@ namespace Avalonia.Controls.Primitives
             }
         }
 
-        T? FindLayer<T>() where T : class
+        private T? FindLayer<T>() where T : class
         {
             foreach (var layer in _layers)
                 if (layer is T match)
@@ -89,7 +88,7 @@ namespace Avalonia.Controls.Primitives
             return null;
         }
 
-        void AddLayer(Control layer, int zindex)
+        private void AddLayer(Control layer, int zindex)
         {
             _layers.Add(layer);
             ((ISetLogicalParent)layer).SetParent(this);
@@ -101,6 +100,7 @@ namespace Avalonia.Controls.Primitives
             InvalidateArrange();
         }
 
+        /// <inheritdoc />
         protected override void NotifyChildResourcesChanged(ResourcesChangedEventArgs e)
         {
             foreach (var l in _layers)
@@ -109,6 +109,7 @@ namespace Avalonia.Controls.Primitives
             base.NotifyChildResourcesChanged(e);
         }
 
+        /// <inheritdoc />
         protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             base.OnAttachedToLogicalTree(e);
@@ -118,6 +119,7 @@ namespace Avalonia.Controls.Primitives
                 ((ILogical)l).NotifyAttachedToLogicalTree(e);
         }
 
+        /// <inheritdoc />
         protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
         {
             _logicalRoot = null;
@@ -126,6 +128,7 @@ namespace Avalonia.Controls.Primitives
                 ((ILogical)l).NotifyDetachedFromLogicalTree(e);
         }
 
+        /// <inheritdoc />
         protected override Size MeasureOverride(Size availableSize)
         {
             foreach (var l in _layers)
@@ -133,6 +136,7 @@ namespace Avalonia.Controls.Primitives
             return base.MeasureOverride(availableSize);
         }
 
+        /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
             foreach (var l in _layers)

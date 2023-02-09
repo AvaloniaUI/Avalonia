@@ -17,28 +17,26 @@ namespace Avalonia.Controls.Chrome
 
         private void UpdateSize(Window window)
         {
-            if (window != null)
+            Margin = new Thickness(
+                window.OffScreenMargin.Left,
+                window.OffScreenMargin.Top,
+                window.OffScreenMargin.Right,
+                window.OffScreenMargin.Bottom);
+
+            if (window.WindowState != WindowState.FullScreen)
             {
-                Margin = new Thickness(
-                    window.OffScreenMargin.Left,
-                    window.OffScreenMargin.Top,
-                    window.OffScreenMargin.Right,
-                    window.OffScreenMargin.Bottom);
+                Height = window.WindowDecorationMargin.Top;
 
-                if (window.WindowState != WindowState.FullScreen)
+                if (_captionButtons != null)
                 {
-                    Height = window.WindowDecorationMargin.Top;
-
-                    if (_captionButtons != null)
-                    {
-                        _captionButtons.Height = Height;
-                    }
+                    _captionButtons.Height = Height;
                 }
-
-                IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
             }
+
+            IsVisible = window.PlatformImpl?.NeedsManagedDecorations ?? false;
         }
 
+        /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
@@ -55,6 +53,7 @@ namespace Avalonia.Controls.Chrome
             }
         }
 
+        /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -64,13 +63,13 @@ namespace Avalonia.Controls.Chrome
                 _disposables = new CompositeDisposable(6)
                 {
                     window.GetObservable(Window.WindowDecorationMarginProperty)
-                        .Subscribe(x => UpdateSize(window)),
+                        .Subscribe(_ => UpdateSize(window)),
                     window.GetObservable(Window.ExtendClientAreaTitleBarHeightHintProperty)
-                        .Subscribe(x => UpdateSize(window)),
+                        .Subscribe(_ => UpdateSize(window)),
                     window.GetObservable(Window.OffScreenMarginProperty)
-                        .Subscribe(x => UpdateSize(window)),
+                        .Subscribe(_ => UpdateSize(window)),
                     window.GetObservable(Window.ExtendClientAreaChromeHintsProperty)
-                        .Subscribe(x => UpdateSize(window)),
+                        .Subscribe(_ => UpdateSize(window)),
                     window.GetObservable(Window.WindowStateProperty)
                         .Subscribe(x =>
                         {
@@ -80,11 +79,12 @@ namespace Avalonia.Controls.Chrome
                             PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
                         }),
                     window.GetObservable(Window.IsExtendedIntoWindowDecorationsProperty)
-                        .Subscribe(x => UpdateSize(window))
+                        .Subscribe(_ => UpdateSize(window))
                 };
             }
         }
 
+        /// <inheritdoc />
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
