@@ -70,6 +70,7 @@
             <ComboBoxItem>Item 0</ComboBoxItem>
             <ComboBoxItem>Item 1</ComboBoxItem>
           </ComboBox>
+          <CheckBox Name="ComboBoxWrapSelection" IsChecked="{Binding #BasicComboBox.WrapSelection}">Wrap Selection</CheckBox>
           <Button Name="ComboBoxSelectionClear">Clear Selection</Button>
           <Button Name="ComboBoxSelectFirst">Select First</Button>
         </StackPanel>
