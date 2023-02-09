@@ -41,7 +41,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        "AvaloniaProperty objects have static lifetimes and should be stored accordingly. Do not multiply construct the same property.");
+        "AvaloniaProperty objects have static lifetimes and should be stored accordingly.");
 
     private static readonly DiagnosticDescriptor InappropriatePropertyRegistration = new(
         "AVP1001",
@@ -60,7 +60,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         "It is sometimes necessary to refer to an AvaloniaProperty in XAML by providing its class name. This cannot be achieved if property's owner is a generic type." +
-        " Additionally, a new AvaloniaProperty object will be generated each time a new version of the the generic owner type is constructed, which may be unexpected.");
+        " Additionally, a new AvaloniaProperty object will be generated each time a new version of the generic owner type is constructed, which may be unexpected.");
 
     private static readonly DiagnosticDescriptor OwnerDoesNotMatchOuterType = new(
         "AVP1010",
@@ -84,13 +84,15 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
 
     private static readonly DiagnosticDescriptor SettingOwnStyledPropertyValue = new(
         "AVP1012",
-        "An AvaloniaObject should not set its own StyledProperty or AttachedProperty values",
-        "Inappropriate assignment: An AvaloniaObject should not set its own StyledProperty or AttachedProperty values",
+        "An AvaloniaObject should use SetCurrentValue when assigning its own StyledProperty or AttachedProperty values",
+        "Inappropriate assignment: An AvaloniaObject should use SetCurrentValue when setting its own StyledProperty or AttachedProperty values",
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        "Setting a StyledProperty or AttachedProperty directly will overwrite values from lower-priority sources, such as styles and templates. This should only be done by control consumers," +
-        "not the control itself. Constructor parameters and assignments within UserControl or TopLevel types are exempt from this diagnostic.",
+        "The standard means of setting an AvaloniaProperty is to call the SetValue method (often via a CLR property setter). This will forcibly overwrite values from sources like styles and templates, " +
+        "which is something that should only be done by consumers of the control, not the control itself. Controls which want to set their own values should instead call the SetCurrentValue method, or " +
+        "refactor the property into a DirectProperty. An assignment is exempt from this diagnostic in two scenarios: when it is forwarding a constructor parameter, and when the target object is derived " +
+        "from UserControl or TopLevel.",
         InappropriateReadWriteTag);
 
     private static readonly DiagnosticDescriptor SuperfluousAddOwnerCall = new(
@@ -120,7 +122,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        "It is unclear which AvaloniaProperty this CLR property refers to. Ensure that each AvaloniaProperty associated with a type has a unique name. If you need to change behaviour of a base property in your class, call its AddOwner method and provide new metadata.",
+        "It is unclear which AvaloniaProperty this CLR property refers to. Ensure that each AvaloniaProperty associated with a type has a unique name. If you need to change behaviour of a base property in your class, call its OverrideMetadata or OverrideDefaultValue methods.",
         NameCollisionTag);
 
     private static readonly DiagnosticDescriptor PropertyNameMismatch = new(
@@ -140,7 +142,7 @@ public partial class AvaloniaPropertyAnalyzer : DiagnosticAnalyzer
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call any user CLR properties. To execute code before or after the property is set, create a Coerce method or a PropertyChanged subscriber.",
+        "The AvaloniaObject.GetValue and AvaloniaObject.SetValue methods are public, and do not call any user CLR properties. To execute code before or after the property is set, consider: 1) adding a Coercion method, b) adding a static observer with AvaloniaProperty.Changed.AddClassHandler, and/or c) overriding the AvaloniaObject.OnPropertyChanged method.",
         AssociatedClrPropertyTag);
 
     private static readonly DiagnosticDescriptor MissingAccessor = new(
