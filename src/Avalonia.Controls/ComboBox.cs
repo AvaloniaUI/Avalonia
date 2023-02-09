@@ -1,10 +1,13 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Selection;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Utils;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -216,7 +219,7 @@ namespace Avalonia.Controls
                 }
                 else if (e.Key == Key.Up)
                 {
-                    SelectPrev();
+                    SelectPrevious();
                     e.Handled = true;
                 }
             }
@@ -247,7 +250,7 @@ namespace Avalonia.Controls
                         if (e.Delta.Y < 0)
                             SelectNext();
                         else
-                            SelectPrev();
+                            SelectPrevious();
 
                         e.Handled = true;
                     }
@@ -475,53 +478,39 @@ namespace Avalonia.Controls
             }
         }
 
-        private void SelectNext()
+        private void SelectNext() => MoveSelection(SelectedIndex, 1, WrapSelection);
+        private void SelectPrevious() => MoveSelection(SelectedIndex, -1, WrapSelection);
+
+        private void MoveSelection(int startIndex, int step, bool wrap)
         {
-            if (ItemCount >= 1)
+            static bool IsSelectable(object? o) => (o as AvaloniaObject)?.GetValue(IsEnabledProperty) ?? true;
+
+            var count = ItemCount;
+
+            for (int i = startIndex + step; i != startIndex; i += step)
             {
-                if (IsDropDownOpen)
+                if (i < 0 || i >= count)
                 {
-                    MoveSelection(NavigationDirection.Next, WrapSelection);
-                }
-                else
-                {
-                    var index = SelectedIndex + 1;
-                    var count = ItemCount;
-
-                    if (WrapSelection)
-                        index %= count;
-                    else
-                        index = Math.Min(index, count - 1);
-
-                    SelectedIndex = index;
-                }
-            }
-        }
-
-        private void SelectPrev()
-        {
-            if (ItemCount >= 1)
-            {
-                if (IsDropDownOpen)
-                {
-                    MoveSelection(NavigationDirection.Previous, WrapSelection);
-                }
-                else
-                {
-                    var index = SelectedIndex - 1;
-                    var count = ItemCount;
-
-                    if (WrapSelection)
+                    if (wrap)
                     {
-                        if (index < 0)
-                            index += count;
+                        if (i < 0)
+                            i += count;
+                        else if (i >= count)
+                            i %= count;
                     }
                     else
                     {
-                        index = Math.Max(index, 0);
+                        return;
                     }
+                }
 
-                    SelectedIndex = index;
+                var item = ItemsView[i];
+                var container = ContainerFromIndex(i);
+                
+                if (IsSelectable(item) && IsSelectable(container))
+                {
+                    SelectedIndex = i;
+                    break;
                 }
             }
         }
