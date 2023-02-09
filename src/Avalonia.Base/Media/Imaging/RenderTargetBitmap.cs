@@ -61,6 +61,25 @@ namespace Avalonia.Media.Imaging
         /// <inheritdoc/>
         public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer? vbr) => PlatformImpl.Item.CreateDrawingContext(vbr);
 
+        /// <inheritdoc/>
         bool IRenderTarget.IsCorrupted => false;
+
+        /// <summary>
+        /// Overrides the <see cref="Bitmap"/> implementation 
+        /// skipping the <see cref="Format"/> null check
+        /// </summary>
+        public override void CopyPixels(PixelRect sourceRect, nint buffer, int bufferSize, int stride)
+        {
+            // only check if we have a readable bitmap and if the formats are identical
+            // this also allows for both formats being null
+            if (PlatformImpl.Item is not IReadableBitmapImpl readable
+                || Format != readable.Format
+            )
+                throw new NotSupportedException("CopyPixels is not supported for this bitmap type");
+
+            using (var fb = readable.Lock())
+                CopyPixelsCore(sourceRect, buffer, bufferSize, stride, fb);
+        }
+
     }
 }
