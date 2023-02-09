@@ -1,10 +1,7 @@
 using System;
 using System.Linq;
 using Avalonia.Automation.Peers;
-using Avalonia.Reactive;
-using Avalonia.Controls.Generators;
-using Avalonia.Controls.Mixins;
-using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
@@ -12,8 +9,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Reactive;
 using Avalonia.VisualTree;
-using Avalonia.Controls.Metadata;
 
 namespace Avalonia.Controls
 {
@@ -482,7 +479,22 @@ namespace Avalonia.Controls
         {
             if (ItemCount >= 1)
             {
-                MoveSelection(NavigationDirection.Next, WrapSelection);
+                if (IsDropDownOpen)
+                {
+                    MoveSelection(NavigationDirection.Next, WrapSelection);
+                }
+                else
+                {
+                    var index = SelectedIndex + 1;
+                    var count = ItemCount;
+
+                    if (WrapSelection)
+                        index %= count;
+                    else
+                        index = Math.Min(index, count - 1);
+
+                    SelectedIndex = index;
+                }
             }
         }
 
@@ -490,7 +502,27 @@ namespace Avalonia.Controls
         {
             if (ItemCount >= 1)
             {
-                MoveSelection(NavigationDirection.Previous, WrapSelection);
+                if (IsDropDownOpen)
+                {
+                    MoveSelection(NavigationDirection.Previous, WrapSelection);
+                }
+                else
+                {
+                    var index = SelectedIndex - 1;
+                    var count = ItemCount;
+
+                    if (WrapSelection)
+                    {
+                        if (index < 0)
+                            index += count;
+                    }
+                    else
+                    {
+                        index = Math.Max(index, 0);
+                    }
+
+                    SelectedIndex = index;
+                }
             }
         }
     }
