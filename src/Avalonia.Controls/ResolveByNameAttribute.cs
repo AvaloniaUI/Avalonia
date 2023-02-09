@@ -7,7 +7,8 @@ namespace Avalonia.Controls
     /// When applying this to attached properties, ensure to put on both
     /// the Getter and Setter methods.
     /// </summary>
-    public class ResolveByNameAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
+    public sealed class ResolveByNameAttribute : Attribute
     {
     }
 }

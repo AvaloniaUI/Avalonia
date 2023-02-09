@@ -70,7 +70,6 @@ namespace ControlCatalog.Pages
 
             _currentScale = 1;
             Vector3 currentOffset = default;
-            bool isZooming = false;
 
             CompositionVisual? compositionVisual = null;
 

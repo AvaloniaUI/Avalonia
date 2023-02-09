@@ -1,5 +1,4 @@
 ﻿using Avalonia.Metadata;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Media
 {
@@ -12,6 +11,6 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets the visual to draw.
         /// </summary>
-        Visual Visual { get; }
+        Visual? Visual { get; }
     }
 }

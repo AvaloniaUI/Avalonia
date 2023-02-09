@@ -238,7 +238,7 @@ namespace Avalonia.Media.TextFormatting
             foreach (var textLine in _textLines)
             {
                 //Current line isn't covered.
-                if (textLine.FirstTextSourceIndex + textLine.Length < start)
+                if (textLine.FirstTextSourceIndex + textLine.Length <= start)
                 {
                     currentY += textLine.Height;
 
@@ -348,14 +348,36 @@ namespace Avalonia.Media.TextFormatting
         {
             var (x, y) = point;
 
-            var lastTrailingIndex = textLine.FirstTextSourceIndex + textLine.Length;
-
             var isInside = x >= 0 && x <= textLine.Width && y >= 0 && y <= textLine.Height;
 
-            if (x >= textLine.Width && textLine.Length > 0 && textLine.NewLineLength > 0)
+            var lastTrailingIndex = 0;
+
+            if(_paragraphProperties.FlowDirection== FlowDirection.LeftToRight)
             {
-                lastTrailingIndex -= textLine.NewLineLength;
+                lastTrailingIndex = textLine.FirstTextSourceIndex + textLine.Length;
+
+                if (x >= textLine.Width && textLine.Length > 0 && textLine.NewLineLength > 0)
+                {
+                    lastTrailingIndex -= textLine.NewLineLength;
+                }
+
+                if (textLine.TextLineBreak?.TextEndOfLine is TextEndOfLine textEndOfLine)
+                {
+                    lastTrailingIndex -= textEndOfLine.Length;
+                }
             }
+            else
+            {
+                if (x <= textLine.WidthIncludingTrailingWhitespace - textLine.Width && textLine.Length > 0 && textLine.NewLineLength > 0)
+                {
+                    lastTrailingIndex += textLine.NewLineLength;
+                }
+
+                if (textLine.TextLineBreak?.TextEndOfLine is TextEndOfLine textEndOfLine)
+                {
+                    lastTrailingIndex += textEndOfLine.Length;
+                }
+            }       
 
             var textPosition = characterHit.FirstCharacterIndex + characterHit.TrailingLength;
 
@@ -391,7 +413,7 @@ namespace Avalonia.Media.TextFormatting
         /// <returns></returns>
         private static TextParagraphProperties CreateTextParagraphProperties(Typeface typeface, double fontSize,
             IBrush? foreground, TextAlignment textAlignment, TextWrapping textWrapping,
-            TextDecorationCollection? textDecorations, FlowDirection flowDirection, double lineHeight, 
+            TextDecorationCollection? textDecorations, FlowDirection flowDirection, double lineHeight,
             double letterSpacing)
         {
             var textRunStyle = new GenericTextRunProperties(typeface, fontSize, textDecorations, foreground);
@@ -456,7 +478,7 @@ namespace Avalonia.Media.TextFormatting
                     var textLine = textFormatter.FormatLine(_textSource, _textSourceLength, MaxWidth,
                         _paragraphProperties, previousLine?.TextLineBreak);
 
-                    if (textLine.Length == 0)
+                    if (textLine is null)
                     {
                         if (previousLine != null && previousLine.NewLineLength > 0)
                         {
@@ -518,7 +540,6 @@ namespace Avalonia.Media.TextFormatting
                     }
                 }
 
-                //Make sure the TextLayout always contains at least on empty line
                 if (textLines.Count == 0)
                 {
                     var textLine = TextFormatterImpl.CreateEmptyTextLine(0, MaxWidth, _paragraphProperties);

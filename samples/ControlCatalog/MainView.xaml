@@ -14,8 +14,8 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
       </Style>
     </Grid.Styles>
-      <controls:HamburgerMenu Name="Sidebar">
-        <TabItem Header="Composition">
+    <controls:HamburgerMenu Name="Sidebar">
+      <TabItem Header="Composition">
         <pages:CompositionPage/>
       </TabItem>
       <TabItem Header="Acrylic">

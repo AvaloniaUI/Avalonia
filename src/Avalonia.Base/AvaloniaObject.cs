@@ -152,7 +152,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
 
-            _values?.ClearLocalValue(property);
+            _values.ClearLocalValue(property);
         }
 
         /// <summary>
@@ -242,7 +242,14 @@ namespace Avalonia
             return registered.InvokeGetter(this);
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets an <see cref="AvaloniaProperty"/> base value.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <remarks>
+        /// Gets the value of the property excluding animated values, otherwise <see cref="Optional{T}.Empty"/>.
+        /// Note that this method does not return property values that come from inherited or default values.
+        /// </remarks>
         public Optional<T> GetBaseValue<T>(StyledProperty<T> property)
         {
             _ = property ?? throw new ArgumentNullException(nameof(property));
@@ -261,7 +268,7 @@ namespace Avalonia
 
             VerifyAccess();
 
-            return _values?.IsAnimating(property) ?? false;
+            return _values.IsAnimating(property);
         }
 
         /// <summary>
@@ -279,7 +286,7 @@ namespace Avalonia
 
             VerifyAccess();
 
-            return _values?.IsSet(property) ?? false;
+            return _values.IsSet(property);
         }
 
         /// <summary>
@@ -515,14 +522,12 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         public void CoerceValue(AvaloniaProperty property) => _values.CoerceValue(property);
 
-        /// <inheritdoc/>
         internal void AddInheritanceChild(AvaloniaObject child)
         {
             _inheritanceChildren ??= new List<AvaloniaObject>();
             _inheritanceChildren.Add(child);
         }
-        
-        /// <inheritdoc/>
+
         internal void RemoveInheritanceChild(AvaloniaObject child)
         {
             _inheritanceChildren?.Remove(child);
@@ -541,24 +546,11 @@ namespace Avalonia
                 return new AvaloniaPropertyValue(
                     property,
                     GetValue(property),
-                    BindingPriority.Unset,
-                    "Local Value");
-            }
-            else if (_values != null)
-            {
-                var result = _values.GetDiagnostic(property);
-
-                if (result != null)
-                {
-                    return result;
-                }
+                    BindingPriority.LocalValue,
+                    null);
             }
 
-            return new AvaloniaPropertyValue(
-                property,
-                GetValue(property),
-                BindingPriority.Unset,
-                "Unset");
+            return _values.GetDiagnostic(property);
         }
 
         internal ValueStore GetValueStore() => _values;

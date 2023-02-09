@@ -792,7 +792,7 @@ namespace Avalonia.Controls
                     Control? element = focused as Control;
                     if (element != null)
                     {
-                        parent = element.Parent;
+                        parent = element.VisualParent;
                     }
                 }
                 focused = parent;
@@ -1711,7 +1711,7 @@ namespace Avalonia.Controls
         /// <param name="predicate">The predicate to use for the partial or
         /// exact match.</param>
         /// <returns>Returns the object or null.</returns>
-        private object? TryGetMatch(string? searchText, AvaloniaList<object> view, AutoCompleteFilterPredicate<string?>? predicate)
+        private object? TryGetMatch(string? searchText, AvaloniaList<object>? view, AutoCompleteFilterPredicate<string?>? predicate)
         {
             if (predicate is null)
                 return null;

@@ -553,7 +553,7 @@ namespace Avalonia.Controls.Platform
             }
         }
 
-        protected static IMenuItem? GetMenuItem(Control? item)
+        protected static IMenuItem? GetMenuItem(StyledElement? item)
         {
             while (true)
             {
