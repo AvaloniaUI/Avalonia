@@ -6,10 +6,12 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Avalonia.Controls.Selection;
+using Avalonia.Controls.Utils;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
+using Avalonia.Metadata;
 using Avalonia.Threading;
 
 namespace Avalonia.Controls.Primitives
@@ -63,6 +65,19 @@ namespace Avalonia.Controls.Primitives
                 o => o.SelectedItem,
                 (o, v) => o.SelectedItem = v,
                 defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+
+        /// <summary>
+        /// Defines the <see cref="SelectedValue"/> property
+        /// </summary>
+        public static readonly StyledProperty<object?> SelectedValueProperty =
+            AvaloniaProperty.Register<SelectingItemsControl, object?>(nameof(SelectedValue),
+                defaultBindingMode: BindingMode.TwoWay);
+
+        /// <summary>
+        /// Defines the <see cref="SelectedValueBinding"/> property
+        /// </summary>
+        public static readonly StyledProperty<IBinding?> SelectedValueBindingProperty =
+            AvaloniaProperty.Register<SelectingItemsControl, IBinding?>(nameof(SelectedValueBinding));
 
         /// <summary>
         /// Defines the <see cref="SelectedItems"/> property.
@@ -127,6 +142,8 @@ namespace Avalonia.Controls.Primitives
         private bool _ignoreContainerSelectionChanged;
         private UpdateState? _updateState;
         private bool _hasScrolledToSelectedItem;
+        private BindingHelper? _bindingHelper;
+        private bool _isSelectionChangeActive;
 
         /// <summary>
         /// Initializes static members of the <see cref="SelectingItemsControl"/> class.
@@ -141,8 +158,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public event EventHandler<SelectionChangedEventArgs>? SelectionChanged
         {
-            add { AddHandler(SelectionChangedEvent, value); }
-            remove { RemoveHandler(SelectionChangedEvent, value); }
+            add => AddHandler(SelectionChangedEvent, value); 
+            remove => RemoveHandler(SelectionChangedEvent, value);
         }
 
         /// <summary>
@@ -150,8 +167,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool AutoScrollToSelectedItem
         {
-            get { return GetValue(AutoScrollToSelectedItemProperty); }
-            set { SetValue(AutoScrollToSelectedItemProperty, value); }
+            get => GetValue(AutoScrollToSelectedItemProperty);
+            set => SetValue(AutoScrollToSelectedItemProperty, value);
         }
 
         /// <summary>
@@ -205,6 +222,28 @@ namespace Avalonia.Controls.Primitives
                     Selection.SelectedItem = value;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the <see cref="IBinding"/> instance used to obtain the 
+        /// <see cref="SelectedValue"/> property
+        /// </summary>
+        [AssignBinding]
+        [InheritDataTypeFromItems(nameof(Items))]
+        public IBinding? SelectedValueBinding
+        {
+            get => GetValue(SelectedValueBindingProperty);
+            set => SetValue(SelectedValueBindingProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the selected item, obtained using 
+        /// <see cref="SelectedValueBinding"/>
+        /// </summary>
+        public object? SelectedValue
+        {
+            get => GetValue(SelectedValueProperty);
+            set => SetValue(SelectedValueProperty, value);
         }
 
         /// <summary>
@@ -321,8 +360,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool IsTextSearchEnabled
         {
-            get { return GetValue(IsTextSearchEnabledProperty); }
-            set { SetValue(IsTextSearchEnabledProperty, value); }
+            get => GetValue(IsTextSearchEnabledProperty);
+            set => SetValue(IsTextSearchEnabledProperty, value);
         }
 
         /// <summary>
@@ -331,8 +370,8 @@ namespace Avalonia.Controls.Primitives
         /// </summary>
         public bool WrapSelection
         {
-            get { return GetValue(WrapSelectionProperty); }
-            set { SetValue(WrapSelectionProperty, value); }
+            get => GetValue(WrapSelectionProperty); 
+            set => SetValue(WrapSelectionProperty, value);
         }
 
         /// <summary>
@@ -344,8 +383,8 @@ namespace Avalonia.Controls.Primitives
         /// </remarks>
         protected SelectionMode SelectionMode
         {
-            get { return GetValue(SelectionModeProperty); }
-            set { SetValue(SelectionModeProperty, value); }
+            get => GetValue(SelectionModeProperty); 
+            set => SetValue(SelectionModeProperty, value);
         }
 
         /// <summary>
@@ -618,6 +657,60 @@ namespace Avalonia.Controls.Primitives
             {
                 WrapFocus = WrapSelection;
             }
+            else if (change.Property == SelectedValueProperty)
+            {
+                if (_isSelectionChangeActive)
+                    return;
+
+                if (_updateState is not null)
+                {
+                    _updateState.SelectedValue = change.NewValue;
+                    return;
+                }
+
+                SelectItemWithValue(change.NewValue);
+            }
+            else if (change.Property == SelectedValueBindingProperty)
+            {
+                var idx = SelectedIndex;
+
+                // If no selection is active, don't do anything as SelectedValue is already null
+                if (idx == -1)
+                {
+                    return;
+                }
+
+                var value = change.GetNewValue<IBinding>();
+                if (value is null)
+                {
+                    // Clearing SelectedValueBinding makes the SelectedValue the item itself
+                    SelectedValue = SelectedItem;
+                    return;
+                }
+
+                var selectedItem = SelectedItem;
+
+                try
+                {
+                    _isSelectionChangeActive = true;
+
+                    if (_bindingHelper is null)
+                    {
+                        _bindingHelper = new BindingHelper(value);
+                    }
+                    else
+                    {
+                        _bindingHelper.UpdateBinding(value);
+                    }
+
+                    // Re-evaluate SelectedValue with the new binding
+                    SelectedValue = _bindingHelper.Evaluate(selectedItem);
+                }
+                finally
+                {
+                    _isSelectionChangeActive = false;
+                }
+            }
         }
 
         /// <summary>
@@ -822,6 +915,10 @@ namespace Avalonia.Controls.Primitives
                     new BindingValue<IList?>(SelectedItems));
                 _oldSelectedItems = SelectedItems;
             }
+            else if (e.PropertyName == nameof(ISelectionModel.Source))
+            {
+                ClearValue(SelectedValueProperty);
+            }
         }
 
         /// <summary>
@@ -852,6 +949,11 @@ namespace Avalonia.Controls.Primitives
                 Mark(i, false);
             }
 
+            if (!_isSelectionChangeActive)
+            {
+                UpdateSelectedValueFromItem();
+            }
+
             var route = BuildEventRoute(SelectionChangedEvent);
 
             if (route.HasHandlers)
@@ -875,6 +977,109 @@ namespace Avalonia.Controls.Primitives
             if (AlwaysSelected && Items is object)
             {
                 SelectedIndex = 0;
+            }
+        }
+
+        private void SelectItemWithValue(object? value)
+        {
+            if (ItemCount == 0 || _isSelectionChangeActive)
+                return;
+
+            try
+            {
+                _isSelectionChangeActive = true;
+                var si = FindItemWithValue(value);
+                if (si != AvaloniaProperty.UnsetValue)
+                {
+                    SelectedItem = si;
+                }
+                else
+                {
+                    SelectedItem = null;
+                }
+            }
+            finally
+            {
+                _isSelectionChangeActive = false;
+            }
+        }
+
+        private object FindItemWithValue(object? value)
+        {
+            if (ItemCount == 0 || value is null)
+            {
+                return AvaloniaProperty.UnsetValue;
+            }
+
+            var items = Items;
+            var binding = SelectedValueBinding;
+
+            if (binding is null)
+            {
+                // No SelectedValueBinding set, SelectedValue is the item itself
+                // Still verify the value passed in is in the Items list
+                var index = items!.IndexOf(value);
+
+                if (index >= 0)
+                {
+                    return value;
+                }
+                else
+                { 
+                    return AvaloniaProperty.UnsetValue;
+                }
+            }
+
+            _bindingHelper ??= new BindingHelper(binding);
+
+            // Matching UWP behavior, if duplicates are present, return the first item matching
+            // the SelectedValue provided
+            foreach (var item in items!)
+            {
+                var itemValue = _bindingHelper.Evaluate(item);
+
+                if (itemValue.Equals(value))
+                {
+                    return item;
+                }
+            }
+
+            return AvaloniaProperty.UnsetValue;
+        }
+
+        private void UpdateSelectedValueFromItem()
+        {
+            if (_isSelectionChangeActive)
+                return;
+
+            var binding = SelectedValueBinding;
+            var item = SelectedItem;
+
+            if (binding is null || item is null)
+            {
+                // No SelectedValueBinding, SelectedValue is Item itself
+                try
+                {
+                    _isSelectionChangeActive = true;
+                    SelectedValue = item;
+                }
+                finally
+                {
+                    _isSelectionChangeActive = false;
+                }
+                return;
+            }
+
+            _bindingHelper ??= new BindingHelper(binding);
+
+            try
+            {
+                _isSelectionChangeActive = true;
+                SelectedValue = _bindingHelper.Evaluate(item);
+            }
+            finally
+            {
+                _isSelectionChangeActive = false;
             }
         }
 
@@ -1044,6 +1249,13 @@ namespace Avalonia.Controls.Primitives
                     Selection.Clear();
                 }
 
+                if (state.SelectedValue.HasValue)
+                {
+                    var item = FindItemWithValue(state.SelectedValue.Value);
+                    if (item != AvaloniaProperty.UnsetValue)
+                        state.SelectedItem = item;
+                }
+
                 if (state.SelectedIndex.HasValue)
                 {
                     SelectedIndex = state.SelectedIndex.Value;
@@ -1105,6 +1317,7 @@ namespace Avalonia.Controls.Primitives
         {
             private Optional<int> _selectedIndex;
             private Optional<object?> _selectedItem;
+            private Optional<object?> _selectedValue;
 
             public int UpdateCount { get; set; }
             public Optional<ISelectionModel> Selection { get; set; }
@@ -1129,6 +1342,54 @@ namespace Avalonia.Controls.Primitives
                     _selectedIndex = default;
                 }
             }
+
+            public Optional<object?> SelectedValue
+            {
+                get => _selectedValue;
+                set
+                {
+                    _selectedValue = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Helper class for evaluating a binding from an Item and IBinding instance
+        /// </summary>
+        private class BindingHelper : StyledElement
+        {
+            public BindingHelper(IBinding binding)
+            {
+                UpdateBinding(binding);
+            }
+
+            public static readonly StyledProperty<object> ValueProperty =
+                AvaloniaProperty.Register<BindingHelper, object>("Value");
+
+            public object Evaluate(object? dataContext)
+            {
+                dataContext = dataContext ?? throw new ArgumentNullException(nameof(dataContext));
+
+                // Only update the DataContext if necessary
+                if (!dataContext.Equals(DataContext))
+                    DataContext = dataContext;
+
+                return GetValue(ValueProperty);
+            }
+
+            public void UpdateBinding(IBinding binding)
+            {
+                _lastBinding = binding;
+                var ib = binding.Initiate(this, ValueProperty);
+                if (ib is null)
+                {
+                    throw new InvalidOperationException("Unable to create binding");
+                }
+
+                BindingOperations.Apply(this, ValueProperty, ib, null);
+            }
+
+            private IBinding? _lastBinding;
         }
     }
 }
