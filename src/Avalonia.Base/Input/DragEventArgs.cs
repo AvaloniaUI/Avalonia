@@ -1,36 +1,28 @@
 ﻿using System;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Input
 {
     public class DragEventArgs : RoutedEventArgs
     {
-        private Interactive _target;
-        private Point _targetLocation;
+        private readonly Interactive _target;
+        private readonly Point _targetLocation;
 
         public DragDropEffects DragEffects { get; set; }
 
-        public IDataObject Data { get; private set; }
+        public IDataObject Data { get; }
 
-        public KeyModifiers KeyModifiers { get; private set; }
+        public KeyModifiers KeyModifiers { get; }
 
         public Point GetPosition(Visual relativeTo)
         {
-            var point = new Point(0, 0);
-
             if (relativeTo == null)
             {
                 throw new ArgumentNullException(nameof(relativeTo));
             }
 
-            if (_target != null)
-            {
-                point = _target.TranslatePoint(_targetLocation, relativeTo) ?? point;
-            }
-
-            return point;
+            return _target.TranslatePoint(_targetLocation, relativeTo) ?? new Point(0, 0);
         }
 
         [Unstable]

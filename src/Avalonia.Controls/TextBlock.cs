@@ -673,8 +673,6 @@ namespace Avalonia.Controls
                             controlRun.Control is Control control)
                         {
                             VisualChildren.Remove(control);
-
-                            LogicalChildren.Remove(control);
                         }
                     }
                 }
@@ -692,8 +690,6 @@ namespace Avalonia.Controls
                         controlRun.Control is Control control)
                     {
                         VisualChildren.Add(control);
-
-                        LogicalChildren.Add(control);
 
                         control.Measure(Size.Infinity);
                     }

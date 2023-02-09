@@ -178,12 +178,11 @@ namespace Avalonia.Controls
                 }
 
             }
-
-
         }
 
         Type IStyleable.StyleKey => typeof(TextBox);
 
+        /// <inheritdoc />
         protected override void OnGotFocus(GotFocusEventArgs e)
         {
             if (HidePromptOnLeave == true && MaskProvider != null)
@@ -193,6 +192,7 @@ namespace Avalonia.Controls
             base.OnGotFocus(e);
         }
 
+        /// <inheritdoc />
         protected override async void OnKeyDown(KeyEventArgs e)
         {
             if (MaskProvider == null)
@@ -271,15 +271,17 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc />
         protected override void OnLostFocus(RoutedEventArgs e)
         {
-            if (HidePromptOnLeave == true && MaskProvider != null)
+            if (HidePromptOnLeave && MaskProvider != null)
             {
                 Text = MaskProvider.ToString(!HidePromptOnLeave, true);
             }
             base.OnLostFocus(e);
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             void UpdateMaskProvider()
@@ -357,6 +359,8 @@ namespace Avalonia.Controls
             }
             base.OnPropertyChanged(change);
         }
+
+        /// <inheritdoc />
         protected override void OnTextInput(TextInputEventArgs e)
         {
             _ignoreTextChanges = true;
@@ -423,7 +427,7 @@ namespace Avalonia.Controls
             return startPosition;
         }
 
-        private void RefreshText(MaskedTextProvider provider, int position)
+        private void RefreshText(MaskedTextProvider? provider, int position)
         {
             if (provider != null)
             {

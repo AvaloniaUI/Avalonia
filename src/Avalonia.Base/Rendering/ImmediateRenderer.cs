@@ -48,8 +48,10 @@ namespace Avalonia.Rendering
         /// <inheritdoc/>
         void IVisualBrushRenderer.RenderVisualBrush(IDrawingContextImpl context, IVisualBrush brush)
         {
-            var visual = brush.Visual;
-            Render(new DrawingContext(context), visual, visual.Bounds);
+            if (brush.Visual is { } visual)
+            {
+                Render(new DrawingContext(context), visual, visual.Bounds);
+            }
         }
 
         internal static void Render(Visual visual, DrawingContext context, bool updateTransformedBounds)

@@ -21,9 +21,9 @@ namespace Avalonia.Controls
         /// <summary>
         /// SharedSizeGroup property.
         /// </summary>
-        public string SharedSizeGroup
+        public string? SharedSizeGroup
         {
-            get { return (string)GetValue(SharedSizeGroupProperty); }
+            get { return GetValue(SharedSizeGroupProperty); }
             set { SetValue(SharedSizeGroupProperty, value); }
         }
 
@@ -32,20 +32,15 @@ namespace Avalonia.Controls
         /// </summary>
         internal void OnEnterParentTree()
         {
-            this.InheritanceParent = Parent;
+            InheritanceParent = Parent;
             if (_sharedState == null)
             {
                 //  start with getting SharedSizeGroup value. 
                 //  this property is NOT inherited which should result in better overall perf.
-                string sharedSizeGroupId = SharedSizeGroup;
-                if (sharedSizeGroupId != null)
+                if (SharedSizeGroup is { } sharedSizeGroupId && PrivateSharedSizeScope is { } privateSharedSizeScope)
                 {
-                    SharedSizeScope? privateSharedSizeScope = PrivateSharedSizeScope;
-                    if (privateSharedSizeScope != null)
-                    {
-                        _sharedState = privateSharedSizeScope.EnsureSharedState(sharedSizeGroupId);
-                        _sharedState.AddMember(this);
-                    }
+                    _sharedState = privateSharedSizeScope.EnsureSharedState(sharedSizeGroupId);
+                    _sharedState.AddMember(this);
                 }
             }
 
@@ -321,13 +316,12 @@ namespace Avalonia.Controls
             return ((_flags & flags) == flags);
         }
 
-        private static void OnSharedSizeGroupPropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
+        private static void OnSharedSizeGroupPropertyChanged(DefinitionBase definition,
+            AvaloniaPropertyChangedEventArgs<string?> e)
         {
-            DefinitionBase definition = (DefinitionBase)d;
-
             if (definition.Parent != null)
             {
-                string sharedSizeGroupId = (string)e.NewValue!;
+                string? sharedSizeGroupId = e.NewValue.Value;
 
                 if (definition._sharedState != null)
                 {
@@ -337,16 +331,14 @@ namespace Avalonia.Controls
                     definition._sharedState = null;
                 }
 
-                if ((definition._sharedState == null) && (sharedSizeGroupId != null))
+                if (definition._sharedState == null
+                    && sharedSizeGroupId != null
+                    && definition.PrivateSharedSizeScope is { } privateSharedSizeScope)
                 {
-                    SharedSizeScope? privateSharedSizeScope = definition.PrivateSharedSizeScope;
-                    if (privateSharedSizeScope != null)
-                    {
-                        //  if definition is not registered and both: shared size group id AND private shared scope 
-                        //  are available, then register definition.
-                        definition._sharedState = privateSharedSizeScope.EnsureSharedState(sharedSizeGroupId);
-                        definition._sharedState.AddMember(definition);
-                    }
+                    //  if definition is not registered and both: shared size group id AND private shared scope
+                    //  are available, then register definition.
+                    definition._sharedState = privateSharedSizeScope.EnsureSharedState(sharedSizeGroupId);
+                    definition._sharedState.AddMember(definition);
                 }
             }
         }
@@ -357,17 +349,15 @@ namespace Avalonia.Controls
         /// b) contains only letters, digits and underscore ('_').
         /// c) does not start with a digit.
         /// </remarks>
-        private static bool SharedSizeGroupPropertyValueValid(string value)
+        private static bool SharedSizeGroupPropertyValueValid(string? id)
         {
             //  null is default value
-            if (value == null)
+            if (id == null)
             {
                 return true;
             }
 
-            string id = (string)value;
-
-            if (!string.IsNullOrEmpty(id))
+            if (id.Length > 0)
             {
                 int i = -1;
                 while (++i < id.Length)
@@ -397,14 +387,11 @@ namespace Avalonia.Controls
         /// existing scope just left. In both cases if the DefinitionBase object is already registered
         /// in SharedSizeState, it should un-register and register itself in a new one.
         /// </remark>
-        private static void OnPrivateSharedSizeScopePropertyChanged(AvaloniaObject d, AvaloniaPropertyChangedEventArgs e)
+        private static void OnPrivateSharedSizeScopePropertyChanged(DefinitionBase definition,
+            AvaloniaPropertyChangedEventArgs<SharedSizeScope?> e)
         {
-            DefinitionBase definition = (DefinitionBase)d;
-
             if (definition.Parent != null)
             {
-                SharedSizeScope privateSharedSizeScope = (SharedSizeScope)e.NewValue!;
-
                 if (definition._sharedState != null)
                 {
                     //  if definition is already registered And shared size scope is changing,
@@ -413,16 +400,14 @@ namespace Avalonia.Controls
                     definition._sharedState = null;
                 }
 
-                if ((definition._sharedState == null) && (privateSharedSizeScope != null))
+                if (definition._sharedState == null
+                    && e.NewValue.Value is { } privateSharedSizeScope
+                    && definition.SharedSizeGroup is { } sharedSizeGroup)
                 {
-                    string sharedSizeGroup = definition.SharedSizeGroup;
-                    if (sharedSizeGroup != null)
-                    {
-                        //  if definition is not registered and both: shared size group id AND private shared scope 
-                        //  are available, then register definition.
-                        definition._sharedState = privateSharedSizeScope.EnsureSharedState(definition.SharedSizeGroup);
-                        definition._sharedState.AddMember(definition);
-                    }
+                    //  if definition is not registered and both: shared size group id AND private shared scope
+                    //  are available, then register definition.
+                    definition._sharedState = privateSharedSizeScope.EnsureSharedState(sharedSizeGroup);
+                    definition._sharedState.AddMember(definition);
                 }
             }
         }
@@ -432,7 +417,7 @@ namespace Avalonia.Controls
         /// </summary>
         private SharedSizeScope? PrivateSharedSizeScope
         {
-            get { return (SharedSizeScope?)GetValue(PrivateSharedSizeScopeProperty); }
+            get { return GetValue(PrivateSharedSizeScopeProperty); }
         }
 
         /// <summary>
@@ -465,7 +450,7 @@ namespace Avalonia.Controls
 
         private SharedSizeState? _sharedState;           //  reference to shared state object this instance is registered with
 
-        [System.Flags]
+        [Flags]
         private enum Flags : byte
         {
             //
@@ -520,11 +505,10 @@ namespace Avalonia.Controls
             /// </summary>
             internal SharedSizeState(SharedSizeScope sharedSizeScope, string sharedSizeGroupId)
             {
-                Debug.Assert(sharedSizeScope != null && sharedSizeGroupId != null);
                 _sharedSizeScope = sharedSizeScope;
                 _sharedSizeGroupId = sharedSizeGroupId;
                 _registry = new List<DefinitionBase>();
-                _layoutUpdated = new EventHandler(OnLayoutUpdated);
+                _layoutUpdated = OnLayoutUpdated;
                 _broadcastInvalidation = true;
             }
 
@@ -568,7 +552,7 @@ namespace Avalonia.Controls
                 {
                     for (int i = 0, count = _registry.Count; i < count; ++i)
                     {
-                        Grid parentGrid = (Grid)(_registry[i].Parent!);
+                        Grid parentGrid = _registry[i].Parent!;
                         parentGrid.Invalidate();
                     }
                     _broadcastInvalidation = false;
@@ -703,7 +687,7 @@ namespace Avalonia.Controls
                         // measure is invalid - it used the old shared size,
                         // which is larger than d's (possibly changed) minSize
                         measureIsValid = (definitionBase.LayoutWasUpdated &&
-                                        MathUtilities.GreaterThanOrClose(definitionBase._minSize, this.MinSize));
+                                        MathUtilities.GreaterThanOrClose(definitionBase._minSize, MinSize));
                     }
 
                     if(!measureIsValid)
@@ -786,8 +770,8 @@ namespace Avalonia.Controls
         /// </description></item>
         /// </list>
         /// </remarks> 
-        public static readonly AttachedProperty<string> SharedSizeGroupProperty =
-            AvaloniaProperty.RegisterAttached<DefinitionBase, Control, string>(
+        public static readonly AttachedProperty<string?> SharedSizeGroupProperty =
+            AvaloniaProperty.RegisterAttached<DefinitionBase, Control, string?>(
                 "SharedSizeGroup",
                 validate: SharedSizeGroupPropertyValueValid);
 
@@ -796,8 +780,8 @@ namespace Avalonia.Controls
         /// </summary>
         static DefinitionBase()
         {
-            SharedSizeGroupProperty.Changed.AddClassHandler<DefinitionBase>(OnSharedSizeGroupPropertyChanged);
-            PrivateSharedSizeScopeProperty.Changed.AddClassHandler<DefinitionBase>(OnPrivateSharedSizeScopePropertyChanged);
+            SharedSizeGroupProperty.Changed.AddClassHandler<DefinitionBase, string?>(OnSharedSizeGroupPropertyChanged);
+            PrivateSharedSizeScopeProperty.Changed.AddClassHandler<DefinitionBase, SharedSizeScope?>(OnPrivateSharedSizeScopePropertyChanged);
         }
 
         /// <summary>

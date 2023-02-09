@@ -1,5 +1,4 @@
 using Avalonia.Media.Immutable;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Media
 {
@@ -11,8 +10,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Visual"/> property.
         /// </summary>
-        public static readonly StyledProperty<Visual> VisualProperty =
-            AvaloniaProperty.Register<VisualBrush, Visual>(nameof(Visual));
+        public static readonly StyledProperty<Visual?> VisualProperty =
+            AvaloniaProperty.Register<VisualBrush, Visual?>(nameof(Visual));
 
         static VisualBrush()
         {
@@ -38,7 +37,7 @@ namespace Avalonia.Media
         /// <summary>
         /// Gets or sets the visual to draw.
         /// </summary>
-        public Visual Visual
+        public Visual? Visual
         {
             get { return GetValue(VisualProperty); }
             set { SetValue(VisualProperty, value); }
