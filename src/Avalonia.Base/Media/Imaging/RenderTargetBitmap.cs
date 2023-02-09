@@ -66,7 +66,7 @@ namespace Avalonia.Media.Imaging
 
         /// <summary>
         /// Overrides the <see cref="Bitmap"/> implementation 
-        /// skipping the <see cref="Format"/> null check
+        /// skipping the <see cref="Bitmap.Format"/> null check
         /// </summary>
         public override void CopyPixels(PixelRect sourceRect, nint buffer, int bufferSize, int stride)
         {
