@@ -1,4 +1,5 @@
 using System;
+using Avalonia.Media.TextFormatting;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Input.TextInput
@@ -29,6 +30,11 @@ namespace Avalonia.Input.TextInput
         /// Sets the non-committed input string
         /// </summary>
         void SetPreeditText(string? text);
+
+        /// <summary>
+        /// Sets the current composing region. This doesn't remove the composing text from the commited text.
+        /// </summary>
+        void SetComposingRegion(TextRange? region);
 
         /// <summary>
         /// Indicates if text input client is capable of providing the text around the cursor

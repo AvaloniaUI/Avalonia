@@ -410,27 +410,23 @@ namespace Avalonia.Android.Platform.SkiaPlatform
     {
         private readonly TopLevelImpl _topLevel;
         private readonly IAndroidInputMethod _inputMethod;
+        private readonly InputEditable _editable;
 
         public AvaloniaInputConnection(TopLevelImpl topLevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
         {
             _topLevel = topLevel;
             _inputMethod = inputMethod;
+            _editable = new InputEditable(_topLevel, _inputMethod);
         }
 
         public TextInputMethodSurroundingText SurroundingText { get; set; }
 
-        public string ComposingText { get; internal set; }
-
-        public ComposingRegion? ComposingRegion { get; internal set; }
-
-        public bool IsComposing => !string.IsNullOrEmpty(ComposingText);
-        public bool IsCommiting { get; private set; }
+        public override IEditable Editable => _editable;
 
         public override bool SetComposingRegion(int start, int end)
         {
-            //System.Diagnostics.Debug.WriteLine($"Composing Region: [{start}|{end}] {SurroundingText.Text?.Substring(start, end - start)}");
-
-            ComposingRegion = new ComposingRegion(start, end);
+            _inputMethod.Client.SetPreeditText(null);
+            _inputMethod.Client.SetComposingRegion(new Media.TextFormatting.TextRange(start, end));
 
             return base.SetComposingRegion(start, end);
         }
@@ -439,130 +435,44 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         {
             var composingText = text.ToString();
 
-            ComposingText = composingText;
+            if (string.IsNullOrEmpty(composingText))
+            {
+                return CommitText(text, newCursorPosition);
+            }
+            else
+            {
+                return base.SetComposingText(text, newCursorPosition);
+            }
+        }
 
-            _inputMethod.Client?.SetPreeditText(ComposingText);
+        public override bool BeginBatchEdit()
+        {
+            _editable.BeginBatchEdit();
 
-            return base.SetComposingText(text, newCursorPosition);
+            return base.BeginBatchEdit();
+        }
+
+        public override bool EndBatchEdit()
+        {
+            var ret = base.EndBatchEdit();
+            _editable.EndBatchEdit();
+
+            return ret;
         }
 
         public override bool FinishComposingText()
         {
-            if (!string.IsNullOrEmpty(ComposingText))
-            {
-                CommitText(ComposingText, ComposingText.Length);
-            }
-            else
-            {
-                ComposingRegion = new ComposingRegion(SurroundingText.CursorOffset, SurroundingText.CursorOffset);
-            }
-
+            _inputMethod.Client?.SetComposingRegion(null);
             return base.FinishComposingText();
-        }
-
-        public override ICharSequence GetTextBeforeCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
-        {
-            if (!string.IsNullOrEmpty(SurroundingText.Text) && length > 0)
-            {
-                var start = System.Math.Max(SurroundingText.CursorOffset - length, 0);
-
-                var end = System.Math.Min(start + length - 1, SurroundingText.CursorOffset);
-
-                var text = SurroundingText.Text.Substring(start, end - start);
-
-                //System.Diagnostics.Debug.WriteLine($"Text Before: {text}");
-
-                return new Java.Lang.String(text);
-            }
-
-            return null;
-        }
-
-        public override ICharSequence GetTextAfterCursorFormatted(int length, [GeneratedEnum] GetTextFlags flags)
-        {
-            if (!string.IsNullOrEmpty(SurroundingText.Text))
-            {
-                var start = SurroundingText.CursorOffset;
-
-                var end = System.Math.Min(start + length, SurroundingText.Text.Length);
-
-                var text = SurroundingText.Text.Substring(start, end - start);
-
-                //System.Diagnostics.Debug.WriteLine($"Text After: {text}");
-
-                return new Java.Lang.String(text);
-            }
-
-            return null;
         }
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
         {
-            IsCommiting = true;
-            var committedText = text.ToString();
-
             _inputMethod.Client.SetPreeditText(null);
 
-            int? start, end;
-
-            if(SurroundingText.CursorOffset != SurroundingText.AnchorOffset)
-            {
-                start = Math.Min(SurroundingText.CursorOffset, SurroundingText.AnchorOffset);
-                end = Math.Max(SurroundingText.CursorOffset, SurroundingText.AnchorOffset);
-            }
-            else if (ComposingRegion != null)
-            {
-                start = ComposingRegion?.Start;
-                end = ComposingRegion?.End;
-
-                ComposingRegion = null;
-            }
-            else
-            {
-                start = end = _inputMethod.Client.SurroundingText.CursorOffset;
-            }
-
-            _inputMethod.Client.SelectInSurroundingText((int)start, (int)end);
-
-            var time = DateTime.Now.TimeOfDay;
-
-            var rawTextEvent = new RawTextInputEventArgs(KeyboardDevice.Instance, (ulong)time.Ticks, _topLevel.InputRoot, committedText);
-
-            _topLevel.Input(rawTextEvent);
-
-            ComposingText = null;
-
-            ComposingRegion = new ComposingRegion(newCursorPosition, newCursorPosition);
+            _inputMethod.Client?.SetComposingRegion(null);
 
             return base.CommitText(text, newCursorPosition);
-        }
-
-        public override bool DeleteSurroundingText(int beforeLength, int afterLength)
-        {
-            var surroundingText = _inputMethod.Client.SurroundingText;
-
-            var selectionStart = surroundingText.CursorOffset;
-
-            _inputMethod.Client.SelectInSurroundingText(selectionStart - beforeLength, selectionStart + afterLength);
-
-            _inputMethod.View.DispatchKeyEvent(new KeyEvent(KeyEventActions.Down, Keycode.ForwardDel));
-
-            surroundingText = _inputMethod.Client.SurroundingText;
-
-            selectionStart = surroundingText.CursorOffset;
-
-            ComposingRegion = new ComposingRegion(selectionStart, selectionStart);
-
-            return base.DeleteSurroundingText(beforeLength, afterLength);
-        }
-
-        public override bool SetSelection(int start, int end)
-        {
-            _inputMethod.Client.SelectInSurroundingText(start, end);
-
-            ComposingRegion = new ComposingRegion(start, end);
-
-            return base.SetSelection(start, end);
         }
 
         public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)

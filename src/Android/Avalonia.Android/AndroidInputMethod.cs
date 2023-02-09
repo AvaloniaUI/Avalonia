@@ -5,8 +5,10 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
+using Avalonia.Reactive;
 
 namespace Avalonia.Android
 {
@@ -39,6 +41,7 @@ namespace Avalonia.Android
         private readonly InputMethodManager _imm;
         private ITextInputMethodClient _client;
         private AvaloniaInputConnection _inputConnection;
+        private IDisposable _textChangeObservable;
 
         public AndroidInputMethod(TView host)
         {
@@ -70,13 +73,9 @@ namespace Avalonia.Android
         {
             if (_client != null)
             {
+                _textChangeObservable?.Dispose();
                 _client.SurroundingTextChanged -= SurroundingTextChanged;
-            }
-
-            if(_inputConnection != null)
-            {
-                _inputConnection.ComposingText = null;
-                _inputConnection.ComposingRegion = default;
+                _client.TextViewVisualChanged -= TextViewVisualChanged;
             }
 
             _client = client;
@@ -84,6 +83,12 @@ namespace Avalonia.Android
             if (IsActive)
             {
                 _client.SurroundingTextChanged += SurroundingTextChanged;
+                _client.TextViewVisualChanged += TextViewVisualChanged;
+
+                if(_client.TextViewVisual is TextPresenter textVisual)
+                {
+                    _textChangeObservable = textVisual.GetObservable(TextPresenter.TextProperty).Subscribe(new AnonymousObserver<string?>(UpdateText));
+                }
 
                 _host.RequestFocus();
 
@@ -101,6 +106,23 @@ namespace Avalonia.Android
             }
         }
 
+        private void TextViewVisualChanged(object sender, EventArgs e)
+        {
+            var textVisual = _client.TextViewVisual as TextPresenter;
+            _textChangeObservable?.Dispose();
+            _textChangeObservable = null;
+
+            if(textVisual != null)
+            {
+                _textChangeObservable = textVisual.GetObservable(TextPresenter.TextProperty).Subscribe(new AnonymousObserver<string?>(UpdateText));
+            }
+        }
+
+        private void UpdateText(string? obj)
+        {
+            (_inputConnection?.Editable as InputEditable)?.UpdateString(obj);
+        }
+
         private void SurroundingTextChanged(object sender, EventArgs e)
         {
             if (IsActive && _inputConnection != null)
@@ -109,12 +131,10 @@ namespace Avalonia.Android
 
                 _inputConnection.SurroundingText = surroundingText;
 
-                _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
-
-                if (_inputConnection.ComposingText != null && !_inputConnection.IsCommiting && surroundingText.AnchorOffset == surroundingText.CursorOffset)
+                if ((_inputConnection?.Editable as InputEditable)?.IsInBatchEdit != true)
                 {
-                    _inputConnection.CommitText(_inputConnection.ComposingText, 0);
                     _inputConnection.SetSelection(surroundingText.AnchorOffset, surroundingText.CursorOffset);
+                    _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
                 }
             }
         }

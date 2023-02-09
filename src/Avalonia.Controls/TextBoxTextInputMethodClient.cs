@@ -5,6 +5,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Controls
 {
@@ -108,6 +109,16 @@ namespace Avalonia.Controls
             }
 
             _presenter.PreeditText = text;
+        }
+
+        public void SetComposingRegion(TextRange? region)
+        {
+            if (_presenter == null)
+            {
+                return;
+            }
+
+            _presenter.CompositionRegion = region;
         }
 
         public void SelectInSurroundingText(int start, int end)
