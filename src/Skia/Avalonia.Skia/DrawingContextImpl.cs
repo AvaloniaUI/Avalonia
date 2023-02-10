@@ -365,15 +365,7 @@ namespace Avalonia.Skia
             SKRoundRect skRoundRect = null;
             if (needRoundRect)
             {
-                skRoundRect = SKRoundRectCache.Shared.Get();
-                skRoundRect.SetRectRadii(rc,
-                    new[]
-                    {
-                        rect.RadiiTopLeft.ToSKPoint(),
-                        rect.RadiiTopRight.ToSKPoint(),
-                        rect.RadiiBottomRight.ToSKPoint(),
-                        rect.RadiiBottomLeft.ToSKPoint(),
-                    });
+                skRoundRect = SKRoundRectCache.Shared.GetAndSetRadii(rc, rect);
             }
 
             foreach (var boxShadow in boxShadows)
@@ -389,8 +381,7 @@ namespace Avalonia.Skia
                         Canvas.Save();
                         if (isRounded)
                         {
-                            var shadowRect = SKRoundRectCache.Shared.Get();
-                            shadowRect.SetRectRadii(skRoundRect!.Rect, skRoundRect.Radii);
+                            var shadowRect = SKRoundRectCache.Shared.GetAndSetRadii(skRoundRect!.Rect, skRoundRect.Radii);
                             if (spread != 0)
                                 shadowRect.Inflate(spread, spread);
                             Canvas.ClipRoundRect(skRoundRect,
@@ -446,8 +437,7 @@ namespace Avalonia.Skia
                         var outerRect = AreaCastingShadowInHole(rc, (float)boxShadow.Blur, spread, offsetX, offsetY);
 
                         Canvas.Save();
-                        var shadowRect = SKRoundRectCache.Shared.Get();
-                        shadowRect.SetRectRadii(skRoundRect!.Rect, skRoundRect.Radii);
+                        var shadowRect = SKRoundRectCache.Shared.GetAndSetRadii(skRoundRect!.Rect, skRoundRect.Radii);
                         if (spread != 0)
                             shadowRect.Deflate(spread, spread);
                         Canvas.ClipRoundRect(skRoundRect,
