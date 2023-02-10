@@ -5,11 +5,10 @@
     <NoWarn>$(NoWarn);IL2026</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <AvaloniaResource Include="Assets\*" />  
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Avalonia.Base\Avalonia.Base.csproj" />
-    <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
-    <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-    <ProjectReference Include="..\Markup\Avalonia.Markup.Xaml\Avalonia.Markup.Xaml.csproj" />
-    <AvaloniaResource Include="**/*.xaml" />  
   </ItemGroup>
   <Import Project="..\..\build\NullableEnable.props" />
   <Import Project="..\..\build\BuildTargets.targets" />

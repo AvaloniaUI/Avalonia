@@ -3,7 +3,7 @@
                     xmlns:sys="using:System"
                     xmlns:converters="using:Avalonia.Controls.Converters">
   <!-- https://docs.microsoft.com/en-us/previous-versions/windows/apps/dn518235(v=win.10)?redirectedfrom=MSDN -->
-  <FontFamily x:Key="ContentControlThemeFontFamily">avares://Avalonia.Themes.Fluent/Assets#Inter</FontFamily>
+  <FontFamily x:Key="ContentControlThemeFontFamily">avares://Avalonia.Themes.Fluent.Fonts/Assets#Inter, $Default</FontFamily>
   <sys:Double x:Key="ControlContentThemeFontSize">14</sys:Double>
 
   <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />

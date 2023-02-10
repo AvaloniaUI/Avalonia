@@ -106,7 +106,14 @@ namespace Avalonia.Skia
         {
             SKTypeface skTypeface = null;
 
-            if (typeface.FontFamily.Key == null)
+            if(typeface.FontFamily.Key != null)
+            {
+                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
+
+                skTypeface = fontCollection.Get(typeface);
+            }
+
+            if (skTypeface is null)
             {
                 var defaultName = SKTypeface.Default.FamilyName;
 
@@ -135,13 +142,7 @@ namespace Avalonia.Skia
                 skTypeface ??= _skFontManager.MatchTypeface(SKTypeface.Default, fontStyle)
                     ?? SKTypeface.Default;
             }
-            else
-            {
-                var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
-
-                skTypeface = fontCollection.Get(typeface);
-            }
-
+           
             if (skTypeface == null)
             {
                 throw new InvalidOperationException(

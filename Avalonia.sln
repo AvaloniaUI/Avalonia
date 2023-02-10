@@ -231,11 +231,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControlCatalog.Browser.Blaz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReactiveUIDemo", "samples\ReactiveUIDemo\ReactiveUIDemo.csproj", "{75C47156-C5D8-44BC-A5A7-E8657C2248D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GpuInterop", "samples\GpuInterop\GpuInterop.csproj", "{C810060E-3809-4B74-A125-F11533AF9C1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GpuInterop", "samples\GpuInterop\GpuInterop.csproj", "{C810060E-3809-4B74-A125-F11533AF9C1B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.ItemsRepeater", "src\Avalonia.Controls.ItemsRepeater\Avalonia.Controls.ItemsRepeater.csproj", "{EE0F0DD4-A70D-472B-BD5D-B7D32D0E9386}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.ItemsRepeater.UnitTests", "tests\Avalonia.Controls.ItemsRepeater.UnitTests\Avalonia.Controls.ItemsRepeater.UnitTests.csproj", "{F4E36AA8-814E-4704-BC07-291F70F45193}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Fluent.Fonts", "src\Avalonia.Themes.Fluent.Fonts\Avalonia.Themes.Fluent.Fonts.csproj", "{5E19C5EF-19D7-4E70-9050-48DAE7FF5FA4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -560,6 +562,10 @@ Global
 		{F4E36AA8-814E-4704-BC07-291F70F45193}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4E36AA8-814E-4704-BC07-291F70F45193}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4E36AA8-814E-4704-BC07-291F70F45193}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E19C5EF-19D7-4E70-9050-48DAE7FF5FA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E19C5EF-19D7-4E70-9050-48DAE7FF5FA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E19C5EF-19D7-4E70-9050-48DAE7FF5FA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E19C5EF-19D7-4E70-9050-48DAE7FF5FA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
