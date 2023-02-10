@@ -14,7 +14,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class WindowTests_MacOS
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public WindowTests_MacOS(TestAppFixture fixture)
         {
@@ -156,7 +156,7 @@ namespace Avalonia.IntegrationTests.Appium
         {
             // Issue #9565
             var mainWindow = _session.FindElementByAccessibilityId("MainWindow");
-            AppiumWebElement windowState;
+            IWebElement windowState;
 
             // Open child window.
             using (OpenWindow(new PixelSize(200, 100), ShowWindowMode.Owned, WindowStartupLocation.Manual))
@@ -342,7 +342,7 @@ namespace Avalonia.IntegrationTests.Appium
             return showButton.OpenWindowWithClick();
         }
 
-        private AppiumWebElement GetWindow(string identifier)
+        private IWebElement GetWindow(string identifier)
         {
             // The Avalonia a11y tree currently exposes two nested Window elements, this is a bug and should be fixed 
             // but in the meantime use the `parent::' selector to return the parent "real" window. 

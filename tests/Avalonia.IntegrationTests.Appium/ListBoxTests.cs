@@ -9,7 +9,7 @@ namespace Avalonia.IntegrationTests.Appium
     [Collection("Default")]
     public class ListBoxTests
     {
-        private readonly AppiumDriver<AppiumWebElement> _session;
+        private readonly AppiumDriver _session;
 
         public ListBoxTests(TestAppFixture fixture)
         {
@@ -94,7 +94,7 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.True(children.Count < 100);
         }
 
-        private AppiumWebElement GetTarget()
+        private IWebElement GetTarget()
         {
             _session.FindElementByAccessibilityId("ListBoxSelectionClear").Click();
             return _session.FindElementByAccessibilityId("BasicListBox");
