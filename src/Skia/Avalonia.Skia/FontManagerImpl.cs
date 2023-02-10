@@ -111,6 +111,12 @@ namespace Avalonia.Skia
                 var fontCollection = SKTypefaceCollectionCache.GetOrAddTypefaceCollection(typeface.FontFamily);
 
                 skTypeface = fontCollection.Get(typeface);
+
+                if (skTypeface is null && !typeface.FontFamily.FamilyNames.HasFallbacks)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not create glyph typeface for: {typeface.FontFamily.Name}.");
+                }
             }
 
             if (skTypeface is null)
