@@ -549,7 +549,13 @@ namespace Avalonia.Controls
         /// Renders the <see cref="TextBlock"/> to a drawing context.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
+        {
+            RenderCore(context);
+        }
+
+        // Workaround to seal Render method, we need to make so because AccessText was overriding Render method which is sealed now.
+        internal protected virtual void RenderCore(DrawingContext context)
         {
             var background = Background;
 

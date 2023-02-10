@@ -388,7 +388,7 @@ namespace Avalonia.Controls.Presenters
             TextLayout.Draw(context, new Point(left, top));
         }
 
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             var selectionStart = SelectionStart;
             var selectionEnd = SelectionEnd;
