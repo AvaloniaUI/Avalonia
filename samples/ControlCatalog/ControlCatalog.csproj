@@ -29,7 +29,7 @@
     <ProjectReference Include="..\..\src\Avalonia.Controls.ItemsRepeater\Avalonia.Controls.ItemsRepeater.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent\Avalonia.Themes.Fluent.csproj" />
-    <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent.Fonts\Avalonia.Themes.Fluent.Fonts.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Themes.Fluent.Inter\Avalonia.Themes.Fluent.Inter.csproj" />
     <ProjectReference Include="..\MiniMvvm\MiniMvvm.csproj" />
     <ProjectReference Include="..\SampleControls\ControlSamples.csproj" />
   </ItemGroup>

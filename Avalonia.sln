@@ -237,7 +237,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.ItemsRepe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Controls.ItemsRepeater.UnitTests", "tests\Avalonia.Controls.ItemsRepeater.UnitTests\Avalonia.Controls.ItemsRepeater.UnitTests.csproj", "{F4E36AA8-814E-4704-BC07-291F70F45193}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Fluent.Fonts", "src\Avalonia.Themes.Fluent.Fonts\Avalonia.Themes.Fluent.Fonts.csproj", "{5E19C5EF-19D7-4E70-9050-48DAE7FF5FA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avalonia.Themes.Fluent.Inter", "src\Avalonia.Themes.Fluent.Inter\Avalonia.Themes.Fluent.Inter.csproj", "{5E19C5EF-19D7-4E70-9050-48DAE7FF5FA4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
