@@ -47,7 +47,64 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(TestPlatforms.Windows)]
-        public void Can_Change_Selection_With_Keyboard()
+        public void Can_Change_Selection_With_Keyboard_When_Closed()
+        {
+            var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
+            var wrap = _session.FindElementByAccessibilityId("ComboBoxWrapSelection");
+
+            if (wrap.GetIsChecked() != false)
+                wrap.Click();
+
+            _session.FindElementByAccessibilityId("ComboBoxSelectionClear").Click();
+
+            comboBox.SendKeys(Keys.ArrowDown);
+            Assert.Equal("Item 0", comboBox.GetComboBoxValue());
+
+            comboBox.SendKeys(Keys.ArrowDown);
+            Assert.Equal("Item 1", comboBox.GetComboBoxValue());
+
+            comboBox.SendKeys(Keys.ArrowDown);
+            Assert.Equal("Item 1", comboBox.GetComboBoxValue());
+
+            comboBox.SendKeys(Keys.ArrowUp);
+            Assert.Equal("Item 0", comboBox.GetComboBoxValue());
+
+            comboBox.SendKeys(Keys.ArrowUp);
+            Assert.Equal("Item 0", comboBox.GetComboBoxValue());
+        }
+
+        [PlatformFact(TestPlatforms.Windows)]
+        public void Can_Change_Wrapping_Selection_With_Keyboard_When_Closed()
+        {
+            var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
+            var wrap = _session.FindElementByAccessibilityId("ComboBoxWrapSelection");
+
+            if (wrap.GetIsChecked() != true)
+                wrap.Click();
+
+            _session.FindElementByAccessibilityId("ComboBoxSelectionClear").Click();
+
+            comboBox.SendKeys(Keys.ArrowDown);
+            Assert.Equal("Item 0", comboBox.GetComboBoxValue());
+
+            comboBox.SendKeys(Keys.ArrowDown);
+            Assert.Equal("Item 1", comboBox.GetComboBoxValue());
+
+            comboBox.SendKeys(Keys.ArrowDown);
+            Assert.Equal("Item 0", comboBox.GetComboBoxValue());
+
+            comboBox.SendKeys(Keys.ArrowDown);
+            Assert.Equal("Item 1", comboBox.GetComboBoxValue());
+
+            comboBox.SendKeys(Keys.ArrowUp);
+            Assert.Equal("Item 0", comboBox.GetComboBoxValue());
+
+            comboBox.SendKeys(Keys.ArrowUp);
+            Assert.Equal("Item 1", comboBox.GetComboBoxValue());
+        }
+
+        [PlatformFact(TestPlatforms.Windows)]
+        public void Can_Change_Selection_When_Open_With_Keyboard()
         {
             var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
 
@@ -64,7 +121,7 @@ namespace Avalonia.IntegrationTests.Appium
         }
 
         [PlatformFact(TestPlatforms.Windows)]
-        public void Can_Change_Selection_With_Keyboard_From_Unselected()
+        public void Can_Change_Selection_When_Open_With_Keyboard_From_Unselected()
         {
             var comboBox = _session.FindElementByAccessibilityId("BasicComboBox");
 

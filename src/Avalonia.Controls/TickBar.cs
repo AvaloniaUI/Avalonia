@@ -213,7 +213,7 @@ namespace Avalonia.Controls
         ///
         /// Brush that use to fill ticks is specified by Fill property.
         /// </summary>
-        public override void Render(DrawingContext dc)
+        public sealed override void Render(DrawingContext dc)
         {
             var size = new Size(Bounds.Width, Bounds.Height);
             var range = Maximum - Minimum;
