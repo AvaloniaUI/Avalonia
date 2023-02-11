@@ -534,7 +534,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <inheritdoc/>
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             _borderRenderer.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow);

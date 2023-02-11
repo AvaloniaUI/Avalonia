@@ -29,5 +29,10 @@ namespace Avalonia.PropertyStore
         {
             throw new NotSupportedException();
         }
+
+        protected override object? GetDefaultValue(Type ownerType)
+        {
+            return ((IStyledPropertyMetadata)Property.GetMetadata(ownerType)).DefaultValue;
+        }
     }
 }
