@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices.JavaScript;
 using Avalonia.Browser.Interop;
@@ -15,6 +16,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using SkiaSharp;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Avalonia.Browser
 {
@@ -94,6 +96,7 @@ namespace Avalonia.Browser
 
             InputHelper.SubscribeTextEvents(
                 _inputElement,
+                OnBeforeInput,
                 OnTextInput,
                 OnCompositionStart,
                 OnCompositionUpdate,
@@ -316,11 +319,37 @@ namespace Avalonia.Browser
             return _topLevelImpl.RawTextEvent(data);
         }
 
+        private bool OnBeforeInput(JSObject arg, int start, int end)
+        {
+            var type = arg.GetPropertyAsString("inputType");
+            Console.WriteLine(type);
+            if (type != "deleteByComposition")
+            {
+                if (type == "deleteContentBackward")
+                {
+                    start = _inputElement.GetPropertyAsInt32("selectionStart");
+                    end = _inputElement.GetPropertyAsInt32("selectionEnd");
+                }
+                else
+                {
+                    start = -1;
+                    end = -1;
+                }
+            }
+
+            if(start != -1 && end != -1 && _client != null)
+            {
+                _client.SelectInSurroundingText(start, end);
+            }
+            return false;
+        }
+
         private bool OnCompositionStart (JSObject args)
         {
             if (_client == null)
                 return false;
 
+            Console.WriteLine("composition start");
             _client.SetPreeditText(null);
             IsComposing = true;
 
@@ -331,6 +360,7 @@ namespace Avalonia.Browser
         {
             if (_client == null)
                 return false;
+            Console.WriteLine("composition update");
 
             _client.SetPreeditText(args.GetPropertyAsString("data"));
 
@@ -342,6 +372,7 @@ namespace Avalonia.Browser
             if (_client == null)
                 return false;
 
+            Console.WriteLine("composition end");
             IsComposing = false;
             _client.SetPreeditText(null);
             _topLevelImpl.RawTextEvent(args.GetPropertyAsString("data")!);
