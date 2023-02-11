@@ -297,13 +297,6 @@ namespace Avalonia.Controls
             set => SetValue(TransparencyBackgroundFallbackProperty, value);
         }
 
-        /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariant"/>
-        public ThemeVariant? RequestedThemeVariant
-        {
-            get => GetValue(RequestedThemeVariantProperty);
-            set => SetValue(RequestedThemeVariantProperty, value);
-        }
-
         /// <summary>
         /// Occurs when physical Back Button is pressed or a back navigation has been requested.
         /// </summary>
