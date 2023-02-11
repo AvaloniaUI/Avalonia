@@ -81,19 +81,18 @@ namespace Avalonia.Win32
 
         private void UpdateIcon(bool remove = false)
         {
-            var iconData = new NOTIFYICONDATA()
+            var iconData = new NOTIFYICONDATA
             {
                 hWnd = Win32Platform.Instance.Handle,
-                uID = _uniqueId,
-                uFlags = NIF.TIP | NIF.MESSAGE,
-                uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE,
-                hIcon = _icon?.HIcon ?? s_emptyIcon,
-                szTip = _tooltipText ?? ""
+                uID = _uniqueId
             };
 
             if (!remove)
             {
-                iconData.uFlags |= NIF.ICON;
+                iconData.uFlags = NIF.TIP | NIF.MESSAGE | NIF.ICON;
+                iconData.uCallbackMessage = (int)CustomWindowsMessage.WM_TRAYMOUSE;
+                iconData.hIcon = _icon?.HIcon ?? s_emptyIcon;
+                iconData.szTip = _tooltipText ?? "";
 
                 if (!_iconAdded)
                 {
@@ -107,6 +106,7 @@ namespace Avalonia.Win32
             }
             else
             {
+                iconData.uFlags = 0;
                 Shell_NotifyIcon(NIM.DELETE, iconData);
                 _iconAdded = false;
             }
