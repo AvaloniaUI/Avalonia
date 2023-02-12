@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Platform;
 using Avalonia.Skia;
 using Avalonia.Reactive;
+using SkiaSharp;
 
 namespace Avalonia.Browser.Skia
 {
@@ -21,7 +22,7 @@ namespace Avalonia.Browser.Skia
             return null;
         }
 
-        public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
+        public ISkiaSurface? TryCreateSurface(PixelSize size, GRSurfaceOrigin? origin)
         {
             return null;
         }
