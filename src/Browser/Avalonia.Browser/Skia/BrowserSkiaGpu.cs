@@ -9,6 +9,9 @@ namespace Avalonia.Browser.Skia
 {
     public class BrowserSkiaGpu : ISkiaGpu
     {
+        // TODO
+        public GRContext GrContext => throw new NotSupportedException();
+
         public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
         {
             foreach (var surface in surfaces)
