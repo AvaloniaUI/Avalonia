@@ -180,40 +180,31 @@ namespace Avalonia.Win32
             s_instances.Add(this);
         }
 
-        /// <inheritdoc />
+        private IInputRoot Owner
+            => _owner ?? throw new InvalidOperationException($"{nameof(SetInputRoot)} must have been called");
+
         public Action? Activated { get; set; }
 
-        /// <inheritdoc />
         public Func<WindowCloseReason, bool>? Closing { get; set; }
 
-        /// <inheritdoc />
         public Action? Closed { get; set; }
 
-        /// <inheritdoc />
         public Action? Deactivated { get; set; }
 
-        /// <inheritdoc />
         public Action<RawInputEventArgs>? Input { get; set; }
 
-        /// <inheritdoc />
         public Action<Rect>? Paint { get; set; }
 
-        /// <inheritdoc />
         public Action<Size, PlatformResizeReason>? Resized { get; set; }
 
-        /// <inheritdoc />
         public Action<double>? ScalingChanged { get; set; }
 
-        /// <inheritdoc />
         public Action<PixelPoint>? PositionChanged { get; set; }
 
-        /// <inheritdoc />
         public Action<WindowState>? WindowStateChanged { get; set; }
 
-        /// <inheritdoc />
         public Action? LostFocus { get; set; }
 
-        /// <inheritdoc />
         public Action<WindowTransparencyLevel>? TransparencyLevelChanged { get; set; }
 
         public Thickness BorderThickness
@@ -245,13 +236,10 @@ namespace Avalonia.Win32
 
         private double PrimaryScreenRenderScaling => Screen.AllScreens.FirstOrDefault(screen => screen.IsPrimary)?.Scaling ?? 1;
 
-        /// <inheritdoc />
         public double RenderScaling => _scaling;
 
-        /// <inheritdoc />
         public double DesktopScaling => RenderScaling;
 
-        /// <inheritdoc />
         public Size ClientSize
         {
             get
@@ -262,7 +250,6 @@ namespace Avalonia.Win32
             }
         }
 
-        /// <inheritdoc />
         public Size? FrameSize
         {
             get
@@ -278,18 +265,14 @@ namespace Avalonia.Win32
             }
         }
 
-        /// <inheritdoc />
         public IScreenImpl Screen { get; }
 
-        /// <inheritdoc />
         public IPlatformHandle Handle { get; private set; }
 
-        /// <inheritdoc />
         public virtual Size MaxAutoSizeHint => new Size(_maxTrackSize.X / RenderScaling, _maxTrackSize.Y / RenderScaling);
 
         public IMouseDevice MouseDevice => _mouseDevice;
 
-        /// <inheritdoc />
         public WindowState WindowState
         {
             get
@@ -327,14 +310,12 @@ namespace Avalonia.Win32
             }
         }
 
-        /// <inheritdoc />
         public WindowTransparencyLevel TransparencyLevel { get; private set; }
 
         protected IntPtr Hwnd => _hwnd;
 
         private bool IsMouseInPointerEnabled => _wmPointerEnabled && IsMouseInPointerEnabled();
 
-        /// <inheritdoc />
         public object? TryGetFeature(Type featureType)
         {
             if (featureType == typeof(ITextInputMethodImpl))
@@ -355,7 +336,6 @@ namespace Avalonia.Win32
             return null;
         }
 
-        /// <inheritdoc />
         public void SetTransparencyLevelHint(WindowTransparencyLevel transparencyLevel)
         {
             TransparencyLevel = EnableBlur(transparencyLevel);
@@ -537,13 +517,11 @@ namespace Avalonia.Win32
             }
         }
 
-        /// <inheritdoc />
         public IEnumerable<object> Surfaces
             => _gl is null ?
                 new object[] { Handle, _framebuffer } :
                 new object[] { Handle, _gl, _framebuffer };
 
-        /// <inheritdoc />
         public PixelPoint Position
         {
             get
@@ -589,21 +567,17 @@ namespace Avalonia.Win32
             }
         }
 
-        /// <inheritdoc />
         public void Move(PixelPoint point) => Position = point;
 
-        /// <inheritdoc />
         public void SetMinMaxSize(Size minSize, Size maxSize)
         {
             _minSize = minSize;
             _maxSize = maxSize;
         }
 
-        /// <inheritdoc />
         public IRenderer CreateRenderer(IRenderRoot root) =>
             new CompositingRenderer(root, Win32Platform.Compositor, () => Surfaces);
 
-        /// <inheritdoc />
         public void Resize(Size value, PlatformResizeReason reason)
         {
             if (WindowState != WindowState.Normal)
@@ -631,16 +605,13 @@ namespace Avalonia.Win32
             }
         }
 
-        /// <inheritdoc />
         public void Activate()
         {
             SetForegroundWindow(_hwnd);
         }
 
-        /// <inheritdoc />
         public IPopupImpl? CreatePopup() => Win32Platform.UseOverlayPopups ? null : new PopupImpl(this);
 
-        /// <inheritdoc />
         public void Dispose()
         {
             (_gl as IDisposable)?.Dispose();
@@ -682,7 +653,6 @@ namespace Avalonia.Win32
             InvalidateRect(_hwnd, ref r, false);
         }
 
-        /// <inheritdoc />
         public Point PointToClient(PixelPoint point)
         {
             var p = new POINT { X = point.X, Y = point.Y };
@@ -690,7 +660,6 @@ namespace Avalonia.Win32
             return new Point(p.X, p.Y) / RenderScaling;
         }
 
-        /// <inheritdoc />
         public PixelPoint PointToScreen(Point point)
         {
             point *= RenderScaling;
@@ -699,31 +668,26 @@ namespace Avalonia.Win32
             return new PixelPoint(p.X, p.Y);
         }
 
-        /// <inheritdoc />
         public void SetInputRoot(IInputRoot inputRoot)
         {
             _owner = inputRoot;
             CreateDropTarget(inputRoot);
         }
 
-        /// <inheritdoc />
         public void Hide()
         {
             UnmanagedMethods.ShowWindow(_hwnd, ShowWindowCommand.Hide);
             _shown = false;
         }
 
-        /// <inheritdoc />
         public virtual void Show(bool activate, bool isDialog)
         {
             SetParent(_parent);
             ShowWindow(_showWindowState, activate);
         }
 
-        /// <inheritdoc />
         public Action? GotInputWhenDisabled { get; set; }
 
-        /// <inheritdoc />
         public void SetParent(IWindowImpl? parent)
         {
             _parent = parent as WindowImpl;
@@ -739,10 +703,8 @@ namespace Avalonia.Win32
             SetWindowLongPtr(_hwnd, (int)WindowLongParam.GWL_HWNDPARENT, parentHwnd);
         }
 
-        /// <inheritdoc />
         public void SetEnabled(bool enable) => EnableWindow(_hwnd, enable);
 
-        /// <inheritdoc />
         public void BeginMoveDrag(PointerPressedEventArgs e)
         {
             e.Pointer.Capture(null);
@@ -750,7 +712,6 @@ namespace Avalonia.Win32
                 new IntPtr((int)HitTestValues.HTCAPTION), IntPtr.Zero);
         }
 
-        /// <inheritdoc />
         public void BeginResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
         {
             if (_windowProperties.IsResizable)
@@ -765,13 +726,11 @@ namespace Avalonia.Win32
             }
         }
 
-        /// <inheritdoc />
         public void SetTitle(string? title)
         {
             SetWindowText(_hwnd, title);
         }
 
-        /// <inheritdoc />
         public void SetCursor(ICursorImpl? cursor)
         {
             var impl = cursor as CursorImpl;
@@ -779,13 +738,12 @@ namespace Avalonia.Win32
             var hCursor = impl?.Handle ?? s_defaultCursor;
             SetClassLong(_hwnd, ClassLongIndex.GCLP_HCURSOR, hCursor);
 
-            if (_owner?.IsPointerOver == true)
+            if (Owner.IsPointerOver)
             {
                 UnmanagedMethods.SetCursor(hCursor);
             }
         }
 
-        /// <inheritdoc />
         public void SetIcon(IWindowIconImpl? icon)
         {
             var impl = icon as IconImpl;
@@ -795,7 +753,6 @@ namespace Avalonia.Win32
                 new IntPtr((int)Icons.ICON_BIG), hIcon);
         }
 
-        /// <inheritdoc />
         public void ShowTaskbarIcon(bool value)
         {
             var newWindowProperties = _windowProperties;
@@ -805,7 +762,6 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
-        /// <inheritdoc />
         public void CanResize(bool value)
         {
             var newWindowProperties = _windowProperties;
@@ -815,7 +771,6 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
-        /// <inheritdoc />
         public void SetSystemDecorations(SystemDecorations value)
         {
             var newWindowProperties = _windowProperties;
@@ -825,7 +780,6 @@ namespace Avalonia.Win32
             UpdateWindowProperties(newWindowProperties);
         }
 
-        /// <inheritdoc />
         public void SetTopmost(bool value)
         {
             if (value == _topmost)
@@ -842,7 +796,6 @@ namespace Avalonia.Win32
             _topmost = value;
         }
 
-        /// <inheritdoc />
         public unsafe void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
             if (Win32Platform.WindowsVersion.Build >= 22000)
@@ -1457,7 +1410,6 @@ namespace Avalonia.Win32
 
         IntPtr EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo.Handle => Handle.Handle;
 
-        /// <inheritdoc />
         public void SetExtendClientAreaToDecorationsHint(bool hint)
         {
             _isClientAreaExtended = hint;
@@ -1465,7 +1417,6 @@ namespace Avalonia.Win32
             ExtendClientArea();
         }
 
-        /// <inheritdoc />
         public void SetExtendClientAreaChromeHints(ExtendClientAreaChromeHints hints)
         {
             _extendChromeHints = hints;

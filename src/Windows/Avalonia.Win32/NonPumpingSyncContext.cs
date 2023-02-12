@@ -8,17 +8,42 @@ namespace Avalonia.Win32
 {
     internal class NonPumpingSyncContext : SynchronizationContext, IDisposable
     {
-        private readonly SynchronizationContext _inner;
+        private readonly SynchronizationContext? _inner;
 
-        private NonPumpingSyncContext(SynchronizationContext inner)
+        private NonPumpingSyncContext(SynchronizationContext? inner)
         {
             _inner = inner;
             SetWaitNotificationRequired();
             SetSynchronizationContext(this);
         }
 
-        public override void Post(SendOrPostCallback d, object? state) => _inner.Post(d, state);
-        public override void Send(SendOrPostCallback d, object? state) => _inner.Send(d, state);
+        public override void Post(SendOrPostCallback d, object? state)
+        {
+            if (_inner is null)
+            {
+#if NET6_0_OR_GREATER
+                ThreadPool.QueueUserWorkItem(static x => x.d(x.state), (d, state), false);
+#else
+                ThreadPool.QueueUserWorkItem(_ => d(state));
+#endif
+            }
+            else
+            {
+                _inner.Post(d, state);
+            }
+        }
+
+        public override void Send(SendOrPostCallback d, object? state)
+        {
+            if (_inner is null)
+            {
+                d(state);
+            }
+            else
+            {
+                _inner.Send(d, state);
+            }
+        }
 
 #if !NET6_0_OR_GREATER
         [PrePrepareMethod]
@@ -34,7 +59,15 @@ namespace Avalonia.Win32
         public static IDisposable? Use()
         {
             var current = Current;
-            return current is null or NonPumpingSyncContext ? null : new NonPumpingSyncContext(current);
+            if (current == null)
+            {
+                if (Thread.CurrentThread.GetApartmentState() != ApartmentState.STA)
+                    return null;
+            }
+            if (current is NonPumpingSyncContext)
+                return null;
+
+            return new NonPumpingSyncContext(current);
         }
 
         internal class HelperImpl : NonPumpingLockHelper.IHelperImpl

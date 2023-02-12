@@ -137,12 +137,12 @@ namespace Avalonia.Win32
                     {
                         var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
 
-                        if (key != Key.None && _owner is not null)
+                        if (key != Key.None)
                         {
                             e = new RawKeyEventArgs(
                                 WindowsKeyboardDevice.Instance,
                                 timestamp,
-                                _owner,
+                                Owner,
                                 RawKeyEventType.KeyDown,
                                 key,
                                 WindowsKeyboardDevice.Instance.Modifiers);
@@ -167,12 +167,12 @@ namespace Avalonia.Win32
                     {
                         var key = KeyInterop.KeyFromVirtualKey(ToInt32(wParam), ToInt32(lParam));
 
-                        if (key != Key.None && _owner is not null)
+                        if (key != Key.None)
                         {
                             e = new RawKeyEventArgs(
                             WindowsKeyboardDevice.Instance,
                             timestamp,
-                            _owner,
+                            Owner,
                             RawKeyEventType.KeyUp,
                             key,
                             WindowsKeyboardDevice.Instance.Modifiers);
@@ -182,9 +182,9 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_CHAR:
                     {
                         // Ignore control chars and chars that were handled in WM_KEYDOWN.
-                        if (ToInt32(wParam) >= 32 && !_ignoreWmChar && _owner is not null)
+                        if (ToInt32(wParam) >= 32 && !_ignoreWmChar)
                         {
-                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, _owner,
+                            e = new RawTextInputEventArgs(WindowsKeyboardDevice.Instance, timestamp, Owner,
                                 new string((char)ToInt32(wParam), 1));
                         }
 
@@ -201,7 +201,7 @@ namespace Avalonia.Win32
                             break;
                         }
                         shouldTakeFocus = ShouldTakeFocusOnClick;
-                        if (ShouldIgnoreTouchEmulatedMessage() || _owner is null)
+                        if (ShouldIgnoreTouchEmulatedMessage())
                         {
                             break;
                         }
@@ -209,7 +209,7 @@ namespace Avalonia.Win32
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            Owner,
 #pragma warning disable CS8509
                             message switch
 #pragma warning restore CS8509
@@ -235,7 +235,7 @@ namespace Avalonia.Win32
                         {
                             break;
                         }
-                        if (ShouldIgnoreTouchEmulatedMessage() || _owner is null)
+                        if (ShouldIgnoreTouchEmulatedMessage())
                         {
                             break;
                         }
@@ -243,7 +243,7 @@ namespace Avalonia.Win32
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            Owner,
 #pragma warning disable CS8509
                             message switch
 #pragma warning restore CS8509
@@ -310,15 +310,10 @@ namespace Avalonia.Win32
                         var prevPoint = _lastWmMousePoint;
                         _lastWmMousePoint = currPoint;
 
-                        if (_owner is null)
-                        {
-                            break;
-                        }
-
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            Owner,
                             RawPointerEventType.Move,
                             point,
                             GetMouseModifiers(wParam))
@@ -331,14 +326,14 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEWHEEL:
                     {
-                        if (IsMouseInPointerEnabled || _owner is null)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
                         e = new RawMouseWheelEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            Owner,
                             PointToClient(PointFromLParam(lParam)),
                             new Vector(0, (ToInt32(wParam) >> 16) / wheelDelta),
                             GetMouseModifiers(wParam));
@@ -347,14 +342,14 @@ namespace Avalonia.Win32
 
                 case WindowsMessage.WM_MOUSEHWHEEL:
                     {
-                        if (IsMouseInPointerEnabled || _owner is null)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
                         e = new RawMouseWheelEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            Owner,
                             PointToClient(PointFromLParam(lParam)),
                             new Vector(-(ToInt32(wParam) >> 16) / wheelDelta, 0),
                             GetMouseModifiers(wParam));
@@ -368,14 +363,10 @@ namespace Avalonia.Win32
                             break;
                         }
                         _trackingMouse = false;
-                        if (_owner is null)
-                        {
-                            break;
-                        }
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            Owner,
                             RawPointerEventType.LeaveWindow,
                             new Point(-1, -1),
                             WindowsKeyboardDevice.Instance.Modifiers);
@@ -387,14 +378,14 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_NCMBUTTONDOWN:
                 case WindowsMessage.WM_NCXBUTTONDOWN:
                     {
-                        if (IsMouseInPointerEnabled || _owner is null)
+                        if (IsMouseInPointerEnabled)
                         {
                             break;
                         }
                         e = new RawPointerEventArgs(
                             _mouseDevice,
                             timestamp,
-                            _owner,
+                            Owner,
 #pragma warning disable CS8509
                             message switch
 #pragma warning restore CS8509
@@ -413,7 +404,7 @@ namespace Avalonia.Win32
                     }
                 case WindowsMessage.WM_TOUCH:
                     {
-                        if (_wmPointerEnabled || _owner is null || Input is not { } input)
+                        if (_wmPointerEnabled || Input is not { } input)
                         {
                             break;
                         }
@@ -427,7 +418,7 @@ namespace Avalonia.Win32
                             foreach (var touchInput in touchInputs)
                             {
                                 input.Invoke(new RawTouchEventArgs(_touchDevice, touchInput.Time,
-                                    _owner,
+                                    Owner,
                                     touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_UP) ?
                                         RawPointerEventType.TouchEnd :
                                         touchInput.Flags.HasAllFlags(TouchInputFlags.TOUCHEVENTF_DOWN) ?
@@ -450,14 +441,14 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERUP:
                 case WindowsMessage.WM_POINTERUPDATE:
                     {
-                        if (!_wmPointerEnabled || _owner is null)
+                        if (!_wmPointerEnabled)
                         {
                             break;
                         }
                         GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
                         var eventType = GetEventType(message, info);
 
-                        var args = CreatePointerArgs(device, timestamp, _owner, eventType, point, modifiers, info.pointerId);
+                        var args = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
                         args.IntermediatePoints = CreateLazyIntermediatePoints(info);
                         e = args;
                         break;
@@ -466,19 +457,19 @@ namespace Avalonia.Win32
                 case WindowsMessage.WM_POINTERLEAVE:
                 case WindowsMessage.WM_POINTERCAPTURECHANGED:
                     {
-                        if (!_wmPointerEnabled || _owner is null)
+                        if (!_wmPointerEnabled)
                         {
                             break;
                         }
                         GetDevicePointerInfo(wParam, out var device, out var info, out var point, out var modifiers, ref timestamp);
                         var eventType = device is TouchDevice ? RawPointerEventType.TouchCancel : RawPointerEventType.LeaveWindow;
-                        e = CreatePointerArgs(device, timestamp, _owner, eventType, point, modifiers, info.pointerId);
+                        e = CreatePointerArgs(device, timestamp, eventType, point, modifiers, info.pointerId);
                         break;
                     }
                 case WindowsMessage.WM_POINTERWHEEL:
                 case WindowsMessage.WM_POINTERHWHEEL:
                     {
-                        if (!_wmPointerEnabled || _owner is null)
+                        if (!_wmPointerEnabled)
                         {
                             break;
                         }
@@ -486,7 +477,7 @@ namespace Avalonia.Win32
 
                         var val = (ToInt32(wParam) >> 16) / wheelDelta;
                         var delta = message == WindowsMessage.WM_POINTERWHEEL ? new Vector(0, val) : new Vector(val, 0);
-                        e = new RawMouseWheelEventArgs(device, timestamp, _owner, point.Position, delta, modifiers)
+                        e = new RawMouseWheelEventArgs(device, timestamp, Owner, point.Position, delta, modifiers)
                         {
                             RawPointerId = info.pointerId
                         };
@@ -900,11 +891,11 @@ namespace Avalonia.Win32
             }
         }
 
-        private RawPointerEventArgs CreatePointerArgs(IInputDevice device, ulong timestamp, IInputRoot owner, RawPointerEventType eventType, RawPointerPoint point, RawInputModifiers modifiers, uint rawPointerId)
+        private RawPointerEventArgs CreatePointerArgs(IInputDevice device, ulong timestamp, RawPointerEventType eventType, RawPointerPoint point, RawInputModifiers modifiers, uint rawPointerId)
         {
             return device is TouchDevice
-                ? new RawTouchEventArgs(device, timestamp, owner, eventType, point, modifiers, rawPointerId)
-                : new RawPointerEventArgs(device, timestamp, owner, eventType, point, modifiers)
+                ? new RawTouchEventArgs(device, timestamp, Owner, eventType, point, modifiers, rawPointerId)
+                : new RawPointerEventArgs(device, timestamp, Owner, eventType, point, modifiers)
                 {
                     RawPointerId = rawPointerId
                 };
