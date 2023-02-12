@@ -20,6 +20,7 @@ using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Avalonia.Controls
 {
@@ -569,6 +570,30 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
+
+        /// <summary>
+        /// Requests a <see cref="PlatformInhibitionType"/> to be inhibited.
+        /// The behavior remains inhibited until the return value is disposed.
+        /// The available set of <see cref="PlatformInhibitionType"/>s depends on the platform.
+        /// If a behavior is inhibited on a platform where this type is not supported the request will have no effect.
+        /// </summary>
+        protected async Task<IDisposable> RequestPlatformInhibition(PlatformInhibitionType type, string reason)
+        {
+            var platformBehaviorInhibition = PlatformImpl?.TryGetFeature<IPlatformBehaviorInhibition>();
+            if (platformBehaviorInhibition == null)
+            {
+                return Disposable.Create(() => { });
+            }
+
+            switch (type)
+            {
+                case PlatformInhibitionType.AppSleep:
+                    await platformBehaviorInhibition.SetInhibitAppSleep(true, reason);
+                    return Disposable.Create(() => platformBehaviorInhibition.SetInhibitAppSleep(false, reason).Wait());
+                default:
+                    return Disposable.Create(() => { });
+            }
+        }
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a
