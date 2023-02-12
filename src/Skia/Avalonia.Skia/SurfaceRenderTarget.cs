@@ -19,6 +19,8 @@ namespace Avalonia.Skia
         private readonly bool _disableLcdRendering;
         private readonly GRContext _grContext;
         private readonly ISkiaGpu _gpu;
+        private PixelFormat? _pixelFormatCache;
+        private bool _pixelFormatCacheInitialized;
 
         class SkiaSurfaceWrapper : ISkiaSurface
         {
@@ -58,6 +60,8 @@ namespace Avalonia.Skia
                     createInfo.Format));
 
             _canvas = _surface?.Surface.Canvas;
+            _pixelFormatCache = null;
+            _pixelFormatCacheInitialized = false;
 
             if (_surface == null || _canvas == null)
             {
@@ -186,9 +190,26 @@ namespace Avalonia.Skia
         }
 
         /// <summary>
-        /// Returns the null because we do not own a format
+        /// Returns the <see cref="PixelFormat"/> of the snapshot image. 
+        /// The format will be cached here to avoid repeated calls of 
+        /// <see cref="SnapshotImage"/>
         /// </summary>
-        PixelFormat? IReadableBitmapImpl.Format => null;
+        PixelFormat? IReadableBitmapImpl.Format
+        {
+            get
+            {
+                if (!_pixelFormatCacheInitialized)
+                {
+                    using (var image = SnapshotImage())
+                    {
+                        _pixelFormatCache = image.ColorType.ToAvalonia();
+                        _pixelFormatCacheInitialized = true;
+                    }
+                }
+
+                return _pixelFormatCache;
+            }
+        }
 
         /// <summary>
         /// Creates a copy of the <see cref="SKSurface.Snapshot()"/> and provides it via
@@ -200,7 +221,7 @@ namespace Avalonia.Skia
             if (_surface.Surface == null)
                 throw new NotSupportedException();
 
-            using (SKImage image = SnapshotImage())
+            using (var image = SnapshotImage())
             {
                 SKBitmap bitmap = SKBitmap.FromImage(image);
                 return new LockedFramebuffer(bitmap.GetPixels(), PixelSize, bitmap.RowBytes, Dpi,
