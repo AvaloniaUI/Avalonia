@@ -2,10 +2,8 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <TargetFramework>net7.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <RuntimeFrameworkVersion>6.0.8</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunNativeAotCompilation)' == 'true'">

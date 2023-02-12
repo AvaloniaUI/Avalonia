@@ -44,6 +44,28 @@ internal class SkiaContext : IPlatformRenderInterfaceContext
     }
 
     public bool IsLost => _gpu.IsLost;
+    public IDrawingContextLayerImpl CreateLayer(Size size, double scaling)
+    {
+        var dpi = new Vector(96 * scaling, 96 * scaling);
+        var pixelSize = PixelSize.FromSizeWithDpi(size, dpi);
+        using (_gpu?.EnsureCurrent())
+        {
+            var createInfo = new SurfaceRenderTarget.CreateInfo
+            {
+                Width = pixelSize.Width,
+                Height = pixelSize.Height,
+                Dpi = dpi,
+                Format = null,
+                DisableTextLcdRendering = false,
+                GrContext = _gpu?.GrContext,
+                Gpu = _gpu,
+                DisableManualFbo = true
+            };
+            
+            return new SurfaceRenderTarget(createInfo);
+        }
+
+    }
 
     public object TryGetFeature(Type featureType) => _gpu?.TryGetFeature(featureType);
 }

@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
+using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using ControlCatalog.ViewModels;
@@ -19,6 +20,7 @@ namespace ControlCatalog
 
             DataContext = new MainWindowViewModel();
             _recentMenu = ((NativeMenu.GetMenu(this)?.Items[0] as NativeMenuItem)?.Menu?.Items[2] as NativeMenuItem)?.Menu;
+            DevTools.AttachCompositionSnapshot(this);
         }
 
         public static string MenuQuitHeader => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "Quit Avalonia" : "E_xit";

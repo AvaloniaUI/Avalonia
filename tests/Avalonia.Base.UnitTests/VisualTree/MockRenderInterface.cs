@@ -17,6 +17,10 @@ namespace Avalonia.Base.UnitTests.VisualTree
         }
 
         public bool IsLost => false;
+        public IDrawingContextLayerImpl CreateLayer(Size size, double scaling)
+        {
+            throw new NotImplementedException();
+        }
 
         public object TryGetFeature(Type featureType) => null;
 

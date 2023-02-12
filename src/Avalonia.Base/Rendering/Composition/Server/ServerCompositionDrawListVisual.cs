@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Avalonia.Collections.Pooled;
 using Avalonia.Platform;
@@ -14,7 +15,8 @@ namespace Avalonia.Rendering.Composition.Server;
 /// <summary>
 /// Server-side counterpart of <see cref="CompositionDrawListVisual"/>
 /// </summary>
-internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisual
+internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisual, 
+    ICompositionVisualWithDrawList, ICompositionVisualWithDiagnosticsInfo
 {
 #if DEBUG
     // This is needed for debugging purposes so we could see inspect the associated visual from debugger
@@ -24,6 +26,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
     
     public ServerCompositionDrawListVisual(ServerCompositor compositor, Visual v) : base(compositor)
     {
+        Name = v.GetType().Name;
 #if DEBUG
         UiVisual = v;
 #endif
@@ -31,22 +34,8 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
 
     Rect? _contentBounds;
 
-    public override Rect OwnContentBounds
-    {
-        get
-        {
-            if (_contentBounds == null)
-            {
-                var rect = default(Rect);
-                if(_renderCommands!=null)
-                    foreach (var cmd in _renderCommands)
-                        rect = rect.Union(cmd.Item.Bounds);
-                _contentBounds = rect;
-            }
-
-            return _contentBounds.Value;
-        }
-    }
+    public override Rect OwnContentBounds =>
+        (_contentBounds ??= _renderCommands?.CalculateBounds()) ?? default;
 
     protected override void DeserializeChangesCore(BatchStreamReader reader, TimeSpan committedAt)
     {
@@ -74,4 +63,7 @@ internal class ServerCompositionDrawListVisual : ServerCompositionContainerVisua
         return UiVisual.GetType().ToString();
     }
 #endif
+
+    public CompositionDrawList? DrawList => _renderCommands;
+    public string? Name { get; }
 }

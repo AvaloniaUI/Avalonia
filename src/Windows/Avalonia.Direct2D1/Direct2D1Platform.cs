@@ -228,6 +228,13 @@ namespace Avalonia.Direct2D1
 
             public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => _platform.CreateRenderTarget(surfaces);
             public bool IsLost => false;
+            public IDrawingContextLayerImpl CreateLayer(Size size, double scaling)
+            {
+                var platform = AvaloniaLocator.Current.GetRequiredService<IPlatformRenderInterface>();
+                var dpi = new Vector(96 * scaling, 96 * scaling);
+                var pixelSize = PixelSize.FromSizeWithDpi(size, dpi);
+                return (IDrawingContextLayerImpl)platform.CreateRenderTargetBitmap(pixelSize, dpi);
+            }
         }
 
         public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext) =>

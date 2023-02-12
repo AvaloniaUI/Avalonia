@@ -139,6 +139,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             var resetBody = Block();
             var startAnimationBody = Block();
             var serverGetPropertyBody = Block();
+            var serverPopulateDiagnosticsPropertiesBody = Block();
             var serverGetCompositionPropertyBody = Block();
             var serializeMethodBody = SerializeChangesPrologue(cl);
             var deserializeMethodBody = DeserializeChangesPrologue(cl);
@@ -237,7 +238,8 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
                     startAnimationBody = ApplyStartAnimation(startAnimationBody, cl, prop);
                 }
 
-                
+                serverPopulateDiagnosticsPropertiesBody =
+                    ApplyPopulateDiagnosticsProperty(serverPopulateDiagnosticsPropertiesBody, prop);
                 serverGetPropertyBody = ApplyGetProperty(serverGetPropertyBody, prop);
                 serverGetCompositionPropertyBody = ApplyGetProperty(serverGetCompositionPropertyBody, prop, CompositionPropertyField(prop));
 
@@ -288,6 +290,7 @@ namespace Avalonia.SourceGenerator.CompositionGenerator
             
             server = WithGetPropertyForAnimation(server, serverGetPropertyBody);
             server = WithGetCompositionProperty(server, serverGetCompositionPropertyBody);
+            server = WithPopulateDiagnosticProperties(server, serverPopulateDiagnosticsPropertiesBody);
             
             if(cl.Implements.Count > 0)
                 foreach (var impl in cl.Implements)
@@ -445,6 +448,15 @@ return;
 
             return body;
         }
+
+        BlockSyntax ApplyPopulateDiagnosticsProperty(BlockSyntax body, GProperty prop)
+        {
+            if (_objects.Contains(prop.Type.Trim('?')))
+                return body.AddStatements(
+                    ParseStatement($"diagnostics[\"{prop.Name}\"] = {prop.Name} == null ? \"Null\" : \"Not null\";"));
+            return body.AddStatements(
+                ParseStatement($"diagnostics[\"{prop.Name}\"] = {prop.Name};"));
+        }
         
         private static BlockSyntax SerializeChangesPrologue(GClass cl)
         {
@@ -535,6 +547,20 @@ var changed = reader.Read<{ChangedFieldsTypeName(cl)}>();
                 ParseStatement("return base.GetCompositionProperty(name);"));
             var method = ((MethodDeclarationSyntax)ParseMemberDeclaration(
                     $"public override CompositionProperty? GetCompositionProperty(string name){{}}")!)
+                .WithBody(body);
+
+            return cl.AddMembers(method);
+        }
+
+        static ClassDeclarationSyntax WithPopulateDiagnosticProperties(ClassDeclarationSyntax cl, BlockSyntax body)
+        {
+            if (body.Statements.Count == 0)
+                return cl;
+
+            body = body.AddStatements(
+                ParseStatement("base.PopulateDiagnosticProperties(diagnostics);"));
+            var method = ((MethodDeclarationSyntax)ParseMemberDeclaration(
+                    $"public override void PopulateDiagnosticProperties(Dictionary<string, object?> diagnostics){{}}")!)
                 .WithBody(body);
 
             return cl.AddMembers(method);

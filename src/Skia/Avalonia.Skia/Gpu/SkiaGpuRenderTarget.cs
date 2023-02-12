@@ -34,7 +34,7 @@ namespace Avalonia.Skia
                 VisualBrushRenderer = visualBrushRenderer,
                 DisableTextLcdRendering = true,
                 Gpu = _skiaGpu,
-                CurrentSession =  session
+                SurfaceOrigin = session.SurfaceOrigin
             };
 
             return new DrawingContextImpl(nfo, session);

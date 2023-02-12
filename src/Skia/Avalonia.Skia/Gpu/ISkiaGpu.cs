@@ -11,6 +11,11 @@ namespace Avalonia.Skia
     public interface ISkiaGpu : IPlatformGraphicsContext
     {
         /// <summary>
+        /// Skia's GrContext
+        /// </summary>
+        GRContext GrContext { get; }
+        
+        /// <summary>
         /// Attempts to create custom render target from given surfaces.
         /// </summary>
         /// <param name="surfaces">Surfaces.</param>
@@ -21,8 +26,8 @@ namespace Avalonia.Skia
         /// Creates an offscreen render target surface
         /// </summary>
         /// <param name="size">size in pixels.</param>
-        /// <param name="session">An optional custom render session.</param>
-        ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session);
+        /// <param name="surfaceOrigin">The expected surface origin</param>
+        ISkiaSurface TryCreateSurface(PixelSize size, GRSurfaceOrigin? surfaceOrigin);
     }
     
     public interface ISkiaSurface : IDisposable

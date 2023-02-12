@@ -52,6 +52,11 @@ namespace Avalonia.Rendering.Composition.Server
             return default;
         }
 
+        public virtual void PopulateDiagnosticProperties(Dictionary<string, object?> properties)
+        {
+            
+        }
+
         ExpressionVariant IExpressionObject.GetProperty(string name) => GetPropertyForAnimation(name);
 
         public void Activate()

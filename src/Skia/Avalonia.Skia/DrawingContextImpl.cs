@@ -38,7 +38,7 @@ namespace Avalonia.Skia
         private readonly SKPaint _fillPaint = SKPaintCache.Get();
         private readonly SKPaint _boxShadowPaint = SKPaintCache.Get();
         private static SKShader s_acrylicNoiseShader;
-        private readonly ISkiaGpuRenderSession _session;
+        private readonly GRSurfaceOrigin? _surfaceOrigin;
         private bool _leased = false;
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Avalonia.Skia
             /// </summary>
             public ISkiaGpu Gpu;
 
-            public ISkiaGpuRenderSession CurrentSession;
+            public GRSurfaceOrigin? SurfaceOrigin;
         }
 
         class SkiaLeaseFeature : ISkiaSharpApiLeaseFeature
@@ -143,7 +143,7 @@ namespace Avalonia.Skia
             Surface = createInfo.Surface;
             Canvas = createInfo.Canvas ?? createInfo.Surface?.Canvas;
 
-            _session = createInfo.CurrentSession;
+            _surfaceOrigin = createInfo.SurfaceOrigin;
 
             if (Canvas == null)
             {
@@ -1189,7 +1189,7 @@ namespace Avalonia.Skia
                 DisableTextLcdRendering = !_canTextUseLcdRendering,
                 GrContext = _grContext,
                 Gpu = _gpu,
-                Session = _session,
+                SurfaceOrigin = _surfaceOrigin,
                 DisableManualFbo = !isLayer,
             };
 

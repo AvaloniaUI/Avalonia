@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Avalonia.Diagnostics.Views.CompositionTreeSnapshotItemView"
+             x:DataType="vm:CompositionTreeSnapshotItemViewModel">
+    <Grid ColumnDefinitions="0.5*,4,0.5*">
+        <DataGrid
+            Items="{Binding Properties}"
+            BorderThickness="0"
+            RowBackground="Transparent"
+            SelectedItem="{Binding SelectedProperty, Mode=TwoWay}"
+            CanUserResizeColumns="true">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True"
+                                    x:DataType="vm:CompositionTreeSnapshotItemPropertyViewModel" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}"
+                                    x:DataType="vm:CompositionTreeSnapshotItemPropertyViewModel" />
+            </DataGrid.Columns>
+
+            <DataGrid.Styles>
+                <Style Selector="DataGridRow TextBox">
+                    <Setter Property="SelectionBrush" Value="LightBlue" />
+                </Style>
+            </DataGrid.Styles>
+        </DataGrid>
+        <GridSplitter Grid.Column="1"/>
+        <Grid Grid.Column="2" RowDefinitions="*,4,*">
+            <DockPanel>
+                <Button DockPanel.Dock="Bottom" Click="ResetDrawOperationIndex">Show all</Button>
+                <ListBox Items="{Binding Item.DrawOperations}" SelectedIndex="{Binding SelectedDrawOperationIndex}"/>
+            </DockPanel>
+            <GridSplitter Grid.Row="1"/>
+            <Image Grid.Row="2" x:Name="Image" Stretch="Uniform"/>
+        </Grid>
+    </Grid>
+
+</UserControl>

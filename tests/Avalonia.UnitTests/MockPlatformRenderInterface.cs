@@ -36,22 +36,31 @@ namespace Avalonia.UnitTests
 
             public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
             {
-                var m = new Mock<IDrawingContextImpl>();
-                m.Setup(c => c.CreateLayer(It.IsAny<Size>()))
-                    .Returns(() =>
-                        {
-                            var r = new Mock<IDrawingContextLayerImpl>();
-                            r.Setup(r => r.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()))
-                                .Returns(CreateDrawingContext(null));
-                            return r.Object;
-                        }
-                    );
-                return m.Object;
-
+                return MockPlatformRenderInterface.CreateDrawingContext(visualBrushRenderer);
             }
 
             public bool IsCorrupted => false;
         }
+
+        public static IDrawingContextLayerImpl CreateLayerShared(Size size, double scaling)
+        {
+            var r = new Mock<IDrawingContextLayerImpl>();
+            r.Setup(r => r.CreateDrawingContext(It.IsAny<IVisualBrushRenderer>()))
+                .Returns(CreateDrawingContext(null));
+            return r.Object;
+        }
+        
+        public IDrawingContextLayerImpl CreateLayer(Size size, double scaling) => CreateLayerShared(size, scaling);
+
+        private static IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        {
+            var m = new Mock<IDrawingContextImpl>();
+            m.Setup(c => c.CreateLayer(It.IsAny<Size>()))
+                .Returns(() => CreateLayerShared(default, 0));
+            return m.Object;
+
+        }
+        
         
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces)
         {

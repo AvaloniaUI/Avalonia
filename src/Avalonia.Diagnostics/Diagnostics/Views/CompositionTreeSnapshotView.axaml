@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Avalonia.Diagnostics.ViewModels"
+             xmlns:views="clr-namespace:Avalonia.Diagnostics.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Avalonia.Diagnostics.Views.CompositionTreeSnapshotView"
+             x:DataType="vm:CompositionTreeSnapshotViewModel">
+    <UserControl.Styles>
+        <SimpleTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Simple.xaml" />
+        <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/ThicknessEditor.axaml" />
+        <StyleInclude Source="avares://Avalonia.Diagnostics/Diagnostics/Controls/FilterTextBox.axaml" />
+    </UserControl.Styles>
+
+    <Grid>
+        <DockPanel>
+            <StackPanel Spacing="4" DockPanel.Dock="Top" Orientation="Horizontal">
+                <ToggleButton IsChecked="{Binding IsPicking}">Pick element</ToggleButton>
+                <Button Click="FreezeMe">Freeze Me</Button>
+            </StackPanel>
+            <Grid ColumnDefinitions="0.35*,4,0.65*">
+                <TreeView
+                    x:DataType="vm:CompositionTreeSnapshotViewModel"
+                          BorderThickness="0"
+                          Items="{Binding Path=RootItems}"
+                          SelectedItem="{Binding SelectedNode, Mode=TwoWay}"
+                          SelectionMode="Single">
+                    <TreeView.DataTemplates>
+                        <TreeDataTemplate DataType="vm:CompositionTreeSnapshotItemViewModel"
+                                          ItemsSource="{Binding Children}">
+                            <TextBlock Text="{Binding Item.Name}" />
+                        </TreeDataTemplate>
+                    </TreeView.DataTemplates>
+                    <TreeView.Styles>
+                        <Style Selector="TreeViewItem" x:DataType="vm:CompositionTreeSnapshotItemViewModel">
+                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                            <Setter Property="Background" Value="Transparent" />
+                        </Style>
+                    </TreeView.Styles>
+                </TreeView>
+
+                <GridSplitter Background="{DynamicResource ThemeControlMidBrush}" Width="1" Grid.Column="1" />
+                <views:CompositionTreeSnapshotItemView DataContext="{Binding SelectedNode}" Grid.Column="2" />
+            </Grid>
+        </DockPanel>
+        <Border IsVisible="{Binding IsPicking}" Background="Black" PointerPressed="PickElement">
+            <Image x:Name="ElementPicker" Source="{Binding Snapshot.Bitmap}" Stretch="Uniform"/>
+        </Border>
+    </Grid>
+</UserControl>

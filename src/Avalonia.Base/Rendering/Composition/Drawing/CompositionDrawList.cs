@@ -50,6 +50,22 @@ internal class CompositionDrawList : PooledList<IRef<IDrawOperation>>
 
         canvas.VisualBrushDrawList = null;
     }
+
+    public Rect CalculateBounds()
+    {
+        var rect = default(Rect);
+        foreach (var cmd in this)
+            rect = rect.Union(cmd.Item.Bounds);
+        return rect;
+    }
+
+    public bool HitTest(Point pt)
+    {
+        foreach (var op in this)
+            if (op.Item.HitTest(pt))
+                return true;
+        return false;
+    }
 }
 
 /// <summary>

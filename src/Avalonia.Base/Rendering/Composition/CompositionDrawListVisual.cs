@@ -64,9 +64,6 @@ internal class CompositionDrawListVisual : CompositionContainerVisual
             return custom.HitTest(pt);
         }
 
-        foreach (var op in DrawList!)
-            if (op.Item.HitTest(pt))
-                return true;
-        return false;
+        return DrawList?.HitTest(pt) == true;
     }
 }

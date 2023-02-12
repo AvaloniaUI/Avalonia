@@ -52,6 +52,9 @@ namespace Avalonia.Headless
 
         public IRenderTarget CreateRenderTarget(IEnumerable<object> surfaces) => new HeadlessRenderTarget();
         public bool IsLost => false;
+
+        public IDrawingContextLayerImpl CreateLayer(Size size, double scaling) => new HeadlessBitmapStub(size, new Vector(96, 96));
+
         public object TryGetFeature(Type featureType) => null;
 
         public IRenderTargetBitmapImpl CreateRenderTargetBitmap(PixelSize size, Vector dpi)
