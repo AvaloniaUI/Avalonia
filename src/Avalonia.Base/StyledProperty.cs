@@ -194,51 +194,20 @@ namespace Avalonia
         }
 
         /// <inheritdoc/>
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
         internal override IDisposable? RouteSetValue(
             AvaloniaObject target,
             object? value,
             BindingPriority priority)
         {
-            if (value == BindingOperations.DoNothing)
-            {
-                return null;
-            }
-            else if (value == UnsetValue)
-            {
-                target.ClearValue(this);
-                return null;
-            }
-            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
-            {
-                return target.SetValue<TValue>(this, (TValue)converted!, priority);
-            }
-            else
-            {
-                var type = value?.GetType().FullName ?? "(null)";
-                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
-            }
+            if (ShouldSetValue(target, value, out var converted))
+                return target.SetValue<TValue>(this, converted, priority);
+            return null;
         }
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
         internal override void RouteSetCurrentValue(AvaloniaObject target, object? value)
         {
-            if (value == BindingOperations.DoNothing)
-                return;
-
-            if (value == UnsetValue)
-            {
-                target.ClearValue(this);
-            }
-            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
-            {
-                target.SetCurrentValue<TValue>(this, (TValue)converted!);
-            }
-            else
-            {
-                var type = value?.GetType().FullName ?? "(null)";
-                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
-            }
+            if (ShouldSetValue(target, value, out var converted))
+                target.SetCurrentValue<TValue>(this, converted);
         }
 
         internal override IDisposable RouteBind(
@@ -247,6 +216,32 @@ namespace Avalonia
             BindingPriority priority)
         {
             return target.Bind<TValue>(this, source, priority);
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+        private bool ShouldSetValue(AvaloniaObject target, object? value, [NotNullWhen(true)] out TValue? converted)
+        {
+            if (value == BindingOperations.DoNothing)
+            {
+                converted = default;
+                return false; 
+            }
+            if (value == UnsetValue)
+            {
+                target.ClearValue(this);
+                converted = default;
+                return false;
+            }
+            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var v))
+            {
+                converted = (TValue)v!;
+                return true;
+            }
+            else
+            {
+                var type = value?.GetType().FullName ?? "(null)";
+                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
+            }
         }
 
         private object? GetDefaultBoxedValue(Type type)
