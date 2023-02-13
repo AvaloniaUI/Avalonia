@@ -16,6 +16,8 @@ namespace Avalonia.PropertyStore
         private IDisposable? _subscription;
         private bool _hasValue;
         private TValue? _value;
+        private TValue? _defaultValue;
+        private bool _isDefaultValueInitialized;
 
         protected BindingEntryBase(
             ValueFrame frame,
@@ -89,6 +91,7 @@ namespace Avalonia.PropertyStore
 
         protected abstract BindingValue<TValue> ConvertAndValidate(TSource value);
         protected abstract BindingValue<TValue> ConvertAndValidate(BindingValue<TSource> value);
+        protected abstract TValue GetDefaultValue(Type ownerType);
 
         protected virtual void Start(bool produceValue)
         {
@@ -104,17 +107,6 @@ namespace Avalonia.PropertyStore
             };
         }
 
-        private void ClearValue()
-        {
-            if (_hasValue)
-            {
-                _hasValue = false;
-                _value = default;
-                if (_subscription is not null)
-                    Frame.Owner?.OnBindingValueCleared(Property, Frame.Priority);
-            }
-        }
-
         private void SetValue(BindingValue<TValue> value)
         {
             static void Execute(BindingEntryBase<TValue, TSource> instance, BindingValue<TValue> value)
@@ -124,23 +116,19 @@ namespace Avalonia.PropertyStore
 
                 LoggingUtils.LogIfNecessary(instance.Frame.Owner.Owner, instance.Property, value);
 
-                if (value.HasValue)
+                var effectiveValue = value.HasValue ? value.Value : instance.GetCachedDefaultValue();
+
+                if (!instance._hasValue || !EqualityComparer<TValue>.Default.Equals(instance._value, effectiveValue))
                 {
-                    if (!instance._hasValue || !EqualityComparer<TValue>.Default.Equals(instance._value, value.Value))
-                    {
-                        instance._value = value.Value;
-                        instance._hasValue = true;
-                        if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
-                            instance.Frame.Owner?.OnBindingValueChanged(instance, instance.Frame.Priority);
-                    }
-                }
-                else if (value.Type != BindingValueType.DoNothing)
-                {
-                    instance.ClearValue();
+                    instance._value = effectiveValue;
+                    instance._hasValue = true;
                     if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
-                        instance.Frame.Owner?.OnBindingValueCleared(instance.Property, instance.Frame.Priority);
+                        instance.Frame.Owner?.OnBindingValueChanged(instance, instance.Frame.Priority);
                 }
             }
+
+            if (value.Type == BindingValueType.DoNothing)
+                return;
 
             if (Dispatcher.UIThread.CheckAccess())
             {
@@ -160,6 +148,17 @@ namespace Avalonia.PropertyStore
         {
             _subscription = null;
             Frame.OnBindingCompleted(this);
+        }
+
+        private TValue GetCachedDefaultValue()
+        {
+            if (!_isDefaultValueInitialized)
+            {
+                _defaultValue = GetDefaultValue(Frame.Owner!.Owner.GetType());
+                _isDefaultValueInitialized = true;
+            }
+
+            return _defaultValue!;
         }
     }
 }

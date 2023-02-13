@@ -277,8 +277,8 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <returns>True if the property is set, otherwise false.</returns>
         /// <remarks>
-        /// Checks whether a value is assigned to the property, or that there is a binding to the
-        /// property that is producing a value other than <see cref="AvaloniaProperty.UnsetValue"/>.
+        /// Returns true if <paramref name="property"/> is a styled property which has a value
+        /// assigned to it or a binding targeting it; otherwise false.
         /// </remarks>
         public bool IsSet(AvaloniaProperty property)
         {
