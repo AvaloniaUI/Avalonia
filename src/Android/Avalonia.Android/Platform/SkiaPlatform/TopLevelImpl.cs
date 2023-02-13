@@ -28,6 +28,7 @@ using Math = System.Math;
 using AndroidRect = Android.Graphics.Rect;
 using Window = Android.Views.Window;
 using Android.Graphics.Drawables;
+using Java.Util;
 
 namespace Avalonia.Android.Platform.SkiaPlatform
 {
@@ -411,8 +412,6 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly TopLevelImpl _topLevel;
         private readonly IAndroidInputMethod _inputMethod;
         private readonly InputEditable _editable;
-        private bool _hasComposingRegion;
-        private int _compositionStart;
 
         public AvaloniaInputConnection(TopLevelImpl topLevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
         {
@@ -427,12 +426,11 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public override bool SetComposingRegion(int start, int end)
         {
-            _inputMethod.Client.SetComposingRegion(new Media.TextFormatting.TextRange(start, end));
+            var ret = base.SetComposingRegion(start, end);
 
-            _hasComposingRegion = true;
-            _compositionStart = start;
+            InputEditable.RaiseCompositionChanged();
 
-            return base.SetComposingRegion(start, end);
+            return ret;
         }
 
         public override bool SetComposingText(ICharSequence text, int newCursorPosition)
@@ -447,13 +445,7 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             {
                 var ret = base.SetComposingText(text, newCursorPosition);
 
-                if (!_hasComposingRegion)
-                {
-                    _compositionStart = _editable.SelectionEnd - composingText.Length;
-                    _hasComposingRegion = true;
-                }
-
-                _inputMethod.Client.SetComposingRegion(new Media.TextFormatting.TextRange(_compositionStart, _compositionStart + composingText.Length));
+                InputEditable.RaiseCompositionChanged();
 
                 return ret;
             }
@@ -476,19 +468,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
 
         public override bool FinishComposingText()
         {
-            _inputMethod.Client?.SetComposingRegion(null);
-            _hasComposingRegion = false;
-            _compositionStart = -1;
-            return base.FinishComposingText();
+            var ret = base.FinishComposingText();
+            InputEditable.RaiseCompositionChanged();
+            return ret;
         }
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
         {
-            _inputMethod.Client?.SetComposingRegion(null);
-            _hasComposingRegion = false;
-            _compositionStart = -1;
-
-            return base.CommitText(text, newCursorPosition);
+            var ret = base.CommitText(text, newCursorPosition);
+            InputEditable.RaiseCompositionChanged();
+            return ret;
         }
 
         public override bool PerformEditorAction([GeneratedEnum] ImeAction actionCode)

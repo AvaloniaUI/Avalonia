@@ -12,8 +12,11 @@ namespace Avalonia.Input.TextInput
     {
         event EventHandler TextChanged;
         event EventHandler SelectionChanged;
+        event EventHandler CompositionChanged;
         int SelectionStart { get; set; }
         int SelectionEnd { get; set; }
+        int CompositionStart { get; }
+        int CompositionEnd { get; }
         
         string? Text { get; set; }
     }

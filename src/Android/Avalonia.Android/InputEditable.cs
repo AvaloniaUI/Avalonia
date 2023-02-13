@@ -26,6 +26,7 @@ namespace Avalonia.Android
 
         public event EventHandler TextChanged;
         public event EventHandler SelectionChanged;
+        public event EventHandler CompositionChanged;
 
         public InputEditable(TopLevelImpl topLevel, IAndroidInputMethod inputMethod, AvaloniaInputConnection avaloniaInputConnection)
         {
@@ -53,8 +54,6 @@ namespace Avalonia.Android
         protected InputEditable(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
         }
-
-        public bool IsInBatchEdit => _currentBatchLevel > 0;
 
         public TextPresenter Presenter { get => _presenter; }
 
@@ -90,6 +89,10 @@ namespace Avalonia.Android
             }
         }
 
+        public int CompositionStart => BaseInputConnection.GetComposingSpanStart(this);
+
+        public int CompositionEnd => BaseInputConnection.GetComposingSpanEnd(this);
+
         public void BeginBatchEdit()
         {
             _currentBatchLevel++;
@@ -118,6 +121,11 @@ namespace Avalonia.Android
             }
 
             _currentBatchLevel--;
+        }
+
+        public void RaiseCompositionChanged()
+        {
+            CompositionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         void IDisposable.Dispose()

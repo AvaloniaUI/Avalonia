@@ -81,6 +81,7 @@ namespace Avalonia.Controls
                 {
                     _textEditable.TextChanged -= TextEditable_TextChanged;
                     _textEditable.SelectionChanged -= TextEditable_SelectionChanged;
+                    _textEditable.CompositionChanged -= TextEditable_CompositionChanged;
                 }
 
                 _textEditable = value;
@@ -89,6 +90,7 @@ namespace Avalonia.Controls
                 {
                     _textEditable.TextChanged += TextEditable_TextChanged;
                     _textEditable.SelectionChanged += TextEditable_SelectionChanged;
+                    _textEditable.CompositionChanged += TextEditable_CompositionChanged;
 
                     if (_presenter != null)
                     {
@@ -97,6 +99,14 @@ namespace Avalonia.Controls
                         _textEditable.SelectionEnd = _presenter.SelectionEnd;
                     }
                 }
+            }
+        }
+
+        private void TextEditable_CompositionChanged(object? sender, EventArgs e)
+        {
+            if (_presenter != null && _textEditable != null)
+            {
+                _presenter.CompositionRegion = new TextRange(_textEditable.CompositionStart, _textEditable.CompositionEnd);
             }
         }
 
