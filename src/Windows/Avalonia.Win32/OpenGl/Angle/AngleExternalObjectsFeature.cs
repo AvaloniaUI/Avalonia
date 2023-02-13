@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Avalonia.Controls.Documents;
 using Avalonia.OpenGL;
@@ -15,12 +16,14 @@ internal class AngleExternalObjectsFeature : IGlContextExternalObjectsFeature, I
 {
     private readonly EglContext _context;
     private readonly ID3D11Device _device;
+    private readonly ID3D11Device1 _device1;
 
     public AngleExternalObjectsFeature(EglContext context)
     {
         _context = context;
         var angle = (AngleWin32EglDisplay)context.Display;
         _device = MicroComRuntime.CreateProxyFor<ID3D11Device>(angle.GetDirect3DDevice(), false).CloneReference();
+        _device1 = _device.QueryInterface<ID3D11Device1>();
         using var dxgiDevice = _device.QueryInterface<IDXGIDevice>();
         using var adapter = dxgiDevice.Adapter;
         DeviceLuid = BitConverter.GetBytes(adapter.Desc.AdapterLuid);
@@ -28,7 +31,8 @@ internal class AngleExternalObjectsFeature : IGlContextExternalObjectsFeature, I
 
     public IReadOnlyList<string> SupportedImportableExternalImageTypes { get; } = new[]
     {
-        KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureGlobalSharedHandle
+        KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureGlobalSharedHandle,
+        KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureNtHandle,
     };
 
     public IReadOnlyList<string> SupportedExportableExternalImageTypes => SupportedImportableExternalImageTypes;
@@ -72,13 +76,17 @@ internal class AngleExternalObjectsFeature : IGlContextExternalObjectsFeature, I
 
     public unsafe IGlExternalImageTexture ImportImage(IPlatformHandle handle, PlatformGraphicsExternalImageProperties properties)
     {
-        if (handle.HandleDescriptor != KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureGlobalSharedHandle)
+        if (!SupportedImportableExternalImageTypes.Contains(handle.HandleDescriptor))
             throw new NotSupportedException("Unsupported external memory type");
         
         using (_context.EnsureCurrent())
         {
             var guid = MicroComRuntime.GetGuidFor(typeof(ID3D11Texture2D));
-            using var opened = _device.OpenSharedResource(handle.Handle, &guid);
+            using var opened =
+                handle.HandleDescriptor ==
+                KnownPlatformGraphicsExternalImageHandleTypes.D3D11TextureGlobalSharedHandle ?
+                    _device.OpenSharedResource(handle.Handle, &guid) :
+                    _device1.OpenSharedResource1(handle.Handle, &guid);
             using var texture = opened.QueryInterface<ID3D11Texture2D>();
             return new AngleExternalMemoryD3D11Texture2D(_context, texture, properties);
         }
