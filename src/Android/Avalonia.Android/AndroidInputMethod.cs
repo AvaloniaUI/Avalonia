@@ -41,7 +41,6 @@ namespace Avalonia.Android
         private readonly InputMethodManager _imm;
         private ITextInputMethodClient _client;
         private AvaloniaInputConnection _inputConnection;
-        private IDisposable _textChangeObservable;
 
         public AndroidInputMethod(TView host)
         {
@@ -71,25 +70,15 @@ namespace Avalonia.Android
 
         public void SetClient(ITextInputMethodClient client)
         {
-            if (_client != null)
+            if(_inputConnection!= null)
             {
-                _textChangeObservable?.Dispose();
-                _client.SurroundingTextChanged -= SurroundingTextChanged;
-                _client.TextViewVisualChanged -= TextViewVisualChanged;
+                (_inputConnection.InputEditable as IDisposable)?.Dispose();
             }
 
             _client = client;
 
             if (IsActive)
             {
-                _client.SurroundingTextChanged += SurroundingTextChanged;
-                _client.TextViewVisualChanged += TextViewVisualChanged;
-
-                if(_client.TextViewVisual is TextPresenter textVisual)
-                {
-                    _textChangeObservable = textVisual.GetObservable(TextPresenter.TextProperty).Subscribe(new AnonymousObserver<string?>(UpdateText));
-                }
-
                 _host.RequestFocus();
 
                 _imm.RestartInput(View);              
@@ -103,39 +92,6 @@ namespace Avalonia.Android
             else
             {
                 _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.ImplicitOnly);
-            }
-        }
-
-        private void TextViewVisualChanged(object sender, EventArgs e)
-        {
-            var textVisual = _client.TextViewVisual as TextPresenter;
-            _textChangeObservable?.Dispose();
-            _textChangeObservable = null;
-
-            if(textVisual != null)
-            {
-                _textChangeObservable = textVisual.GetObservable(TextPresenter.TextProperty).Subscribe(new AnonymousObserver<string?>(UpdateText));
-            }
-        }
-
-        private void UpdateText(string? obj)
-        {
-            (_inputConnection?.Editable as InputEditable)?.UpdateString(obj);
-        }
-
-        private void SurroundingTextChanged(object sender, EventArgs e)
-        {
-            if (IsActive && _inputConnection != null)
-            {
-                var surroundingText = Client.SurroundingText;
-
-                _inputConnection.SurroundingText = surroundingText;
-
-                if ((_inputConnection?.Editable as InputEditable)?.IsInBatchEdit != true)
-                {
-                    _inputConnection.SetSelection(surroundingText.AnchorOffset, surroundingText.CursorOffset);
-                    _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
-                }
             }
         }
 
@@ -182,6 +138,13 @@ namespace Avalonia.Android
                 };
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
+
+                if(_client.TextViewVisual is TextPresenter presenter)
+                {
+                    _inputConnection?.InputEditable.SetPresenter(presenter);
+                }
+
+                _client.TextEditable = _inputConnection.InputEditable;
 
                 return _inputConnection;
             });

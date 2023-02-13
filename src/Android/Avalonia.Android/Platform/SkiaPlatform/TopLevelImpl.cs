@@ -411,22 +411,26 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         private readonly TopLevelImpl _topLevel;
         private readonly IAndroidInputMethod _inputMethod;
         private readonly InputEditable _editable;
+        private bool _hasComposingRegion;
+        private int _compositionStart;
 
         public AvaloniaInputConnection(TopLevelImpl topLevel, IAndroidInputMethod inputMethod) : base(inputMethod.View, true)
         {
             _topLevel = topLevel;
             _inputMethod = inputMethod;
-            _editable = new InputEditable(_topLevel, _inputMethod);
+            _editable = new InputEditable(_topLevel, _inputMethod, this);
         }
-
-        public TextInputMethodSurroundingText SurroundingText { get; set; }
 
         public override IEditable Editable => _editable;
 
+        internal InputEditable InputEditable => _editable;
+
         public override bool SetComposingRegion(int start, int end)
         {
-            _inputMethod.Client.SetPreeditText(null);
             _inputMethod.Client.SetComposingRegion(new Media.TextFormatting.TextRange(start, end));
+
+            _hasComposingRegion = true;
+            _compositionStart = start;
 
             return base.SetComposingRegion(start, end);
         }
@@ -441,7 +445,17 @@ namespace Avalonia.Android.Platform.SkiaPlatform
             }
             else
             {
-                return base.SetComposingText(text, newCursorPosition);
+                var ret = base.SetComposingText(text, newCursorPosition);
+
+                if (!_hasComposingRegion)
+                {
+                    _compositionStart = _editable.SelectionEnd - composingText.Length;
+                    _hasComposingRegion = true;
+                }
+
+                _inputMethod.Client.SetComposingRegion(new Media.TextFormatting.TextRange(_compositionStart, _compositionStart + composingText.Length));
+
+                return ret;
             }
         }
 
@@ -463,14 +477,16 @@ namespace Avalonia.Android.Platform.SkiaPlatform
         public override bool FinishComposingText()
         {
             _inputMethod.Client?.SetComposingRegion(null);
+            _hasComposingRegion = false;
+            _compositionStart = -1;
             return base.FinishComposingText();
         }
 
         public override bool CommitText(ICharSequence text, int newCursorPosition)
         {
-            _inputMethod.Client.SetPreeditText(null);
-
             _inputMethod.Client?.SetComposingRegion(null);
+            _hasComposingRegion = false;
+            _compositionStart = -1;
 
             return base.CommitText(text, newCursorPosition);
         }

@@ -49,6 +49,11 @@ namespace Avalonia.Input.TextInput
         /// </summary>
         event EventHandler? SurroundingTextChanged;
 
+        /// <summary>
+        /// Gets or sets a platform editable. Text and selection changes made in the editable are forwarded to the IM client.
+        /// </summary>
+        ITextEditable? TextEditable { get; set; }
+
         void SelectInSurroundingText(int start, int end);
     }
 

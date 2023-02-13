@@ -13,6 +13,7 @@ namespace Avalonia.Controls
     {
         private TextBox? _parent;
         private TextPresenter? _presenter;
+        private ITextEditable? _textEditable;
 
         public Visual TextViewVisual => _presenter!;
 
@@ -46,7 +47,7 @@ namespace Avalonia.Controls
         {
             get
             {
-                if(_presenter is null || _parent is null)
+                if (_presenter is null || _parent is null)
                 {
                     return default;
                 }
@@ -72,13 +73,60 @@ namespace Avalonia.Controls
             }
         }
 
+        public ITextEditable? TextEditable
+        {
+            get => _textEditable; set
+            {
+                if(_textEditable != null)
+                {
+                    _textEditable.TextChanged -= TextEditable_TextChanged;
+                    _textEditable.SelectionChanged -= TextEditable_SelectionChanged;
+                }
+
+                _textEditable = value;
+
+                if(_textEditable != null)
+                {
+                    _textEditable.TextChanged += TextEditable_TextChanged;
+                    _textEditable.SelectionChanged += TextEditable_SelectionChanged;
+
+                    if (_presenter != null)
+                    {
+                        _textEditable.Text = _presenter.Text;
+                        _textEditable.SelectionStart = _presenter.SelectionStart;
+                        _textEditable.SelectionEnd = _presenter.SelectionEnd;
+                    }
+                }
+            }
+        }
+
+        private void TextEditable_SelectionChanged(object? sender, EventArgs e)
+        {
+            if(_parent != null && _textEditable != null)
+            {
+                _parent.SelectionStart = _textEditable.SelectionStart;
+                _parent.SelectionEnd = _textEditable.SelectionEnd;
+            }
+        }
+
+        private void TextEditable_TextChanged(object? sender, EventArgs e)
+        {
+            if (_parent != null)
+            {
+                if (_parent.Text != _textEditable?.Text)
+                {
+                    _parent.Text = _textEditable?.Text;
+                }
+            }
+        }
+
         private static string GetTextLineText(TextLine textLine)
         {
             var builder = StringBuilderCache.Acquire(textLine.Length);
 
             foreach (var run in textLine.TextRuns)
             {
-                if(run.Length > 0)
+                if (run.Length > 0)
                 {
 #if NET6_0_OR_GREATER
                     builder.Append(run.Text.Span);
@@ -117,13 +165,12 @@ namespace Avalonia.Controls
             {
                 return;
             }
-
             _presenter.CompositionRegion = region;
         }
 
         public void SelectInSurroundingText(int start, int end)
         {
-            if(_parent is null ||_presenter is null)
+            if (_parent is null || _presenter is null)
             {
                 return;
             }
@@ -136,21 +183,21 @@ namespace Avalonia.Controls
 
             var selectionStart = lineStart + start;
             var selectionEnd = lineStart + end;
-             
+
             _parent.SelectionStart = selectionStart;
             _parent.SelectionEnd = selectionEnd;
-        }    
-        
+        }
+
         public void SetPresenter(TextPresenter? presenter, TextBox? parent)
         {
-            if(_parent != null)
+            if (_parent != null)
             {
                 _parent.PropertyChanged -= OnParentPropertyChanged;
             }
 
             _parent = parent;
 
-            if(_parent != null)
+            if (_parent != null)
             {
                 _parent.PropertyChanged += OnParentPropertyChanged;
             }
@@ -159,16 +206,16 @@ namespace Avalonia.Controls
             {
                 _presenter.PreeditText = null;
 
-                _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;             
+                _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;
             }
-           
+
             _presenter = presenter;
-            
+
             if (_presenter != null)
             {
                 _presenter.CaretBoundsChanged += OnCaretBoundsChanged;
             }
-           
+
             TextViewVisualChanged?.Invoke(this, EventArgs.Empty);
 
             OnCaretBoundsChanged(this, EventArgs.Empty);
@@ -176,11 +223,32 @@ namespace Avalonia.Controls
 
         private void OnParentPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
-            if(e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
+            if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty)
             {
                 if (SupportsSurroundingText)
                 {
                     SurroundingTextChanged?.Invoke(this, e);
+                }
+                if (_textEditable != null)
+                {
+                    var value = (int)(e.NewValue ?? 0);
+                    if (e.Property == TextBox.SelectionStartProperty)
+                    {
+                        _textEditable.SelectionStart = value;
+                    }
+
+                    if (e.Property == TextBox.SelectionEndProperty)
+                    {
+                        _textEditable.SelectionEnd = value;
+                    }
+                }
+            }
+
+            if(e.Property == TextBox.TextProperty)
+            {
+                if(_textEditable != null)
+                {
+                    _textEditable.Text = (string?)e.NewValue;
                 }
             }
         }
