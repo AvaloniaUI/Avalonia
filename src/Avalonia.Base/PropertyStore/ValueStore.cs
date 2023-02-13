@@ -211,7 +211,7 @@ namespace Avalonia.PropertyStore
 
         public void SetCurrentValue<T>(StyledProperty<T> property, T value)
         {
-            if (_effectiveValues.TryGetValue(property, out var v))
+            if (TryGetEffectiveValue(property, out var v))
             {
                 ((EffectiveValue<T>)v).SetCurrentValueAndRaise(this, property, value);
             }
