@@ -1,8 +1,6 @@
 using System;
-using System.Reactive.Linq;
 using Avalonia.Data;
 using Avalonia.Diagnostics;
-using Avalonia.Reactive;
 using Xunit;
 using Observable = Avalonia.Reactive.Observable;
 
@@ -18,6 +16,7 @@ namespace Avalonia.Base.UnitTests
             target.SetCurrentValue(Class1.FooProperty, "newvalue");
 
             Assert.Equal("newvalue", target.GetValue(Class1.FooProperty));
+            Assert.True(target.IsSet(Class1.FooProperty));
             Assert.Equal(BindingPriority.Unset, GetPriority(target, Class1.FooProperty));
             Assert.True(IsOverridden(target, Class1.FooProperty));
         }
@@ -34,6 +33,7 @@ namespace Avalonia.Base.UnitTests
             target.SetCurrentValue(Class1.FooProperty, "newvalue");
 
             Assert.Equal("newvalue", target.GetValue(Class1.FooProperty));
+            Assert.True(target.IsSet(Class1.FooProperty));
             Assert.Equal(priority, GetPriority(target, Class1.FooProperty));
             Assert.True(IsOverridden(target, Class1.FooProperty));
         }
@@ -48,6 +48,7 @@ namespace Avalonia.Base.UnitTests
             target.SetCurrentValue(Class1.InheritedProperty, "newvalue");
 
             Assert.Equal("newvalue", target.GetValue(Class1.InheritedProperty));
+            Assert.True(target.IsSet(Class1.InheritedProperty));
             Assert.Equal(BindingPriority.Unset, GetPriority(target, Class1.InheritedProperty));
             Assert.True(IsOverridden(target, Class1.InheritedProperty));
         }
@@ -61,6 +62,7 @@ namespace Avalonia.Base.UnitTests
             parent.SetCurrentValue(Class1.InheritedProperty, "newvalue");
 
             Assert.Equal("newvalue", target.GetValue(Class1.InheritedProperty));
+            Assert.False(target.IsSet(Class1.FooProperty));
             Assert.Equal(BindingPriority.Inherited, GetPriority(target, Class1.InheritedProperty));
             Assert.False(IsOverridden(target, Class1.InheritedProperty));
         }
@@ -74,6 +76,7 @@ namespace Avalonia.Base.UnitTests
             target.ClearValue(Class1.FooProperty);
 
             Assert.Equal("foodefault", target.Foo);
+            Assert.False(target.IsSet(Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
         }
 
@@ -88,6 +91,7 @@ namespace Avalonia.Base.UnitTests
             target.ClearValue(Class1.InheritedProperty);
 
             Assert.Equal("inheritedvalue", target.Inherited);
+            Assert.False(target.IsSet(Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
         }
 
@@ -101,6 +105,7 @@ namespace Avalonia.Base.UnitTests
             target.ClearValue(Class1.FooProperty);
 
             Assert.Equal("foodefault", target.Foo);
+            Assert.False(target.IsSet(Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
         }
 
@@ -114,6 +119,7 @@ namespace Avalonia.Base.UnitTests
             target.ClearValue(Class1.FooProperty);
 
             Assert.Equal("stylevalue", target.Foo);
+            Assert.True(target.IsSet(Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
         }
 
@@ -146,6 +152,7 @@ namespace Avalonia.Base.UnitTests
             target.SetValue(Class1.FooProperty, "setvalue", priority);
 
             Assert.Equal("setvalue", target.Foo);
+            Assert.True(target.IsSet(Class1.FooProperty));
             Assert.Equal(priority, GetPriority(target, Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
         }
@@ -160,6 +167,7 @@ namespace Avalonia.Base.UnitTests
             target.SetValue(Class1.FooProperty, "setvalue", BindingPriority.Animation);
 
             Assert.Equal("setvalue", target.Foo);
+            Assert.True(target.IsSet(Class1.FooProperty));
             Assert.Equal(BindingPriority.Animation, GetPriority(target, Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
         }
@@ -174,6 +182,7 @@ namespace Avalonia.Base.UnitTests
             target.SetValue(Class1.FooProperty, "setvalue", BindingPriority.StyleTrigger);
 
             Assert.Equal("setvalue", target.Foo);
+            Assert.True(target.IsSet(Class1.FooProperty));
             Assert.Equal(BindingPriority.StyleTrigger, GetPriority(target, Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
         }
@@ -191,6 +200,7 @@ namespace Avalonia.Base.UnitTests
             var s = target.Bind(Class1.FooProperty, Observable.SingleValue("binding"), priority);
 
             Assert.Equal("binding", target.Foo);
+            Assert.True(target.IsSet(Class1.FooProperty));
             Assert.Equal(priority, GetPriority(target, Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
 
@@ -210,6 +220,7 @@ namespace Avalonia.Base.UnitTests
             var s = target.Bind(Class1.FooProperty, Observable.SingleValue("binding"), BindingPriority.Animation);
 
             Assert.Equal("binding", target.Foo);
+            Assert.True(target.IsSet(Class1.FooProperty));
             Assert.Equal(BindingPriority.Animation, GetPriority(target, Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
 
@@ -229,6 +240,7 @@ namespace Avalonia.Base.UnitTests
             var s = target.Bind(Class1.FooProperty, Observable.SingleValue("binding"), BindingPriority.StyleTrigger);
 
             Assert.Equal("binding", target.Foo);
+            Assert.True(target.IsSet(Class1.FooProperty));
             Assert.Equal(BindingPriority.StyleTrigger, GetPriority(target, Class1.FooProperty));
             Assert.False(IsOverridden(target, Class1.FooProperty));
 

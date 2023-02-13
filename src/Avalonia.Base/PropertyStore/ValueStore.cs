@@ -249,12 +249,7 @@ namespace Avalonia.PropertyStore
             return false;
         }
 
-        public bool IsSet(AvaloniaProperty property)
-        {
-            if (_effectiveValues.TryGetValue(property, out var v))
-                return v.Priority < BindingPriority.Inherited;
-            return false;
-        }
+        public bool IsSet(AvaloniaProperty property) => _effectiveValues.TryGetValue(property, out _);
 
         public void CoerceValue(AvaloniaProperty property)
         {
