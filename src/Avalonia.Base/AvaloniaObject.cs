@@ -355,6 +355,23 @@ namespace Avalonia
             SetDirectValueUnchecked(property, value);
         }
 
+        public void SetCurrentValue<T>(StyledProperty<T> property, T value)
+        {
+            _ = property ?? throw new ArgumentNullException(nameof(property));
+            VerifyAccess();
+
+            LogPropertySet(property, value, BindingPriority.LocalValue);
+
+            if (value is UnsetValueType)
+            {
+                _values.ClearLocalValue(property);
+            }
+            else if (value is not DoNothingType)
+            {
+                _values.SetCurrentValue(property, value);
+            }
+        }
+
         /// <summary>
         /// Binds a <see cref="AvaloniaProperty"/> to an observable.
         /// </summary>
@@ -547,7 +564,8 @@ namespace Avalonia
                     property,
                     GetValue(property),
                     BindingPriority.LocalValue,
-                    null);
+                    null,
+                    false);
             }
 
             return _values.GetDiagnostic(property);
