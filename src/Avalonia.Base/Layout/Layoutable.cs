@@ -323,12 +323,15 @@ namespace Avalonia.Layout
             set { SetValue(UseLayoutRoundingProperty, value); }
         }
 
-        internal Size? PreviousMeasure => _previousMeasure;
+        /// <summary>
+        /// Gets the available size passed in the previous layout pass, if any.
+        /// </summary>
+        public Size? PreviousMeasure => _previousMeasure;
 
         /// <summary>
         /// Gets the layout rect passed in the previous layout pass, if any.
         /// </summary>
-        internal Rect? PreviousArrange => _previousArrange;
+        public Rect? PreviousArrange => _previousArrange;
 
         /// <summary>
         /// Creates the visual children of the control, if necessary
