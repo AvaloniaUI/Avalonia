@@ -155,7 +155,7 @@ namespace Avalonia.PropertyStore
             return observer;
         }
 
-        public void ClearLocalValue(AvaloniaProperty property)
+        public void ClearValue(AvaloniaProperty property)
         {
             if (TryGetEffectiveValue(property, out var effective) &&
                 (effective.Priority == BindingPriority.LocalValue || effective.IsOverridenCurrentValue))
@@ -499,7 +499,7 @@ namespace Avalonia.PropertyStore
                 if (existing == observer)
                 {
                     _localValueBindings?.Remove(property.Id);
-                    ClearLocalValue(property);
+                    ClearValue(property);
                 }
             }
         }

@@ -118,7 +118,7 @@ namespace Avalonia
         {
             _ = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
-            _values.ClearLocalValue(property);
+            _values.ClearValue(property);
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
 
-            _values.ClearLocalValue(property);
+            _values.ClearValue(property);
         }
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace Avalonia
             if (value is UnsetValueType)
             {
                 if (priority == BindingPriority.LocalValue)
-                    _values.ClearLocalValue(property);
+                    _values.ClearValue(property);
             }
             else if (value is not DoNothingType)
             {
@@ -398,7 +398,7 @@ namespace Avalonia
 
             if (value is UnsetValueType)
             {
-                _values.ClearLocalValue(property);
+                _values.ClearValue(property);
             }
             else if (value is not DoNothingType)
             {
