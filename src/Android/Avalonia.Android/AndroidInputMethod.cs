@@ -177,7 +177,8 @@ namespace Avalonia.Android
                     TextInputReturnKeyType.Search => (ImeFlags)CustomImeFlags.ActionSearch,
                     TextInputReturnKeyType.Next => (ImeFlags)CustomImeFlags.ActionNext,
                     TextInputReturnKeyType.Previous => (ImeFlags)CustomImeFlags.ActionPrevious,
-                    _ => (ImeFlags)CustomImeFlags.ActionDone
+                    TextInputReturnKeyType.Done => (ImeFlags)CustomImeFlags.ActionDone,
+                    _ => options.Multiline ? ImeFlags.NoEnterAction : (ImeFlags)CustomImeFlags.ActionDone
                 };
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
