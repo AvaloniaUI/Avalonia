@@ -62,7 +62,7 @@ public unsafe class VulkanImage : IDisposable
             //MipLevels = MipLevels != 0 ? MipLevels : (uint)Math.Floor(Math.Log(Math.Max(Size.Width, Size.Height), 2));
 
             var handleType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                ExternalMemoryHandleTypeFlags.D3D11TextureKmtBit :
+                ExternalMemoryHandleTypeFlags.D3D11TextureBit :
                 ExternalMemoryHandleTypeFlags.OpaqueFDBit;
             var externalMemoryCreateInfo = new ExternalMemoryImageCreateInfo
             {
