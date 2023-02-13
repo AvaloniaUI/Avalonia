@@ -21,6 +21,19 @@ namespace Avalonia.Base.UnitTests
             Assert.True(IsOverridden(target, Class1.FooProperty));
         }
 
+        [Fact]
+        public void SetCurrentValue_Sets_Unset_Value_Untyped()
+        {
+            var target = new Class1();
+
+            target.SetCurrentValue((AvaloniaProperty)Class1.FooProperty, "newvalue");
+
+            Assert.Equal("newvalue", target.GetValue(Class1.FooProperty));
+            Assert.True(target.IsSet(Class1.FooProperty));
+            Assert.Equal(BindingPriority.Unset, GetPriority(target, Class1.FooProperty));
+            Assert.True(IsOverridden(target, Class1.FooProperty));
+        }
+
         [Theory]
         [InlineData(BindingPriority.LocalValue)]
         [InlineData(BindingPriority.Style)]
@@ -138,6 +151,19 @@ namespace Avalonia.Base.UnitTests
             target.CoerceMax = 100;
             target.CoerceValue(Class1.CoercedProperty);
             Assert.Equal(60, target.GetValue(Class1.CoercedProperty));
+        }
+
+        [Fact]
+        public void SetCurrentValue_Unset_Clears_CurrentValue()
+        {
+            var target = new Class1();
+
+            target.SetCurrentValue(Class1.FooProperty, "newvalue");
+            target.SetCurrentValue(Class1.FooProperty, AvaloniaProperty.UnsetValue);
+
+            Assert.Equal("foodefault", target.Foo);
+            Assert.False(target.IsSet(Class1.FooProperty));
+            Assert.False(IsOverridden(target, Class1.FooProperty));
         }
 
         [Theory]

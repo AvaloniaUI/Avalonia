@@ -179,6 +179,11 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
+            internal override void RouteSetCurrentValue(AvaloniaObject o, object value)
+            {
+                throw new NotImplementedException();
+            }
+
             internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();

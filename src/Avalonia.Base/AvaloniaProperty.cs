@@ -497,6 +497,13 @@ namespace Avalonia
             BindingPriority priority);
 
         /// <summary>
+        /// Routes an untyped SetCurrentValue call to a typed call.
+        /// </summary>
+        /// <param name="o">The object instance.</param>
+        /// <param name="value">The value.</param>
+        internal abstract void RouteSetCurrentValue(AvaloniaObject o, object? value);
+
+        /// <summary>
         /// Routes an untyped Bind call to a typed call.
         /// </summary>
         /// <param name="o">The object instance.</param>

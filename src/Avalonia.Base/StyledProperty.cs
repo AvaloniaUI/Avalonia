@@ -220,6 +220,27 @@ namespace Avalonia
             }
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
+        internal override void RouteSetCurrentValue(AvaloniaObject target, object? value)
+        {
+            if (value == BindingOperations.DoNothing)
+                return;
+
+            if (value == UnsetValue)
+            {
+                target.ClearValue(this);
+            }
+            else if (TypeUtilities.TryConvertImplicit(PropertyType, value, out var converted))
+            {
+                target.SetCurrentValue<TValue>(this, (TValue)converted!);
+            }
+            else
+            {
+                var type = value?.GetType().FullName ?? "(null)";
+                throw new ArgumentException($"Invalid value for Property '{Name}': '{value}' ({type})");
+            }
+        }
+
         internal override IDisposable RouteBind(
             AvaloniaObject target,
             IObservable<object?> source,
