@@ -16,7 +16,6 @@ namespace Avalonia.Win32
         {
             var gl = InitializeCore();
             AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl);
-            AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(gl);
             return gl;
         }
         
