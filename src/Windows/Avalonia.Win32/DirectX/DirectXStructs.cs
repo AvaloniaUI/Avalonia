@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 // ReSharper disable InconsistentNaming
 #pragma warning disable CS0649
 
 namespace Avalonia.Win32.DirectX
 {
-#nullable enable
     public unsafe struct HANDLE
     {
         public readonly void* Value;
@@ -288,5 +281,4 @@ namespace Avalonia.Win32.DirectX
 
         public D3D11_RESOURCE_MISC_FLAG MiscFlags;
     }
-#nullable restore
 }
