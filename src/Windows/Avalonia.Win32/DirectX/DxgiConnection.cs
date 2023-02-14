@@ -9,7 +9,7 @@ using MicroCom.Runtime;
 
 namespace Avalonia.Win32.DirectX
 {
-    public unsafe class DxgiConnection : IRenderTimer
+    internal unsafe class DxgiConnection : IRenderTimer
     {
         public const uint ENUM_CURRENT_SETTINGS = unchecked((uint)(-1));
 

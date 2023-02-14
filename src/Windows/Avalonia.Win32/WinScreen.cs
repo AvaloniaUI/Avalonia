@@ -3,7 +3,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Win32
 {
-    public class WinScreen : Screen
+    internal class WinScreen : Screen
     {
         private readonly IntPtr _hMonitor;
 

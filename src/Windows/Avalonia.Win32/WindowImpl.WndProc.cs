@@ -6,7 +6,7 @@ using Avalonia.Controls.Platform;
 
 namespace Avalonia.Win32
 {
-    public partial class WindowImpl
+    internal partial class WindowImpl
     {
         protected virtual unsafe IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {

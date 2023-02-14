@@ -4,7 +4,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    public class SKTypefaceCollection
+    internal class SKTypefaceCollection
     {
         private readonly ConcurrentDictionary<Typeface, SKTypeface> _typefaces =
             new ConcurrentDictionary<Typeface, SKTypeface>();
