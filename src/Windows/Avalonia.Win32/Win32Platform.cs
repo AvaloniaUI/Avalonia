@@ -107,7 +107,7 @@ namespace Avalonia
 
 namespace Avalonia.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
+    internal class Win32Platform : IPlatformThreadingInterface, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
         private static readonly Win32Platform s_instance = new();
         private static Thread? s_uiThread;
