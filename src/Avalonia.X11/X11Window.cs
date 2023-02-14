@@ -27,7 +27,7 @@ using static Avalonia.X11.XLib;
 // ReSharper disable StringLiteralTypo
 namespace Avalonia.X11
 {
-    unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client
+    internal unsafe partial class X11Window : IWindowImpl, IPopupImpl, IXI2Client
     {
         private readonly AvaloniaX11Platform _platform;
         private readonly bool _popup;
@@ -59,7 +59,7 @@ namespace Avalonia.X11
         private bool _useRenderWindow = false;
         private bool _usePositioningFlags = false;
 
-        enum XSyncState
+        private enum XSyncState
         {
             None,
             WaitConfigure,
@@ -219,7 +219,7 @@ namespace Avalonia.X11
             });
         }
 
-        class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+        private class SurfaceInfo  : EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
         {
             private readonly X11Window _window;
             private readonly IntPtr _display;
@@ -249,7 +249,7 @@ namespace Avalonia.X11
             public double Scaling => _window.RenderScaling;
         }
 
-        void UpdateMotifHints()
+        private void UpdateMotifHints()
         {
             var functions = MotifFunctions.Move | MotifFunctions.Close | MotifFunctions.Resize |
                             MotifFunctions.Minimize | MotifFunctions.Maximize;
@@ -278,7 +278,7 @@ namespace Avalonia.X11
                 PropertyMode.Replace, ref hints, 5);
         }
 
-        void UpdateSizeHints(PixelSize? preResize)
+        private void UpdateSizeHints(PixelSize? preResize)
         {
             var min = _minMaxSize.minSize;
             var max = _minMaxSize.maxSize;
@@ -386,7 +386,7 @@ namespace Avalonia.X11
         public IRenderer CreateRenderer(IRenderRoot root) =>
             new CompositingRenderer(root, _platform.Compositor, () => Surfaces);
 
-        void OnEvent(ref XEvent ev)
+        private void OnEvent(ref XEvent ev)
         {
             if (ev.type == XEventName.MapNotify)
             {
@@ -668,7 +668,7 @@ namespace Avalonia.X11
 
         }
 
-        static RawInputModifiers TranslateModifiers(XModifierMask state)
+        private static RawInputModifiers TranslateModifiers(XModifierMask state)
         {
             var rv = default(RawInputModifiers);
             if (state.HasAllFlags(XModifierMask.Button1Mask))
@@ -704,13 +704,13 @@ namespace Avalonia.X11
         
         private double _scaling = 1;
 
-        void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
+        private void ScheduleInput(RawInputEventArgs args, ref XEvent xev)
         {
             _x11.LastActivityTimestamp = xev.ButtonEvent.time;
             ScheduleInput(args);
         }
 
-        void DispatchInput(RawInputEventArgs args)
+        private void DispatchInput(RawInputEventArgs args)
         {
             Input?.Invoke(args);
             if (!args.Handled && args is RawKeyEventArgsWithText text && !string.IsNullOrEmpty(text.Text))
@@ -746,8 +746,8 @@ namespace Avalonia.X11
             
             _rawEventGrouper.HandleEvent(args);
         }
-        
-        void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
+
+        private void MouseEvent(RawPointerEventType type, ref XEvent ev, XModifierMask mods)
         {
             var mev = new RawPointerEventArgs(
                 _mouse, (ulong)ev.ButtonEvent.time.ToInt64(), _inputRoot,
@@ -755,7 +755,7 @@ namespace Avalonia.X11
             ScheduleInput(mev, ref ev);
         }
 
-        void EnqueuePaint()
+        private void EnqueuePaint()
         {
             if (!_triggeredExpose)
             {
@@ -767,8 +767,8 @@ namespace Avalonia.X11
                 }, DispatcherPriority.Render);
             }
         }
-        
-        void DoPaint()
+
+        private void DoPaint()
         {
             Paint?.Invoke(new Rect());
             if (_xSyncCounter != IntPtr.Zero && _xSyncState == XSyncState.WaitPaint)
@@ -819,8 +819,8 @@ namespace Avalonia.X11
 
             return null;
         }
-        
-        void Cleanup()
+
+        private void Cleanup()
         {
             if (_rawEventGrouper != null)
             {
@@ -871,7 +871,7 @@ namespace Avalonia.X11
             }
         }
 
-        bool ActivateTransientChildIfNeeded()
+        private bool ActivateTransientChildIfNeeded()
         {
             if (_disabled)
             {
@@ -923,9 +923,9 @@ namespace Avalonia.X11
             Resize(size, true, PlatformResizeReason.Layout);
         }
 
-        PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * RenderScaling), (int)(size.Height * RenderScaling));
-        
-        void Resize(Size clientSize, bool force, PlatformResizeReason reason)
+        private PixelSize ToPixelSize(Size size) => new PixelSize((int)(size.Width * RenderScaling), (int)(size.Height * RenderScaling));
+
+        private void Resize(Size clientSize, bool force, PlatformResizeReason reason)
         {
             if (!force && clientSize == ClientSize)
                 return;
@@ -1020,7 +1020,7 @@ namespace Avalonia.X11
             .OrderByDescending(x => x.Width + x.Height).FirstOrDefault();
 
 
-        void SendNetWMMessage(IntPtr message_type, IntPtr l0,
+        private void SendNetWMMessage(IntPtr message_type, IntPtr l0,
             IntPtr? l1 = null, IntPtr? l2 = null, IntPtr? l3 = null, IntPtr? l4 = null)
         {
             var xev = new XEvent
@@ -1044,7 +1044,7 @@ namespace Avalonia.X11
 
         }
 
-        void BeginMoveResize(NetWmMoveResize side, PointerPressedEventArgs e)
+        private void BeginMoveResize(NetWmMoveResize side, PointerPressedEventArgs e)
         {
             var pos = GetCursorPos(_x11);
             XUngrabPointer(_x11.Display, new IntPtr(0));
@@ -1184,7 +1184,7 @@ namespace Avalonia.X11
             ChangeWMAtoms(!value, _x11.Atoms._NET_WM_STATE_SKIP_TASKBAR);
         }
 
-        void ChangeWMAtoms(bool enable, params IntPtr[] atoms)
+        private void ChangeWMAtoms(bool enable, params IntPtr[] atoms)
         {
             if (atoms.Length != 1 && atoms.Length != 2)
                 throw new ArgumentException();

@@ -1,4 +1,6 @@
 using System;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -228,10 +230,15 @@ namespace Avalonia.Controls
             UpdateIndicator();
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ProgressBarAutomationPeer(this);
+        }
+
         private void UpdateIndicator()
         {
             // Gets the size of the parent indicator container
-            var barSize = _indicator?.Parent?.Bounds.Size ?? Bounds.Size;
+            var barSize = _indicator?.VisualParent?.Bounds.Size ?? Bounds.Size;
 
             if (_indicator != null)
             {

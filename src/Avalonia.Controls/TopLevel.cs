@@ -20,6 +20,7 @@ using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Avalonia.Controls
 {
@@ -94,7 +95,6 @@ namespace Avalonia.Controls
         private readonly IInputManager? _inputManager;
         private readonly IAccessKeyHandler? _accessKeyHandler;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
-        private readonly IPlatformRenderInterface? _renderInterface;
         private readonly IGlobalStyles? _globalStyles;
         private readonly IGlobalThemeVariantProvider? _applicationThemeHost;
         private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
@@ -136,36 +136,21 @@ namespace Avalonia.Controls
         /// </param>
         public TopLevel(ITopLevelImpl impl, IAvaloniaDependencyResolver? dependencyResolver)
         {
-            if (impl == null)
-            {
-                throw new InvalidOperationException(
-                    "Could not create window implementation: maybe no windowing subsystem was initialized?");
-            }
-
-            PlatformImpl = impl;
+            PlatformImpl = impl ?? throw new InvalidOperationException(
+                "Could not create window implementation: maybe no windowing subsystem was initialized?");
 
             _actualTransparencyLevel = PlatformImpl.TransparencyLevel;            
 
-            dependencyResolver = dependencyResolver ?? AvaloniaLocator.Current;
+            dependencyResolver ??= AvaloniaLocator.Current;
 
             _accessKeyHandler = TryGetService<IAccessKeyHandler>(dependencyResolver);
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
-            _renderInterface = TryGetService<IPlatformRenderInterface>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
             _applicationThemeHost = TryGetService<IGlobalThemeVariantProvider>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
-
-            if (Renderer != null)
-            {
-                Renderer.SceneInvalidated += SceneInvalidated;
-            }
-            else
-            {
-                // Prevent nullable error.
-                Renderer = null!;
-            }
+            Renderer.SceneInvalidated += SceneInvalidated;
 
             impl.SetInputRoot(this);
 
@@ -216,7 +201,7 @@ namespace Avalonia.Controls
 
             if(impl.TryGetFeature<ISystemNavigationManagerImpl>() is {} systemNavigationManager)
             {
-                systemNavigationManager.BackRequested += (s, e) =>
+                systemNavigationManager.BackRequested += (_, e) =>
                 {
                     e.RoutedEvent = BackRequestedEvent;
                     RaiseEvent(e);
@@ -337,7 +322,7 @@ namespace Avalonia.Controls
                 {
                     _layoutManager = CreateLayoutManager();
 
-                    if (_layoutManager is LayoutManager typedLayoutManager && Renderer is not null)
+                    if (_layoutManager is LayoutManager typedLayoutManager)
                     {
                         _layoutDiagnosticBridge = new LayoutDiagnosticBridge(Renderer.Diagnostics, typedLayoutManager);
                         _layoutDiagnosticBridge.SetupBridge();
@@ -356,7 +341,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Gets the renderer for the window.
         /// </summary>
-        public IRenderer Renderer { get; private set; }
+        public IRenderer Renderer { get; }
 
         internal PixelPoint? LastPointerPosition => _pointerOverPreProcessor?.LastPosition;
         
@@ -418,7 +403,7 @@ namespace Avalonia.Controls
         /// <returns>The TopLevel</returns>
         public static TopLevel? GetTopLevel(Visual? visual)
         {
-            return visual == null ? null : visual.VisualRoot as TopLevel;
+            return visual?.VisualRoot as TopLevel;
         }
         
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -450,7 +435,7 @@ namespace Avalonia.Controls
         /// <param name="rect">The dirty area.</param>
         protected virtual void HandlePaint(Rect rect)
         {
-            Renderer?.Paint(rect);
+            Renderer.Paint(rect);
         }
 
         /// <summary>
@@ -468,8 +453,8 @@ namespace Avalonia.Controls
                 _applicationThemeHost.ActualThemeVariantChanged -= GlobalActualThemeVariantChanged;
             }
 
-            Renderer?.Dispose();
-            Renderer = null!;
+            Renderer.SceneInvalidated -= SceneInvalidated;
+            Renderer.Dispose();
 
             _layoutDiagnosticBridge?.Dispose();
             _layoutDiagnosticBridge = null;
@@ -488,7 +473,7 @@ namespace Avalonia.Controls
             
             OnClosed(EventArgs.Empty);
 
-            LayoutManager?.Dispose();
+            LayoutManager.Dispose();
         }
 
         /// <summary>
@@ -503,7 +488,7 @@ namespace Avalonia.Controls
             Width = clientSize.Width;
             Height = clientSize.Height;
             LayoutManager.ExecuteLayoutPass();
-            Renderer?.Resized(clientSize);
+            Renderer.Resized(clientSize);
         }
 
         /// <summary>
@@ -585,6 +570,30 @@ namespace Avalonia.Controls
         /// </summary>
         /// <param name="e">The event args.</param>
         protected virtual void OnClosed(EventArgs e) => Closed?.Invoke(this, e);
+
+        /// <summary>
+        /// Requests a <see cref="PlatformInhibitionType"/> to be inhibited.
+        /// The behavior remains inhibited until the return value is disposed.
+        /// The available set of <see cref="PlatformInhibitionType"/>s depends on the platform.
+        /// If a behavior is inhibited on a platform where this type is not supported the request will have no effect.
+        /// </summary>
+        protected async Task<IDisposable> RequestPlatformInhibition(PlatformInhibitionType type, string reason)
+        {
+            var platformBehaviorInhibition = PlatformImpl?.TryGetFeature<IPlatformBehaviorInhibition>();
+            if (platformBehaviorInhibition == null)
+            {
+                return Disposable.Create(() => { });
+            }
+
+            switch (type)
+            {
+                case PlatformInhibitionType.AppSleep:
+                    await platformBehaviorInhibition.SetInhibitAppSleep(true, reason);
+                    return Disposable.Create(() => platformBehaviorInhibition.SetInhibitAppSleep(false, reason).Wait());
+                default:
+                    return Disposable.Create(() => { });
+            }
+        }
 
         /// <summary>
         /// Tries to get a service from an <see cref="IAvaloniaDependencyResolver"/>, logging a

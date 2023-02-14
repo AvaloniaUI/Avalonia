@@ -30,6 +30,12 @@ namespace Avalonia.PropertyStore
         public BindingPriority BasePriority { get; protected set; }
 
         /// <summary>
+        /// Gets a value indicating whether the <see cref="Value"/> was overridden by a call to 
+        /// <see cref="AvaloniaObject.SetCurrentValue{T}"/>.
+        /// </summary>
+        public bool IsOverridenCurrentValue { get; set; }
+
+        /// <summary>
         /// Begins a reevaluation pass on the effective value.
         /// </summary>
         /// <param name="clearLocalValue">

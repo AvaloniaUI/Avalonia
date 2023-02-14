@@ -28,19 +28,19 @@ namespace Avalonia.Controls.Presenters
         /// Defines the <see cref="AreHorizontalSnapPointsRegular"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> AreHorizontalSnapPointsRegularProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreHorizontalSnapPointsRegular));
+            AvaloniaProperty.Register<ItemsPresenter, bool>(nameof(AreHorizontalSnapPointsRegular));
 
         /// <summary>
         /// Defines the <see cref="AreVerticalSnapPointsRegular"/> property.
         /// </summary>
         public static readonly StyledProperty<bool> AreVerticalSnapPointsRegularProperty =
-            AvaloniaProperty.Register<ItemsControl, bool>(nameof(AreVerticalSnapPointsRegular));
+            AvaloniaProperty.Register<ItemsPresenter, bool>(nameof(AreVerticalSnapPointsRegular));
 
         /// <summary>
         /// Defines the <see cref="HorizontalSnapPointsChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> HorizontalSnapPointsChangedEvent =
-            RoutedEvent.Register<StackPanel, RoutedEventArgs>(
+            RoutedEvent.Register<ItemsPresenter, RoutedEventArgs>(
                 nameof(HorizontalSnapPointsChanged),
                 RoutingStrategies.Bubble);
 
@@ -48,7 +48,7 @@ namespace Avalonia.Controls.Presenters
         /// Defines the <see cref="VerticalSnapPointsChanged"/> event.
         /// </summary>
         public static readonly RoutedEvent<RoutedEventArgs> VerticalSnapPointsChangedEvent =
-            RoutedEvent.Register<StackPanel, RoutedEventArgs>(
+            RoutedEvent.Register<ItemsPresenter, RoutedEventArgs>(
                 nameof(VerticalSnapPointsChanged),
                 RoutingStrategies.Bubble);
 
@@ -139,7 +139,7 @@ namespace Avalonia.Controls.Presenters
         Size IScrollable.Viewport => _logicalScrollable?.Viewport ?? default;
 
         /// <summary>
-        /// Gets or sets whether the horizontal snap points for the <see cref="ItemsControl"/> are equidistant from each other.
+        /// Gets or sets whether the horizontal snap points for the <see cref="ItemsPresenter"/> are equidistant from each other.
         /// </summary>
         public bool AreHorizontalSnapPointsRegular
         {
@@ -148,7 +148,7 @@ namespace Avalonia.Controls.Presenters
         }
 
         /// <summary>
-        /// Gets or sets whether the vertical snap points for the <see cref="ItemsControl"/> are equidistant from each other.
+        /// Gets or sets whether the vertical snap points for the <see cref="ItemsPresenter"/> are equidistant from each other.
         /// </summary>
         public bool AreVerticalSnapPointsRegular
         {

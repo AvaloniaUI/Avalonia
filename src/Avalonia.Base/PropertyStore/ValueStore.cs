@@ -7,7 +7,6 @@ using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.PropertyStore
 {
@@ -156,11 +155,12 @@ namespace Avalonia.PropertyStore
             return observer;
         }
 
-        public void ClearLocalValue(AvaloniaProperty property)
+        public void ClearValue(AvaloniaProperty property)
         {
             if (TryGetEffectiveValue(property, out var effective) &&
-                effective.Priority == BindingPriority.LocalValue)
+                (effective.Priority == BindingPriority.LocalValue || effective.IsOverridenCurrentValue))
             {
+                effective.IsOverridenCurrentValue = false;
                 ReevaluateEffectiveValue(property, effective, ignoreLocalValue: true);
             }
         }
@@ -209,6 +209,20 @@ namespace Avalonia.PropertyStore
             }
         }
 
+        public void SetCurrentValue<T>(StyledProperty<T> property, T value)
+        {
+            if (TryGetEffectiveValue(property, out var v))
+            {
+                ((EffectiveValue<T>)v).SetCurrentValueAndRaise(this, property, value);
+            }
+            else
+            {
+                var effectiveValue = new EffectiveValue<T>(Owner, property);
+                AddEffectiveValue(property, effectiveValue);
+                effectiveValue.SetCurrentValueAndRaise(this, property, value);
+            }
+        }
+
         public object? GetValue(AvaloniaProperty property)
         {
             if (_effectiveValues.TryGetValue(property, out var v))
@@ -235,12 +249,7 @@ namespace Avalonia.PropertyStore
             return false;
         }
 
-        public bool IsSet(AvaloniaProperty property)
-        {
-            if (_effectiveValues.TryGetValue(property, out var v))
-                return v.Priority < BindingPriority.Inherited;
-            return false;
-        }
+        public bool IsSet(AvaloniaProperty property) => _effectiveValues.TryGetValue(property, out _);
 
         public void CoerceValue(AvaloniaProperty property)
         {
@@ -381,23 +390,6 @@ namespace Avalonia.PropertyStore
         }
 
         /// <summary>
-        /// Called by non-LocalValue binding entries to re-evaluate the effective value when the
-        /// binding produces an unset value.
-        /// </summary>
-        /// <param name="property">The bound property.</param>
-        /// <param name="priority">The priority of binding which produced a new value.</param>
-        public void OnBindingValueCleared(AvaloniaProperty property, BindingPriority priority)
-        {
-            Debug.Assert(priority != BindingPriority.LocalValue);
-
-            if (TryGetEffectiveValue(property, out var existing))
-            {
-                if (priority <= existing.Priority)
-                    ReevaluateEffectiveValue(property, existing);
-            }
-        }
-
-        /// <summary>
         /// Called by a <see cref="ValueFrame"/> when its <see cref="ValueFrame.IsActive"/>
         /// state changes.
         /// </summary>
@@ -507,7 +499,7 @@ namespace Avalonia.PropertyStore
                 if (existing == observer)
                 {
                     _localValueBindings?.Remove(property.Id);
-                    ClearLocalValue(property);
+                    ClearValue(property);
                 }
             }
         }
@@ -633,11 +625,13 @@ namespace Avalonia.PropertyStore
         {
             object? value;
             BindingPriority priority;
+            bool overridden = false;
 
             if (_effectiveValues.TryGetValue(property, out var v))
             {
                 value = v.Value;
                 priority = v.Priority;
+                overridden = v.IsOverridenCurrentValue;
             }
             else if (property.Inherits && TryGetInheritedValue(property, out v))
             {
@@ -654,7 +648,8 @@ namespace Avalonia.PropertyStore
                 property,
                 value,
                 priority,
-                null);
+                null,
+                overridden);
         }
 
         private int InsertFrame(ValueFrame frame)

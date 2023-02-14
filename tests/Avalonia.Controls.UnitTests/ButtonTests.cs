@@ -140,10 +140,9 @@ namespace Avalonia.Controls.UnitTests
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
 
-            var target = new TestButton()
+            var target = new TestButton(renderer.Object)
             {
-                Bounds = new Rect(0, 0, 100, 100),
-                Renderer = renderer.Object
+                Bounds = new Rect(0, 0, 100, 100)
             };
 
             bool clicked = false;
@@ -172,10 +171,9 @@ namespace Avalonia.Controls.UnitTests
                 .Returns<Point, Visual, Func<Visual, bool>>((p, r, f) =>
                     r.Bounds.Contains(p) ? new Visual[] { r } : new Visual[0]);
 
-            var target = new TestButton()
+            var target = new TestButton(renderer.Object)
             {
-                Bounds = new Rect(0, 0, 100, 100),
-                Renderer = renderer.Object
+                Bounds = new Rect(0, 0, 100, 100)
             };
 
             bool clicked = false;
@@ -206,11 +204,10 @@ namespace Avalonia.Controls.UnitTests
                     r.Bounds.Contains(p.Transform(r.RenderTransform.Value.Invert())) ?
                     new Visual[] { r } : new Visual[0]);
 
-            var target = new TestButton()
+            var target = new TestButton(renderer.Object)
             {
                 Bounds = new Rect(0, 0, 100, 100),
-                RenderTransform = new TranslateTransform { X = 100, Y = 0 },
-                Renderer = renderer.Object
+                RenderTransform = new TranslateTransform { X = 100, Y = 0 }
             };
 
             //actual bounds of button should  be 100,0,100,100 x -> translated 100 pixels
@@ -386,9 +383,10 @@ namespace Avalonia.Controls.UnitTests
 
         private class TestButton : Button, IRenderRoot
         {
-            public TestButton()
+            public TestButton(IRenderer renderer)
             {
                 IsVisible = true;
+                Renderer = renderer;
             }
 
             public new Rect Bounds
@@ -399,7 +397,7 @@ namespace Avalonia.Controls.UnitTests
 
             public Size ClientSize => throw new NotImplementedException();
 
-            public IRenderer Renderer { get; set; }
+            public IRenderer Renderer { get; }
 
             public double RenderScaling => throw new NotImplementedException();
 
