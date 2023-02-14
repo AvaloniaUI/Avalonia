@@ -225,13 +225,8 @@ namespace Avalonia
         /// <param name="defaultValue">The default value of the property.</param>
         /// <param name="inherits">Whether the property inherits its value.</param>
         /// <param name="defaultBindingMode">The default binding mode for the property.</param>
-         /// <param name="validate">A value validation callback.</param>
+        /// <param name="validate">A value validation callback.</param>
         /// <param name="coerce">A value coercion callback.</param>
-        /// <param name="notifying">
-        /// A method that gets called before and after the property starts being notified on an
-        /// object; the bool argument will be true before and false afterwards. This callback is
-        /// intended to support IsDataContextChanging.
-        /// </param>
         /// <returns>A <see cref="StyledProperty{TValue}"/></returns>
         public static StyledProperty<TValue> Register<TOwner, TValue>(
             string name,
@@ -239,8 +234,40 @@ namespace Avalonia
             bool inherits = false,
             BindingMode defaultBindingMode = BindingMode.OneWay,
             Func<TValue, bool>? validate = null,
-            Func<AvaloniaObject, TValue, TValue>? coerce = null,
-            Action<AvaloniaObject, bool>? notifying = null)
+            Func<AvaloniaObject, TValue, TValue>? coerce = null)
+                where TOwner : AvaloniaObject
+        {
+            _ = name ?? throw new ArgumentNullException(nameof(name));
+
+            var metadata = new StyledPropertyMetadata<TValue>(
+                defaultValue,
+                defaultBindingMode: defaultBindingMode,
+                coerce: coerce);
+
+            var result = new StyledProperty<TValue>(
+                name,
+                typeof(TOwner),
+                metadata,
+                inherits,
+                validate);
+            AvaloniaPropertyRegistry.Instance.Register(typeof(TOwner), result);
+            return result;
+        }
+        
+        /// <inheritdoc cref="Register{TOwner, TValue}" />
+        /// <param name="notifying">
+        /// A method that gets called before and after the property starts being notified on an
+        /// object; the bool argument will be true before and false afterwards. This callback is
+        /// intended to support IsDataContextChanging.
+        /// </param>
+        internal static StyledProperty<TValue> Register<TOwner, TValue>(
+            string name,
+            TValue defaultValue,
+            bool inherits,
+            BindingMode defaultBindingMode,
+            Func<TValue, bool>? validate,
+            Func<AvaloniaObject, TValue, TValue>? coerce,
+            Action<AvaloniaObject, bool>? notifying)
                 where TOwner : AvaloniaObject
         {
             _ = name ?? throw new ArgumentNullException(nameof(name));
