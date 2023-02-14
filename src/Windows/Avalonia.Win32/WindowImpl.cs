@@ -1182,8 +1182,21 @@ namespace Avalonia.Win32
                     var y = monitorInfo.rcWork.top;
                     var cx = Math.Abs(monitorInfo.rcWork.right - x);
                     var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
+                    var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
 
-                    SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
+                    if (!style.HasFlag(WindowStyles.WS_SIZEFRAME))
+                    {
+                        // When calling SetWindowPos on a maximized window it automatically adjusts
+                        // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
+                        // NO BORDERS, meaning that the window is placed wrong when we have CanResize
+                        // == false. Account for this here.
+                        var borderThickness = BorderThickness;
+                        x -= (int)borderThickness.Left;
+                        cx += (int)borderThickness.Left + (int)borderThickness.Right;
+                        cy += (int)borderThickness.Bottom;
+                    }
+
+                    SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW | SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
             }
         }
