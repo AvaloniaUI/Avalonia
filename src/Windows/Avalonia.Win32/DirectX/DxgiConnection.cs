@@ -1,24 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 using Avalonia.Logging;
-using Avalonia.OpenGL.Angle;
-using Avalonia.OpenGL.Egl;
 using Avalonia.Rendering;
-using Avalonia.Win32.OpenGl.Angle;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 using static Avalonia.Win32.DirectX.DirectXUnmanagedMethods;
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32.DirectX
 {
-#pragma warning disable CA1416 // This should only be reachable on Windows
-#nullable enable
     public unsafe class DxgiConnection : IRenderTimer
     {
         public const uint ENUM_CURRENT_SETTINGS = unchecked((uint)(-1));
@@ -26,11 +16,11 @@ namespace Avalonia.Win32.DirectX
         public bool RunsInBackground => true;
 
         public event Action<TimeSpan>? Tick;
-        private object _syncLock;
+        private readonly object _syncLock;
 
-        private IDXGIOutput? _output = null;
+        private IDXGIOutput? _output;
 
-        private Stopwatch? _stopwatch = null;
+        private Stopwatch? _stopwatch;
         private const string LogArea = "DXGI";
 
         public DxgiConnection(object syncLock)
@@ -51,9 +41,9 @@ namespace Avalonia.Win32.DirectX
             }
         }
 
-        private unsafe void RunLoop()
+        private void RunLoop()
         {
-            _stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            _stopwatch = Stopwatch.StartNew();
             try
             {
                 GetBestOutputToVWaitOn();
@@ -162,7 +152,7 @@ namespace Avalonia.Win32.DirectX
         }
 
         // Used the windows composition as a blueprint for this startup/creation 
-        static private bool TryCreateAndRegisterCore()
+        private static bool TryCreateAndRegisterCore()
         {
             var tcs = new TaskCompletionSource<bool>();
             var pumpLock = new object();
@@ -170,9 +160,7 @@ namespace Avalonia.Win32.DirectX
             {
                 try
                 {
-                    DxgiConnection connection;
-
-                    connection = new DxgiConnection(pumpLock);
+                    var connection = new DxgiConnection(pumpLock);
 
                     AvaloniaLocator.CurrentMutable.BindToSelf(connection);
                     AvaloniaLocator.CurrentMutable.Bind<IRenderTimer>().ToConstant(connection);
@@ -191,6 +179,4 @@ namespace Avalonia.Win32.DirectX
             return tcs.Task.Result;
         }
     }
-#nullable restore
-#pragma warning restore CA1416 // Validate platform compatibility
 }
