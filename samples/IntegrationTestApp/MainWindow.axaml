@@ -151,6 +151,9 @@
           </StackPanel>
         </Grid>
       </TabItem>
+      <TabItem Header="Slider">
+          <Slider Name="Slider2" Value="30"/>
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>
