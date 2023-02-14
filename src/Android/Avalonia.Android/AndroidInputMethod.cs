@@ -34,7 +34,7 @@ namespace Avalonia.Android
        ActionPrevious = 0x00000007,
     }
 
-    class AndroidInputMethod<TView> : ITextInputMethodImpl, IAndroidInputMethod
+    internal class AndroidInputMethod<TView> : ITextInputMethodImpl, IAndroidInputMethod
         where TView : View, IInitEditorInfo
     {
         private readonly TView _host;
@@ -141,7 +141,7 @@ namespace Avalonia.Android
         }
     }
 
-    public readonly record struct ComposingRegion
+    internal readonly record struct ComposingRegion
     {
         private readonly int _start = -1;
         private readonly int _end = -1;

@@ -16,11 +16,11 @@ namespace Avalonia.X11
 {
     internal unsafe static class XLib
     {
-        const string libX11 = "libX11.so.6";
-        const string libX11Randr = "libXrandr.so.2";
-        const string libX11Ext = "libXext.so.6";
-        const string libXInput = "libXi.so.6";
-        const string libXCursor = "libXcursor.so.1";
+        private const string libX11 = "libX11.so.6";
+        private const string libX11Randr = "libXrandr.so.2";
+        private const string libX11Ext = "libXext.so.6";
+        private const string libXInput = "libXi.so.6";
+        private const string libXCursor = "libXcursor.so.1";
 
         [DllImport(libX11)]
         public static extern IntPtr XOpenDisplay(IntPtr display);
