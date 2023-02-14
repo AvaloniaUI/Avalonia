@@ -100,10 +100,10 @@ namespace Avalonia.Win32
 
         private const int MaxPointerHistorySize = 512;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
-        private static readonly POINTER_TOUCH_INFO[] s_historyTouchInfos = new POINTER_TOUCH_INFO[MaxPointerHistorySize];
-        private static readonly POINTER_PEN_INFO[] s_historyPenInfos = new POINTER_PEN_INFO[MaxPointerHistorySize];
-        private static readonly POINTER_INFO[] s_historyInfos = new POINTER_INFO[MaxPointerHistorySize];
-        private static readonly MOUSEMOVEPOINT[] s_mouseHistoryInfos = new MOUSEMOVEPOINT[64];
+        private static POINTER_TOUCH_INFO[]? s_historyTouchInfos;
+        private static POINTER_PEN_INFO[]? s_historyPenInfos;
+        private static POINTER_INFO[]? s_historyInfos;
+        private static MOUSEMOVEPOINT[]? s_mouseHistoryInfos;
 
         public WindowImpl()
         {
