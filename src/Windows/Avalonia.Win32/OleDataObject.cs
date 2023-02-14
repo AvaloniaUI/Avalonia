@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
 using Avalonia.Input;
-using Avalonia.MicroCom;
 using Avalonia.Utilities;
 using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
@@ -35,23 +34,23 @@ namespace Avalonia.Win32
             return GetDataFormatsCore().Distinct();
         }
 
-        public string GetText()
+        public string? GetText()
         {
-            return (string)GetDataFromOleHGLOBAL(DataFormats.Text, DVASPECT.DVASPECT_CONTENT);
+            return (string?)GetDataFromOleHGLOBAL(DataFormats.Text, DVASPECT.DVASPECT_CONTENT);
         }
 
-        public IEnumerable<string> GetFileNames()
+        public IEnumerable<string>? GetFileNames()
         {
-            return (IEnumerable<string>)GetDataFromOleHGLOBAL(DataFormats.FileNames, DVASPECT.DVASPECT_CONTENT);
+            return (IEnumerable<string>?)GetDataFromOleHGLOBAL(DataFormats.FileNames, DVASPECT.DVASPECT_CONTENT);
         }
 
-        public object Get(string dataFormat)
+        public object? Get(string dataFormat)
         {
             return GetDataFromOleHGLOBAL(dataFormat, DVASPECT.DVASPECT_CONTENT);
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We still use BinaryFormatter for WinForms dragndrop compatability")]
-        private unsafe object GetDataFromOleHGLOBAL(string format, DVASPECT aspect)
+        private unsafe object? GetDataFromOleHGLOBAL(string format, DVASPECT aspect)
         {
             var formatEtc = new Interop.FORMATETC();
             formatEtc.cfFormat = ClipboardFormats.GetFormat(format);
@@ -100,7 +99,7 @@ namespace Avalonia.Win32
 
         private static IEnumerable<string> ReadFileNamesFromHGlobal(IntPtr hGlobal)
         {
-            List<string> files = new List<string>();
+            var files = new List<string>();
             int fileCount = UnmanagedMethods.DragQueryFile(hGlobal, -1, null, 0);
             if (fileCount > 0)
             {
@@ -118,7 +117,7 @@ namespace Avalonia.Win32
             return files;
         }
 
-        private static string ReadStringFromHGlobal(IntPtr hGlobal)
+        private static string? ReadStringFromHGlobal(IntPtr hGlobal)
         {
             IntPtr ptr = UnmanagedMethods.GlobalLock(hGlobal);
             try

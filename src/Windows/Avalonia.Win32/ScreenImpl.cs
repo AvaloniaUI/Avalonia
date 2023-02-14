@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Metadata;
 using Avalonia.Platform;
-using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
@@ -11,12 +10,15 @@ namespace Avalonia.Win32
     [Unstable]
     public class ScreenImpl : IScreenImpl
     {
+        private Screen[]? _allScreens;
+
+        /// <inheritdoc />
         public int ScreenCount
         {
             get => GetSystemMetrics(SystemMetric.SM_CMONITORS);
         }
 
-        private Screen[] _allScreens;
+        /// <inheritdoc />
         public IReadOnlyList<Screen> AllScreens
         {
             get
@@ -38,7 +40,7 @@ namespace Avalonia.Win32
                                 if (method != IntPtr.Zero)
                                 {
                                     GetDpiForMonitor(monitor, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out var x, out _);
-                                    dpi = (double)x;
+                                    dpi = x;
                                 }
                                 else
                                 {
@@ -74,7 +76,8 @@ namespace Avalonia.Win32
             _allScreens = null;
         }
 
-        public Screen ScreenFromWindow(IWindowBaseImpl window)
+        /// <inheritdoc />
+        public Screen? ScreenFromWindow(IWindowBaseImpl window)
         {
             var handle = window.Handle.Handle;
 
@@ -83,7 +86,8 @@ namespace Avalonia.Win32
             return FindScreenByHandle(monitor);
         }
 
-        public Screen ScreenFromPoint(PixelPoint point)
+        /// <inheritdoc />
+        public Screen? ScreenFromPoint(PixelPoint point)
         {
             var monitor = MonitorFromPoint(new POINT
             {
@@ -94,7 +98,8 @@ namespace Avalonia.Win32
             return FindScreenByHandle(monitor);
         }
 
-        public Screen ScreenFromRect(PixelRect rect)
+        /// <inheritdoc />
+        public Screen? ScreenFromRect(PixelRect rect)
         {
             var monitor = MonitorFromRect(new RECT
             {
@@ -107,7 +112,7 @@ namespace Avalonia.Win32
             return FindScreenByHandle(monitor);
         }
 
-        private Screen FindScreenByHandle(IntPtr handle)
+        private Screen? FindScreenByHandle(IntPtr handle)
         {
             return AllScreens.Cast<WinScreen>().FirstOrDefault(m => m.Handle == handle);
         }

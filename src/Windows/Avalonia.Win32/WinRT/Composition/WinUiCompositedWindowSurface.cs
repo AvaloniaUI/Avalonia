@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using Avalonia.MicroCom;
-using Avalonia.OpenGL;
-using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
-using Avalonia.OpenGL.Surfaces;
 using Avalonia.Platform;
-using Avalonia.Utilities;
 using Avalonia.Win32.DirectX;
 using Avalonia.Win32.Interop;
-using Avalonia.Win32.OpenGl.Angle;
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition
@@ -18,7 +11,7 @@ namespace Avalonia.Win32.WinRT.Composition
     {
         private readonly WinUiCompositionShared _shared;
         private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _info;
-        private WinUiCompositedWindow _window;
+        private WinUiCompositedWindow? _window;
         private BlurEffect _blurEffect;
 
         public WinUiCompositedWindowSurface(WinUiCompositionShared shared, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo info)
@@ -52,6 +45,8 @@ namespace Avalonia.Win32.WinRT.Composition
 
     internal class WinUiCompositedWindowRenderTarget : IDirect3D11TextureRenderTarget
     {
+        private static readonly Guid IID_ID3D11Texture2D = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
+
         private readonly IPlatformGraphicsContext _context;
         private readonly WinUiCompositedWindow _window;
         private readonly IUnknown _d3dDevice;
@@ -63,6 +58,7 @@ namespace Avalonia.Win32.WinRT.Composition
         private PixelSize _size;
         private bool _lost;
         private readonly ICompositionDrawingSurfaceInterop _surfaceInterop;
+        private readonly ICompositionDrawingSurface _drawingSurface;
 
         public WinUiCompositedWindowRenderTarget(IPlatformGraphicsContext context,
             WinUiCompositedWindow window, IntPtr device,
@@ -83,28 +79,33 @@ namespace Avalonia.Win32.WinRT.Composition
                 _surface = _drawingSurface.QueryInterface<ICompositionSurface>();
                 _surfaceInterop = _drawingSurface.QueryInterface<ICompositionDrawingSurfaceInterop>();
             }
-            finally
+            catch
             {
-                if (_surfaceInterop == null)
-                    Dispose();
+                _surface?.Dispose();
+                _surfaceInterop?.Dispose();
+                _drawingSurface?.Dispose();
+                _compositionDevice2?.Dispose();
+                _compositionDevice?.Dispose();
+                _interop?.Dispose();
+                _compositor?.Dispose();
+                _d3dDevice?.Dispose();
+                throw;
             }
         }
 
         public void Dispose()
         {
-            _surface?.Dispose();
-            _surfaceInterop?.Dispose();
-            _drawingSurface?.Dispose();
-            _compositionDevice2?.Dispose();
-            _compositionDevice?.Dispose();
-            _interop?.Dispose();
-            _compositor?.Dispose();
-            _d3dDevice?.Dispose();
+            _surface.Dispose();
+            _surfaceInterop.Dispose();
+            _drawingSurface.Dispose();
+            _compositionDevice2.Dispose();
+            _compositionDevice.Dispose();
+            _interop.Dispose();
+            _compositor.Dispose();
+            _d3dDevice.Dispose();
         }
 
         public bool IsCorrupted => _context.IsLost || _lost;
-        private static Guid IID_ID3D11Texture2D = Guid.Parse("6f15aaf2-d208-4e89-9ab4-489535d34f9c");
-        private readonly ICompositionDrawingSurface _drawingSurface;
 
         public unsafe IDirect3D11TextureRenderTargetRenderSession BeginDraw()
         {
@@ -155,12 +156,12 @@ namespace Avalonia.Win32.WinRT.Composition
                 {
                     if (needsEndDraw)
                         _surfaceInterop.EndDraw();
-                    transaction?.Dispose();
+                    transaction.Dispose();
                 }
             }
         }
 
-        class Session : IDirect3D11TextureRenderTargetRenderSession
+        private class Session : IDirect3D11TextureRenderTargetRenderSession
         {
             private readonly IDisposable _transaction;
             private readonly PixelSize _size;
