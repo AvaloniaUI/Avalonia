@@ -223,7 +223,7 @@ namespace ControlCatalog.Pages
                     ShowOverwritePrompt = false
                 });
 
-                if (file is not null && file.CanOpenWrite)
+                if (file is not null)
                 {
                     // Sync disposal of StreamWriter is not supported on WASM
 #if NET6_0_OR_GREATER
@@ -298,31 +298,26 @@ namespace ControlCatalog.Pages
                     if (item is IStorageFile file)
                     {
                         resultText += @$"
-            CanOpenRead: {file.CanOpenRead}
-            CanOpenWrite: {file.CanOpenWrite}
             Content:
             ";
-                        if (file.CanOpenRead)
-                        {
 #if NET6_0_OR_GREATER
-                            await using var stream = await file.OpenReadAsync();
+                        await using var stream = await file.OpenReadAsync();
 #else
-                                        using var stream = await file.OpenReadAsync();
+                        using var stream = await file.OpenReadAsync();
 #endif
-                            using var reader = new System.IO.StreamReader(stream);
+                        using var reader = new System.IO.StreamReader(stream);
 
-                            // 4GB file test, shouldn't load more than 10000 chars into a memory.
-                            const int length = 10000;
-                            var buffer = ArrayPool<char>.Shared.Rent(length);
-                            try
-                            {
-                                var charsRead = await reader.ReadAsync(buffer, 0, length);
-                                resultText += new string(buffer, 0, charsRead);
-                            }
-                            finally
-                            {
-                                ArrayPool<char>.Shared.Return(buffer);
-                            }
+                        // 4GB file test, shouldn't load more than 10000 chars into a memory.
+                        const int length = 10000;
+                        var buffer = ArrayPool<char>.Shared.Rent(length);
+                        try
+                        {
+                            var charsRead = await reader.ReadAsync(buffer, 0, length);
+                            resultText += new string(buffer, 0, charsRead);
+                        }
+                        finally
+                        {
+                            ArrayPool<char>.Shared.Return(buffer);
                         }
                     }
 

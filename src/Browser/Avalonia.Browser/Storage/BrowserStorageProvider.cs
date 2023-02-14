@@ -216,7 +216,6 @@ internal class JSStorageFile : JSStorageItem, IStorageBookmarkFile
     {
     }
 
-    public bool CanOpenRead => true;
     public async Task<Stream> OpenReadAsync()
     {
         try
@@ -230,7 +229,6 @@ internal class JSStorageFile : JSStorageItem, IStorageBookmarkFile
         }
     }
 
-    public bool CanOpenWrite => true;
     public async Task<Stream> OpenWriteAsync()
     {
         try

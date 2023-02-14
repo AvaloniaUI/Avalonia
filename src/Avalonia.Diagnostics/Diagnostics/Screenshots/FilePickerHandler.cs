@@ -68,10 +68,6 @@ namespace Avalonia.Diagnostics.Screenshots
             {
                 return null;
             }
-            if (!result.CanOpenWrite)
-            {
-                throw new InvalidOperationException("Read-only file was selected.");
-            }
 
             return await result.OpenWriteAsync();
         }
