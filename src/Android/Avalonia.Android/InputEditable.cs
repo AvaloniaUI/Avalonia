@@ -13,7 +13,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Avalonia.Android
 {
-    internal class InputEditable : SpannableStringBuilder, IDisposable, ITextEditable
+    internal class InputEditable : SpannableStringBuilder, ITextEditable
     {
         private readonly TopLevelImpl _topLevel;
         private readonly IAndroidInputMethod _inputMethod;
@@ -22,7 +22,6 @@ namespace Avalonia.Android
         private string _previousText;
         private int _previousSelectionStart;
         private int _previousSelectionEnd;
-        private TextPresenter _presenter;
 
         public event EventHandler TextChanged;
         public event EventHandler SelectionChanged;
@@ -54,9 +53,6 @@ namespace Avalonia.Android
         protected InputEditable(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
         }
-
-        public TextPresenter Presenter { get => _presenter; }
-
 
         public int SelectionStart
         {
@@ -107,7 +103,7 @@ namespace Avalonia.Android
 
         public void EndBatchEdit()
         {
-            if (_currentBatchLevel == 1 && _presenter != null)
+            if (_currentBatchLevel == 1)
             {
                 if(_previousText != Text)
                 {
@@ -126,19 +122,6 @@ namespace Avalonia.Android
         public void RaiseCompositionChanged()
         {
             CompositionChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        void IDisposable.Dispose()
-        {
-            _presenter = null;
-        }
-
-        public void SetPresenter(TextPresenter presenter)
-        {
-            if (_presenter == null)
-            {
-                _presenter = presenter;
-            }
         }
     }
 }

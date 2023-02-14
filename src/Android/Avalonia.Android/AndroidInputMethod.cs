@@ -70,11 +70,6 @@ namespace Avalonia.Android
 
         public void SetClient(ITextInputMethodClient client)
         {
-            if(_inputConnection!= null)
-            {
-                (_inputConnection.InputEditable as IDisposable)?.Dispose();
-            }
-
             _client = client;
 
             if (IsActive)
@@ -138,11 +133,6 @@ namespace Avalonia.Android
                 };
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
-
-                if(_client.TextViewVisual is TextPresenter presenter)
-                {
-                    _inputConnection?.InputEditable.SetPresenter(presenter);
-                }
 
                 _client.TextEditable = _inputConnection.InputEditable;
 

@@ -216,6 +216,8 @@ namespace Avalonia.Controls
             {
                 _presenter.PreeditText = null;
 
+                _presenter.CompositionRegion = null;
+
                 _presenter.CaretBoundsChanged -= OnCaretBoundsChanged;
             }
 
