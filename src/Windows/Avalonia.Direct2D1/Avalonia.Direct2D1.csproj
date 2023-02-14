@@ -6,11 +6,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\Avalonia.Win32\Interop\UnmanagedMethods.cs">
-      <Link>UnmanagedMethods.cs</Link>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
     <ProjectReference Include="..\Avalonia.Win32\Avalonia.Win32.csproj" />
   </ItemGroup>
@@ -22,6 +17,7 @@
   <ItemGroup Label="InternalsVisibleTo">
     <InternalsVisibleTo Include="Avalonia.Direct2D1.RenderTests, PublicKey=$(AvaloniaPublicKey)" />
     <InternalsVisibleTo Include="Avalonia.Direct2D1.UnitTests, PublicKey=$(AvaloniaPublicKey)" />
+    <InternalsVisibleTo Include="Avalonia.Win32.Interop, PublicKey=$(AvaloniaPublicKey)"/>
   </ItemGroup>
 
   <ItemGroup>

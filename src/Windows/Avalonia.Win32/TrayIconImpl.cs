@@ -13,8 +13,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    [Unstable]
-    public class TrayIconImpl : ITrayIconImpl
+    internal class TrayIconImpl : ITrayIconImpl
     {
         private static readonly IntPtr s_emptyIcon = new System.Drawing.Bitmap(32, 32).GetHicon();
         private readonly int _uniqueId;
