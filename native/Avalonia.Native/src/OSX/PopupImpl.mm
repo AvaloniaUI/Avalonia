@@ -28,7 +28,7 @@ private:
         [Window setLevel:NSPopUpMenuWindowLevel];
     }
 protected:
-    virtual NSWindowStyleMask GetStyle() override
+    virtual NSWindowStyleMask CalculateStyleMask() override
     {
         return NSWindowStyleMaskBorderless;
     }
