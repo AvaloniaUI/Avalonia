@@ -20,7 +20,7 @@ using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Avalonia.Browser
 {
-    public partial class AvaloniaView : ITextInputMethodImpl
+    public class AvaloniaView : ITextInputMethodImpl
     {
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
         private readonly BrowserTopLevelImpl _topLevelImpl;
@@ -43,8 +43,9 @@ namespace Avalonia.Browser
         private bool _useGL;        
         private ITextInputMethodClient? _client;
 
+        /// <param name="divId">ID of the html element where avalonia content should be rendered.</param>
         public AvaloniaView(string divId)
-            : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id {divId} was not found in the html document."))
+            : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id '{divId}' was not found in the html document."))
         {
         }
 
