@@ -43,6 +43,10 @@ internal class IOSStorageProvider : IStorageProvider
                     {
                         return f.AppleUniformTypeIdentifiers.Select(id => UTType.CreateFromIdentifier(id));
                     }
+                    if (f.TryGetExtensions() is { } extensions && extensions.Any())
+                    {
+                        return extensions.Select(id => UTType.CreateFromExtension(id.TrimStart('.')));
+                    }
                     if (f.MimeTypes?.Any() == true)
                     {
                         return f.MimeTypes.Select(id => UTType.CreateFromMimeType(id));

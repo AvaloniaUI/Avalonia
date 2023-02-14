@@ -54,5 +54,5 @@ internal static partial class StorageHelper
     public static partial JSObject[] ItemsArray(JSObject item);
 
     [JSImport("StorageProvider.createAcceptType", AvaloniaModule.StorageModuleName)]
-    public static partial JSObject CreateAcceptType(string description, string[] mimeTypes);
+    public static partial JSObject CreateAcceptType(string description, string[] mimeTypes, string[]? extensions);
 }

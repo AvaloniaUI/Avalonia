@@ -82,7 +82,13 @@ namespace ControlCatalog.Pages
                 return new List<FilePickerFileType>
                             {
                                 FilePickerFileTypes.All,
-                                FilePickerFileTypes.TextPlain
+                                FilePickerFileTypes.TextPlain,
+                                new("Binary Log")
+                                {
+                                    Patterns = new[] { "*.binlog", "*.buildlog" },
+                                    MimeTypes = new[] { "application/binlog", "application/buildlog" },
+                                    AppleUniformTypeIdentifiers = new []{ "public.data" }
+                                }
                             };
             }
 

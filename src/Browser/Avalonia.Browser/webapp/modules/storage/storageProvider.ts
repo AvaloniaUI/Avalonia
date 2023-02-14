@@ -62,9 +62,9 @@ export class StorageProvider {
         }
     }
 
-    public static createAcceptType(description: string, mimeTypes: string[]): FilePickerAcceptType {
+    public static createAcceptType(description: string, mimeTypes: string[], extensions: string[] | undefined): FilePickerAcceptType {
         const accept: Record<string, string[]> = {};
-        mimeTypes.forEach(a => { accept[a] = []; });
+        mimeTypes.forEach(a => { accept[a] = extensions ?? []; });
         return { description, accept };
     }
 }
