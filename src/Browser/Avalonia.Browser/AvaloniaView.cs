@@ -322,7 +322,6 @@ namespace Avalonia.Browser
         private bool OnBeforeInput(JSObject arg, int start, int end)
         {
             var type = arg.GetPropertyAsString("inputType");
-            Console.WriteLine(type);
             if (type != "deleteByComposition")
             {
                 if (type == "deleteContentBackward")
@@ -349,7 +348,6 @@ namespace Avalonia.Browser
             if (_client == null)
                 return false;
 
-            Console.WriteLine("composition start");
             _client.SetPreeditText(null);
             IsComposing = true;
 
@@ -360,7 +358,6 @@ namespace Avalonia.Browser
         {
             if (_client == null)
                 return false;
-            Console.WriteLine("composition update");
 
             _client.SetPreeditText(args.GetPropertyAsString("data"));
 
@@ -372,7 +369,6 @@ namespace Avalonia.Browser
             if (_client == null)
                 return false;
 
-            Console.WriteLine("composition end");
             IsComposing = false;
             _client.SetPreeditText(null);
             _topLevelImpl.RawTextEvent(args.GetPropertyAsString("data")!);
