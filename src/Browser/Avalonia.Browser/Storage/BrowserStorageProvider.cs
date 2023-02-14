@@ -20,9 +20,9 @@ internal class BrowserStorageProvider : IStorageProvider
 
     private readonly Lazy<Task> _lazyModule = new(() => AvaloniaModule.ImportStorage());
 
-    public bool CanOpen => StorageHelper.CanShowOpenFilePicker();
-    public bool CanSave => StorageHelper.CanShowSaveFilePicker();
-    public bool CanPickFolder => StorageHelper.CanShowDirectoryPicker();
+    public bool CanOpen => true;
+    public bool CanSave => StorageHelper.HasNativeFilePicker();
+    public bool CanPickFolder => true;
 
     public async Task<IReadOnlyList<IStorageFile>> OpenFilePickerAsync(FilePickerOpenOptions options)
     {
@@ -186,10 +186,15 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
             dateModified: lastModified > 0 ? DateTimeOffset.FromUnixTimeMilliseconds(lastModified.Value) : null);
     }
 
-    public bool CanBookmark => true;
+    public bool CanBookmark => StorageHelper.HasNativeFilePicker();
 
     public Task<string?> SaveBookmarkAsync()
     {
+        if (!CanBookmark)
+        {
+            return Task.FromResult<string?>(null);
+        }
+
         return StorageHelper.SaveBookmark(FileHandle);
     }
 
@@ -200,6 +205,11 @@ internal abstract class JSStorageItem : IStorageBookmarkItem
 
     public Task ReleaseBookmarkAsync()
     {
+        if (!CanBookmark)
+        {
+            return Task.CompletedTask;
+        }
+
         return StorageHelper.DeleteBookmark(FileHandle);
     }
 

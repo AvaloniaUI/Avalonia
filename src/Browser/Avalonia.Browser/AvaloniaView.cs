@@ -381,12 +381,10 @@ namespace Avalonia.Browser
         {
             if (_useGL && (_jsGlInfo == null))
             {
-                Console.WriteLine("nothing to render");
                 return;
             }
             if (_canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0)
             {
-                Console.WriteLine("nothing to render");
                 return;
             }
 
@@ -459,7 +457,6 @@ namespace Avalonia.Browser
 
         void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
         {
-            Console.WriteLine("Set Client");
             if (_client != null)
             {
                 _client.SurroundingTextChanged -= SurroundingTextChanged;
@@ -482,8 +479,6 @@ namespace Avalonia.Browser
                 var surroundingText = _client.SurroundingText;
 
                 InputHelper.SetSurroundingText(_inputElement, surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
-
-                Console.WriteLine("Shown, focused and surrounded.");
             }
             else
             {

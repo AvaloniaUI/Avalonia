@@ -281,7 +281,7 @@ namespace ControlCatalog.Pages
             {
                 ignoreTextChanged = true;
                 lastSelectedDirectory = folder;
-                currentFolderBox.Text = folder?.Path.LocalPath;
+                currentFolderBox.Text = folder?.Path is { IsAbsoluteUri: true } abs ? abs.LocalPath : folder?.Path?.ToString();
                 ignoreTextChanged = false;
             }
             async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items)
