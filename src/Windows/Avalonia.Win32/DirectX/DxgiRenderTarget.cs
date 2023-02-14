@@ -1,40 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Avalonia.OpenGL.Angle;
 using Avalonia.OpenGL.Egl;
 using Avalonia.OpenGL.Surfaces;
 using Avalonia.Win32.OpenGl.Angle;
 using MicroCom.Runtime;
-using static Avalonia.OpenGL.Egl.EglGlPlatformSurfaceBase;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.DirectX
 {
-#pragma warning disable CA1416 // Validate platform compatibility, if you enter this not on windows you have messed up badly 
-#nullable enable
     public unsafe class DxgiRenderTarget : EglPlatformSurfaceRenderTargetBase
     {
         // DXGI_FORMAT_B8G8R8A8_UNORM is target texture format as per ANGLE documentation 
 
         public const uint DXGI_USAGE_RENDER_TARGET_OUTPUT = 0x00000020U;
+        private readonly Guid ID3D11Texture2DGuid = Guid.Parse("6F15AAF2-D208-4E89-9AB4-489535D34F9C");
 
-        private EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _window;
-        private DxgiConnection _connection;
-        private IDXGIDevice? _dxgiDevice = null;
-        private IDXGIFactory2? _dxgiFactory = null;
-        private IDXGISwapChain1? _swapChain = null;
-        private IUnknown? _renderTexture = null;
+        private readonly EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo _window;
+        private readonly DxgiConnection _connection;
+        private readonly IDXGIDevice? _dxgiDevice;
+        private readonly IDXGIFactory2? _dxgiFactory;
+        private readonly IDXGISwapChain1? _swapChain;
+        private readonly uint _flagsUsed;
 
-        private Interop.UnmanagedMethods.RECT _clientRect = default;
-
-        private uint _flagsUsed;
-
-        private Guid ID3D11Texture2DGuid = Guid.Parse("6F15AAF2-D208-4E89-9AB4-489535D34F9C");
+        private IUnknown? _renderTexture;
+        private RECT _clientRect;
 
         public DxgiRenderTarget(EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo window, EglContext context, DxgiConnection connection) : base(context)
         {
@@ -80,11 +68,11 @@ namespace Avalonia.Win32.DirectX
                     null
             );
 
-            Interop.UnmanagedMethods.RECT pClientRect;
-            GetClientRect(_window.Handle, out pClientRect);
+            GetClientRect(_window.Handle, out var pClientRect);
             _clientRect = pClientRect;
         }
 
+        /// <inheritdoc />
         public override IGlPlatformSurfaceRenderingSession BeginDrawCore()
         {
             if (_swapChain is null)
@@ -98,8 +86,7 @@ namespace Avalonia.Win32.DirectX
             var success = false;
             try
             {
-                Interop.UnmanagedMethods.RECT pClientRect;
-                GetClientRect(_window.Handle, out pClientRect);
+                GetClientRect(_window.Handle, out var pClientRect);
                 if (!RectsEqual(pClientRect, _clientRect))
                 {
                     // we gotta resize 
@@ -137,7 +124,7 @@ namespace Avalonia.Win32.DirectX
                 var res = base.BeginDraw(surface, _window.Size, _window.Scaling, () =>
                 {
                     _swapChain.Present((ushort)0U, (ushort)0U);
-                    surface?.Dispose();
+                    surface.Dispose();
                     transaction?.Dispose();
                     contextLock?.Dispose();
                 }, true);
@@ -178,6 +165,4 @@ namespace Avalonia.Win32.DirectX
         }
 
     }
-#pragma warning restore CA1416 // Validate platform compatibility
-#nullable restore
 }

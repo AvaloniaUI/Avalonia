@@ -7,9 +7,9 @@ namespace Avalonia.Platform.Storage;
 /// </summary>
 public sealed class FilePickerFileType
 {
-    public FilePickerFileType(string name)
+    public FilePickerFileType(string? name)
     {
-        Name = name;
+        Name = name ?? string.Empty;
     }
 
     /// <summary>

@@ -12,8 +12,6 @@ using Avalonia.Threading;
 using Avalonia.Win32.Interop.Automation;
 using AAP = Avalonia.Automation.Provider;
 
-#nullable enable
-
 namespace Avalonia.Win32.Automation
 {
     [ComVisible(true)]
@@ -25,7 +23,7 @@ namespace Avalonia.Win32.Automation
         IRawElementProviderAdviseEvents,
         IInvokeProvider
     {
-        private static Dictionary<AutomationProperty, UiaPropertyId> s_propertyMap = new Dictionary<AutomationProperty, UiaPropertyId>()
+        private static Dictionary<AutomationProperty, UiaPropertyId> s_propertyMap = new()
         {
             { AutomationElementIdentifiers.BoundingRectangleProperty, UiaPropertyId.BoundingRectangle },
             { AutomationElementIdentifiers.ClassNameProperty, UiaPropertyId.ClassName },
@@ -46,8 +44,7 @@ namespace Avalonia.Win32.Automation
             { SelectionPatternIdentifiers.SelectionProperty, UiaPropertyId.SelectionSelection },
         };
 
-        private static ConditionalWeakTable<AutomationPeer, AutomationNode> s_nodes =
-            new ConditionalWeakTable<AutomationPeer, AutomationNode>();
+        private static ConditionalWeakTable<AutomationPeer, AutomationNode> s_nodes = new();
 
         private readonly int[] _runtimeId;
         private int _raiseFocusChanged;
@@ -174,11 +171,12 @@ namespace Avalonia.Win32.Automation
                     NavigateDirection.LastChild => GetOrCreate(Peer.GetChildren().LastOrDefault()),
                     _ => null,
                 };
-            }) as IRawElementProviderFragment;
+            });
         }
 
         public void SetFocus() => InvokeSync(() => Peer.SetFocus());
 
+        [return: NotNullIfNotNull(nameof(peer))]
         public static AutomationNode? GetOrCreate(AutomationPeer? peer)
         {
             return peer is null ? null : s_nodes.GetValue(peer, Create);
