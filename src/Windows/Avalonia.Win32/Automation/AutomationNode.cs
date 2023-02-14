@@ -59,12 +59,12 @@ namespace Avalonia.Win32.Automation
             peer.PropertyChanged += Peer_PropertyChanged;
         }
 
-        private void Peer_ChildrenChanged(object sender, EventArgs e)
+        private void Peer_ChildrenChanged(object? sender, EventArgs e)
         {
             ChildrenChanged();
         }
 
-        private void Peer_PropertyChanged(object sender, AutomationPropertyChangedEventArgs e)
+        private void Peer_PropertyChanged(object? sender, AutomationPropertyChangedEventArgs e)
         {
             if (s_propertyMap.TryGetValue(e.Property, out var id))
             {
