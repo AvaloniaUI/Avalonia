@@ -51,20 +51,16 @@ namespace Avalonia.Controls
                                    TicksProperty);
         }
 
-        public TickBar() : base()
-        {
-        }
-
         /// <summary>
         /// Defines the <see cref="Fill"/> property.
         /// </summary>
-        public static readonly StyledProperty<IBrush> FillProperty =
-            AvaloniaProperty.Register<TickBar, IBrush>(nameof(Fill));
+        public static readonly StyledProperty<IBrush?> FillProperty =
+            AvaloniaProperty.Register<TickBar, IBrush?>(nameof(Fill));
 
         /// <summary>
         /// Brush used to fill the TickBar's Ticks.
         /// </summary>
-        public IBrush Fill
+        public IBrush? Fill
         {
             get { return GetValue(FillProperty); }
             set { SetValue(FillProperty, value); }
@@ -136,15 +132,15 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Ticks"/> property.
         /// </summary>
-        public static readonly StyledProperty<AvaloniaList<double>> TicksProperty =
-            AvaloniaProperty.Register<TickBar, AvaloniaList<double>>(nameof(Ticks));
+        public static readonly StyledProperty<AvaloniaList<double>?> TicksProperty =
+            AvaloniaProperty.Register<TickBar, AvaloniaList<double>?>(nameof(Ticks));
 
         /// <summary>
         /// The Ticks property contains collection of value of type Double which
         /// are the logical positions use to draw the ticks.
         /// The property value is a <see cref="AvaloniaList{T}" />.
         /// </summary>
-        public AvaloniaList<double> Ticks
+        public AvaloniaList<double>? Ticks
         {
             get { return GetValue(TicksProperty); }
             set { SetValue(TicksProperty, value); }
@@ -217,7 +213,7 @@ namespace Avalonia.Controls
         ///
         /// Brush that use to fill ticks is specified by Fill property.
         /// </summary>
-        public override void Render(DrawingContext dc)
+        public sealed override void Render(DrawingContext dc)
         {
             var size = new Size(Bounds.Width, Bounds.Height);
             var range = Maximum - Minimum;
@@ -281,7 +277,7 @@ namespace Avalonia.Controls
                     endPoint = new Point(0d, halfReservedSpace);
                     logicalToPhysical = size.Height / range * -1;
                     break;
-            };
+            }
 
             tickLen2 = tickLen * 0.75;
 

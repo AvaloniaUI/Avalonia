@@ -11,7 +11,8 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers
     {
         public IXamlAstNode Transform(AstTransformationContext context, IXamlAstNode node)
         {
-            if (!(node is XamlAstObjectNode on && on.Type.GetClrType().FullName == "Avalonia.Styling.ControlTheme"))
+            if (node is not XamlAstObjectNode on ||
+                !context.GetAvaloniaTypes().ControlTheme.IsAssignableFrom(on.Type.GetClrType()))
                 return node;
 
             // Check if we've already transformed this node.

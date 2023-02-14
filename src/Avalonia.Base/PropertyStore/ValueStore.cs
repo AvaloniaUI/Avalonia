@@ -381,23 +381,6 @@ namespace Avalonia.PropertyStore
         }
 
         /// <summary>
-        /// Called by non-LocalValue binding entries to re-evaluate the effective value when the
-        /// binding produces an unset value.
-        /// </summary>
-        /// <param name="property">The bound property.</param>
-        /// <param name="priority">The priority of binding which produced a new value.</param>
-        public void OnBindingValueCleared(AvaloniaProperty property, BindingPriority priority)
-        {
-            Debug.Assert(priority != BindingPriority.LocalValue);
-
-            if (TryGetEffectiveValue(property, out var existing))
-            {
-                if (priority <= existing.Priority)
-                    ReevaluateEffectiveValue(property, existing);
-            }
-        }
-
-        /// <summary>
         /// Called by a <see cref="ValueFrame"/> when its <see cref="ValueFrame.IsActive"/>
         /// state changes.
         /// </summary>

@@ -229,7 +229,11 @@ namespace Avalonia.Controls
             if (Match(keymap.Copy))
             {
                 Copy();
-
+                handled = true;
+            }
+            else if (Match(keymap.SelectAll))
+            {
+                SelectAll();
                 handled = true;
             }
 

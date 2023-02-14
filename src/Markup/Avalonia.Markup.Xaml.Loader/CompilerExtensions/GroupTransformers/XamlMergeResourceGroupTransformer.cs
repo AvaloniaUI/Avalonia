@@ -4,6 +4,8 @@ using System.Linq;
 using Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.Transformers;
 using XamlX.Ast;
 using XamlX.IL.Emitters;
+using XamlX.Transform.Transformers;
+using XamlX.TypeSystem;
 
 namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions.GroupTransformers;
 #nullable enable
@@ -72,14 +74,20 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
             }
         }
 
-        var manipulationGroup = new XamlManipulationGroupNode(node, new List<IXamlAstManipulationNode>());
+        if (!mergeSourceNodes.Any())
+        {
+            return node;
+        }
+        
+        var manipulationGroup = new List<IXamlAstManipulationNode>();
         foreach (var sourceNode in mergeSourceNodes)
         {
             var (originalAssetPath, propertyNode) =
                 AvaloniaXamlIncludeTransformer.ResolveSourceFromXamlInclude(context, "MergeResourceInclude", sourceNode, true);
             if (originalAssetPath is null)
             {
-                return node;
+                return context.ParseError(
+                    $"Node MergeResourceInclude is unable to resolve \"{originalAssetPath}\" path.", propertyNode, node);
             }
             
             var targetDocument = context.Documents.FirstOrDefault(d =>
@@ -99,15 +107,95 @@ internal class XamlMergeResourceGroupTransformer : IXamlAstGroupTransformer
                     $"MergeResourceInclude can only include another ResourceDictionary", propertyNode, node);
             }
             
-            manipulationGroup.Children.Add(singleRootObject.Manipulation);
+            manipulationGroup.Add(singleRootObject.Manipulation);
+        }
+        
+        // Order of resources is defined by ResourceDictionary.TryGetResource.
+        // It is read by following priority:
+        // - own resources.
+        // - own theme dictionaries.
+        // - merged dictionaries.
+        // We need to maintain this order when we inject "compiled merged" resources.
+        // Doing this by injecting merged dictionaries in the beginning, so it can be overwritten by "own resources".  
+        // MergedDictionaries are read first, so we need ot inject our merged values in the beginning.
+        var children = resourceDictionaryManipulation.Children;
+        children.InsertRange(0, manipulationGroup);
+
+        // Flatten resource assignments.
+        for (var i = 0; i < children.Count; i++)
+        {
+            if (children[i] is XamlManipulationGroupNode group)
+            {
+                children.RemoveAt(i);
+                children.AddRange(group.Children);
+                i--; // step back, so new items can be reiterated.
+            }
         }
 
-        if (manipulationGroup.Children.Any())
+        // Merge "ThemeDictionaries" as well.
+        for (var i = children.Count - 1; i >= 0; i--)
         {
-            // MergedDictionaries are read first, so we need ot inject our merged values in the beginning.
-            resourceDictionaryManipulation.Children.Insert(0, manipulationGroup);
+            if (children[i] is XamlPropertyAssignmentNode assignmentNode
+                && assignmentNode.Property.Name == "ThemeDictionaries"
+                && assignmentNode.Values.Count == 2
+                && assignmentNode.Values[0] is {} key
+                && assignmentNode.Values[1] is XamlValueWithManipulationNode
+                {
+                    Manipulation: XamlObjectInitializationNode
+                    {
+                        Manipulation: XamlManipulationGroupNode valueGroup
+                    }
+                })
+            {
+                for (var j = i - 1; j >= 0; j--)
+                {
+                    if (children[j] is XamlPropertyAssignmentNode sameKeyPrevAssignmentNode
+                        && sameKeyPrevAssignmentNode.Property.Name == "ThemeDictionaries"
+                        && sameKeyPrevAssignmentNode.Values.Count == 2
+                        && sameKeyPrevAssignmentNode.Values[1] is XamlValueWithManipulationNode
+                        {
+                            Manipulation: XamlObjectInitializationNode
+                            {
+                                Manipulation: XamlManipulationGroupNode sameKeyPrevValueGroup
+                            }
+                        }
+                        && ThemeVariantNodeEquals(context, key, sameKeyPrevAssignmentNode.Values[0]))
+                    {
+                        sameKeyPrevValueGroup.Children.AddRange(valueGroup.Children);
+                        children.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
         }
         
         return node;
+    }
+
+    public static bool ThemeVariantNodeEquals(AstGroupTransformationContext context, IXamlAstValueNode left, IXamlAstValueNode right)
+    {
+        if (left is XamlConstantNode leftConst
+            && right is XamlConstantNode rightConst)
+        {
+            return leftConst.Constant == rightConst.Constant;
+        }
+        if (left is XamlStaticExtensionNode leftStaticExt
+            && right is XamlStaticExtensionNode rightStaticExt)
+        {
+            return leftStaticExt.Type.GetClrType().GetFullName() == rightStaticExt.Type.GetClrType().GetFullName()
+                   && leftStaticExt.Member == rightStaticExt.Member;
+        }
+        if (left is XamlAstNewClrObjectNode leftClrObjectNode
+            && right is XamlAstNewClrObjectNode rightClrObjectNode)
+        {
+            var themeVariant = context.GetAvaloniaTypes().ThemeVariant;
+            return leftClrObjectNode.Type.GetClrType() == themeVariant
+                   && leftClrObjectNode.Type == rightClrObjectNode.Type
+                   && leftClrObjectNode.Constructor == rightClrObjectNode.Constructor
+                   && ThemeVariantNodeEquals(context, leftClrObjectNode.Arguments.Single(),
+                       leftClrObjectNode.Arguments.Single());
+        }
+
+        return false;
     }
 }

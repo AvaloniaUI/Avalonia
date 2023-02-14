@@ -11,15 +11,13 @@ using SharpDX;
 using SharpDX.Direct2D1;
 using SharpDX.Mathematics.Interop;
 using BitmapInterpolationMode = Avalonia.Media.Imaging.BitmapInterpolationMode;
-using Avalonia.Metadata;
 
 namespace Avalonia.Direct2D1.Media
 {
     /// <summary>
     /// Draws using Direct2D1.
     /// </summary>
-    [Unstable]
-    public class DrawingContextImpl : IDrawingContextImpl
+    internal class DrawingContextImpl : IDrawingContextImpl
     {
         private readonly IVisualBrushRenderer _visualBrushRenderer;
         private readonly ILayerFactory _layerFactory;

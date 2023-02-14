@@ -43,13 +43,13 @@ namespace Avalonia.LinuxFramebuffer.Output
         public IPlatformGraphics PlatformGraphics { get; private set; }
 
         public DrmOutput(DrmCard card, DrmResources resources, DrmConnector connector, DrmModeInfo modeInfo,
-            DrmOutputOptions? options = null)
+            DrmOutputOptions options = null)
         {
             if(options != null) 
                 _outputOptions = options;
             Init(card, resources, connector, modeInfo);
         }
-        public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions? options = null)
+        public DrmOutput(string path = null, bool connectorsForceProbe = false, DrmOutputOptions options = null)
         {
             if(options != null) 
                 _outputOptions = options;
@@ -63,7 +63,7 @@ namespace Avalonia.LinuxFramebuffer.Output
             if(connector == null)
                 throw new InvalidOperationException("Unable to find connected DRM connector");
 
-            DrmModeInfo? mode = null;
+            DrmModeInfo mode = null;
 
             if (options?.VideoMode != null)
             {

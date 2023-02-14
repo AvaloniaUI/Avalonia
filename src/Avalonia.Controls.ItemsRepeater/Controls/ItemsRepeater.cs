@@ -44,8 +44,8 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="Layout"/> property.
         /// </summary>
-        public static readonly StyledProperty<AttachedLayout> LayoutProperty =
-            AvaloniaProperty.Register<ItemsRepeater, AttachedLayout>(nameof(Layout), new StackLayout());
+        public static readonly StyledProperty<AttachedLayout?> LayoutProperty =
+            AvaloniaProperty.Register<ItemsRepeater, AttachedLayout?>(nameof(Layout), new StackLayout());
 
         /// <summary>
         /// Defines the <see cref="VerticalCacheLength"/> property.
@@ -53,8 +53,8 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<double> VerticalCacheLengthProperty =
             AvaloniaProperty.Register<ItemsRepeater, double>(nameof(VerticalCacheLength), 2.0);
 
-        private static readonly StyledProperty<VirtualizationInfo> VirtualizationInfoProperty =
-            AvaloniaProperty.RegisterAttached<ItemsRepeater, Control, VirtualizationInfo>("VirtualizationInfo");
+        private static readonly StyledProperty<VirtualizationInfo?> VirtualizationInfoProperty =
+            AvaloniaProperty.RegisterAttached<ItemsRepeater, Control, VirtualizationInfo?>("VirtualizationInfo");
 
         internal static readonly Rect InvalidRect = new Rect(-1, -1, -1, -1);
         internal static readonly Point ClearedElementsArrangePosition = new Point(-10000.0, -10000.0);
@@ -63,7 +63,7 @@ namespace Avalonia.Controls
         private readonly ViewportManager _viewportManager;
         private readonly TargetWeakEventSubscriber<ItemsRepeater, EventArgs> _layoutWeakSubscriber;
         private IEnumerable? _items;
-        private VirtualizingLayoutContext? _layoutContext;
+        private RepeaterLayoutContext? _layoutContext;
         private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
         private bool _isLayoutInProgress;
         private NotifyCollectionChangedEventArgs? _processingItemsSourceChange;
@@ -104,7 +104,7 @@ namespace Avalonia.Controls
         /// The layout used to size and position elements. The default is a StackLayout with
         /// vertical orientation.
         /// </value>
-        public AttachedLayout Layout
+        public AttachedLayout? Layout
         {
             get => GetValue(LayoutProperty);
             set => SetValue(LayoutProperty, value);
@@ -164,18 +164,7 @@ namespace Avalonia.Controls
 
         private bool IsProcessingCollectionChange => _processingItemsSourceChange != null;
 
-        private LayoutContext LayoutContext
-        {
-            get
-            {
-                if (_layoutContext == null)
-                {
-                    _layoutContext = new RepeaterLayoutContext(this);
-                }
-
-                return _layoutContext;
-            }
-        }
+        private RepeaterLayoutContext LayoutContext => _layoutContext ??= new RepeaterLayoutContext(this);
 
         event EventHandler<ChildIndexChangedEventArgs>? IChildIndexProvider.ChildIndexChanged
         {
@@ -269,39 +258,22 @@ namespace Avalonia.Controls
 
         internal void UnpinElement(Control element) => _viewManager.UpdatePin(element, false);
 
-        internal static VirtualizationInfo? TryGetVirtualizationInfo(Control element)
+        internal static VirtualizationInfo? TryGetVirtualizationInfo(Control? element)
         {
-            return (element as AvaloniaObject)?.GetValue(VirtualizationInfoProperty);
-        }
-
-        internal static VirtualizationInfo CreateAndInitializeVirtualizationInfo(Control element)
-        {
-            if (TryGetVirtualizationInfo(element) != null)
-            {
-                throw new InvalidOperationException("VirtualizationInfo already created.");
-            }
-
-            var result = new VirtualizationInfo();
-            element.SetValue(VirtualizationInfoProperty, result);
-            return result;
+            return element?.GetValue(VirtualizationInfoProperty);
         }
 
         internal static VirtualizationInfo GetVirtualizationInfo(Control element)
         {
-            if (element is AvaloniaObject ao)
+            var result = element.GetValue(VirtualizationInfoProperty);
+
+            if (result == null)
             {
-                var result = ao.GetValue(VirtualizationInfoProperty);
-
-                if (result == null)
-                {
-                    result = new VirtualizationInfo();
-                    ao.SetValue(VirtualizationInfoProperty, result);
-                }
-
-                return result;
+                result = new VirtualizationInfo();
+                element.SetValue(VirtualizationInfoProperty, result);
             }
 
-            throw new NotSupportedException("Custom implementations of AvaloniaObject not supported.");
+            return result;
         }
 
         private protected override void InvalidateMeasureOnChildrenChanged()
@@ -309,6 +281,7 @@ namespace Avalonia.Controls
             // Don't invalidate measure when children change.
         }
 
+        /// <inheritdoc />
         protected override Size MeasureOverride(Size availableSize)
         {
             if (_isLayoutInProgress)
@@ -334,7 +307,7 @@ namespace Avalonia.Controls
 
                 if (layout != null)
                 {
-                    var layoutContext = GetLayoutContext();
+                    var layoutContext = LayoutContext;
 
                     desiredSize = layout.Measure(layoutContext, availableSize);
                     extent = new Rect(LayoutOrigin.X, LayoutOrigin.Y, desiredSize.Width, desiredSize.Height);
@@ -364,6 +337,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc />
         protected override Size ArrangeOverride(Size finalSize)
         {
             if (_isLayoutInProgress)
@@ -380,7 +354,7 @@ namespace Avalonia.Controls
 
             try
             {
-                var arrangeSize = Layout?.Arrange(GetLayoutContext(), finalSize) ?? default;
+                var arrangeSize = Layout?.Arrange(LayoutContext, finalSize) ?? default;
 
                 // The view manager might clear elements during this call.
                 // That's why we call it before arranging cleared elements
@@ -421,6 +395,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
@@ -428,11 +403,13 @@ namespace Avalonia.Controls
             _viewportManager.ResetScrollers();
         }
 
+        /// <inheritdoc />
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             _viewportManager.ResetScrollers();
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             if (change.Property == ItemsProperty)
@@ -501,7 +478,7 @@ namespace Avalonia.Controls
             if (parent == this)
             {
                 var virtInfo = TryGetVirtualizationInfo(element);
-                return _viewManager.GetElementIndex(virtInfo!);
+                return _viewManager.GetElementIndex(virtInfo);
             }
 
             return -1;
@@ -529,7 +506,7 @@ namespace Avalonia.Controls
         {
             if (index >= 0 && index >= (ItemsSourceView?.Count ?? 0))
             {
-                throw new ArgumentException("Argument index is invalid.", "index");
+                throw new ArgumentException("Argument index is invalid.", nameof(index));
             }
 
             if (_isLayoutInProgress)
@@ -547,7 +524,7 @@ namespace Avalonia.Controls
                     throw new InvalidOperationException("Cannot make an Anchor when there is no attached layout.");
                 }
 
-                element = (Control)GetLayoutContext().GetOrCreateElementAt(index);
+                element = (Control)LayoutContext.GetOrCreateElementAt(index);
                 element.Measure(Size.Infinity);
             }
 
@@ -647,9 +624,9 @@ namespace Avalonia.Controls
 
                     if (Layout is VirtualizingLayout virtualLayout)
                     {
-                        virtualLayout.OnItemsChanged(GetLayoutContext(), newValue, args);
+                        virtualLayout.OnItemsChanged(LayoutContext, newValue, args);
                     }
-                    else if (Layout is NonVirtualizingLayout nonVirtualLayout)
+                    else if (Layout is NonVirtualizingLayout)
                     {
                         // Walk through all the elements and make sure they are cleared for
                         // non-virtualizing layouts.
@@ -693,7 +670,7 @@ namespace Avalonia.Controls
 
                     try
                     {
-                        virtualLayout.OnItemsChanged(GetLayoutContext(), newValue, args);
+                        virtualLayout.OnItemsChanged(LayoutContext, newValue, args);
                     }
                     finally
                     {
@@ -760,7 +737,7 @@ namespace Avalonia.Controls
                 AttachedLayout.ArrangeInvalidatedWeakEvent.Subscribe(newValue, _layoutWeakSubscriber);
             }
 
-            bool isVirtualizingLayout = newValue != null && newValue is VirtualizingLayout;
+            bool isVirtualizingLayout = newValue is VirtualizingLayout;
             _viewportManager.OnLayoutChanged(isVirtualizingLayout);
             InvalidateMeasure();
         }
@@ -788,7 +765,7 @@ namespace Avalonia.Controls
                 {
                     if (Layout is VirtualizingLayout virtualLayout)
                     {
-                        virtualLayout.OnItemsChanged(GetLayoutContext(), sender, args);
+                        virtualLayout.OnItemsChanged(LayoutContext, sender, args);
                     }
                     else
                     {
@@ -806,16 +783,6 @@ namespace Avalonia.Controls
         private void OnRequestBringIntoView(RequestBringIntoViewEventArgs e)
         {
             _viewportManager.OnBringIntoViewRequested(e);
-        }
-        
-        private VirtualizingLayoutContext GetLayoutContext()
-        {
-            if (_layoutContext == null)
-            {
-                _layoutContext = new RepeaterLayoutContext(this);
-            }
-
-            return _layoutContext;
         }
     }
 }

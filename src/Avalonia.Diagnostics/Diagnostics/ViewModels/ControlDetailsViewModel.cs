@@ -123,7 +123,8 @@ namespace Avalonia.Diagnostics.ViewModels
 
         private static (object resourceKey, bool isDynamic)? GetResourceInfo(object? value)
         {
-            if (value is StaticResourceExtension staticResource)
+            if (value is StaticResourceExtension staticResource
+                && staticResource.ResourceKey != null)
             {
                 return (staticResource.ResourceKey, false);
             }

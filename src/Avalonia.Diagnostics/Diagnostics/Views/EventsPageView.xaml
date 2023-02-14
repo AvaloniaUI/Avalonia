@@ -29,6 +29,7 @@
 
     <Style Selector="ListBoxItem.handled" >
       <Setter Property="Background" Value="#d9ffdc" />
+      <Setter Property="Foreground" Value="Black" />
     </Style>
   </UserControl.Styles>
 
