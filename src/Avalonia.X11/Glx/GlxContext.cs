@@ -7,7 +7,7 @@ using Avalonia.Reactive;
 
 namespace Avalonia.X11.Glx
 {
-    class GlxContext : IGlContext
+    internal class GlxContext : IGlContext
     {
         public  IntPtr Handle { get; }
         public GlxInterface Glx { get; }
@@ -46,8 +46,8 @@ namespace Avalonia.X11.Glx
         public GlInterface GlInterface { get; }
         public int SampleCount { get; }
         public int StencilSize { get; }
-        
-        class RestoreContext : IDisposable
+
+        private class RestoreContext : IDisposable
         {
             private GlxInterface _glx;
             private IntPtr _defaultDisplay;
