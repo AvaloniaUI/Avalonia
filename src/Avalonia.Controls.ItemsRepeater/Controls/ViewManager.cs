@@ -53,7 +53,7 @@ namespace Avalonia.Controls
                     }
                 }
             }
-            if (element == null) { element = GetElementFromUniqueIdResetPool(index); };
+            if (element == null) { element = GetElementFromUniqueIdResetPool(index); }
             if (element == null) { element = GetElementFromPinnedElements(index); }
             if (element == null) { element = GetElementFromElementFactory(index); }
 
@@ -221,7 +221,7 @@ namespace Avalonia.Controls
             return nextElement;
         }
 
-        public int GetElementIndex(VirtualizationInfo virtInfo)
+        public int GetElementIndex(VirtualizationInfo? virtInfo)
         {
             if (virtInfo == null)
             {
@@ -256,7 +256,7 @@ namespace Avalonia.Controls
 
         public void UpdatePin(Control element, bool addPin)
         {
-            var parent = element.VisualParent;
+            var parent = element.GetVisualParent();
             var child = (Visual)element;
 
             while (parent != null)
@@ -283,7 +283,7 @@ namespace Avalonia.Controls
                 }
 
                 child = parent;
-                parent = child.VisualParent;
+                parent = child.GetVisualParent();
             }
         }
 
@@ -627,11 +627,7 @@ namespace Avalonia.Controls
 
             var element = GetElement();
 
-            var virtInfo = ItemsRepeater.TryGetVirtualizationInfo(element);
-            if (virtInfo == null)
-            {
-                virtInfo = ItemsRepeater.CreateAndInitializeVirtualizationInfo(element);
-            }
+            var virtInfo = ItemsRepeater.GetVirtualizationInfo(element);
             // Clear flag
             virtInfo.MustClearDataContext = false;
 
@@ -656,7 +652,7 @@ namespace Avalonia.Controls
             // that handlers can walk up the tree in case they want to find their IndexPath in the 
             // nested case.
             var children = repeater.Children;
-            if (element.VisualParent != repeater)
+            if (element.GetVisualParent() != repeater)
             {
                 children.Add(element);
             }
@@ -701,7 +697,7 @@ namespace Avalonia.Controls
 
             if (FocusManager.Instance?.Current is Visual child)
             {
-                var parent = child.VisualParent;
+                var parent = child.GetVisualParent();
                 var owner = _owner;
 
                 // Find out if the focused element belongs to one of our direct
@@ -710,9 +706,8 @@ namespace Avalonia.Controls
                 {
                     if (parent is ItemsRepeater repeater)
                     {
-                        var element = child as Control;
                         if (repeater == owner &&
-                            element is not null &&
+                            child is Control element &&
                             ItemsRepeater.GetVirtualizationInfo(element).IsRealized)
                         {
                             focusedElement = element;
@@ -722,7 +717,7 @@ namespace Avalonia.Controls
                     }
 
                     child = parent;
-                    parent = child?.VisualParent;
+                    parent = child.GetVisualParent();
                 }
             }
 

@@ -237,11 +237,11 @@ namespace Avalonia.Controls
         private DateTime _selectedYear;
 
         private DateTime _displayDate = DateTime.Today;
-        private DateTime? _displayDateStart = null;
-        private DateTime? _displayDateEnd = null;
+        private DateTime? _displayDateStart;
+        private DateTime? _displayDateEnd;
 
         private bool _isShiftPressed;
-        private bool _displayDateIsChanging = false;
+        private bool _displayDateIsChanging;
 
         internal CalendarDayButton? FocusButton { get; set; }
         internal CalendarButton? FocusCalendarButton { get; set; }
@@ -291,7 +291,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                throw new ArgumentOutOfRangeException("d", "Invalid DayOfWeek");
+                throw new ArgumentOutOfRangeException(nameof(e), "Invalid DayOfWeek");
             }
         }
 
@@ -346,10 +346,10 @@ namespace Avalonia.Controls
             }
         }
 
-        public static readonly StyledProperty<IBrush> HeaderBackgroundProperty =
-            AvaloniaProperty.Register<Calendar, IBrush>(nameof(HeaderBackground));
+        public static readonly StyledProperty<IBrush?> HeaderBackgroundProperty =
+            AvaloniaProperty.Register<Calendar, IBrush?>(nameof(HeaderBackground));
 
-        public IBrush HeaderBackground
+        public IBrush? HeaderBackground
         {
             get { return GetValue(HeaderBackgroundProperty); }
             set { SetValue(HeaderBackgroundProperty, value); }
@@ -478,7 +478,7 @@ namespace Avalonia.Controls
             }
             else
             {
-                throw new ArgumentOutOfRangeException("d", "Invalid SelectionMode");
+                throw new ArgumentOutOfRangeException(nameof(e), "Invalid SelectionMode");
             }
         }
 
@@ -574,7 +574,7 @@ namespace Avalonia.Controls
                     }
                     else
                     {
-                        throw new ArgumentOutOfRangeException("d", "SelectedDate value is not valid.");
+                        throw new ArgumentOutOfRangeException(nameof(e), "SelectedDate value is not valid.");
                     }
                 }
                 else

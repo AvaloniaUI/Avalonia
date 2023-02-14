@@ -166,7 +166,7 @@ namespace Avalonia.Media
         /// </summary>
         public Point BaselineOrigin
         {
-            get => _baselineOrigin ?? default;
+            get => PlatformImpl.Item.BaselineOrigin;
             set => Set(ref _baselineOrigin, value);
         }
 

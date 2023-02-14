@@ -20,8 +20,8 @@ namespace Avalonia.Media
         /// <summary>
         /// Defines the <see cref="Drawing"/> property.
         /// </summary>
-        public static readonly StyledProperty<Drawing> DrawingProperty =
-            AvaloniaProperty.Register<DrawingImage, Drawing>(nameof(Drawing));
+        public static readonly StyledProperty<Drawing?> DrawingProperty =
+            AvaloniaProperty.Register<DrawingImage, Drawing?>(nameof(Drawing));
 
         /// <inheritdoc/>
         public event EventHandler? Invalidated;
@@ -30,7 +30,7 @@ namespace Avalonia.Media
         /// Gets or sets the drawing content.
         /// </summary>
         [Content]
-        public Drawing Drawing
+        public Drawing? Drawing
         {
             get => GetValue(DrawingProperty);
             set => SetValue(DrawingProperty, value);

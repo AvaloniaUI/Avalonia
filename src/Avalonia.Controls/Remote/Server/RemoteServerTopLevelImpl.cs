@@ -14,8 +14,8 @@ using Avalonia.Remote.Protocol.Viewport;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Key = Avalonia.Input.Key;
-using PixelFormat = Avalonia.Platform.PixelFormat;
 using ProtocolPixelFormat = Avalonia.Remote.Protocol.Viewport.PixelFormat;
+using ProtocolMouseButton = Avalonia.Remote.Protocol.Input.MouseButton;
 
 namespace Avalonia.Controls.Remote.Server
 {
@@ -24,7 +24,7 @@ namespace Avalonia.Controls.Remote.Server
     {
         private readonly IAvaloniaRemoteTransportConnection _transport;
         private LockedFramebuffer? _framebuffer;
-        private object _lock = new object();
+        private readonly object _lock = new();
         private long _lastSentFrame = -1;
         private long _lastReceivedFrame = -1;
         private long _nextFrameNumber = 1;
@@ -50,17 +50,17 @@ namespace Avalonia.Controls.Remote.Server
             return r;
         }
 
-        private static RawPointerEventType GetAvaloniaEventType (Avalonia.Remote.Protocol.Input.MouseButton button, bool pressed)
+        private static RawPointerEventType GetAvaloniaEventType(ProtocolMouseButton button, bool pressed)
         {
             switch (button)
             {
-                case Avalonia.Remote.Protocol.Input.MouseButton.Left:
+                case ProtocolMouseButton.Left:
                     return pressed ? RawPointerEventType.LeftButtonDown : RawPointerEventType.LeftButtonUp;
 
-                case Avalonia.Remote.Protocol.Input.MouseButton.Middle:
+                case ProtocolMouseButton.Middle:
                     return pressed ? RawPointerEventType.MiddleButtonDown : RawPointerEventType.MiddleButtonUp;
 
-                case Avalonia.Remote.Protocol.Input.MouseButton.Right:
+                case ProtocolMouseButton.Right:
                     return pressed ? RawPointerEventType.RightButtonDown : RawPointerEventType.RightButtonUp;
 
                 default:
@@ -68,11 +68,7 @@ namespace Avalonia.Controls.Remote.Server
             }
         }
 
-        private static RawInputModifiers GetAvaloniaRawInputModifiers(
-            Avalonia.Remote.Protocol.Input.InputModifiers[] modifiers)
-            => (RawInputModifiers)GetAvaloniaInputModifiers(modifiers);
-        
-        private static RawInputModifiers GetAvaloniaInputModifiers (Avalonia.Remote.Protocol.Input.InputModifiers[] modifiers)
+        private static RawInputModifiers GetAvaloniaRawInputModifiers(InputModifiers[]? modifiers)
         {
             var result = RawInputModifiers.None;
 
@@ -85,31 +81,31 @@ namespace Avalonia.Controls.Remote.Server
             {
                 switch (modifier)
                 {
-                    case Avalonia.Remote.Protocol.Input.InputModifiers.Control:
+                    case InputModifiers.Control:
                         result |= RawInputModifiers.Control;
                         break;
 
-                    case Avalonia.Remote.Protocol.Input.InputModifiers.Alt:
+                    case InputModifiers.Alt:
                         result |= RawInputModifiers.Alt;
                         break;
 
-                    case Avalonia.Remote.Protocol.Input.InputModifiers.Shift:
+                    case InputModifiers.Shift:
                         result |= RawInputModifiers.Shift;
                         break;
 
-                    case Avalonia.Remote.Protocol.Input.InputModifiers.Windows:
+                    case InputModifiers.Windows:
                         result |= RawInputModifiers.Meta;
                         break;
 
-                    case Avalonia.Remote.Protocol.Input.InputModifiers.LeftMouseButton:
+                    case InputModifiers.LeftMouseButton:
                         result |= RawInputModifiers.LeftMouseButton;
                         break;
 
-                    case Avalonia.Remote.Protocol.Input.InputModifiers.MiddleMouseButton:
+                    case InputModifiers.MiddleMouseButton:
                         result |= RawInputModifiers.MiddleMouseButton;
                         break;
 
-                    case Avalonia.Remote.Protocol.Input.InputModifiers.RightMouseButton:
+                    case InputModifiers.RightMouseButton:
                         result |= RawInputModifiers.RightMouseButton;
                         break;
                 }
@@ -187,7 +183,7 @@ namespace Avalonia.Controls.Remote.Server
                             InputRoot!, 
                             RawPointerEventType.Move, 
                             new Point(pointer.X, pointer.Y), 
-                            GetAvaloniaInputModifiers(pointer.Modifiers)));
+                            GetAvaloniaRawInputModifiers(pointer.Modifiers)));
                     }, DispatcherPriority.Input);
                 }
                 if(obj is PointerPressedEventMessage pressed)
@@ -200,7 +196,7 @@ namespace Avalonia.Controls.Remote.Server
                             InputRoot!,
                             GetAvaloniaEventType(pressed.Button, true),
                             new Point(pressed.X, pressed.Y),
-                            GetAvaloniaInputModifiers(pressed.Modifiers)));
+                            GetAvaloniaRawInputModifiers(pressed.Modifiers)));
                     }, DispatcherPriority.Input);
                 }
                 if (obj is PointerReleasedEventMessage released)
@@ -213,7 +209,7 @@ namespace Avalonia.Controls.Remote.Server
                             InputRoot!,
                             GetAvaloniaEventType(released.Button, false),
                             new Point(released.X, released.Y),
-                            GetAvaloniaInputModifiers(released.Modifiers)));
+                            GetAvaloniaRawInputModifiers(released.Modifiers)));
                     }, DispatcherPriority.Input);
                 }
                 if(obj is ScrollEventMessage scroll)
@@ -226,7 +222,7 @@ namespace Avalonia.Controls.Remote.Server
                             InputRoot!,
                             new Point(scroll.X, scroll.Y),
                             new Vector(scroll.DeltaX, scroll.DeltaY),
-                            GetAvaloniaInputModifiers(scroll.Modifiers)));
+                            GetAvaloniaRawInputModifiers(scroll.Modifiers)));
                     }, DispatcherPriority.Input);
                 }
                 if(obj is KeyEventMessage key)
@@ -274,8 +270,8 @@ namespace Avalonia.Controls.Remote.Server
         }
 
         public override IEnumerable<object> Surfaces => new[] { this };
-        
-        FrameMessage RenderFrame(int width, int height, ProtocolPixelFormat? format)
+
+        private FrameMessage RenderFrame(int width, int height, ProtocolPixelFormat? format)
         {
             var scalingX = _dpi.X / 96.0;
             var scalingY = _dpi.Y / 96.0;

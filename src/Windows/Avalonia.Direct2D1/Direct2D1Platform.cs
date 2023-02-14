@@ -27,7 +27,7 @@ namespace Avalonia
 
 namespace Avalonia.Direct2D1
 {
-    public class Direct2D1Platform : IPlatformRenderInterface
+    internal class Direct2D1Platform : IPlatformRenderInterface
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
@@ -257,7 +257,7 @@ namespace Avalonia.Direct2D1
                 sink.Close();
             }
 
-            var (baselineOriginX, baselineOriginY) = glyphRun.PlatformImpl.Item.BaselineOrigin;
+            var (baselineOriginX, baselineOriginY) = glyphRun.BaselineOrigin;
 
             var transformedGeometry = new SharpDX.Direct2D1.TransformedGeometry(
                 Direct2D1Factory,
