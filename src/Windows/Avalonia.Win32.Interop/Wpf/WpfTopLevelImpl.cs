@@ -45,13 +45,6 @@ namespace Avalonia.Win32.Interop.Wpf
                 ((FrameworkElement)PlatformImpl)?.InvalidateMeasure();
             }
 
-            protected override void HandleResized(Size clientSize, PlatformResizeReason reason)
-            {
-                ClientSize = clientSize;
-                LayoutManager.ExecuteLayoutPass();
-                Renderer?.Resized(clientSize);
-            }
-
             public Size AllocatedSize => ClientSize;
         }
 
@@ -223,7 +216,7 @@ namespace Avalonia.Win32.Interop.Wpf
                 (Key)e.Key,
                 GetModifiers(null)));
 
-        protected override void OnTextInput(TextCompositionEventArgs e) 
+        protected override void OnTextInput(TextCompositionEventArgs e)
             => _ttl.Input?.Invoke(new RawTextInputEventArgs(_keyboard, (uint) e.Timestamp, _inputRoot, e.Text));
 
         void ITopLevelImpl.SetCursor(ICursorImpl cursor)

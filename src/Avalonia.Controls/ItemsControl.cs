@@ -559,7 +559,12 @@ namespace Avalonia.Controls
             return new ItemContainerGenerator(this);
         }
 
-        internal void AddLogicalChild(Control c) => LogicalChildren.Add(c);
+        internal void AddLogicalChild(Control c)
+        {
+            if (!LogicalChildren.Contains(c))
+                LogicalChildren.Add(c);
+        }
+
         internal void RemoveLogicalChild(Control c) => LogicalChildren.Remove(c);
 
         /// <summary>

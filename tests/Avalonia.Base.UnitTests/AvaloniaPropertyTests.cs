@@ -179,6 +179,11 @@ namespace Avalonia.Base.UnitTests
                 throw new NotImplementedException();
             }
 
+            internal override void RouteSetCurrentValue(AvaloniaObject o, object value)
+            {
+                throw new NotImplementedException();
+            }
+
             internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
             {
                 throw new NotImplementedException();
@@ -188,7 +193,12 @@ namespace Avalonia.Base.UnitTests
         private class Class1 : AvaloniaObject
         {
             public static readonly StyledProperty<string> FooProperty =
-                AvaloniaProperty.Register<Class1, string>("Foo", "default", notifying: FooNotifying);
+                AvaloniaProperty.Register<Class1, string>("Foo", "default",
+                    inherits: true,
+                    defaultBindingMode: BindingMode.OneWay,
+                    validate: null,
+                    coerce: null,
+                    notifying: FooNotifying);
 
             public int NotifyCount { get; private set; }
 

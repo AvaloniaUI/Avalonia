@@ -31,5 +31,7 @@ namespace Avalonia.PropertyStore
         {
             throw new NotSupportedException();
         }
+
+        protected override TTarget GetDefaultValue(Type ownerType) => Property.GetDefaultValue(ownerType);
     }
 }

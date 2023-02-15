@@ -10,7 +10,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Android
 {
-    public abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, IPlatformNativeSurfaceHandle
+    internal abstract class InvalidationAwareSurfaceView : SurfaceView, ISurfaceHolderCallback, IPlatformNativeSurfaceHandle
     {
         bool _invalidateQueued;
         readonly object _lock = new object();

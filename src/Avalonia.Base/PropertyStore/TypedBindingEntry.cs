@@ -48,5 +48,7 @@ namespace Avalonia.PropertyStore
             
             return value;
         }
+
+        protected override T GetDefaultValue(Type ownerType) => Property.GetDefaultValue(ownerType);
     }
 }

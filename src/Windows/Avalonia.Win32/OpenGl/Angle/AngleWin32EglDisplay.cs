@@ -1,4 +1,3 @@
-#nullable enable annotations
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -97,7 +96,7 @@ namespace Avalonia.Win32.OpenGl.Angle
                 DirectXUnmanagedMethods.D3D11CreateDevice(chosenAdapter?.GetNativeIntPtr() ?? IntPtr.Zero,
                     D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_UNKNOWN,
                     IntPtr.Zero, 0, featureLevels, (uint)featureLevels.Length,
-                    7, out pD3dDevice, out var featureLevel, null);
+                    7, out pD3dDevice, out _, null);
 
 
             if (pD3dDevice == IntPtr.Zero)

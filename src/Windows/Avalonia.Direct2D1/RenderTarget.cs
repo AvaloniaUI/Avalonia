@@ -5,7 +5,7 @@ using Avalonia.Rendering;
 
 namespace Avalonia.Direct2D1
 {
-    public class RenderTarget : IRenderTarget, ILayerFactory
+    internal class RenderTarget : IRenderTarget, ILayerFactory
     {
         /// <summary>
         /// The render target.
