@@ -799,7 +799,7 @@ namespace Avalonia.PropertyStore
                     // - The value is a non-animation value and its priority is higher than the current
                     //   effective value's base priority
                     var isRelevantPriority = current is null ||
-                        priority < current.Priority ||
+                        (priority < current.Priority && priority < current.BasePriority) ||
                         (priority > BindingPriority.Animation && priority < current.BasePriority);
 
                     if (foundEntry && isRelevantPriority && entry!.HasValue)
