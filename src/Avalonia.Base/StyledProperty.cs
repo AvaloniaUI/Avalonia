@@ -171,7 +171,7 @@ namespace Avalonia
 
         internal override EffectiveValue CreateEffectiveValue(AvaloniaObject o)
         {
-            return new EffectiveValue<TValue>(o, this);
+            return o.GetValueStore().CreateEffectiveValue(this);
         }
 
         /// <inheritdoc/>
