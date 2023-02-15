@@ -6,7 +6,7 @@ using Avalonia.Platform;
 namespace Avalonia.Styling;
 
 /// <summary>
-/// Specifies a UI theme variant that should be used for the 
+/// Specifies a UI theme variant that should be used for the Control and Application types.
 /// </summary>
 [TypeConverter(typeof(ThemeVariantTypeConverter))]
 public sealed record ThemeVariant

@@ -162,6 +162,7 @@ namespace Avalonia.Controls
             set => SetValue(TagProperty, value);
         }
         
+        /// <inheritdoc />
         public ThemeVariant ActualThemeVariant => GetValue(ThemeVariantScope.ActualThemeVariantProperty);
 
         public event EventHandler? ActualThemeVariantChanged;
