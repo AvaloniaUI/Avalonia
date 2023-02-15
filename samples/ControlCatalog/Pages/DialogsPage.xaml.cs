@@ -40,7 +40,7 @@ namespace ControlCatalog.Pages
 
                 if (Enum.TryParse<WellKnownFolder>(currentFolderBox.Text, true, out var folderEnum))
                 {
-                    lastSelectedDirectory = await GetStorageProvider().TryGetWellKnownFolder(folderEnum);
+                    lastSelectedDirectory = await GetStorageProvider().TryGetWellKnownFolderAsync(folderEnum);
                 }
                 else
                 {
@@ -51,7 +51,7 @@ namespace ControlCatalog.Pages
 
                     if (folderLink is not null)
                     {
-                        lastSelectedDirectory = await GetStorageProvider().TryGetFolderFromPath(folderLink);
+                        lastSelectedDirectory = await GetStorageProvider().TryGetFolderFromPathAsync(folderLink);
                     }
                 }
             };
@@ -148,7 +148,7 @@ namespace ControlCatalog.Pages
                 }
                 else
                 {
-                    SetFolder(await GetStorageProvider().TryGetFolderFromPath(result));
+                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result));
                     results.Items = new[] { result };
                     resultsVisible.IsVisible = true;
                 }

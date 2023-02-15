@@ -196,7 +196,7 @@ namespace Avalonia.X11.NativeDialogs
                 gtk_dialog_add_button(dlg, open, GtkResponseType.Cancel);
             }
 
-            var folderLocalPath = initialFolder?.TryGetFullPath();
+            var folderLocalPath = initialFolder?.TryGetLocalPath();
             if (folderLocalPath is not null)
             {
                 using var dir = new Utf8Buffer(folderLocalPath);
