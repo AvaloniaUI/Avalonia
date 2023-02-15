@@ -387,6 +387,15 @@ namespace Avalonia.Controls.Primitives
                 popupHost.Transform = null;
             }
 
+            if (popupHost is PopupRoot topLevelPopup)
+            {
+                topLevelPopup
+                    .Bind(
+                        ThemeVariantScope.ActualThemeVariantProperty,
+                        placementTarget.GetBindingObservable(ThemeVariantScope.ActualThemeVariantProperty))
+                    .DisposeWith(handlerCleanup);
+            }
+
             UpdateHostPosition(popupHost, placementTarget);
 
             SubscribeToEventHandler<IPopupHost, EventHandler<TemplateAppliedEventArgs>>(popupHost, RootTemplateApplied,
