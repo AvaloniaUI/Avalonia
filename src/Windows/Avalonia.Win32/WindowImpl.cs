@@ -30,8 +30,7 @@ namespace Avalonia.Win32
     /// <summary>
     /// Window implementation for Win32 platform.
     /// </summary>
-    [Unstable]
-    public partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
+    internal partial class WindowImpl : IWindowImpl, EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo
     {
         private static readonly List<WindowImpl> s_instances = new();
 
@@ -101,10 +100,10 @@ namespace Avalonia.Win32
 
         private const int MaxPointerHistorySize = 512;
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new();
-        private static readonly POINTER_TOUCH_INFO[] s_historyTouchInfos = new POINTER_TOUCH_INFO[MaxPointerHistorySize];
-        private static readonly POINTER_PEN_INFO[] s_historyPenInfos = new POINTER_PEN_INFO[MaxPointerHistorySize];
-        private static readonly POINTER_INFO[] s_historyInfos = new POINTER_INFO[MaxPointerHistorySize];
-        private static readonly MOUSEMOVEPOINT[] s_mouseHistoryInfos = new MOUSEMOVEPOINT[64];
+        private static POINTER_TOUCH_INFO[]? s_historyTouchInfos;
+        private static POINTER_PEN_INFO[]? s_historyPenInfos;
+        private static POINTER_INFO[]? s_historyInfos;
+        private static MOUSEMOVEPOINT[]? s_mouseHistoryInfos;
 
         public WindowImpl()
         {
@@ -1183,8 +1182,21 @@ namespace Avalonia.Win32
                     var y = monitorInfo.rcWork.top;
                     var cx = Math.Abs(monitorInfo.rcWork.right - x);
                     var cy = Math.Abs(monitorInfo.rcWork.bottom - y);
+                    var style = (WindowStyles)GetWindowLong(_hwnd, (int)WindowLongParam.GWL_STYLE);
 
-                    SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW);
+                    if (!style.HasFlag(WindowStyles.WS_SIZEFRAME))
+                    {
+                        // When calling SetWindowPos on a maximized window it automatically adjusts
+                        // for "hidden" borders which are placed offscreen, EVEN IF THE WINDOW HAS
+                        // NO BORDERS, meaning that the window is placed wrong when we have CanResize
+                        // == false. Account for this here.
+                        var borderThickness = BorderThickness;
+                        x -= (int)borderThickness.Left;
+                        cx += (int)borderThickness.Left + (int)borderThickness.Right;
+                        cy += (int)borderThickness.Bottom;
+                    }
+
+                    SetWindowPos(_hwnd, WindowPosZOrder.HWND_NOTOPMOST, x, y, cx, cy, SetWindowPosFlags.SWP_SHOWWINDOW | SetWindowPosFlags.SWP_FRAMECHANGED);
                 }
             }
         }

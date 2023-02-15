@@ -148,6 +148,25 @@ namespace Avalonia.Controls.UnitTests
         }
 
         [Fact]
+        public void Control_Item_Should_Be_Logical_Child_After_Layout()
+        {
+            var target = new ItemsControl
+            {
+                Template = GetTemplate(),
+            };
+            var root = new TestRoot(target);
+            var child = new Control();
+
+            target.Template = GetTemplate();
+            target.Items = new[] { child };
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            Assert.Equal(target, child.Parent);
+            Assert.Equal(target, child.GetLogicalParent());
+            Assert.Equal(new[] { child }, target.GetLogicalChildren());
+        }
+
+        [Fact]
         public void Added_Container_Should_Have_LogicalParent_Set_To_ItemsControl()
         {
             var item = new Border();

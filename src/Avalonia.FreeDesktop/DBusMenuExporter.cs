@@ -15,7 +15,7 @@ using Tmds.DBus;
 
 namespace Avalonia.FreeDesktop
 {
-    public class DBusMenuExporter
+    internal class DBusMenuExporter
     {
         public static ITopLevelNativeMenuExporter? TryCreateTopLevelNativeMenu(IntPtr xid)
         {

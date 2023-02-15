@@ -7,7 +7,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.DirectX
 {
-    public unsafe class DxgiRenderTarget : EglPlatformSurfaceRenderTargetBase
+    internal unsafe class DxgiRenderTarget : EglPlatformSurfaceRenderTargetBase
     {
         // DXGI_FORMAT_B8G8R8A8_UNORM is target texture format as per ANGLE documentation 
 

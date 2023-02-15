@@ -5,7 +5,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32.DirectX
 {
-    public unsafe struct HANDLE
+    internal unsafe struct HANDLE
     {
         public readonly void* Value;
 

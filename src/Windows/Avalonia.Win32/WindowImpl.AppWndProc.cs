@@ -15,7 +15,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    public partial class WindowImpl
+    internal partial class WindowImpl
     {
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation",
             Justification = "Using Win32 naming for consistency.")]
@@ -793,6 +793,7 @@ namespace Avalonia.Win32
 
                     if (info.pointerType == PointerInputType.PT_TOUCH)
                     {
+                        s_historyTouchInfos ??= new POINTER_TOUCH_INFO[MaxPointerHistorySize];
                         if (GetPointerTouchInfoHistory(info.pointerId, ref historyCount, s_historyTouchInfos))
                         {
                             for (int i = historyCount - 1; i >= 1; i--)
@@ -804,6 +805,7 @@ namespace Avalonia.Win32
                     }
                     else if (info.pointerType == PointerInputType.PT_PEN)
                     {
+                        s_historyPenInfos ??= new POINTER_PEN_INFO[MaxPointerHistorySize];
                         if (GetPointerPenInfoHistory(info.pointerId, ref historyCount, s_historyPenInfos))
                         {
                             for (int i = historyCount - 1; i >= 1; i--)
@@ -815,6 +817,7 @@ namespace Avalonia.Win32
                     }
                     else
                     {
+                        s_historyInfos ??= new POINTER_INFO[MaxPointerHistorySize];
                         // Currently Windows does not return history info for mouse input, but we handle it just for case.
                         if (GetPointerInfoHistory(info.pointerId, ref historyCount, s_historyInfos))
                         {
@@ -836,6 +839,8 @@ namespace Avalonia.Win32
         {
             // To understand some of this code, please check MS docs:
             // https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getmousemovepointsex#remarks
+
+            s_mouseHistoryInfos ??= new MOUSEMOVEPOINT[64];
 
             fixed (MOUSEMOVEPOINT* movePoints = s_mouseHistoryInfos)
             {
