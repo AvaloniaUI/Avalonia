@@ -538,13 +538,18 @@ HRESULT WindowBaseImpl::GruntSetupWindow(void* powerpointWindow) {
     }
 
     for (NSView *view in allSubviews) {
+        // We go looking for this particular NSView which contains most of the visible area (except top ribbon and right properties)
         if ([NSStringFromClass([view class]) isEqualToString:@"SwiftPPT.TriPaneView"]) {
             NSLog(@"Found NSView: %@, tag: %ld, identifier: %@", view, view.tag, view.identifier);
+            // Debug highlight
+            // [view.layer setBorderWidth: 2];
+            // [view.layer setCornerRadius: 10];
+            // [view.layer setBorderColor:[NSColor systemBlueColor].CGColor];
+
+            // Then we add Avalonia (View) on top
             [view setWantsLayer: YES];
-            [view.layer setBorderWidth: 2];
-            [view.layer setCornerRadius: 10];
-            [view.layer setBorderColor:[NSColor systemBlueColor].CGColor];
-            [view addSubview:Window.contentView];
+            [view addSubview:View];
+            [View setFrame:view.frame];
             break;
         }
     }
