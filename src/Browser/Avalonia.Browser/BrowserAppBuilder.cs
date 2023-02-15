@@ -21,7 +21,7 @@ public static class BrowserAppBuilder
     /// <param name="builder">Application builder.</param>
     /// <param name="mainDivId">ID of the html element where avalonia content should be rendered.</param>
     /// <param name="options">Browser backend specific options.</param>
-    public static async Task StartBrowserApp(this AppBuilder builder, string mainDivId, BrowserPlatformOptions? options = null)
+    public static async Task StartBrowserAppAsync(this AppBuilder builder, string mainDivId, BrowserPlatformOptions? options = null)
     {
         if (mainDivId is null)
         {
@@ -46,9 +46,9 @@ public static class BrowserAppBuilder
     /// <param name="options">Browser backend specific options.</param>
     /// <remarks>
     /// This method doesn't creates any avalonia views to be rendered. To do so create an <see cref="AvaloniaView"/> object.
-    /// Alternatively, you can call <see cref="StartBrowserApp"/> method instead of <see cref="SetupBrowserApp"/>.
+    /// Alternatively, you can call <see cref="StartBrowserAppAsync"/> method instead of <see cref="SetupBrowserAppAsync"/>.
     /// </remarks>
-    public static async Task SetupBrowserApp(this AppBuilder builder, BrowserPlatformOptions? options = null)
+    public static async Task SetupBrowserAppAsync(this AppBuilder builder, BrowserPlatformOptions? options = null)
     {
         builder = await PreSetupBrowser(builder, options);
 

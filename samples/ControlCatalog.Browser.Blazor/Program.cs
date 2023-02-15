@@ -19,7 +19,7 @@ public class Program
     public static async Task StartAvaloniaApp()
     {
         await AppBuilder.Configure<ControlCatalog.App>()
-            .StartBlazorApp();
+            .StartBlazorAppAsync();
     }
     
     public static WebAssemblyHostBuilder CreateHostBuilder(string[] args)

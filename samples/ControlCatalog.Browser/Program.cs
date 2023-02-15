@@ -17,7 +17,7 @@ internal partial class Program
             {
                 ControlCatalog.Pages.EmbedSample.Implementation = new EmbedSampleWeb();
             })
-            .StartBrowserApp("out");
+            .StartBrowserAppAsync("out");
     }
 
     // Example without a ISingleViewApplicationLifetime
