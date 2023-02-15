@@ -98,6 +98,27 @@ namespace Avalonia.Base.UnitTests.PropertyStore
         }
 
         [Fact]
+        public void Child_Notifies_About_Setting_Back_To_Default_Value()
+        {
+            var parent = new Class1();
+            var child = new Class1();
+
+            parent.Foo = "changed";
+            child.Parent = parent;
+
+            bool raised = false;
+            child.PropertyChanged += (_, args) =>
+            {
+                raised = args.Property == Class1.FooProperty && args.GetNewValue<string>() == "foodefault";
+            };
+
+            Assert.Equal("changed", child.Foo); // inherited from parent.
+
+            child.Foo = "foodefault"; // reset back to default.
+            Assert.True(raised); // expect event to be raised, as actual value was changed.
+        }
+
+        [Fact]
         public void Adding_Child_Sets_InheritanceAncestor()
         {
             var parent = new Class1();
