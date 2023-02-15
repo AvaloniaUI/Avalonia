@@ -15,19 +15,19 @@ namespace Avalonia.IntegrationTests.Appium
             _session = fixture.Session;
 
             var tabs = _session.FindElementByAccessibilityId("MainTabs");
-            var tab = tabs.FindElementByName("Slider");
+            var tab = tabs.FindElementByName("SliderTab");
             tab.Click();
         }
 
         [Fact]
-        public void Changes_Value_When_Moving_Slider()
+        public void Changes_Value_When_Clicking_Increase_Button()
         {
-            var slider = _session.FindElementByAccessibilityId("Slider2");
+            var slider = _session.FindElementByAccessibilityId("Slider");
 
             // slider.Text gets the Slider value
             Assert.True(double.Parse(slider.Text) == 30);
 
-            new Actions(_session).Click(slider).MoveByOffset(100, 0).Perform();
+            new Actions(_session).Click(slider).Perform();
 
             Assert.Equal(50, Math.Round(double.Parse(slider.Text)));
         }
