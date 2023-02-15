@@ -13,8 +13,7 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
             AvaloniaProperty.Register<ThemeVariantScope, ThemeVariant>(
                 nameof(ActualThemeVariant),
-                inherits: true,
-                defaultValue: ThemeVariant.Light);
+                inherits: true);
 
         /// <summary>
         /// Defines the <see cref="RequestedThemeVariant"/> property.
