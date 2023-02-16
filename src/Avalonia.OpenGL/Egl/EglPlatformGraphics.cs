@@ -1,7 +1,6 @@
 using System;
 using Avalonia.Logging;
 using Avalonia.Platform;
-using static Avalonia.OpenGL.Egl.EglConsts;
 
 namespace Avalonia.OpenGL.Egl
 {
@@ -24,7 +23,7 @@ namespace Avalonia.OpenGL.Egl
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformGraphics>().ToConstant(feature);
         }
         
-        public static EglPlatformGraphics TryCreate() => TryCreate(() => new EglDisplay(new EglDisplayCreationOptions
+        public static EglPlatformGraphics? TryCreate() => TryCreate(() => new EglDisplay(new EglDisplayCreationOptions
         {
             Egl = new EglInterface(),
             // Those are expected to be supported by most EGL implementations
@@ -32,7 +31,7 @@ namespace Avalonia.OpenGL.Egl
             SupportsContextSharing = true
         }));
         
-        public static EglPlatformGraphics TryCreate(Func<EglDisplay> displayFactory)
+        public static EglPlatformGraphics? TryCreate(Func<EglDisplay> displayFactory)
         {
             try
             {

@@ -19,13 +19,16 @@ namespace Avalonia.PropertyStore
         private T? _baseValue;
         private UncommonFields? _uncommon;
 
-        public EffectiveValue(AvaloniaObject owner, StyledProperty<T> property)
+        public EffectiveValue(
+            AvaloniaObject owner,
+            StyledProperty<T> property,
+            EffectiveValue<T>? inherited)
         {
             Priority = BindingPriority.Unset;
             BasePriority = BindingPriority.Unset;
             _metadata = property.GetMetadata(owner.GetType());
 
-            var value = _metadata.DefaultValue;
+            var value = inherited is null ? _metadata.DefaultValue : inherited.Value;
 
             if (property.HasCoercion && _metadata.CoerceValue is { } coerce)
             {

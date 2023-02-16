@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -11,10 +12,10 @@ namespace Avalonia.OpenGL.Controls
 {
     public abstract class OpenGlControlBase : Control
     {
-        private CompositionSurfaceVisual _visual;
-        private Action _update;
+        private CompositionSurfaceVisual? _visual;
+        private readonly Action _update;
         private bool _updateQueued;
-        private Task<bool> _initialization;
+        private Task<bool>? _initialization;
         private OpenGlControlBaseResources? _resources;
         private Compositor? _compositor;
         protected GlVersion GlVersion => _resources?.Context.Version ?? default;
@@ -24,7 +25,7 @@ namespace Avalonia.OpenGL.Controls
             _update = Update;
         }
 
-        void DoCleanup()
+        private void DoCleanup()
         {
             if (_initialization is { Status: TaskStatus.RanToCompletion } && _resources != null)
             {
@@ -63,14 +64,14 @@ namespace Avalonia.OpenGL.Controls
             RequestNextFrameRendering();
         }
 
+        [MemberNotNullWhen(true, nameof(_resources))]
         private bool EnsureInitializedCore(
             ICompositionGpuInterop interop,
-            IOpenGlTextureSharingRenderInterfaceContextFeature contextSharingFeature)
+            IOpenGlTextureSharingRenderInterfaceContextFeature? contextSharingFeature)
         {
-            var surface = _compositor.CreateDrawingSurface();
+            var surface = _compositor!.CreateDrawingSurface();
 
-            IGlContext ctx = null;
-            var contextFactory = AvaloniaLocator.Current.GetService<IPlatformGraphicsOpenGlContextFactory>();
+            IGlContext? ctx = null;
             try
             {
                 if (contextSharingFeature?.CanCreateSharedContext == true)
@@ -78,6 +79,7 @@ namespace Avalonia.OpenGL.Controls
 
                 if(_resources == null)
                 {
+                    var contextFactory = AvaloniaLocator.Current.GetRequiredService<IPlatformGraphicsOpenGlContextFactory>();
                     ctx = contextFactory.CreateContext(null);
                     if (ctx.TryGetFeature<IGlContextExternalObjectsFeature>(out var externalObjects))
                         _resources = OpenGlControlBaseResources.TryCreate(ctx, surface, interop, externalObjects);
@@ -121,13 +123,14 @@ namespace Avalonia.OpenGL.Controls
             base.OnPropertyChanged(change);
         }
 
-        void ContextLost()
+        private void ContextLost()
         {
             _initialization = null;
             _resources?.DisposeAsync();
             OnOpenGlLost();
         }
 
+        [MemberNotNullWhen(true, nameof(_resources))]
         private bool EnsureInitialized()
         {
             if (_initialization != null)
@@ -170,11 +173,11 @@ namespace Avalonia.OpenGL.Controls
         private void Update()
         {
             _updateQueued = false;
-            if (VisualRoot == null)
+            if (VisualRoot is not { } visualRoot)
                 return;
             if(!EnsureInitialized())
                 return;
-            using (_resources.BeginDraw(GetPixelSize()))
+            using (_resources.BeginDraw(GetPixelSize(visualRoot)))
                 OnOpenGlRender(_resources.Context.GlInterface, _resources.Fbo);
         }
 
@@ -190,7 +193,7 @@ namespace Avalonia.OpenGL.Controls
             var gpuInteropTask = _compositor.TryGetCompositionGpuInterop();
 
             var contextSharingFeature =
-                (IOpenGlTextureSharingRenderInterfaceContextFeature)
+                (IOpenGlTextureSharingRenderInterfaceContextFeature?)
                 await _compositor.TryGetRenderInterfaceFeature(
                     typeof(IOpenGlTextureSharingRenderInterfaceContextFeature));
             var interop = await gpuInteropTask;
@@ -208,7 +211,7 @@ namespace Avalonia.OpenGL.Controls
                 return false;
             }
 
-            using (_resources!.Context.MakeCurrent())
+            using (_resources.Context.MakeCurrent())
                 OnOpenGlInit(_resources.Context.GlInterface);
             
             return true;
@@ -228,9 +231,9 @@ namespace Avalonia.OpenGL.Controls
             }
         }
 
-        private PixelSize GetPixelSize()
+        private PixelSize GetPixelSize(IRenderRoot visualRoot)
         {
-            var scaling = VisualRoot!.RenderScaling;
+            var scaling = visualRoot.RenderScaling;
             return new PixelSize(Math.Max(1, (int)(Bounds.Width * scaling)),
                 Math.Max(1, (int)(Bounds.Height * scaling)));
         }
