@@ -326,12 +326,12 @@ namespace Avalonia.Layout
         /// <summary>
         /// Gets the available size passed in the previous layout pass, if any.
         /// </summary>
-        public Size? PreviousMeasure => _previousMeasure;
+        internal Size? PreviousMeasure => _previousMeasure;
 
         /// <summary>
         /// Gets the layout rect passed in the previous layout pass, if any.
         /// </summary>
-        public Rect? PreviousArrange => _previousArrange;
+        internal Rect? PreviousArrange => _previousArrange;
 
         /// <summary>
         /// Creates the visual children of the control, if necessary
