@@ -17,12 +17,10 @@ using Avalonia.Rendering.Composition;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.Win32.Input;
-using Avalonia.Win32.Interop;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia
 {
-#nullable enable
     public static class Win32ApplicationExtensions
     {
         public static AppBuilder UseWin32(this AppBuilder builder)
@@ -106,17 +104,19 @@ namespace Avalonia
         public IPlatformGraphics? CustomPlatformGraphics { get; set; }
     }
 }
-#nullable restore
 
 namespace Avalonia.Win32
 {
-    public class Win32Platform : IPlatformThreadingInterface, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
+    internal class Win32Platform : IPlatformThreadingInterface, IWindowingPlatform, IPlatformIconLoader, IPlatformLifetimeEventsImpl
     {
-        private static readonly Win32Platform s_instance = new Win32Platform();
-        private static Thread _uiThread;
-        private UnmanagedMethods.WndProc _wndProcDelegate;
+        private static readonly Win32Platform s_instance = new();
+        private static Thread? s_uiThread;
+        private static Win32PlatformOptions? s_options;
+        private static Compositor? s_compositor;
+
+        private WndProc? _wndProcDelegate;
         private IntPtr _hwnd;
-        private readonly List<Delegate> _delegates = new List<Delegate>();
+        private readonly List<Delegate> _delegates = new();
 
         public Win32Platform()
         {
@@ -135,9 +135,12 @@ namespace Avalonia.Win32
         public static Version WindowsVersion { get; } = RtlGetVersion();
 
         internal static bool UseOverlayPopups => Options.OverlayPopups;
-        public static Win32PlatformOptions Options { get; private set; }
 
-        internal static Compositor Compositor { get; private set; }
+        public static Win32PlatformOptions Options
+            => s_options ?? throw new InvalidOperationException($"{nameof(Win32Platform)} hasn't been initialized");
+
+        internal static Compositor Compositor
+            => s_compositor ?? throw new InvalidOperationException($"{nameof(Win32Platform)} hasn't been initialized");
 
         public static void Initialize()
         {
@@ -146,7 +149,7 @@ namespace Avalonia.Win32
 
         public static void Initialize(Win32PlatformOptions options)
         {
-            Options = options;
+            s_options = options;
             var renderTimer = options.ShouldRenderOnUIThread ? new UiThreadRenderTimer(60) : new DefaultRenderTimer(60);
 
             AvaloniaLocator.CurrentMutable
@@ -171,26 +174,24 @@ namespace Avalonia.Win32
                 .Bind<IMountedVolumeInfoProvider>().ToConstant(new WindowsMountedVolumeInfoProvider())
                 .Bind<IPlatformLifetimeEventsImpl>().ToConstant(s_instance);
             
-            _uiThread = Thread.CurrentThread;
+            s_uiThread = Thread.CurrentThread;
 
-            var platformGraphics = options?.CustomPlatformGraphics
+            var platformGraphics = options.CustomPlatformGraphics
                                    ?? Win32GlManager.Initialize();
             
             if (OleContext.Current != null)
                 AvaloniaLocator.CurrentMutable.Bind<IPlatformDragSource>().ToSingleton<DragSource>();
             
-            Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), platformGraphics);
+            s_compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), platformGraphics);
         }
 
         public bool HasMessages()
         {
-            UnmanagedMethods.MSG msg;
-            return PeekMessage(out msg, IntPtr.Zero, 0, 0, 0);
+            return PeekMessage(out _, IntPtr.Zero, 0, 0, 0);
         }
 
         public void ProcessMessage()
         {
-
             if (GetMessage(out var msg, IntPtr.Zero, 0, 0) > -1)
             {
                 TranslateMessage(ref msg);
@@ -222,8 +223,7 @@ namespace Avalonia.Win32
 
         public IDisposable StartTimer(DispatcherPriority priority, TimeSpan interval, Action callback)
         {
-            UnmanagedMethods.TimerProc timerDelegate =
-                (hWnd, uMsg, nIDEvent, dwTime) => callback();
+            TimerProc timerDelegate = (_, _, _, _) => callback();
 
             IntPtr handle = SetTimer(
                 IntPtr.Zero,
@@ -253,11 +253,11 @@ namespace Avalonia.Win32
                 new IntPtr(SignalL));
         }
 
-        public bool CurrentThreadIsLoopThread => _uiThread == Thread.CurrentThread;
+        public bool CurrentThreadIsLoopThread => s_uiThread == Thread.CurrentThread;
 
-        public event Action<DispatcherPriority?> Signaled;
+        public event Action<DispatcherPriority?>? Signaled;
 
-        public event EventHandler<ShutdownRequestedEventArgs> ShutdownRequested;
+        public event EventHandler<ShutdownRequestedEventArgs>? ShutdownRequested;
 
         [SuppressMessage("Microsoft.StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Using Win32 naming for consistency.")]
         private IntPtr WndProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -301,11 +301,11 @@ namespace Avalonia.Win32
         private void CreateMessageWindow()
         {
             // Ensure that the delegate doesn't get garbage collected by storing it as a field.
-            _wndProcDelegate = new UnmanagedMethods.WndProc(WndProc);
+            _wndProcDelegate = WndProc;
 
-            UnmanagedMethods.WNDCLASSEX wndClassEx = new UnmanagedMethods.WNDCLASSEX
+            WNDCLASSEX wndClassEx = new WNDCLASSEX
             {
-                cbSize = Marshal.SizeOf<UnmanagedMethods.WNDCLASSEX>(),
+                cbSize = Marshal.SizeOf<WNDCLASSEX>(),
                 lpfnWndProc = _wndProcDelegate,
                 hInstance = GetModuleHandle(null),
                 lpszClassName = "AvaloniaMessageWindow " + Guid.NewGuid(),
@@ -326,7 +326,7 @@ namespace Avalonia.Win32
             }
         }
 
-        public ITrayIconImpl CreateTrayIcon ()
+        public ITrayIconImpl CreateTrayIcon()
         {
             return new TrayIconImpl();
         }

@@ -1,13 +1,11 @@
 using Avalonia.Media;
-using Avalonia.Metadata;
 using Avalonia.Rendering.Utilities;
 using Avalonia.Utilities;
 using SharpDX.Direct2D1;
 
 namespace Avalonia.Direct2D1.Media
 {
-    [Unstable]
-    public sealed class ImageBrushImpl : BrushImpl
+    internal sealed class ImageBrushImpl : BrushImpl
     {
         private readonly OptionalDispose<Bitmap> _bitmap;
 

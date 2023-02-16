@@ -15,7 +15,7 @@ namespace Avalonia.OpenGL
         IDisposable EnsureCurrent();
         bool IsSharedWith(IGlContext context);
         bool CanCreateSharedContext { get; }
-        IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null);
+        IGlContext? CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null);
     }
 
     public interface IGlPlatformSurfaceRenderTargetFactory

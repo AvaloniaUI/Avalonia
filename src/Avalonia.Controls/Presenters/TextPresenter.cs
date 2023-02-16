@@ -64,6 +64,15 @@ namespace Avalonia.Controls.Presenters
                  (o, v) => o.PreeditText = v);
 
         /// <summary>
+        /// Defines the <see cref="CompositionRegion"/> property.
+        /// </summary>
+        public static readonly DirectProperty<TextPresenter, TextRange?> CompositionRegionProperty =
+            AvaloniaProperty.RegisterDirect<TextPresenter, TextRange?>(
+                nameof(CompositionRegion),
+                o => o.CompositionRegion,
+                 (o, v) => o.CompositionRegion = v);
+
+        /// <summary>
         /// Defines the <see cref="TextAlignment"/> property.
         /// </summary>
         public static readonly StyledProperty<TextAlignment> TextAlignmentProperty =
@@ -106,6 +115,7 @@ namespace Avalonia.Controls.Presenters
         private Rect _caretBounds;
         private Point _navigationPosition;
         private string? _preeditText;
+        private TextRange? _compositionRegion;
 
         static TextPresenter()
         {
@@ -144,6 +154,12 @@ namespace Avalonia.Controls.Presenters
         {
             get => _preeditText;
             set => SetAndRaise(PreeditTextProperty, ref _preeditText, value);
+        }
+
+        public TextRange? CompositionRegion
+        {
+            get => _compositionRegion;
+            set => SetAndRaise(CompositionRegionProperty, ref _compositionRegion, value);
         }
 
         /// <summary>
@@ -548,7 +564,20 @@ namespace Avalonia.Controls.Presenters
 
             var foreground = Foreground;
 
-            if (!string.IsNullOrEmpty(_preeditText))
+            if(_compositionRegion != null)
+            {
+                var preeditHighlight = new ValueSpan<TextRunProperties>(_compositionRegion?.Start ?? 0, _compositionRegion?.Length ?? 0,
+                        new GenericTextRunProperties(typeface, FontSize,
+                        foregroundBrush: foreground,
+                        textDecorations: TextDecorations.Underline));
+
+                textStyleOverrides = new[]
+                {
+                    preeditHighlight
+                };
+
+            }
+            else if (!string.IsNullOrEmpty(_preeditText))
             {
                 var preeditHighlight = new ValueSpan<TextRunProperties>(_caretIndex, _preeditText.Length,
                         new GenericTextRunProperties(typeface, FontSize,
@@ -911,6 +940,7 @@ namespace Avalonia.Controls.Presenters
                         break;
                     }
 
+                case nameof(CompositionRegion):
                 case nameof(Foreground):
                 case nameof(FontSize):
                 case nameof(FontStyle):
@@ -931,7 +961,6 @@ namespace Avalonia.Controls.Presenters
 
                 case nameof(PasswordChar):
                 case nameof(RevealPassword):
-
                 case nameof(FlowDirection):
                     {
                         InvalidateTextLayout();

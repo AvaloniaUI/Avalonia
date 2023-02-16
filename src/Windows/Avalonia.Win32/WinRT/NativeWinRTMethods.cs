@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Avalonia.MicroCom;
-using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT
@@ -108,24 +102,24 @@ namespace Avalonia.Win32.WinRT
         [DllImport("combase.dll", PreserveSig = false)]
         private static extern IntPtr RoGetActivationFactory(IntPtr activatableClassId, ref Guid iid);
         
-        private static bool _initialized;
+        private static bool s_initialized;
         private static void EnsureRoInitialized()
         {
-            if (_initialized)
+            if (s_initialized)
                 return;
             RoInitialize(Thread.CurrentThread.GetApartmentState() == ApartmentState.STA ?
                 RO_INIT_TYPE.RO_INIT_SINGLETHREADED :
                 RO_INIT_TYPE.RO_INIT_MULTITHREADED);
-            _initialized = true;
+            s_initialized = true;
         }
     }
 
-    class HStringInterop : IDisposable
+    internal class HStringInterop : IDisposable
     {
         private IntPtr _s;
-        private bool _owns;
+        private readonly bool _owns;
 
-        public HStringInterop(string s)
+        public HStringInterop(string? s)
         {
             _s = s == null ? IntPtr.Zero : NativeWinRTMethods.WindowsCreateString(s);
             _owns = true;
@@ -139,7 +133,7 @@ namespace Avalonia.Win32.WinRT
 
         public IntPtr Handle => _s;
 
-        public unsafe string Value
+        public unsafe string? Value
         {
             get
             {

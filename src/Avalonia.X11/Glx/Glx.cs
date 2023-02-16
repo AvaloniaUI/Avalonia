@@ -10,7 +10,7 @@ using Avalonia.SourceGenerator;
 
 namespace Avalonia.X11.Glx
 {
-    unsafe partial class GlxInterface
+    internal unsafe partial class GlxInterface
     {
         private const string libGL = "libGL.so.1";
         [GetProcAddress("glXMakeContextCurrent")]
