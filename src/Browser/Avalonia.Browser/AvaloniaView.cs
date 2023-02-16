@@ -20,7 +20,7 @@ using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Avalonia.Browser
 {
-    public partial class AvaloniaView : ITextInputMethodImpl
+    public class AvaloniaView : ITextInputMethodImpl
     {
         private static readonly PooledList<RawPointerPoint> s_intermediatePointsPooledList = new(ClearMode.Never);
         private readonly BrowserTopLevelImpl _topLevelImpl;
@@ -43,8 +43,9 @@ namespace Avalonia.Browser
         private bool _useGL;        
         private ITextInputMethodClient? _client;
 
+        /// <param name="divId">ID of the html element where avalonia content should be rendered.</param>
         public AvaloniaView(string divId)
-            : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id {divId} was not found in the html document."))
+            : this(DomHelper.GetElementById(divId) ?? throw new Exception($"Element with id '{divId}' was not found in the html document."))
         {
         }
 
@@ -380,12 +381,10 @@ namespace Avalonia.Browser
         {
             if (_useGL && (_jsGlInfo == null))
             {
-                Console.WriteLine("nothing to render");
                 return;
             }
             if (_canvasSize.Width <= 0 || _canvasSize.Height <= 0 || _dpi <= 0)
             {
-                Console.WriteLine("nothing to render");
                 return;
             }
 
@@ -458,7 +457,6 @@ namespace Avalonia.Browser
 
         void ITextInputMethodImpl.SetClient(ITextInputMethodClient? client)
         {
-            Console.WriteLine("Set Client");
             if (_client != null)
             {
                 _client.SurroundingTextChanged -= SurroundingTextChanged;
@@ -481,8 +479,6 @@ namespace Avalonia.Browser
                 var surroundingText = _client.SurroundingText;
 
                 InputHelper.SetSurroundingText(_inputElement, surroundingText.Text, surroundingText.AnchorOffset, surroundingText.CursorOffset);
-
-                Console.WriteLine("Shown, focused and surrounded.");
             }
             else
             {
