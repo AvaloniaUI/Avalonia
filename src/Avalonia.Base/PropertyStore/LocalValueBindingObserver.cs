@@ -88,6 +88,8 @@ namespace Avalonia.PropertyStore
                 {
                     owner.SetValue(property, instance.GetCachedDefaultValue(), BindingPriority.LocalValue);
                 }
+
+                owner.Owner.UpdateDataValidationCore(property, value.Type, value.Error);
             }
 
             if (value.Type is BindingValueType.DoNothing or BindingValueType.DataValidationError)

@@ -125,6 +125,8 @@ namespace Avalonia.PropertyStore
                     if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
                         instance.Frame.Owner?.OnBindingValueChanged(instance, instance.Frame.Priority);
                 }
+
+                instance.Frame.Owner?.Owner.UpdateDataValidationCore(instance.Property, value.Type, value.Error);
             }
 
             if (value.Type == BindingValueType.DoNothing)

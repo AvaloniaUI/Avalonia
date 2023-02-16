@@ -86,9 +86,7 @@ namespace Avalonia.Data
         {
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
-            anchor = anchor ?? DefaultAnchor?.Target;
-
-            enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
+            anchor ??= DefaultAnchor?.Target;
 
             var observer = CreateExpressionObserver(target, targetProperty, anchor, enableDataValidation);
 

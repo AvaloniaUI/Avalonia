@@ -61,7 +61,6 @@ namespace Avalonia.Data
             _ = target ?? throw new ArgumentNullException(nameof(target));
 
             anchor ??= DefaultAnchor?.Target;
-            enableDataValidation = enableDataValidation && Priority == BindingPriority.LocalValue;
 
             INameScope? nameScope = null;
             NameScope?.TryGetTarget(out nameScope);
