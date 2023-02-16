@@ -51,7 +51,16 @@ namespace Avalonia.Diagnostics.Controls
         public object? Value
         {
             get => _value;
-            set => SetAndRaise(ValueProperty, ref _value, value);
+            set
+            {
+                if (_needsUpdate)
+                {
+                    _needsUpdate = false;
+                    Child = UpdateControl();
+                }
+
+                SetAndRaise(ValueProperty, ref _value, value);
+            }
         }
 
         public Type? ValueType
@@ -76,13 +85,6 @@ namespace Avalonia.Diagnostics.Controls
                 _cleanup.Clear();
 
                 _needsUpdate = true;
-            }
-
-            if (change.Property == ValueProperty && _needsUpdate)
-            {
-                _needsUpdate = false;
-
-                Child = UpdateControl();
             }
         }
 
@@ -202,13 +204,7 @@ namespace Avalonia.Diagnostics.Controls
                     img.HorizontalAlignment = HorizontalAlignment.Stretch;
 
                     img.PointerPressed += (_, _) =>
-                        new Window
-                        {
-                            Content = new Image
-                            {
-                                Source = img.Source
-                            }
-                        }.Show();
+                        new Window { Content = new Image { Source = img.Source } }.Show();
                 });
 
             if (ValueType.IsEnum)
