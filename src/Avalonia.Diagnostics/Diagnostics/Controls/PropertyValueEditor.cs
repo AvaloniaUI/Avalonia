@@ -180,8 +180,14 @@ namespace Avalonia.Diagnostics.Controls
                 return CreateControl<CheckBox>(ToggleButton.IsCheckedProperty);
 
             //TODO: Infinity, NaN not working with NumericUpDown
-            //if (ValueType.IsPrimitive)
-            //    return CreateControl<NumericUpDown>(NumericUpDown.ValueProperty, new ValueToDecimalConverter());
+            if (ValueType.IsPrimitive && ValueType != typeof(float) && ValueType != typeof(double))
+                return CreateControl<NumericUpDown>(NumericUpDown.ValueProperty, new ValueToDecimalConverter(), init:
+                    n =>
+                    {
+                        n.Increment = 1;
+                        n.NumberFormat = new NumberFormatInfo { NumberDecimalDigits = 0 };
+                        n.ParsingNumberStyle = NumberStyles.Integer;
+                    });
 
             if (ValueType == typeof(Color))
                 return CreateControl<ColorPicker>(ColorView.ColorProperty);
