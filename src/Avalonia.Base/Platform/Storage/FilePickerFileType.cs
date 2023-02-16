@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Avalonia.Platform.Storage;
 
@@ -21,7 +23,7 @@ public sealed class FilePickerFileType
     /// List of extensions in GLOB format. I.e. "*.png" or "*.*".
     /// </summary>
     /// <remarks>
-    /// Used on Windows and Linux systems.
+    /// Used on Windows, Linux and Browser platforms.
     /// </remarks>
     public IReadOnlyList<string>? Patterns { get; set; }
 
@@ -29,7 +31,7 @@ public sealed class FilePickerFileType
     /// List of extensions in MIME format.
     /// </summary>
     /// <remarks>
-    /// Used on Android, Browser and Linux systems.
+    /// Used on Android, Linux and Browser platforms.
     /// </remarks>
     public IReadOnlyList<string>? MimeTypes { get; set; }
 
@@ -41,4 +43,14 @@ public sealed class FilePickerFileType
     /// See https://developer.apple.com/documentation/uniformtypeidentifiers/system_declared_uniform_type_identifiers.
     /// </remarks>
     public IReadOnlyList<string>? AppleUniformTypeIdentifiers { get; set; }
+
+    internal IReadOnlyList<string>? TryGetExtensions()
+    {
+        // Converts random glob pattern to a simple extension name.
+        // GetExtension should be sufficient here.
+        // Only exception is "*.*proj" patterns that should be filtered as well.
+        return Patterns?.Select(Path.GetExtension)
+            .Where(e => !string.IsNullOrEmpty(e) && !e.Contains('*') && e.StartsWith("."))
+            .ToArray()!;
+    }
 }

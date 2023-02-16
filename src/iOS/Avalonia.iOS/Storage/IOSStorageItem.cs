@@ -94,11 +94,7 @@ internal sealed class IOSStorageFile : IOSStorageItem, IStorageBookmarkFile
     public IOSStorageFile(NSUrl url) : base(url)
     {
     }
-
-    public bool CanOpenRead => true;
-
-    public bool CanOpenWrite => true;
-
+    
     public Task<Stream> OpenReadAsync()
     {
         return Task.FromResult<Stream>(new IOSSecurityScopedStream(Url, FileAccess.Read));
