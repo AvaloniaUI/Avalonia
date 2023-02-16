@@ -184,7 +184,7 @@ namespace Avalonia.PropertyStore
                 }
                 else
                 {
-                    var effectiveValue = new EffectiveValue<T>(Owner, property);
+                    var effectiveValue = CreateEffectiveValue(property);
                     AddEffectiveValue(property, effectiveValue);
                     effectiveValue.SetAndRaise(this, result, priority);
                 }
@@ -200,7 +200,7 @@ namespace Avalonia.PropertyStore
                 }
                 else
                 {
-                    var effectiveValue = new EffectiveValue<T>(Owner, property);
+                    var effectiveValue = CreateEffectiveValue(property);
                     AddEffectiveValue(property, effectiveValue);
                     effectiveValue.SetLocalValueAndRaise(this, property, value);
                 }
@@ -217,7 +217,7 @@ namespace Avalonia.PropertyStore
             }
             else
             {
-                var effectiveValue = new EffectiveValue<T>(Owner, property);
+                var effectiveValue = CreateEffectiveValue(property);
                 AddEffectiveValue(property, effectiveValue);
                 effectiveValue.SetCurrentValueAndRaise(this, property, value);
             }
@@ -285,6 +285,16 @@ namespace Avalonia.PropertyStore
 
             result = null;
             return false;
+        }
+
+        public EffectiveValue<T> CreateEffectiveValue<T>(StyledProperty<T> property)
+        {
+            EffectiveValue<T>? inherited = null;
+
+            if (property.Inherits && TryGetInheritedValue(property, out var v))
+                inherited = (EffectiveValue<T>)v;
+
+            return new EffectiveValue<T>(Owner, property, inherited);
         }
 
         public void SetInheritanceParent(AvaloniaObject? newParent)
@@ -799,7 +809,7 @@ namespace Avalonia.PropertyStore
                     // - The value is a non-animation value and its priority is higher than the current
                     //   effective value's base priority
                     var isRelevantPriority = current is null ||
-                        priority < current.Priority ||
+                        (priority < current.Priority && priority < current.BasePriority) ||
                         (priority > BindingPriority.Animation && priority < current.BasePriority);
 
                     if (foundEntry && isRelevantPriority && entry!.HasValue)
