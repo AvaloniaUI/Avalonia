@@ -20,7 +20,6 @@ namespace Avalonia.Win32.Automation
         IRawElementProviderSimple,
         IRawElementProviderSimple2,
         IRawElementProviderFragment,
-        IRawElementProviderAdviseEvents,
         IInvokeProvider
     {
         private static Dictionary<AutomationProperty, UiaPropertyId> s_propertyMap = new()
@@ -47,14 +46,31 @@ namespace Avalonia.Win32.Automation
         private static ConditionalWeakTable<AutomationPeer, AutomationNode> s_nodes = new();
 
         private readonly int[] _runtimeId;
-        private int _raiseFocusChanged;
-        private int _raisePropertyChanged;
 
         public AutomationNode(AutomationPeer peer)
         {
             _runtimeId = new int[] { 3, GetHashCode() };
             Peer = peer;
             s_nodes.Add(peer, this);
+            peer.ChildrenChanged += Peer_ChildrenChanged;
+            peer.PropertyChanged += Peer_PropertyChanged;
+        }
+
+        private void Peer_ChildrenChanged(object? sender, EventArgs e)
+        {
+            ChildrenChanged();
+        }
+
+        private void Peer_PropertyChanged(object? sender, AutomationPropertyChangedEventArgs e)
+        {
+            if (s_propertyMap.TryGetValue(e.Property, out var id))
+            {
+                UiaCoreProviderApi.UiaRaiseAutomationPropertyChangedEvent(
+                    this,
+                    (int)id,
+                    e.OldValue as IConvertible,
+                    e.NewValue as IConvertible);
+            }
         }
 
         public AutomationPeer Peer { get; protected set; }
@@ -84,14 +100,6 @@ namespace Avalonia.Win32.Automation
                 StructureChangeType.ChildrenInvalidated,
                 null,
                 0);
-        }
-
-        public void PropertyChanged(AutomationProperty property, object? oldValue, object? newValue) 
-        {
-            if (_raisePropertyChanged > 0 && s_propertyMap.TryGetValue(property, out var id))
-            {
-                UiaCoreProviderApi.UiaRaiseAutomationPropertyChangedEvent(this, (int)id, oldValue, newValue);
-            }
         }
 
         [return: MarshalAs(UnmanagedType.IUnknown)]
@@ -188,32 +196,6 @@ namespace Avalonia.Win32.Automation
         void IRawElementProviderSimple2.ShowContextMenu() => InvokeSync(() => Peer.ShowContextMenu());
         void IInvokeProvider.Invoke() => InvokeSync((AAP.IInvokeProvider x) => x.Invoke());
 
-        void IRawElementProviderAdviseEvents.AdviseEventAdded(int eventId, int[] properties)
-        {
-            switch ((UiaEventId)eventId)
-            {
-                case UiaEventId.AutomationPropertyChanged:
-                    ++_raisePropertyChanged;
-                    break;
-                case UiaEventId.AutomationFocusChanged:
-                    ++_raiseFocusChanged;
-                    break;
-            }
-        }
-
-        void IRawElementProviderAdviseEvents.AdviseEventRemoved(int eventId, int[] properties)
-        {
-            switch ((UiaEventId)eventId)
-            {
-                case UiaEventId.AutomationPropertyChanged:
-                    --_raisePropertyChanged;
-                    break;
-                case UiaEventId.AutomationFocusChanged:
-                    --_raiseFocusChanged;
-                    break;
-            }
-        }
-
         protected void InvokeSync(Action action)
         {
             if (Dispatcher.UIThread.CheckAccess())
@@ -266,15 +248,6 @@ namespace Avalonia.Win32.Automation
             throw new NotSupportedException();
         }
 
-        protected void RaiseFocusChanged(AutomationNode? focused)
-        {
-            if (_raiseFocusChanged > 0)
-            {
-                UiaCoreProviderApi.UiaRaiseAutomationEvent(
-                    focused,
-                    (int)UiaEventId.AutomationFocusChanged);
-            }
-        }
 
         private AutomationNode? GetRoot()
         {
