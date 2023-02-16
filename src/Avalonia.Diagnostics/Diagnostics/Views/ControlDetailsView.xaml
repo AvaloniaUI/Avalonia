@@ -62,10 +62,7 @@
           <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" />
           <DataGridTemplateColumn Header="Value" Width="100">
             <DataTemplate>
-                <controls:PropertyValueEditor ValueType="{Binding PropertyType}"
-                                              Value="{Binding Value, Mode=TwoWay}"
-                                              IsReadonly="{Binding IsReadonly}"
-                                              x:DataType="vm:PropertyViewModel" />
+              <controls:PropertyValueEditorView />
               </DataTemplate>
           </DataGridTemplateColumn>
           <DataGridTextColumn Header="Type" Binding="{Binding Type}"
