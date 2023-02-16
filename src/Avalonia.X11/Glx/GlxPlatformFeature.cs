@@ -6,7 +6,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.X11.Glx
 {
-    class GlxPlatformGraphics : IPlatformGraphics
+    internal class GlxPlatformGraphics : IPlatformGraphics
     {
         public GlxDisplay Display { get; private set; }
         public bool CanCreateContexts => true;

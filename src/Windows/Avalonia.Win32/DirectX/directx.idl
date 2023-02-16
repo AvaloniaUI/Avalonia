@@ -36,6 +36,8 @@
 @clr-map DXGI_SHARED_RESOURCE void*
 @clr-map LUID ulong
 @clr-map LPSTR ushort*
+@clr-map LPWSTR ushort*
+@clr-map LPCWSTR ushort*
 
 
 enum DXGI_FORMAT
@@ -500,6 +502,44 @@ interface ID3D11Device : IUnknown
     HRESULT SetExceptionMode( UINT RaiseFlags );
     UINT GetExceptionMode();
 }
+
+[uuid(a04bfb29-08ef-43d6-a49c-a9bdbdcbe686)]
+interface ID3D11Device1 : ID3D11Device
+{
+    void GetImmediateContext1( void** ppImmediateContext );
+
+    HRESULT CreateDeferredContext1(
+            UINT ContextFlags, // Reserved parameter; must be 0
+            [out, retval] IUnknown** ppDeferredContext );
+
+    HRESULT CreateBlendState1(
+        void* pBlendStateDesc,
+        [out, retval] IUnknown** ppBlendState );
+
+    HRESULT CreateRasterizerState1(
+        void* pRasterizerDesc,
+        [out, retval] IUnknown** ppRasterizerState );
+
+    HRESULT CreateDeviceContextState(
+        UINT Flags,
+        void* pFeatureLevels,
+        UINT FeatureLevels,
+        UINT SDKVersion,
+        GUID* EmulatedInterface,
+        void* pChosenFeatureLevel,
+        [out, retval] IUnknown** ppContextState);
+
+    HRESULT OpenSharedResource1(
+        IntPtr hResource,
+        Guid* ReturnedInterface,
+        [out, retval] IUnknown** ppResource);
+
+    HRESULT OpenSharedResourceByName(
+        LPCWSTR lpName,
+        DWORD dwDesiredAccess,
+        REFIID returnedInterface,
+        void** ppResource);
+};
 
 
 [uuid( 6f15aaf2-d208-4e89-9ab4-489535d34f9c)]

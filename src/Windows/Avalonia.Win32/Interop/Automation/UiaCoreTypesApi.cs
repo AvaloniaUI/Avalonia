@@ -63,8 +63,8 @@ namespace Avalonia.Win32.Interop.Automation
             }
 #endif
 
-            var comConfig = AppContext.GetData("System.Runtime.InteropServices.BuiltInComInterop.IsSupported");
-            return comConfig == null || bool.Parse(comConfig.ToString());
+            var comConfig = AppContext.GetData("System.Runtime.InteropServices.BuiltInComInterop.IsSupported") as string;
+            return comConfig == null || bool.Parse(comConfig);
         }
 
         [DllImport("UIAutomationCore.dll", EntryPoint = "UiaLookupId", CharSet = CharSet.Unicode)]

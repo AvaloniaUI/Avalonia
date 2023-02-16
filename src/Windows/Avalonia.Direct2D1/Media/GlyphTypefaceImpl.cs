@@ -1,6 +1,5 @@
 ﻿using System;
 using Avalonia.Media;
-using Avalonia.Metadata;
 using HarfBuzzSharp;
 using SharpDX.DirectWrite;
 using FontMetrics = Avalonia.Media.FontMetrics;
@@ -9,8 +8,7 @@ using GlyphMetrics = Avalonia.Media.GlyphMetrics;
 
 namespace Avalonia.Direct2D1.Media
 {
-    [Unstable]
-    public class GlyphTypefaceImpl : IGlyphTypeface
+    internal class GlyphTypefaceImpl : IGlyphTypeface
     {
         private bool _isDisposed;
 

@@ -26,6 +26,7 @@ extern IAvnTrayIcon* CreateTrayIcon();
 extern IAvnMenuItem* CreateAppMenuItem();
 extern IAvnMenuItem* CreateAppMenuItemSeparator();
 extern IAvnApplicationCommands* CreateApplicationCommands();
+extern IAvnPlatformBehaviorInhibition* CreatePlatformBehaviorInhibition();
 extern IAvnNativeControlHost* CreateNativeControlHost(NSView* parent);
 extern IAvnPlatformSettings* CreatePlatformSettings();
 extern void SetAppMenu(IAvnMenu *menu);

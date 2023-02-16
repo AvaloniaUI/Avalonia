@@ -41,7 +41,11 @@ namespace Avalonia
         public static readonly StyledProperty<object?> DataContextProperty =
             AvaloniaProperty.Register<StyledElement, object?>(
                 nameof(DataContext),
+                defaultValue: null,
                 inherits: true,
+                defaultBindingMode: BindingMode.OneWay,
+                validate: null,
+                coerce: null,
                 notifying: DataContextNotifying);
 
         /// <summary>

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Avalonia.Metadata;
 using Avalonia.Platform;
 using SkiaSharp;
 #nullable enable
 
 namespace Avalonia.Skia
 {
-    /// <inheritdoc />
-    [Unstable]
-    public class GlyphRunImpl : IGlyphRunImpl
+    internal class GlyphRunImpl : IGlyphRunImpl
     {
         public GlyphRunImpl(SKTextBlob textBlob, Size size, Point baselineOrigin)
         {

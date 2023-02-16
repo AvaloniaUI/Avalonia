@@ -5,14 +5,8 @@ namespace Avalonia.Browser.Interop;
 
 internal static partial class StorageHelper
 {
-    [JSImport("Caniuse.canShowOpenFilePicker", AvaloniaModule.MainModuleName)]
-    public static partial bool CanShowOpenFilePicker();
-
-    [JSImport("Caniuse.canShowSaveFilePicker", AvaloniaModule.MainModuleName)]
-    public static partial bool CanShowSaveFilePicker();
-
-    [JSImport("Caniuse.canShowDirectoryPicker", AvaloniaModule.MainModuleName)]
-    public static partial bool CanShowDirectoryPicker();
+    [JSImport("Caniuse.hasNativeFilePicker", AvaloniaModule.MainModuleName)]
+    public static partial bool HasNativeFilePicker();
 
     [JSImport("StorageProvider.selectFolderDialog", AvaloniaModule.StorageModuleName)]
     public static partial Task<JSObject?> SelectFolderDialog(JSObject? startIn);
@@ -54,5 +48,5 @@ internal static partial class StorageHelper
     public static partial JSObject[] ItemsArray(JSObject item);
 
     [JSImport("StorageProvider.createAcceptType", AvaloniaModule.StorageModuleName)]
-    public static partial JSObject CreateAcceptType(string description, string[] mimeTypes);
+    public static partial JSObject CreateAcceptType(string description, string[] mimeTypes, string[]? extensions);
 }
