@@ -119,9 +119,10 @@ partial class Build : NukeBuild
                 .SetProcessWorkingDirectory(webappDir)
                 .SetProcessArgumentConfigurator(a => a.Add("--silent")));
             NpmTasks.NpmRun(c => c
-                .SetProcessEnvironmentVariable("NODE_OPTIONS", "--openssl-legacy-provider")
                 .SetProcessWorkingDirectory(webappDir)
-                .SetCommand("dist"));
+                .SetCommand("dist")
+                .When(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), d =>
+                    d.SetProcessEnvironmentVariable("NODE_OPTIONS", "--openssl-legacy-provider")));
         });
 
     Target CompileNative => _ => _
