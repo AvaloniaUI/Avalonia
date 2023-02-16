@@ -116,17 +116,17 @@ internal class BrowserStorageProvider : IStorageProvider
         return item is not null ? new JSStorageFolder(item) : null;
     }
 
-    public Task<IStorageFile?> TryGetFileFromPath(Uri filePath)
+    public Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
     {
         return Task.FromResult<IStorageFile?>(null);
     }
 
-    public Task<IStorageFolder?> TryGetFolderFromPath(Uri folderPath)
+    public Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
     {
         return Task.FromResult<IStorageFolder?>(null);
     }
 
-    public async Task<IStorageFolder?> TryGetWellKnownFolder(WellKnownFolder wellKnownFolder)
+    public async Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
     {
         await _lazyModule.Value;
         var directory = StorageHelper.CreateWellKnownDirectory(wellKnownFolder switch
