@@ -66,11 +66,13 @@ namespace IntegrationTestApp
             var locationComboBox = this.GetControl<ComboBox>("ShowWindowLocation");
             var stateComboBox = this.GetControl<ComboBox>("ShowWindowState");
             var size = !string.IsNullOrWhiteSpace(sizeTextBox.Text) ? Size.Parse(sizeTextBox.Text) : (Size?)null;
+            var canResizeCheckBox = this.GetControl<CheckBox>("ShowWindowCanResize");
             var owner = (Window)this.GetVisualRoot()!;
 
             var window = new ShowWindowTest
             {
                 WindowStartupLocation = (WindowStartupLocation)locationComboBox.SelectedIndex,
+                CanResize = canResizeCheckBox.IsChecked.Value,
             };
 
             if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)

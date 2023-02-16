@@ -6,8 +6,6 @@ using Avalonia.Automation.Provider;
 using Avalonia.Platform;
 using Avalonia.Win32.Interop.Automation;
 
-#nullable enable
-
 namespace Avalonia.Win32.Automation
 {
     [RequiresUnreferencedCode("Requires .NET COM interop")]

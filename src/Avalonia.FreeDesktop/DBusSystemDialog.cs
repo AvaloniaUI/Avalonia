@@ -88,7 +88,7 @@ namespace Avalonia.FreeDesktop
 
             if (options.SuggestedFileName is { } currentName)
                 chooserOptions.Add("current_name", currentName);
-            if (options.SuggestedStartLocation?.TryGetFullPath() is { } folderPath)
+            if (options.SuggestedStartLocation?.TryGetLocalPath() is { } folderPath)
                 chooserOptions.Add("current_folder", Encoding.UTF8.GetBytes(folderPath));
             objectPath = await _fileChooser.SaveFileAsync(parentWindow, options.Title ?? string.Empty, chooserOptions);
 

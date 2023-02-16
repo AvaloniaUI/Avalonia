@@ -40,7 +40,7 @@ namespace ControlCatalog.Pages
 
                 if (Enum.TryParse<WellKnownFolder>(currentFolderBox.Text, true, out var folderEnum))
                 {
-                    lastSelectedDirectory = await GetStorageProvider().TryGetWellKnownFolder(folderEnum);
+                    lastSelectedDirectory = await GetStorageProvider().TryGetWellKnownFolderAsync(folderEnum);
                 }
                 else
                 {
@@ -51,7 +51,7 @@ namespace ControlCatalog.Pages
 
                     if (folderLink is not null)
                     {
-                        lastSelectedDirectory = await GetStorageProvider().TryGetFolderFromPath(folderLink);
+                        lastSelectedDirectory = await GetStorageProvider().TryGetFolderFromPathAsync(folderLink);
                     }
                 }
             };
@@ -82,7 +82,13 @@ namespace ControlCatalog.Pages
                 return new List<FilePickerFileType>
                             {
                                 FilePickerFileTypes.All,
-                                FilePickerFileTypes.TextPlain
+                                FilePickerFileTypes.TextPlain,
+                                new("Binary Log")
+                                {
+                                    Patterns = new[] { "*.binlog", "*.buildlog" },
+                                    MimeTypes = new[] { "application/binlog", "application/buildlog" },
+                                    AppleUniformTypeIdentifiers = new []{ "public.data" }
+                                }
                             };
             }
 
@@ -142,7 +148,7 @@ namespace ControlCatalog.Pages
                 }
                 else
                 {
-                    SetFolder(await GetStorageProvider().TryGetFolderFromPath(result));
+                    SetFolder(await GetStorageProvider().TryGetFolderFromPathAsync(result));
                     results.Items = new[] { result };
                     resultsVisible.IsVisible = true;
                 }
@@ -223,7 +229,7 @@ namespace ControlCatalog.Pages
                     ShowOverwritePrompt = false
                 });
 
-                if (file is not null && file.CanOpenWrite)
+                if (file is not null)
                 {
                     // Sync disposal of StreamWriter is not supported on WASM
 #if NET6_0_OR_GREATER
@@ -275,7 +281,7 @@ namespace ControlCatalog.Pages
             {
                 ignoreTextChanged = true;
                 lastSelectedDirectory = folder;
-                currentFolderBox.Text = folder?.Path.LocalPath;
+                currentFolderBox.Text = folder?.Path is { IsAbsoluteUri: true } abs ? abs.LocalPath : folder?.Path?.ToString();
                 ignoreTextChanged = false;
             }
             async Task SetPickerResult(IReadOnlyCollection<IStorageItem>? items)
@@ -298,31 +304,26 @@ namespace ControlCatalog.Pages
                     if (item is IStorageFile file)
                     {
                         resultText += @$"
-            CanOpenRead: {file.CanOpenRead}
-            CanOpenWrite: {file.CanOpenWrite}
             Content:
             ";
-                        if (file.CanOpenRead)
-                        {
 #if NET6_0_OR_GREATER
-                            await using var stream = await file.OpenReadAsync();
+                        await using var stream = await file.OpenReadAsync();
 #else
-                                        using var stream = await file.OpenReadAsync();
+                        using var stream = await file.OpenReadAsync();
 #endif
-                            using var reader = new System.IO.StreamReader(stream);
+                        using var reader = new System.IO.StreamReader(stream);
 
-                            // 4GB file test, shouldn't load more than 10000 chars into a memory.
-                            const int length = 10000;
-                            var buffer = ArrayPool<char>.Shared.Rent(length);
-                            try
-                            {
-                                var charsRead = await reader.ReadAsync(buffer, 0, length);
-                                resultText += new string(buffer, 0, charsRead);
-                            }
-                            finally
-                            {
-                                ArrayPool<char>.Shared.Return(buffer);
-                            }
+                        // 4GB file test, shouldn't load more than 10000 chars into a memory.
+                        const int length = 10000;
+                        var buffer = ArrayPool<char>.Shared.Rent(length);
+                        try
+                        {
+                            var charsRead = await reader.ReadAsync(buffer, 0, length);
+                            resultText += new string(buffer, 0, charsRead);
+                        }
+                        finally
+                        {
+                            ArrayPool<char>.Shared.Return(buffer);
                         }
                     }
 

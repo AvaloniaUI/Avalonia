@@ -118,7 +118,7 @@ namespace Avalonia
         {
             _ = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
-            _values.ClearLocalValue(property);
+            _values.ClearValue(property);
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Avalonia
             property = property ?? throw new ArgumentNullException(nameof(property));
             VerifyAccess();
 
-            _values.ClearLocalValue(property);
+            _values.ClearValue(property);
         }
 
         /// <summary>
@@ -277,8 +277,8 @@ namespace Avalonia
         /// <param name="property">The property.</param>
         /// <returns>True if the property is set, otherwise false.</returns>
         /// <remarks>
-        /// Checks whether a value is assigned to the property, or that there is a binding to the
-        /// property that is producing a value other than <see cref="AvaloniaProperty.UnsetValue"/>.
+        /// Returns true if <paramref name="property"/> is a styled property which has a value
+        /// assigned to it or a binding targeting it; otherwise false.
         /// </remarks>
         public bool IsSet(AvaloniaProperty property)
         {
@@ -329,7 +329,7 @@ namespace Avalonia
             if (value is UnsetValueType)
             {
                 if (priority == BindingPriority.LocalValue)
-                    _values.ClearLocalValue(property);
+                    _values.ClearValue(property);
             }
             else if (value is not DoNothingType)
             {
@@ -353,6 +353,57 @@ namespace Avalonia
             property = AvaloniaPropertyRegistry.Instance.GetRegisteredDirect(this, property);
             LogPropertySet(property, value, BindingPriority.LocalValue);
             SetDirectValueUnchecked(property, value);
+        }
+
+        /// <summary>
+        /// Sets the value of a dependency property without changing its value source.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        /// <remarks>
+        /// This method is used by a component that programmatically sets the value of one of its
+        /// own properties without disabling an application's declared use of the property. The
+        /// method changes the effective value of the property, but existing data bindings and
+        /// styles will continue to work.
+        /// 
+        /// The new value will have the property's current <see cref="BindingPriority"/>, even if
+        /// that priority is <see cref="BindingPriority.Unset"/> or 
+        /// <see cref="BindingPriority.Inherited"/>.
+        /// </remarks>
+        public void SetCurrentValue(AvaloniaProperty property, object? value) => 
+            property.RouteSetCurrentValue(this, value);
+
+        /// <summary>
+        /// Sets the value of a dependency property without changing its value source.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="property">The property.</param>
+        /// <param name="value">The value.</param>
+        /// <remarks>
+        /// This method is used by a component that programmatically sets the value of one of its
+        /// own properties without disabling an application's declared use of the property. The
+        /// method changes the effective value of the property, but existing data bindings and
+        /// styles will continue to work.
+        /// 
+        /// The new value will have the property's current <see cref="BindingPriority"/>, even if
+        /// that priority is <see cref="BindingPriority.Unset"/> or 
+        /// <see cref="BindingPriority.Inherited"/>.
+        /// </remarks>
+        public void SetCurrentValue<T>(StyledProperty<T> property, T value)
+        {
+            _ = property ?? throw new ArgumentNullException(nameof(property));
+            VerifyAccess();
+
+            LogPropertySet(property, value, BindingPriority.LocalValue);
+
+            if (value is UnsetValueType)
+            {
+                _values.ClearValue(property);
+            }
+            else if (value is not DoNothingType)
+            {
+                _values.SetCurrentValue(property, value);
+            }
         }
 
         /// <summary>
@@ -547,7 +598,8 @@ namespace Avalonia
                     property,
                     GetValue(property),
                     BindingPriority.LocalValue,
-                    null);
+                    null,
+                    false);
             }
 
             return _values.GetDiagnostic(property);

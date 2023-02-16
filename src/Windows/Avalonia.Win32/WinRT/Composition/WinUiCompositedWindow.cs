@@ -3,7 +3,6 @@ using System.Numerics;
 using System.Threading;
 using Avalonia.OpenGL.Egl;
 using Avalonia.Reactive;
-using Avalonia.Win32.Interop;
 using MicroCom.Runtime;
 
 namespace Avalonia.Win32.WinRT.Composition;
@@ -12,8 +11,8 @@ internal class WinUiCompositedWindow : IDisposable
 {
     public EglGlPlatformSurface.IEglWindowGlPlatformSurfaceInfo WindowInfo { get; }
     private readonly WinUiCompositionShared _shared;
-    private readonly ICompositionRoundedRectangleGeometry _compositionRoundedRectangleGeometry;
-    private readonly IVisual _mica;
+    private readonly ICompositionRoundedRectangleGeometry? _compositionRoundedRectangleGeometry;
+    private readonly IVisual? _mica;
     private readonly IVisual _blur;
     private readonly IVisual _visual;
     private PixelSize _size;
@@ -25,7 +24,7 @@ internal class WinUiCompositedWindow : IDisposable
         lock (_shared.SyncRoot)
         {
             _compositionRoundedRectangleGeometry?.Dispose();
-            _blur?.Dispose();
+            _blur.Dispose();
             _mica?.Dispose();
             _visual.Dispose();
             _surfaceBrush.Dispose();

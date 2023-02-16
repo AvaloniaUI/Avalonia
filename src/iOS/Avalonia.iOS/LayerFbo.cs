@@ -5,7 +5,7 @@ using OpenGLES;
 
 namespace Avalonia.iOS
 {
-    public class LayerFbo
+    internal class LayerFbo
     {
         private readonly EAGLContext _context;
         private readonly GlInterface _gl;

@@ -68,8 +68,6 @@ namespace Avalonia.Headless
                 .Bind<IKeyboardDevice>().ToConstant(new KeyboardDevice())
                 .Bind<IRenderLoop>().ToConstant(new RenderLoop())
                 .Bind<IRenderTimer>().ToConstant(new RenderTimer(60))
-                .Bind<IFontManagerImpl>().ToSingleton<HeadlessFontManagerStub>()
-                .Bind<ITextShaperImpl>().ToSingleton<HeadlessTextShaperStub>()
                 .Bind<IWindowingPlatform>().ToConstant(new HeadlessWindowingPlatform())
                 .Bind<PlatformHotkeyConfiguration>().ToSingleton<PlatformHotkeyConfiguration>();
             Compositor = new Compositor(AvaloniaLocator.Current.GetRequiredService<IRenderLoop>(), null);

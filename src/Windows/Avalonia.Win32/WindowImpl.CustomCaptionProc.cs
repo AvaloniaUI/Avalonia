@@ -3,17 +3,15 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using static Avalonia.Win32.Interop.UnmanagedMethods;
 
-#nullable enable
-
 namespace Avalonia.Win32
 {
-    public partial class WindowImpl
+    internal partial class WindowImpl
     {
         // Hit test the frame for resizing and moving.
         private HitTestValues HitTestNCA(IntPtr hWnd, IntPtr wParam, IntPtr lParam)
         {
             // Get the point coordinates for the hit test (screen space).
-            var ptMouse = WindowImpl.PointFromLParam(lParam);
+            var ptMouse = PointFromLParam(lParam);
 
             // Get the window rectangle.
             GetWindowRect(hWnd, out var rcWindow);
@@ -101,11 +99,9 @@ namespace Avalonia.Win32
 
                         lRet = (IntPtr)hittestResult;
 
-                        uint timestamp = unchecked((uint)GetMessageTime());
-
                         if (hittestResult == HitTestValues.HTCAPTION)
                         {
-                            var position = PointToClient(WindowImpl.PointFromLParam(lParam));
+                            var position = PointToClient(PointFromLParam(lParam));
 
                             if (_owner is Window window)
                             {

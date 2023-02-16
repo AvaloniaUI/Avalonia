@@ -12,7 +12,7 @@ using Avalonia.Utilities;
 
 namespace Avalonia.X11
 {
-    partial class X11CursorFactory : ICursorFactory
+    internal partial class X11CursorFactory : ICursorFactory
     {
         private static readonly byte[] NullCursorData = new byte[] { 0 };
 
@@ -142,7 +142,7 @@ namespace Avalonia.X11
         }
     }
 
-    class CursorImpl : ICursorImpl
+    internal class CursorImpl : ICursorImpl
     {
         public CursorImpl() { }
         public CursorImpl(IntPtr handle) => Handle = handle;

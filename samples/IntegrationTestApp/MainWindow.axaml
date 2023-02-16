@@ -70,6 +70,7 @@
             <ComboBoxItem>Item 0</ComboBoxItem>
             <ComboBoxItem>Item 1</ComboBoxItem>
           </ComboBox>
+          <CheckBox Name="ComboBoxWrapSelection" IsChecked="{Binding #BasicComboBox.WrapSelection}">Wrap Selection</CheckBox>
           <Button Name="ComboBoxSelectionClear">Clear Selection</Button>
           <Button Name="ComboBoxSelectFirst">Select First</Button>
         </StackPanel>
@@ -139,6 +140,7 @@
               <ComboBoxItem Name="ShowWindowStateMaximized">Maximized</ComboBoxItem>
               <ComboBoxItem Name="ShowWindowStateFullScreen">FullScreen</ComboBoxItem>
             </ComboBox>
+            <CheckBox Name="ShowWindowCanResize" IsChecked="True">Can Resize</CheckBox>
             <Button Name="ShowWindow">Show Window</Button>
             <Button Name="SendToBack">Send to Back</Button>
             <Button Name="EnterFullscreen">Enter Fullscreen</Button>
