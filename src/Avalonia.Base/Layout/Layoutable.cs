@@ -323,6 +323,9 @@ namespace Avalonia.Layout
             set { SetValue(UseLayoutRoundingProperty, value); }
         }
 
+        /// <summary>
+        /// Gets the available size passed in the previous layout pass, if any.
+        /// </summary>
         internal Size? PreviousMeasure => _previousMeasure;
 
         /// <summary>
