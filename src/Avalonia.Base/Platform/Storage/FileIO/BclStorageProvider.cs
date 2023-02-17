@@ -34,7 +34,7 @@ internal abstract class BclStorageProvider : IStorageProvider
             : Task.FromResult<IStorageBookmarkFolder?>(null);
     }
 
-    public virtual Task<IStorageFile?> TryGetFileFromPath(Uri filePath)
+    public virtual Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
     {
         if (filePath.IsAbsoluteUri)
         {
@@ -48,7 +48,7 @@ internal abstract class BclStorageProvider : IStorageProvider
         return Task.FromResult<IStorageFile?>(null);
     }
 
-    public virtual Task<IStorageFolder?> TryGetFolderFromPath(Uri folderPath)
+    public virtual Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
     {
         if (folderPath.IsAbsoluteUri)
         {
@@ -62,7 +62,7 @@ internal abstract class BclStorageProvider : IStorageProvider
         return Task.FromResult<IStorageFolder?>(null);
     }
 
-    public virtual Task<IStorageFolder?> TryGetWellKnownFolder(WellKnownFolder wellKnownFolder)
+    public virtual Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
     {
         // Note, this BCL API returns different values depending on the .NET version.
         // We should also document it. 

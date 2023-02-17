@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Avalonia.Media.TextFormatting;
@@ -13,6 +14,7 @@ namespace Avalonia.Skia
 {
     internal class TextShaperImpl : ITextShaperImpl
     {
+        private static readonly ConcurrentDictionary<int, Language> s_cachedLanguage = new();
         public ShapedBuffer ShapeText(ReadOnlyMemory<char> text, TextShaperOptions options)
         {
             var textSpan = text.Span;
@@ -33,7 +35,9 @@ namespace Avalonia.Skia
 
                 buffer.Direction = (bidiLevel & 1) == 0 ? Direction.LeftToRight : Direction.RightToLeft;
 
-                buffer.Language = new Language(culture ?? CultureInfo.CurrentCulture);
+                var usedCulture = culture ?? CultureInfo.CurrentCulture;
+
+                buffer.Language = s_cachedLanguage.GetOrAdd(usedCulture.LCID, i => new Language(usedCulture));
 
                 var font = ((GlyphTypefaceImpl)typeface).Font;
 
