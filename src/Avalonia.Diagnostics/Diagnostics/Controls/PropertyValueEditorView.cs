@@ -63,7 +63,9 @@ namespace Avalonia.Diagnostics.Controls
                 control.Bind(valueProperty,
                     new Binding(nameof(Property.Value), BindingMode.TwoWay)
                     {
-                        Source = Property, Converter = converter ?? new ValueConverter()
+                        Source = Property,
+                        Converter = converter ?? new ValueConverter(),
+                        ConverterParameter = propertyType
                     }).DisposeWith(_cleanup);
 
                 control.IsEnabled = !Property.IsReadonly;
@@ -153,12 +155,7 @@ namespace Avalonia.Diagnostics.Controls
                         .Bind(Path.DataProperty, valueObservable)
                         .DisposeWith(_cleanup);
 
-                    ToolTip.SetTip(sp, new Border
-                    {
-                        Child = previewShape,
-                        Width = 300, 
-                        Height = 300
-                    });
+                    ToolTip.SetTip(sp, new Border { Child = previewShape, Width = 300, Height = 300 });
                 }
 
                 return sp;
@@ -186,6 +183,8 @@ namespace Avalonia.Diagnostics.Controls
         }
 
         //HACK: ValueConverter that skips first target update
+        //TODO: Would be nice to have some kind of "InitialBindingValue" option on TwoWay bindings to control
+        //if the first value comes from the source or target
         private class ValueConverter : IValueConverter
         {
             private bool _firstUpdate = true;
@@ -204,7 +203,8 @@ namespace Avalonia.Diagnostics.Controls
                     return BindingOperations.DoNothing;
                 }
 
-                return ConvertBack(value, targetType, parameter, culture);
+                //Note: targetType provided by Converter is simply "object"
+                return ConvertBack(value, (Type)parameter!, parameter, culture);
             }
 
             protected virtual object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -234,7 +234,41 @@ namespace Avalonia.Diagnostics.Controls
                 return GetParseMethod(type, out _) != null;
             }
 
-            public static MethodInfo? GetParseMethod(Type type, out bool hasFormat)
+            public static string? ToString(object o)
+            {
+                var converter = TypeDescriptor.GetConverter(o);
+
+                //CollectionConverter does not deliver any important information. It just displays "(Collection)".
+                if (!converter.CanConvertTo(typeof(string)) ||
+                    converter.GetType() == typeof(CollectionConverter))
+                    return o.ToString();
+
+                return converter.ConvertToString(o);
+            }
+
+            public static object? FromString(string str, Type type)
+            {
+                var converter = TypeDescriptor.GetConverter(type);
+
+                return converter.CanConvertFrom(typeof(string)) ?
+                    converter.ConvertFrom(null, CultureInfo.InvariantCulture, str) :
+                    InvokeParse(str, type);
+            }
+
+            private static object? InvokeParse(string s, Type targetType)
+            {
+                var m = GetParseMethod(targetType, out bool hasFormat);
+
+                if (m == null)
+                    throw new InvalidOperationException();
+
+                return m.Invoke(null,
+                    hasFormat ?
+                        new object[] { s, CultureInfo.InvariantCulture } :
+                        new object[] { s });
+            }
+
+            private static MethodInfo? GetParseMethod(Type type, out bool hasFormat)
             {
                 var m = type.GetMethod("Parse", PublicStatic, null, StringFormatProviderParameters, null);
 
@@ -269,17 +303,7 @@ namespace Avalonia.Diagnostics.Controls
         {
             protected override object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
             {
-                if (value is null)
-                    return null;
-
-                var converter = TypeDescriptor.GetConverter(value);
-
-                //CollectionConverter does not deliver any important information. It just displays "(Collection)".
-                if (!converter.CanConvertTo(typeof(string)) ||
-                    converter.GetType() == typeof(CollectionConverter))
-                    return value.ToString();
-
-                return converter.ConvertToString(value);
+                return value is null ? null : StringConversionHelper.ToString(value);
             }
 
             protected override object? ConvertBack(object? value, Type targetType, object? parameter,
@@ -290,28 +314,12 @@ namespace Avalonia.Diagnostics.Controls
 
                 try
                 {
-                    var converter = TypeDescriptor.GetConverter(targetType);
-
-                    return converter.CanConvertFrom(typeof(string)) ?
-                        converter.ConvertFrom(null, CultureInfo.InvariantCulture, s) :
-                        InvokeParse(s, targetType);
+                    return StringConversionHelper.FromString(s, targetType);
                 }
                 catch
                 {
                     return BindingOperations.DoNothing;
                 }
-            }
-
-            private static object? InvokeParse(string s, Type targetType)
-            {
-                var m = StringConversionHelper.GetParseMethod(targetType, out bool hasFormat);
-
-                if (m == null) throw new InvalidOperationException();
-
-                return m.Invoke(null,
-                    hasFormat ?
-                        new object[] { s, CultureInfo.InvariantCulture } :
-                        new object[] { s });
             }
         }
     }
