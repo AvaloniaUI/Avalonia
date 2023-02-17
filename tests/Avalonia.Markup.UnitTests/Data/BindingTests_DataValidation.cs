@@ -59,7 +59,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 Assert.Equal(200, target.GetValue(property));
                 Assert.IsType<DataValidationException>(target.DataValidationError);
-                Assert.Equal("Invalid value.", target.DataValidationError?.Message);
+                Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
 
                 target.SetValue(property, 10);
 
@@ -81,7 +81,7 @@ namespace Avalonia.Markup.UnitTests.Data
         public class StyledPropertyTests : TestBase<StyledProperty<int>>
         {
             [Fact]
-            public void Style_Binding_Supports_Indei_Data_Validation()
+            public void Style_Binding_Supports_Data_Validation()
             {
                 var (target, property) = CreateTarget();
                 var binding = new Binding(nameof(IndeiValidatingModel.Value))
@@ -113,7 +113,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 Assert.Equal(200, target.GetValue(property));
                 Assert.IsType<DataValidationException>(target.DataValidationError);
-                Assert.Equal("Invalid value.", target.DataValidationError?.Message);
+                Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
 
                 target.SetValue(property, 10);
 
@@ -122,7 +122,7 @@ namespace Avalonia.Markup.UnitTests.Data
             }
 
             [Fact]
-            public void Style_With_Activator_Binding_Supports_Indei_Data_Validation()
+            public void Style_With_Activator_Binding_Supports_Data_Validation()
             {
                 var (target, property) = CreateTarget();
                 var binding = new Binding(nameof(IndeiValidatingModel.Value))
@@ -156,7 +156,7 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 Assert.Equal(200, target.GetValue(property));
                 Assert.IsType<DataValidationException>(target.DataValidationError);
-                Assert.Equal("Invalid value.", target.DataValidationError?.Message);
+                Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
 
                 target.Classes.Remove("foo");
                 Assert.Equal(0, target.GetValue(property));
@@ -164,12 +164,102 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 target.Classes.Add("foo");
                 Assert.IsType<DataValidationException>(target.DataValidationError);
-                Assert.Equal("Invalid value.", target.DataValidationError?.Message);
+                Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
 
                 target.SetValue(property, 10);
 
                 Assert.Equal(10, target.GetValue(property));
                 Assert.Null(target.DataValidationError);
+            }
+
+            [Fact]
+            public void Data_Validation_Can_Switch_Between_Style_And_LocalValue_Binding()
+            {
+                var (target, property) = CreateTarget();
+                var model1 = new IndeiValidatingModel { Value = 200 };
+                var model2 = new IndeiValidatingModel { Value = 300 };
+                var binding1 = new Binding(nameof(IndeiValidatingModel.Value));
+                var binding2 = new Binding(nameof(IndeiValidatingModel.Value)) { Source = model2 };
+
+                var root = new TestRoot
+                {
+                    DataContext = model1,
+                    Styles =
+                    {
+                        new Style(x => x.Is<DataValidationTestControl>())
+                        {
+                            Setters =
+                            {
+                                new Setter(property, binding1)
+                            }
+                        }
+                    },
+                    Child = target,
+                };
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                Assert.Equal(200, target.GetValue(property));
+                Assert.IsType<DataValidationException>(target.DataValidationError);
+                Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
+
+                var sub = target.Bind(property, binding2);
+                Assert.Equal(300, target.GetValue(property));
+                Assert.Equal("Invalid value: 300.", target.DataValidationError?.Message);
+
+                sub.Dispose();
+                Assert.Equal(200, target.GetValue(property));
+                Assert.IsType<DataValidationException>(target.DataValidationError);
+                Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
+            }
+
+
+            [Fact]
+            public void Data_Validation_Can_Switch_Between_Style_And_StyleTrigger_Binding()
+            {
+                var (target, property) = CreateTarget();
+                var model1 = new IndeiValidatingModel { Value = 200 };
+                var model2 = new IndeiValidatingModel { Value = 300 };
+                var binding1 = new Binding(nameof(IndeiValidatingModel.Value));
+                var binding2 = new Binding(nameof(IndeiValidatingModel.Value)) { Source = model2 };
+
+                var root = new TestRoot
+                {
+                    DataContext = model1,
+                    Styles =
+                    {
+                        new Style(x => x.Is<DataValidationTestControl>())
+                        {
+                            Setters =
+                            {
+                                new Setter(property, binding1)
+                            }
+                        },
+                        new Style(x => x.Is<DataValidationTestControl>().Class("foo"))
+                        {
+                            Setters =
+                            {
+                                new Setter(property, binding2)
+                            }
+                        },
+                    },
+                    Child = target,
+                };
+
+                root.LayoutManager.ExecuteInitialLayoutPass();
+
+                Assert.Equal(200, target.GetValue(property));
+                Assert.IsType<DataValidationException>(target.DataValidationError);
+                Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
+
+                target.Classes.Add("foo");
+                Assert.Equal(300, target.GetValue(property));
+                Assert.Equal("Invalid value: 300.", target.DataValidationError?.Message);
+
+                target.Classes.Remove("foo");
+                Assert.Equal(200, target.GetValue(property));
+                Assert.IsType<DataValidationException>(target.DataValidationError);
+                Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
             }
 
             private protected override (DataValidationTestControl, StyledProperty<int>) CreateTarget()
@@ -282,7 +372,7 @@ namespace Avalonia.Markup.UnitTests.Data
             public IEnumerable GetErrors(string? propertyName)
             {
                 if (propertyName == nameof(Value) && _value > MaxValue)
-                    yield return "Invalid value.";
+                    yield return $"Invalid value: {_value}.";
             }
         }
     }
