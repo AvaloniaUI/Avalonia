@@ -5,7 +5,7 @@ using static Avalonia.Win32.Interop.UnmanagedMethods;
 
 namespace Avalonia.Win32
 {
-    public partial class WindowImpl
+    internal partial class WindowImpl
     {
         // Hit test the frame for resizing and moving.
         private HitTestValues HitTestNCA(IntPtr hWnd, IntPtr wParam, IntPtr lParam)

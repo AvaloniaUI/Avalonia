@@ -20,7 +20,7 @@ using static Avalonia.X11.XLib;
 
 namespace Avalonia.X11
 {
-    class AvaloniaX11Platform : IWindowingPlatform
+    internal class AvaloniaX11Platform : IWindowingPlatform
     {
         private Lazy<KeyboardDevice> _keyboardDevice = new Lazy<KeyboardDevice>(() => new KeyboardDevice());
         public KeyboardDevice KeyboardDevice => _keyboardDevice.Value;
@@ -35,7 +35,7 @@ namespace Avalonia.X11
         public IntPtr OrphanedWindow { get; private set; }
         public X11Globals Globals { get; private set; }
         [DllImport("libc")]
-        static extern void setlocale(int type, string s);
+        private static extern void setlocale(int type, string s);
         public void Initialize(X11PlatformOptions options)
         {
             Options = options;
@@ -138,7 +138,7 @@ namespace Avalonia.X11
             throw new NotSupportedException();
         }
 
-        static bool EnableIme(X11PlatformOptions options)
+        private static bool EnableIme(X11PlatformOptions options)
         {
             // Disable if explicitly asked by user
             var avaloniaImModule = Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE");
@@ -160,7 +160,7 @@ namespace Avalonia.X11
             return isCjkLocale;
         }
 
-        static bool ShouldUseXim()
+        private static bool ShouldUseXim()
         {
             // Check if we are forbidden from using IME
             if (Environment.GetEnvironmentVariable("AVALONIA_IM_MODULE") == "none"

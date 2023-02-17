@@ -81,12 +81,12 @@ namespace Avalonia.Skia
             }
             else
             {
-                var paint = SKPaintCache.Get();
+                var paint = SKPaintCache.Shared.Get();
                 paint.IsStroke = true;
                 paint.StrokeWidth = strokeWidth;
                 paint.GetFillPath(EffectivePath, strokePath);
 
-                SKPaintCache.ReturnReset(paint);
+                SKPaintCache.Shared.ReturnReset(paint);
 
                 _pathCache.Cache(strokePath, strokeWidth, strokePath.TightBounds.ToAvaloniaRect());
             }

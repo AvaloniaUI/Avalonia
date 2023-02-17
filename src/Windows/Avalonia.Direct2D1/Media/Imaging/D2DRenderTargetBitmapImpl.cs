@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Avalonia.Metadata;
 using Avalonia.Platform;
 using Avalonia.Rendering;
 using Avalonia.Utilities;
@@ -10,8 +9,7 @@ using D2DBitmap = SharpDX.Direct2D1.Bitmap;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
-    [Unstable]
-    public class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IDrawingContextLayerImpl, ILayerFactory
+    internal class D2DRenderTargetBitmapImpl : D2DBitmapImpl, IDrawingContextLayerImpl, ILayerFactory
     {
         private readonly BitmapRenderTarget _renderTarget;
 

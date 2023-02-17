@@ -6,7 +6,7 @@ using PixelFormat = Avalonia.Platform.PixelFormat;
 
 namespace Avalonia.Direct2D1.Media.Imaging
 {
-    class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
+    internal class WriteableWicBitmapImpl : WicBitmapImpl, IWriteableBitmapImpl
     {
         public WriteableWicBitmapImpl(Stream stream, int decodeSize, bool horizontal,
             Avalonia.Media.Imaging.BitmapInterpolationMode interpolationMode)

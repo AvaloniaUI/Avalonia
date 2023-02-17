@@ -17,8 +17,8 @@ internal class RawEventGrouper : IDisposable
     private readonly Action<RawInputEventArgs> _eventCallback;
     private readonly Queue<RawInputEventArgs> _inputQueue = new();
     private readonly Action _dispatchFromQueue;
-    readonly Dictionary<long, RawPointerEventArgs> _lastTouchPoints = new();
-    RawInputEventArgs? _lastEvent;
+    private readonly Dictionary<long, RawPointerEventArgs> _lastTouchPoints = new();
+    private RawInputEventArgs? _lastEvent;
 
     public RawEventGrouper(Action<RawInputEventArgs> eventCallback)
     {

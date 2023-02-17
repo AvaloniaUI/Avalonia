@@ -8,7 +8,7 @@ using SharpDX.DXGI;
 
 namespace Avalonia.Direct2D1
 {   
-    public abstract class SwapChainRenderTarget : IRenderTarget, ILayerFactory
+    internal abstract class SwapChainRenderTarget : IRenderTarget, ILayerFactory
     {
         private Size2 _savedSize;
         private Size2F _savedDpi;
