@@ -664,14 +664,12 @@ namespace Avalonia
         /// <param name="property">The property that has changed.</param>
         /// <param name="oldValue">The old property value.</param>
         /// <param name="newValue">The new property value.</param>
-        /// <param name="priority">The priority of the binding that produced the value.</param>
         protected void RaisePropertyChanged<T>(
             DirectPropertyBase<T> property,
-            Optional<T> oldValue,
-            BindingValue<T> newValue,
-            BindingPriority priority = BindingPriority.LocalValue)
+            T oldValue,
+            T newValue)
         {
-            RaisePropertyChanged(property, oldValue, newValue, priority, true);
+            RaisePropertyChanged(property, oldValue, newValue, BindingPriority.LocalValue, true);
         }
 
         /// <summary>
@@ -720,7 +718,7 @@ namespace Avalonia
         /// <returns>
         /// True if the value changed, otherwise false.
         /// </returns>
-        protected bool SetAndRaise<T>(AvaloniaProperty<T> property, ref T field, T value)
+        protected bool SetAndRaise<T>(DirectPropertyBase<T> property, ref T field, T value)
         {
             VerifyAccess();
 
