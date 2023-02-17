@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Avalonia.Data;
+using Avalonia.Data.Core;
 
 namespace Avalonia.Controls.Templates
 {
@@ -56,9 +57,10 @@ namespace Avalonia.Controls.Templates
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns>The child items, or null if no child items.</returns>
-        public InstancedBinding ItemsSelector(object item)
+        public IBinding ItemsSelector(object item)
         {
-            return InstancedBinding.OneTime(_itemsSelector(item));
+            // what should we do here?
+            throw new NotImplementedException();
         }
 
         /// <summary>

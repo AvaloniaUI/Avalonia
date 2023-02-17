@@ -390,8 +390,10 @@ namespace Avalonia.Controls
 
                 if (itemTemplate is ITreeDataTemplate treeTemplate)
                 {
-                    if (item is not null && treeTemplate.ItemsSelector(item) is { } itemsBinding)
+                    if (item is not null && treeTemplate.ItemsSelector(item)?.Initiate(hic, ItemsProperty) is { } itemsBinding)
+                    {
                         BindingOperations.Apply(hic, ItemsProperty, itemsBinding, null);
+                    }
                 }
             }
         }
