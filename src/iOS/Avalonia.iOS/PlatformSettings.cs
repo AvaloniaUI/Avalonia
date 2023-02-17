@@ -1,8 +1,7 @@
+#nullable enable
 using System;
-using System.Linq;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Foundation;
 using UIKit;
 
 namespace Avalonia.iOS;
@@ -10,7 +9,7 @@ namespace Avalonia.iOS;
 // TODO: ideally should be created per view/activity.
 internal class PlatformSettings : DefaultPlatformSettings
 {
-    private PlatformColorValues _lastColorValues;
+    private PlatformColorValues? _lastColorValues;
 
     public override PlatformColorValues GetColorValues()
     {
