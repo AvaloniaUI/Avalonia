@@ -323,6 +323,7 @@ namespace Avalonia.Controls
         private bool _hasDoneSnapshotOnce;
         private static bool _isHolding;
         private int _currentClickCount;
+        private bool _isDoubleTapped;
         private const int _maxCharsBeforeUndoSnapshot = 7;
 
         static TextBox()
@@ -360,6 +361,13 @@ namespace Avalonia.Controls
             _selectedTextChangesMadeSinceLastUndoSnapshot = 0;
             _hasDoneSnapshotOnce = false;
             UpdatePseudoclasses();
+
+            AddHandler(Gestures.DoubleTappedEvent, OnDoubleTapped);
+        }
+
+        private void OnDoubleTapped(object? sender, TappedEventArgs e)
+        {
+            _isDoubleTapped = true;
         }
 
         /// <summary>
@@ -1470,7 +1478,9 @@ namespace Avalonia.Controls
             var text = Text;
             var clickInfo = e.GetCurrentPoint(this);
 
-            if (text != null && clickInfo.Properties.IsLeftButtonPressed &&
+            _isDoubleTapped = false;
+
+            if (text != null && (e.Pointer.Type == PointerType.Mouse || e.ClickCount >= 2) && clickInfo.Properties.IsLeftButtonPressed &&
                 !(clickInfo.Pointer?.Captured is Border))
             {
                 var isTouch = e.Pointer.Type == PointerType.Touch;
@@ -1548,6 +1558,7 @@ namespace Avalonia.Controls
                 }
             }
 
+            _isDoubleTapped = false;
             e.Pointer.Capture(_presenter);
             e.Handled = true;
         }
@@ -1560,7 +1571,7 @@ namespace Avalonia.Controls
             }
 
             // selection should not change during pointer move if the user right clicks
-            if (e.Pointer.Captured == _presenter && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            if (e.Pointer.Captured == _presenter && e.Pointer.Type == PointerType.Mouse && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
                 var point = e.GetPosition(_presenter);
 
@@ -1641,6 +1652,46 @@ namespace Avalonia.Controls
             if (e.Pointer.Captured != _presenter)
             {
                 return;
+            }
+
+            if (e.Pointer.Type != PointerType.Mouse && !_isDoubleTapped)
+            {
+                var text = Text;
+                var clickInfo = e.GetCurrentPoint(this);
+                if (text != null && !(clickInfo.Pointer?.Captured is Border))
+                {
+                    var point = e.GetPosition(_presenter);
+
+                    _presenter.MoveCaretToPoint(point);
+
+                    var caretIndex = _presenter.CaretIndex;
+                    var clickToSelect = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+                    var selectionStart = SelectionStart;
+                    var selectionEnd = SelectionEnd;
+
+                    if (clickToSelect)
+                    {
+                        if (_wordSelectionStart >= 0)
+                        {
+                            UpdateWordSelectionRange(caretIndex, ref selectionStart, ref selectionEnd);
+
+                            SetCurrentValue(SelectionStartProperty, selectionStart);
+                            SetCurrentValue(SelectionEndProperty, selectionEnd);
+                        }
+                        else
+                        {
+                            SetCurrentValue(SelectionEndProperty, caretIndex);
+                        }
+                    }
+                    else
+                    {
+                        SetCurrentValue(SelectionStartProperty, caretIndex);
+                        SetCurrentValue(SelectionEndProperty, caretIndex);
+                        _wordSelectionStart = -1;
+                    }
+
+                    _presenter.Canvas?.MoveThumbsToSelection();
+                }
             }
 
             // Don't update selection if the pointer was held

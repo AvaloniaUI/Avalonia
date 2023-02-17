@@ -9,6 +9,7 @@ namespace Avalonia.Controls.Primitives
         private const int ChromeZIndex = int.MaxValue - 99;
         private const int LightDismissOverlayZIndex = int.MaxValue - 98;
         private const int OverlayZIndex = int.MaxValue - 97;
+        private const int TestLayerZIndex = int.MaxValue - 96;
 
         private ILogicalRoot? _logicalRoot;
         private readonly List<Control> _layers = new();
@@ -61,6 +62,19 @@ namespace Avalonia.Controls.Primitives
                 var rv = FindLayer<OverlayLayer>();
                 if (rv == null)
                     AddLayer(rv = new OverlayLayer(), OverlayZIndex);
+                return rv;
+            }
+        }
+
+        public TestLayer? TestLayer
+        {
+            get
+            {
+                if (IsPopup)
+                    return null;
+                var rv = FindLayer<TestLayer>();
+                if (rv == null)
+                    AddLayer(rv = new TestLayer(), TestLayerZIndex);
                 return rv;
             }
         }
