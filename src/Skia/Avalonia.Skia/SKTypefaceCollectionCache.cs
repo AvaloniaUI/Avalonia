@@ -7,7 +7,7 @@ using SkiaSharp;
 
 namespace Avalonia.Skia
 {
-    public static class SKTypefaceCollectionCache
+    internal static class SKTypefaceCollectionCache
     {
         private static readonly ConcurrentDictionary<FontFamily, SKTypefaceCollection> s_cachedCollections;
 

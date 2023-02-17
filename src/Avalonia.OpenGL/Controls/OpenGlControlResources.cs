@@ -14,14 +14,14 @@ internal class OpenGlControlBaseResources : IAsyncDisposable
     public int Fbo { get; private set; }
     private PixelSize _depthBufferSize;
     public CompositionDrawingSurface Surface { get; }
-    public CompositionOpenGlSwapchain _swapchain;
+    private readonly CompositionOpenGlSwapchain _swapchain;
     public IGlContext Context { get; private set; }
     
     public static OpenGlControlBaseResources? TryCreate(CompositionDrawingSurface surface,
         ICompositionGpuInterop interop,
         IOpenGlTextureSharingRenderInterfaceContextFeature feature)
     {
-        IGlContext context;
+        IGlContext? context;
         try
         {
             context = feature.CreateSharedContext();
@@ -71,7 +71,7 @@ internal class OpenGlControlBaseResources : IAsyncDisposable
                 new CompositionOpenGlSwapchain(context, interop, Surface, externalObjects);
     }
 
-    void UpdateDepthRenderbuffer(PixelSize size)
+    private void UpdateDepthRenderbuffer(PixelSize size)
     {
         if (size == _depthBufferSize && _depthBuffer != 0)
             return;

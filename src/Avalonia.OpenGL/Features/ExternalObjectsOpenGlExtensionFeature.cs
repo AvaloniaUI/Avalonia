@@ -63,10 +63,10 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
 {
     private readonly IGlContext _context;
     private readonly ExternalObjectsInterface _ext;
-    private List<string> _imageTypes = new();
-    private List<string> _semaphoreTypes = new();
+    private readonly List<string> _imageTypes = new();
+    private readonly List<string> _semaphoreTypes = new();
 
-    public static ExternalObjectsOpenGlExtensionFeature TryCreate(IGlContext context)
+    public static ExternalObjectsOpenGlExtensionFeature? TryCreate(IGlContext context)
     {
         var extensions = context.GlInterface.GetExtensions();
         if (extensions.Contains("GL_EXT_memory_object") && extensions.Contains("GL_EXT_semaphore"))
@@ -142,10 +142,15 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
 
     public IGlExternalImageTexture ImportImage(IPlatformHandle handle, PlatformGraphicsExternalImageProperties properties)
     {
-        if(!_imageTypes.Contains(handle.HandleDescriptor))
-            throw new ArgumentException(handle.HandleDescriptor + " is not supported");
-        
-        if (handle.HandleDescriptor == KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaquePosixFileDescriptor)
+        var handleDescriptor = handle.HandleDescriptor;
+
+        if (string.IsNullOrEmpty(handleDescriptor))
+            throw new ArgumentException("The handle must have a descriptor", nameof(handle));
+
+        if (!_imageTypes.Contains(handleDescriptor))
+            throw new ArgumentException(handleDescriptor + " is not supported", nameof(handle));
+
+        if (handleDescriptor == KnownPlatformGraphicsExternalImageHandleTypes.VulkanOpaquePosixFileDescriptor)
         {
             while (_context.GlInterface.GetError() != 0)
             {
@@ -174,23 +179,27 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
             return new ExternalImageTexture(_context, properties, _ext, memoryObject, texture);
         }
 
-        throw new ArgumentException(handle.HandleDescriptor + " is not supported");
+        throw new ArgumentException(handleDescriptor + " is not supported", nameof(handle));
     }
 
     public IGlExternalSemaphore ImportSemaphore(IPlatformHandle handle)
     {
-        if(!_semaphoreTypes.Contains(handle.HandleDescriptor))
-            throw new ArgumentException(handle.HandleDescriptor + " is not supported");
+        var handleDescriptor = handle.HandleDescriptor;
 
-        if (handle.HandleDescriptor ==
-            KnownPlatformGraphicsExternalSemaphoreHandleTypes.VulkanOpaquePosixFileDescriptor)
+        if (string.IsNullOrEmpty(handleDescriptor))
+            throw new ArgumentException("The handle must have a descriptor", nameof(handle));
+
+        if (!_semaphoreTypes.Contains(handleDescriptor))
+            throw new ArgumentException(handleDescriptor + " is not supported");
+
+        if (handleDescriptor == KnownPlatformGraphicsExternalSemaphoreHandleTypes.VulkanOpaquePosixFileDescriptor)
         {
             _ext.GenSemaphoresEXT(1, out var semaphore);
             _ext.ImportSemaphoreFdEXT(semaphore, GL_HANDLE_TYPE_OPAQUE_FD_EXT, handle.Handle.ToInt32());
             return new ExternalSemaphore(_context, _ext, semaphore);
         }
         
-        throw new ArgumentException(handle.HandleDescriptor + " is not supported");
+        throw new ArgumentException(handleDescriptor + " is not supported", nameof(handle));
     }
 
     public CompositionGpuImportedImageSynchronizationCapabilities GetSynchronizationCapabilities(string imageHandleType)
@@ -200,10 +209,10 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
         return default;
     }
 
-    public byte[] DeviceLuid { get; }
-    public byte[] DeviceUuid { get; }
+    public byte[]? DeviceLuid { get; }
+    public byte[]? DeviceUuid { get; }
 
-    unsafe class ExternalSemaphore : IGlExternalSemaphore
+    private unsafe class ExternalSemaphore : IGlExternalSemaphore
     {
         private readonly IGlContext _context;
         private readonly ExternalObjectsInterface _ext;
@@ -242,7 +251,7 @@ public class ExternalObjectsOpenGlExtensionFeature : IGlContextExternalObjectsFe
         }
     }
 
-    class ExternalImageTexture : IGlExternalImageTexture
+    private class ExternalImageTexture : IGlExternalImageTexture
     {
         private readonly IGlContext _context;
         private readonly ExternalObjectsInterface _ext;

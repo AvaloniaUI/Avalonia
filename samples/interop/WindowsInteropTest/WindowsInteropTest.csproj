@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net461</TargetFramework>
-
+    <PlatformTarget>x64</PlatformTarget>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
@@ -10,9 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Avalonia.Diagnostics\Avalonia.Diagnostics.csproj" />
     <ProjectReference Include="..\..\..\src\Windows\Avalonia.Win32.Interop\Avalonia.Win32.Interop.csproj" />
-    <ProjectReference Include="..\..\ControlCatalog\ControlCatalog.csproj">
-      <Project>{d0a739b9-3c68-4ba6-a328-41606954b6bd}</Project>
-      <Name>ControlCatalog</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\ControlCatalog\ControlCatalog.csproj" />
   </ItemGroup>
 </Project>

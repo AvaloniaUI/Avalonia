@@ -10,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Utilities;
 using Avalonia.Automation;
+using Avalonia.Controls.Automation.Peers;
 
 namespace Avalonia.Controls
 {
@@ -378,6 +379,11 @@ namespace Avalonia.Controls
             {
                 DataValidationErrors.SetError(this, error);
             }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new SliderAutomationPeer(this);
         }
 
         /// <inheritdoc />
