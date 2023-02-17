@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Controls.Documents;
+using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Avalonia.VisualTree;
-using Avalonia.Layout;
-using Avalonia.Media.Immutable;
-using Avalonia.Controls.Documents;
 
 namespace Avalonia.Controls.Presenters
 {
@@ -88,6 +89,10 @@ namespace Avalonia.Controls.Presenters
         private CharacterHit _lastCharacterHit;
         private Rect _caretBounds;
         private Point _navigationPosition;
+
+        private TextSelectionCanvas? _canvas;
+        private Point? _previousOffset;
+        private TestLayer? _layer;
 
         static TextPresenter()
         {
@@ -286,6 +291,8 @@ namespace Avalonia.Controls.Presenters
 
         protected override bool BypassFlowDirectionPolicies => true;
 
+        internal TextSelectionCanvas? Canvas { get => _canvas; set => _canvas = value; }
+
         /// <summary>
         /// Creates the <see cref="TextLayout"/> used to render the text.
         /// </summary>
@@ -362,9 +369,19 @@ namespace Avalonia.Controls.Presenters
                 }
             }
 
+            if(VisualRoot is Visual root)
+            {
+                var offset = this.TranslatePoint(Bounds.Position, root);
+
+                if(_previousOffset != offset)
+                {
+                    _previousOffset = offset;
+                }
+            }
+
             RenderInternal(context);
 
-            if (selectionStart != selectionEnd || !_caretBlink)
+            if ((selectionStart != selectionEnd || !_caretBlink))
             {
                 return;
             }
@@ -394,7 +411,7 @@ namespace Avalonia.Controls.Presenters
             context.DrawLine(new ImmutablePen(caretBrush), p1, p2);
         }
 
-        private (Point, Point) GetCaretPoints()
+        internal (Point, Point) GetCaretPoints()
         {
             var x = Math.Floor(_caretBounds.X) + 0.5;
             var y = Math.Floor(_caretBounds.Y) + 0.5;
@@ -415,6 +432,10 @@ namespace Avalonia.Controls.Presenters
         public void ShowCaret()
         {
             _caretBlink = true;
+            if (_canvas != null)
+            {
+                _canvas.ShowThumbs = true;
+            }
             _caretTimer.Start();
             InvalidateVisual();
         }
@@ -422,6 +443,10 @@ namespace Avalonia.Controls.Presenters
         public void HideCaret()
         {
             _caretBlink = false;
+            if (_canvas != null)
+            {
+                _canvas.ShowThumbs = false;
+            }
             _caretTimer.Stop();
             InvalidateVisual();
         }
@@ -818,11 +843,23 @@ namespace Avalonia.Controls.Presenters
             base.OnAttachedToVisualTree(e);
 
             _caretTimer.Tick += CaretTimerTick;
+
+            if (_canvas == null)
+            {
+                _canvas = new TextSelectionCanvas();
+            }
+
+            _layer = TestLayer.GetTestLayer(this);
+            _layer?.Add(_canvas);
+            _canvas?.SetPresenter(this);
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
+            if (_canvas is { } c)
+                _layer?.Remove(c);
+            _canvas?.SetPresenter(null);
 
             _caretTimer.Stop();
 
