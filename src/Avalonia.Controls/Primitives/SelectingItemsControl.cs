@@ -345,10 +345,7 @@ namespace Avalonia.Controls.Primitives
 
                     if (_oldSelectedItems != SelectedItems)
                     {
-                        RaisePropertyChanged(
-                            SelectedItemsProperty,
-                            new Optional<IList?>(_oldSelectedItems),
-                            new BindingValue<IList?>(SelectedItems));
+                        RaisePropertyChanged(SelectedItemsProperty, _oldSelectedItems, SelectedItems);
                         _oldSelectedItems = SelectedItems;
                     }
                 }
@@ -909,10 +906,7 @@ namespace Avalonia.Controls.Primitives
             else if (e.PropertyName == nameof(InternalSelectionModel.WritableSelectedItems) &&
                      _oldSelectedItems != (Selection as InternalSelectionModel)?.SelectedItems)
             {
-                RaisePropertyChanged(
-                    SelectedItemsProperty,
-                    new Optional<IList?>(_oldSelectedItems),
-                    new BindingValue<IList?>(SelectedItems));
+                RaisePropertyChanged(SelectedItemsProperty, _oldSelectedItems, SelectedItems);
                 _oldSelectedItems = SelectedItems;
             }
             else if (e.PropertyName == nameof(ISelectionModel.Source))
