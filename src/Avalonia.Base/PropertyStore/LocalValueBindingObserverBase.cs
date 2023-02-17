@@ -1,29 +1,34 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Threading;
 
 namespace Avalonia.PropertyStore
 {
-    internal class LocalValueUntypedBindingObserver<T> : IObserver<object?>,
+    internal class LocalValueBindingObserverBase<T> : IObserver<T>,
+        IObserver<BindingValue<T>>,
         IDisposable
     {
         private readonly ValueStore _owner;
         private readonly bool _hasDataValidation;
-        private IDisposable? _subscription;
+        protected IDisposable? _subscription;
         private T? _defaultValue;
         private bool _isDefaultValueInitialized;
 
-        public LocalValueUntypedBindingObserver(ValueStore owner, StyledProperty<T> property)
+        protected LocalValueBindingObserverBase(ValueStore owner, StyledProperty<T> property)
         {
             _owner = owner;
             Property = property;
             _hasDataValidation = property.GetMetadata(owner.Owner.GetType()).EnableDataValidation ?? false;
         }
 
-        public StyledProperty<T> Property { get; }
+        public StyledProperty<T> Property { get;}
 
-        public void Start(IObservable<object?> source)
+        public void Start(IObservable<T> source)
+        {
+            _subscription = source.Subscribe(this);
+        }
+
+        public void Start(IObservable<BindingValue<T>> source)
         {
             _subscription = source.Subscribe(this);
         }
@@ -38,14 +43,42 @@ namespace Avalonia.PropertyStore
         public void OnCompleted() => _owner.OnLocalValueBindingCompleted(Property, this);
         public void OnError(Exception error) => OnCompleted();
 
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
-        public void OnNext(object? value)
+        public void OnNext(T value)
         {
-            static void Execute(LocalValueUntypedBindingObserver<T> instance, object? untypedValue)
+            static void Execute(LocalValueBindingObserverBase<T> instance, T value)
             {
                 var owner = instance._owner;
                 var property = instance.Property;
-                var value = BindingValue<T>.FromUntyped(untypedValue, property.PropertyType);
+
+                if (property.ValidateValue?.Invoke(value) == false)
+                    value = instance.GetCachedDefaultValue();
+
+                owner.SetLocalValue(property, value);
+
+                if (instance._hasDataValidation)
+                    owner.Owner.OnUpdateDataValidation(property, BindingValueType.Value, null);
+            }
+
+            if (Dispatcher.UIThread.CheckAccess())
+            {
+                Execute(this, value);
+            }
+            else
+            {
+                // To avoid allocating closure in the outer scope we need to capture variables
+                // locally. This allows us to skip most of the allocations when on UI thread.
+                var instance = this;
+                var newValue = value;
+                Dispatcher.UIThread.Post(() => Execute(instance, newValue));
+            }
+        }
+
+        public void OnNext(BindingValue<T> value)
+        {
+            static void Execute(LocalValueBindingObserverBase<T> instance, BindingValue<T> value)
+            {
+                var owner = instance._owner;
+                var property = instance.Property;
                 var originalType = value.Type;
 
                 LoggingUtils.LogIfNecessary(owner.Owner, property, value);
@@ -62,14 +95,14 @@ namespace Avalonia.PropertyStore
                     owner.Owner.OnUpdateDataValidation(property, originalType, value.Error);
             }
 
-            if (value == BindingOperations.DoNothing)
+            if (value.Type is BindingValueType.DoNothing)
                 return;
 
             if (Dispatcher.UIThread.CheckAccess())
             {
                 Execute(this, value);
             }
-            else if (value != BindingOperations.DoNothing)
+            else
             {
                 // To avoid allocating closure in the outer scope we need to capture variables
                 // locally. This allows us to skip most of the allocations when on UI thread.

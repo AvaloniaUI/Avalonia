@@ -104,7 +104,7 @@ namespace Avalonia.PropertyStore
         {
             if (priority == BindingPriority.LocalValue)
             {
-                var observer = new LocalValueUntypedBindingObserver<T>(this, property);
+                var observer = new LocalValueBindingObserver<T>(this, property);
                 DisposeExistingLocalValueBinding(property);
                 _localValueBindings ??= new();
                 _localValueBindings[property.Id] = observer;
