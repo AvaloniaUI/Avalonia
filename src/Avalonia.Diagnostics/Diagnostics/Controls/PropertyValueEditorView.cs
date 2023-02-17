@@ -4,17 +4,22 @@ using System.Globalization;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Reactive;
+using Image = Avalonia.Controls.Image;
 
 namespace Avalonia.Diagnostics.Controls
 {
     internal class PropertyValueEditorView : UserControl
     {
+        private static Geometry ImageGeometry = Geometry.Parse(
+            "M12.25 6C8.79822 6 6 8.79822 6 12.25V35.75C6 37.1059 6.43174 38.3609 7.16525 39.3851L21.5252 25.0251C22.8921 23.6583 25.1081 23.6583 26.475 25.0251L40.8348 39.385C41.5683 38.3608 42 37.1058 42 35.75V12.25C42 8.79822 39.2018 6 35.75 6H12.25ZM34.5 17.5C34.5 19.7091 32.7091 21.5 30.5 21.5C28.2909 21.5 26.5 19.7091 26.5 17.5C26.5 15.2909 28.2909 13.5 30.5 13.5C32.7091 13.5 34.5 15.2909 34.5 17.5ZM39.0024 41.0881L24.7072 26.7929C24.3167 26.4024 23.6835 26.4024 23.293 26.7929L8.99769 41.0882C9.94516 41.6667 11.0587 42 12.25 42H35.75C36.9414 42 38.0549 41.6666 39.0024 41.0881Z");
+
         private readonly CompositeDisposable _cleanup = new();
         private PropertyViewModel? Property => (PropertyViewModel?)DataContext;
 
@@ -50,8 +55,7 @@ namespace Avalonia.Diagnostics.Controls
                 control.Bind(valueProperty,
                     new Binding(nameof(Property.Value), BindingMode.TwoWay)
                     {
-                        Source = Property, 
-                        Converter = converter ?? new ValueConverter()
+                        Source = Property, Converter = converter ?? new ValueConverter()
                     }).DisposeWith(_cleanup);
 
                 control.IsEnabled = !Property.IsReadonly;
@@ -83,14 +87,50 @@ namespace Avalonia.Diagnostics.Controls
                 return CreateControl<BrushEditor>(BrushEditor.BrushProperty);
 
             if (!isObjectType && propertyType.IsAssignableFrom(typeof(IImage)))
-                return CreateControl<Image>(Image.SourceProperty, init: img =>
-                {
-                    img.Stretch = Stretch.Uniform;
-                    img.HorizontalAlignment = HorizontalAlignment.Stretch;
+            {
+                var valueObservable = Property.GetObservable(x => x.Value);
 
-                    img.PointerPressed += (_, _) =>
-                        new Window { Content = new Image { Source = img.Source } }.Show();
-                });
+                var tbl = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
+
+                tbl.Bind(TextBlock.TextProperty,
+                        valueObservable.Select(
+                            value => value is IImage image ? $"{image.Size.Width} x {image.Size.Height}" : "(null)"))
+                    .DisposeWith(_cleanup);
+
+                var sp = new StackPanel
+                {
+                    Background = Brushes.Transparent,
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 2,
+                    Children =
+                    {
+                        new Path
+                        {
+                            Data = ImageGeometry,
+                            Fill = Brushes.Gray,
+                            Width = 12,
+                            Height = 12,
+                            Stretch = Stretch.Uniform,
+                            VerticalAlignment = VerticalAlignment.Center
+                        },
+                        tbl
+                    }
+                };
+
+                var previewImage = new Image
+                {
+                    Width = 300,
+                    Height = 300
+                };
+
+                previewImage
+                    .Bind(Image.SourceProperty, valueObservable)
+                    .DisposeWith(_cleanup);
+
+                ToolTip.SetTip(sp, previewImage);
+
+                return sp;
+            }
 
             if (propertyType.IsEnum)
                 return CreateControl<ComboBox>(
@@ -123,7 +163,8 @@ namespace Avalonia.Diagnostics.Controls
                 return value;
             }
 
-            protected virtual object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            protected virtual object? ConvertBack(object? value, Type targetType, object? parameter,
+                CultureInfo culture)
             {
                 return value;
             }
@@ -185,7 +226,8 @@ namespace Avalonia.Diagnostics.Controls
                 return System.Convert.ToDecimal(value);
             }
 
-            protected override object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            protected override object? ConvertBack(object? value, Type targetType, object? parameter,
+                CultureInfo culture)
             {
                 return System.Convert.ChangeType(value, targetType);
             }
@@ -208,7 +250,8 @@ namespace Avalonia.Diagnostics.Controls
                 return converter.ConvertToString(value);
             }
 
-            protected override object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+            protected override object? ConvertBack(object? value, Type targetType, object? parameter,
+                CultureInfo culture)
             {
                 if (value is not string s)
                     return null;
