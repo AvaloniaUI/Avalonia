@@ -193,18 +193,7 @@ namespace Avalonia.PropertyStore
             }
             else
             {
-                if (TryGetEffectiveValue(property, out var existing))
-                {
-                    var effective = (EffectiveValue<T>)existing;
-                    effective.SetLocalValueAndRaise(this, property, value);
-                }
-                else
-                {
-                    var effectiveValue = CreateEffectiveValue(property);
-                    AddEffectiveValue(property, effectiveValue);
-                    effectiveValue.SetLocalValueAndRaise(this, property, value);
-                }
-
+                SetLocalValue(property, value);
                 return null;
             }
         }
@@ -220,6 +209,21 @@ namespace Avalonia.PropertyStore
                 var effectiveValue = CreateEffectiveValue(property);
                 AddEffectiveValue(property, effectiveValue);
                 effectiveValue.SetCurrentValueAndRaise(this, property, value);
+            }
+        }
+
+        public void SetLocalValue<T>(StyledProperty<T> property, T value)
+        {
+            if (TryGetEffectiveValue(property, out var existing))
+            {
+                var effective = (EffectiveValue<T>)existing;
+                effective.SetLocalValueAndRaise(this, property, value);
+            }
+            else
+            {
+                var effectiveValue = CreateEffectiveValue(property);
+                AddEffectiveValue(property, effectiveValue);
+                effectiveValue.SetLocalValueAndRaise(this, property, value);
             }
         }
 

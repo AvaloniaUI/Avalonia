@@ -776,17 +776,17 @@ namespace Avalonia
                     break;
             }
 
-            UpdateDataValidationCore(property, value.Type, value.Error);
+            var metadata = property.GetMetadata(GetType());
+
+            if (metadata.EnableDataValidation == true)
+            {
+                UpdateDataValidation(property, value.Type, value.Error);
+            }
         }
 
-        internal void UpdateDataValidationCore(AvaloniaProperty property,
-            BindingValueType state,
-            Exception? error)
+        internal void OnUpdateDataValidation(AvaloniaProperty property, BindingValueType state, Exception? error)
         {
-            if (property.GetMetadata(GetType()) is { EnableDataValidation: true })
-            {
-                UpdateDataValidation(property, state, error);
-            }
+            UpdateDataValidation(property, state, error);
         }
 
         /// <summary>

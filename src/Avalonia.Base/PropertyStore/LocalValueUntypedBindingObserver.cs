@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Data;
 using Avalonia.Threading;
 
@@ -8,6 +9,7 @@ namespace Avalonia.PropertyStore
         IDisposable
     {
         private readonly ValueStore _owner;
+        private readonly bool _hasDataValidation;
         private IDisposable? _subscription;
         private T? _defaultValue;
         private bool _isDefaultValueInitialized;
@@ -16,6 +18,7 @@ namespace Avalonia.PropertyStore
         {
             _owner = owner;
             Property = property;
+            _hasDataValidation = property.GetMetadata(owner.Owner.GetType()).EnableDataValidation ?? false;
         }
 
         public StyledProperty<T> Property { get; }
@@ -35,32 +38,28 @@ namespace Avalonia.PropertyStore
         public void OnCompleted() => _owner.OnLocalValueBindingCompleted(Property, this);
         public void OnError(Exception error) => OnCompleted();
 
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = TrimmingMessages.ImplicitTypeConvertionSupressWarningMessage)]
         public void OnNext(object? value)
         {
-            static void Execute(LocalValueUntypedBindingObserver<T> instance, object? value)
+            static void Execute(LocalValueUntypedBindingObserver<T> instance, object? untypedValue)
             {
                 var owner = instance._owner;
                 var property = instance.Property;
+                var value = BindingValue<T>.FromUntyped(untypedValue, property.PropertyType);
+                var originalType = value.Type;
 
-                if (value is BindingNotification n)
-                {
-                    value = n.Value;
-                    LoggingUtils.LogIfNecessary(owner.Owner, property, n);
-                }
+                LoggingUtils.LogIfNecessary(owner.Owner, property, value);
 
-                if (value == AvaloniaProperty.UnsetValue)
-                {
-                    owner.SetValue(property, instance.GetCachedDefaultValue(), BindingPriority.LocalValue);
-                }
-                else if (UntypedValueUtils.TryConvertAndValidate(property, value, out var typedValue))
-                {
-                    owner.SetValue(property, typedValue, BindingPriority.LocalValue);
-                }
-                else
-                {
-                    owner.SetValue(property, instance.GetCachedDefaultValue(), BindingPriority.LocalValue);
-                    LoggingUtils.LogInvalidValue(owner.Owner, property, typeof(T), value);
-                }
+                // Revert to the default value if the binding value fails validation, or if
+                // there was no value (though not if there was a data validation error).
+                if ((value.HasValue && property.ValidateValue?.Invoke(value.Value) == false) ||
+                    (!value.HasValue && value.Type != BindingValueType.DataValidationError))
+                    value = value.WithValue(instance.GetCachedDefaultValue());
+
+                if (value.HasValue)
+                    owner.SetLocalValue(property, value.Value);
+                if (instance._hasDataValidation)
+                    owner.Owner.OnUpdateDataValidation(property, originalType, value.Error);
             }
 
             if (value == BindingOperations.DoNothing)

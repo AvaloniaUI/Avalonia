@@ -9,6 +9,7 @@ namespace Avalonia.PropertyStore
         IDisposable
     {
         private readonly ValueStore _owner;
+        private readonly bool _hasDataValidation;
         private IDisposable? _subscription;
         private T? _defaultValue;
         private bool _isDefaultValueInitialized;
@@ -17,6 +18,7 @@ namespace Avalonia.PropertyStore
         {
             _owner = owner;
             Property = property;
+            _hasDataValidation = property.GetMetadata(owner.Owner.GetType()).EnableDataValidation ?? false;
         }
 
         public StyledProperty<T> Property { get;}
@@ -51,7 +53,10 @@ namespace Avalonia.PropertyStore
                 if (property.ValidateValue?.Invoke(value) == false)
                     value = instance.GetCachedDefaultValue();
 
-                owner.SetValue(property, value, BindingPriority.LocalValue);
+                owner.SetLocalValue(property, value);
+
+                if (instance._hasDataValidation)
+                    owner.Owner.OnUpdateDataValidation(property, BindingValueType.Value, null);
             }
 
             if (Dispatcher.UIThread.CheckAccess())
@@ -74,23 +79,23 @@ namespace Avalonia.PropertyStore
             {
                 var owner = instance._owner;
                 var property = instance.Property;
+                var originalType = value.Type;
 
                 LoggingUtils.LogIfNecessary(owner.Owner, property, value);
 
+                // Revert to the default value if the binding value fails validation, or if
+                // there was no value (though not if there was a data validation error).
+                if ((value.HasValue && property.ValidateValue?.Invoke(value.Value) == false) ||
+                    (!value.HasValue && value.Type != BindingValueType.DataValidationError))
+                    value = value.WithValue(instance.GetCachedDefaultValue());
+
                 if (value.HasValue)
-                {
-                    var effectiveValue = value.Value;
-                    if (property.ValidateValue?.Invoke(effectiveValue) == false)
-                        effectiveValue = instance.GetCachedDefaultValue();
-                    owner.SetValue(property, effectiveValue, BindingPriority.LocalValue);
-                }
-                else
-                {
-                    owner.SetValue(property, instance.GetCachedDefaultValue(), BindingPriority.LocalValue);
-                }
+                    owner.SetLocalValue(property, value.Value);
+                if (instance._hasDataValidation)
+                    owner.Owner.OnUpdateDataValidation(property, originalType, value.Error);
             }
 
-            if (value.Type is BindingValueType.DoNothing or BindingValueType.DataValidationError)
+            if (value.Type is BindingValueType.DoNothing)
                 return;
 
             if (Dispatcher.UIThread.CheckAccess())
