@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Avalonia.Reactive;
 using Avalonia.Data;
 using Avalonia.Threading;
+using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.PropertyStore
 {
@@ -13,6 +14,7 @@ namespace Avalonia.PropertyStore
     {
         private static readonly IDisposable s_creating = Disposable.Empty;
         private static readonly IDisposable s_creatingQuiet = Disposable.Create(() => { });
+        private readonly bool _hasDataValidation;
         private IDisposable? _subscription;
         private bool _hasValue;
         private TValue? _value;
@@ -20,6 +22,7 @@ namespace Avalonia.PropertyStore
         private bool _isDefaultValueInitialized;
 
         protected BindingEntryBase(
+            AvaloniaObject target,
             ValueFrame frame,
             AvaloniaProperty property,
             IObservable<BindingValue<TSource>> source)
@@ -27,9 +30,11 @@ namespace Avalonia.PropertyStore
             Frame = frame;
             Source = source;
             Property = property;
+            _hasDataValidation = property.GetMetadata(target.GetType()).EnableDataValidation ?? false;
         }
 
         protected BindingEntryBase(
+            AvaloniaObject target,
             ValueFrame frame,
             AvaloniaProperty property,
             IObservable<TSource> source)
@@ -37,6 +42,7 @@ namespace Avalonia.PropertyStore
             Frame = frame;
             Source = source;
             Property = property;
+            _hasDataValidation = property.GetMetadata(target.GetType()).EnableDataValidation ?? false;
         }
 
         public bool HasValue
@@ -79,6 +85,9 @@ namespace Avalonia.PropertyStore
         {
             _subscription?.Dispose();
             _subscription = null;
+
+            if (_hasDataValidation)
+                Frame.Owner?.Owner.OnUpdateDataValidation(Property, BindingValueType.UnsetValue, null);
         }
 
         object? IValueEntry.GetValue()
@@ -111,20 +120,29 @@ namespace Avalonia.PropertyStore
         {
             static void Execute(BindingEntryBase<TValue, TSource> instance, BindingValue<TValue> value)
             {
-                if (instance.Frame.Owner is null)
+                if (instance.Frame.Owner is not { } valueStore)
                     return;
 
-                LoggingUtils.LogIfNecessary(instance.Frame.Owner.Owner, instance.Property, value);
+                var owner = valueStore.Owner;
+                var property = instance.Property;
+                var originalType = value.Type;
 
-                var effectiveValue = value.HasValue ? value.Value : instance.GetCachedDefaultValue();
+                LoggingUtils.LogIfNecessary(owner, property, value);
 
-                if (!instance._hasValue || !EqualityComparer<TValue>.Default.Equals(instance._value, effectiveValue))
+                if (!value.HasValue && value.Type != BindingValueType.DataValidationError)
+                    value = value.WithValue(instance.GetCachedDefaultValue());
+
+                if (value.HasValue &&
+                    (!instance._hasValue || !EqualityComparer<TValue>.Default.Equals(instance._value, value.Value)))
                 {
-                    instance._value = effectiveValue;
+                    instance._value = value.Value;
                     instance._hasValue = true;
                     if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
                         instance.Frame.Owner?.OnBindingValueChanged(instance, instance.Frame.Priority);
                 }
+
+                if (instance._hasDataValidation)
+                    owner.OnUpdateDataValidation(property, originalType, value.Error);
             }
 
             if (value.Type == BindingValueType.DoNothing)

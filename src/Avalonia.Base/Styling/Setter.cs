@@ -99,7 +99,8 @@ namespace Avalonia.Styling
         {
             if (!Property!.IsDirect)
             {
-                var i = binding.Initiate(target, Property)!;
+                var hasDataValidation = Property.GetMetadata(target.GetType()).EnableDataValidation ?? false;
+                var i = binding.Initiate(target, Property, enableDataValidation: hasDataValidation)!;
                 var mode = i.Mode;
 
                 if (mode == BindingMode.Default)
