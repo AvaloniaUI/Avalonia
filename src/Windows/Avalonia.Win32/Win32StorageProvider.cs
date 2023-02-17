@@ -131,7 +131,7 @@ namespace Avalonia.Win32
                         }
                     }
 
-                    if (folder?.TryGetFullPath() is { } folderPath)
+                    if (folder?.TryGetLocalPath() is { } folderPath)
                     {
                         var riid = UnmanagedMethods.ShellIds.IShellItem;
                         if (UnmanagedMethods.SHCreateItemFromParsingName(folderPath, IntPtr.Zero, ref riid, out var directoryShellItem)
