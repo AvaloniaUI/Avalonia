@@ -63,6 +63,7 @@ namespace Avalonia.Native
         private GlPlatformSurface _glSurface;
         private NativeControlHostImpl _nativeControlHost;
         private IStorageProvider _storageProvider;
+        private PlatformBehaviorInhibition _platformBehaviorInhibition;
 
         internal WindowBaseImpl(IAvaloniaNativeFactory factory, AvaloniaNativePlatformOptions opts,
             AvaloniaNativeGlPlatformGraphics glFeature)
@@ -88,6 +89,7 @@ namespace Avalonia.Native
             _savedScaling = RenderScaling;
             _nativeControlHost = new NativeControlHostImpl(_native.CreateNativeControlHost());
             _storageProvider = new SystemDialogs(this, _factory.CreateSystemDialogs());
+            _platformBehaviorInhibition = new PlatformBehaviorInhibition(_factory.CreatePlatformBehaviorInhibition());
 
             var monitor = Screen.AllScreens.OrderBy(x => x.Scaling)
                     .FirstOrDefault(m => m.Bounds.Contains(Position));
@@ -501,7 +503,7 @@ namespace Avalonia.Native
             }
         }
 
-        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.Transparent;
+        public WindowTransparencyLevel TransparencyLevel { get; private set; } = WindowTransparencyLevel.None;
 
         public void SetFrameThemeVariant(PlatformThemeVariant themeVariant)
         {
@@ -519,6 +521,11 @@ namespace Avalonia.Native
             if (featureType == typeof(IStorageProvider))
             {
                 return _storageProvider;
+            }
+
+            if (featureType == typeof(IPlatformBehaviorInhibition))
+            {
+                return _platformBehaviorInhibition;
             }
 
             return null;

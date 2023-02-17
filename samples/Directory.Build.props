@@ -6,4 +6,5 @@
       <LangVersion>11</LangVersion>
   </PropertyGroup>
   <Import Project="..\build\SharedVersion.props" />
+  <Import Project="..\build\DevAnalyzers.props" />
 </Project>

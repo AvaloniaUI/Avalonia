@@ -5,7 +5,7 @@ using Avalonia.Platform;
 
 namespace Avalonia.Native
 {
-    class ScreenImpl : IScreenImpl, IDisposable
+    internal class ScreenImpl : IScreenImpl, IDisposable
     {
         private IAvnScreens _native;
 

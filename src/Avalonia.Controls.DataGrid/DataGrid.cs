@@ -3979,7 +3979,7 @@ namespace Avalonia.Controls
                     {
                         if (focusedObject is Control element)
                         {
-                            parent = element.Parent;
+                            parent = element.VisualParent;
                             if (parent != null)
                             {
                                 dataGridWillReceiveRoutedEvent = false;

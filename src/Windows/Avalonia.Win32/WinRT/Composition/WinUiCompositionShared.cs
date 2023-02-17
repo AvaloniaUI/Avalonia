@@ -8,11 +8,11 @@ internal class WinUiCompositionShared : IDisposable
     public ICompositor Compositor { get; }
     public ICompositor5 Compositor5 { get; }
     public ICompositorDesktopInterop DesktopInterop { get; }
-    public ICompositionBrush BlurBrush;
-    public ICompositionBrush MicaBrush;
+    public ICompositionBrush BlurBrush { get; }
+    public ICompositionBrush? MicaBrush { get; }
     public object SyncRoot { get; } = new();
 
-    public static readonly Version MinHostBackdropVersion = new Version(10, 0, 22000);
+    public static readonly Version MinHostBackdropVersion = new(10, 0, 22000);
     
     public WinUiCompositionShared(ICompositor compositor)
     {
@@ -26,7 +26,7 @@ internal class WinUiCompositionShared : IDisposable
     public void Dispose()
     {
         BlurBrush.Dispose();
-        MicaBrush.Dispose();
+        MicaBrush?.Dispose();
         DesktopInterop.Dispose();
         Compositor.Dispose();
         Compositor5.Dispose();

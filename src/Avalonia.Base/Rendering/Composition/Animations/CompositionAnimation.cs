@@ -23,7 +23,7 @@ namespace Avalonia.Rendering.Composition.Animations
     public abstract class CompositionAnimation : CompositionObject,  ICompositionAnimationBase
     {
         private readonly CompositionPropertySet _propertySet;
-        internal CompositionAnimation(Compositor compositor) : base(compositor, null!)
+        internal CompositionAnimation(Compositor compositor) : base(compositor, null)
         {
             _propertySet = new CompositionPropertySet(compositor);
         }

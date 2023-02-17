@@ -47,6 +47,7 @@ export class InputHelper {
 
     public static subscribeTextEvents(
         element: HTMLInputElement,
+        beforeInputCallback: (args: InputEvent, start: number, end: number) => boolean,
         inputCallback: (type: string, data: string | null) => boolean,
         compositionStartCallback: (args: CompositionEvent) => boolean,
         compositionUpdateCallback: (args: CompositionEvent) => boolean,
@@ -67,6 +68,25 @@ export class InputHelper {
             }
         };
         element.addEventListener("compositionstart", compositionStartHandler);
+
+        const beforeInputHandler = (args: InputEvent) => {
+            const ranges = args.getTargetRanges();
+            let start = -1;
+            let end = -1;
+            if (ranges.length > 0) {
+                start = ranges[0].startOffset;
+                end = ranges[0].endOffset;
+            }
+
+            if (args.inputType === "insertCompositionText") {
+                start = 2;
+                end = start + 2;
+            }
+            if (beforeInputCallback(args, start, end)) {
+                args.preventDefault();
+            }
+        };
+        element.addEventListener("beforeinput", beforeInputHandler);
 
         const compositionUpdateHandler = (args: CompositionEvent) => {
             if (compositionUpdateCallback(args)) {

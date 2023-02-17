@@ -1,4 +1,3 @@
-import { RuntimeAPI } from "../types/dotnet";
 import { SizeWatcher, DpiWatcher, Canvas } from "./avalonia/canvas";
 import { InputHelper } from "./avalonia/input";
 import { AvaloniaDOM } from "./avalonia/dom";
@@ -8,20 +7,6 @@ import { ShareHelper } from "./avalonia/share";
 import { NativeControlHost } from "./avalonia/nativeControlHost";
 import { NavigationHelper } from "./avalonia/navigationHelper";
 
-async function registerAvaloniaModule(api: RuntimeAPI): Promise<void> {
-    api.setModuleImports("avalonia", {
-        Caniuse,
-        Canvas,
-        InputHelper,
-        SizeWatcher,
-        DpiWatcher,
-        AvaloniaDOM,
-        StreamHelper,
-        ShareHelper,
-        NativeControlHost,
-        NavigationHelper
-    });
-}
 export {
     Caniuse,
     Canvas,
@@ -32,7 +17,5 @@ export {
     StreamHelper,
     ShareHelper,
     NativeControlHost,
-    NavigationHelper,
-
-    registerAvaloniaModule
+    NavigationHelper
 };

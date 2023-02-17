@@ -291,6 +291,19 @@ namespace Avalonia.Markup.Xaml.XamlIl.CompilerExtensions
                 return true;
             }
 
+            if (type.Equals(types.ThemeVariant))
+            {
+                var variantText = text.Trim();
+                var foundConstProperty = types.ThemeVariant.Properties.FirstOrDefault(p =>
+                    p.Name == variantText && p.PropertyType == types.ThemeVariant);
+                var themeVariantTypeRef = new XamlAstClrTypeReference(node, types.ThemeVariant, false);
+                if (foundConstProperty is not null)
+                {
+                    result = new XamlStaticExtensionNode(new XamlAstObjectNode(node, node.Type), themeVariantTypeRef, foundConstProperty.Name);
+                    return true;
+                }
+            }
+
             result = null;
             return false;
         }

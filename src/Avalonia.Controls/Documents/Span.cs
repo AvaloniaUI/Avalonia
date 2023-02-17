@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Avalonia.Media.TextFormatting;
@@ -51,6 +52,7 @@ namespace Avalonia.Controls.Documents
             }
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -68,26 +70,26 @@ namespace Avalonia.Controls.Documents
         {
             base.OnInlineHostChanged(oldValue, newValue);
 
-            if (Inlines is not null)
-            {
-                Inlines.InlineHost = newValue;
-            }
+            Inlines.InlineHost = newValue;
         }
 
         private void OnInlinesChanged(InlineCollection? oldValue, InlineCollection? newValue)
         {
+            void OnInlinesInvalidated(object? sender, EventArgs e)
+                => InlineHost?.Invalidate();
+
             if (oldValue is not null)
             {
                 oldValue.LogicalChildren = null;
                 oldValue.InlineHost = null;
-                oldValue.Invalidated -= (s, e) => InlineHost?.Invalidate();
+                oldValue.Invalidated -= OnInlinesInvalidated;
             }
 
             if (newValue is not null)
             {
                 newValue.LogicalChildren = LogicalChildren;
                 newValue.InlineHost = InlineHost;
-                newValue.Invalidated += (s, e) => InlineHost?.Invalidate();
+                newValue.Invalidated += OnInlinesInvalidated;
             }
         }
     }

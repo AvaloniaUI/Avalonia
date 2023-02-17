@@ -223,6 +223,19 @@
     }
 }
 
+// From chromium:
+//
+// > The delegate or the window class should implement this method so that
+// > -[NSWindow isZoomed] can be then determined by whether or not the current
+// > window frame is equal to the zoomed frame.
+//
+// If we don't implement this, then isZoomed always returns true for a non-
+// resizable window ¯\_(ツ)_/¯
+- (NSRect)windowWillUseStandardFrame:(NSWindow*)window
+                        defaultFrame:(NSRect)newFrame {
+  return newFrame;
+}
+
 -(BOOL)canBecomeKeyWindow
 {
     if(_canBecomeKeyWindow)
@@ -261,10 +274,6 @@
 -(void) setEnabled:(bool)enable
 {
     _isEnabled = enable;
-    
-    [[self standardWindowButton:NSWindowCloseButton] setEnabled:enable];
-    [[self standardWindowButton:NSWindowMiniaturizeButton] setEnabled:enable];
-    [[self standardWindowButton:NSWindowZoomButton] setEnabled:enable];
 }
 
 -(void)becomeKeyWindow

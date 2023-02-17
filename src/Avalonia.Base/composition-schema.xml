@@ -26,6 +26,7 @@
         <Property Name="Scale" Type="Vector3" DefaultValue="new Vector3(1, 1, 1)" Animated="true"/>
         <Property Name="TransformMatrix" Type="Matrix4x4" DefaultValue="Matrix4x4.Identity" Animated="true"/>
         <Property Name="AdornedVisual" Type="CompositionVisual?" Internal="true" />
+        <Property Name="AdornerIsClipped" Type="bool" Internal="true" />
         <Property Name="OpacityMaskBrush" Type="Avalonia.Media.IBrush?" Internal="true" />
     </Object>
     <Object Name="CompositionContainerVisual" Inherits="CompositionVisual"/>
@@ -39,8 +40,8 @@
     <Object Name="CompositionTarget" CustomServerCtor="true">
         <Property Name="Root" Type="CompositionVisual?"/>
         <Property Name="IsEnabled" Type="bool"/>
-        <Property Name="DrawDirtyRects" Type="bool"/>
-        <Property Name="DrawFps" Type="bool"/>
+        <Property Name="DebugOverlays" Type="RendererDebugOverlays"/>
+        <Property Name="LastLayoutPassTiming" Type="LayoutPassTiming" Internal="true"/>
         <Property Name="Scaling" Type="double"/>
         <Property Name="Size" Type="Size" />
     </Object>

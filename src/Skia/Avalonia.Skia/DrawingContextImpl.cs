@@ -34,9 +34,9 @@ namespace Avalonia.Skia
         private GRContext _grContext;
         public GRContext GrContext => _grContext;
         private ISkiaGpu _gpu;
-        private readonly SKPaint _strokePaint = SKPaintCache.Get();
-        private readonly SKPaint _fillPaint = SKPaintCache.Get();
-        private readonly SKPaint _boxShadowPaint = SKPaintCache.Get();
+        private readonly SKPaint _strokePaint = SKPaintCache.Shared.Get();
+        private readonly SKPaint _fillPaint = SKPaintCache.Shared.Get();
+        private readonly SKPaint _boxShadowPaint = SKPaintCache.Shared.Get();
         private static SKShader s_acrylicNoiseShader;
         private readonly ISkiaGpuRenderSession _session;
         private bool _leased = false;
@@ -186,13 +186,13 @@ namespace Avalonia.Skia
             var s = sourceRect.ToSKRect();
             var d = destRect.ToSKRect();
 
-            var paint = SKPaintCache.Get();
+            var paint = SKPaintCache.Shared.Get();
             paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
             paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
 
             drawableImage.Draw(this, s, d, paint);
-            SKPaintCache.ReturnReset(paint);
+            SKPaintCache.Shared.ReturnReset(paint);
         }
 
         /// <inheritdoc />
@@ -208,6 +208,12 @@ namespace Avalonia.Skia
         public void DrawLine(IPen pen, Point p1, Point p2)
         {
             CheckLease();
+
+            if (pen is null)
+            {
+                return;
+            }
+
             using (var paint = CreatePaint(_strokePaint, pen, new Size(Math.Abs(p2.X - p1.X), Math.Abs(p2.Y - p1.Y))))
             {
                 if (paint.Paint is object)
@@ -309,15 +315,20 @@ namespace Avalonia.Skia
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
             var needRoundRect = rect.IsRounded;
-            using var skRoundRect = needRoundRect ? new SKRoundRect() : null;
+            SKRoundRect skRoundRect = null;
 
             if (needRoundRect)
+            {
+                skRoundRect = SKRoundRectCache.Shared.Get();
                 skRoundRect.SetRectRadii(rc,
                     new[]
                     {
-                        rect.RadiiTopLeft.ToSKPoint(), rect.RadiiTopRight.ToSKPoint(),
-                        rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
+                        rect.RadiiTopLeft.ToSKPoint(),
+                        rect.RadiiTopRight.ToSKPoint(),
+                        rect.RadiiBottomRight.ToSKPoint(),
+                        rect.RadiiBottomLeft.ToSKPoint(),
                     });
+            }
 
             if (material != null)
             {
@@ -326,6 +337,7 @@ namespace Avalonia.Skia
                     if (isRounded)
                     {
                         Canvas.DrawRoundRect(skRoundRect, paint.Paint);
+                        SKRoundRectCache.Shared.Return(skRoundRect);
                     }
                     else
                     {
@@ -350,14 +362,11 @@ namespace Avalonia.Skia
             var rc = rect.Rect.ToSKRect();
             var isRounded = rect.IsRounded;
             var needRoundRect = rect.IsRounded || (boxShadows.HasInsetShadows);
-            using var skRoundRect = needRoundRect ? new SKRoundRect() : null;
+            SKRoundRect skRoundRect = null;
             if (needRoundRect)
-                skRoundRect.SetRectRadii(rc,
-                    new[]
-                    {
-                        rect.RadiiTopLeft.ToSKPoint(), rect.RadiiTopRight.ToSKPoint(),
-                        rect.RadiiBottomRight.ToSKPoint(), rect.RadiiBottomLeft.ToSKPoint(),
-                    });
+            {
+                skRoundRect = SKRoundRectCache.Shared.GetAndSetRadii(rc, rect);
+            }
 
             foreach (var boxShadow in boxShadows)
             {
@@ -372,7 +381,7 @@ namespace Avalonia.Skia
                         Canvas.Save();
                         if (isRounded)
                         {
-                            using var shadowRect = new SKRoundRect(skRoundRect);
+                            var shadowRect = SKRoundRectCache.Shared.GetAndSetRadii(skRoundRect!.Rect, skRoundRect.Radii);
                             if (spread != 0)
                                 shadowRect.Inflate(spread, spread);
                             Canvas.ClipRoundRect(skRoundRect,
@@ -382,6 +391,7 @@ namespace Avalonia.Skia
                             Transform = oldTransform * Matrix.CreateTranslation(boxShadow.OffsetX, boxShadow.OffsetY);
                             Canvas.DrawRoundRect(shadowRect, shadow.Paint);
                             Transform = oldTransform;
+                            SKRoundRectCache.Shared.Return(shadowRect);
                         }
                         else
                         {
@@ -427,7 +437,7 @@ namespace Avalonia.Skia
                         var outerRect = AreaCastingShadowInHole(rc, (float)boxShadow.Blur, spread, offsetX, offsetY);
 
                         Canvas.Save();
-                        using var shadowRect = new SKRoundRect(skRoundRect);
+                        var shadowRect = SKRoundRectCache.Shared.GetAndSetRadii(skRoundRect!.Rect, skRoundRect.Radii);
                         if (spread != 0)
                             shadowRect.Deflate(spread, spread);
                         Canvas.ClipRoundRect(skRoundRect,
@@ -439,6 +449,7 @@ namespace Avalonia.Skia
                             Canvas.DrawRoundRectDifference(outerRRect, shadowRect, shadow.Paint);
                         Transform = oldTransform;
                         Canvas.Restore();
+                        SKRoundRectCache.Shared.Return(shadowRect);
                     }
                 }
             }
@@ -460,6 +471,9 @@ namespace Avalonia.Skia
                     }
                 }
             }
+
+            if(isRounded)
+                SKRoundRectCache.Shared.Return(skRoundRect);
         }
 
         /// <inheritdoc />
@@ -495,6 +509,12 @@ namespace Avalonia.Skia
         public void DrawGlyphRun(IBrush foreground, IRef<IGlyphRunImpl> glyphRun)
         {
             CheckLease();
+
+            if (foreground is null)
+            {
+                return;
+            }
+
             using (var paintWrapper = CreatePaint(_fillPaint, foreground, glyphRun.Item.Size))
             {
                 var glyphRunImpl = (GlyphRunImpl)glyphRun.Item;
@@ -523,7 +543,24 @@ namespace Avalonia.Skia
         {
             CheckLease();
             Canvas.Save();
-            Canvas.ClipRoundRect(clip.ToSKRoundRect(), antialias:true);
+
+            // Get the rounded rectangle
+            var rc = clip.Rect.ToSKRect();
+
+            // Get a round rect from the cache.
+            var roundRect = SKRoundRectCache.Shared.Get();
+
+            roundRect.SetRectRadii(rc,
+                new[]
+                {
+                    clip.RadiiTopLeft.ToSKPoint(), clip.RadiiTopRight.ToSKPoint(),
+                    clip.RadiiBottomRight.ToSKPoint(), clip.RadiiBottomLeft.ToSKPoint(),
+                });
+
+            Canvas.ClipRoundRect(roundRect, antialias:true);
+
+            // Should not need to reset as SetRectRadii overrides the values.
+            SKRoundRectCache.Shared.Return(roundRect);
         }
 
         /// <inheritdoc />
@@ -557,9 +594,9 @@ namespace Avalonia.Skia
             try
             {
                 // Return leased paints.
-                SKPaintCache.ReturnReset(_strokePaint);
-                SKPaintCache.ReturnReset(_fillPaint);
-                SKPaintCache.ReturnReset(_boxShadowPaint);
+                SKPaintCache.Shared.ReturnReset(_strokePaint);
+                SKPaintCache.Shared.ReturnReset(_fillPaint);
+                SKPaintCache.Shared.ReturnReset(_boxShadowPaint);
 
                 if (_grContext != null)
                 {
@@ -621,7 +658,7 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Get();
+            var paint = SKPaintCache.Shared.Get();
 
             Canvas.SaveLayer(paint);
             _maskStack.Push(CreatePaint(paint, mask, bounds.Size));
@@ -632,11 +669,11 @@ namespace Avalonia.Skia
         {
             CheckLease();
 
-            var paint = SKPaintCache.Get();
+            var paint = SKPaintCache.Shared.Get();
             paint.BlendMode = SKBlendMode.DstIn;
             
             Canvas.SaveLayer(paint);
-            SKPaintCache.ReturnReset(paint);
+            SKPaintCache.Shared.ReturnReset(paint);
 
             PaintWrapper paintWrapper;
             using (paintWrapper = _maskStack.Pop())
@@ -644,7 +681,7 @@ namespace Avalonia.Skia
                 Canvas.DrawPaint(paintWrapper.Paint);
             }
             // Return the paint wrapper's paint less the reset since the paint is already reset in the Dispose method above.
-            SKPaintCache.Return(paintWrapper.Paint);
+            SKPaintCache.Shared.Return(paintWrapper.Paint);
 
             Canvas.Restore();
 

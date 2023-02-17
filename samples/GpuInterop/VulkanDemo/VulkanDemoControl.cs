@@ -1,24 +1,12 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
-using Avalonia.Platform;
 using Avalonia.Rendering.Composition;
-using Silk.NET.Core;
-using Silk.NET.Vulkan;
-using Silk.NET.Vulkan.Extensions.KHR;
-using SilkNetDemo;
 
 namespace GpuInterop.VulkanDemo;
 
 public class VulkanDemoControl : DrawingSurfaceDemoBase
 {
-    private Instance _vkInstance;
-    private Vk _api;
-
     class VulkanResources : IAsyncDisposable
     {
         public VulkanContext Context { get; }

@@ -7,7 +7,6 @@ using Avalonia.Data;
 using Avalonia.Diagnostics;
 using Avalonia.Styling;
 using Avalonia.Utilities;
-using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.PropertyStore
 {
@@ -156,11 +155,12 @@ namespace Avalonia.PropertyStore
             return observer;
         }
 
-        public void ClearLocalValue(AvaloniaProperty property)
+        public void ClearValue(AvaloniaProperty property)
         {
             if (TryGetEffectiveValue(property, out var effective) &&
-                effective.Priority == BindingPriority.LocalValue)
+                (effective.Priority == BindingPriority.LocalValue || effective.IsOverridenCurrentValue))
             {
+                effective.IsOverridenCurrentValue = false;
                 ReevaluateEffectiveValue(property, effective, ignoreLocalValue: true);
             }
         }
@@ -184,7 +184,7 @@ namespace Avalonia.PropertyStore
                 }
                 else
                 {
-                    var effectiveValue = new EffectiveValue<T>(Owner, property);
+                    var effectiveValue = CreateEffectiveValue(property);
                     AddEffectiveValue(property, effectiveValue);
                     effectiveValue.SetAndRaise(this, result, priority);
                 }
@@ -200,12 +200,26 @@ namespace Avalonia.PropertyStore
                 }
                 else
                 {
-                    var effectiveValue = new EffectiveValue<T>(Owner, property);
+                    var effectiveValue = CreateEffectiveValue(property);
                     AddEffectiveValue(property, effectiveValue);
                     effectiveValue.SetLocalValueAndRaise(this, property, value);
                 }
 
                 return null;
+            }
+        }
+
+        public void SetCurrentValue<T>(StyledProperty<T> property, T value)
+        {
+            if (TryGetEffectiveValue(property, out var v))
+            {
+                ((EffectiveValue<T>)v).SetCurrentValueAndRaise(this, property, value);
+            }
+            else
+            {
+                var effectiveValue = CreateEffectiveValue(property);
+                AddEffectiveValue(property, effectiveValue);
+                effectiveValue.SetCurrentValueAndRaise(this, property, value);
             }
         }
 
@@ -235,12 +249,7 @@ namespace Avalonia.PropertyStore
             return false;
         }
 
-        public bool IsSet(AvaloniaProperty property)
-        {
-            if (_effectiveValues.TryGetValue(property, out var v))
-                return v.Priority < BindingPriority.Inherited;
-            return false;
-        }
+        public bool IsSet(AvaloniaProperty property) => _effectiveValues.TryGetValue(property, out _);
 
         public void CoerceValue(AvaloniaProperty property)
         {
@@ -276,6 +285,16 @@ namespace Avalonia.PropertyStore
 
             result = null;
             return false;
+        }
+
+        public EffectiveValue<T> CreateEffectiveValue<T>(StyledProperty<T> property)
+        {
+            EffectiveValue<T>? inherited = null;
+
+            if (property.Inherits && TryGetInheritedValue(property, out var v))
+                inherited = (EffectiveValue<T>)v;
+
+            return new EffectiveValue<T>(Owner, property, inherited);
         }
 
         public void SetInheritanceParent(AvaloniaObject? newParent)
@@ -377,23 +396,6 @@ namespace Avalonia.PropertyStore
             else
             {
                 AddEffectiveValueAndRaise(property, entry, priority);
-            }
-        }
-
-        /// <summary>
-        /// Called by non-LocalValue binding entries to re-evaluate the effective value when the
-        /// binding produces an unset value.
-        /// </summary>
-        /// <param name="property">The bound property.</param>
-        /// <param name="priority">The priority of binding which produced a new value.</param>
-        public void OnBindingValueCleared(AvaloniaProperty property, BindingPriority priority)
-        {
-            Debug.Assert(priority != BindingPriority.LocalValue);
-
-            if (TryGetEffectiveValue(property, out var existing))
-            {
-                if (priority <= existing.Priority)
-                    ReevaluateEffectiveValue(property, existing);
             }
         }
 
@@ -507,7 +509,7 @@ namespace Avalonia.PropertyStore
                 if (existing == observer)
                 {
                     _localValueBindings?.Remove(property.Id);
-                    ClearLocalValue(property);
+                    ClearValue(property);
                 }
             }
         }
@@ -633,11 +635,13 @@ namespace Avalonia.PropertyStore
         {
             object? value;
             BindingPriority priority;
+            bool overridden = false;
 
             if (_effectiveValues.TryGetValue(property, out var v))
             {
                 value = v.Value;
                 priority = v.Priority;
+                overridden = v.IsOverridenCurrentValue;
             }
             else if (property.Inherits && TryGetInheritedValue(property, out v))
             {
@@ -654,7 +658,8 @@ namespace Avalonia.PropertyStore
                 property,
                 value,
                 priority,
-                null);
+                null,
+                overridden);
         }
 
         private int InsertFrame(ValueFrame frame)
@@ -804,7 +809,7 @@ namespace Avalonia.PropertyStore
                     // - The value is a non-animation value and its priority is higher than the current
                     //   effective value's base priority
                     var isRelevantPriority = current is null ||
-                        priority < current.Priority ||
+                        (priority < current.Priority && priority < current.BasePriority) ||
                         (priority > BindingPriority.Animation && priority < current.BasePriority);
 
                     if (foundEntry && isRelevantPriority && entry!.HasValue)

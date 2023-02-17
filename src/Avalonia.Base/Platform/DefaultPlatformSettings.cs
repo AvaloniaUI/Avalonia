@@ -37,7 +37,7 @@ namespace Avalonia.Platform
             };
         }
 
-        public event EventHandler<PlatformColorValues>? ColorValuesChanged;
+        public virtual event EventHandler<PlatformColorValues>? ColorValuesChanged;
 
         protected void OnColorValuesChanged(PlatformColorValues colorValues)
         {
