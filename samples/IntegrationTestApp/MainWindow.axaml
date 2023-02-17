@@ -153,6 +153,9 @@
           </StackPanel>
         </Grid>
       </TabItem>
+      <TabItem Header="SliderTab">
+          <Slider VerticalAlignment="Top" Name="Slider" Value="30"/>
+      </TabItem>
     </TabControl>
   </DockPanel>
 </Window>
