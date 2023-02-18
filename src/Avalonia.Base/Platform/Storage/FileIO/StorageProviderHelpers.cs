@@ -7,6 +7,23 @@ namespace Avalonia.Platform.Storage.FileIO;
 
 internal static class StorageProviderHelpers
 {
+    public static IStorageItem? TryCreateBclStorageItem(string path)
+    {
+        var directory = new DirectoryInfo(path);
+        if (directory.Exists)
+        {
+            return new BclStorageFolder(directory);
+        }
+        
+        var file = new FileInfo(path);
+        if (file.Exists)
+        {
+            return new BclStorageFile(file);
+        }
+
+        return null;
+    }
+    
     public static Uri FilePathToUri(string path)
     {
         var uriPath = new StringBuilder(path)

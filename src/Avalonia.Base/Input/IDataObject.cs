@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using Avalonia.Platform.Storage;
 
 namespace Avalonia.Input
 {
@@ -20,20 +22,11 @@ namespace Avalonia.Input
         bool Contains(string dataFormat);
 
         /// <summary>
-        /// Returns the dragged text if the DataObject contains any text.
-        /// <seealso cref="DataFormats.Text"/>
-        /// </summary>
-        string? GetText();
-
-        /// <summary>
-        /// Returns a list of filenames if the DataObject contains filenames.
-        /// <seealso cref="DataFormats.FileNames"/>
-        /// </summary>
-        IEnumerable<string>? GetFileNames();
-        
-        /// <summary>
         /// Tries to get the data of the given DataFormat.
         /// </summary>
+        /// <returns>
+        /// Object data. If format isn't avaialble, returns null.
+        /// </returns>
         object? Get(string dataFormat);
     }
 }
