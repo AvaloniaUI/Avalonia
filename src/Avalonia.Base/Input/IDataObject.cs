@@ -25,7 +25,7 @@ namespace Avalonia.Input
         /// Tries to get the data of the given DataFormat.
         /// </summary>
         /// <returns>
-        /// Object data. If format isn't avaialble, returns null.
+        /// Object data. If format isn't available, returns null.
         /// </returns>
         object? Get(string dataFormat);
     }

@@ -11,7 +11,7 @@ namespace Avalonia.Input
         /// <seealso cref="DataFormats.Files"/>.
         /// </summary>
         /// <returns>
-        /// Collection of storage items - files or folders. If format isn't avaialble, returns null.
+        /// Collection of storage items - files or folders. If format isn't available, returns null.
         /// </returns>
         public static IEnumerable<IStorageItem>? GetFiles(this IDataObject dataObject)
         {
@@ -23,7 +23,7 @@ namespace Avalonia.Input
         /// <seealso cref="DataFormats.FileNames"/>
         /// </summary>
         /// <returns>
-        /// Collection of file names. If format isn't avaialble, returns null.
+        /// Collection of file names. If format isn't available, returns null.
         /// </returns>
         [System.Obsolete("Use GetFiles, this method is supported only on desktop platforms.")]
         public static IEnumerable<string>? GetFileNames(this IDataObject dataObject)
@@ -40,7 +40,7 @@ namespace Avalonia.Input
         /// <seealso cref="DataFormats.Text"/>
         /// </summary>
         /// <returns>
-        /// A text string. If format isn't avaialble, returns null.
+        /// A text string. If format isn't available, returns null.
         /// </returns>
         public static string? GetText(this IDataObject dataObject)
         {
