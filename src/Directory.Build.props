@@ -18,10 +18,11 @@
         <PackageReference Include="Nerdbank.GitVersioning" Version="3.5.119" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup Condition="'$(InstallAvalonia)' == 'true'">
-        <PackageReference Include="Avalonia" Version="0.10.999-cibuild0012810-beta" />
-        <PackageReference Include="Avalonia.Desktop" Version="0.10.999-cibuild0012810-beta" />
-        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.999-cibuild0012810-beta" />
-        <PackageReference Include="Avalonia.Diagnostics" Version="0.10.999-cibuild0012810-beta" />
+        <PackageReference Include="Avalonia" Version="11.0.0-preview5" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.0.0-preview5" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.0-preview5" />
+        <PackageReference Include="Avalonia.Diagnostics" Version="11.0.0-preview5" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0-preview5" />
     </ItemGroup>
     <ItemGroup>
         <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="LICENSE" />

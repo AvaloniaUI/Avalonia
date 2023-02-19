@@ -15,6 +15,7 @@ namespace Sample.App
         internal global::Avalonia.Controls.ListBox AwesomeListView;
         internal global::Avalonia.Controls.TextBox ConfirmPasswordTextBox;
         internal global::Avalonia.Controls.TextBlock ConfirmPasswordValidation;
+        internal global::Avalonia.Controls.Documents.Run SignUpButtonDescription;
         internal global::Avalonia.Controls.Button SignUpButton;
         internal global::Avalonia.Controls.TextBlock CompoundValidation;
 
@@ -30,15 +31,16 @@ namespace Sample.App
                 AvaloniaXamlLoader.Load(this);
             }
 
-            UserNameTextBox = this.FindControl<global::Controls.CustomTextBox>("UserNameTextBox");
-            UserNameValidation = this.FindControl<global::Avalonia.Controls.TextBlock>("UserNameValidation");
-            PasswordTextBox = this.FindControl<global::Avalonia.Controls.TextBox>("PasswordTextBox");
-            PasswordValidation = this.FindControl<global::Avalonia.Controls.TextBlock>("PasswordValidation");
-            AwesomeListView = this.FindControl<global::Avalonia.Controls.ListBox>("AwesomeListView");
-            ConfirmPasswordTextBox = this.FindControl<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
-            ConfirmPasswordValidation = this.FindControl<global::Avalonia.Controls.TextBlock>("ConfirmPasswordValidation");
-            SignUpButton = this.FindControl<global::Avalonia.Controls.Button>("SignUpButton");
-            CompoundValidation = this.FindControl<global::Avalonia.Controls.TextBlock>("CompoundValidation");
+            UserNameTextBox = this.FindNameScope()?.Find<global::Controls.CustomTextBox>("UserNameTextBox");
+            UserNameValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("UserNameValidation");
+            PasswordTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("PasswordTextBox");
+            PasswordValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("PasswordValidation");
+            AwesomeListView = this.FindNameScope()?.Find<global::Avalonia.Controls.ListBox>("AwesomeListView");
+            ConfirmPasswordTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("ConfirmPasswordTextBox");
+            ConfirmPasswordValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("ConfirmPasswordValidation");
+            SignUpButtonDescription = this.FindNameScope()?.Find<global::Avalonia.Controls.Documents.Run>("SignUpButtonDescription");
+            SignUpButton = this.FindNameScope()?.Find<global::Avalonia.Controls.Button>("SignUpButton");
+            CompoundValidation = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBlock>("CompoundValidation");
         }
     }
 }

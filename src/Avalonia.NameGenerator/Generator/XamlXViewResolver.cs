@@ -63,8 +63,7 @@ internal class XamlXViewResolver : IViewResolver, IXamlAstVisitor
             return node;
 
         var clrType = objectNode.Type.GetClrType();
-
-        if (!clrType.IsAvaloniaControl())
+        if (!clrType.IsAvaloniaStyledElement())
             return node;
 
         foreach (var child in objectNode.Children)

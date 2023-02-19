@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using XamlX.Compiler;
 using XamlX.Emit;
 using XamlX.Transform;
@@ -19,7 +21,7 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
 
         var configuration = new TransformerConfiguration(
             typeSystem,
-            typeSystem.Assemblies[0],
+            typeSystem.Assemblies.First(),
             mappings);
         return new MiniCompiler(configuration);
     }
@@ -37,8 +39,12 @@ internal sealed class MiniCompiler : XamlCompiler<object, IXamlEmitResult>
 
     protected override XamlEmitContext<object, IXamlEmitResult> InitCodeGen(
         IFileSource file,
-        Func<string, IXamlType, IXamlTypeBuilder<object>> createSubType,
-        object codeGen, XamlRuntimeContext<object, IXamlEmitResult> context,
+        Func<string, IXamlType,
+        IXamlTypeBuilder<object>> createSubType,
+        Func<string, IXamlType, IEnumerable<IXamlType>,
+        IXamlTypeBuilder<object>> createDelegateType,
+        object codeGen,
+        XamlRuntimeContext<object, IXamlEmitResult> context,
         bool needContextLocal) =>
         throw new NotSupportedException();
 }

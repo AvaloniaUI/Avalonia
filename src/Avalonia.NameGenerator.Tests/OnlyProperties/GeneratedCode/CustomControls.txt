@@ -6,8 +6,8 @@ namespace Sample.App
 {
     partial class SampleView
     {
-        internal global::Avalonia.ReactiveUI.RoutedViewHost ClrNamespaceRoutedViewHost => this.FindControl<global::Avalonia.ReactiveUI.RoutedViewHost>("ClrNamespaceRoutedViewHost");
-        internal global::Avalonia.ReactiveUI.RoutedViewHost UriRoutedViewHost => this.FindControl<global::Avalonia.ReactiveUI.RoutedViewHost>("UriRoutedViewHost");
-        internal global::Controls.CustomTextBox UserNameTextBox => this.FindControl<global::Controls.CustomTextBox>("UserNameTextBox");
+        internal global::Avalonia.ReactiveUI.RoutedViewHost ClrNamespaceRoutedViewHost => this.FindNameScope()?.Find<global::Avalonia.ReactiveUI.RoutedViewHost>("ClrNamespaceRoutedViewHost");
+        internal global::Avalonia.ReactiveUI.RoutedViewHost UriRoutedViewHost => this.FindNameScope()?.Find<global::Avalonia.ReactiveUI.RoutedViewHost>("UriRoutedViewHost");
+        internal global::Controls.CustomTextBox UserNameTextBox => this.FindNameScope()?.Find<global::Controls.CustomTextBox>("UserNameTextBox");
     }
 }

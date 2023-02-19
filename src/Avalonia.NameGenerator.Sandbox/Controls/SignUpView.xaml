@@ -27,6 +27,13 @@
                    TextWrapping="Wrap"
                    Foreground="Red"
                    FontSize="12" />
+        <TextBlock>
+            <TextBlock.Inlines>
+                <InlineCollection>
+                    <Run x:Name="SignUpButtonDescription" />
+                </InlineCollection>
+            </TextBlock.Inlines>
+        </TextBlock>
         <Button Margin="0 10 0 5"
                 Content="Sign up"
                 x:Name="SignUpButton" />

@@ -24,9 +24,9 @@ namespace Sample.App
                 AvaloniaXamlLoader.Load(this);
             }
 
-            ClrNamespaceRoutedViewHost = this.FindControl<global::Avalonia.ReactiveUI.RoutedViewHost>("ClrNamespaceRoutedViewHost");
-            UriRoutedViewHost = this.FindControl<global::Avalonia.ReactiveUI.RoutedViewHost>("UriRoutedViewHost");
-            UserNameTextBox = this.FindControl<global::Controls.CustomTextBox>("UserNameTextBox");
+            ClrNamespaceRoutedViewHost = this.FindNameScope()?.Find<global::Avalonia.ReactiveUI.RoutedViewHost>("ClrNamespaceRoutedViewHost");
+            UriRoutedViewHost = this.FindNameScope()?.Find<global::Avalonia.ReactiveUI.RoutedViewHost>("UriRoutedViewHost");
+            UserNameTextBox = this.FindNameScope()?.Find<global::Controls.CustomTextBox>("UserNameTextBox");
         }
     }
 }

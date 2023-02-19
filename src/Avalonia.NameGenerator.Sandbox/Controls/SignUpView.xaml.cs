@@ -48,6 +48,7 @@ public partial class SignUpView : ReactiveUserControl<SignUpViewModel>
             UserNameTextBox.Text = "Joseph!";
             PasswordTextBox.Text = "1234";
             ConfirmPasswordTextBox.Text = "1234";
+            SignUpButtonDescription.Text = "Press the button below to sign up.";
         });
     }
 }

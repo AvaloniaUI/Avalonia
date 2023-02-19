@@ -1,33 +1,25 @@
-﻿using System.Linq;
+using System.Linq;
 using XamlX.TypeSystem;
 
 namespace Avalonia.NameGenerator.Generator;
 
 internal static class ResolverExtensions
 {
-	public static bool IsAvaloniaControl(this IXamlType clrType)
-	{
-		return clrType.HasControlBaseType() || clrType.HasIControlInterface();
-	}
+    public static bool IsAvaloniaStyledElement(this IXamlType clrType) =>
+        clrType.HasStyledElementBaseType() ||
+        clrType.HasIStyledElementInterface();
 
-	private static bool HasControlBaseType(this IXamlType clrType)
-	{
-		// Check for the base type since IControl interface is removed.
-		// https://github.com/AvaloniaUI/Avalonia/pull/9553
-		if (clrType.FullName == "Avalonia.Controls.Control")
-			return true;
+    private static bool HasStyledElementBaseType(this IXamlType clrType)
+    {
+        // Check for the base type since IStyledElement interface is removed.
+        // https://github.com/AvaloniaUI/Avalonia/pull/9553
+        if (clrType.FullName == "Avalonia.StyledElement")
+            return true;
+        return clrType.BaseType != null && IsAvaloniaStyledElement(clrType.BaseType);
+    }
 
-		if (clrType.BaseType != null)
-			return IsAvaloniaControl(clrType.BaseType);
-
-		return false;
-	}
-
-	private static bool HasIControlInterface(this IXamlType clrType)
-	{
-		return clrType
-			.Interfaces
-			.Any(abstraction => abstraction.IsInterface &&
-			                    abstraction.FullName == "Avalonia.Controls.IControl");
-	}
+    private static bool HasIStyledElementInterface(this IXamlType clrType) =>
+        clrType.Interfaces.Any(abstraction =>
+            abstraction.IsInterface &&
+            abstraction.FullName == "Avalonia.IStyledElement");
 }

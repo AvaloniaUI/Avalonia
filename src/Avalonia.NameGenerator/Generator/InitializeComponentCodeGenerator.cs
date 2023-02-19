@@ -34,7 +34,7 @@ internal class InitializeComponentCodeGenerator: ICodeGenerator
         {
             var (typeName, name, fieldModifier) = resolvedName;
             properties.Add($"        {fieldModifier} {typeName} {name};");
-            initializations.Add($"            {name} = this.FindControl<{typeName}>(\"{name}\");");
+            initializations.Add($"            {name} = this.FindNameScope()?.Find<{typeName}>(\"{name}\");");
         }
 
         var attachDevTools = _diagnosticsAreConnected && IsWindow(xamlType);

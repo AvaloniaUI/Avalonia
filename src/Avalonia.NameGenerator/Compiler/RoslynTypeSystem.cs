@@ -25,7 +25,7 @@ public class RoslynTypeSystem : IXamlTypeSystem
         _assemblies.AddRange(assemblySymbols);
     }
 
-    public IReadOnlyList<IXamlAssembly> Assemblies => _assemblies;
+    public IEnumerable<IXamlAssembly> Assemblies => _assemblies;
 
     public IXamlAssembly FindAssembly(string name) =>
         Assemblies

@@ -108,7 +108,7 @@ public class XamlXNameResolverTests
         var controls = ResolveNames(xaml);
 
         Assert.NotEmpty(controls);
-        Assert.Equal(9, controls.Count);
+        Assert.Equal(10, controls.Count);
         Assert.Equal("UserNameTextBox", controls[0].Name);
         Assert.Equal("UserNameValidation", controls[1].Name);
         Assert.Equal("PasswordTextBox", controls[2].Name);
@@ -116,8 +116,9 @@ public class XamlXNameResolverTests
         Assert.Equal("AwesomeListView", controls[4].Name);
         Assert.Equal("ConfirmPasswordTextBox", controls[5].Name);
         Assert.Equal("ConfirmPasswordValidation", controls[6].Name);
-        Assert.Equal("SignUpButton", controls[7].Name);
-        Assert.Equal("CompoundValidation", controls[8].Name);
+        Assert.Equal("SignUpButtonDescription", controls[7].Name);
+        Assert.Equal("SignUpButton", controls[8].Name);
+        Assert.Equal("CompoundValidation", controls[9].Name);
     }
 
     private static IReadOnlyList<ResolvedName> ResolveNames(string xaml)

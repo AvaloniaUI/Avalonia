@@ -7,12 +7,7 @@
         <InstallAvalonia>true</InstallAvalonia>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Update="**\*.xaml.cs">
-            <DependentUpon>%(Filename)</DependentUpon>
-        </Compile>
-        <EmbeddedResource Include="**\*.xaml">
-            <SubType>Designer</SubType>
-        </EmbeddedResource>
+        <AvaloniaResource Include="**\*.xaml" />
         <!-- Note this AdditionalFiles directive. -->
         <AdditionalFiles Include="**\*.xaml" />
     </ItemGroup>

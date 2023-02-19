@@ -23,8 +23,8 @@ namespace Sample.App
                 AvaloniaXamlLoader.Load(this);
             }
 
-            UserNameTextBox = this.FindControl<global::Avalonia.Controls.TextBox>("UserNameTextBox");
-            NamedListBox = this.FindControl<global::Avalonia.Controls.ListBox>("NamedListBox");
+            UserNameTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("UserNameTextBox");
+            NamedListBox = this.FindNameScope()?.Find<global::Avalonia.Controls.ListBox>("NamedListBox");
         }
     }
 }

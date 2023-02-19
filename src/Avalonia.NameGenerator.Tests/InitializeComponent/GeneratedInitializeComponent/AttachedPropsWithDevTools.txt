@@ -30,7 +30,7 @@ namespace Sample.App
             }
 #endif
 
-            UserNameTextBox = this.FindControl<global::Avalonia.Controls.TextBox>("UserNameTextBox");
+            UserNameTextBox = this.FindNameScope()?.Find<global::Avalonia.Controls.TextBox>("UserNameTextBox");
         }
     }
 }
