@@ -190,7 +190,7 @@ namespace Avalonia.Controls
                 {
                     if (treeViewItem.ItemCount > 0 && !treeViewItem.IsExpanded)
                     {
-                        treeViewItem.IsExpanded = true;
+                        treeViewItem.SetCurrentValue(IsExpandedProperty, true);
                         return true;
                     }
 
@@ -201,7 +201,7 @@ namespace Avalonia.Controls
                 {
                     if (treeViewItem.ItemCount > 0 && treeViewItem.IsExpanded)
                     {
-                        treeViewItem.IsExpanded = false;
+                        treeViewItem.SetCurrentValue(IsExpandedProperty, false);
                         return true;
                     }
 
@@ -214,7 +214,7 @@ namespace Avalonia.Controls
                     {
                         if (treeViewItem.IsFocused)
                         {
-                            treeViewItem.IsExpanded = false;
+                            treeViewItem.SetCurrentValue(IsExpandedProperty, false);
                         }
                         else
                         {
@@ -265,7 +265,7 @@ namespace Avalonia.Controls
         {
             if (ItemCount > 0)
             {
-                IsExpanded = !IsExpanded;
+                SetCurrentValue(IsExpandedProperty, !IsExpanded);
                 e.Handled = true;
             }
         }
