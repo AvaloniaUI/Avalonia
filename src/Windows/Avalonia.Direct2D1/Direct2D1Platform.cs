@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
@@ -27,7 +27,7 @@ namespace Avalonia
 
 namespace Avalonia.Direct2D1
 {
-    public class Direct2D1Platform : IPlatformRenderInterface
+    internal class Direct2D1Platform : IPlatformRenderInterface
     {
         private static readonly Direct2D1Platform s_instance = new Direct2D1Platform();
 
@@ -55,15 +55,18 @@ namespace Avalonia.Direct2D1
                     return;
                 }
 #if DEBUG
-                try
+                if (Debugger.IsAttached)
                 {
-                    Direct2D1Factory = new SharpDX.Direct2D1.Factory1(
-                        SharpDX.Direct2D1.FactoryType.MultiThreaded,
+                    try
+                    {
+                        Direct2D1Factory = new SharpDX.Direct2D1.Factory1(
+                            SharpDX.Direct2D1.FactoryType.MultiThreaded,
                             SharpDX.Direct2D1.DebugLevel.Error);
-                }
-                catch
-                {
-                    //
+                    }
+                    catch
+                    {
+                        // ignore, retry below without the debug layer
+                    }
                 }
 #endif
                 if (Direct2D1Factory == null)
@@ -257,7 +260,7 @@ namespace Avalonia.Direct2D1
                 sink.Close();
             }
 
-            var (baselineOriginX, baselineOriginY) = glyphRun.PlatformImpl.Item.BaselineOrigin;
+            var (baselineOriginX, baselineOriginY) = glyphRun.BaselineOrigin;
 
             var transformedGeometry = new SharpDX.Direct2D1.TransformedGeometry(
                 Direct2D1Factory,

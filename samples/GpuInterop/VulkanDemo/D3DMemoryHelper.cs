@@ -47,7 +47,7 @@ public class D3DMemoryHelper
                 MipLevels = 1,
                 SampleDescription = new SampleDescription { Count = 1, Quality = 0 },
                 CpuAccessFlags = default,
-                OptionFlags = ResourceOptionFlags.SharedKeyedmutex,
+                OptionFlags = ResourceOptionFlags.SharedKeyedmutex|ResourceOptionFlags.SharedNthandle,
                 BindFlags = BindFlags.RenderTarget | BindFlags.ShaderResource
             });
     }

@@ -22,7 +22,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var device = CreatePointerDeviceMock().Object;
             var impl = CreateTopLevelImplMock(renderer.Object);
 
@@ -50,7 +50,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var device = CreatePointerDeviceMock().Object;
             var impl = CreateTopLevelImplMock(renderer.Object);
 
@@ -93,7 +93,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var device = CreatePointerDeviceMock(pointerType: PointerType.Touch).Object;
             var impl = CreateTopLevelImplMock(renderer.Object);
 
@@ -119,7 +119,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var pointer = new Mock<IPointer>();
             var device = CreatePointerDeviceMock(pointer.Object).Object;
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -155,7 +155,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var device = CreatePointerDeviceMock().Object;
             var impl = CreateTopLevelImplMock(renderer.Object);
 
@@ -201,7 +201,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
             var result = new List<(object?, string)>();
@@ -256,7 +256,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
             var result = new List<(object?, string)>();
@@ -307,7 +307,7 @@ namespace Avalonia.Base.UnitTests.Input
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
             var expectedPosition = new Point(15, 15);
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
             var result = new List<(object?, string, Point)>();
@@ -351,7 +351,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
 
@@ -405,7 +405,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
 
@@ -442,7 +442,7 @@ namespace Avalonia.Base.UnitTests.Input
         {
             using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
 
-            var renderer = new Mock<IRenderer>();
+            var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
 

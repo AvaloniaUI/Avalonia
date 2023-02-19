@@ -44,7 +44,7 @@ namespace Avalonia.Benchmarks.Styling
             return new Styles
             {
                 preHost,
-                new TestStyles(50, 3, 5),
+                new TestStyles(50, 3, 5, 0),
                 postHost
             };
         }

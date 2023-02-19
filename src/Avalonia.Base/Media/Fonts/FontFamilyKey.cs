@@ -41,10 +41,7 @@ namespace Avalonia.Media.Fonts
             {
                 var hash = (int)2166136261;
 
-                if (Source != null)
-                {
-                    hash = (hash * 16777619) ^ Source.GetHashCode();
-                }
+                hash = (hash * 16777619) ^ Source.GetHashCode();
 
                 if (BaseUri != null)
                 {

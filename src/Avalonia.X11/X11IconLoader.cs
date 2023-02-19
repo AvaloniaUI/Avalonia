@@ -7,9 +7,9 @@ using Avalonia.Platform;
 
 namespace Avalonia.X11
 {
-    class X11IconLoader : IPlatformIconLoader
+    internal class X11IconLoader : IPlatformIconLoader
     {
-        static IWindowIconImpl LoadIcon(Bitmap bitmap)
+        private static IWindowIconImpl LoadIcon(Bitmap bitmap)
         {
             var rv = new X11IconData(bitmap);
             bitmap.Dispose();
@@ -28,8 +28,8 @@ namespace Avalonia.X11
             return LoadIcon(ms);
         }
     }
-    
-    unsafe class X11IconData : IWindowIconImpl, IFramebufferPlatformSurface
+
+    internal unsafe class X11IconData : IWindowIconImpl, IFramebufferPlatformSurface
     {
         private int _width;
         private int _height;

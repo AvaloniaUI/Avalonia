@@ -103,13 +103,13 @@ namespace Avalonia.Diagnostics.ViewModels
         public HorizontalAlignment HorizontalAlignment
         {
             get => _horizontalAlignment;
-            private set => RaiseAndSetIfChanged(ref _horizontalAlignment, value);
+            set => RaiseAndSetIfChanged(ref _horizontalAlignment, value);
         }
 
         public VerticalAlignment VerticalAlignment
         {
             get => _verticalAlignment;
-            private set => RaiseAndSetIfChanged(ref _verticalAlignment, value);
+            set => RaiseAndSetIfChanged(ref _verticalAlignment, value);
         }
 
         public bool HasPadding { get; }

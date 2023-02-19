@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-#nullable enable
+﻿using System.Runtime.InteropServices;
 
 namespace Avalonia.Win32.Interop.Automation
 {

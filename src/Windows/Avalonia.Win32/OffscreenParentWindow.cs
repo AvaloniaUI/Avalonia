@@ -1,17 +1,18 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using Avalonia.Platform;
 using Avalonia.Win32.Interop;
 namespace Avalonia.Win32
 {
-    class OffscreenParentWindow
+    internal class OffscreenParentWindow
     {
         public static IntPtr Handle { get; } = CreateParentWindow();
-        private static UnmanagedMethods.WndProc s_wndProcDelegate;
+
+        private static UnmanagedMethods.WndProc? s_wndProcDelegate;
+
         private static IntPtr CreateParentWindow()
         {
-            s_wndProcDelegate = new UnmanagedMethods.WndProc(ParentWndProc);
+            s_wndProcDelegate = ParentWndProc;
 
             var wndClassEx = new UnmanagedMethods.WNDCLASSEX
             {

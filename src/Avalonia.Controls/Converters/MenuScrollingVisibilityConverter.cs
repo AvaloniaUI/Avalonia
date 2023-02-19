@@ -14,7 +14,6 @@ namespace Avalonia.Controls.Converters
         public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
         {
             if (parameter == null ||
-                values == null ||
                 values.Count != 4 ||
                 !(values[0] is ScrollBarVisibility visibility) ||
                 !(values[1] is double offset) ||

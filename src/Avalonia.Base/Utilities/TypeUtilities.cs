@@ -212,7 +212,7 @@ namespace Avalonia.Utilities
 
             var toTypeConverter = TypeDescriptor.GetConverter(toUnderl);
 
-            if (toTypeConverter.CanConvertFrom(from) == true)
+            if (toTypeConverter.CanConvertFrom(from))
             {
                 result = toTypeConverter.ConvertFrom(null, culture, value);
                 return true;
@@ -220,7 +220,7 @@ namespace Avalonia.Utilities
 
             var fromTypeConverter = TypeDescriptor.GetConverter(from);
 
-            if (fromTypeConverter.CanConvertTo(toUnderl) == true)
+            if (fromTypeConverter.CanConvertTo(toUnderl))
             {
                 result = fromTypeConverter.ConvertTo(null, culture, value, toUnderl);
                 return true;
@@ -329,7 +329,7 @@ namespace Avalonia.Utilities
         }
 
         [RequiresUnreferencedCode(TrimmingMessages.ImplicitTypeConvertionRequiresUnreferencedCodeMessage)]
-        public static T ConvertImplicit<T>(object value)
+        public static T ConvertImplicit<T>(object? value)
         {
             if (TryConvertImplicit(typeof(T), value, out var result))
             {
@@ -369,11 +369,6 @@ namespace Avalonia.Utilities
         /// </remarks>
         public static bool IsNumeric(Type type)
         {
-            if (type == null)
-            {
-                return false;
-            }
-
             var underlyingType = Nullable.GetUnderlyingType(type);
 
             if (underlyingType != null)

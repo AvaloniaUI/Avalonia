@@ -68,7 +68,7 @@ namespace Avalonia.Controls
         /// Renders the visual to a <see cref="DrawingContext"/>.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             var background = Background;
             if (background != null)

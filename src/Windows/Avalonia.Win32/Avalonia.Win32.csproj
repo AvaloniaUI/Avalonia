@@ -6,17 +6,17 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <Compile Include="..\..\Avalonia.Base\Metadata\NullableAttributes.cs" Link="NullableAttributes.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\Avalonia\Avalonia.csproj" />
-    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2020091801" />
+    <PackageReference Include="Avalonia.Angle.Windows.Natives" Version="2.1.0.2023020321" />
     <PackageReference Include="MicroCom.CodeGenerator.MSBuild" Version="0.11.0" PrivateAssets="all" />
     <MicroComIdl Include="WinRT\winrt.idl" CSharpInteropPath="WinRT\WinRT.Generated.cs" />
     <MicroComIdl Include="Win32Com\win32.idl" CSharpInteropPath="Win32Com\Win32.Generated.cs" />
     <MicroComIdl Include="DirectX\directx.idl" CSharpInteropPath="DirectX\directx.Generated.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\build\System.Drawing.Common.props" />
+  <Import Project="..\..\..\build\System.Drawing.Common.props" />
+  <Import Project="..\..\..\build\NullableEnable.props" />
   <Import Project="..\..\..\build\DevAnalyzers.props" />
   <Import Project="..\..\..\build\SourceGenerators.props" />
   <ItemGroup>
@@ -27,4 +27,8 @@
   <PropertyGroup Label="Warnings">
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Avalonia.Win32.Interop, PublicKey=$(AvaloniaPublicKey)"/>
+    <InternalsVisibleTo Include="Avalonia.Direct2D1, PublicKey=$(AvaloniaPublicKey)"/>
+  </ItemGroup>
 </Project>
