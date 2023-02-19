@@ -12,68 +12,6 @@ using Avalonia.Metadata;
 namespace Avalonia.Controls
 {
     /// <summary>
-    /// Defines constants for how the SplitView Pane should display
-    /// </summary>
-    public enum SplitViewDisplayMode
-    {
-        /// <summary>
-        /// Pane is displayed next to content, and does not auto collapse
-        /// when tapped outside
-        /// </summary>
-        Inline,
-        /// <summary>
-        /// Pane is displayed next to content. When collapsed, pane is still
-        /// visible according to CompactPaneLength. Pane does not auto collapse
-        /// when tapped outside
-        /// </summary>
-        CompactInline,
-        /// <summary>
-        /// Pane is displayed above content. Pane collapses when tapped outside
-        /// </summary>
-        Overlay,
-        /// <summary>
-        /// Pane is displayed above content. When collapsed, pane is still
-        /// visible according to CompactPaneLength. Pane collapses when tapped outside
-        /// </summary>
-        CompactOverlay
-    }
-
-    /// <summary>
-    /// Defines constants for where the Pane should appear
-    /// </summary>
-    public enum SplitViewPanePlacement
-    {
-        Left,
-        Right
-    }
-
-    public class SplitViewTemplateSettings : AvaloniaObject
-    {
-        internal SplitViewTemplateSettings() { }
-
-        public static readonly StyledProperty<double> ClosedPaneWidthProperty =
-            AvaloniaProperty.Register<SplitViewTemplateSettings,
-                double>(nameof(ClosedPaneWidth),
-                0d);
-
-        public static readonly StyledProperty<GridLength> PaneColumnGridLengthProperty =
-            AvaloniaProperty.Register<SplitViewTemplateSettings, GridLength>(
-                nameof(PaneColumnGridLength));
-
-        public double ClosedPaneWidth
-        {
-            get => GetValue(ClosedPaneWidthProperty);
-            internal set => SetValue(ClosedPaneWidthProperty, value);
-        }
-
-        public GridLength PaneColumnGridLength
-        {
-            get => GetValue(PaneColumnGridLengthProperty);
-            internal set => SetValue(PaneColumnGridLengthProperty, value);
-        }
-    }
-
-    /// <summary>
     /// A control with two views: A collapsible pane and an area for content
     /// </summary>
     [TemplatePart("PART_PaneRoot", typeof(Panel))]
