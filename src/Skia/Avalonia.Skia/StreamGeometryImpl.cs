@@ -47,7 +47,7 @@ namespace Avalonia.Skia
         /// <inheritdoc />
         public IStreamGeometryImpl Clone()
         {
-            return new StreamGeometryImpl(_effectivePath?.Clone(), Bounds);
+            return new StreamGeometryImpl(_effectivePath.Clone(), Bounds);
         }
 
         /// <inheritdoc />
