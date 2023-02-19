@@ -97,6 +97,38 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<SplitViewTemplateSettings> TemplateSettingsProperty =
             AvaloniaProperty.Register<SplitView, SplitViewTemplateSettings>(nameof(TemplateSettings));
 
+        /// <summary>
+        /// Defines the <see cref="PaneClosed"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> PaneClosedEvent =
+            RoutedEvent.Register<SplitView, RoutedEventArgs>(
+                nameof(PaneClosed),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PaneClosing"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<CancelRoutedEventArgs> PaneClosingEvent =
+            RoutedEvent.Register<SplitView, CancelRoutedEventArgs>(
+                nameof(PaneClosing),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PaneOpened"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<RoutedEventArgs> PaneOpenedEvent =
+            RoutedEvent.Register<SplitView, RoutedEventArgs>(
+                nameof(PaneOpened),
+                RoutingStrategies.Bubble);
+
+        /// <summary>
+        /// Defines the <see cref="PaneOpening"/> event.
+        /// </summary>
+        public static readonly RoutedEvent<CancelRoutedEventArgs> PaneOpeningEvent =
+            RoutedEvent.Register<SplitView, CancelRoutedEventArgs>(
+                nameof(PaneOpening),
+                RoutingStrategies.Bubble);
+
         private Panel? _pane;
         private IDisposable? _pointerDisposable;
 
@@ -208,24 +240,48 @@ namespace Avalonia.Controls
         }
 
         /// <summary>
-        /// Fired when the pane is closed
+        /// Fired when the pane is closed.
         /// </summary>
-        public event EventHandler<EventArgs>? PaneClosed;
+        public event EventHandler<RoutedEventArgs>? PaneClosed
+        {
+            add => AddHandler(PaneClosedEvent, value);
+            remove => RemoveHandler(PaneClosedEvent, value);
+        }
 
         /// <summary>
-        /// Fired when the pane is closing
+        /// Fired when the pane is closing.
         /// </summary>
-        public event EventHandler<SplitViewPaneClosingEventArgs>? PaneClosing;
+        /// <remarks>
+        /// The event args <see cref="CancelRoutedEventArgs.Cancel"/> property may be set to true to cancel the event
+        /// and keep the pane open.
+        /// </remarks>
+        public event EventHandler<CancelRoutedEventArgs>? PaneClosing
+        {
+            add => AddHandler(PaneClosingEvent, value);
+            remove => RemoveHandler(PaneClosingEvent, value);
+        }
 
         /// <summary>
-        /// Fired when the pane is opened
+        /// Fired when the pane is opened.
         /// </summary>
-        public event EventHandler<EventArgs>? PaneOpened;
+        public event EventHandler<RoutedEventArgs>? PaneOpened
+        {
+            add => AddHandler(PaneOpenedEvent, value);
+            remove => RemoveHandler(PaneOpenedEvent, value);
+        }
 
         /// <summary>
-        /// Fired when the pane is opening
+        /// Fired when the pane is opening.
         /// </summary>
-        public event EventHandler<EventArgs>? PaneOpening;
+        /// <remarks>
+        /// The event args <see cref="CancelRoutedEventArgs.Cancel"/> property may be set to true to cancel the event
+        /// and keep the pane closed.
+        /// </remarks>
+        public event EventHandler<CancelRoutedEventArgs>? PaneOpening
+        {
+            add => AddHandler(PaneOpeningEvent, value);
+            remove => RemoveHandler(PaneOpeningEvent, value);
+        }
 
         protected override bool RegisterContentPresenter(IContentPresenter presenter)
         {
@@ -308,13 +364,15 @@ namespace Avalonia.Controls
                 {
                     PseudoClasses.Add(":open");
                     PseudoClasses.Remove(":closed");
-                    OnPaneOpened(EventArgs.Empty);
+
+                    OnPaneOpened(new RoutedEventArgs(PaneOpenedEvent, this));
                 }
                 else
                 {
                     PseudoClasses.Add(":closed");
                     PseudoClasses.Remove(":open");
-                    OnPaneClosed(EventArgs.Empty);
+
+                    OnPaneClosed(new RoutedEventArgs(PaneClosedEvent, this));
                 }
             }
             else if (change.Property == PaneProperty)
@@ -386,24 +444,24 @@ namespace Avalonia.Controls
             return (DisplayMode == SplitViewDisplayMode.CompactOverlay || DisplayMode == SplitViewDisplayMode.Overlay);
         }
 
-        protected virtual void OnPaneOpening(EventArgs args)
+        protected virtual void OnPaneOpening(CancelRoutedEventArgs args)
         {
-            PaneOpening?.Invoke(this, args);
+            RaiseEvent(args);
         }
 
-        protected virtual void OnPaneOpened(EventArgs args)
+        protected virtual void OnPaneOpened(RoutedEventArgs args)
         {
-            PaneOpened?.Invoke(this, args);
+            RaiseEvent(args);
         }
 
-        protected virtual void OnPaneClosing(SplitViewPaneClosingEventArgs args)
+        protected virtual void OnPaneClosing(CancelRoutedEventArgs args)
         {
-            PaneClosing?.Invoke(this, args);
+            RaiseEvent(args);
         }
 
-        protected virtual void OnPaneClosed(EventArgs args)
+        protected virtual void OnPaneClosed(RoutedEventArgs args)
         {
-            PaneClosed?.Invoke(this, args);
+            RaiseEvent(args);
         }
 
         /// <summary>
@@ -440,19 +498,22 @@ namespace Avalonia.Controls
         /// <param name="value">The value to coerce.</param>
         protected virtual bool OnCoerceIsPaneOpen(bool value)
         {
+            CancelRoutedEventArgs eventArgs;
+
             if (value)
             {
-                OnPaneOpening(EventArgs.Empty);
+                eventArgs = new CancelRoutedEventArgs(PaneOpeningEvent, this);
+                OnPaneOpening(eventArgs);
             }
             else
             {
-                var eventArgs = new SplitViewPaneClosingEventArgs(false);
+                eventArgs = new CancelRoutedEventArgs(PaneClosingEvent, this);
                 OnPaneClosing(eventArgs);
+            }
 
-                if (eventArgs.Cancel)
-                {
-                    return !value;
-                }
+            if (eventArgs.Cancel)
+            {
+                return !value;
             }
 
             return value;
