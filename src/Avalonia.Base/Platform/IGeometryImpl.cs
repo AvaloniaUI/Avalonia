@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using Avalonia.Metadata;
 
@@ -47,7 +48,7 @@ namespace Avalonia.Platform
         /// <param name="pen">The stroke to use.</param>
         /// <param name="point">The point.</param>
         /// <returns><c>true</c> if the geometry contains the point; otherwise, <c>false</c>.</returns>
-        bool StrokeContains(IPen pen, Point point);
+        bool StrokeContains(IPen? pen, Point point);
 
         /// <summary>
         /// Makes a clone of the geometry with the specified transform.
@@ -87,6 +88,7 @@ namespace Avalonia.Platform
         /// <param name="startOnBeginFigure">If ture, the resulting snipped path will start with a BeginFigure call.</param>
         /// <param name="segmentGeometry">The resulting snipped path.</param>
         /// <returns>If the snipping operation is successful.</returns>
-        bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure, out IGeometryImpl segmentGeometry);
+        bool TryGetSegment(double startDistance, double stopDistance, bool startOnBeginFigure,
+            [NotNullWhen(true)] out IGeometryImpl? segmentGeometry);
     }
 }

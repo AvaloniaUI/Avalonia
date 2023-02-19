@@ -6,7 +6,7 @@ using Tmds.DBus;
 
 namespace Avalonia.FreeDesktop
 {
-    public static class DBusHelper
+    internal static class DBusHelper
     {
         /// <summary>
         /// This class uses synchronous execution at DBus connection establishment stage

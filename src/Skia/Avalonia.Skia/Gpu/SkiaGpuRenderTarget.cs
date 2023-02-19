@@ -22,7 +22,7 @@ namespace Avalonia.Skia
             _renderTarget.Dispose();
         }
 
-        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer visualBrushRenderer)
+        public IDrawingContextImpl CreateDrawingContext(IVisualBrushRenderer? visualBrushRenderer)
         {
             var session = _renderTarget.BeginRenderingSession();
 

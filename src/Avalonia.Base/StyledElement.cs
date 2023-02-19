@@ -41,7 +41,11 @@ namespace Avalonia
         public static readonly StyledProperty<object?> DataContextProperty =
             AvaloniaProperty.Register<StyledElement, object?>(
                 nameof(DataContext),
+                defaultValue: null,
                 inherits: true,
+                defaultBindingMode: BindingMode.OneWay,
+                validate: null,
+                coerce: null,
                 notifying: DataContextNotifying);
 
         /// <summary>
@@ -520,13 +524,7 @@ namespace Avalonia
                     NotifyResourcesChanged();
                 }
 
-#nullable disable
-                RaisePropertyChanged(
-                    ParentProperty,
-                    new Optional<StyledElement>(old),
-                    new BindingValue<StyledElement>(Parent),
-                    BindingPriority.LocalValue);
-#nullable enable
+                RaisePropertyChanged(ParentProperty, old, Parent);
             }
         }
 

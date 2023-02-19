@@ -14,7 +14,7 @@ internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
             Display: AngleWin32EglDisplay { PlatformApi: AngleOptions.PlatformApi.DirectX11 }
         } && surface is IDirect3D11TexturePlatformSurface;
 
-    class RenderTargetWrapper : EglPlatformSurfaceRenderTargetBase
+    private class RenderTargetWrapper : EglPlatformSurfaceRenderTargetBase
     {
         private readonly AngleWin32EglDisplay _angle;
         private readonly IDirect3D11TextureRenderTarget _target;
@@ -31,8 +31,8 @@ internal class AngleD3DTextureFeature  : IGlPlatformSurfaceRenderTargetFactory
         {
             var success = false;
             var contextLock = Context.EnsureCurrent();
-            IDirect3D11TextureRenderTargetRenderSession session = null;
-            EglSurface surface = null;
+            IDirect3D11TextureRenderTargetRenderSession? session = null;
+            EglSurface? surface = null;
             try
             {
                 try

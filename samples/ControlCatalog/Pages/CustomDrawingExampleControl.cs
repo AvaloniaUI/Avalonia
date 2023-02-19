@@ -59,10 +59,12 @@ namespace ControlCatalog.Pages
 
             };
             StreamGeometry sg = new StreamGeometry();
-            var cntx = sg.Open();
-            cntx.BeginFigure(new Point(-25.0d, -10.0d), false);
-            cntx.ArcTo(new Point(25.0d, -10.0d), new Size(10.0d, 10.0d), 0.0d, false, SweepDirection.Clockwise);
-            cntx.EndFigure(true);
+            using (var cntx = sg.Open())
+            {
+                cntx.BeginFigure(new Point(-25.0d, -10.0d), false);
+                cntx.ArcTo(new Point(25.0d, -10.0d), new Size(10.0d, 10.0d), 0.0d, false, SweepDirection.Clockwise);
+                cntx.EndFigure(true);
+            }
             _smileGeometry = sg.Clone();
         }
 
