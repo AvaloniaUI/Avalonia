@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop.DBusIme.Fcitx
 {

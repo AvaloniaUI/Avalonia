@@ -6,6 +6,7 @@ using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
 using Avalonia.Logging;
 using Tmds.DBus.Protocol;
+using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop.DBusIme
 {

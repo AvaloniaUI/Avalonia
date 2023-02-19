@@ -33,7 +33,6 @@
       "src\\Avalonia.Themes.Simple\\Avalonia.Themes.Simple.csproj",
       "src\\Avalonia.X11\\Avalonia.X11.csproj",
       "src\\Linux\\Avalonia.LinuxFramebuffer\\Avalonia.LinuxFramebuffer.csproj",
-      "src\\Linux\\Tmds.DBus\\src\\Tmds.DBus.Protocol\\Tmds.DBus.Protocol.csproj",
       "src\\Markup\\Avalonia.Markup.Xaml.Loader\\Avalonia.Markup.Xaml.Loader.csproj",
       "src\\Markup\\Avalonia.Markup.Xaml\\Avalonia.Markup.Xaml.csproj",
       "src\\Markup\\Avalonia.Markup\\Avalonia.Markup.csproj",

@@ -4,6 +4,7 @@ using Avalonia.Controls.Platform;
 using Avalonia.Logging;
 using Avalonia.Platform;
 using Tmds.DBus.Protocol;
+using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
 {
