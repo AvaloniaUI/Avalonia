@@ -1,9 +1,0 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="clr-namespace:Avalonia.NameGenerator.Sandbox.Controls"
-        x:Class="Avalonia.NameGenerator.Sandbox.Views.SignUpView">
-    <StackPanel Margin="10">
-        <TextBlock Text="Sign Up" />
-        <controls:SignUpView x:Name="SignUpControl" />
-    </StackPanel>
-</Window>
