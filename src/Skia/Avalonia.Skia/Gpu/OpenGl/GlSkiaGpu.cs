@@ -10,15 +10,15 @@ using static Avalonia.OpenGL.GlConsts;
 
 namespace Avalonia.Skia
 {
-    class GlSkiaGpu : ISkiaGpu, IOpenGlTextureSharingRenderInterfaceContextFeature
+    internal class GlSkiaGpu : ISkiaGpu, IOpenGlTextureSharingRenderInterfaceContextFeature
     {
-        private GRContext _grContext;
-        private IGlContext _glContext;
+        private readonly GRContext _grContext;
+        private readonly IGlContext _glContext;
         public GRContext GrContext => _grContext;
         public IGlContext GlContext => _glContext;
-        private List<Action> _postDisposeCallbacks = new();
+        private readonly List<Action> _postDisposeCallbacks = new();
         private bool? _canCreateSurfaces;
-        private IExternalObjectsRenderInterfaceContextFeature? _externalObjectsFeature;
+        private readonly IExternalObjectsRenderInterfaceContextFeature? _externalObjectsFeature;
 
         public GlSkiaGpu(IGlContext context, long? maxResourceBytes)
         {
@@ -41,7 +41,7 @@ namespace Avalonia.Skia
             }
         }
 
-        class SurfaceWrapper : IGlPlatformSurface
+        private class SurfaceWrapper : IGlPlatformSurface
         {
             private readonly object _surface;
 
@@ -57,7 +57,7 @@ namespace Avalonia.Skia
             }
         }
 
-        public ISkiaGpuRenderTarget TryCreateRenderTarget(IEnumerable<object> surfaces)
+        public ISkiaGpuRenderTarget? TryCreateRenderTarget(IEnumerable<object> surfaces)
         {
             var customRenderTargetFactory = _glContext.TryGetFeature<IGlPlatformSurfaceRenderTargetFactory>();
             foreach (var surface in surfaces)
@@ -75,7 +75,7 @@ namespace Avalonia.Skia
             return null;
         }
 
-        public ISkiaSurface TryCreateSurface(PixelSize size, ISkiaGpuRenderSession session)
+        public ISkiaSurface? TryCreateSurface(PixelSize size, ISkiaGpuRenderSession? session)
         {
             // Only windows platform needs our FBO trickery
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -106,7 +106,7 @@ namespace Avalonia.Skia
 
         public bool CanCreateSharedContext => _glContext.CanCreateSharedContext;
 
-        public IGlContext CreateSharedContext(IEnumerable<GlVersion> preferredVersions = null) =>
+        public IGlContext? CreateSharedContext(IEnumerable<GlVersion>? preferredVersions = null) =>
             _glContext.CreateSharedContext(preferredVersions);
 
         public ICompositionImportableOpenGlSharedTexture CreateSharedTextureForComposition(IGlContext context, PixelSize size)
@@ -153,7 +153,7 @@ namespace Avalonia.Skia
         public bool IsLost => _glContext.IsLost;
         public IDisposable EnsureCurrent() => _glContext.EnsureCurrent();
 
-        public object TryGetFeature(Type featureType)
+        public object? TryGetFeature(Type featureType)
         {
             if (featureType == typeof(IOpenGlTextureSharingRenderInterfaceContextFeature))
                 return this;

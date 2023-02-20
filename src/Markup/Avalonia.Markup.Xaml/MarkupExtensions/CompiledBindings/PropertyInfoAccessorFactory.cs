@@ -121,7 +121,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         {
             if (_reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
             {
-                WeakEvents.PropertyChanged.Unsubscribe(inpc, this);
+                WeakEvents.ThreadSafePropertyChanged.Unsubscribe(inpc, this);
             }
         }
 
@@ -138,7 +138,7 @@ namespace Avalonia.Markup.Xaml.MarkupExtensions.CompiledBindings
         private void SubscribeToChanges()
         {
             if (_reference.TryGetTarget(out var o) && o is INotifyPropertyChanged inpc)
-                WeakEvents.PropertyChanged.Subscribe(inpc, this);
+                WeakEvents.ThreadSafePropertyChanged.Subscribe(inpc, this);
         }
     }
 

@@ -48,7 +48,8 @@ namespace Avalonia.Rendering.Composition.Server
             {
                 canvas.PostTransform = Matrix.Identity;
                 canvas.Transform = Matrix.Identity;
-                canvas.PushClip(AdornedVisual._combinedTransformedClipBounds);
+                if (AdornerIsClipped)
+                    canvas.PushClip(AdornedVisual._combinedTransformedClipBounds);
             }
             var transform = GlobalTransformMatrix;
             canvas.PostTransform = MatrixUtils.ToMatrix(transform);
@@ -74,7 +75,7 @@ namespace Avalonia.Rendering.Composition.Server
                 canvas.PopGeometryClip();
             if (ClipToBounds && !HandlesClipToBounds)
                 canvas.PopClip();
-            if (AdornedVisual != null)
+            if (AdornedVisual != null && AdornerIsClipped)
                 canvas.PopClip();
             if(Opacity != 1)
                 canvas.PopOpacity();
