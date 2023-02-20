@@ -61,8 +61,8 @@
         <DataGrid.Columns>
           <DataGridTextColumn Header="Property" Binding="{Binding Name}" IsReadOnly="True" x:DataType="vm:PropertyViewModel" />
           <DataGridTemplateColumn Header="Value" Width="100">
-            <DataTemplate>
-              <controls:PropertyValueEditorView />
+              <DataTemplate>
+                <local:PropertyValueEditorView />
               </DataTemplate>
           </DataGridTemplateColumn>
           <DataGridTextColumn Header="Type" Binding="{Binding Type}"

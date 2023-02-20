@@ -7,14 +7,16 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Diagnostics.Controls;
 using Avalonia.Diagnostics.ViewModels;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Media;
 using Avalonia.Reactive;
 
-namespace Avalonia.Diagnostics.Controls
+namespace Avalonia.Diagnostics.Views
 {
     internal class PropertyValueEditorView : UserControl
     {
@@ -53,7 +55,8 @@ namespace Avalonia.Diagnostics.Controls
         {
             _cleanup.Clear();
 
-            if (Property?.PropertyType is not { } propertyType) return null;
+            if (Property?.PropertyType is not { } propertyType)
+                return null;
 
             TControl CreateControl<TControl>(AvaloniaProperty valueProperty,
                 IValueConverter? converter = null,
@@ -94,22 +97,14 @@ namespace Avalonia.Diagnostics.Controls
 
             if (propertyType == typeof(Color))
             {
-                var el = new Ellipse
-                { 
-                    Width = 12,
-                    Height = 12,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
+                var el = new Ellipse { Width = 12, Height = 12, VerticalAlignment = VerticalAlignment.Center };
 
                 el.Bind(
                         Shape.FillProperty,
                         new Binding(nameof(Property.Value)) { Source = Property, Converter = Color2Brush })
                     .DisposeWith(_cleanup);
 
-                var tbl = new TextBlock
-                {
-                    VerticalAlignment = VerticalAlignment.Center
-                };
+                var tbl = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
 
                 tbl.Bind(
                         TextBlock.TextProperty,
@@ -128,11 +123,11 @@ namespace Avalonia.Diagnostics.Controls
                 var cv = new ColorView();
 
                 cv.Bind(
-                    ColorView.ColorProperty,
-                    new Binding(nameof(Property.Value), BindingMode.TwoWay)
-                    {
-                        Source = Property, Converter = Color2Brush
-                    })
+                        ColorView.ColorProperty,
+                        new Binding(nameof(Property.Value), BindingMode.TwoWay)
+                        {
+                            Source = Property, Converter = Color2Brush
+                        })
                     .DisposeWith(_cleanup);
 
                 FlyoutBase.SetAttachedFlyout(sp, new Flyout { Content = cv });
@@ -220,8 +215,8 @@ namespace Avalonia.Diagnostics.Controls
                         c.Items = Enum.GetValues(propertyType);
                     });
 
-            var tb = CreateControl<TextBox>(
-                TextBox.TextProperty,
+            var tb = CreateControl<CommitTextBox>(
+                CommitTextBox.CommittedTextProperty,
                 new TextToValueConverter(),
                 t =>
                 {
@@ -230,6 +225,26 @@ namespace Avalonia.Diagnostics.Controls
 
             tb.IsEnabled &= propertyType != typeof(object) &&
                             StringConversionHelper.CanConvertFromString(propertyType);
+
+            if (tb.IsEnabled)
+            {
+                tb.GetObservable(TextBox.TextProperty).Subscribe(t =>
+                {
+                    try
+                    {
+                        if (t != null)
+                        {
+                            StringConversionHelper.FromString(t, propertyType);
+                        }
+
+                        DataValidationErrors.ClearErrors(tb);
+                    }
+                    catch (Exception ex)
+                    {
+                        DataValidationErrors.SetError(tb, ex.GetBaseException());
+                    }
+                }).DisposeWith(_cleanup);
+            }
 
             return tb;
         }
@@ -281,7 +296,8 @@ namespace Avalonia.Diagnostics.Controls
             {
                 var converter = TypeDescriptor.GetConverter(type);
 
-                if (converter.CanConvertFrom(typeof(string))) return true;
+                if (converter.CanConvertFrom(typeof(string)))
+                    return true;
 
                 return GetParseMethod(type, out _) != null;
             }
@@ -309,7 +325,7 @@ namespace Avalonia.Diagnostics.Controls
 
             private static object? InvokeParse(string s, Type targetType)
             {
-                var m = GetParseMethod(targetType, out bool hasFormat);
+                var m = GetParseMethod(targetType, out var hasFormat);
 
                 if (m == null)
                     throw new InvalidOperationException();
