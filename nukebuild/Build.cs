@@ -220,16 +220,18 @@ partial class Build : NukeBuild
         .Executes(() =>
         {
             RunCoreTest("Avalonia.Skia.RenderTests");
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Parameters.IsRunningOnWindows)
                 RunCoreTest("Avalonia.Direct2D1.RenderTests");
         });
 
-    Target RunDesignerTests => _ => _
-        .OnlyWhenStatic(() => !Parameters.SkipTests && Parameters.IsRunningOnWindows)
+    Target RunToolsTests => _ => _
+        .OnlyWhenStatic(() => !Parameters.SkipTests)
         .DependsOn(Compile)
         .Executes(() =>
         {
-            RunCoreTest("Avalonia.DesignerSupport.Tests");
+            RunCoreTest("Avalonia.Generators.Tests");
+            if (Parameters.IsRunningOnWindows)
+                RunCoreTest("Avalonia.DesignerSupport.Tests");
         });
 
     Target RunLeakTests => _ => _
@@ -276,7 +278,7 @@ partial class Build : NukeBuild
     Target RunTests => _ => _
         .DependsOn(RunCoreLibsTests)
         .DependsOn(RunRenderTests)
-        .DependsOn(RunDesignerTests)
+        .DependsOn(RunToolsTests)
         .DependsOn(RunHtmlPreviewerTests)
         .DependsOn(RunLeakTests);
 
