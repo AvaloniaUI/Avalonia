@@ -8,7 +8,9 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Diagnostics.ViewModels;
+using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Markup.Xaml.Converters;
 using Avalonia.Media;
 using Avalonia.Reactive;
 
@@ -21,6 +23,8 @@ namespace Avalonia.Diagnostics.Controls
 
         private static readonly Geometry GeometryIcon = Geometry.Parse(
             "M23.25 15.5H30.8529C29.8865 8.99258 24.2763 4 17.5 4C10.0442 4 4 10.0442 4 17.5C4 24.2763 8.99258 29.8865 15.5 30.8529V23.25C15.5 18.9698 18.9698 15.5 23.25 15.5ZM23.25 18C20.3505 18 18 20.3505 18 23.25V38.75C18 41.6495 20.3505 44 23.25 44H38.75C41.6495 44 44 41.6495 44 38.75V23.25C44 20.3505 41.6495 18 38.75 18H23.25Z");
+
+        private static readonly ColorToBrushConverter Color2Brush = new();
 
         private readonly CompositeDisposable _cleanup = new();
         private PropertyViewModel? Property => (PropertyViewModel?)DataContext;
@@ -88,7 +92,54 @@ namespace Avalonia.Diagnostics.Controls
                         n.ParsingNumberStyle = NumberStyles.Integer;
                     });
 
-            if (propertyType == typeof(Color)) return CreateControl<ColorPicker>(ColorView.ColorProperty);
+            if (propertyType == typeof(Color))
+            {
+                var el = new Ellipse
+                { 
+                    Width = 12,
+                    Height = 12,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Cursor = new Cursor(StandardCursorType.Hand)
+                };
+
+                el.Bind(
+                        Shape.FillProperty,
+                        new Binding(nameof(Property.Value)) { Source = Property, Converter = Color2Brush })
+                    .DisposeWith(_cleanup);
+
+                var tbl = new TextBlock
+                {
+                    VerticalAlignment = VerticalAlignment.Center
+                };
+
+                tbl.Bind(
+                        TextBlock.TextProperty,
+                        new Binding(nameof(Property.Value)) { Source = Property })
+                    .DisposeWith(_cleanup);
+
+                var sp = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    Spacing = 2,
+                    Children = { el, tbl }
+                };
+
+                var cv = new ColorView();
+
+                cv.Bind(
+                    ColorView.ColorProperty,
+                    new Binding(nameof(Property.Value), BindingMode.TwoWay)
+                    {
+                        Source = Property, Converter = Color2Brush
+                    })
+                    .DisposeWith(_cleanup);
+
+                FlyoutBase.SetAttachedFlyout(sp, new Flyout { Content = cv });
+
+                sp.PointerPressed += (_, _) => FlyoutBase.ShowAttachedFlyout(sp);
+
+                return sp;
+            }
 
             if (ImplementsInterface<IBrush>(propertyType))
                 return CreateControl<BrushEditor>(BrushEditor.BrushProperty);
@@ -133,7 +184,7 @@ namespace Avalonia.Diagnostics.Controls
 
                 if (isImage)
                 {
-                    var previewImage = new Image { Width = 300, Height = 300 };
+                    var previewImage = new Image { Stretch = Stretch.Uniform, Width = 300, Height = 300 };
 
                     previewImage
                         .Bind(Image.SourceProperty, valueObservable)
