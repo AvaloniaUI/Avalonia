@@ -89,9 +89,10 @@ namespace Avalonia.Markup.UnitTests.Data
                     Mode = BindingMode.TwoWay
                 };
 
+                var model = new IndeiValidatingModel();
                 var root = new TestRoot
                 {
-                    DataContext = new IndeiValidatingModel(),
+                    DataContext = model,
                     Styles =
                     {
                         new Style(x => x.Is<DataValidationTestControl>())
@@ -109,13 +110,13 @@ namespace Avalonia.Markup.UnitTests.Data
 
                 Assert.Equal(20, target.GetValue(property));
 
-                target.SetValue(property, 200);
+                model.Value = 200;
 
                 Assert.Equal(200, target.GetValue(property));
                 Assert.IsType<DataValidationException>(target.DataValidationError);
                 Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
 
-                target.SetValue(property, 10);
+                model.Value = 10;
 
                 Assert.Equal(10, target.GetValue(property));
                 Assert.Null(target.DataValidationError);
@@ -166,7 +167,7 @@ namespace Avalonia.Markup.UnitTests.Data
                 Assert.IsType<DataValidationException>(target.DataValidationError);
                 Assert.Equal("Invalid value: 200.", target.DataValidationError?.Message);
 
-                target.SetValue(property, 10);
+                model.Value = 10;
 
                 Assert.Equal(10, target.GetValue(property));
                 Assert.Null(target.DataValidationError);

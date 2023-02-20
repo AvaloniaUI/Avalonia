@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Avalonia.Reactive;
 using Avalonia.Data;
 using Avalonia.Threading;
-using static Avalonia.Rendering.Composition.Animations.PropertySetSnapshot;
 
 namespace Avalonia.PropertyStore
 {

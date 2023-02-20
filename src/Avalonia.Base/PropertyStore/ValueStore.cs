@@ -838,8 +838,6 @@ namespace Avalonia.PropertyStore
                         break;
                 }
 
-                current?.EndReevaluation();
-
                 if (current?.Priority == BindingPriority.Unset)
                 {
                     if (current.BasePriority == BindingPriority.Unset)
@@ -852,6 +850,8 @@ namespace Avalonia.PropertyStore
                         current.RemoveAnimationAndRaise(this, property);
                     }
                 }
+
+                current?.EndReevaluation();
             }
             finally
             {
@@ -923,7 +923,6 @@ namespace Avalonia.PropertyStore
                 for (var i = _effectiveValues.Count - 1; i >= 0; --i)
                 {
                     _effectiveValues.GetKeyValue(i, out var key, out var e);
-                    e.EndReevaluation();
 
                     if (e.Priority == BindingPriority.Unset)
                     {
@@ -933,6 +932,8 @@ namespace Avalonia.PropertyStore
                         if (i > _effectiveValues.Count)
                             break;
                     }
+
+                    e.EndReevaluation();
                 }
             }
             finally
