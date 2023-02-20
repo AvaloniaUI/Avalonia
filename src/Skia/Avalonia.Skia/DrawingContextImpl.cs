@@ -585,9 +585,11 @@ namespace Avalonia.Skia
                 var rect = bounds.ToSKRect();
                 Canvas.SaveLayer(rect, new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity)});
             }
-
-            _opacityStack.Push(_currentOpacity);
-            _currentOpacity *= opacity;          
+            else
+            {
+                _opacityStack.Push(_currentOpacity);
+                _currentOpacity *= opacity;
+            }
         }
 
         /// <inheritdoc />
@@ -599,8 +601,10 @@ namespace Avalonia.Skia
             {
                 Canvas.Restore();
             }
-
-            _currentOpacity = _opacityStack.Pop();           
+            else
+            {
+                _currentOpacity = _opacityStack.Pop();
+            }    
         }
 
         /// <inheritdoc />
