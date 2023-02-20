@@ -1237,6 +1237,31 @@ namespace Avalonia.Base.UnitTests
             target.Bind(TextBlock.TextProperty, new Binding("[0]", BindingMode.TwoWay));
         }
 
+        [Fact]
+        public void TwoWay_Style_Binding_Works_With_LocalValue()
+        {
+            var model = new TestTwoWayBindingViewModel { Value = 41 };
+            var target = new Class1();
+            var binding = new Binding
+            {
+                Path = nameof(model.Value),
+                Source = model,
+                Mode = BindingMode.TwoWay,
+                Priority = BindingPriority.Style,
+            };
+
+            target.Bind(Class1.DoubleValueProperty, binding);
+            Assert.Equal(41, target.DoubleValue);
+
+            target.DoubleValue = 42;
+
+            Assert.Equal(42, model.Value);
+
+            model.Value = 43;
+
+            Assert.Equal(43, target.DoubleValue);
+        }
+
         [Theory(Skip = "Will need changes to binding internals in order to pass")]
         [InlineData(BindingPriority.LocalValue)]
         [InlineData(BindingPriority.StyleTrigger)]
@@ -1453,7 +1478,7 @@ namespace Avalonia.Base.UnitTests
             }
         }
 
-        private class TestTwoWayBindingViewModel
+        private class TestTwoWayBindingViewModel : NotifyingBase
         {
             private double _value;
 
@@ -1464,6 +1489,7 @@ namespace Avalonia.Base.UnitTests
                 {
                     _value = value;
                     SetterCalled = true;
+                    RaisePropertyChanged();
                 }
             }
 
