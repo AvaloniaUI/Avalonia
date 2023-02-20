@@ -98,8 +98,7 @@ namespace Avalonia.Diagnostics.Controls
                 { 
                     Width = 12,
                     Height = 12,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Cursor = new Cursor(StandardCursorType.Hand)
+                    VerticalAlignment = VerticalAlignment.Center
                 };
 
                 el.Bind(
@@ -121,7 +120,9 @@ namespace Avalonia.Diagnostics.Controls
                 {
                     Orientation = Orientation.Horizontal,
                     Spacing = 2,
-                    Children = { el, tbl }
+                    Children = { el, tbl },
+                    Background = Brushes.Transparent,
+                    Cursor = new Cursor(StandardCursorType.Hand)
                 };
 
                 var cv = new ColorView();
