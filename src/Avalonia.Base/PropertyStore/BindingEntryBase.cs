@@ -14,23 +14,18 @@ namespace Avalonia.PropertyStore
     {
         private static readonly IDisposable s_creating = Disposable.Empty;
         private static readonly IDisposable s_creatingQuiet = Disposable.Create(() => { });
-        private readonly bool _hasDataValidation;
         private IDisposable? _subscription;
         private bool _hasValue;
         private TValue? _value;
-        private TValue? _defaultValue;
-        private bool _isDefaultValueInitialized;
+        private UncommonFields? _uncommon;
 
         protected BindingEntryBase(
             AvaloniaObject target,
             ValueFrame frame,
             AvaloniaProperty property,
             IObservable<BindingValue<TSource>> source)
+            : this(target, frame, property, (object)source)
         {
-            Frame = frame;
-            Source = source;
-            Property = property;
-            _hasDataValidation = property.GetMetadata(target.GetType()).EnableDataValidation ?? false;
         }
 
         protected BindingEntryBase(
@@ -38,11 +33,21 @@ namespace Avalonia.PropertyStore
             ValueFrame frame,
             AvaloniaProperty property,
             IObservable<TSource> source)
+            : this(target, frame, property, (object)source)
+        {
+        }
+
+        private BindingEntryBase(
+            AvaloniaObject target,
+            ValueFrame frame,
+            AvaloniaProperty property,
+            object source)
         {
             Frame = frame;
-            Source = source;
             Property = property;
-            _hasDataValidation = property.GetMetadata(target.GetType()).EnableDataValidation ?? false;
+            Source = source;
+            if (property.GetMetadata(target.GetType()).EnableDataValidation == true)
+                _uncommon = new() { _hasDataValidation = true };
         }
 
         public bool HasValue
@@ -74,6 +79,20 @@ namespace Avalonia.PropertyStore
             return _value!;
         }
 
+        public bool GetDataValidationState(out BindingValueType state, out Exception? error)
+        {
+            if (_uncommon?._hasDataValidation == true)
+            {
+                state = _uncommon._dataValidationState;
+                error = _uncommon._dataValidationError;
+                return true;
+            }
+
+            state = BindingValueType.Value;
+            error = null;
+            return false;
+        }
+
         public void Start() => Start(true);
 
         public void OnCompleted() => BindingCompleted();
@@ -85,9 +104,6 @@ namespace Avalonia.PropertyStore
         {
             _subscription?.Dispose();
             _subscription = null;
-
-            if (_hasDataValidation)
-                Frame.Owner?.Owner.OnUpdateDataValidation(Property, BindingValueType.UnsetValue, null);
         }
 
         object? IValueEntry.GetValue()
@@ -132,6 +148,12 @@ namespace Avalonia.PropertyStore
                 if (!value.HasValue && value.Type != BindingValueType.DataValidationError)
                     value = value.WithValue(instance.GetCachedDefaultValue());
 
+                if (instance._uncommon?._hasDataValidation == true)
+                {
+                    instance._uncommon._dataValidationState = value.Type;
+                    instance._uncommon._dataValidationError = value.Error;
+                }
+
                 if (value.HasValue &&
                     (!instance._hasValue || !EqualityComparer<TValue>.Default.Equals(instance._value, value.Value)))
                 {
@@ -140,9 +162,6 @@ namespace Avalonia.PropertyStore
                     if (instance._subscription is not null && instance._subscription != s_creatingQuiet)
                         instance.Frame.Owner?.OnBindingValueChanged(instance, instance.Frame.Priority);
                 }
-
-                if (instance._hasDataValidation)
-                    owner.OnUpdateDataValidation(property, originalType, value.Error);
             }
 
             if (value.Type == BindingValueType.DoNothing)
@@ -170,13 +189,23 @@ namespace Avalonia.PropertyStore
 
         private TValue GetCachedDefaultValue()
         {
-            if (!_isDefaultValueInitialized)
+            if (_uncommon?._isDefaultValueInitialized != true)
             {
-                _defaultValue = GetDefaultValue(Frame.Owner!.Owner.GetType());
-                _isDefaultValueInitialized = true;
+                _uncommon ??= new();
+                _uncommon._defaultValue = GetDefaultValue(Frame.Owner!.Owner.GetType());
+                _uncommon._isDefaultValueInitialized = true;
             }
 
-            return _defaultValue!;
+            return _uncommon._defaultValue!;
+        }
+
+        private class UncommonFields
+        {
+            public TValue? _defaultValue;
+            public bool _isDefaultValueInitialized;
+            public bool _hasDataValidation;
+            public BindingValueType _dataValidationState;
+            public Exception? _dataValidationError;
         }
     }
 }

@@ -90,6 +90,13 @@ namespace Avalonia.Styling
 
         object? IValueEntry.GetValue() => Value;
 
+        bool IValueEntry.GetDataValidationState(out BindingValueType state, out Exception? error)
+        {
+            state = BindingValueType.Value;
+            error = null;
+            return false;
+        }
+
         private AvaloniaProperty EnsureProperty()
         {
             return Property ?? throw new InvalidOperationException("Setter.Property must be set.");
