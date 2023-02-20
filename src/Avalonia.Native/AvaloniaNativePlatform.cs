@@ -158,25 +158,4 @@ namespace Avalonia.Native
             throw new NotImplementedException();
         }
     }
-
-    public class AvaloniaNativeMacOptions
-    {
-        private readonly IAvnMacOptions _opts;
-        private bool _showInDock;
-        internal AvaloniaNativeMacOptions(IAvnMacOptions opts)
-        {
-            _opts = opts;
-            ShowInDock = true;
-        }
-
-        public bool ShowInDock
-        {
-            get => _showInDock;
-            set
-            {
-                _showInDock = value;
-                _opts.SetShowInDock(value ? 1 : 0);
-            }
-        }
-    }
 }

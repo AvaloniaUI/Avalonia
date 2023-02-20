@@ -14,7 +14,7 @@ using Tmds.DBus.SourceGenerator;
 
 namespace Avalonia.FreeDesktop
 {
-    public class DBusMenuExporter
+    internal class DBusMenuExporter
     {
         public static ITopLevelNativeMenuExporter? TryCreateTopLevelNativeMenu(IntPtr xid) =>
             DBusHelper.Connection is null ? null : new DBusMenuExporterImpl(DBusHelper.Connection, xid);

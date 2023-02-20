@@ -173,7 +173,7 @@ public unsafe class VulkanContext : IDisposable
                 api.GetPhysicalDeviceQueueFamilyProperties(physicalDevice, ref queueFamilyCount, familyProperties);
                 for (uint queueFamilyIndex = 0; queueFamilyIndex < queueFamilyCount; queueFamilyIndex++)
                 {
-                    var family = familyProperties[c];
+                    var family = familyProperties[queueFamilyIndex];
                     if (!family.QueueFlags.HasAllFlags(QueueFlags.GraphicsBit))
                         continue;
 

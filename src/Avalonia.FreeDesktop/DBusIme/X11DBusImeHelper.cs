@@ -6,7 +6,7 @@ using Tmds.DBus.Protocol;
 
 namespace Avalonia.FreeDesktop.DBusIme
 {
-    public class X11DBusImeHelper
+    internal class X11DBusImeHelper
     {
         private static readonly Dictionary<string, Func<Connection, IX11InputMethodFactory>> KnownMethods = new()
             {

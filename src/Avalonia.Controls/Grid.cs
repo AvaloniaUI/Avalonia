@@ -3256,7 +3256,7 @@ namespace Avalonia.Controls
             /// <summary>
             /// UpdateRenderBounds.
             /// </summary>
-            public override void Render(DrawingContext drawingContext)
+            public sealed override void Render(DrawingContext drawingContext)
             {
                 var grid = this.GetVisualParent<Grid>();
 

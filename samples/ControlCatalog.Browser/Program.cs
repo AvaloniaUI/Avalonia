@@ -1,6 +1,8 @@
 using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Browser;
+using Avalonia.Controls;
 using ControlCatalog;
 using ControlCatalog.Browser;
 
@@ -8,15 +10,27 @@ using ControlCatalog.Browser;
 
 internal partial class Program
 {
-    private static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
-        BuildAvaloniaApp()
+        await BuildAvaloniaApp()
             .AfterSetup(_ =>
             {
                 ControlCatalog.Pages.EmbedSample.Implementation = new EmbedSampleWeb();
-            }).SetupBrowserApp("out");
+            })
+            .StartBrowserAppAsync("out");
     }
 
+    // Example without a ISingleViewApplicationLifetime
+    // private static AvaloniaView _avaloniaView;
+    // public static async Task Main(string[] args)
+    // {
+    //     await BuildAvaloniaApp()
+    //         .SetupBrowserApp();
+    //
+    //     _avaloniaView = new AvaloniaView("out");
+    //     _avaloniaView.Content = new TextBlock { Text = "Hello world" };
+    // }
+    
     public static AppBuilder BuildAvaloniaApp()
            => AppBuilder.Configure<App>();
 }

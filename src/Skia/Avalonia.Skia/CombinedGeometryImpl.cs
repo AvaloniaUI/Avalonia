@@ -1,8 +1,5 @@
-using System.Collections.Generic;
 using Avalonia.Media;
 using SkiaSharp;
-
-#nullable enable
 
 namespace Avalonia.Skia
 {
@@ -13,23 +10,24 @@ namespace Avalonia.Skia
     {
         public CombinedGeometryImpl(GeometryCombineMode combineMode, Geometry g1, Geometry g2)
         {
-            var path1 = ((GeometryImpl)g1.PlatformImpl).EffectivePath;
-            var path2 = ((GeometryImpl)g2.PlatformImpl).EffectivePath;
+            var path1 = (g1.PlatformImpl as GeometryImpl)?.EffectivePath;
+            var path2 = (g2.PlatformImpl as GeometryImpl)?.EffectivePath;
+
             var op = combineMode switch
             {
                 GeometryCombineMode.Intersect => SKPathOp.Intersect,
                 GeometryCombineMode.Xor => SKPathOp.Xor,
                 GeometryCombineMode.Exclude => SKPathOp.Difference,
-                _ => SKPathOp.Union,
+                _ => SKPathOp.Union
             };
 
-            var path = path1.Op(path2, op);
+            var path = path1?.Op(path2, op);
 
             EffectivePath = path;
-            Bounds = path.Bounds.ToAvaloniaRect();
+            Bounds = path?.Bounds.ToAvaloniaRect() ?? default;
         }
 
         public override Rect Bounds { get; }
-        public override SKPath EffectivePath { get; }
+        public override SKPath? EffectivePath { get; }
     }
 }

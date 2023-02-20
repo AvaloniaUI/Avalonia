@@ -5,7 +5,7 @@ using Tmds.DBus.Protocol;
 
 namespace Avalonia.FreeDesktop
 {
-    public static class DBusHelper
+    internal static class DBusHelper
     {
         public static Connection? Connection { get; private set; }
 
