@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Media;
 using SkiaSharp;
 
@@ -6,20 +7,19 @@ namespace Avalonia.Skia
 {
     internal class SKTypefaceCollection
     {
-        private readonly ConcurrentDictionary<Typeface, SKTypeface> _typefaces =
-            new ConcurrentDictionary<Typeface, SKTypeface>();
+        private readonly ConcurrentDictionary<Typeface, SKTypeface> _typefaces = new();
 
         public void AddTypeface(Typeface key, SKTypeface typeface)
         {
             _typefaces.TryAdd(key, typeface);
         }
 
-        public SKTypeface Get(Typeface typeface)
+        public SKTypeface? Get(Typeface typeface)
         {
             return GetNearestMatch(typeface);
         }
 
-        private SKTypeface GetNearestMatch(Typeface key)
+        private SKTypeface? GetNearestMatch(Typeface key)
         {
             if (_typefaces.Count == 0)
             {
@@ -70,7 +70,7 @@ namespace Avalonia.Skia
                 return typeface;
             }
 
-            SKTypeface skTypeface = null;
+            SKTypeface? skTypeface = null;
 
             foreach(var pair in _typefaces)
             {
@@ -85,7 +85,7 @@ namespace Avalonia.Skia
             return skTypeface;
         }
 
-        private bool TryFindStretchFallback(Typeface key, out SKTypeface typeface)
+        private bool TryFindStretchFallback(Typeface key, [NotNullWhen(true)] out SKTypeface? typeface)
         {
             typeface = null;
             var stretch = (int)key.Stretch;
@@ -114,7 +114,7 @@ namespace Avalonia.Skia
             return false;
         }
 
-        private bool TryFindWeightFallback(Typeface key, out SKTypeface typeface)
+        private bool TryFindWeightFallback(Typeface key, [NotNullWhen(true)] out SKTypeface? typeface)
         {
             typeface = null;
             var weight = (int)key.Weight;

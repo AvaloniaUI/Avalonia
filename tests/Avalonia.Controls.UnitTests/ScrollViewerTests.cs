@@ -237,6 +237,40 @@ namespace Avalonia.Controls.UnitTests
             Assert.Equal(1, raised);
         }
 
+        [Fact]
+        public void Reducing_Extent_Should_Constrain_Offset()
+        {
+            var target = new ScrollViewer
+            {
+                Template = new FuncControlTemplate<ScrollViewer>(CreateTemplate),
+            };
+            var root = new TestRoot(target);
+            var raised = 0;
+
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(100, 100));
+            target.SetValue(ScrollViewer.ViewportProperty, new Size(50, 50));
+            target.Offset = new Vector(50, 50);
+
+            root.LayoutManager.ExecuteInitialLayoutPass();
+
+            target.ScrollChanged += (s, e) =>
+            {
+                Assert.Equal(new Vector(-30, -30), e.ExtentDelta);
+                Assert.Equal(new Vector(-30, -30), e.OffsetDelta);
+                Assert.Equal(default, e.ViewportDelta);
+                ++raised;
+            };
+
+            target.SetValue(ScrollViewer.ExtentProperty, new Size(70, 70));
+
+            Assert.Equal(0, raised);
+
+            root.LayoutManager.ExecuteLayoutPass();
+
+            Assert.Equal(1, raised);
+            Assert.Equal(new Vector(20, 20), target.Offset); 
+        }
+
         private Control CreateTemplate(ScrollViewer control, INameScope scope)
         {
             return new Grid
