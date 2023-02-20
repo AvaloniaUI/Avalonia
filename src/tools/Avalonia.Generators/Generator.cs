@@ -6,8 +6,6 @@ using Avalonia.Generators.Generator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-[assembly: InternalsVisibleTo("Avalonia.Generators.Tests")]
-
 namespace Avalonia.Generators;
 
 [Generator]

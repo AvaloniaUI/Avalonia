@@ -7,7 +7,7 @@ using XamlX.TypeSystem;
 
 namespace Avalonia.Generators.Compiler;
 
-public class RoslynTypeSystem : IXamlTypeSystem
+internal class RoslynTypeSystem : IXamlTypeSystem
 {
     private readonly List<IXamlAssembly> _assemblies = new();
 
@@ -42,7 +42,7 @@ public class RoslynTypeSystem : IXamlTypeSystem
             .FirstOrDefault(type => type != null);
 }
     
-public class RoslynAssembly : IXamlAssembly
+internal class RoslynAssembly : IXamlAssembly
 {
     private readonly IAssemblySymbol _symbol;
 
@@ -66,7 +66,7 @@ public class RoslynAssembly : IXamlAssembly
     }
 }
 
-public class RoslynAttribute : IXamlCustomAttribute
+internal class RoslynAttribute : IXamlCustomAttribute
 {
     private readonly AttributeData _data;
     private readonly RoslynAssembly _assembly;
@@ -94,7 +94,7 @@ public class RoslynAttribute : IXamlCustomAttribute
             pair => pair.Value.Value);
 }
     
-public class RoslynType : IXamlType
+internal class RoslynType : IXamlType
 {
     private static readonly SymbolDisplayFormat SymbolDisplayFormat = new SymbolDisplayFormat(
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -181,7 +181,7 @@ public class RoslynType : IXamlType
     public IReadOnlyList<IXamlType> GenericParameters { get; } = new List<IXamlType>();
 }
 
-public class RoslynConstructor : IXamlConstructor
+internal class RoslynConstructor : IXamlConstructor
 {
     private readonly IMethodSymbol _symbol;
     private readonly RoslynAssembly _assembly;
@@ -208,7 +208,7 @@ public class RoslynConstructor : IXamlConstructor
             .ToList();
 }
 
-public class RoslynProperty : IXamlProperty
+internal class RoslynProperty : IXamlProperty
 {
     private readonly IPropertySymbol _symbol;
     private readonly RoslynAssembly _assembly;
@@ -239,7 +239,7 @@ public class RoslynProperty : IXamlProperty
     public IReadOnlyList<IXamlType> IndexerParameters { get; } = new List<IXamlType>();
 }
 
-public class RoslynMethod : IXamlMethod
+internal class RoslynMethod : IXamlMethod
 {
     private readonly IMethodSymbol _symbol;
     private readonly RoslynAssembly _assembly;

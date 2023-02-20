@@ -2,7 +2,8 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>    
+    <Nullable>enable</Nullable>
+    <IncludeAvaloniaGenerators>true</IncludeAvaloniaGenerators>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
@@ -34,14 +35,5 @@
   </ItemGroup>
 
   <Import Project="..\..\build\BuildTargets.targets" />
-
-  <ItemGroup>
-    <None Remove="Pages\CustomDrawing.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AvaloniaResource Update="Pages\CustomDrawing.xaml">
-      <Generator></Generator>
-    </AvaloniaResource>
-  </ItemGroup>
+  <Import Project="..\..\build\SourceGenerators.props" />
 </Project>
