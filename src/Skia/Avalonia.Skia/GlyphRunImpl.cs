@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Avalonia.Platform;
 using SkiaSharp;
-#nullable enable
 
 namespace Avalonia.Skia
 {
@@ -10,7 +9,7 @@ namespace Avalonia.Skia
     {
         public GlyphRunImpl(SKTextBlob textBlob, Size size, Point baselineOrigin)
         {
-            TextBlob = textBlob ?? throw new ArgumentNullException (nameof (textBlob));
+            TextBlob = textBlob ?? throw new ArgumentNullException(nameof(textBlob));
 
             Size = size;
 
