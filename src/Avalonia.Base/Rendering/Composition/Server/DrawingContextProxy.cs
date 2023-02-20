@@ -111,9 +111,9 @@ internal class CompositorDrawingContextProxy : IDrawingContextImpl, IDrawingCont
         _impl.PopClip();
     }
 
-    public void PushOpacity(double opacity)
+    public void PushOpacity(double opacity, Rect bounds)
     {
-        _impl.PushOpacity(opacity);
+        _impl.PushOpacity(opacity, bounds);
     }
 
     public void PopOpacity()
