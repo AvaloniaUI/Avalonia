@@ -13,16 +13,12 @@
 
   <ItemGroup>
     <PackageReference Include="Tmds.DBus.Protocol" Version="0.13.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="DBusGeneratorMode" />
+    <PackageReference Include="Tmds.DBus.SourceGenerator" Version="0.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\Avalonia.Dialogs\Avalonia.Dialogs.csproj" />
-    <ProjectReference Include="..\tools\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator\Tmds.DBus.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup Label="InternalsVisibleTo">
