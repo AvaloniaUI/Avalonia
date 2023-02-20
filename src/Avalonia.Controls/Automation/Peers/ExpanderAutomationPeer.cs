@@ -13,16 +13,11 @@ namespace Avalonia.Controls.Automation.Peers
             owner.PropertyChanged += Owner_PropertyChanged;
         }
 
-        protected override string? GetNameCore()
-        {
-            return base.GetNameCore();
-        }
         protected override string GetClassNameCore()
         {
             return "Expander";
         }
-        protected override bool IsContentElementCore() => true;
-        protected override bool IsControlElementCore() => true;
+
         protected override AutomationControlType GetAutomationControlTypeCore()
         {
             return AutomationControlType.Group;
