@@ -40,6 +40,7 @@ namespace Avalonia.Skia
         private static SKShader? s_acrylicNoiseShader;
         private readonly ISkiaGpuRenderSession? _session;
         private bool _leased;
+        private bool _useOpacitySaveLayer;
 
         /// <summary>
         /// Context create info.
@@ -158,6 +159,13 @@ namespace Avalonia.Skia
             }
 
             Transform = Matrix.Identity;
+
+            var options = AvaloniaLocator.Current.GetService<SkiaOptions>();
+
+            if(options != null)
+            {
+                _useOpacitySaveLayer = options.UseOpacitySaveLayer;
+            }
         }
         
         /// <summary>
@@ -188,7 +196,7 @@ namespace Avalonia.Skia
             var d = destRect.ToSKRect();
 
             var paint = SKPaintCache.Shared.Get();
-            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * _currentOpacity));
+            paint.Color = new SKColor(255, 255, 255, (byte)(255 * opacity * (_useOpacitySaveLayer ? 1 : _currentOpacity)));
             paint.FilterQuality = bitmapInterpolationMode.ToSKFilterQuality();
             paint.BlendMode = _currentBlendingMode.ToSKBlendMode();
 
@@ -373,7 +381,7 @@ namespace Avalonia.Skia
             {
                 if (!boxShadow.IsDefault && !boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         if (boxShadow.IsInset)
@@ -430,7 +438,7 @@ namespace Avalonia.Skia
             {
                 if (!boxShadow.IsDefault && boxShadow.IsInset)
                 {
-                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _currentOpacity))
+                    using (var shadow = BoxShadowFilter.Create(_boxShadowPaint, boxShadow, _useOpacitySaveLayer ? 1 : _currentOpacity))
                     {
                         var spread = (float)boxShadow.Spread;
                         var offsetX = (float)boxShadow.OffsetX;
@@ -568,18 +576,35 @@ namespace Avalonia.Skia
         }
 
         /// <inheritdoc />
-        public void PushOpacity(double opacity)
+        public void PushOpacity(double opacity, Rect bounds)
         {
             CheckLease();
-            _opacityStack.Push(_currentOpacity);
-            _currentOpacity *= opacity;
+
+            if(_useOpacitySaveLayer)
+            {
+                var rect = bounds.ToSKRect();
+                Canvas.SaveLayer(rect, new SKPaint { ColorF = new SKColorF(0, 0, 0, (float)opacity)});
+            }
+            else
+            {
+                _opacityStack.Push(_currentOpacity);
+                _currentOpacity *= opacity;
+            }
         }
 
         /// <inheritdoc />
         public void PopOpacity()
         {
             CheckLease();
-            _currentOpacity = _opacityStack.Pop();
+
+            if(_useOpacitySaveLayer)
+            {
+                Canvas.Restore();
+            }
+            else
+            {
+                _currentOpacity = _opacityStack.Pop();
+            }    
         }
 
         /// <inheritdoc />
@@ -657,7 +682,7 @@ namespace Avalonia.Skia
 
             var paint = SKPaintCache.Shared.Get();
 
-            Canvas.SaveLayer(paint);
+            Canvas.SaveLayer(bounds.ToSKRect(), paint);
             _maskStack.Push(CreatePaint(paint, mask, bounds.Size));
         }
 
@@ -1021,8 +1046,6 @@ namespace Avalonia.Skia
 
             paint.IsAntialias = true;
 
-            double opacity = _currentOpacity;
-
             var tintOpacity =
                 material.BackgroundSource == AcrylicBackgroundSource.Digger ?
                 material.TintOpacity : 1;
@@ -1071,7 +1094,7 @@ namespace Avalonia.Skia
 
             paint.IsAntialias = true;
 
-            double opacity = brush.Opacity * _currentOpacity;
+            double opacity = brush.Opacity * (_useOpacitySaveLayer ? 1 :_currentOpacity);
 
             if (brush is ISolidColorBrush solid)
             {
