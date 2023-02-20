@@ -79,7 +79,7 @@ namespace Avalonia.Direct2D1.RenderTests.Media
             using (var ctx = target.CreateDrawingContext(null))
             {
                 ctx.Clear(Colors.Transparent);
-                ctx.PushOpacity(0.8);
+                ctx.PushOpacity(0.8, new Rect(0, 0, 80, 80));
                 ctx.DrawRectangle(Brushes.Chartreuse, null, new Rect(0, 0, 20, 100));
                 ctx.DrawRectangle(Brushes.Crimson, null, new Rect(20, 0, 20, 100));
                 ctx.DrawRectangle(Brushes.Gold,null, new Rect(40, 0, 20, 100));
