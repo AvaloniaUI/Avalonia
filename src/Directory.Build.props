@@ -2,10 +2,10 @@
     <PropertyGroup>
         <Product>XamlNameReferenceGenerator</Product>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageProjectUrl>https://github.com/avaloniaui/Avalonia.NameGenerator/</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/avaloniaui/Avalonia.Generators/</PackageProjectUrl>
         <Description>Generates typed x:Name references to Avalonia controls declared in XAML.</Description>
-        <PackageReleaseNotes>https://github.com/avaloniaui/Avalonia.NameGenerator/releases</PackageReleaseNotes>
-        <RepositoryUrl>https://github.com/avaloniaui/Avalonia.NameGenerator</RepositoryUrl>
+        <PackageReleaseNotes>https://github.com/avaloniaui/Avalonia.Generators/releases</PackageReleaseNotes>
+        <RepositoryUrl>https://github.com/avaloniaui/Avalonia.Generators</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <InstallAvalonia>false</InstallAvalonia>
@@ -23,8 +23,5 @@
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.0-preview5" />
         <PackageReference Include="Avalonia.Diagnostics" Version="11.0.0-preview5" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.0-preview5" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="LICENSE" />
     </ItemGroup>
 </Project>
