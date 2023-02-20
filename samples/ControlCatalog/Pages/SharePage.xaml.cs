@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ControlCatalog.Pages
 {
@@ -24,40 +24,49 @@ namespace ControlCatalog.Pages
             {
                 var text = this.Get<TextBox>("ShareBox").Text ?? string.Empty;
 
-                var share = (VisualRoot as TopLevel).ShareProvider;
+                var share = TopLevel.GetTopLevel(this)?.ShareProvider;
 
-                await share?.Share(text);
+                if (share != null)
+                {
+                    await share.ShareAsync(text!.ToDataObject());
+                }
             };
 
             this.Get<Button>("OpenFile").Click += async delegate
             {
-                var storageProvider = (VisualRoot as TopLevel).StorageProvider;
+                var storageProvider = TopLevel.GetTopLevel(this)?.StorageProvider;
 
-                var result = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+                if (storageProvider != null)
                 {
-                    Title = "Open file",
-                    AllowMultiple = this.Get<CheckBox>("SelectMultiple").IsChecked.Value,
-                });
+                    var result = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
+                    {
+                        Title = "Open file",
+                        AllowMultiple = this.Get<CheckBox>("SelectMultiple").IsChecked ?? true,
+                    });
 
-                _files = result;
+                    _files = result;
 
-                string list = string.Empty;
+                    string list = string.Empty;
 
-                foreach ( var file in _files )
-                {
-                    list += file.Name + "\n";   
+                    foreach (var file in _files)
+                    {
+                        list += file.Name + "\n";
+                    }
+
+                    this.Get<TextBlock>("FileText").Text = list;
                 }
-
-                this.Get<TextBlock>("FileText").Text = list;
             };
 
             this.Get<Button>("ShareFile").Click += async (o, e) =>
             {
                 if(_files != null && _files.Count> 0)
                 {
-                    var share = (VisualRoot as TopLevel).ShareProvider;
+                    var share = TopLevel.GetTopLevel(this)?.ShareProvider;
 
-                   await share?.Share(_files.ToList());
+                    if (share != null)
+                    {
+                        await share.ShareAsync(_files.ToDataObject());
+                    }
                 }
             };
 
@@ -65,13 +74,17 @@ namespace ControlCatalog.Pages
             {
                 if (_files != null && _files.Count > 0)
                 {
-                    var share = (VisualRoot as TopLevel).ShareProvider;
+                    var share = TopLevel.GetTopLevel(this)?.ShareProvider;
 
-                    var file = _files.FirstOrDefault();
+                    if (share != null)
+                    {
+                        var file = _files.First();
 
-                    using var stream = await file.OpenReadAsync();
+                        using var stream = await file.OpenReadAsync();
 
-                    await share?.Share(stream, "test");
+                        var dataObject = stream.ToDataObject("test");
+                        await share.ShareAsync(dataObject);
+                    }
                 }
             };
         }

@@ -134,7 +134,8 @@ namespace Avalonia.Android
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
 
-                _client.TextEditable = _inputConnection.InputEditable;
+                if (_client != null)
+                    _client.TextEditable = _inputConnection.InputEditable;
 
                 return _inputConnection;
             });

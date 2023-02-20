@@ -11,13 +11,19 @@ using Avalonia.Platform.Storage;
 using Avalonia.Browser.Interop;
 using Avalonia.Browser.Storage;
 using static System.Net.Mime.MediaTypeNames;
+using Avalonia.Input;
 
 namespace Avalonia.Browser
 {
     [SupportedOSPlatform("browser")]
     internal class BrowserShare : IShareProvider
     {
-        public async Task Share(string text)
+        public bool CanShareAsync(IDataObject dataObject)
+        {
+            return dataObject is DataObject data && (data.Contains(DataFormats.Text) || data.Contains(DataFormats.FileNames));
+        }
+
+        private async Task Share(string? text)
         {
             using var jsObject = DomHelper.Create(default);
             jsObject?.SetProperty("title", $"Sending {text}");
@@ -29,20 +35,40 @@ namespace Avalonia.Browser
             }
         }
 
-        public async Task Share(IStorageFile file)
+        private async Task Share(List<IStorageFile?> files)
         {
-            await Share(new[] { file });
+            var fileList = new List<IStorageFile>();
+
+            foreach(var file in files)
+            {
+                if(file != null)
+                {
+                    fileList.Add(file); 
+                }
+            }
+
+            ShareHelper.shareFileList($"Sending {fileList.Count} file{(fileList.Count > 0 ? "s" : "")}", fileList.Select(f => ((JSStorageItem)f).FileHandle).ToArray());
         }
 
-        public async Task Share(IList<IStorageFile> files)
+        public async Task ShareAsync(IDataObject dataObject)
         {
-            ShareHelper.shareFileList($"Sending {files.Count} file{( files.Count > 0 ? "s" : "")}", files.Select(f => ((JSStorageItem)f).FileHandle).ToArray());
-        }
+            if(dataObject == null)
+            {
+                return;
+            }
 
-        public async Task Share(Stream stream, string tempName = "")
-        {
-            // Currently, there's no way to save a file without user input, and sharing a file in memory is not permitted.
-            return;
+            if (dataObject.Contains(DataFormats.Text))
+            {
+                await Share(dataObject.GetText());
+            }
+            else if (dataObject.Contains(DataFormats.Files))
+            {
+                var files = dataObject.GetFiles()?.Select(x => x as IStorageFile).Where(x => x != null);
+                if (files != null)
+                {
+                    await Share(files.ToList());
+                }
+            }
         }
     }
 }

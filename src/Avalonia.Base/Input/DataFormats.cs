@@ -13,6 +13,11 @@ namespace Avalonia.Input
         /// Dataformat for one or more files.
         /// </summary>
         public static readonly string Files = nameof(Files);
+
+        /// <summary>
+        /// Dataformat for a stream.
+        /// </summary>
+        public static readonly string Stream = nameof(Stream);
         
         /// <summary>
         /// Dataformat for one or more filenames

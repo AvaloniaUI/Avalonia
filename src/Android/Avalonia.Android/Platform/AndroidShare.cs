@@ -7,6 +7,7 @@ using Android.Net;
 using Android.OS;
 using Android.Webkit;
 using AndroidX.Core.Content;
+using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
 using AndroidFile = Java.IO.File;
@@ -22,7 +23,12 @@ namespace Avalonia.Android.Platform
             _context = context;
         }
 
-        public async Task Share(string text)
+        public bool CanShareAsync(IDataObject dataObject)
+        {
+            return dataObject is DataObject data && (data.Contains(DataFormats.Text) || data.Contains(DataFormats.Files));
+        }
+
+        private async Task ShareAsync(string text)
         {
             var intent = new Intent(Intent.ActionSend);
             intent.SetType("text/plain");
@@ -33,12 +39,7 @@ namespace Avalonia.Android.Platform
             _context.StartActivity(shareIntent);
         }
 
-        public async Task Share(IStorageFile file)
-        {
-            await Share(new[] { file });
-        }
-
-        public async Task Share(IList<IStorageFile> files)
+        private async Task ShareAsync(IList<IStorageFile> files)
         {
             IList<IParcelable> uris = new List<IParcelable>();
 
@@ -46,6 +47,11 @@ namespace Avalonia.Android.Platform
 
             foreach (var file in files)
             {
+                if(file == null)
+                {
+                    continue;
+                }
+
                 if (file.Path != null)
                 {
                     uris.Add(Uri.Parse(file.Path.AbsoluteUri));
@@ -73,9 +79,9 @@ namespace Avalonia.Android.Platform
             _context.StartActivity(shareIntent);
         }
 
-        public async Task Share(Stream stream, string tempName = "")
+        private async Task ShareAsync(Stream? stream, string? tempName = "")
         {
-            if ((stream.CanSeek && stream.Length == 0) || !stream.CanRead)
+            if (stream == null || (stream.CanSeek && stream.Length == 0) || !stream.CanRead)
             {
                 return;
             }
@@ -113,6 +119,23 @@ namespace Avalonia.Android.Platform
 
                 var shareIntent = Intent.CreateChooser(intent, "Sharing File");
                 _context.StartActivity(shareIntent);
+            }
+        }
+
+        public async Task ShareAsync(IDataObject dataObject)
+        {
+            if(dataObject.Contains(DataFormats.Stream))
+            {
+                await ShareAsync(dataObject.GetStream(), dataObject.GetText());
+            }
+            else if (dataObject.Contains(DataFormats.Text))
+            {
+                await ShareAsync(dataObject.GetText());
+            }
+            else if (dataObject.Contains(DataFormats.Files))
+            {
+                var files = dataObject.GetFiles().Select( x => x as IStorageFile);
+                await ShareAsync(files.ToList());
             }
         }
     }
