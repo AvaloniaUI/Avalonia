@@ -877,7 +877,7 @@ namespace Avalonia.Media
 
                     var lastRunProps = (GenericTextRunProperties)thatFormatRider.CurrentElement!;
 
-                    TextCollapsingProperties collapsingProperties = _that._trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(maxLineLength, lastRunProps));
+                    TextCollapsingProperties collapsingProperties = _that._trimming.CreateCollapsingProperties(new TextCollapsingCreateInfo(maxLineLength, lastRunProps, paraProps.FlowDirection));
 
                     var collapsedLine = line.Collapse(collapsingProperties);
 
