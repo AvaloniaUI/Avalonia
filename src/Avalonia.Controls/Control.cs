@@ -24,7 +24,7 @@ namespace Avalonia.Controls
     /// - A <see cref="Tag"/> property to allow user-defined data to be attached to the control.
     /// - <see cref="ContextRequestedEvent"/> and other context menu related members.
     /// </remarks>
-    public class Control : InputElement, IDataTemplateHost, INamed, IVisualBrushInitialize, ISetterValue, IThemeVariantHost
+    public class Control : InputElement, IDataTemplateHost, INamed, IVisualBrushInitialize, ISetterValue
     {
         /// <summary>
         /// Defines the <see cref="FocusAdorner"/> property.
@@ -162,11 +162,6 @@ namespace Avalonia.Controls
             set => SetValue(TagProperty, value);
         }
         
-        /// <inheritdoc />
-        public ThemeVariant ActualThemeVariant => GetValue(ThemeVariantScope.ActualThemeVariantProperty);
-
-        public event EventHandler? ActualThemeVariantChanged;
-
         /// <summary>
         /// Occurs when the user has completed a context input gesture, such as a right-click.
         /// </summary>
@@ -530,17 +525,6 @@ namespace Avalonia.Controls
 
                     RaiseEvent(sizeChangedEventArgs);
                 }
-            }
-            else if (change.Property == ThemeVariantScope.RequestedThemeVariantProperty)
-            {
-                if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
-                    SetValue(ThemeVariantScope.ActualThemeVariantProperty, themeVariant);
-                else
-                    ClearValue(ThemeVariantScope.ActualThemeVariantProperty);
-            }
-            else if (change.Property == ThemeVariantScope.ActualThemeVariantProperty)
-            {
-                ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
             }
         }
     }

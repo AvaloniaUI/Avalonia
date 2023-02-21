@@ -12,6 +12,21 @@ namespace Avalonia.Styling;
 public sealed record ThemeVariant
 {
     /// <summary>
+    /// Defines the ActualThemeVariant property.
+    /// </summary>
+    internal static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
+        AvaloniaProperty.Register<StyledElement, ThemeVariant>(
+            "ActualThemeVariant",
+            inherits: true);
+
+    /// <summary>
+    /// Defines the RequestedThemeVariant property.
+    /// </summary>
+    internal static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
+        AvaloniaProperty.Register<StyledElement, ThemeVariant?>(
+            "RequestedThemeVariant", defaultValue: Default);
+    
+    /// <summary>
     /// Creates a new instance of the <see cref="ThemeVariant"/>
     /// </summary>
     /// <param name="key">Key of the theme variant by which variants are compared.</param>

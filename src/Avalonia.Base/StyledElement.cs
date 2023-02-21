@@ -28,7 +28,7 @@ namespace Avalonia
     public class StyledElement : Animatable, 
         IDataContextProvider, 
         ILogical,
-        IResourceHost,
+        IThemeVariantHost,
         IStyleHost,
         IStyleable,
         ISetLogicalParent,
@@ -143,6 +143,9 @@ namespace Avalonia
         /// </summary>
         public event EventHandler<ResourcesChangedEventArgs>? ResourcesChanged;
 
+        /// <inheritdoc />
+        public event EventHandler? ActualThemeVariantChanged;
+        
         /// <summary>
         /// Gets or sets the name of the styled element.
         /// </summary>
@@ -299,6 +302,9 @@ namespace Avalonia
         /// </summary>
         public StyledElement? Parent { get; private set; }
 
+        /// <inheritdoc />
+        public ThemeVariant ActualThemeVariant => GetValue(ThemeVariant.ActualThemeVariantProperty);
+        
         /// <summary>
         /// Gets the styled element's logical parent.
         /// </summary>
@@ -618,7 +624,20 @@ namespace Avalonia
             base.OnPropertyChanged(change);
 
             if (change.Property == ThemeProperty)
+            {
                 OnControlThemeChanged();
+            }
+            else if (change.Property == ThemeVariant.RequestedThemeVariantProperty)
+            {
+                if (change.GetNewValue<ThemeVariant>() is {} themeVariant && themeVariant != ThemeVariant.Default)
+                    SetValue(ThemeVariant.ActualThemeVariantProperty, themeVariant);
+                else
+                    ClearValue(ThemeVariant.ActualThemeVariantProperty);
+            }
+            else if (change.Property == ThemeVariant.ActualThemeVariantProperty)
+            {
+                ActualThemeVariantChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         private protected virtual void OnControlThemeChanged()

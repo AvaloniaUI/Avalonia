@@ -7,21 +7,13 @@ namespace Avalonia.Controls
     /// </summary>
     public class ThemeVariantScope : Decorator
     {
-        /// <summary>
-        /// Defines the <see cref="Control.ActualThemeVariant"/> property.
-        /// </summary>
+        /// <inheritdoc cref="ThemeVariant.ActualThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
-            AvaloniaProperty.Register<ThemeVariantScope, ThemeVariant>(
-                nameof(ActualThemeVariant),
-                inherits: true);
+            ThemeVariant.ActualThemeVariantProperty.AddOwner<ThemeVariantScope>();
 
-        /// <summary>
-        /// Defines the <see cref="RequestedThemeVariant"/> property.
-        /// </summary>
+        /// <inheritdoc cref="ThemeVariant.RequestedThemeVariantProperty" />
         public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
-            AvaloniaProperty.Register<ThemeVariantScope, ThemeVariant?>(
-                nameof(RequestedThemeVariant),
-                defaultValue: ThemeVariant.Default);
+            ThemeVariant.RequestedThemeVariantProperty.AddOwner<ThemeVariantScope>();
 
         /// <summary>
         /// Gets or sets the UI theme variant that is used by the control (and its child elements) for resource determination.
