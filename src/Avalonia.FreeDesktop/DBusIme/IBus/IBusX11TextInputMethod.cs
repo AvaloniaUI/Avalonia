@@ -1,36 +1,38 @@
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Input.Raw;
 using Avalonia.Input.TextInput;
-using Tmds.DBus;
+using Tmds.DBus.Protocol;
+using Tmds.DBus.SourceGenerator;
+
 
 namespace Avalonia.FreeDesktop.DBusIme.IBus
 {
     internal class IBusX11TextInputMethod : DBusTextInputMethodBase
     {
-        private IIBusInputContext? _context;
+        private OrgFreedesktopIBusService? _service;
+        private OrgFreedesktopIBusInputContext? _context;
 
-        public IBusX11TextInputMethod(Connection connection) : base(connection, 
-            "org.freedesktop.portal.IBus")
-        {
-        }
+        public IBusX11TextInputMethod(Connection connection) : base(connection, "org.freedesktop.portal.IBus") { }
 
         protected override async Task<bool> Connect(string name)
         {
-            var path =
-                await Connection.CreateProxy<IIBusPortal>(name, "/org/freedesktop/IBus")
-                    .CreateInputContextAsync(GetAppName());
-
-            _context = Connection.CreateProxy<IIBusInputContext>(name, path);
+            var portal = new OrgFreedesktopIBusPortal(Connection, name, "/org/freedesktop/IBus");
+            var path = await portal.CreateInputContextAsync(GetAppName());
+            _service = new OrgFreedesktopIBusService(Connection, name, path);
+            _context = new OrgFreedesktopIBusInputContext(Connection, name, path);
             AddDisposable(await _context.WatchCommitTextAsync(OnCommitText));
             AddDisposable(await _context.WatchForwardKeyEventAsync(OnForwardKey));
             Enqueue(() => _context.SetCapabilitiesAsync((uint)IBusCapability.CapFocus));
             return true;
         }
 
-        private void OnForwardKey((uint keyval, uint keycode, uint state) k)
+        private void OnForwardKey(Exception? e, (uint keyval, uint keycode, uint state) k)
         {
+            if (e is not null)
+                return;
+
             var state = (IBusModifierMask)k.state;
             KeyModifiers mods = default;
             if (state.HasAllFlags(IBusModifierMask.ControlMask))
@@ -49,28 +51,25 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             });
         }
 
-        
-        private void OnCommitText(object wtf)
+        private void OnCommitText(Exception? e, DBusVariantItem variantItem)
         {
-            // Hello darkness, my old friend
-            if (wtf.GetType().GetField("Item3") is { } prop)
-            {
-                var text = prop.GetValue(wtf) as string;
-                if (!string.IsNullOrEmpty(text))
-                    FireCommit(text!);
-            }
+            if (e is not null)
+                return;
+
+            if (variantItem.Value is DBusStructItem { Count: >= 3 } structItem && structItem[2] is DBusStringItem stringItem)
+                FireCommit(stringItem.Value);
         }
 
-        protected override Task Disconnect() => _context?.DestroyAsync()
-            ?? Task.CompletedTask;
+        protected override Task DisconnectAsync() => _service?.DestroyAsync() ?? Task.CompletedTask;
 
         protected override void OnDisconnected()
         {
+            _service = null;
             _context = null;
             base.OnDisconnected();
         }
 
-        protected override Task SetCursorRectCore(PixelRect rect) 
+        protected override Task SetCursorRectCore(PixelRect rect)
             => _context?.SetCursorLocationAsync(rect.X, rect.Y, rect.Width, rect.Height)
             ?? Task.CompletedTask;
 
@@ -96,20 +95,12 @@ namespace Avalonia.FreeDesktop.DBusIme.IBus
             if (args.Type == RawKeyEventType.KeyUp)
                 state |= IBusModifierMask.ReleaseMask;
 
-            if(_context is { })
-            {
-                return _context.ProcessKeyEventAsync((uint)keyVal, (uint)keyCode, (uint)state);
-            }
-            else
-            {
-                return Task.FromResult(false);
-            }
-            
+            return _context is not null ? _context.ProcessKeyEventAsync((uint)keyVal, (uint)keyCode, (uint)state) : Task.FromResult(false);
         }
 
         public override void SetOptions(TextInputOptions options)
         {
-            // No-op, because ibus 
+            // No-op, because ibus
         }
     }
 }
