@@ -67,6 +67,30 @@ namespace Avalonia.Markup.UnitTests.Data
                 Assert.Null(target.DataValidationError);
             }
 
+            [Fact]
+            public void Disposing_Binding_Subscription_Clears_DataValidation()
+            {
+                var (target, property) = CreateTarget();
+                var binding = new Binding(nameof(ExceptionValidatingModel.Value))
+                {
+                    Mode = BindingMode.TwoWay
+                };
+
+                target.DataContext = new IndeiValidatingModel
+                {
+                    Value = 200,
+                };
+                
+                var sub = target.Bind(property, binding);
+
+                Assert.Equal(200, target.GetValue(property));
+                Assert.IsType<DataValidationException>(target.DataValidationError);
+
+                sub.Dispose();
+
+                Assert.Null(target.DataValidationError);
+            }
+
             private protected abstract (DataValidationTestControl, T) CreateTarget();
         }
 

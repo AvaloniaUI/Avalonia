@@ -37,10 +37,17 @@ namespace Avalonia.PropertyStore
         {
             _subscription?.Dispose();
             _subscription = null;
+            OnCompleted();
+        }
+
+        public void OnCompleted()
+        {
+            if (_hasDataValidation)
+                _owner.Owner.OnUpdateDataValidation(Property, BindingValueType.UnsetValue, null);
+
             _owner.OnLocalValueBindingCompleted(Property, this);
         }
 
-        public void OnCompleted() => _owner.OnLocalValueBindingCompleted(Property, this);
         public void OnError(Exception error) => OnCompleted();
 
         public void OnNext(T value)

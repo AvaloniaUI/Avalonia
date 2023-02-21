@@ -92,6 +92,48 @@ namespace Avalonia.Base.UnitTests
                 Assert.Equal(1, target.Notifications.Count);
             }
 
+            [Fact]
+            public void Disposing_Binding_Subscription_Clears_DataValidation()
+            {
+                var target = new Class1();
+                var source = new Subject<BindingValue<int>>();
+                var property = GetProperty();
+                var error = new Exception();
+                var sub = target.Bind(property, source);
+
+                source.OnNext(6);
+                source.OnNext(BindingValue<int>.DataValidationError(error));
+                sub.Dispose();
+
+                Assert.Equal(new Notification[]
+                {
+                    new(BindingValueType.Value, 6, null),
+                    new(BindingValueType.DataValidationError, 6, error),
+                    new(BindingValueType.UnsetValue, 6, null),
+                }, target.Notifications);
+            }
+
+            [Fact]
+            public void Completing_Binding_Clears_DataValidation()
+            {
+                var target = new Class1();
+                var source = new Subject<BindingValue<int>>();
+                var property = GetProperty();
+                var error = new Exception();
+                
+                target.Bind(property, source);
+                source.OnNext(6);
+                source.OnNext(BindingValue<int>.DataValidationError(error));
+                source.OnCompleted();
+
+                Assert.Equal(new Notification[]
+                {
+                    new(BindingValueType.Value, 6, null),
+                    new(BindingValueType.DataValidationError, 6, error),
+                    new(BindingValueType.UnsetValue, 6, null),
+                }, target.Notifications);
+            }
+
             protected abstract T GetProperty();
             protected abstract T GetNonValidatedProperty();
         }
