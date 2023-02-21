@@ -140,7 +140,7 @@ namespace Avalonia.Skia
             return Font.GetHorizontalGlyphAdvances(glyphIndices);
         }
 
-        private Blob GetTable(Face face, Tag tag)
+        private Blob? GetTable(Face face, Tag tag)
         {
             var size = Typeface.GetTableSize(tag);
 
@@ -166,8 +166,8 @@ namespace Avalonia.Skia
                 return;
             }
 
-            Font?.Dispose();
-            Face?.Dispose();
+            Font.Dispose();
+            Face.Dispose();
         }
 
         public void Dispose()

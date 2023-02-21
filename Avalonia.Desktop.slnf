@@ -42,6 +42,7 @@
       "src\\Windows\\Avalonia.Win32\\Avalonia.Win32.csproj",
       "src\\tools\\DevAnalyzers\\DevAnalyzers.csproj",
       "src\\tools\\DevGenerators\\DevGenerators.csproj",
+      "src\\tools\\PublicAnalyzers\\Avalonia.Analyzers.csproj",
       "tests\\Avalonia.Base.UnitTests\\Avalonia.Base.UnitTests.csproj",
       "tests\\Avalonia.Benchmarks\\Avalonia.Benchmarks.csproj",
       "tests\\Avalonia.Controls.DataGrid.UnitTests\\Avalonia.Controls.DataGrid.UnitTests.csproj",

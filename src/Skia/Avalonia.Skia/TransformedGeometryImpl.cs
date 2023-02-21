@@ -19,14 +19,14 @@ namespace Avalonia.Skia
             Transform = transform;
 
             var transformedPath = source.EffectivePath.Clone();
-            transformedPath.Transform(transform.ToSKMatrix());
+            transformedPath?.Transform(transform.ToSKMatrix());
 
             EffectivePath = transformedPath;
-            Bounds = transformedPath.TightBounds.ToAvaloniaRect();
+            Bounds = transformedPath?.TightBounds.ToAvaloniaRect() ?? default;
         }
 
         /// <inheritdoc />
-        public override SKPath EffectivePath { get; }
+        public override SKPath? EffectivePath { get; }
 
         /// <inheritdoc />
         public IGeometryImpl SourceGeometry { get; }

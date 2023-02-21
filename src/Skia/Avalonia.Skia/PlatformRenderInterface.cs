@@ -24,7 +24,7 @@ namespace Avalonia.Skia
         }
 
 
-        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext graphicsContext)
+        public IPlatformRenderInterfaceContext CreateBackendContext(IPlatformGraphicsContext? graphicsContext)
         {
             if (graphicsContext == null)
                 return new SkiaContext(null);
@@ -225,7 +225,7 @@ namespace Avalonia.Skia
                 throw new ArgumentNullException(nameof(glyphInfos));
             }
 
-            var glyphTypefaceImpl = glyphTypeface as GlyphTypefaceImpl;
+            var glyphTypefaceImpl = (GlyphTypefaceImpl)glyphTypeface;
 
             var font = SKFontCache.Shared.Get();
 

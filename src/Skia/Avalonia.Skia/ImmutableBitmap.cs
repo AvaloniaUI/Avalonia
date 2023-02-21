@@ -100,7 +100,7 @@ namespace Avalonia.Skia
                     _bitmap = scaledBmp;
                 }
                 
-                _bitmap!.SetImmutable();
+                _bitmap.SetImmutable();
 
                 _image = SKImage.FromBitmap(_bitmap);
 
@@ -134,7 +134,7 @@ namespace Avalonia.Skia
                     data);
                 _bitmap = tmp.Copy();
             }
-            _bitmap!.SetImmutable();
+            _bitmap.SetImmutable();
             _image = SKImage.FromBitmap(_bitmap);
 
             if (_image == null)
@@ -179,10 +179,13 @@ namespace Avalonia.Skia
         public PixelFormat? Format => _bitmap?.ColorType.ToAvalonia();
         public ILockedFramebuffer Lock()
         {
-            if (_bitmap == null)
-                throw new NotSupportedException();
-            return new LockedFramebuffer(_bitmap.GetPixels(), PixelSize, _bitmap.RowBytes, Dpi,
-                _bitmap.ColorType.ToAvalonia().Value, null);
+            if (_bitmap is null)
+                throw new NotSupportedException("A bitmap is needed for locking");
+
+            if (_bitmap.ColorType.ToAvalonia() is not { } format)
+                throw new NotSupportedException($"Unsupported format {_bitmap.ColorType}");
+
+            return new LockedFramebuffer(_bitmap.GetPixels(), PixelSize, _bitmap.RowBytes, Dpi, format, null);
         }
     }
 }

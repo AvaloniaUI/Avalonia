@@ -403,7 +403,7 @@ namespace Avalonia.Controls
             if (firstIndex == -1)
             {
                 estimatedElementSize = EstimateElementSizeU();
-                firstIndex = (int)(viewportStart / estimatedElementSize);
+                firstIndex = Math.Min((int)(viewportStart / estimatedElementSize), maxIndex);
                 firstIndexU = firstIndex * estimatedElementSize;
             }
 
@@ -411,13 +411,13 @@ namespace Avalonia.Controls
             {
                 if (estimatedElementSize == -1)
                     estimatedElementSize = EstimateElementSizeU();
-                lastIndex = (int)(viewportEnd / estimatedElementSize);
+                lastIndex = Math.Min((int)(viewportEnd / estimatedElementSize), maxIndex);
             }
 
             return new MeasureViewport
             {
-                firstIndex = MathUtilities.Clamp(firstIndex, 0, maxIndex),
-                lastIndex = MathUtilities.Clamp(lastIndex, 0, maxIndex),
+                firstIndex = firstIndex,
+                lastIndex = lastIndex,
                 viewportUStart = viewportStart,
                 viewportUEnd = viewportEnd,
                 startU = firstIndexU,
@@ -1131,6 +1131,7 @@ namespace Avalonia.Controls
                     // The removed range was before the realized elements. Update the first index and
                     // the indexes of the realized elements.
                     _firstIndex -= count;
+                    _startUUnstable = true;
 
                     var newIndex = _firstIndex;
                     for (var i = 0; i < _elements.Count; ++i)

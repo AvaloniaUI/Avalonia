@@ -23,7 +23,7 @@ namespace Avalonia.Skia
         /// <returns></returns>
         public static SKTypefaceCollection GetOrAddTypefaceCollection(FontFamily fontFamily)
         {
-            return s_cachedCollections.GetOrAdd(fontFamily, x => CreateCustomFontCollection(fontFamily));
+            return s_cachedCollections.GetOrAdd(fontFamily, CreateCustomFontCollection);
         }
 
         /// <summary>
@@ -33,9 +33,14 @@ namespace Avalonia.Skia
         /// <returns></returns>
         private static SKTypefaceCollection CreateCustomFontCollection(FontFamily fontFamily)
         {
-            var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamily.Key);
-
             var typeFaceCollection = new SKTypefaceCollection();
+
+            if (fontFamily.Key is not { } fontFamilyKey)
+            {
+                return typeFaceCollection;
+            }
+
+            var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamilyKey);
 
             var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
 
