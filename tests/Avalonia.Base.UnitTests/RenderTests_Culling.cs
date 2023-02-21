@@ -13,162 +13,147 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void In_Bounds_Control_Should_Be_Rendered()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            TestControl target;
+
+            var container = new Canvas
             {
-                TestControl target;
-
-                var container = new Canvas
+                Width = 100,
+                Height = 100,
+                ClipToBounds = true,
+                Children =
                 {
-                    Width = 100,
-                    Height = 100,
-                    ClipToBounds = true,
-                    Children =
+                    (target = new TestControl
                     {
-                        (target = new TestControl
-                        {
-                            Width = 10, Height = 10, [Canvas.LeftProperty] = 98, [Canvas.TopProperty] = 98,
-                        })
-                    }
-                };
+                        Width = 10, Height = 10, [Canvas.LeftProperty] = 98, [Canvas.TopProperty] = 98,
+                    })
+                }
+            };
 
-                Render(container);
+            Render(container);
 
-                Assert.True(target.Rendered);
-            }
+            Assert.True(target.Rendered);
         }
 
         [Fact]
         public void Out_Of_Bounds_Control_Should_Not_Be_Rendered()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            TestControl target;
+
+            var container = new Canvas
             {
-                TestControl target;
-
-                var container = new Canvas
+                Width = 100,
+                Height = 100,
+                ClipToBounds = true,
+                Children =
                 {
-                    Width = 100,
-                    Height = 100,
-                    ClipToBounds = true,
-                    Children =
+                    (target = new TestControl
                     {
-                        (target = new TestControl
-                        {
-                            Width = 10,
-                            Height = 10,
-                            ClipToBounds = true,
-                            [Canvas.LeftProperty] = 110,
-                            [Canvas.TopProperty] = 110,
-                        })
-                    }
-                };
+                        Width = 10,
+                        Height = 10,
+                        ClipToBounds = true,
+                        [Canvas.LeftProperty] = 110,
+                        [Canvas.TopProperty] = 110,
+                    })
+                }
+            };
 
-                Render(container);
+            Render(container);
 
-                Assert.False(target.Rendered);
-            }
+            Assert.False(target.Rendered);
         }
 
         [Fact]
         public void Out_Of_Bounds_Child_Control_Should_Not_Be_Rendered()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                TestControl target;
+            TestControl target;
 
-                var container = new Canvas
+            var container = new Canvas
+            {
+                Width = 100,
+                Height = 100,
+                ClipToBounds = true,
+                Children =
                 {
-                    Width = 100,
-                    Height = 100,
-                    ClipToBounds = true,
-                    Children =
+                    new Canvas
                     {
-                        new Canvas
+                        Width = 100,
+                        Height = 100,
+                        [Canvas.LeftProperty] = 50,
+                        [Canvas.TopProperty] = 50,
+                        Children =
                         {
-                            Width = 100,
-                            Height = 100,
-                            [Canvas.LeftProperty] = 50,
-                            [Canvas.TopProperty] = 50,
-                            Children =
+                            (target = new TestControl
                             {
-                                (target = new TestControl
-                                {
-                                    Width = 10,
-                                    Height = 10,
-                                    ClipToBounds = true,
-                                    [Canvas.LeftProperty] = 50,
-                                    [Canvas.TopProperty] = 50,
-                                })
-                            }
+                                Width = 10,
+                                Height = 10,
+                                ClipToBounds = true,
+                                [Canvas.LeftProperty] = 50,
+                                [Canvas.TopProperty] = 50,
+                            })
                         }
                     }
-                };
+                }
+            };
 
-                Render(container);
+            Render(container);
 
-                Assert.False(target.Rendered);
-            }
+            Assert.False(target.Rendered);
         }
 
         [Fact]
         public void RenderTransform_Should_Be_Respected()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            TestControl target;
+
+            var container = new Canvas
             {
-                TestControl target;
-
-                var container = new Canvas
+                Width = 100,
+                Height = 100,
+                ClipToBounds = true,
+                Children =
                 {
-                    Width = 100,
-                    Height = 100,
-                    ClipToBounds = true,
-                    Children =
+                    (target = new TestControl
                     {
-                        (target = new TestControl
-                        {
-                            Width = 10,
-                            Height = 10,
-                            [Canvas.LeftProperty] = 110,
-                            [Canvas.TopProperty] = 110,
-                            RenderTransform = new TranslateTransform(-100, -100),
-                        })
-                    }
-                };
+                        Width = 10,
+                        Height = 10,
+                        [Canvas.LeftProperty] = 110,
+                        [Canvas.TopProperty] = 110,
+                        RenderTransform = new TranslateTransform(-100, -100),
+                    })
+                }
+            };
 
-                Render(container);
+            Render(container);
 
-                Assert.True(target.Rendered);
-            }
+            Assert.True(target.Rendered);
         }
 
         [Fact]
         public void Negative_Margin_Should_Be_Respected()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
-            {
-                TestControl target;
+            TestControl target;
 
-                var container = new Canvas
+            var container = new Canvas
+            {
+                Width = 100,
+                Height = 100,
+                ClipToBounds = true,
+                Children =
                 {
-                    Width = 100,
-                    Height = 100,
-                    ClipToBounds = true,
-                    Children =
+                    new Border
                     {
-                        new Border
+                        Margin = new Thickness(100, 100, 0, 0),
+                        Child = target = new TestControl
                         {
-                            Margin = new Thickness(100, 100, 0, 0),
-                            Child = target = new TestControl
-                            {
-                                Width = 10, Height = 10, Margin = new Thickness(-100, -100, 0, 0),
-                            }
+                            Width = 10, Height = 10, Margin = new Thickness(-100, -100, 0, 0),
                         }
                     }
-                };
+                }
+            };
 
-                Render(container);
+            Render(container);
 
-                Assert.True(target.Rendered);
-            }
+            Assert.True(target.Rendered);
         }
 
         private void Render(Control control)

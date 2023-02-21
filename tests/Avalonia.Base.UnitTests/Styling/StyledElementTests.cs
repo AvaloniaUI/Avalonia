@@ -330,7 +330,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Style_Is_Removed_When_Control_Removed_From_Logical_Tree()
         {
-            var app = UnitTestApplication.Start();
             var target = new Border();
             var root = new TestRoot
             {
@@ -579,8 +578,6 @@ namespace Avalonia.Base.UnitTests.Styling
         public void SetParent_Does_Not_Crash_Due_To_Reentrancy()
         {
             // Issue #3708
-            var app = UnitTestApplication.Start(TestServices.StyledWindow);
-
             ContentControl target;
             var root = new TestRoot
             {

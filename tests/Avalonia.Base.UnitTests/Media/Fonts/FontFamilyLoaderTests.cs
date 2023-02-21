@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Disposables;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Avalonia.Platform;
@@ -95,30 +96,28 @@ namespace Avalonia.Base.UnitTests.Media.Fonts
         [Fact]
         public void Should_Load_Embedded_Font()
         {
-            using (UnitTestApplication.Start(TestServices.MockPlatformRenderInterface))
+            var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+
+            var fontFamily = new FontFamily("resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests#Noto Mono");
+
+            var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamily.Key).ToArray();
+
+            Assert.NotEmpty(fontAssets);
+
+            foreach (var fontAsset in fontAssets)
             {
-                var assetLoader = AvaloniaLocator.Current.GetRequiredService<IAssetLoader>();
+                var stream = assetLoader.Open(fontAsset);
 
-                var fontFamily = new FontFamily("resm:Avalonia.Base.UnitTests.Assets?assembly=Avalonia.Base.UnitTests#Noto Mono");
-
-                var fontAssets = FontFamilyLoader.LoadFontAssets(fontFamily.Key).ToArray();
-
-                Assert.NotEmpty(fontAssets);
-
-                foreach (var fontAsset in fontAssets)
-                {
-                    var stream = assetLoader.Open(fontAsset);
-
-                    Assert.NotNull(stream);
-                }
+                Assert.NotNull(stream);
             }
         }
 
         private static IDisposable StartWithResources(params (string, string)[] assets)
         {
-            var assetLoader = new MockAssetLoader(assets);
-            var services = new TestServices(assetLoader: assetLoader, platform: new StandardRuntimePlatform());
-            return UnitTestApplication.Start(services);
+            return Disposable.Empty;
+            // var assetLoader = new MockAssetLoader(assets);
+            // var services = new TestServices(assetLoader: assetLoader, platform: new StandardRuntimePlatform());
+            // return UnitTestApplication.Start(services);
         }
     }
 }

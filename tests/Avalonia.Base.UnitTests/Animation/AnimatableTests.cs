@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Disposables;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
@@ -498,9 +499,7 @@ namespace Avalonia.Base.UnitTests.Animation
 
         private static IDisposable Start()
         {
-            var clock = new MockGlobalClock();
-            var services = new TestServices(globalClock: clock);
-            return UnitTestApplication.Start(services);
+            return Disposable.Empty;
         }
 
         private static Mock<ITransition> CreateTarget()

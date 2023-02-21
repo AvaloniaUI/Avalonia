@@ -11,8 +11,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Capture_Is_Transferred_To_Parent_When_Control_Removed()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var device = new MouseDevice();
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -49,8 +47,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void GetPosition_Should_Respect_Control_RenderTransform()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var device = new MouseDevice();
             var impl = CreateTopLevelImplMock(renderer.Object);

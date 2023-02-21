@@ -15,6 +15,8 @@
     <ProjectReference Include="..\..\src\Avalonia.Base\Avalonia.Base.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Controls\Avalonia.Controls.csproj" />
     <ProjectReference Include="..\..\src\Avalonia.Themes.Simple\Avalonia.Themes.Simple.csproj" />
+    <ProjectReference Include="..\..\src\Avalonia.Headless\Avalonia.Headless.csproj" />
+    <ProjectReference Include="..\..\src\Skia\Avalonia.Skia\Avalonia.Skia.csproj" />
   </ItemGroup>
   <Import Project="..\..\build\Moq.props" />
   <Import Project="..\..\build\Rx.props" />

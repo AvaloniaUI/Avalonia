@@ -16,7 +16,7 @@ namespace Avalonia.UnitTests
 
         public TestRoot()
         {
-            Renderer = RendererMocks.CreateRenderer().Object;
+            Renderer = new Window().PlatformImpl!.CreateRenderer(this);
             LayoutManager = new LayoutManager(this);
             IsVisible = true;
             KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.Cycle);
@@ -33,7 +33,7 @@ namespace Avalonia.UnitTests
         {
             if (useGlobalStyles)
             {
-                StylingParent = UnitTestApplication.Current;
+                StylingParent = Application.Current;
             }
 
             Child = child;

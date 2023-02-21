@@ -286,7 +286,6 @@ namespace Avalonia.Base.UnitTests.Styling
         [Fact]
         public void Direct_Property_Setter_With_TwoWay_Binding_Should_Update_Source()
         {
-            using var app = UnitTestApplication.Start(TestServices.MockThreadingInterface);
             var data = new Data { Foo = "foo" };
             var control = new TextBox
             {

@@ -18,7 +18,8 @@ namespace Avalonia.Headless
         public static void Initialize()
         {
             AvaloniaLocator.CurrentMutable
-                .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface());
+                .Bind<IPlatformRenderInterface>().ToConstant(new HeadlessPlatformRenderInterface())
+                .Bind<IFontManagerImpl>().ToConstant(new HeadlessFontManagerStub());
         }
 
         public IEnumerable<string> InstalledFontNames { get; } = new[] { "Tahoma" };

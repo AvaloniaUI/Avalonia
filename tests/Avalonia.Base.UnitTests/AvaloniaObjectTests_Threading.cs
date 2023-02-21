@@ -16,8 +16,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void AvaloniaObject_Constructor_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: new ThreadingInterface())))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 Assert.Throws<InvalidOperationException>(() => new Class1());
             }
         }
@@ -25,8 +26,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void StyledProperty_GetValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() => target.GetValue(Class1.StyledProperty));
@@ -36,8 +38,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void StyledProperty_SetValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() => target.SetValue(Class1.StyledProperty, "foo"));
@@ -47,8 +50,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Setting_StyledProperty_Binding_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() => 
@@ -61,8 +65,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void StyledProperty_ClearValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() => target.ClearValue(Class1.StyledProperty));
@@ -72,8 +77,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void StyledProperty_IsSet_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() => target.IsSet(Class1.StyledProperty));
@@ -83,8 +89,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void DirectProperty_GetValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() => target.GetValue(Class1.DirectProperty));
@@ -94,8 +101,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void DirectProperty_SetValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() => target.SetValue(Class1.DirectProperty, "foo"));
@@ -105,8 +113,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void Setting_DirectProperty_Binding_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() =>
@@ -119,8 +128,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void DirectProperty_ClearValue_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() => target.ClearValue(Class1.DirectProperty));
@@ -130,8 +140,9 @@ namespace Avalonia.Base.UnitTests
         [Fact]
         public void DirectProperty_IsSet_Should_Throw()
         {
-            using (UnitTestApplication.Start(new TestServices(threadingInterface: _threading)))
+            using (AvaloniaLocator.EnterScope())
             {
+                AvaloniaLocator.CurrentMutable.Bind<IPlatformThreadingInterface>().ToConstant(_threading);
                 var target = new Class1();
                 _threading.CurrentThreadIsLoopThread = false;
                 Assert.Throws<InvalidOperationException>(() => target.IsSet(Class1.DirectProperty));

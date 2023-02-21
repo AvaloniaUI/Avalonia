@@ -20,8 +20,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Close_Should_Remove_PointerOver()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var device = CreatePointerDeviceMock().Object;
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -48,8 +46,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void MouseMove_Should_Update_IsPointerOver()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var device = CreatePointerDeviceMock().Object;
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -91,8 +87,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void TouchMove_Should_Not_Set_IsPointerOver()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var device = CreatePointerDeviceMock(pointerType: PointerType.Touch).Object;
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -117,8 +111,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void HitTest_Should_Be_Ignored_If_Element_Captured()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var pointer = new Mock<IPointer>();
             var device = CreatePointerDeviceMock(pointer.Object).Object;
@@ -153,8 +145,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void IsPointerOver_Should_Be_Updated_When_Child_Sets_Handled_True()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var device = CreatePointerDeviceMock().Object;
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -199,8 +189,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Pointer_Enter_Move_Leave_Should_Be_Followed()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -254,8 +242,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void PointerEntered_Exited_Should_Be_Raised_In_Correct_Order()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -304,8 +290,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void PointerEntered_Exited_Should_Set_Correct_Position()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var expectedPosition = new Point(15, 15);
             var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
@@ -349,8 +333,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void Render_Invalidation_Should_Affect_PointerOver()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -403,8 +385,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void PointerOver_Invalidation_Should_Use_Previously_Captured_Element()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);
@@ -440,8 +420,6 @@ namespace Avalonia.Base.UnitTests.Input
         [Fact]
         public void LeaveWindow_Should_Reset_PointerOver()
         {
-            using var app = UnitTestApplication.Start(new TestServices(inputManager: new InputManager()));
-
             var renderer = RendererMocks.CreateRenderer();
             var deviceMock = CreatePointerDeviceMock();
             var impl = CreateTopLevelImplMock(renderer.Object);

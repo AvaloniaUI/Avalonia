@@ -521,39 +521,26 @@ namespace Avalonia.Base.UnitTests
         }
 
         [Fact]
-        public void Bind_Executes_On_UIThread()
+        public async Task Bind_Executes_On_UIThread()
         {
-            AsyncContext.Run(async () =>
+            var target = new Class1();
+            var source = new Subject<object>();
+            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+            var raised = 0;
+
+            target.PropertyChanged += (s, e) =>
             {
-                var target = new Class1();
-                var source = new Subject<object>();
-                var currentThreadId = Thread.CurrentThread.ManagedThreadId;
-                var raised = 0;
+                Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
+                ++raised;
+            };
 
-                var threadingInterfaceMock = new Mock<IPlatformThreadingInterface>();
-                threadingInterfaceMock.SetupGet(mock => mock.CurrentThreadIsLoopThread)
-                    .Returns(() => Thread.CurrentThread.ManagedThreadId == currentThreadId);
+            target.Bind(Class1.FooProperty, source);
 
-                var services = new TestServices(
-                    threadingInterface: threadingInterfaceMock.Object);
+            await Task.Run(() => source.OnNext("foobar"));
+            Dispatcher.UIThread.RunJobs();
 
-                target.PropertyChanged += (s, e) =>
-                {
-                    Assert.Equal(currentThreadId, Thread.CurrentThread.ManagedThreadId);
-                    ++raised;
-                };
-
-                using (UnitTestApplication.Start(services))
-                {
-                    target.Bind(Class1.FooProperty, source);
-
-                    await Task.Run(() => source.OnNext("foobar"));
-                    Dispatcher.UIThread.RunJobs();
-
-                    Assert.Equal("foobar", target.Foo);
-                    Assert.Equal(1, raised);
-                }
-            });
+            Assert.Equal("foobar", target.Foo);
+            Assert.Equal(1, raised);
         }
 
         [Fact]
