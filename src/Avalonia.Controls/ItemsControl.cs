@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Automation.Peers;
 using Avalonia.Collections;
 using Avalonia.Controls.Generators;
@@ -17,7 +16,6 @@ using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Metadata;
 using Avalonia.Styling;
-using Avalonia.VisualTree;
 
 namespace Avalonia.Controls
 {
@@ -91,10 +89,11 @@ namespace Avalonia.Controls
         /// Gets or sets the <see cref="IBinding"/> to use for binding to the display member of each item.
         /// </summary>
         [AssignBinding]
+        [InheritDataTypeFromItems(nameof(Items))]
         public IBinding? DisplayMemberBinding
         {
-            get { return GetValue(DisplayMemberBindingProperty); }
-            set { SetValue(DisplayMemberBindingProperty, value); }
+            get => GetValue(DisplayMemberBindingProperty);
+            set => SetValue(DisplayMemberBindingProperty, value);
         }
         
         private IEnumerable? _items = new AvaloniaList<object>();
@@ -106,7 +105,6 @@ namespace Avalonia.Controls
         private Tuple<int, Control>? _containerBeingPrepared;
         private ScrollViewer? _scrollViewer;
         private ItemsPresenter? _itemsPresenter;
-        private IScrollSnapPointsInfo? _scrolSnapPointInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ItemsControl"/> class.
@@ -134,8 +132,8 @@ namespace Avalonia.Controls
         [Content]
         public IEnumerable? Items
         {
-            get { return _items; }
-            set { SetAndRaise(ItemsProperty, ref _items, value); }
+            get => _items;
+            set => SetAndRaise(ItemsProperty, ref _items, value);
         }
 
         /// <summary>
@@ -143,8 +141,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ControlTheme? ItemContainerTheme
         {
-            get { return GetValue(ItemContainerThemeProperty); }
-            set { SetValue(ItemContainerThemeProperty, value); }
+            get => GetValue(ItemContainerThemeProperty); 
+            set => SetValue(ItemContainerThemeProperty, value);
         }
 
         /// <summary>
@@ -161,8 +159,8 @@ namespace Avalonia.Controls
         /// </summary>
         public ITemplate<Panel> ItemsPanel
         {
-            get { return GetValue(ItemsPanelProperty); }
-            set { SetValue(ItemsPanelProperty, value); }
+            get => GetValue(ItemsPanelProperty);
+            set => SetValue(ItemsPanelProperty, value);
         }
 
         /// <summary>
@@ -171,8 +169,8 @@ namespace Avalonia.Controls
         [InheritDataTypeFromItems(nameof(Items))]
         public IDataTemplate? ItemTemplate
         {
-            get { return GetValue(ItemTemplateProperty); }
-            set { SetValue(ItemTemplateProperty, value); }
+            get => GetValue(ItemTemplateProperty); 
+            set => SetValue(ItemTemplateProperty, value);
         }
 
         /// <summary>
@@ -221,6 +219,7 @@ namespace Avalonia.Controls
         }
 
 
+        /// <inheritdoc />
         public event EventHandler<RoutedEventArgs> HorizontalSnapPointsChanged
         {
             add
@@ -240,6 +239,7 @@ namespace Avalonia.Controls
             }
         }
 
+        /// <inheritdoc />
         public event EventHandler<RoutedEventArgs> VerticalSnapPointsChanged
         {
             add
@@ -264,8 +264,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreHorizontalSnapPointsRegular
         {
-            get { return GetValue(AreHorizontalSnapPointsRegularProperty); }
-            set { SetValue(AreHorizontalSnapPointsRegularProperty, value); }
+            get => GetValue(AreHorizontalSnapPointsRegularProperty); 
+            set => SetValue(AreHorizontalSnapPointsRegularProperty, value);
         }
 
         /// <summary>
@@ -273,8 +273,8 @@ namespace Avalonia.Controls
         /// </summary>
         public bool AreVerticalSnapPointsRegular
         {
-            get { return GetValue(AreVerticalSnapPointsRegularProperty); }
-            set { SetValue(AreVerticalSnapPointsRegularProperty, value); }
+            get => GetValue(AreVerticalSnapPointsRegularProperty); 
+            set => SetValue(AreVerticalSnapPointsRegularProperty, value);
         }
 
         /// <summary>
@@ -424,13 +424,12 @@ namespace Avalonia.Controls
         /// <returns>true if the item is (or is eligible to be) its own container; otherwise, false.</returns>
         protected internal virtual bool IsItemItsOwnContainerOverride(Control item) => true;
 
+        /// <inheritdoc />
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
         {
             base.OnApplyTemplate(e);
             _scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
             _itemsPresenter = e.NameScope.Find<ItemsPresenter>("PART_ItemsPresenter");
-
-            _scrolSnapPointInfo = _itemsPresenter as IScrollSnapPointsInfo;
         }
 
         /// <summary>
@@ -477,11 +476,13 @@ namespace Avalonia.Controls
             base.OnKeyDown(e);
         }
 
+        /// <inheritdoc />
         protected override AutomationPeer OnCreateAutomationPeer()
         {
             return new ItemsControlAutomationPeer(this);
         }
 
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -558,7 +559,12 @@ namespace Avalonia.Controls
             return new ItemContainerGenerator(this);
         }
 
-        internal void AddLogicalChild(Control c) => LogicalChildren.Add(c);
+        internal void AddLogicalChild(Control c)
+        {
+            if (!LogicalChildren.Contains(c))
+                LogicalChildren.Add(c);
+        }
+
         internal void RemoveLogicalChild(Control c) => LogicalChildren.Remove(c);
 
         /// <summary>
@@ -748,11 +754,13 @@ namespace Avalonia.Controls
             return true;
         }
 
+        /// <inheritdoc />
         public IReadOnlyList<double> GetIrregularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment)
         {
             return _itemsPresenter?.GetIrregularSnapPoints(orientation, snapPointsAlignment) ?? new List<double>();
         }
 
+        /// <inheritdoc />
         public double GetRegularSnapPoints(Orientation orientation, SnapPointsAlignment snapPointsAlignment, out double offset)
         {
             offset = 0;

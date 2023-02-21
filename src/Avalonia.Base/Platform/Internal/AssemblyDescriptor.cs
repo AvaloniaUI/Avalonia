@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -18,7 +19,7 @@ internal class AssemblyDescriptor : IAssemblyDescriptor
 {
     public AssemblyDescriptor(Assembly assembly)
     {
-        Assembly = assembly;
+        Assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
         Resources = assembly.GetManifestResourceNames()
             .ToDictionary(n => n, n => (IAssetDescriptor)new AssemblyResourceDescriptor(assembly, n));
         Name = assembly.GetName().Name;

@@ -166,7 +166,7 @@ namespace Avalonia.Controls
             if (Math.Abs(_expectedViewportShift.X) > 1 || Math.Abs(_expectedViewportShift.Y) > 1)
             {
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Expecting viewport shift of ({Shift})",
-                    _owner.Layout.LayoutId, _expectedViewportShift);
+                    _owner.Layout?.LayoutId, _expectedViewportShift);
 
                 // There are cases where we might be expecting a shift but not get it. We will
                 // be waiting for the effective viewport event but if the scroll viewer is not able
@@ -287,7 +287,7 @@ namespace Avalonia.Controls
             if (_pendingViewportShift.X != 0 || _pendingViewportShift.Y != 0)
             {
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Layout Updated with pending shift {Shift}- invalidating measure",
-                    _owner.Layout.LayoutId,
+                    _owner.Layout?.LayoutId,
                     _pendingViewportShift);
 
                 // Assume this is never going to come.
@@ -436,7 +436,7 @@ namespace Avalonia.Controls
 
         private void OnEffectiveViewportChanged(object? sender, EffectiveViewportChangedEventArgs e)
         {
-            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: EffectiveViewportChanged event callback", _owner.Layout.LayoutId);
+            Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: EffectiveViewportChanged event callback", _owner.Layout?.LayoutId);
             UpdateViewport(e.EffectiveViewport);
 
             _pendingViewportShift = default;
@@ -490,14 +490,14 @@ namespace Avalonia.Controls
             var previousVisibleWindow = _visibleWindow;
 
             Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Effective Viewport: ({Before})->({After})",
-                _owner.Layout.LayoutId,
+                _owner.Layout?.LayoutId,
                 previousVisibleWindow,
                 viewport);
 
             if (-currentVisibleWindow.X <= ItemsRepeater.ClearedElementsArrangePosition.X &&
                 -currentVisibleWindow.Y <= ItemsRepeater.ClearedElementsArrangePosition.Y)
             {
-                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Viewport is invalid. visible window cleared", _owner.Layout.LayoutId);
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Viewport is invalid. visible window cleared", _owner.Layout?.LayoutId);
                 // We got cleared.
                 _visibleWindow = default;
             }
@@ -509,7 +509,7 @@ namespace Avalonia.Controls
             if (_visibleWindow != previousVisibleWindow)
             {
                 Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Used Viewport: ({Before})->({After})",
-                    _owner.Layout.LayoutId,
+                    _owner.Layout?.LayoutId,
                     previousVisibleWindow,
                     currentVisibleWindow);
                 TryInvalidateMeasure();
@@ -532,7 +532,7 @@ namespace Avalonia.Controls
                 // We invalidate measure instead of just invalidating arrange because
                 // we don't invalidate measure in UpdateViewport if the view is changing to
                 // avoid layout cycles.
-                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Invalidating measure due to viewport change", _owner.Layout.LayoutId);
+                Logger.TryGet(LogEventLevel.Verbose, "Repeater")?.Log(this, "{LayoutId}: Invalidating measure due to viewport change", _owner.Layout?.LayoutId);
                 _owner.InvalidateMeasure();
             }
         }

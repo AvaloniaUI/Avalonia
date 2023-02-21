@@ -10,6 +10,7 @@ using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Utilities;
 using Avalonia.Automation;
+using Avalonia.Controls.Automation.Peers;
 
 namespace Avalonia.Controls
 {
@@ -81,11 +82,11 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the <see cref="TicksProperty"/> property.
         /// </summary>
-        public static readonly StyledProperty<AvaloniaList<double>> TicksProperty =
+        public static readonly StyledProperty<AvaloniaList<double>?> TicksProperty =
             TickBar.TicksProperty.AddOwner<Slider>();
 
         // Slider required parts
-        private bool _isDragging = false;
+        private bool _isDragging;
         private Track? _track;
         private Button? _decreaseButton;
         private Button? _increaseButton;
@@ -124,7 +125,7 @@ namespace Avalonia.Controls
         /// <summary>
         /// Defines the ticks to be drawn on the tick bar.
         /// </summary>
-        public AvaloniaList<double> Ticks
+        public AvaloniaList<double>? Ticks
         {
             get => GetValue(TicksProperty);
             set => SetValue(TicksProperty, value);
@@ -215,6 +216,7 @@ namespace Avalonia.Controls
             _pointerMovedDispose = this.AddDisposableHandler(PointerMovedEvent, TrackMoved, RoutingStrategies.Tunnel);
         }
 
+        /// <inheritdoc />
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
@@ -350,8 +352,8 @@ namespace Avalonia.Controls
 
             var orient = Orientation == Orientation.Horizontal;
             var thumbLength = (orient
-                ? _track.Thumb.Bounds.Width
-                : _track.Thumb.Bounds.Height) + double.Epsilon;
+                ? _track.Thumb?.Bounds.Width ?? 0.0
+                : _track.Thumb?.Bounds.Height ?? 0.0) + double.Epsilon;
             var trackLength = (orient
                 ? _track.Bounds.Width
                 : _track.Bounds.Height) - thumbLength;
@@ -367,6 +369,7 @@ namespace Avalonia.Controls
             Value = IsSnapToTickEnabled ? SnapToTick(finalValue) : finalValue;
         }
 
+        /// <inheritdoc />
         protected override void UpdateDataValidation(
             AvaloniaProperty property,
             BindingValueType state,
@@ -378,6 +381,12 @@ namespace Avalonia.Controls
             }
         }
 
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new SliderAutomationPeer(this);
+        }
+
+        /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);

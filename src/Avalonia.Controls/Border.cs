@@ -225,7 +225,7 @@ namespace Avalonia.Controls
         /// Renders the control.
         /// </summary>
         /// <param name="context">The drawing context.</param>
-        public override void Render(DrawingContext context)
+        public sealed override void Render(DrawingContext context)
         {
             _borderRenderHelper.Render(context, Bounds.Size, LayoutThickness, CornerRadius, Background, BorderBrush,
                 BoxShadow, BorderDashOffset, BorderLineCap, BorderLineJoin, BorderDashArray);

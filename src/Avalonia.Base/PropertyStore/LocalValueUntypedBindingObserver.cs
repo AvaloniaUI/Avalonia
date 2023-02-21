@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography;
 using Avalonia.Data;
 using Avalonia.Threading;
 
@@ -10,6 +9,8 @@ namespace Avalonia.PropertyStore
     {
         private readonly ValueStore _owner;
         private IDisposable? _subscription;
+        private T? _defaultValue;
+        private bool _isDefaultValueInitialized;
 
         public LocalValueUntypedBindingObserver(ValueStore owner, StyledProperty<T> property)
         {
@@ -49,11 +50,7 @@ namespace Avalonia.PropertyStore
 
                 if (value == AvaloniaProperty.UnsetValue)
                 {
-                    owner.ClearLocalValue(property);
-                }
-                else if (value == BindingOperations.DoNothing)
-                {
-                    // Do nothing!
+                    owner.SetValue(property, instance.GetCachedDefaultValue(), BindingPriority.LocalValue);
                 }
                 else if (UntypedValueUtils.TryConvertAndValidate(property, value, out var typedValue))
                 {
@@ -61,10 +58,13 @@ namespace Avalonia.PropertyStore
                 }
                 else
                 {
-                    owner.ClearLocalValue(property);
+                    owner.SetValue(property, instance.GetCachedDefaultValue(), BindingPriority.LocalValue);
                     LoggingUtils.LogInvalidValue(owner.Owner, property, typeof(T), value);
                 }
             }
+
+            if (value == BindingOperations.DoNothing)
+                return;
 
             if (Dispatcher.UIThread.CheckAccess())
             {
@@ -78,6 +78,17 @@ namespace Avalonia.PropertyStore
                 var newValue = value;
                 Dispatcher.UIThread.Post(() => Execute(instance, newValue));
             }
+        }
+
+        private T GetCachedDefaultValue()
+        {
+            if (!_isDefaultValueInitialized)
+            {
+                _defaultValue = Property.GetDefaultValue(_owner.Owner.GetType());
+                _isDefaultValueInitialized = true;
+            }
+
+            return _defaultValue!;
         }
     }
 }

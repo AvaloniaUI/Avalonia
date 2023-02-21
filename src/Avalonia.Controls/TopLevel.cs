@@ -20,6 +20,7 @@ using Avalonia.Styling;
 using Avalonia.Utilities;
 using Avalonia.Input.Platform;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Avalonia.Controls
 {
@@ -79,6 +80,14 @@ namespace Avalonia.Controls
         public static readonly StyledProperty<IBrush> TransparencyBackgroundFallbackProperty =
             AvaloniaProperty.Register<TopLevel, IBrush>(nameof(TransparencyBackgroundFallback), Brushes.White);
 
+        /// <inheritdoc cref="ThemeVariantScope.ActualThemeVariantProperty" />
+        public static readonly StyledProperty<ThemeVariant> ActualThemeVariantProperty =
+            ThemeVariantScope.ActualThemeVariantProperty.AddOwner<Application>();
+        
+        /// <inheritdoc cref="ThemeVariantScope.RequestedThemeVariantProperty" />
+        public static readonly StyledProperty<ThemeVariant?> RequestedThemeVariantProperty =
+            ThemeVariantScope.RequestedThemeVariantProperty.AddOwner<Application>();
+        
         /// <summary>
         /// Defines the <see cref="BackRequested"/> event.
         /// </summary>
@@ -95,7 +104,7 @@ namespace Avalonia.Controls
         private readonly IAccessKeyHandler? _accessKeyHandler;
         private readonly IKeyboardNavigationHandler? _keyboardNavigationHandler;
         private readonly IGlobalStyles? _globalStyles;
-        private readonly IGlobalThemeVariantProvider? _applicationThemeHost;
+        private readonly IThemeVariantHost? _applicationThemeHost;
         private readonly PointerOverPreProcessor? _pointerOverPreProcessor;
         private readonly IDisposable? _pointerOverPreProcessorSubscription;
         private readonly IDisposable? _backGestureSubscription;
@@ -146,7 +155,7 @@ namespace Avalonia.Controls
             _inputManager = TryGetService<IInputManager>(dependencyResolver);
             _keyboardNavigationHandler = TryGetService<IKeyboardNavigationHandler>(dependencyResolver);
             _globalStyles = TryGetService<IGlobalStyles>(dependencyResolver);
-            _applicationThemeHost = TryGetService<IGlobalThemeVariantProvider>(dependencyResolver);
+            _applicationThemeHost = TryGetService<IThemeVariantHost>(dependencyResolver);
 
             Renderer = impl.CreateRenderer(this);
             Renderer.SceneInvalidated += SceneInvalidated;
@@ -402,9 +411,33 @@ namespace Avalonia.Controls
         /// <returns>The TopLevel</returns>
         public static TopLevel? GetTopLevel(Visual? visual)
         {
-            return visual == null ? null : visual.VisualRoot as TopLevel;
+            return visual?.VisualRoot as TopLevel;
         }
-        
+
+        /// <summary>
+        /// Requests a <see cref="PlatformInhibitionType"/> to be inhibited.
+        /// The behavior remains inhibited until the return value is disposed.
+        /// The available set of <see cref="PlatformInhibitionType"/>s depends on the platform.
+        /// If a behavior is inhibited on a platform where this type is not supported the request will have no effect.
+        /// </summary>
+        public async Task<IDisposable> RequestPlatformInhibition(PlatformInhibitionType type, string reason)
+        {
+            var platformBehaviorInhibition = PlatformImpl?.TryGetFeature<IPlatformBehaviorInhibition>();
+            if (platformBehaviorInhibition == null)
+            {
+                return Disposable.Create(() => { });
+            }
+
+            switch (type)
+            {
+                case PlatformInhibitionType.AppSleep:
+                    await platformBehaviorInhibition.SetInhibitAppSleep(true, reason);
+                    return Disposable.Create(() => platformBehaviorInhibition.SetInhibitAppSleep(false, reason).Wait());
+                default:
+                    return Disposable.Create(() => { });
+            }
+        }
+
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
         {
             base.OnPropertyChanged(change);
@@ -617,7 +650,7 @@ namespace Avalonia.Controls
 
         private void GlobalActualThemeVariantChanged(object? sender, EventArgs e)
         {
-            SetValue(ActualThemeVariantProperty, ((IGlobalThemeVariantProvider)sender!).ActualThemeVariant, BindingPriority.Template);
+            SetValue(ActualThemeVariantProperty, ((IThemeVariantHost)sender!).ActualThemeVariant, BindingPriority.Template);
         }
 
         private void SceneInvalidated(object? sender, SceneInvalidatedEventArgs e)

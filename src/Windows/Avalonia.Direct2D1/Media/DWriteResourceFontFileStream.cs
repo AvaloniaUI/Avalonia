@@ -7,7 +7,7 @@ namespace Avalonia.Direct2D1.Media
     /// <summary>
     /// This FontFileStream implementation is reading data from a <see cref="DataStream"/>.
     /// </summary>
-    public class DWriteResourceFontFileStream : CallbackBase, FontFileStream
+    internal class DWriteResourceFontFileStream : CallbackBase, FontFileStream
     {
         private readonly DataStream _stream;
 

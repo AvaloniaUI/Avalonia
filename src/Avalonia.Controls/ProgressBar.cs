@@ -1,4 +1,6 @@
 using System;
+using Avalonia.Automation.Peers;
+using Avalonia.Controls.Automation.Peers;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -226,6 +228,11 @@ namespace Avalonia.Controls
                 .Subscribe(_ => UpdateIndicator());
 
             UpdateIndicator();
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ProgressBarAutomationPeer(this);
         }
 
         private void UpdateIndicator()

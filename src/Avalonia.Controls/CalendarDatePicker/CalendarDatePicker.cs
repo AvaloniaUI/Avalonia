@@ -51,11 +51,11 @@ namespace Avalonia.Controls
         private bool _isDropDownOpen;
         private DateTime? _selectedDate;
         private string? _text;
-        private bool _suspendTextChangeHandler = false;
-        private bool _isPopupClosing = false;
-        private bool _ignoreButtonClick = false;
-        private bool _isFlyoutOpen = false;
-        private bool _isPressed = false;
+        private bool _suspendTextChangeHandler;
+        private bool _isPopupClosing;
+        private bool _ignoreButtonClick;
+        private bool _isFlyoutOpen;
+        private bool _isPressed;
 
         /// <summary>
         /// Occurs when the drop-down
@@ -185,7 +185,7 @@ namespace Avalonia.Controls
             {
                 _textBox.KeyDown += TextBox_KeyDown;
                 _textBox.GotFocus += TextBox_GotFocus;
-                _textBoxTextChangedSubscription = _textBox.GetObservable(TextBox.TextProperty).Subscribe(txt => TextBox_TextChanged());
+                _textBoxTextChangedSubscription = _textBox.GetObservable(TextBox.TextProperty).Subscribe(_ => TextBox_TextChanged());
 
                 if(SelectedDate.HasValue)
                 {
@@ -292,7 +292,7 @@ namespace Avalonia.Controls
             // Text
             else if (change.Property == TextProperty)
             {
-                var (oldValue, newValue) = change.GetOldAndNewValue<string>();
+                var (_, newValue) = change.GetOldAndNewValue<string?>();
 
                 if (!_suspendTextChangeHandler)
                 {
@@ -595,9 +595,9 @@ namespace Avalonia.Controls
 
         private void Calendar_KeyDown(object? sender, KeyEventArgs e)
         {
-            Calendar? c = sender as Calendar ?? throw new ArgumentException("Sender must be Calendar.", nameof(sender));
-
-            if (!e.Handled && (e.Key == Key.Enter || e.Key == Key.Space || e.Key == Key.Escape) && c.DisplayMode == CalendarMode.Month)
+            if (!e.Handled
+                && sender is Calendar { DisplayMode: CalendarMode.Month }
+                && (e.Key == Key.Enter || e.Key == Key.Space || e.Key == Key.Escape))
             {
                 Focus();
                 IsDropDownOpen = false;
