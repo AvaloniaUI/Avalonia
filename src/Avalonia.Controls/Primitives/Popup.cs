@@ -392,7 +392,7 @@ namespace Avalonia.Controls.Primitives
                 topLevelPopup
                     .Bind(
                         ThemeVariantScope.ActualThemeVariantProperty,
-                        placementTarget.GetBindingObservable(ThemeVariantScope.ActualThemeVariantProperty))
+                        this.GetBindingObservable(ThemeVariantScope.ActualThemeVariantProperty))
                     .DisposeWith(handlerCleanup);
             }
 
