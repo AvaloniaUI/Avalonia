@@ -41,6 +41,8 @@ namespace Avalonia.Win32.Automation
             { SelectionPatternIdentifiers.CanSelectMultipleProperty, UiaPropertyId.SelectionCanSelectMultiple },
             { SelectionPatternIdentifiers.IsSelectionRequiredProperty, UiaPropertyId.SelectionIsSelectionRequired },
             { SelectionPatternIdentifiers.SelectionProperty, UiaPropertyId.SelectionSelection },
+            { SelectionItemPatternIdentifiers.IsSelectedProperty, UiaPropertyId.SelectionItemIsSelected },
+            { SelectionItemPatternIdentifiers.SelectionContainerProperty, UiaPropertyId.SelectionItemSelectionContainer }
         };
 
         private static ConditionalWeakTable<AutomationPeer, AutomationNode> s_nodes = new();
