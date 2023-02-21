@@ -11,13 +11,13 @@ internal static partial class AvaloniaModule
     public static Task ImportMain()
     {
         var options = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
-        return JSHost.ImportAsync(MainModuleName, options.FrameworkAssetPathResolver("avalonia.js"));
+        return JSHost.ImportAsync(MainModuleName, options.FrameworkAssetPathResolver!("avalonia.js"));
     }
 
     public static Task ImportStorage()
     {
         var options = AvaloniaLocator.Current.GetService<BrowserPlatformOptions>() ?? new BrowserPlatformOptions();
-        return JSHost.ImportAsync(StorageModuleName, options.FrameworkAssetPathResolver("storage.js"));
+        return JSHost.ImportAsync(StorageModuleName, options.FrameworkAssetPathResolver!("storage.js"));
     }
 
     [JSImport("Caniuse.isMobile", AvaloniaModule.MainModuleName)]

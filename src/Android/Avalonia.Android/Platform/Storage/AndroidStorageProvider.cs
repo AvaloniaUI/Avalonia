@@ -37,7 +37,7 @@ internal class AndroidStorageProvider : IStorageProvider
         return Task.FromResult<IStorageBookmarkFolder?>(new AndroidStorageFolder(_activity, uri, false));
     }
 
-    public async Task<IStorageFile?> TryGetFileFromPath(Uri filePath)
+    public async Task<IStorageFile?> TryGetFileFromPathAsync(Uri filePath)
     {
         if (filePath is null)
         {
@@ -70,7 +70,7 @@ internal class AndroidStorageProvider : IStorageProvider
         return new AndroidStorageFile(_activity, androidUri);
     }
 
-    public async Task<IStorageFolder?> TryGetFolderFromPath(Uri folderPath)
+    public async Task<IStorageFolder?> TryGetFolderFromPathAsync(Uri folderPath)
     {
         if (folderPath is null)
         {
@@ -103,7 +103,7 @@ internal class AndroidStorageProvider : IStorageProvider
         return new AndroidStorageFolder(_activity, androidUri, false);
     }
 
-    public Task<IStorageFolder?> TryGetWellKnownFolder(WellKnownFolder wellKnownFolder)
+    public Task<IStorageFolder?> TryGetWellKnownFolderAsync(WellKnownFolder wellKnownFolder)
     {
         var dirCode = wellKnownFolder switch
         {

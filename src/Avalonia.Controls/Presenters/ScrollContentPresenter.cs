@@ -427,6 +427,7 @@ namespace Avalonia.Controls.Presenters
 
             Viewport = finalSize;
             Extent = Child!.Bounds.Size.Inflate(Child.Margin);
+            Offset = ScrollViewer.CoerceOffset(Extent, finalSize, Offset);
             _isAnchorElementDirty = true;
 
             return finalSize;

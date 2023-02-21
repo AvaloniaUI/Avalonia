@@ -18,11 +18,7 @@ internal class BclStorageFile : IStorageBookmarkFile
     }
 
     public FileInfo FileInfo { get; }
-
-    public bool CanOpenRead => true;
-
-    public bool CanOpenWrite => true;
-
+    
     public string Name => FileInfo.Name;
 
     public virtual bool CanBookmark => true;

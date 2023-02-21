@@ -313,13 +313,13 @@ internal class CompositionDrawingContext : IDrawingContextImpl, IDrawingContextW
     }
 
     /// <inheritdoc/>
-    public void PushOpacity(double opacity)
+    public void PushOpacity(double opacity, Rect bounds)
     {
         var next = NextDrawAs<OpacityNode>();
 
-        if (next == null || !next.Item.Equals(opacity))
+        if (next == null || !next.Item.Equals(opacity, bounds))
         {
-            Add(new OpacityNode(opacity));
+            Add(new OpacityNode(opacity, bounds));
         }
         else
         {

@@ -5,8 +5,10 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Avalonia.Android.Platform.SkiaPlatform;
+using Avalonia.Controls.Presenters;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
+using Avalonia.Reactive;
 
 namespace Avalonia.Android
 {
@@ -68,23 +70,10 @@ namespace Avalonia.Android
 
         public void SetClient(ITextInputMethodClient client)
         {
-            if (_client != null)
-            {
-                _client.SurroundingTextChanged -= SurroundingTextChanged;
-            }
-
-            if(_inputConnection != null)
-            {
-                _inputConnection.ComposingText = null;
-                _inputConnection.ComposingRegion = default;
-            }
-
             _client = client;
 
             if (IsActive)
             {
-                _client.SurroundingTextChanged += SurroundingTextChanged;
-
                 _host.RequestFocus();
 
                 _imm.RestartInput(View);              
@@ -98,24 +87,6 @@ namespace Avalonia.Android
             else
             {
                 _imm.HideSoftInputFromWindow(_host.WindowToken, HideSoftInputFlags.ImplicitOnly);
-            }
-        }
-
-        private void SurroundingTextChanged(object sender, EventArgs e)
-        {
-            if (IsActive && _inputConnection != null)
-            {
-                var surroundingText = Client.SurroundingText;
-
-                _inputConnection.SurroundingText = surroundingText;
-
-                _imm.UpdateSelection(_host, surroundingText.AnchorOffset, surroundingText.CursorOffset, surroundingText.AnchorOffset, surroundingText.CursorOffset);
-
-                if (_inputConnection.ComposingText != null && !_inputConnection.IsCommiting && surroundingText.AnchorOffset == surroundingText.CursorOffset)
-                {
-                    _inputConnection.CommitText(_inputConnection.ComposingText, 0);
-                    _inputConnection.SetSelection(surroundingText.AnchorOffset, surroundingText.CursorOffset);
-                }
             }
         }
 
@@ -157,10 +128,13 @@ namespace Avalonia.Android
                     TextInputReturnKeyType.Search => (ImeFlags)CustomImeFlags.ActionSearch,
                     TextInputReturnKeyType.Next => (ImeFlags)CustomImeFlags.ActionNext,
                     TextInputReturnKeyType.Previous => (ImeFlags)CustomImeFlags.ActionPrevious,
-                    _ => (ImeFlags)CustomImeFlags.ActionDone
+                    TextInputReturnKeyType.Done => (ImeFlags)CustomImeFlags.ActionDone,
+                    _ => options.Multiline ? ImeFlags.NoEnterAction : (ImeFlags)CustomImeFlags.ActionDone
                 };
 
                 outAttrs.ImeOptions |= ImeFlags.NoFullscreen | ImeFlags.NoExtractUi;
+
+                _client.TextEditable = _inputConnection.InputEditable;
 
                 return _inputConnection;
             });

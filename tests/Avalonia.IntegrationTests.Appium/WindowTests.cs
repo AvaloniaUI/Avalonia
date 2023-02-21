@@ -30,9 +30,9 @@ namespace Avalonia.IntegrationTests.Appium
 
         [Theory]
         [MemberData(nameof(StartupLocationData))]
-        public void StartupLocation(Size? size, ShowWindowMode mode, WindowStartupLocation location)
+        public void StartupLocation(Size? size, ShowWindowMode mode, WindowStartupLocation location, bool canResize)
         {
-            using var window = OpenWindow(size, mode, location);
+            using var window = OpenWindow(size, mode, location, canResize: canResize);
             var info = GetWindowInfo();
 
             if (size.HasValue)
@@ -63,9 +63,9 @@ namespace Avalonia.IntegrationTests.Appium
 
         [Theory]
         [MemberData(nameof(WindowStateData))]
-        public void WindowState(Size? size, ShowWindowMode mode, WindowState state)
+        public void WindowState(Size? size, ShowWindowMode mode, WindowState state, bool canResize)
         {
-            using var window = OpenWindow(size, mode, state: state);
+            using var window = OpenWindow(size, mode, state: state, canResize: canResize);
 
             try
             {
@@ -230,10 +230,10 @@ namespace Avalonia.IntegrationTests.Appium
             Assert.Equal(new Rgba32(255, 0, 0), centerColor);
         }
 
-        public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation> StartupLocationData()
+        public static TheoryData<Size?, ShowWindowMode, WindowStartupLocation, bool> StartupLocationData()
         {
             var sizes = new Size?[] { null, new Size(400, 300) };
-            var data = new TheoryData<Size?, ShowWindowMode, WindowStartupLocation>();
+            var data = new TheoryData<Size?, ShowWindowMode, WindowStartupLocation, bool>();
 
             foreach (var size in sizes)
             {
@@ -243,7 +243,8 @@ namespace Avalonia.IntegrationTests.Appium
                     {
                         if (!(location == WindowStartupLocation.CenterOwner && mode == ShowWindowMode.NonOwned))
                         {
-                            data.Add(size, mode, location);
+                            data.Add(size, mode, location, true);
+                            data.Add(size, mode, location, false);
                         }
                     }
                 }
@@ -252,10 +253,10 @@ namespace Avalonia.IntegrationTests.Appium
             return data;
         }
 
-        public static TheoryData<Size?, ShowWindowMode, WindowState> WindowStateData()
+        public static TheoryData<Size?, ShowWindowMode, WindowState, bool> WindowStateData()
         {
             var sizes = new Size?[] { null, new Size(400, 300) };
-            var data = new TheoryData<Size?, ShowWindowMode, WindowState>();
+            var data = new TheoryData<Size?, ShowWindowMode, WindowState, bool>();
 
             foreach (var size in sizes)
             {
@@ -273,7 +274,8 @@ namespace Avalonia.IntegrationTests.Appium
                             mode != ShowWindowMode.NonOwned)
                             continue;
 
-                        data.Add(size, mode, state);
+                        data.Add(size, mode, state, true);
+                        data.Add(size, mode, state, false);
                     }
                 }
             }
@@ -311,25 +313,39 @@ namespace Avalonia.IntegrationTests.Appium
             Size? size,
             ShowWindowMode mode,
             WindowStartupLocation location = WindowStartupLocation.Manual,
-            WindowState state = Controls.WindowState.Normal)
+            WindowState state = Controls.WindowState.Normal,
+            bool canResize = true)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
             var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
             var stateComboBox = _session.FindElementByAccessibilityId("ShowWindowState");
+            var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
             var showButton = _session.FindElementByAccessibilityId("ShowWindow");
-
+            
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
 
-            modeComboBox.Click();
-            _session.FindElementByName(mode.ToString()).SendClick();
+            if (modeComboBox.GetComboBoxValue() != mode.ToString())
+            {
+                modeComboBox.Click();
+                _session.FindElementByName(mode.ToString()).SendClick();
+            }
 
-            locationComboBox.Click();
-            _session.FindElementByName(location.ToString()).SendClick();
+            if (locationComboBox.GetComboBoxValue() != location.ToString())
+            {
+                locationComboBox.Click();
+                _session.FindElementByName(location.ToString()).SendClick();
+            }
 
-            stateComboBox.Click();
-            _session.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
+            if (stateComboBox.GetComboBoxValue() != state.ToString())
+            {
+                stateComboBox.Click();
+                _session.FindElementByAccessibilityId($"ShowWindowState{state}").SendClick();
+            }
+
+            if (canResizeCheckBox.GetIsChecked() != canResize)
+                canResizeCheckBox.Click();
 
             return showButton.OpenWindowWithClick();
         }

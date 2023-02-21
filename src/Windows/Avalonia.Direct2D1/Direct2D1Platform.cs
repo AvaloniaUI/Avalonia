@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using Avalonia.Controls;
 using Avalonia.Controls.Platform.Surfaces;
 using Avalonia.Direct2D1.Media;
 using Avalonia.Direct2D1.Media.Imaging;
@@ -55,15 +55,18 @@ namespace Avalonia.Direct2D1
                     return;
                 }
 #if DEBUG
-                try
+                if (Debugger.IsAttached)
                 {
-                    Direct2D1Factory = new SharpDX.Direct2D1.Factory1(
-                        SharpDX.Direct2D1.FactoryType.MultiThreaded,
+                    try
+                    {
+                        Direct2D1Factory = new SharpDX.Direct2D1.Factory1(
+                            SharpDX.Direct2D1.FactoryType.MultiThreaded,
                             SharpDX.Direct2D1.DebugLevel.Error);
-                }
-                catch
-                {
-                    //
+                    }
+                    catch
+                    {
+                        // ignore, retry below without the debug layer
+                    }
                 }
 #endif
                 if (Direct2D1Factory == null)

@@ -279,8 +279,11 @@ namespace Avalonia.Controls.Primitives
         private void UpdateAdornedElement(Visual adorner, Visual? adorned)
         {
             if (adorner.CompositionVisual != null)
+            {
                 adorner.CompositionVisual.AdornedVisual = adorned?.CompositionVisual;
-            
+                adorner.CompositionVisual.AdornerIsClipped = GetIsClipEnabled(adorner);
+            }
+
             var info = adorner.GetValue(s_adornedElementInfoProperty);
 
             if (info != null)

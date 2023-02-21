@@ -323,21 +323,49 @@ namespace Avalonia.IntegrationTests.Appium
             secondaryWindow.GetChromeButtons().close.Click();
         }
 
-        private IDisposable OpenWindow(PixelSize? size, ShowWindowMode mode, WindowStartupLocation location)
+        [PlatformTheory(TestPlatforms.MacOS)]
+        [InlineData(ShowWindowMode.NonOwned)]
+        [InlineData(ShowWindowMode.Owned)]
+        [InlineData(ShowWindowMode.Modal)]
+        public void Window_Has_Disabled_Zoom_Button_When_CanResize_Is_False(ShowWindowMode mode)
+        {
+            using (OpenWindow(null, mode, WindowStartupLocation.Manual, canResize: false))
+            {
+                var secondaryWindow = GetWindow("SecondaryWindow");
+                var (_, _, zoomButton) = secondaryWindow.GetChromeButtons();
+                Assert.False(zoomButton.Enabled);
+            }
+        }
+        
+        private IDisposable OpenWindow(
+            PixelSize? size,
+            ShowWindowMode mode,
+            WindowStartupLocation location,
+            bool canResize = true)
         {
             var sizeTextBox = _session.FindElementByAccessibilityId("ShowWindowSize");
             var modeComboBox = _session.FindElementByAccessibilityId("ShowWindowMode");
             var locationComboBox = _session.FindElementByAccessibilityId("ShowWindowLocation");
+            var canResizeCheckBox = _session.FindElementByAccessibilityId("ShowWindowCanResize");
             var showButton = _session.FindElementByAccessibilityId("ShowWindow");
 
             if (size.HasValue)
                 sizeTextBox.SendKeys($"{size.Value.Width}, {size.Value.Height}");
 
-            modeComboBox.Click();
-            _session.FindElementByName(mode.ToString()).SendClick();
+            if (modeComboBox.GetComboBoxValue() != mode.ToString())
+            {
+                modeComboBox.Click();
+                _session.FindElementByName(mode.ToString()).SendClick();
+            }
 
-            locationComboBox.Click();
-            _session.FindElementByName(location.ToString()).SendClick();
+            if (locationComboBox.GetComboBoxValue() != location.ToString())
+            {
+                locationComboBox.Click();
+                _session.FindElementByName(location.ToString()).SendClick();
+            }
+            
+            if (canResizeCheckBox.GetIsChecked() != canResize)
+                canResizeCheckBox.Click();
 
             return showButton.OpenWindowWithClick();
         }
